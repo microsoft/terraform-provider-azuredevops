@@ -1,0 +1,1850 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "Core",
+      "description": "",
+      "termsOfService": "https://go.microsoft.com/fwlink/?LinkId=329770",
+      "contact": {
+        "name": "nugetvss",
+        "email": "nugetvss@microsoft.com"
+      },
+      "license": {
+        "name": "MICROSOFT SOFTWARE LICENSE TERMS",
+        "url": "https://go.microsoft.com/fwlink/?LinkId=329770"
+      },
+      "version": "5.1-preview"
+    },
+    "host": "dev.azure.com",
+    "basePath": "/",
+    "tags": [
+      {
+        "name": "Avatar"
+      },
+      {
+        "name": "Processes",
+        "description": "Controller for processes."
+      },
+      {
+        "name": "Projects",
+        "description": "DO NOT REMOVE. Used in TfsDeleteProject.exe to determine whether soft-delete is enabled."
+      },
+      {
+        "name": "Teams",
+        "description": "Manage teams in Azure DevOps Services.\nA DevOps account has one or more team projects.\nEach team project has one or more teams that contribute to that project."
+      }
+    ],
+    "schemes": [
+      "https"
+    ],
+    "paths": {
+      "/{organization}/_apis/projects": {
+        "get": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Get all projects in the organization that the authenticated user has access to.",
+          "operationId": "List",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "query",
+              "name": "stateFilter",
+              "description": "Filter on team projects in a specific team project state (default: WellFormed).",
+              "required": false,
+              "type": "string",
+              "enum": [
+                "deleting",
+                "new",
+                "wellFormed",
+                "createPending",
+                "all",
+                "unchanged",
+                "deleted"
+              ],
+              "x-ms-enum": {
+                "name": "ProjectState",
+                "values": [
+                  {
+                    "value": "deleting",
+                    "description": "Project is in the process of being deleted."
+                  },
+                  {
+                    "value": "new",
+                    "description": "Project is in the process of being created."
+                  },
+                  {
+                    "value": "wellFormed",
+                    "description": "Project is completely created and ready to use."
+                  },
+                  {
+                    "value": "createPending",
+                    "description": "Project has been queued for creation, but the process has not yet started."
+                  },
+                  {
+                    "value": "all",
+                    "description": "All projects regardless of state."
+                  },
+                  {
+                    "value": "unchanged",
+                    "description": "Project has not been changed."
+                  },
+                  {
+                    "value": "deleted",
+                    "description": "Project has been deleted."
+                  }
+                ]
+              }
+            },
+            {
+              "in": "query",
+              "name": "$top",
+              "description": "",
+              "required": false,
+              "type": "integer",
+              "format": "int32"
+            },
+            {
+              "in": "query",
+              "name": "$skip",
+              "description": "",
+              "required": false,
+              "type": "integer",
+              "format": "int32"
+            },
+            {
+              "in": "query",
+              "name": "continuationToken",
+              "description": "",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "in": "query",
+              "name": "getDefaultTeamImageUrl",
+              "description": "",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.4"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/TeamProjectReference"
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.profile",
+                "vso.project"
+              ]
+            }
+          ]
+        },
+        "post": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Queues a project to be created. Use the [GetOperation](../../operations/operations/get) to periodically check for create project status.",
+          "operationId": "Create",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "body",
+              "name": "body",
+              "description": "The project to create.",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/TeamProject"
+              }
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.4"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "$ref": "#/definitions/OperationReference"
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.project_manage"
+              ]
+            }
+          ]
+        }
+      },
+      "/{organization}/_apis/projects/{projectId}": {
+        "get": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Get project with the specified id or name, optionally including capabilities.",
+          "operationId": "Get",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "query",
+              "name": "includeCapabilities",
+              "description": "Include capabilities (such as source control) in the team project result (default: false).",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "in": "query",
+              "name": "includeHistory",
+              "description": "Search within renamed projects (that had such name in the past).",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.4"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "$ref": "#/definitions/TeamProject"
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.profile",
+                "vso.project"
+              ]
+            }
+          ]
+        },
+        "delete": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Queues a project to be deleted. Use the [GetOperation](../../operations/operations/get) to periodically check for delete project status.",
+          "operationId": "Delete",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The project id of the project to delete.",
+              "required": true,
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.4"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "$ref": "#/definitions/OperationReference"
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.project_manage"
+              ]
+            }
+          ]
+        },
+        "patch": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Update an existing project's name, abbreviation, description, or restore a project.",
+          "operationId": "Update",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "body",
+              "name": "body",
+              "description": "The updates for the project. The state must be set to wellFormed to restore the project.",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/TeamProject"
+              }
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The project id of the project to update.",
+              "required": true,
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.4"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "$ref": "#/definitions/OperationReference"
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.project_write"
+              ]
+            }
+          ]
+        }
+      },
+      "/{organization}/_apis/projects/{projectId}/avatar": {
+        "delete": {
+          "tags": [
+            "Avatar"
+          ],
+          "description": "Removes the avatar for the project.",
+          "operationId": "Remove Project Avatar",
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The ID or name of the project.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.1"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation"
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.project_manage"
+              ]
+            }
+          ]
+        },
+        "put": {
+          "tags": [
+            "Avatar"
+          ],
+          "description": "Sets the avatar for the project.",
+          "operationId": "Set Project Avatar",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "body",
+              "name": "body",
+              "description": "The avatar blob data object to upload.",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/ProjectAvatar"
+              }
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The ID or name of the project.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.1"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation"
+            }
+          }
+        }
+      },
+      "/{organization}/_apis/projects/{projectId}/properties": {
+        "get": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Get a collection of team project properties.",
+          "operationId": "Get Project Properties",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The team project ID.",
+              "required": true,
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "in": "query",
+              "name": "keys",
+              "description": "A comma-delimited string of team project property names. Wildcard characters (\"?\" and \"*\") are supported. If no key is specified, all properties will be returned.",
+              "required": false,
+              "type": "string",
+              "format": "array (string)"
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.1"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/ProjectProperty"
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.profile",
+                "vso.project"
+              ]
+            }
+          ]
+        },
+        "patch": {
+          "tags": [
+            "Projects"
+          ],
+          "description": "Create, update, and delete team project properties.",
+          "operationId": "Set Project Properties",
+          "consumes": [
+            "application/json-patch+json"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "organization",
+              "description": "The name of the Azure DevOps organization.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "projectId",
+              "description": "The team project ID.",
+              "required": true,
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "in": "body",
+              "name": "body",
+              "description": "A JSON Patch document that represents an array of property operations. See RFC 6902 for more details on JSON Patch. The accepted operation verbs are Add and Remove, where Add is used for both creating and updating properties. The path consists of a forward slash and a property name.",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/JsonPatchDocument"
+              }
+            },
+            {
+              "$ref": "#/parameters/api-Version-preview.1"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation"
+            }
+          },
+          "security": [
+            {
+              "oauth2": [
+                "vso.project_write"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "definitions": {
+      "GraphSubjectBase": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "_links": {
+            "description": "This field contains zero or more interesting links about the graph subject. These links may be invoked to obtain additional relationships or more detailed information about this graph subject.",
+            "$ref": "#/definitions/ReferenceLinks"
+          },
+          "descriptor": {
+            "description": "The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.",
+            "type": "string"
+          },
+          "url": {
+            "description": "This url is the full route to the source resource of this graph subject.",
+            "type": "string"
+          }
+        }
+      },
+      "Identity": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/IdentityBase"
+          }
+        ],
+        "properties": {
+          
+        }
+      },
+      "IdentityBase": {
+        "description": "Base Identity class to allow \"trimmed\" identity class in the GetConnectionData API Makes sure that on-the-wire representations of the derived classes are compatible with each other (e.g. Server responds with PublicIdentity object while client deserializes it as Identity object) Derived classes should not have additional [DataMember] properties",
+        "type": "object",
+        "properties": {
+          "customDisplayName": {
+            "description": "The custom display name for the identity (if any). Setting this property to an empty string will clear the existing custom display name. Setting this property to null will not affect the existing persisted value (since null values do not get sent over the wire or to the database)",
+            "type": "string"
+          },
+          "descriptor": {
+            "$ref": "#/definitions/IdentityDescriptor"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isContainer": {
+            "type": "boolean"
+          },
+          "masterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "memberOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/IdentityDescriptor"
+            }
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/IdentityDescriptor"
+            }
+          },
+          "metaTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "properties": {
+            "$ref": "#/definitions/PropertiesCollection"
+          },
+          "providerDisplayName": {
+            "description": "The display name for the identity as specified by the source identity provider.",
+            "type": "string"
+          },
+          "resourceVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "socialDescriptor": {
+            "type": "string"
+          },
+          "subjectDescriptor": {
+            "type": "string"
+          },
+          "uniqueUserId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "IdentityData": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "identityIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "IdentityDescriptor": {
+        "description": "An Identity descriptor is a wrapper for the identity type (Windows SID, Passport) along with a unique identifier such as the SID or PUID.",
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "description": "The unique identifier for this identity, not exceeding 256 chars, which will be persisted.",
+            "type": "string"
+          },
+          "identityType": {
+            "description": "Type of descriptor (for example, Windows, Passport, etc.).",
+            "type": "string"
+          }
+        }
+      },
+      "IdentityRef": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/GraphSubjectBase"
+          }
+        ],
+        "properties": {
+          "directoryAlias": {
+            "description": "Deprecated - Can be retrieved by querying the Graph user referenced in the \"self\" entry of the IdentityRef \"_links\" dictionary",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Deprecated - Available in the \"avatar\" entry of the IdentityRef \"_links\" dictionary",
+            "type": "string"
+          },
+          "inactive": {
+            "description": "Deprecated - Can be retrieved by querying the Graph membership state referenced in the \"membershipState\" entry of the GraphUser \"_links\" dictionary",
+            "type": "boolean"
+          },
+          "isAadIdentity": {
+            "description": "Deprecated - Can be inferred from the subject type of the descriptor (Descriptor.IsAadUserType/Descriptor.IsAadGroupType)",
+            "type": "boolean"
+          },
+          "isContainer": {
+            "description": "Deprecated - Can be inferred from the subject type of the descriptor (Descriptor.IsGroupType)",
+            "type": "boolean"
+          },
+          "isDeletedInOrigin": {
+            "type": "boolean"
+          },
+          "profileUrl": {
+            "description": "Deprecated - not in use in most preexisting implementations of ToIdentityRef",
+            "type": "string"
+          },
+          "uniqueName": {
+            "description": "Deprecated - use Domain+PrincipalName instead",
+            "type": "string"
+          }
+        }
+      },
+      "JsonPatchDocument": {
+        "description": "The JSON model for JSON Patch Operations",
+        "type": "object",
+        "allOf": [
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/JsonPatchOperation"
+            }
+          }
+        ],
+        "properties": {
+          
+        }
+      },
+      "JsonPatchOperation": {
+        "description": "The JSON model for a JSON Patch operation",
+        "type": "object",
+        "properties": {
+          "from": {
+            "description": "The path to copy from for the Move/Copy operation.",
+            "type": "string"
+          },
+          "op": {
+            "description": "The patch operation",
+            "enum": [
+              "add",
+              "remove",
+              "replace",
+              "move",
+              "copy",
+              "test"
+            ],
+            "x-ms-enum": {
+              "name": "Operation",
+              "values": [
+                {
+                  "value": "add",
+                  "description": ""
+                },
+                {
+                  "value": "remove",
+                  "description": ""
+                },
+                {
+                  "value": "replace",
+                  "description": ""
+                },
+                {
+                  "value": "move",
+                  "description": ""
+                },
+                {
+                  "value": "copy",
+                  "description": ""
+                },
+                {
+                  "value": "test",
+                  "description": ""
+                }
+              ]
+            }
+          },
+          "path": {
+            "description": "The path for the operation. In the case of an array, a zero based index can be used to specify the position in the array (e.g. /biscuits/0/name). The \"-\" character can be used instead of an index to insert at the end of the array (e.g. /biscuits/-).",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value for the operation. This is either a primitive or a JToken.",
+            "type": "object"
+          }
+        }
+      },
+      "OperationReference": {
+        "description": "Reference for an async operation.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for the operation.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "pluginId": {
+            "description": "Unique identifier for the plugin.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "description": "The current status of the operation.",
+            "enum": [
+              "notSet",
+              "queued",
+              "inProgress",
+              "cancelled",
+              "succeeded",
+              "failed"
+            ],
+            "x-ms-enum": {
+              "name": "OperationStatus",
+              "values": [
+                {
+                  "value": "notSet",
+                  "description": "The operation does not have a status set."
+                },
+                {
+                  "value": "queued",
+                  "description": "The operation has been queued."
+                },
+                {
+                  "value": "inProgress",
+                  "description": "The operation is in progress."
+                },
+                {
+                  "value": "cancelled",
+                  "description": "The operation was cancelled by the user."
+                },
+                {
+                  "value": "succeeded",
+                  "description": "The operation completed successfully."
+                },
+                {
+                  "value": "failed",
+                  "description": "The operation completed with a failure."
+                }
+              ]
+            }
+          },
+          "url": {
+            "description": "URL to get the full operation object.",
+            "type": "string"
+          }
+        }
+      },
+      "Process": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/ProcessReference"
+          }
+        ],
+        "properties": {
+          "_links": {
+            "$ref": "#/definitions/ReferenceLinks"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "type": {
+            "enum": [
+              "system",
+              "custom",
+              "inherited"
+            ],
+            "x-ms-enum": {
+              "name": "ProcessType",
+              "values": [
+                {
+                  "value": "system",
+                  "description": ""
+                },
+                {
+                  "value": "custom",
+                  "description": ""
+                },
+                {
+                  "value": "inherited",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ProcessReference": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "ProjectAvatar": {
+        "description": "Contains the image data for project avatar.",
+        "type": "object",
+        "properties": {
+          "image": {
+            "description": "The avatar image represented as a byte array.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
+        }
+      },
+      "ProjectInfo": {
+        "description": "Contains information describing a project.",
+        "type": "object",
+        "properties": {
+          "abbreviation": {
+            "description": "The abbreviated name of the project.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The description of the project.",
+            "type": "string"
+          },
+          "id": {
+            "description": "The id of the project.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastUpdateTime": {
+            "description": "The time that this project was last updated.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "description": "The name of the project.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "A set of name-value pairs storing additional property data related to the project.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ProjectProperty"
+            }
+          },
+          "revision": {
+            "description": "The current revision of the project.",
+            "type": "integer",
+            "format": "int64"
+          },
+          "state": {
+            "description": "The current state of the project.",
+            "enum": [
+              "deleting",
+              "new",
+              "wellFormed",
+              "createPending",
+              "all",
+              "unchanged",
+              "deleted"
+            ],
+            "x-ms-enum": {
+              "name": "ProjectState",
+              "values": [
+                {
+                  "value": "deleting",
+                  "description": "Project is in the process of being deleted."
+                },
+                {
+                  "value": "new",
+                  "description": "Project is in the process of being created."
+                },
+                {
+                  "value": "wellFormed",
+                  "description": "Project is completely created and ready to use."
+                },
+                {
+                  "value": "createPending",
+                  "description": "Project has been queued for creation, but the process has not yet started."
+                },
+                {
+                  "value": "all",
+                  "description": "All projects regardless of state."
+                },
+                {
+                  "value": "unchanged",
+                  "description": "Project has not been changed."
+                },
+                {
+                  "value": "deleted",
+                  "description": "Project has been deleted."
+                }
+              ]
+            }
+          },
+          "uri": {
+            "description": "A Uri that can be used to refer to this project.",
+            "type": "string"
+          },
+          "version": {
+            "description": "The version number of the project.",
+            "type": "integer",
+            "format": "int64"
+          },
+          "visibility": {
+            "description": "Indicates whom the project is visible to.",
+            "enum": [
+              "private",
+              "public"
+            ],
+            "x-ms-enum": {
+              "name": "ProjectVisibility",
+              "values": [
+                {
+                  "value": "private",
+                  "description": "The project is only visible to users with explicit access."
+                },
+                {
+                  "value": "public",
+                  "description": "The project is visible to all."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ProjectMessage": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "project": {
+            "$ref": "#/definitions/ProjectInfo"
+          },
+          "projectChangeType": {
+            "enum": [
+              "modified",
+              "deleted",
+              "added"
+            ],
+            "x-ms-enum": {
+              "name": "ProjectChangeType",
+              "values": [
+                {
+                  "value": "modified",
+                  "description": ""
+                },
+                {
+                  "value": "deleted",
+                  "description": ""
+                },
+                {
+                  "value": "added",
+                  "description": ""
+                }
+              ]
+            }
+          },
+          "shouldInvalidateSystemStore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProjectProperties": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "description": "The team project Id",
+            "type": "string",
+            "format": "uuid"
+          },
+          "properties": {
+            "description": "The collection of team project properties",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ProjectProperty"
+            }
+          }
+        }
+      },
+      "ProjectProperty": {
+        "description": "A named value associated with a project.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The name of the property.",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the property.",
+            "type": "object"
+          }
+        }
+      },
+      "PropertiesCollection": {
+        "description": "The class represents a property bag as a collection of key-value pairs. Values of all primitive types (any type with a `TypeCode != TypeCode.Object`) except for `DBNull` are accepted. Values of type Byte[], Int32, Double, DateType and String preserve their type, other primitives are retuned as a String. Byte[] expected as base64 encoded string.",
+        "type": "object",
+        "properties": {
+          "count": {
+            "description": "The count of properties in the collection.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "type": "object"
+          },
+          "keys": {
+            "description": "The set of keys in the collection.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "values": {
+            "description": "The set of values in the collection.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Proxy": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "authorization": {
+            "$ref": "#/definitions/ProxyAuthorization"
+          },
+          "description": {
+            "description": "This is a description string",
+            "type": "string"
+          },
+          "friendlyName": {
+            "description": "The friendly name of the server",
+            "type": "string"
+          },
+          "globalDefault": {
+            "type": "boolean"
+          },
+          "site": {
+            "description": "This is a string representation of the site that the proxy server is located in (e.g. \"NA-WA-RED\")",
+            "type": "string"
+          },
+          "siteDefault": {
+            "type": "boolean"
+          },
+          "url": {
+            "description": "The URL of the proxy server",
+            "type": "string"
+          }
+        }
+      },
+      "ProxyAuthorization": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "authorizationUrl": {
+            "description": "Gets or sets the endpoint used to obtain access tokens from the configured token service.",
+            "type": "string"
+          },
+          "clientId": {
+            "description": "Gets or sets the client identifier for this proxy.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "identity": {
+            "description": "Gets or sets the user identity to authorize for on-prem.",
+            "$ref": "#/definitions/IdentityDescriptor"
+          },
+          "publicKey": {
+            "description": "Gets or sets the public key used to verify the identity of this proxy. Only specify on hosted.",
+            "$ref": "#/definitions/PublicKey"
+          }
+        }
+      },
+      "PublicKey": {
+        "description": "Represents the public key portion of an RSA asymmetric key.",
+        "type": "object",
+        "properties": {
+          "exponent": {
+            "description": "Gets or sets the exponent for the public key.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          },
+          "modulus": {
+            "description": "Gets or sets the modulus for the public key.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
+        }
+      },
+      "ReferenceLinks": {
+        "description": "The class to represent a collection of REST reference links.",
+        "type": "object",
+        "properties": {
+          "links": {
+            "description": "The readonly view of the links.  Because Reference links are readonly, we only want to expose them as read only.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "TeamContext": {
+        "description": "The Team Context for an operation.",
+        "type": "object",
+        "properties": {
+          "project": {
+            "description": "The team project Id or name.  Ignored if ProjectId is set.",
+            "type": "string"
+          },
+          "projectId": {
+            "description": "The Team Project ID.  Required if Project is not set.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "team": {
+            "description": "The Team Id or name.  Ignored if TeamId is set.",
+            "type": "string"
+          },
+          "teamId": {
+            "description": "The Team Id",
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "TeamMember": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "identity": {
+            "$ref": "#/definitions/IdentityRef"
+          },
+          "isTeamAdmin": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TeamProject": {
+        "description": "Represents a Team Project object.",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/TeamProjectReference"
+          }
+        ],
+        "properties": {
+          "_links": {
+            "description": "The links to other objects related to this object.",
+            "$ref": "#/definitions/ReferenceLinks"
+          },
+          "capabilities": {
+            "description": "Set of capabilities this project has (such as process template & version control).",
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "defaultTeam": {
+            "description": "The shallow ref to the default team.",
+            "$ref": "#/definitions/WebApiTeamRef"
+          }
+        }
+      },
+      "TeamProjectCollection": {
+        "description": "Data contract for a TeamProjectCollection.",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/TeamProjectCollectionReference"
+          }
+        ],
+        "properties": {
+          "_links": {
+            "description": "The links to other objects related to this object.",
+            "$ref": "#/definitions/ReferenceLinks"
+          },
+          "description": {
+            "description": "Project collection description.",
+            "type": "string"
+          },
+          "processCustomizationType": {
+            "description": "Process customzation type on this collection. It can be Xml or Inherited.",
+            "enum": [
+              "xml",
+              "inherited"
+            ],
+            "x-ms-enum": {
+              "name": "ProcessCustomizationType",
+              "values": [
+                {
+                  "value": "xml",
+                  "description": "Customization based on project-scoped xml customization"
+                },
+                {
+                  "value": "inherited",
+                  "description": "Customization based on process inheritance"
+                }
+              ]
+            }
+          },
+          "state": {
+            "description": "Project collection state.",
+            "type": "string"
+          }
+        }
+      },
+      "TeamProjectCollectionReference": {
+        "description": "Reference object for a TeamProjectCollection.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Collection Id.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "description": "Collection Name.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Collection REST Url.",
+            "type": "string"
+          }
+        }
+      },
+      "TeamProjectReference": {
+        "description": "Represents a shallow reference to a TeamProject.",
+        "type": "object",
+        "properties": {
+          "abbreviation": {
+            "description": "Project abbreviation.",
+            "type": "string"
+          },
+          "defaultTeamImageUrl": {
+            "description": "Url to default team identity image.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The project's description (if any).",
+            "type": "string"
+          },
+          "id": {
+            "description": "Project identifier.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastUpdateTime": {
+            "description": "Project last update time.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "description": "Project name.",
+            "type": "string"
+          },
+          "revision": {
+            "description": "Project revision.",
+            "type": "integer",
+            "format": "int64"
+          },
+          "state": {
+            "description": "Project state.",
+            "enum": [
+              "deleting",
+              "new",
+              "wellFormed",
+              "createPending",
+              "all",
+              "unchanged",
+              "deleted"
+            ],
+            "x-ms-enum": {
+              "name": "ProjectState",
+              "values": [
+                {
+                  "value": "deleting",
+                  "description": "Project is in the process of being deleted."
+                },
+                {
+                  "value": "new",
+                  "description": "Project is in the process of being created."
+                },
+                {
+                  "value": "wellFormed",
+                  "description": "Project is completely created and ready to use."
+                },
+                {
+                  "value": "createPending",
+                  "description": "Project has been queued for creation, but the process has not yet started."
+                },
+                {
+                  "value": "all",
+                  "description": "All projects regardless of state."
+                },
+                {
+                  "value": "unchanged",
+                  "description": "Project has not been changed."
+                },
+                {
+                  "value": "deleted",
+                  "description": "Project has been deleted."
+                }
+              ]
+            }
+          },
+          "url": {
+            "description": "Url to the full version of the object.",
+            "type": "string"
+          },
+          "visibility": {
+            "description": "Project visibility.",
+            "enum": [
+              "private",
+              "public"
+            ],
+            "x-ms-enum": {
+              "name": "ProjectVisibility",
+              "values": [
+                {
+                  "value": "private",
+                  "description": "The project is only visible to users with explicit access."
+                },
+                {
+                  "value": "public",
+                  "description": "The project is visible to all."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "TemporaryDataCreatedDTO": {
+        "description": "A data transfer object that stores the metadata associated with the creation of temporary data.",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/TemporaryDataDTO"
+          }
+        ],
+        "properties": {
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "TemporaryDataDTO": {
+        "description": "A data transfer object that stores the metadata associated with the temporary data.",
+        "type": "object",
+        "properties": {
+          "expirationSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdateTeam": {
+        "description": "Updateable properties for a WebApiTeam.",
+        "type": "object",
+        "properties": {
+          "description": {
+            "description": "New description for the team.",
+            "type": "string"
+          },
+          "name": {
+            "description": "New name for the team.",
+            "type": "string"
+          }
+        }
+      },
+      "VssJsonCollectionWrapper": {
+        "description": "This class is used to serialized collections as a single JSON object on the wire, to avoid serializing JSON arrays directly to the client, which can be a security hole",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/VssJsonCollectionWrapperBase"
+          }
+        ],
+        "properties": {
+          "value": {
+            "type": "string",
+            "format": "T"
+          }
+        }
+      },
+      "VssJsonCollectionWrapperBase": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "WebApiConnectedService": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/WebApiConnectedServiceRef"
+          }
+        ],
+        "properties": {
+          "authenticatedBy": {
+            "description": "The user who did the OAuth authentication to created this service",
+            "$ref": "#/definitions/IdentityRef"
+          },
+          "description": {
+            "description": "Extra description on the service.",
+            "type": "string"
+          },
+          "friendlyName": {
+            "description": "Friendly Name of service connection",
+            "type": "string"
+          },
+          "id": {
+            "description": "Id/Name of the connection service. For Ex: Subscription Id for Azure Connection",
+            "type": "string"
+          },
+          "kind": {
+            "description": "The kind of service.",
+            "type": "string"
+          },
+          "project": {
+            "description": "The project associated with this service",
+            "$ref": "#/definitions/TeamProjectReference"
+          },
+          "serviceUri": {
+            "description": "Optional uri to connect directly to the service such as https://windows.azure.com",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiConnectedServiceDetails": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/WebApiConnectedServiceRef"
+          }
+        ],
+        "properties": {
+          "connectedServiceMetaData": {
+            "description": "Meta data for service connection",
+            "$ref": "#/definitions/WebApiConnectedService"
+          },
+          "credentialsXml": {
+            "description": "Credential info",
+            "type": "string"
+          },
+          "endPoint": {
+            "description": "Optional uri to connect directly to the service such as https://windows.azure.com",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiConnectedServiceRef": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "WebApiCreateTagRequestData": {
+        "description": "The representation of data needed to create a tag definition which is sent across the wire.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the tag definition that will be created.",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiProject": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/TeamProjectReference"
+          }
+        ],
+        "properties": {
+          "capabilities": {
+            "description": "Set of capabilities this project has",
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "collection": {
+            "description": "Reference to collection which contains this project",
+            "$ref": "#/definitions/WebApiProjectCollectionRef"
+          },
+          "defaultTeam": {
+            "description": "Default team for this project",
+            "$ref": "#/definitions/WebApiTeamRef"
+          }
+        }
+      },
+      "WebApiProjectCollection": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/WebApiProjectCollectionRef"
+          }
+        ],
+        "properties": {
+          "description": {
+            "description": "Project collection description",
+            "type": "string"
+          },
+          "state": {
+            "description": "Project collection state",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiProjectCollectionRef": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "collectionUrl": {
+            "description": "Collection Tfs Url (Host Url)",
+            "type": "string"
+          },
+          "id": {
+            "description": "Collection Guid",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "description": "Collection Name",
+            "type": "string"
+          },
+          "url": {
+            "description": "Collection REST Url",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiTagDefinition": {
+        "description": "The representation of a tag definition which is sent across the wire.",
+        "type": "object",
+        "properties": {
+          "active": {
+            "description": "Whether or not the tag definition is active.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "ID of the tag definition.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "description": "The name of the tag definition.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Resource URL for the Tag Definition.",
+            "type": "string"
+          }
+        }
+      },
+      "WebApiTeam": {
+        "description": "",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/WebApiTeamRef"
+          }
+        ],
+        "properties": {
+          "description": {
+            "description": "Team description",
+            "type": "string"
+          },
+          "identity": {
+            "description": "Team identity.",
+            "$ref": "#/definitions/Identity"
+          },
+          "identityUrl": {
+            "description": "Identity REST API Url to this team",
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectName": {
+            "type": "string"
+          }
+        }
+      },
+      "WebApiTeamRef": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Team (Identity) Guid. A Team Foundation ID.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "description": "Team name",
+            "type": "string"
+          },
+          "url": {
+            "description": "Team REST API Url",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "api-Version-preview.1": {
+        "name": "api-version",
+        "in": "query",
+        "description": "Version of the API to use.  This should be set to '5.1-preview.1' to use this version of the api.",
+        "required": true,
+        "type": "string"
+      },
+      "api-Version-preview.2": {
+        "name": "api-version",
+        "in": "query",
+        "description": "Version of the API to use.  This should be set to '5.1-preview.2' to use this version of the api.",
+        "required": true,
+        "type": "string"
+      },
+      "api-Version-preview.3": {
+        "name": "api-version",
+        "in": "query",
+        "description": "Version of the API to use.  This should be set to '5.1-preview.3' to use this version of the api.",
+        "required": true,
+        "type": "string"
+      },
+      "api-Version-preview.4": {
+        "name": "api-version",
+        "in": "query",
+        "description": "Version of the API to use.  This should be set to '5.1-preview.4' to use this version of the api.",
+        "required": true,
+        "type": "string"
+      }
+    },
+    "securityDefinitions": {
+      "accessToken": {
+        "type": "basic",
+        "description": "Personal access token. Use any value for the user name and the token as the password."
+      },
+      "oauth2": {
+        "type": "oauth2",
+        "flow": "accessCode",
+        "authorizationUrl": "https://app.vssps.visualstudio.com/oauth2/authorize&response_type=Assertion",
+        "tokenUrl": "https://app.vssps.visualstudio.com/oauth2/token?client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer",
+        "scopes": {
+          "vso.profile": "Grants the ability to read your profile, accounts, collections, projects, teams, and other top-level organizational artifacts.",
+          "vso.project": "Grants the ability to read projects and teams.",
+          "vso.project_manage": "Grants the ability to create, read, update, and delete projects and teams.",
+          "vso.project_write": "Grants the ability to read and update projects and teams.",
+          "vso.work": "Grants the ability to read work items, queries, boards, area and iterations paths, and other work item tracking related metadata. Also grants the ability to execute queries, search work items and to receive notifications about work item events via service hooks."
+        }
+      }
+    },
+    "security": [
+      {
+        "accessToken": [
+          
+        ]
+      }
+    ],
+    "externalDocs": {
+      "description": "Azure DevOps REST APIs",
+      "url": "https://aka.ms/azure-devops-rest-apis"
+    }
+  }
