@@ -1,2 +1,5 @@
 .env
+.terraform/
 ./vscode
+build/
+terraform.tfstate

@@ -1,0 +1,1 @@
+cd src && go build -o ../build/terraform-provider-azuredevops_v0.0.1 && cd ..
