@@ -3,3 +3,5 @@
 ./vscode
 build/
 terraform.tfstate
+terraform.tfstate.backup
+terraform.log

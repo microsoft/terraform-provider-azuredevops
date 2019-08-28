@@ -15,14 +15,19 @@ resource "azuredevops_foo" "nicks_example_resource" {
 #   <resource configuration goes here>
 # }
 
-# resource "azuredevops_project" "nicks_project" {
-#   organization = "..."
-#   project_name = "..."
-#   ...
-# }
+resource "azuredevops_project" "nicks_project" {
+  organization = "csedevops"
+  project_name = "tf_test"
+  description = "test project" #(OPTIONAL DEFAULT "")
+  visibility = "private" # public, private (OPTIONAL DEFAULT: private)
+  version_control = "Git" # Git, Tfvc (OPTIONAL DEFAULT: git)
+  work_item_template = "Scrum" # Scrum, Agile, Basic, CMMI (OPTIONAL DEFAULT: Agile)
+
+  #TODO support Custom templates (process templates)
+}
 
 # resource "azuredevops_pipeline" "nicks_pipeline" {
 #   organization = "..."
-#   project_id = azuredevops_project.nicks_project.id
+#   project_id = azuredevops_project.nicks_project.project_id
 #   ...
 # }

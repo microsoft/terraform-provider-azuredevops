@@ -9,7 +9,8 @@ func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			// Why is the key/value named the way they are?
-			"azuredevops_foo": resourceFoo(),
+			"azuredevops_foo":     resourceFoo(),
+			"azuredevops_project": resourceProject(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
