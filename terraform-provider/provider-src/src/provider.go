@@ -8,7 +8,13 @@ import (
 func Provider() *schema.Provider {
 
 	return &schema.Provider{
-		Schema: map[string]*schema.Schema{
+		Schema: map[string]*schema.Schema{			
+			"org_service_url": {
+				Type:        schema.TypeString,
+				Required: 	 true,	
+				DefaultFunc: schema.EnvDefaultFunc("AZDO_ORG_SERVICE_URL", nil),
+				Description: "The url of the Azure DevOps instance which should be used.",
+			},
 			"personal_access_token": {
 				Type:        schema.TypeString,
 				Required: 	 true,	
