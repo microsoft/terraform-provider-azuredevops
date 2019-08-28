@@ -1,6 +1,8 @@
 
 provider "azuredevops" {
   version = ">= 0.0.1"
+  # provide via env var as AZDO_PERSONAL_ACCESS_TOKEN=<my personal access token>
+  # personal_access_token = "foo"
 }
 
 resource "azuredevops_foo" "nicks_example_resource" {
