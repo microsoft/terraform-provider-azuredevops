@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -77,12 +76,8 @@ type projectValues struct {
 
 func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 	//instantiate client
-	ctx := context.Background()
-	clients, err := getClients(ctx)
+	clients := m.(*aggregatedClient)
 
-	if err != nil {
-		return fmt.Errorf("Error creating client: %+v", err)
-	}
 	//extract project values from TF file
 	//organization := d.Get("organization").(string)
 
@@ -94,7 +89,7 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 		workItemTemplate: d.Get("work_item_template").(string),
 	}
 	// lookup process template id
-	processTemplateID, err := lookupProcessTemplateID(ctx, clients, values.workItemTemplate)
+	processTemplateID, err := lookupProcessTemplateID(clients, values.workItemTemplate)
 
 	if err != nil {
 		return fmt.Errorf("Invalid work item template name: %+v", err)
@@ -103,17 +98,13 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 	values.workItemTemplateID = processTemplateID //clean up
 
 	// create project
-	projectCreate(ctx, clients, &values)
+	projectCreate(clients, &values)
 
 	//lookup project id
-	projectID, err := lookupProjectID(ctx, clients, values.projectName)
+	projectID, err := lookupProjectID(clients, values.projectName)
 
 	if err != nil {
-<<<<<<< HEAD
-		return fmt.Errorf("Error looking up project ID for project: %+v", values.projectName)
-=======
 		return fmt.Errorf("Error looking up project ID for project: %v, %+v", values.projectName, err)
->>>>>>> d9a514c1a9553a4cb1feccc79cd9709261cd6f6f
 	}
 
 	values.projectID = projectID
@@ -139,9 +130,9 @@ func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func projectCreate(ctx context.Context, clients *AggregatedClient, values *projectValues) (map[string]string, error) {
+func projectCreate(clients *aggregatedClient, values *projectValues) (map[string]string, error) {
 
-	operationRef, err := clients.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{
+	operationRef, err := clients.CoreClient.QueueCreateProject(clients.ctx, core.QueueCreateProjectArgs{
 		ProjectToCreate: &core.TeamProject{
 			Name:        &values.projectName,
 			Description: &values.description,
@@ -160,7 +151,7 @@ func projectCreate(ctx context.Context, clients *AggregatedClient, values *proje
 		return nil, err
 	}
 
-	err = waitForAsyncOperationSuccess(ctx, clients, operationRef)
+	err = waitForAsyncOperationSuccess(clients, operationRef)
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +159,8 @@ func projectCreate(ctx context.Context, clients *AggregatedClient, values *proje
 	return nil, nil
 }
 
-func lookupProjectID(ctx context.Context, clients *AggregatedClient, projectName string) (string, error) {
-	projects, err := clients.CoreClient.GetProjects(ctx, core.GetProjectsArgs{})
+func lookupProjectID(clients *aggregatedClient, projectName string) (string, error) {
+	projects, err := clients.CoreClient.GetProjects(clients.ctx, core.GetProjectsArgs{})
 	if err != nil {
 		return "", err
 	}
@@ -183,8 +174,8 @@ func lookupProjectID(ctx context.Context, clients *AggregatedClient, projectName
 	return "", fmt.Errorf("No project found")
 }
 
-func lookupProcessTemplateID(ctx context.Context, clients *AggregatedClient, processTemplateName string) (string, error) {
-	processes, err := clients.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
+func lookupProcessTemplateID(clients *aggregatedClient, processTemplateName string) (string, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.ctx, core.GetProcessesArgs{})
 	if err != nil {
 		return "", err
 	}
@@ -198,13 +189,13 @@ func lookupProcessTemplateID(ctx context.Context, clients *AggregatedClient, pro
 	return "", fmt.Errorf("No process template found")
 }
 
-func waitForAsyncOperationSuccess(ctx context.Context, clients *AggregatedClient, operationRef *operations.OperationReference) error {
+func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference) error {
 	maxAttempts := 30
 	currentAttempt := 1
 
 	for currentAttempt <= maxAttempts {
 		//log.Printf("Checking status for operation with ID: %s", operationRef.Id)
-		result, err := clients.OperationsClient.GetOperation(ctx, operations.GetOperationArgs{
+		result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
 			OperationId: operationRef.Id,
 			PluginId:    operationRef.PluginId,
 		})
