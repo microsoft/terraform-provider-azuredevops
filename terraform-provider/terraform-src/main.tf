@@ -2,13 +2,25 @@
 provider "azuredevops" {
   version = ">= 0.0.1"
   # provide via env var as AZDO_PERSONAL_ACCESS_TOKEN=<my personal access token>
-  personal_access_token = "foo"
   # provide via env var as AZDO_ORG_SERVICE_URL=<my org's service url>
-  org_service_url = "https://dev.azure.com/chzipp"
+  org_service_url = "https://dev.azure.com/niiodice"
 }
 
 resource "azuredevops_foo" "nicks_example_resource" {
   fookey = "fooValue"
+}
+
+resource "azuredevops_pipeline" "pipeline_example" {
+  project_id = "..."
+  pipeline_name = "sample-pipeline-nick"
+
+  repository {
+    repo_type = "GitHub"
+    repo_name = "nmiodice/terraform-azure-devops-hack"
+    branch_name = "master"
+    yml_path = "azdo-api-samples/azure-pipeline.yml"
+    service_connection_id = "..."
+  }
 }
 
 # resource "azuredevops_$RESOURCE" "$LOGICAL_NAME" {

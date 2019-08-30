@@ -3,5 +3,7 @@
 ./vscode
 build/
 terraform.tfstate
+go.mod
+terraform-provider-azure-devops
 terraform.tfstate.backup
 terraform.log
