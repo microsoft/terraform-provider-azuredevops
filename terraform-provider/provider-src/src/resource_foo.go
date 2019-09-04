@@ -16,12 +16,19 @@ func resourceFoo() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"project_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
 		},
 	}
 }
 
 func resourceFooCreate(d *schema.ResourceData, m interface{}) error {
 	fookey := d.Get("fookey").(string)
+	projectID := d.Get("project_id").(string)
+
+	d.Set("project_id", projectID)
 	d.SetId(fookey)
 	return resourceFooRead(d, m)
 }

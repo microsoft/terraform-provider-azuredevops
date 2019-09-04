@@ -2,12 +2,14 @@
 provider "azuredevops" {
   version = ">= 0.0.1"
   # provide via env var as AZDO_PERSONAL_ACCESS_TOKEN=<my personal access token>
+  #personal_access_token = "foo"
   # provide via env var as AZDO_ORG_SERVICE_URL=<my org's service url>
   org_service_url = "https://dev.azure.com/niiodice"
 }
 
 resource "azuredevops_foo" "nicks_example_resource" {
   fookey = "fooValue"
+  project_id = azuredevops_project.nicks_project.project_id
 }
 
 resource "azuredevops_pipeline" "pipeline_example" {
@@ -28,7 +30,6 @@ resource "azuredevops_pipeline" "pipeline_example" {
 # }
 
 resource "azuredevops_project" "nicks_project" {
-  organization = "csedevops"
   project_name = "tf_test"
   description = "test project" #(OPTIONAL DEFAULT "")
   visibility = "private" # public, private (OPTIONAL DEFAULT: private)

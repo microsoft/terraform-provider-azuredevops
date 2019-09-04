@@ -160,6 +160,7 @@ github.com/hashicorp/serf v0.0.0-20160124182025-e4ec8cc423bb/go.mod h1:h/Ru6tmZa
 github.com/hashicorp/terraform v0.12.5 h1:Z2FichOU9kUKWa8RBzwMXzPR1+vhAIstvdsrT8NgYwE=
 github.com/hashicorp/terraform v0.12.5/go.mod h1:79gUmnwZ6qMgdCF2RVlVjmIDnqrVROxsczBbmRirIQE=
 github.com/hashicorp/terraform v0.12.6 h1:mWItQdLZQ7f3kBYBu2Kgdg+E5iZb1KtCq73V10Hmu48=
+github.com/hashicorp/terraform v0.12.7 h1:4pD+XguGRMGBnERUO3Wbtmv23R26ovWpGSQ2yqIL73Q=
 github.com/hashicorp/terraform-config-inspect v0.0.0-20190327195015-8022a2663a70/go.mod h1:ItvqtvbC3K23FFET62ZwnkwtpbKZm8t8eMcWjmVVjD8=
 github.com/hashicorp/vault v0.10.4/go.mod h1:KfSyffbKxoVyspOdlaGVjIuwLobi07qD1bAbosPMpP0=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb h1:b5rjCoWHc7eqmAS4/qyk21ZsHyb6Mxv/jykxvNTkU4M=
@@ -202,6 +203,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/microcosm-cc/bluemonday v1.0.1/go.mod h1:hsXNsILzKxV+sX77C5b8FSuKF00vh2OMYv+xgHpAMF4=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20190822161802-a196ec51000e h1:/pQNybtOoY0cHnXJrCPukZBfziVezeBb8ZrGJnZJt8I=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20190822161802-a196ec51000e/go.mod h1:PoGiBqKSQK1vIfQ+yVaFcGjDySHvym6FM1cNYnwzbrY=
+github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20190903225844-47715c5e3aa1 h1:Ogci+pzugEp8tdRUIi+Bo6twn3jPoFtM66gBAeD2B8o=
+github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20190903225844-47715c5e3aa1/go.mod h1:PoGiBqKSQK1vIfQ+yVaFcGjDySHvym6FM1cNYnwzbrY=
 github.com/miekg/dns v1.0.8/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/mitchellh/cli v1.0.0 h1:iGBIsUe3+HZ/AD/Vd7DErOt5sU9fa8Uj7A2s1aggv1Y=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
