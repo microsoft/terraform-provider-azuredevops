@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"io"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
@@ -146,7 +146,6 @@ type CoreClient interface {
 type OperationsClient interface {
 	GetOperation(ctx context.Context, args operations.GetOperationArgs) (*operations.Operation, error)
 }
-
 
 func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, error) {
 	ctx := context.Background()

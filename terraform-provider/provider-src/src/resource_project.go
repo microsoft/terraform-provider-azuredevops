@@ -204,6 +204,7 @@ func projectRead(clients *aggregatedClient, projectName string) (projectValues, 
 		visibility:         string(*p.Visibility),
 		versionControl:     (*p.Capabilities)["versioncontrol"]["sourceControlType"],
 		workItemTemplateID: (*p.Capabilities)["processTemplate"]["templateTypeId"],
+		projectID:          p.Id.String(),
 	}
 
 	templateID, err := uuid.Parse(pv.workItemTemplateID)
@@ -251,10 +252,6 @@ func lookupProcessTemplateID(clients *aggregatedClient, processTemplateName stri
 
 	return "", fmt.Errorf("No process template found")
 }
-
-// func lookupProcessTemplate(clients *aggregatedClient, processTemplateID string) (string, error) {
-
-// }
 
 func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference) error {
 	maxAttempts := 30
