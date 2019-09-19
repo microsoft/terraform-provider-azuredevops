@@ -1,9 +1,8 @@
 .env
 .terraform/
 ./vscode
-build/
+bin/
 terraform.tfstate
-go.mod
 terraform-provider-azure-devops
 terraform.tfstate.backup
 terraform.log
