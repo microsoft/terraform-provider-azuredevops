@@ -1,6 +1,6 @@
 .env
 .terraform/
-./vscode
+.vscode/
 bin/
 terraform.tfstate
 terraform-provider-azure-devops
