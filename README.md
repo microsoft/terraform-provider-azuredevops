@@ -6,6 +6,9 @@ The AzDO (Azure DevOps) Provider supports Terraform 0.11.x and later - but Terra
 * [AzDO Website](https://azure.microsoft.com/en-us/services/devops/)
 * [AzDO Provider Usage Examples](./examples/)
 
+## Important!
+This repository is a work in progress and is not yet suitable for production workloads. Community contributions are welcome.
+
 ## Usage Example
 
 * Installing the provider
