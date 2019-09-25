@@ -1,8 +1,16 @@
 .env
-.terraform/
 .vscode/
 bin/
-terraform.tfstate
+
 terraform-provider-azure-devops
-terraform.tfstate.backup
 terraform.log
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
