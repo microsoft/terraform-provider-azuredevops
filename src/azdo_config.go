@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
 )
 
@@ -21,10 +22,11 @@ import (
 // allow for mocking to support unit testing of the funcs that invoke the
 // Azure DevOps client.
 type aggregatedClient struct {
-	CoreClient       CoreClient
-	BuildClient      BuildClient
-	OperationsClient OperationsClient
-	ctx              context.Context
+	CoreClient            CoreClient
+	BuildClient           BuildClient
+	OperationsClient      OperationsClient
+	ServiceEndpointClient ServiceEndpointClient
+	ctx                   context.Context
 }
 
 // Use ifacemaker ( https://github.com/vburenin/ifacemaker ) to pull the interfaces for required clients
@@ -147,6 +149,20 @@ type OperationsClient interface {
 	GetOperation(ctx context.Context, args operations.GetOperationArgs) (*operations.Operation, error)
 }
 
+// ServiceEndpointClient was pulled from https://github.com/microsoft/azure-devops-go-api/blob/dev/azuredevops/serviceendpoint/client.go
+type ServiceEndpointClient interface {
+	ExecuteServiceEndpointRequest(ctx context.Context, args serviceendpoint.ExecuteServiceEndpointRequestArgs) (*serviceendpoint.ServiceEndpointRequestResult, error)
+	CreateServiceEndpoint(ctx context.Context, args serviceendpoint.CreateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error)
+	DeleteServiceEndpoint(ctx context.Context, args serviceendpoint.DeleteServiceEndpointArgs) error
+	GetServiceEndpointDetails(ctx context.Context, args serviceendpoint.GetServiceEndpointDetailsArgs) (*serviceendpoint.ServiceEndpoint, error)
+	GetServiceEndpoints(ctx context.Context, args serviceendpoint.GetServiceEndpointsArgs) (*[]serviceendpoint.ServiceEndpoint, error)
+	GetServiceEndpointsByNames(ctx context.Context, args serviceendpoint.GetServiceEndpointsByNamesArgs) (*[]serviceendpoint.ServiceEndpoint, error)
+	UpdateServiceEndpoint(ctx context.Context, args serviceendpoint.UpdateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error)
+	UpdateServiceEndpoints(ctx context.Context, args serviceendpoint.UpdateServiceEndpointsArgs) (*[]serviceendpoint.ServiceEndpoint, error)
+	GetServiceEndpointExecutionRecords(ctx context.Context, args serviceendpoint.GetServiceEndpointExecutionRecordsArgs) (*serviceendpoint.GetServiceEndpointExecutionRecordsResponseValue, error)
+	GetServiceEndpointTypes(ctx context.Context, args serviceendpoint.GetServiceEndpointTypesArgs) (*[]serviceendpoint.ServiceEndpointType, error)
+}
+
 func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, error) {
 	ctx := context.Background()
 
@@ -180,13 +196,22 @@ func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, e
 	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/operations/operations?view=azure-devops-rest-5.1
 	operationsClient := operations.NewClient(ctx, connection)
 
-	aggregatedClient := &aggregatedClient{
-		CoreClient:       coreClient,
-		BuildClient:      buildClient,
-		OperationsClient: operationsClient,
-		ctx:              ctx,
+	// client for these APIs (includes CRUD for AzDO service endpoints a.k.a. service connections...):
+	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1
+	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): serviceendpoint.NewClient failed.")
+		return nil, err
 	}
 
-	log.Printf("getAzdoClient(): Created core, build, and operations clients successfully!")
+	aggregatedClient := &aggregatedClient{
+		CoreClient:            coreClient,
+		BuildClient:           buildClient,
+		OperationsClient:      operationsClient,
+		ServiceEndpointClient: serviceEndpointClient,
+		ctx:                   ctx,
+	}
+
+	log.Printf("getAzdoClient(): Created core, build, operations, and serviceendpoint clients successfully!")
 	return aggregatedClient, nil
 }

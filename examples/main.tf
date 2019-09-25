@@ -2,6 +2,7 @@
 # Make sure to set the following environment variables:
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
+#   AZDO_GITHUB_SERVICE_CONNECTION_PAT
 provider "azuredevops" {
   version = ">= 0.0.1"
 }
@@ -23,6 +24,14 @@ resource "azuredevops_pipeline" "pipeline" {
     repo_name             = "nmiodice/terraform-azure-devops-hack"
     branch_name           = "master"
     yml_path              = "azdo-api-samples/azure-pipeline.yml"
-    service_connection_id = "1a0e1da9-57a6-4470-8e96-160a622c4a17" # Note: Eventually this will come from a GitHub Service Connection resource...
+    service_connection_id = azuredevops_serviceendpoint.github_serviceendpoint.id
   }
+}
+
+resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
+  project_id             = azuredevops_project.project.project_id
+  service_endpoint_name  = "GitHub Service Connection"
+  service_endpoint_type  = "github"
+  service_endpoint_url   = "http://github.com"
+  service_endpoint_owner = "library"
 }

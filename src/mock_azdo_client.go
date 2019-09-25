@@ -7,13 +7,15 @@ package main
 
 import (
 	context "context"
+	io "io"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	build "github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	core "github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	operations "github.com/microsoft/azure-devops-go-api/azuredevops/operations"
+	serviceendpoint "github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	webapi "github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
-	io "io"
-	reflect "reflect"
 )
 
 // MockBuildClient is a mock of BuildClient interface
@@ -1648,4 +1650,176 @@ func (m *MockOperationsClient) GetOperation(ctx context.Context, args operations
 func (mr *MockOperationsClientMockRecorder) GetOperation(ctx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOperation", reflect.TypeOf((*MockOperationsClient)(nil).GetOperation), ctx, args)
+}
+
+// MockServiceEndpointClient is a mock of ServiceEndpointClient interface
+type MockServiceEndpointClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceEndpointClientMockRecorder
+}
+
+// MockServiceEndpointClientMockRecorder is the mock recorder for MockServiceEndpointClient
+type MockServiceEndpointClientMockRecorder struct {
+	mock *MockServiceEndpointClient
+}
+
+// NewMockServiceEndpointClient creates a new mock instance
+func NewMockServiceEndpointClient(ctrl *gomock.Controller) *MockServiceEndpointClient {
+	mock := &MockServiceEndpointClient{ctrl: ctrl}
+	mock.recorder = &MockServiceEndpointClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceEndpointClient) EXPECT() *MockServiceEndpointClientMockRecorder {
+	return m.recorder
+}
+
+// ExecuteServiceEndpointRequest mocks base method
+func (m *MockServiceEndpointClient) ExecuteServiceEndpointRequest(ctx context.Context, args serviceendpoint.ExecuteServiceEndpointRequestArgs) (*serviceendpoint.ServiceEndpointRequestResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExecuteServiceEndpointRequest", ctx, args)
+	ret0, _ := ret[0].(*serviceendpoint.ServiceEndpointRequestResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecuteServiceEndpointRequest indicates an expected call of ExecuteServiceEndpointRequest
+func (mr *MockServiceEndpointClientMockRecorder) ExecuteServiceEndpointRequest(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteServiceEndpointRequest", reflect.TypeOf((*MockServiceEndpointClient)(nil).ExecuteServiceEndpointRequest), ctx, args)
+}
+
+// CreateServiceEndpoint mocks base method
+func (m *MockServiceEndpointClient) CreateServiceEndpoint(ctx context.Context, args serviceendpoint.CreateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateServiceEndpoint", ctx, args)
+	ret0, _ := ret[0].(*serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateServiceEndpoint indicates an expected call of CreateServiceEndpoint
+func (mr *MockServiceEndpointClientMockRecorder) CreateServiceEndpoint(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateServiceEndpoint", reflect.TypeOf((*MockServiceEndpointClient)(nil).CreateServiceEndpoint), ctx, args)
+}
+
+// DeleteServiceEndpoint mocks base method
+func (m *MockServiceEndpointClient) DeleteServiceEndpoint(ctx context.Context, args serviceendpoint.DeleteServiceEndpointArgs) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteServiceEndpoint", ctx, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteServiceEndpoint indicates an expected call of DeleteServiceEndpoint
+func (mr *MockServiceEndpointClientMockRecorder) DeleteServiceEndpoint(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceEndpoint", reflect.TypeOf((*MockServiceEndpointClient)(nil).DeleteServiceEndpoint), ctx, args)
+}
+
+// GetServiceEndpointDetails mocks base method
+func (m *MockServiceEndpointClient) GetServiceEndpointDetails(ctx context.Context, args serviceendpoint.GetServiceEndpointDetailsArgs) (*serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceEndpointDetails", ctx, args)
+	ret0, _ := ret[0].(*serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceEndpointDetails indicates an expected call of GetServiceEndpointDetails
+func (mr *MockServiceEndpointClientMockRecorder) GetServiceEndpointDetails(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEndpointDetails", reflect.TypeOf((*MockServiceEndpointClient)(nil).GetServiceEndpointDetails), ctx, args)
+}
+
+// GetServiceEndpoints mocks base method
+func (m *MockServiceEndpointClient) GetServiceEndpoints(ctx context.Context, args serviceendpoint.GetServiceEndpointsArgs) (*[]serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceEndpoints", ctx, args)
+	ret0, _ := ret[0].(*[]serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceEndpoints indicates an expected call of GetServiceEndpoints
+func (mr *MockServiceEndpointClientMockRecorder) GetServiceEndpoints(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEndpoints", reflect.TypeOf((*MockServiceEndpointClient)(nil).GetServiceEndpoints), ctx, args)
+}
+
+// GetServiceEndpointsByNames mocks base method
+func (m *MockServiceEndpointClient) GetServiceEndpointsByNames(ctx context.Context, args serviceendpoint.GetServiceEndpointsByNamesArgs) (*[]serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceEndpointsByNames", ctx, args)
+	ret0, _ := ret[0].(*[]serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceEndpointsByNames indicates an expected call of GetServiceEndpointsByNames
+func (mr *MockServiceEndpointClientMockRecorder) GetServiceEndpointsByNames(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEndpointsByNames", reflect.TypeOf((*MockServiceEndpointClient)(nil).GetServiceEndpointsByNames), ctx, args)
+}
+
+// UpdateServiceEndpoint mocks base method
+func (m *MockServiceEndpointClient) UpdateServiceEndpoint(ctx context.Context, args serviceendpoint.UpdateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateServiceEndpoint", ctx, args)
+	ret0, _ := ret[0].(*serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateServiceEndpoint indicates an expected call of UpdateServiceEndpoint
+func (mr *MockServiceEndpointClientMockRecorder) UpdateServiceEndpoint(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceEndpoint", reflect.TypeOf((*MockServiceEndpointClient)(nil).UpdateServiceEndpoint), ctx, args)
+}
+
+// UpdateServiceEndpoints mocks base method
+func (m *MockServiceEndpointClient) UpdateServiceEndpoints(ctx context.Context, args serviceendpoint.UpdateServiceEndpointsArgs) (*[]serviceendpoint.ServiceEndpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateServiceEndpoints", ctx, args)
+	ret0, _ := ret[0].(*[]serviceendpoint.ServiceEndpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateServiceEndpoints indicates an expected call of UpdateServiceEndpoints
+func (mr *MockServiceEndpointClientMockRecorder) UpdateServiceEndpoints(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceEndpoints", reflect.TypeOf((*MockServiceEndpointClient)(nil).UpdateServiceEndpoints), ctx, args)
+}
+
+// GetServiceEndpointExecutionRecords mocks base method
+func (m *MockServiceEndpointClient) GetServiceEndpointExecutionRecords(ctx context.Context, args serviceendpoint.GetServiceEndpointExecutionRecordsArgs) (*serviceendpoint.GetServiceEndpointExecutionRecordsResponseValue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceEndpointExecutionRecords", ctx, args)
+	ret0, _ := ret[0].(*serviceendpoint.GetServiceEndpointExecutionRecordsResponseValue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceEndpointExecutionRecords indicates an expected call of GetServiceEndpointExecutionRecords
+func (mr *MockServiceEndpointClientMockRecorder) GetServiceEndpointExecutionRecords(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEndpointExecutionRecords", reflect.TypeOf((*MockServiceEndpointClient)(nil).GetServiceEndpointExecutionRecords), ctx, args)
+}
+
+// GetServiceEndpointTypes mocks base method
+func (m *MockServiceEndpointClient) GetServiceEndpointTypes(ctx context.Context, args serviceendpoint.GetServiceEndpointTypesArgs) (*[]serviceendpoint.ServiceEndpointType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceEndpointTypes", ctx, args)
+	ret0, _ := ret[0].(*[]serviceendpoint.ServiceEndpointType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceEndpointTypes indicates an expected call of GetServiceEndpointTypes
+func (mr *MockServiceEndpointClientMockRecorder) GetServiceEndpointTypes(ctx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEndpointTypes", reflect.TypeOf((*MockServiceEndpointClient)(nil).GetServiceEndpointTypes), ctx, args)
 }
