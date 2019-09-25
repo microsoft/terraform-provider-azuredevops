@@ -13,8 +13,8 @@ This repository is a work in progress and is not yet suitable for production wor
 
 * Installing the provider
 ```bash
-./build.sh          # build & test provider code
-./local-install.sh  # install provider locally
+./scripts/build.sh          # build & test provider code
+./scripts/local-install.sh  # install provider locally
 ```
 
 * Using the provider

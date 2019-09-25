@@ -2,14 +2,15 @@
 
 set -euo pipefail
 
-. ./commons.sh
+. $(dirname $0)/commons.sh
 
 function clean() {
+    info "Cleaning $BUILD_DIR"
     rm -rf "$BUILD_DIR"
     mkdir -p "$BUILD_DIR"
 }
 
-function test() {
+function unittest() {
     info "Executing unit tests"
     (
         cd "$SOURCE_DIR"
@@ -34,7 +35,7 @@ function compile() {
 
 function clean_and_build() {
     clean
-    # test - enable in https://github.com/nmiodice/terraform-azure-devops-hack/issues/31
+    unittest
     compile
     info "Build finished successfully"
 }

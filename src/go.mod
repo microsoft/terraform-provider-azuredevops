@@ -1,4 +1,4 @@
-module github.com/nmiodice/terraform-provider-azure-devops
+module github.com/microsoft/terraform-provider-azuredevops
 
 go 1.12
 

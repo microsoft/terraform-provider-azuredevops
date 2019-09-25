@@ -32,6 +32,6 @@ func TestProjectCreate_MapsTfState(t *testing.T) {
 		ctx:        context.Background(),
 	}
 
-	_, err := projectCreate(clients, testValues)
+	err := projectCreate(clients, testValues)
 	require.Equal(t, "Whoops", err.Error())
 }

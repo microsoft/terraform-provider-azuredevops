@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-. ./commons.sh
+. $(dirname $0)/commons.sh
 
 
 PLUGINS_DIR="$HOME/.terraform.d/plugins/"
