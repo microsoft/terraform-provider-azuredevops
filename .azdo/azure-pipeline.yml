@@ -1,0 +1,29 @@
+trigger:
+  branches:
+    include:
+    - 'master'
+
+pr:
+  branches:
+    include:
+    - '*'
+
+jobs:
+- template: ./ci.yml
+  parameters:
+    goVersions:
+    - value: '1.12.1'
+      ymlSafeName: '1_12_1'
+
+    - value: '1.12.10'
+      ymlSafeName: '1_12_10'
+
+    - value: '1.13.1'
+      ymlSafeName: '1_13_1'
+
+    vmImages:
+    - value: 'macOS-10.14'
+      ymlSafeName: 'macos_10_14'
+  
+    - value: 'ubuntu-16.04'
+      ymlSafeName: ubuntu_16_04

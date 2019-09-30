@@ -198,9 +198,14 @@ func projectRead(clients *aggregatedClient, projectName string) (projectValues, 
 		return pv, fmt.Errorf("Error getting project: %v", err)
 	}
 
+	projectDescription := ""
+	if (p.Description != nil) {
+		projectDescription = *p.Description
+	}
+
 	pv = projectValues{
 		projectName:        *p.Name,
-		description:        *p.Description,
+		description:        projectDescription,
 		visibility:         string(*p.Visibility),
 		versionControl:     (*p.Capabilities)["versioncontrol"]["sourceControlType"],
 		workItemTemplateID: (*p.Capabilities)["processTemplate"]["templateTypeId"],

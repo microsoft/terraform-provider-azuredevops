@@ -1,0 +1,37 @@
+# This template will generate a list of jobs that will run. The
+# jobs created will correspond to the cross product of the
+# vmImages and goVersions specified by the parameters.
+
+parameters:
+  goVersions: []
+  vmImages: []
+
+jobs:
+
+- job: build
+  displayName: 'Build: '
+
+  # Build on each combination of supported OS and Go version
+  strategy:
+    matrix:
+      ${{ each goVersion in parameters.goVersions }}:
+        ${{ each vmImage in parameters.vmImages }}:
+          OS_${{ vmImage.ymlSafeName }}_GO_${{ goVersion.ymlSafeName }}:
+            vmImage: ${{ vmImage.value }}
+            goVersion: ${{ goVersion.value }}
+  
+  pool:
+    vmImage: $(vmImage)
+
+  steps:
+  - task: GoTool@0
+    displayName: 'Install correct version of Go'
+    inputs:
+      version: $(goVersion)
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
+      chmod +x ./scripts/*.sh
+      ./scripts/build.sh
+    displayName: 'Run Build Script'
