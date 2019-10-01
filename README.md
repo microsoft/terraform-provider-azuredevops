@@ -1,5 +1,8 @@
 # Terraform Provider for Azure DevOps
 
+[![Build Status](https://dev.azure.com/terraform-azdo/terraform-provider-azuredevops/_apis/build/status/microsoft.terraform-provider-azuredevops?branchName=master)](https://dev.azure.com/terraform-azdo/terraform-provider-azuredevops/_build/latest?definitionId=3&branchName=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
+
 The AzDO (Azure DevOps) Provider supports Terraform 0.11.x and later - but Terraform 0.12.x is recommended.
 
 * [Terraform Website](https://www.terraform.io)
