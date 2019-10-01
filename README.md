@@ -38,7 +38,7 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_pipeline" "pipeline" {
-  project_id    = azuredevops_project.project.project_id
+  project_id    = azuredevops_project.project.id
   pipeline_name = "Test Pipeline"
 
   repository {

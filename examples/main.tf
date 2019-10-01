@@ -16,7 +16,7 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_pipeline" "pipeline" {
-  project_id    = azuredevops_project.project.project_id
+  project_id    = azuredevops_project.project.id
   pipeline_name = "Test Pipeline"
 
   repository {
@@ -29,7 +29,7 @@ resource "azuredevops_pipeline" "pipeline" {
 }
 
 resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
-  project_id             = azuredevops_project.project.project_id
+  project_id             = azuredevops_project.project.id
   service_endpoint_name  = "GitHub Service Connection"
   service_endpoint_type  = "github"
   service_endpoint_url   = "http://github.com"

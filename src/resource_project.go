@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/utils/tfhelper"
 	"strings"
 	"time"
 
@@ -25,7 +27,7 @@ func resourceProject() *schema.Resource {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Required:         true,
-				DiffSuppressFunc: suppressCaseSensitivity,
+				DiffSuppressFunc: tfhelper.DiffFuncSupressCaseSensitivity,
 			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
@@ -33,31 +35,21 @@ func resourceProject() *schema.Resource {
 				Default:  "",
 			},
 			"visibility": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "private",
-				ValidateFunc: validation.StringInSlice([]string{
-					"private",
-					"public",
-				}, false),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "private",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 			},
 			"version_control": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "Git",
-				ValidateFunc: validation.StringInSlice([]string{
-					"Git",
-					"Tfvc",
-				}, true),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Git",
+				ValidateFunc: validation.StringInSlice([]string{"Git", "Tfvc"}, true),
 			},
 			"work_item_template": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Agile",
-			},
-			"project_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 			"process_template_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -67,110 +59,25 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-type projectValues struct {
-	projectName        string
-	description        string
-	visibility         string
-	versionControl     string
-	workItemTemplate   string
-	workItemTemplateID string
-	projectID          string
-}
-
 func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
-	//instantiate client
 	clients := m.(*aggregatedClient)
-
-	values := projectValues{
-		projectName:      d.Get("project_name").(string),
-		description:      d.Get("description").(string),
-		visibility:       d.Get("visibility").(string),
-		versionControl:   d.Get("version_control").(string),
-		workItemTemplate: d.Get("work_item_template").(string),
-	}
-
-	// lookup process template id
-	processTemplateID, err := lookupProcessTemplateID(clients, values.workItemTemplate)
-
+	project, err := expandProject(clients, d)
 	if err != nil {
-		return fmt.Errorf("Invalid work item template name: %+v", err)
+		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
 	}
 
-	values.workItemTemplateID = processTemplateID
-
-	// create project
-	err = projectCreate(clients, &values)
+	err = createProject(clients, project)
 	if err != nil {
 		return fmt.Errorf("Error creating project in Azure DevOps: %+v", err)
 	}
 
-	//lookup project id
-	projectID, err := lookupProjectID(clients, values.projectName)
-
-	if err != nil {
-		return fmt.Errorf("Error looking up project ID for project: %v, %+v", values.projectName, err)
-	}
-
-	values.projectID = projectID
-
-	//call set id
-	d.Set("process_template_id", values.workItemTemplateID)
-	d.Set("project_id", values.projectID)
-	d.SetId(values.projectName)
-
-	//read project and return
+	d.Set("project_name", *project.Name)
 	return resourceProjectRead(d, m)
 }
 
-func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
-	// Setup client
-	clients := m.(*aggregatedClient)
-	projectName := d.Id()
-
-	// Get the Project
-	projectValues, err := projectRead(clients, projectName)
-
-	if err != nil {
-		return fmt.Errorf("Error looking up project given ID: %v %v", projectName, err)
-	}
-
-	// Assign project values
-	d.Set("project_name", projectValues.projectName)
-	d.Set("description", projectValues.description)
-	d.Set("visibility", projectValues.visibility)
-	d.Set("version_control", projectValues.versionControl)
-	d.Set("work_item_template", projectValues.workItemTemplate)
-	d.Set("project_id", projectValues.projectID)
-	d.Set("process_template_id", projectValues.workItemTemplateID)
-
-	return nil
-}
-
-func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceProjectRead(d, m)
-}
-
-func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
-}
-
-func projectCreate(clients *aggregatedClient, values *projectValues) error {
-
-	operationRef, err := clients.CoreClient.QueueCreateProject(clients.ctx, core.QueueCreateProjectArgs{
-		ProjectToCreate: &core.TeamProject{
-			Name:        &values.projectName,
-			Description: &values.description,
-			Visibility:  convertVisibilty(values.visibility),
-			Capabilities: &map[string]map[string]string{
-				"versioncontrol": map[string]string{
-					"sourceControlType": values.versionControl,
-				},
-				"processTemplate": map[string]string{
-					"templateTypeId": values.workItemTemplateID,
-				},
-			},
-		},
-	})
+// Make API call to create the project and wait for an async success/fail response from the service
+func createProject(clients *aggregatedClient, project *core.TeamProject) error {
+	operationRef, err := clients.CoreClient.QueueCreateProject(clients.ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
 		return err
 	}
@@ -183,87 +90,11 @@ func projectCreate(clients *aggregatedClient, values *projectValues) error {
 	return nil
 }
 
-func projectRead(clients *aggregatedClient, projectName string) (projectValues, error) {
-	t := true
-	f := false
-	var pv projectValues
-
-	p, err := clients.CoreClient.GetProject(clients.ctx, core.GetProjectArgs{
-		ProjectId:           &projectName,
-		IncludeCapabilities: &t,
-		IncludeHistory:      &f,
-	})
-
-	if err != nil {
-		return pv, fmt.Errorf("Error getting project: %v", err)
-	}
-
-	projectDescription := ""
-	if (p.Description != nil) {
-		projectDescription = *p.Description
-	}
-
-	pv = projectValues{
-		projectName:        *p.Name,
-		description:        projectDescription,
-		visibility:         string(*p.Visibility),
-		versionControl:     (*p.Capabilities)["versioncontrol"]["sourceControlType"],
-		workItemTemplateID: (*p.Capabilities)["processTemplate"]["templateTypeId"],
-		projectID:          p.Id.String(),
-	}
-
-	templateID, err := uuid.Parse(pv.workItemTemplateID)
-	if err != nil {
-		return pv, fmt.Errorf("Error parsing Work Item Template ID, got %v: %v", pv.workItemTemplateID, err)
-	}
-
-	process, err := clients.CoreClient.GetProcessById(clients.ctx, core.GetProcessByIdArgs{
-		ProcessId: &templateID,
-	})
-	if err != nil {
-		return pv, fmt.Errorf("Error looking up template by ID: %v", err)
-	}
-	pv.workItemTemplate = *process.Name
-
-	return pv, nil
-}
-
-func lookupProjectID(clients *aggregatedClient, projectName string) (string, error) {
-	projects, err := clients.CoreClient.GetProjects(clients.ctx, core.GetProjectsArgs{})
-	if err != nil {
-		return "", err
-	}
-
-	for _, project := range projects.Value {
-		if *project.Name == projectName {
-			return project.Id.String(), nil
-		}
-	}
-
-	return "", fmt.Errorf("No project found")
-}
-
-func lookupProcessTemplateID(clients *aggregatedClient, processTemplateName string) (string, error) {
-	processes, err := clients.CoreClient.GetProcesses(clients.ctx, core.GetProcessesArgs{})
-	if err != nil {
-		return "", err
-	}
-
-	for _, p := range *processes {
-		if *p.Name == processTemplateName {
-			return p.Id.String(), nil
-		}
-	}
-
-	return "", fmt.Errorf("No process template found")
-}
-
 func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference) error {
 	maxAttempts := 30
 	currentAttempt := 1
 
 	for currentAttempt <= maxAttempts {
-		//log.Printf("Checking status for operation with ID: %s", operationRef.Id)
 		result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
 			OperationId: operationRef.Id,
 			PluginId:    operationRef.PluginId,
@@ -286,6 +117,73 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 	return fmt.Errorf("Operation was not successful after %d attempts", maxAttempts)
 }
 
+func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*aggregatedClient)
+
+	projectID := d.Id()
+	if projectID == "" {
+		// project name can be used as an identifier for the core.Projects API:
+		//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.0
+		projectID = d.Get("project_name").(string)
+	}
+	project, err := clients.CoreClient.GetProject(clients.ctx, core.GetProjectArgs{
+		ProjectId:           &projectID,
+		IncludeCapabilities: converter.Bool(true),
+		IncludeHistory:      converter.Bool(false),
+	})
+	if err != nil {
+		return fmt.Errorf("Error looking up project given ID: %v %v", projectID, err)
+	}
+
+	err = flattenProject(clients, d, project)
+	if err != nil {
+		return fmt.Errorf("Error flattening project: %v", err)
+	}
+	return nil
+}
+
+func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
+	return resourceProjectRead(d, m)
+}
+
+func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
+	return nil
+}
+
+// Convert internal Terraform data structure to an AzDO data structure
+func expandProject(clients *aggregatedClient, d *schema.ResourceData) (*core.TeamProject, error) {
+	workItemTemplate := d.Get("work_item_template").(string)
+	processTemplateID, err := lookupProcessTemplateID(clients, workItemTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
+	var projectID *uuid.UUID
+	parsedID, err := uuid.Parse(d.Id())
+	if err == nil {
+		projectID = &parsedID
+	}
+
+	visibility := d.Get("visibility").(string)
+	project := &core.TeamProject{
+		Id:          projectID,
+		Name:        converter.String(d.Get("project_name").(string)),
+		Description: converter.String(d.Get("description").(string)),
+		Visibility:  convertVisibilty(visibility),
+		Capabilities: &map[string]map[string]string{
+			"versioncontrol": map[string]string{
+				"sourceControlType": d.Get("version_control").(string),
+			},
+			"processTemplate": map[string]string{
+				"templateTypeId": processTemplateID,
+			},
+		},
+	}
+
+	return project, nil
+}
+
 func convertVisibilty(v string) *core.ProjectVisibility {
 	if strings.ToLower(v) == "public" {
 		return &core.ProjectVisibilityValues.Public
@@ -293,9 +191,56 @@ func convertVisibilty(v string) *core.ProjectVisibility {
 	return &core.ProjectVisibilityValues.Private
 }
 
-func suppressCaseSensitivity(k, old, new string, d *schema.ResourceData) bool {
-	if strings.ToLower(old) == strings.ToLower(new) {
-		return true
+func flattenProject(clients *aggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
+	description := converter.ToString(project.Description, "")
+	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
+	processTemplateName, err := lookupProcessTemplateName(clients, processTemplateID)
+
+	if err != nil {
+		return err
 	}
-	return false
+
+	d.SetId(project.Id.String())
+	d.Set("project_name", *project.Name)
+	d.Set("visibility", *project.Visibility)
+	d.Set("description", description)
+	d.Set("version_control", (*project.Capabilities)["versioncontrol"]["sourceControlType"])
+	d.Set("process_template_id", processTemplateID)
+	d.Set("work_item_template", processTemplateName)
+
+	return nil
+}
+
+// given a process template name, get the process template ID
+func lookupProcessTemplateID(clients *aggregatedClient, templateName string) (string, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, p := range *processes {
+		if *p.Name == templateName {
+			return p.Id.String(), nil
+		}
+	}
+
+	return "", fmt.Errorf("No process template found")
+}
+
+// given a process template ID, get the process template name
+func lookupProcessTemplateName(clients *aggregatedClient, templateID string) (string, error) {
+	id, err := uuid.Parse(templateID)
+	if err != nil {
+		return "", fmt.Errorf("Error parsing Work Item Template ID, got %s: %v", templateID, err)
+	}
+
+	process, err := clients.CoreClient.GetProcessById(clients.ctx, core.GetProcessByIdArgs{
+		ProcessId: &id,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("Error looking up template by ID: %v", err)
+	}
+
+	return *process.Name, nil
 }

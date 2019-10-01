@@ -6,20 +6,17 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/stretchr/testify/require"
 )
 
 func TestProjectCreate_MapsTfState(t *testing.T) {
-
-	testValues := &projectValues{
-		projectName:      "Test Project",
-		description:      "A description",
-		visibility:       "public",
-		versionControl:   "git",
-		workItemTemplate: "Agile",
+	project := &core.TeamProject{
+		Name: converter.String("Name"),
 	}
 
 	ctrl := gomock.NewController(t)
@@ -32,6 +29,6 @@ func TestProjectCreate_MapsTfState(t *testing.T) {
 		ctx:        context.Background(),
 	}
 
-	err := projectCreate(clients, testValues)
+	err := createProject(clients, project)
 	require.Equal(t, "Whoops", err.Error())
 }
