@@ -26,10 +26,9 @@ function compile() {
 
     info "Attempting to build $BUILD_ARTIFACT"
     (
-        ROOT=$(pwd)
         cd "$SOURCE_DIR"
-	go mod download 
-        go build -o "$ROOT/$BUILD_DIR/$BUILD_ARTIFACT"
+        go mod download 
+        go build -o "$BUILD_DIR/$BUILD_ARTIFACT"
     )
 }
 
