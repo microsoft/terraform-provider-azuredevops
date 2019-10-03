@@ -24,6 +24,7 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
 				Description: "The personal access token which should be used.",
+				Sensitive:   true,
 			},
 		},
 	}
