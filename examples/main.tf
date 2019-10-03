@@ -33,5 +33,5 @@ resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
   service_endpoint_name  = "GitHub Service Connection"
   service_endpoint_type  = "github"
   service_endpoint_url   = "http://github.com"
-  service_endpoint_owner = "library"
+  service_endpoint_owner = "Library"
 }

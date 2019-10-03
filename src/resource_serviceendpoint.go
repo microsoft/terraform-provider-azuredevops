@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
@@ -41,102 +43,105 @@ func resourceServiceEndpoint() *schema.Resource {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
 				Description: "The GitHub personal access token which should be used.",
+				Sensitive:   true,
 			},
 		},
 	}
 }
 
-type serviceEndpointValues struct {
-	projectID                   string
-	serviceEndpointName         string
-	serviceEndpointType         string
-	serviceEndpointURL          string
-	serviceEndpointOwner        string
-	githubServiceEndpointPAT    string
-	githubServiceEndpointScheme string
-	serviceEndpointID           string
-}
-
 func resourceServiceEndpointCreate(d *schema.ResourceData, m interface{}) error {
-	// instantiate client
 	clients := m.(*aggregatedClient)
+	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
 
-	values := serviceEndpointValues{
-		projectID:                   d.Get("project_id").(string),
-		serviceEndpointName:         d.Get("service_endpoint_name").(string),
-		serviceEndpointType:         d.Get("service_endpoint_type").(string),
-		serviceEndpointURL:          d.Get("service_endpoint_url").(string),
-		serviceEndpointOwner:        d.Get("service_endpoint_owner").(string),
-		githubServiceEndpointPAT:    d.Get("github_service_endpoint_pat").(string),
-		githubServiceEndpointScheme: "PersonalAccessToken",
-	}
-
-	if _, err := serviceEndpointCreate(clients, &values); err != nil {
-		return fmt.Errorf("Error creating service endpoint: %+v", err)
-	}
-
-	serviceEndpointID, err := lookupServiceEndpointID(clients, values.projectID, values.serviceEndpointName)
-
+	createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint, projectID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service endpoint: %+v", err)
+		return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	values.serviceEndpointID = serviceEndpointID
-
-	d.Set("service_endpoint_id", values.serviceEndpointID)
-	d.SetId(values.serviceEndpointID)
-
-	// read service endpoint and return
-	return resourceServiceEndpointRead(d, m)
+	flattenServiceEndpoint(clients, d, createdServiceEndpoint, projectID)
+	return nil
 }
 
 func resourceServiceEndpointRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*aggregatedClient)
+
+	var serviceEndpointID *uuid.UUID
+	parsedServiceEndpointID, err := uuid.Parse(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error parsing the service endpoint ID from the Terraform resource data: %v", err)
+	}
+	serviceEndpointID = &parsedServiceEndpointID
+	projectID := converter.String(d.Get("project_id").(string))
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
+		clients.ctx,
+		serviceendpoint.GetServiceEndpointDetailsArgs{
+			EndpointId: serviceEndpointID,
+			Project:    projectID,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v", serviceEndpointID, projectID, err)
+	}
+
+	flattenServiceEndpoint(clients, d, serviceEndpoint, projectID)
 	return nil
 }
 
 func resourceServiceEndpointUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	return resourceServiceEndpointRead(d, m)
 }
 
 func resourceServiceEndpointDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func serviceEndpointCreate(clients *aggregatedClient, values *serviceEndpointValues) (string, error) {
-	serviceEndpointRef, err := clients.ServiceEndpointClient.CreateServiceEndpoint(clients.ctx, serviceendpoint.CreateServiceEndpointArgs{
-		Endpoint: &serviceendpoint.ServiceEndpoint{
-			Name:  &values.serviceEndpointName,
-			Type:  &values.serviceEndpointType,
-			Url:   &values.serviceEndpointURL,
-			Owner: &values.serviceEndpointOwner,
-			Authorization: &serviceendpoint.EndpointAuthorization{
-				Parameters: &map[string]string{
-					"accessToken": values.githubServiceEndpointPAT,
-				},
-				Scheme: &values.githubServiceEndpointScheme,
-			},
-		},
-		Project: &values.projectID,
-	})
-	if err != nil {
-		return "", err
-	}
-	return uuid.UUID.String(*serviceEndpointRef.Id), nil
+// Make the Azure DevOps API call to create the endpoint
+func createServiceEndpoint(clients *aggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
+		clients.ctx,
+		serviceendpoint.CreateServiceEndpointArgs{
+			Endpoint: endpoint,
+			Project:  project,
+		})
+
+	return createdServiceEndpoint, err
 }
 
-func lookupServiceEndpointID(clients *aggregatedClient, projectID string, serviceEndpointName string) (string, error) {
-	serviceEndpoints, err := clients.ServiceEndpointClient.GetServiceEndpoints(clients.ctx, serviceendpoint.GetServiceEndpointsArgs{
-		Project: &projectID,
-	})
-	if err != nil {
-		return "", err
+// Convert internal Terraform data structure to an AzDO data structure
+func expandServiceEndpoint(clients *aggregatedClient, d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
+	var serviceEndpointID *uuid.UUID
+	parsedID, err := uuid.Parse(d.Id())
+	if err == nil {
+		serviceEndpointID = &parsedID
 	}
 
-	for _, serviceEndpoint := range *serviceEndpoints {
-		if *serviceEndpoint.Name == serviceEndpointName {
-			return serviceEndpoint.Id.String(), nil
-		}
+	projectID := converter.String(d.Get("project_id").(string))
+	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
+		Id:    serviceEndpointID,
+		Name:  converter.String(d.Get("service_endpoint_name").(string)),
+		Type:  converter.String(d.Get("service_endpoint_type").(string)),
+		Url:   converter.String(d.Get("service_endpoint_url").(string)),
+		Owner: converter.String(d.Get("service_endpoint_owner").(string)),
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"accessToken": d.Get("github_service_endpoint_pat").(string),
+			},
+			Scheme: converter.String("PersonalAccessToken"),
+		},
 	}
 
-	return "", fmt.Errorf("No service endpoint found")
+	return serviceEndpoint, projectID
+}
+
+// Convert AzDO data structure to internal Terraform data structure
+func flattenServiceEndpoint(clients *aggregatedClient, d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+	d.SetId(serviceEndpoint.Id.String())
+	d.Set("service_endpoint_name", *serviceEndpoint.Name)
+	d.Set("service_endpoint_type", *serviceEndpoint.Type)
+	d.Set("service_endpoint_url", *serviceEndpoint.Url)
+	d.Set("service_endpoint_owner", *serviceEndpoint.Owner)
+	d.Set("github_service_endpoint_pat", (*serviceEndpoint.Authorization.Parameters)["accessToken"])
+	d.Set("project_id", projectID)
 }

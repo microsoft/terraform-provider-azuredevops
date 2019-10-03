@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SCRIPTS_DIR=$(dirname $0)
+SCRIPTS_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPTS_DIR}/../bin/"
 SOURCE_DIR="${SCRIPTS_DIR}/../src/"
 PROVIDER_NAME_FILE="${SCRIPTS_DIR}/../PROVIDER_NAME.txt"

@@ -9,4 +9,4 @@ PLUGINS_DIR="$HOME/.terraform.d/plugins/"
 mkdir -p "$PLUGINS_DIR"
 
 info "Installing provider to $PLUGINS_DIR"
-cp "$BUILD_DIR"/* "$PLUGINS_DIR/"
+cp "$BUILD_DIR"* "$PLUGINS_DIR/"
