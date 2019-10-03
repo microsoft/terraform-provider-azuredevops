@@ -14,7 +14,7 @@ function unittest() {
     info "Executing unit tests"
     (
         cd "$SOURCE_DIR"
-        go test ./... || fatal "Build finished in error due to failed unit tests"
+        go test -v ./... || fatal "Build finished in error due to failed unit tests"
     )
 }
 

@@ -14,6 +14,8 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 )
 
+var projectCreateTimeoutSeconds time.Duration = 30
+
 func resourceProject() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceProjectCreate,
@@ -66,7 +68,7 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
 	}
 
-	err = createProject(clients, project)
+	err = createProject(clients, project, projectCreateTimeoutSeconds)
 	if err != nil {
 		return fmt.Errorf("Error creating project in Azure DevOps: %+v", err)
 	}
@@ -76,13 +78,13 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 // Make API call to create the project and wait for an async success/fail response from the service
-func createProject(clients *aggregatedClient, project *core.TeamProject) error {
+func createProject(clients *aggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
 	operationRef, err := clients.CoreClient.QueueCreateProject(clients.ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
 		return err
 	}
 
-	err = waitForAsyncOperationSuccess(clients, operationRef)
+	err = waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
 	if err != nil {
 		return err
 	}
@@ -90,49 +92,41 @@ func createProject(clients *aggregatedClient, project *core.TeamProject) error {
 	return nil
 }
 
-func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference) error {
-	maxAttempts := 30
-	currentAttempt := 1
+func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
+	timeout := time.After(timeoutSeconds * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 
-	for currentAttempt <= maxAttempts {
-		result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
-			OperationId: operationRef.Id,
-			PluginId:    operationRef.PluginId,
-		})
+	for {
+		select {
+		case <- ticker.C:
+			result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
+				OperationId: operationRef.Id,
+				PluginId:    operationRef.PluginId,
+			})
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			if *result.Status == operations.OperationStatusValues.Succeeded {
+				return nil
+			}
+		case <- timeout:
+			return fmt.Errorf("Operation was not successful after %d seconds", timeoutSeconds)
 		}
-
-		if *result.Status == operations.OperationStatusValues.Succeeded {
-			// Sometimes without the sleep, the subsequent operations won't find the project...
-			time.Sleep(2 * time.Second)
-			return nil
-		}
-
-		currentAttempt++
-		time.Sleep(1 * time.Second)
 	}
-
-	return fmt.Errorf("Operation was not successful after %d attempts", maxAttempts)
 }
+
 
 func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
 
-	projectID := d.Id()
-	if projectID == "" {
-		// project name can be used as an identifier for the core.Projects API:
-		//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.0
-		projectID = d.Get("project_name").(string)
-	}
-	project, err := clients.CoreClient.GetProject(clients.ctx, core.GetProjectArgs{
-		ProjectId:           &projectID,
-		IncludeCapabilities: converter.Bool(true),
-		IncludeHistory:      converter.Bool(false),
-	})
+	id := d.Id()
+	name := d.Get("project_name").(string)
+	project, err := projectRead(clients, id, name)
 	if err != nil {
-		return fmt.Errorf("Error looking up project given ID: %v %v", projectID, err)
+		return fmt.Errorf("Error looking up project with ID %s and Name %s", id, name)
 	}
 
 	err = flattenProject(clients, d, project)
@@ -140,6 +134,22 @@ func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error flattening project: %v", err)
 	}
 	return nil
+}
+
+// Lookup a project using the ID, or name if the ID is not set. Note, usage of the name in place
+// of the ID is an explicitly stated supported behavior:
+//		https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.0
+func projectRead(clients *aggregatedClient, projectID string, projectName string) (*core.TeamProject, error) {
+	identifier := projectID
+	if identifier == "" {
+		identifier = projectName
+	}
+
+	return clients.CoreClient.GetProject(clients.ctx, core.GetProjectArgs{
+		ProjectId:           &identifier,
+		IncludeCapabilities: converter.Bool(true),
+		IncludeHistory:      converter.Bool(false),
+	})
 }
 
 func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
