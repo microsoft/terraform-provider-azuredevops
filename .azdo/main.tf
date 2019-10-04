@@ -19,10 +19,10 @@ resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
   service_endpoint_owner = "library"
 }
 
-resource "azuredevops_pipeline" "pipeline" {
+resource "azuredevops_build_definition" "build_definition" {
   project_id    = azuredevops_project.project.id
 
-  pipeline_name = "Provider CI Pipeline"
+  name = "Provider CI Pipeline"
   repository {
     repo_type             = "GitHub"
     repo_name             = "microsoft/terraform-provider-azuredevops"

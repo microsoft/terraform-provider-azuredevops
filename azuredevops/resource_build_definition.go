@@ -12,12 +12,12 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 )
 
-func resourcePipeline() *schema.Resource {
+func resourceBuildDefinition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePipelineCreate,
-		Read:   resourcePipelineRead,
-		Update: resourcePipelineUpdate,
-		Delete: resourcePipelineDelete,
+		Create: resourceBuildDefinitionCreate,
+		Read:   resourceBuildDefinitionRead,
+		Update: resourceBuildDefinitionUpdate,
+		Delete: resourceBuildDefinitionDelete,
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -28,7 +28,7 @@ func resourcePipeline() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"pipeline_name": &schema.Schema{
+			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
@@ -70,29 +70,29 @@ func resourcePipeline() *schema.Resource {
 }
 
 type buildDefinitionValues struct {
-	agentPoolName                 string
-	agentPoolID                   int
-	pipelineName                  string
-	projectID                     string
-	projectReference              *core.TeamProjectReference
-	repositoryDefaultBranch       string
-	repositoryName                string
-	repositoryPipelineYmlPath     string
-	repositoryType                string
-	repositoryURL                 string
-	repositoryServiceConnectionID string
+	agentPoolName                    string
+	agentPoolID                      int
+	buildDefinitionName              string
+	projectID                        string
+	projectReference                 *core.TeamProjectReference
+	repositoryDefaultBranch          string
+	repositoryName                   string
+	repositoryBuildDefinitionYmlPath string
+	repositoryType                   string
+	repositoryURL                    string
+	repositoryServiceConnectionID    string
 }
 
-func resourcePipelineCreate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
 	values := resourceDataToBuildDefinitionValues(d)
 
-	pipelineID, err := createPipeline(m.(*aggregatedClient), values)
+	buildDefinitionID, err := createBuildDefinition(m.(*aggregatedClient), values)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(strconv.Itoa(pipelineID))
-	return resourcePipelineRead(d, m)
+	d.SetId(strconv.Itoa(buildDefinitionID))
+	return resourceBuildDefinitionRead(d, m)
 }
 
 func resourceDataToBuildDefinitionValues(d *schema.ResourceData) *buildDefinitionValues {
@@ -101,9 +101,9 @@ func resourceDataToBuildDefinitionValues(d *schema.ResourceData) *buildDefinitio
 	repositories := d.Get("repository").(*schema.Set).List()
 	repository := repositories[0].(map[string]interface{})
 	repoName := repository["repo_name"].(string)
-	pipelineName := d.Get("pipeline_name").(string)
-	if pipelineName == "" {
-		pipelineName = repoName + "_pipeline"
+	buildDefinitionName := d.Get("name").(string)
+	if buildDefinitionName == "" {
+		buildDefinitionName = repoName + "_pipeline"
 	}
 
 	return &buildDefinitionValues{
@@ -111,21 +111,21 @@ func resourceDataToBuildDefinitionValues(d *schema.ResourceData) *buildDefinitio
 		projectReference: &core.TeamProjectReference{
 			Id: &projectUUID,
 		},
-		pipelineName:                  pipelineName,
-		repositoryName:                repoName,
-		repositoryDefaultBranch:       repository["branch_name"].(string),
-		repositoryPipelineYmlPath:     repository["yml_path"].(string),
-		repositoryType:                repository["repo_type"].(string),
-		repositoryURL:                 fmt.Sprintf("https://github.com/%s.git", repoName),
-		repositoryServiceConnectionID: repository["service_connection_id"].(string),
-		agentPoolName:                 "Hosted Ubuntu 1604",
-		agentPoolID:                   224,
+		buildDefinitionName:              buildDefinitionName,
+		repositoryName:                   repoName,
+		repositoryDefaultBranch:          repository["branch_name"].(string),
+		repositoryBuildDefinitionYmlPath: repository["yml_path"].(string),
+		repositoryType:                   repository["repo_type"].(string),
+		repositoryURL:                    fmt.Sprintf("https://github.com/%s.git", repoName),
+		repositoryServiceConnectionID:    repository["service_connection_id"].(string),
+		agentPoolName:                    "Hosted Ubuntu 1604",
+		agentPoolID:                      224,
 	}
 }
 
-func createBuildDefinition(values *buildDefinitionValues) *build.BuildDefinition {
+func createBuildDefinitionDefinition(values *buildDefinitionValues) *build.BuildDefinition {
 	return &build.BuildDefinition{
-		Name:    &values.pipelineName,
+		Name:    &values.buildDefinitionName,
 		Type:    &build.DefinitionTypeValues.Build,
 		Quality: &build.DefinitionQualityValues.Definition,
 		Queue: &build.AgentPoolQueue{
@@ -147,16 +147,16 @@ func createBuildDefinition(values *buildDefinitionValues) *build.BuildDefinition
 			},
 		},
 		Process: &build.YamlProcess{
-			YamlFilename: &values.repositoryPipelineYmlPath,
+			YamlFilename: &values.repositoryBuildDefinitionYmlPath,
 		},
 		Project: values.projectReference,
 	}
 }
 
-func createPipeline(clients *aggregatedClient, values *buildDefinitionValues) (int, error) {
+func createBuildDefinition(clients *aggregatedClient, values *buildDefinitionValues) (int, error) {
 	//get info from the client & create a build definition
 	createRes, err := clients.BuildClient.CreateDefinition(clients.ctx, build.CreateDefinitionArgs{
-		Definition: createBuildDefinition(values),
+		Definition: createBuildDefinitionDefinition(values),
 		Project:    &values.projectID,
 	})
 
@@ -168,10 +168,10 @@ func createPipeline(clients *aggregatedClient, values *buildDefinitionValues) (i
 	return *(createRes.Id), nil
 }
 
-func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*aggregatedClient).BuildClient
 	projectID := d.Get("project_id").(string)
-	pipelineName := d.Get("pipeline_name").(string)
+	buildDefinitionName := d.Get("name").(string)
 
 	// Get List of Definitions
 	getDefinitionsResponseValue, err := client.GetDefinitions(m.(*aggregatedClient).ctx, build.GetDefinitionsArgs{
@@ -184,17 +184,17 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 
 	definitionID := -1
 
-	// Find Build with pipelineName, if it exists, save that build's ID
+	// Find Build with buildDefinitionName, if it exists, save that build's ID
 	// TODO: handle ContinuationToken, pagination support for build results...
 	for _, buildDefinitionReference := range getDefinitionsResponseValue.Value {
-		if strings.TrimRight(*(buildDefinitionReference.Name), "\n") == pipelineName {
+		if strings.TrimRight(*(buildDefinitionReference.Name), "\n") == buildDefinitionName {
 			// https://github.com/microsoft/azure-devops-go-api/blob/dev/azuredevops/build/models.go#L451
 			definitionID = *(buildDefinitionReference.Id)
 			break
 		}
 	}
 
-	// No existing pipeline definition found.
+	// No existing buildDefinition definition found.
 	if definitionID < 0 {
 		d.SetId("")
 		return nil
@@ -227,7 +227,7 @@ func saveBuildDefinitionToSchema(d *schema.ResourceData, buildDefinition *build.
 	return nil
 }
 
-func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*aggregatedClient).BuildClient
 	if d.Id() != "" {
 		projectID := d.Get("project_id").(string)
@@ -247,7 +247,7 @@ func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*aggregatedClient).BuildClient
 	values := resourceDataToBuildDefinitionValues(d)
 
@@ -256,7 +256,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	buildDefinition := createBuildDefinition(values)
+	buildDefinition := createBuildDefinitionDefinition(values)
 	revisionNum := d.Get("revision").(int)
 	buildDefinition.Revision = &revisionNum
 	buildDefinition.Revision = &revisionNum
@@ -272,5 +272,5 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	return resourcePipelineRead(d, m)
+	return resourceBuildDefinitionRead(d, m)
 }

@@ -8,9 +8,9 @@ import (
 func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"azuredevops_pipeline":        resourcePipeline(),
-			"azuredevops_project":         resourceProject(),
-			"azuredevops_serviceendpoint": resourceServiceEndpoint(),
+			"azuredevops_build_definition": resourceBuildDefinition(),
+			"azuredevops_project":          resourceProject(),
+			"azuredevops_serviceendpoint":  resourceServiceEndpoint(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

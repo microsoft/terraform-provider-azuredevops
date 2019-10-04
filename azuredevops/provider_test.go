@@ -11,7 +11,7 @@ var provider = Provider()
 
 func Test_ResourceKeyValues(t *testing.T) {
 	expectedResources := []string{
-		"azuredevops_pipeline",
+		"azuredevops_build_definition",
 		"azuredevops_project",
 		"azuredevops_serviceendpoint",
 	}

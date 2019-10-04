@@ -37,9 +37,9 @@ resource "azuredevops_project" "project" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_pipeline" "pipeline" {
-  project_id    = azuredevops_project.project.id
-  pipeline_name = "Test Pipeline"
+resource "azuredevops_build_definition" "build_definition" {
+  project_id            = azuredevops_project.project.id
+  name = "Test Pipeline"
 
   repository {
     repo_type             = "GitHub"
