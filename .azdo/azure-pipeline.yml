@@ -3,10 +3,17 @@ trigger:
     include:
     - 'master'
 
+  paths:
+    exclude:
+      - '/**/*.md'
 pr:
   branches:
     include:
     - '*'
+
+  paths:
+    exclude:
+      - '/**/*.md'
 
 jobs:
 - template: ./ci.yml
