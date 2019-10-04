@@ -10,14 +10,6 @@ function clean() {
     mkdir -p "$BUILD_DIR"
 }
 
-function unittest() {
-    info "Executing unit tests"
-    (
-        cd "$SOURCE_DIR"
-        go test -v ./... || fatal "Build finished in error due to failed unit tests"
-    )
-}
-
 function compile() {
     NAME=$(cat $PROVIDER_NAME_FILE)
     VERSION=$(cat $PROVIDER_VERSION_FILE)
@@ -34,7 +26,7 @@ function compile() {
 
 function clean_and_build() {
     clean
-    unittest
+    $(dirname $0)/unittest.sh
     compile
     info "Build finished successfully"
 }

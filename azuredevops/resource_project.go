@@ -16,6 +16,7 @@ import (
 )
 
 var projectCreateTimeoutSeconds time.Duration = 30
+var projectDeleteTimeoutSeconds time.Duration = 30
 
 func resourceProject() *schema.Resource {
 	return &schema.Resource{
@@ -26,35 +27,35 @@ func resourceProject() *schema.Resource {
 
 		//https://godoc.org/github.com/hashicorp/terraform/helper/schema#Schema
 		Schema: map[string]*schema.Schema{
-			"project_name": &schema.Schema{
+			"project_name": {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Required:         true,
 				DiffSuppressFunc: tfhelper.DiffFuncSupressCaseSensitivity,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
 			},
-			"visibility": &schema.Schema{
+			"visibility": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "private",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 			},
-			"version_control": &schema.Schema{
+			"version_control": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Git",
 				ValidateFunc: validation.StringInSlice([]string{"Git", "Tfvc"}, true),
 			},
-			"work_item_template": &schema.Schema{
+			"work_item_template": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Agile",
 			},
-			"process_template_id": &schema.Schema{
+			"process_template_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -85,12 +86,7 @@ func createProject(clients *aggregatedClient, project *core.TeamProject, timeout
 		return err
 	}
 
-	err = waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
 }
 
 func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
@@ -157,7 +153,27 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	clients := m.(*aggregatedClient)
+	id := d.Id()
+
+	return deleteProject(clients, id, projectDeleteTimeoutSeconds)
+}
+
+func deleteProject(clients *aggregatedClient, id string, timeoutSeconds time.Duration) error {
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("Invalid project UUID: %s", id)
+	}
+
+	operationRef, err := clients.CoreClient.QueueDeleteProject(clients.ctx, core.QueueDeleteProjectArgs{
+		ProjectId: &uuid,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
@@ -182,10 +198,10 @@ func expandProject(clients *aggregatedClient, d *schema.ResourceData) (*core.Tea
 		Description: converter.String(d.Get("description").(string)),
 		Visibility:  convertVisibilty(visibility),
 		Capabilities: &map[string]map[string]string{
-			"versioncontrol": map[string]string{
+			"versioncontrol": {
 				"sourceControlType": d.Get("version_control").(string),
 			},
-			"processTemplate": map[string]string{
+			"processTemplate": {
 				"templateTypeId": processTemplateID,
 			},
 		},

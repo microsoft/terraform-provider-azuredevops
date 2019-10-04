@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 var provider = Provider()
@@ -55,4 +57,31 @@ func Test_ProviderSchema(t *testing.T) {
 			require.Equal(t, expectedValue, actualValue, "The default value pulled from the environment has the wrong value")
 		}
 	}
+}
+
+// The configuration below can be used for every acceptance test in the project. For that reason,
+// it will be defined once and will live in this file.
+
+// pre-check to validate that the correct environment variables are set prior to running any acceptance test
+func testAccPreCheck(t *testing.T) {
+	requiredEnvVars := []string{
+		"AZDO_ORG_SERVICE_URL",
+		"AZDO_PERSONAL_ACCESS_TOKEN",
+	}
+
+	for _, variable := range requiredEnvVars {
+		if os.Getenv(variable) == "" {
+			t.Fatalf("`%s` must be set for acceptance tests!", variable)
+		}
+	}
+}
+
+var testAccProviders map[string]terraform.ResourceProvider
+var testAccProvider *schema.Provider
+
+func init() {
+  testAccProvider = provider
+  testAccProviders = map[string]terraform.ResourceProvider{
+    "azuredevops": testAccProvider,
+  }
 }

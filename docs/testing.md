@@ -1,6 +1,7 @@
 # Testing
 
 * [Unit Tests](#unit-tests)
+* [Integration Tests](#integration-tests)
 
 # Unit Tests
 
@@ -84,3 +85,7 @@ func foo_ReturnsErrorWhenGivenNil(t *testing.T) {
     require.Equal(t, expectedErrorDescription, actualError.Error())
 }
 ```
+
+# Integration Tests
+
+The established integration testing pattern for Terraform Providers is to write [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). The process is well defined but can be a tad tricky to understand at fist. Given this, you may want to get started by reading through the excellent [guide](https://www.terraform.io/docs/extend/testing/acceptance-tests/testcase.html) published by Hashicorp.

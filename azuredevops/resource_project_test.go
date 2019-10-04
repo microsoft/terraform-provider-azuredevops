@@ -6,13 +6,17 @@ package azuredevops
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 	"github.com/stretchr/testify/require"
@@ -29,6 +33,10 @@ var testProject = core.TeamProject{
 		"processTemplate": {"templateTypeId": testID.String()},
 	},
 }
+
+/**
+ * Begin unit tests
+ */
 
 // verifies that the create operation is considered failed if the initial API
 // call fails.
@@ -260,4 +268,98 @@ func Test_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 // creates an operation given a status
 func operationWithStatus(status operations.OperationStatus) operations.Operation {
 	return operations.Operation{Status: &status}
+}
+
+/**
+ * Begin acceptance tests
+ */
+
+// Verifies that the following sequence of events occurrs without error:
+//	(1) TF apply creates project
+//	(2) TF state values are set
+//	(3) project can be queried by ID and has expected name
+// 	(4) TF destroy deletes project
+//	(5) project can no longer be queried by ID
+func TestAccProject_Create(t *testing.T) {
+	projectName := "test-acc-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfNode := "azuredevops_project.project"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccProjectCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResource(projectName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
+					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
+					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
+					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
+					testAccCheckProjectResourceExists(tfNode, projectName),
+				),
+			},
+		},
+	})
+}
+
+// HCL describing an AzDO project
+func testAccProjectResource(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+	project_name       = "%s"
+	description        = "%s-description"
+	visibility         = "private"
+	version_control    = "Git"
+	work_item_template = "Agile"
+}`, projectName, projectName)
+}
+
+// Given the name of a terraform state node, this will return a function that will check whether
+// or not the node (1) exists in the state and (2) exist in AzDO and (3) has the correct name
+func testAccCheckProjectResourceExists(tfNode string, expectedName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		resource, ok := s.RootModule().Resources[tfNode]
+		if !ok {
+			return fmt.Errorf("Did not find an expected node in the TF state: %s", tfNode)
+		}
+
+		clients := testAccProvider.Meta().(*aggregatedClient)
+		id := resource.Primary.ID
+		project, err := projectRead(clients, id, "")
+
+		if err != nil {
+			return fmt.Errorf("Project with ID=%s cannot be found!. Error=%v", id, err)
+		}
+
+		if *project.Name != expectedName {
+			return fmt.Errorf("Project with ID=%s has Name=%s, but expected Name=%s", id, *project.Name, expectedName)
+		}
+
+		return nil
+	}
+
+}
+
+// verifies that all projects referenced in the state are destroyed. This will be invoked
+// *after* terrafform destroys the resource but *before* the state is wiped clean.
+func testAccProjectCheckDestroy(s *terraform.State) error {
+	clients := testAccProvider.Meta().(*aggregatedClient)
+
+	// verify that every project referenced in the state does not exist in AzDO
+	for _, resource := range s.RootModule().Resources {
+		if resource.Type != "azuredevops_project" {
+			continue
+		}
+
+		id := resource.Primary.ID
+
+		// indicates the project still exists - this should fail the test
+		if _, err := projectRead(clients, id, ""); err == nil {
+			return fmt.Errorf("project with ID %s should not exist", id)
+		}
+	}
+
+	return nil
 }

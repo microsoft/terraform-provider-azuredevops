@@ -128,14 +128,25 @@ After the provider has been correctly initialized, it can be used like any other
 
 The unit tests are executed whenever `./scripts/build.sh` is run. This can be run locally, but will also be run on every automated build and will be a gate for any PR against this repository. If you made it this far, you've already ran these!
 
-The tests can also be run in isolation by executing the following command from the [module root](https://blog.golang.org/using-go-modules). This will be the folder containing `go.mod`:
+The tests can also be run in isolation by running the following:
 ```bash
-go test ./...
+$ ./scripts/unittest.sh
 ```
 
 #### Acceptance Tests (Integration Tests)
 
-As of now these are not implemented. Please add a 👍 reaction to our [open issue](https://github.com/microsoft/terraform-provider-azuredevops/issues/59) in order to draw attention to this.
+The integration tests for terraform providers are typically implemented as [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html).
+
+**Note** Running acceptance tests provisions and deletes actual resources in AzDO. This can cost money and can be dangerous if you are not running them in isolation!
+
+Acceptance tests can be invoked by running the following:
+```bash
+$ ./scripts/acctest.sh
+```
+
+#### Writing your own tests
+
+We have a [great document](./testing.md) that covers this topic in more depth. 
 
 ## Note about CLA
 
