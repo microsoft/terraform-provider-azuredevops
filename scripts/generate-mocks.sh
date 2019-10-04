@@ -21,9 +21,9 @@ function check_gomock() {
 }
 
 function generate_mock_clients() {
-    info "Generating mock clients (from azdo_config.go)"
-    cd "$SOURCE_DIR"
-    mockgen -source=azdo_config.go -destination=mock_azdo_client.go -package=main
+    info "Generating mock clients (from config.go)"
+    cd "$SOURCE_DIR"azuredevops
+    mockgen -source=config.go -destination=mock_config.go -package=azuredevops
 }
 
 function generate_mocks() {

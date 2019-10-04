@@ -1,4 +1,4 @@
-package main
+package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
@@ -6,8 +6,9 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
 	"testing"
+
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"

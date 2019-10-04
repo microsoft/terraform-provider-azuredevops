@@ -1,11 +1,9 @@
 package tfhelper
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
-)
-
-import (
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 // DiffFuncSupressCaseSensitivity Suppress case sensitivity when comparing string values

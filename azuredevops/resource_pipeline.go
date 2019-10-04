@@ -1,14 +1,15 @@
-package main
+package azuredevops
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"log"
-	"strconv"
-	"strings"
 )
 
 func resourcePipeline() *schema.Resource {

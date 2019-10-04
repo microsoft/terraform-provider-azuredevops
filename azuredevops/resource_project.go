@@ -1,11 +1,12 @@
-package main
+package azuredevops
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/utils/tfhelper"
 	"strings"
 	"time"
+
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -99,7 +100,7 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
 				OperationId: operationRef.Id,
 				PluginId:    operationRef.PluginId,
@@ -112,12 +113,11 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 			if *result.Status == operations.OperationStatusValues.Succeeded {
 				return nil
 			}
-		case <- timeout:
+		case <-timeout:
 			return fmt.Errorf("Operation was not successful after %d seconds", timeoutSeconds)
 		}
 	}
 }
-
 
 func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)

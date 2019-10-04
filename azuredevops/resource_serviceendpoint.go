@@ -1,9 +1,9 @@
-package main
+package azuredevops
 
 import (
 	"fmt"
 
-	"github.com/microsoft/terraform-provider-azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform/helper/schema"
