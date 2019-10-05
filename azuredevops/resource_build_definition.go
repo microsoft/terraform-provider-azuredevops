@@ -20,20 +20,20 @@ func resourceBuildDefinition() *schema.Resource {
 		Delete: resourceBuildDefinitionDelete,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"revision": &schema.Schema{
+			"revision": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
 			},
-			"repository": &schema.Schema{
+			"repository": {
 				Type:     schema.TypeSet,
 				Required: true,
 				MinItems: 1,

@@ -18,27 +18,27 @@ func resourceServiceEndpoint() *schema.Resource {
 		Delete: resourceServiceEndpointDelete,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"service_endpoint_name": &schema.Schema{
+			"service_endpoint_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"service_endpoint_type": &schema.Schema{
+			"service_endpoint_type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"service_endpoint_url": &schema.Schema{
+			"service_endpoint_url": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"service_endpoint_owner": &schema.Schema{
+			"service_endpoint_owner": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"github_service_endpoint_pat": &schema.Schema{
+			"github_service_endpoint_pat": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),

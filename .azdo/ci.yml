@@ -33,5 +33,16 @@ jobs:
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
       chmod +x ./scripts/*.sh
+    displayName: 'Set Scripts as Executable'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
+      ./scripts/lint-check-go.sh
+    displayName: 'Run Lint Check'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
       ./scripts/build.sh
     displayName: 'Run Build Script'

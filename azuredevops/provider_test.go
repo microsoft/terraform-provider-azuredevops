@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/hashicorp/terraform/terraform"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 var provider = Provider()
@@ -80,8 +80,8 @@ var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
 
 func init() {
-  testAccProvider = provider
-  testAccProviders = map[string]terraform.ResourceProvider{
-    "azuredevops": testAccProvider,
-  }
+	testAccProvider = provider
+	testAccProviders = map[string]terraform.ResourceProvider{
+		"azuredevops": testAccProvider,
+	}
 }
