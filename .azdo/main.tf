@@ -20,9 +20,10 @@ resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
 }
 
 resource "azuredevops_build_definition" "build_definition" {
-  project_id    = azuredevops_project.project.id
+  project_id      = azuredevops_project.project.id
+  agent_pool_name = "Hosted Ubuntu 1604"
+  name            = "Provider CI Pipeline"
 
-  name = "Provider CI Pipeline"
   repository {
     repo_type             = "GitHub"
     repo_name             = "microsoft/terraform-provider-azuredevops"

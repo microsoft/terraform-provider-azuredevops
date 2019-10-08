@@ -12,6 +12,14 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestInt(t *testing.T) {
+	value := 123456
+	valuePtr := Int(value)
+	if value != *valuePtr {
+		t.Errorf("The pointer returned references a different value")
+	}
+}
+
 func TestBoolTrue(t *testing.T) {
 	value := true
 	valuePtr := Bool(value)

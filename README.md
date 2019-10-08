@@ -38,8 +38,9 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_build_definition" "build_definition" {
-  project_id            = azuredevops_project.project.id
-  name = "Test Pipeline"
+  project_id      = azuredevops_project.project.id
+  name            = "Test Pipeline"
+  agent_pool_name = "Hosted Ubuntu 1604"
 
   repository {
     repo_type             = "GitHub"

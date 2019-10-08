@@ -2,14 +2,14 @@ package azuredevops
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 )
 
 func resourceBuildDefinition() *schema.Resource {
@@ -33,6 +33,11 @@ func resourceBuildDefinition() *schema.Resource {
 				Optional: true,
 				Default:  "",
 			},
+			"agent_pool_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "Hosted Ubuntu 1604",
+			},
 			"repository": {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -49,8 +54,9 @@ func resourceBuildDefinition() *schema.Resource {
 							Required: true,
 						},
 						"repo_type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"GitHub"}, false),
 						},
 						"branch_name": {
 							Type:     schema.TypeString,
@@ -69,208 +75,176 @@ func resourceBuildDefinition() *schema.Resource {
 	}
 }
 
-type buildDefinitionValues struct {
-	agentPoolName                    string
-	agentPoolID                      int
-	buildDefinitionName              string
-	projectID                        string
-	projectReference                 *core.TeamProjectReference
-	repositoryDefaultBranch          string
-	repositoryName                   string
-	repositoryBuildDefinitionYmlPath string
-	repositoryType                   string
-	repositoryURL                    string
-	repositoryServiceConnectionID    string
-}
-
 func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
-	values := resourceDataToBuildDefinitionValues(d)
-
-	buildDefinitionID, err := createBuildDefinition(m.(*aggregatedClient), values)
+	clients := m.(*aggregatedClient)
+	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(strconv.Itoa(buildDefinitionID))
-	return resourceBuildDefinitionRead(d, m)
-}
-
-func resourceDataToBuildDefinitionValues(d *schema.ResourceData) *buildDefinitionValues {
-	projectID := d.Get("project_id").(string)
-	projectUUID := uuid.MustParse(projectID)
-	repositories := d.Get("repository").(*schema.Set).List()
-	repository := repositories[0].(map[string]interface{})
-	repoName := repository["repo_name"].(string)
-	buildDefinitionName := d.Get("name").(string)
-	if buildDefinitionName == "" {
-		buildDefinitionName = repoName + "_pipeline"
+	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
+	if err != nil {
+		return err
 	}
 
-	return &buildDefinitionValues{
-		projectID: projectID,
-		projectReference: &core.TeamProjectReference{
-			Id: &projectUUID,
-		},
-		buildDefinitionName:              buildDefinitionName,
-		repositoryName:                   repoName,
-		repositoryDefaultBranch:          repository["branch_name"].(string),
-		repositoryBuildDefinitionYmlPath: repository["yml_path"].(string),
-		repositoryType:                   repository["repo_type"].(string),
-		repositoryURL:                    fmt.Sprintf("https://github.com/%s.git", repoName),
-		repositoryServiceConnectionID:    repository["service_connection_id"].(string),
-		agentPoolName:                    "Hosted Ubuntu 1604",
-		agentPoolID:                      224,
-	}
+	flattenBuildDefinition(d, createdBuildDefinition, projectID)
+	return nil
 }
 
-func createBuildDefinitionDefinition(values *buildDefinitionValues) *build.BuildDefinition {
-	return &build.BuildDefinition{
-		Name:    &values.buildDefinitionName,
-		Type:    &build.DefinitionTypeValues.Build,
-		Quality: &build.DefinitionQualityValues.Definition,
-		Queue: &build.AgentPoolQueue{
-			Name: &values.agentPoolName,
-			Pool: &build.TaskAgentPoolReference{
-				Id:   &values.agentPoolID,
-				Name: &values.agentPoolName,
-			},
-		},
-		QueueStatus: &build.DefinitionQueueStatusValues.Enabled,
-		Repository: &build.BuildRepository{
-			Url:           &values.repositoryURL,
-			Id:            &values.repositoryName,
-			Name:          &values.repositoryName,
-			DefaultBranch: &values.repositoryDefaultBranch,
-			Type:          &values.repositoryType,
-			Properties: &map[string]string{
-				"connectedServiceId": values.repositoryServiceConnectionID,
-			},
-		},
-		Process: &build.YamlProcess{
-			YamlFilename: &values.repositoryBuildDefinitionYmlPath,
-		},
-		Project: values.projectReference,
+func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
+	d.SetId(strconv.Itoa(*buildDefinition.Id))
+
+	d.Set("project_id", projectID)
+	d.Set("name", *buildDefinition.Name)
+	d.Set("repository", flattenRepository(buildDefinition))
+	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
+
+	revision := 0
+	if buildDefinition.Revision != nil {
+		revision = *buildDefinition.Revision
 	}
+
+	d.Set("revision", revision)
 }
 
-func createBuildDefinition(clients *aggregatedClient, values *buildDefinitionValues) (int, error) {
-	//get info from the client & create a build definition
-	createRes, err := clients.BuildClient.CreateDefinition(clients.ctx, build.CreateDefinitionArgs{
-		Definition: createBuildDefinitionDefinition(values),
-		Project:    &values.projectID,
+func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
+	createdBuild, err := clients.BuildClient.CreateDefinition(clients.ctx, build.CreateDefinitionArgs{
+		Definition: buildDefinition,
+		Project:    &project,
 	})
 
-	if err != nil {
-		return 0, err
-	}
-
-	log.Printf("got response: %T", createRes)
-	return *(createRes.Id), nil
+	return createdBuild, err
 }
 
 func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*aggregatedClient).BuildClient
-	projectID := d.Get("project_id").(string)
-	buildDefinitionName := d.Get("name").(string)
+	clients := m.(*aggregatedClient)
+	projectID, buildDefinitionID, err := parseIdentifiers(d)
 
-	// Get List of Definitions
-	getDefinitionsResponseValue, err := client.GetDefinitions(m.(*aggregatedClient).ctx, build.GetDefinitionsArgs{
-		Project: &projectID, // Project ID or project name
+	if err != nil {
+		return err
+	}
+
+	buildDefinition, err := clients.BuildClient.GetDefinition(clients.ctx, build.GetDefinitionArgs{
+		Project:      &projectID,
+		DefinitionId: &buildDefinitionID,
 	})
 
 	if err != nil {
 		return err
 	}
 
-	definitionID := -1
-
-	// Find Build with buildDefinitionName, if it exists, save that build's ID
-	// TODO: handle ContinuationToken, pagination support for build results...
-	for _, buildDefinitionReference := range getDefinitionsResponseValue.Value {
-		if strings.TrimRight(*(buildDefinitionReference.Name), "\n") == buildDefinitionName {
-			// https://github.com/microsoft/azure-devops-go-api/blob/dev/azuredevops/build/models.go#L451
-			definitionID = *(buildDefinitionReference.Id)
-			break
-		}
-	}
-
-	// No existing buildDefinition definition found.
-	if definitionID < 0 {
-		d.SetId("")
-		return nil
-	}
-
-	// Get Build via client, this call has extra data like: properties, tags, jobAuthorizationScope, process, repository
-	buildDefinition, err := client.GetDefinition(m.(*aggregatedClient).ctx, build.GetDefinitionArgs{
-		Project:      &projectID, // Project ID or project name
-		DefinitionId: &definitionID,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	// Save values from buildDefinition into schema, d
-	return saveBuildDefinitionToSchema(d, buildDefinition)
-}
-
-// Saves passed BuildDefinition values into schema
-func saveBuildDefinitionToSchema(d *schema.ResourceData, buildDefinition *build.BuildDefinition) error {
-	if buildDefinition.Id != nil {
-		d.SetId(strconv.Itoa(*buildDefinition.Id))
-	}
-
-	if buildDefinition.Revision != nil {
-		d.Set("revision", *buildDefinition.Revision)
-	}
-
+	flattenBuildDefinition(d, buildDefinition, projectID)
 	return nil
 }
 
 func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*aggregatedClient).BuildClient
-	if d.Id() != "" {
-		projectID := d.Get("project_id").(string)
-		definitionID, err := strconv.Atoi(d.Id())
-
-		if err != nil {
-			return err
-		}
-
-		// returns nil if no error, else returns error
-		return client.DeleteDefinition(m.(*aggregatedClient).ctx, build.DeleteDefinitionArgs{
-			Project:      &projectID,
-			DefinitionId: &definitionID,
-		})
+	if d.Id() == "" {
+		return nil
 	}
 
-	return nil
-}
-
-func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*aggregatedClient).BuildClient
-	values := resourceDataToBuildDefinitionValues(d)
-
-	definitionID, err := strconv.Atoi(d.Id())
+	clients := m.(*aggregatedClient)
+	projectID, buildDefinitionID, err := parseIdentifiers(d)
 	if err != nil {
 		return err
 	}
 
-	buildDefinition := createBuildDefinitionDefinition(values)
-	revisionNum := d.Get("revision").(int)
-	buildDefinition.Revision = &revisionNum
-	buildDefinition.Revision = &revisionNum
-	buildDefinition.Id = &definitionID
+	err = clients.BuildClient.DeleteDefinition(m.(*aggregatedClient).ctx, build.DeleteDefinitionArgs{
+		Project:      &projectID,
+		DefinitionId: &buildDefinitionID,
+	})
 
-	_, err = client.UpdateDefinition(m.(*aggregatedClient).ctx, build.UpdateDefinitionArgs{
+	return err
+}
+
+func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*aggregatedClient)
+	buildDefinition, projectID, err := expandBuildDefinition(d)
+	if err != nil {
+		return err
+	}
+
+	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*aggregatedClient).ctx, build.UpdateDefinitionArgs{
 		Definition:   buildDefinition,
-		Project:      &values.projectID,
-		DefinitionId: &definitionID,
+		Project:      &projectID,
+		DefinitionId: buildDefinition.Id,
 	})
 
 	if err != nil {
 		return err
 	}
 
-	return resourceBuildDefinitionRead(d, m)
+	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
+	return nil
+}
+
+func parseIdentifiers(d *schema.ResourceData) (string, int, error) {
+	projectID := d.Get("project_id").(string)
+	buildDefinitionID, err := strconv.Atoi(d.Id())
+
+	return projectID, buildDefinitionID, err
+}
+
+func flattenRepository(buildDefiniton *build.BuildDefinition) interface{} {
+	process := buildDefiniton.Process.(map[string]interface{})
+	return []map[string]interface{}{{
+		"yml_path":              process["yamlFilename"].(string),
+		"repo_name":             *buildDefiniton.Repository.Name,
+		"repo_type":             *buildDefiniton.Repository.Type,
+		"branch_name":           *buildDefiniton.Repository.DefaultBranch,
+		"service_connection_id": (*buildDefiniton.Repository.Properties)["connectedServiceId"],
+	}}
+}
+
+func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, string, error) {
+	projectID := d.Get("project_id").(string)
+	repositories := d.Get("repository").(*schema.Set).List()
+	repository := repositories[0].(map[string]interface{})
+
+	repoName := repository["repo_name"].(string)
+	repoType := repository["repo_type"].(string)
+	repoURL := ""
+	if strings.EqualFold(repoType, "github") {
+		repoURL = fmt.Sprintf("https://github.com/%s.git", repoName)
+	}
+
+	// Look for the ID. This may not exist if we are within the context of a "create" operation,
+	// so it is OK if it is missing.
+	buildDefinitionID, err := strconv.Atoi(d.Id())
+	var buildDefinitionReference *int
+	if err == nil {
+		buildDefinitionReference = &buildDefinitionID
+	} else {
+		buildDefinitionReference = nil
+	}
+
+	agentPoolName := d.Get("agent_pool_name").(string)
+	buildDefinition := build.BuildDefinition{
+		Id:       buildDefinitionReference,
+		Name:     converter.String(d.Get("name").(string)),
+		Revision: converter.Int(d.Get("revision").(int)),
+		Repository: &build.BuildRepository{
+			Url:           &repoURL,
+			Id:            &repoName,
+			Name:          &repoName,
+			DefaultBranch: converter.String(repository["branch_name"].(string)),
+			Type:          &repoType,
+			Properties: &map[string]string{
+				"connectedServiceId": repository["service_connection_id"].(string),
+			},
+		},
+		Process: &build.YamlProcess{
+			YamlFilename: converter.String(repository["yml_path"].(string)),
+		},
+		Queue: &build.AgentPoolQueue{
+			Name: &agentPoolName,
+			Pool: &build.TaskAgentPoolReference{
+				Name: &agentPoolName,
+			},
+		},
+		QueueStatus: &build.DefinitionQueueStatusValues.Enabled,
+		Type:        &build.DefinitionTypeValues.Build,
+		Quality:     &build.DefinitionQualityValues.Definition,
+	}
+
+	return &buildDefinition, projectID, nil
 }

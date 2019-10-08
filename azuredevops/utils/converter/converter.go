@@ -10,6 +10,11 @@ func Bool(value bool) *bool {
 	return &value
 }
 
+// Int Get a pointer to an integer value
+func Int(value int) *int {
+	return &value
+}
+
 // ToString Given a pointer return its value, or a default value of the poitner is nil
 func ToString(value *string, defaultValue string) string {
 	if value != nil {
