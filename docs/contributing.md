@@ -97,7 +97,7 @@ To learn more about the plugin discovery process, refer to the official [Terrafo
 
 ## Running the provider locally
 
-**Note** These steps assume you have built the provider locally using the previous steps.
+**Note** These steps assume you have built the provider locally using the previous steps. The samples in the `./examples/` folder use syntax specific to Terraform 12 + and are not compatible with older versions of Terraform.
 
 #### Configuring the provider
 
