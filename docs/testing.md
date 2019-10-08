@@ -5,8 +5,6 @@
 
 # Unit Tests
 
-
-
 ## Mocks
 
 The Azure DevOps Provider for Terraform has a strong dependency on the Azure DevOps Go API client. To test our providers, we utilize the GoMock mocking framework in addition to Go's built-in `testing` package. The GoMock framework allows us to mock any clients required from the Azure DevOps Go API (e.g., the `CoreClient` or `BuildClient`) so that we can isolate our unit test to the resource provider code by mocking operations of the Azure DevOps Go API client.
@@ -38,6 +36,8 @@ The script includes the following steps that might be manually run to support mo
 ### Writing Unit Tests
 
 When writing a unit test with a mocked client, GoMock will use the mocked clients from the `mockgen`-generated output. Additionally, `github.com/stretchr/testify/require` is used to stop test execution and fail if the assertion is not met.
+
+When naming your unit tests (and acceptance tests), please follow the guidance from Hashicorp found [here](https://www.terraform.io/docs/extend/testing/unit-testing.html).
 
 #### SampleClient interface
 ```go

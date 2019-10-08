@@ -40,7 +40,7 @@ var testProject = core.TeamProject{
 
 // verifies that the create operation is considered failed if the initial API
 // call fails.
-func Test_CreateProject_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
+func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -64,7 +64,7 @@ func Test_CreateProject_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
 
 // verifies that the create operation is considered failed if there is an issue
 // verifying via the async polling operation API that it has completed successfully.
-func Test_CreateProject_DoesNotSwallowErrorFromFailedAsyncStatusCheckCall(t *testing.T) {
+func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedAsyncStatusCheckCall(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -98,7 +98,7 @@ func Test_CreateProject_DoesNotSwallowErrorFromFailedAsyncStatusCheckCall(t *tes
 
 // verifies that polling is done to validate the status of the asynchronous
 // testProject create operation.
-func Test_CreateProject_PollsUntilOperationIsSuccessful(t *testing.T) {
+func TestAzureDevOpsProject_CreateProject_PollsUntilOperationIsSuccessful(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -139,7 +139,7 @@ func Test_CreateProject_PollsUntilOperationIsSuccessful(t *testing.T) {
 }
 
 // verifies that if a project takes too long to create, an error is returned
-func Test_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *testing.T) {
+func TestAzureDevOpsProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -173,7 +173,7 @@ func Test_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *testing.T) {
 	require.NotNil(t, err, "Expected error indicating timeout")
 }
 
-func Test_FlattenExpand_RoundTrip(t *testing.T) {
+func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -214,7 +214,7 @@ func Test_FlattenExpand_RoundTrip(t *testing.T) {
 }
 
 // verifies that the project ID is used for reads if the ID is set
-func Test_ProjectRead_UsesIdIfSet(t *testing.T) {
+func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -240,7 +240,7 @@ func Test_ProjectRead_UsesIdIfSet(t *testing.T) {
 }
 
 // verifies that the project name is used for reads if the ID is not set
-func Test_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
+func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -280,7 +280,7 @@ func operationWithStatus(status operations.OperationStatus) operations.Operation
 //	(3) project can be queried by ID and has expected name
 // 	(4) TF destroy deletes project
 //	(5) project can no longer be queried by ID
-func TestAccProject_Create(t *testing.T) {
+func TestAccAzureDevOpsProject_Create(t *testing.T) {
 	projectName := "test-acc-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfNode := "azuredevops_project.project"
 

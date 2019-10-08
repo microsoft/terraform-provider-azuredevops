@@ -11,7 +11,9 @@ import (
 
 var provider = Provider()
 
-func Test_ResourceKeyValues(t *testing.T) {
+// TestAzureDevOpsProvider_foo
+
+func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_build_definition",
 		"azuredevops_project",
@@ -27,7 +29,7 @@ func Test_ResourceKeyValues(t *testing.T) {
 	}
 }
 
-func Test_ProviderSchema(t *testing.T) {
+func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 	type testParams struct {
 		name          string
 		required      bool
