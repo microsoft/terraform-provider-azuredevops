@@ -17,7 +17,7 @@ If you are familiar with the technologies used for this project but are looking 
 
 If you are still reading, then you are in the right place!
 
-If, after reading through the content here, you are seeking more detailed information, you may want to checkout [this awesome getting started guide](https://github.com/Azure/terraform/blob/master/provider/CONTRIBUTE.md) that was written for the `terraform-provider-azurerm` project. While it targets a different provider there are some great findings that you can read about
+If, after reading through the content here, you are seeking more detailed information, you may want to checkout [this awesome getting started guide](https://github.com/Azure/terraform/blob/master/provider/CONTRIBUTE.md) that was written for the `terraform-provider-azurerm` project. While it targets a different provider there are some great findings that you can read about.
 
 ## Install the dependencies
 
