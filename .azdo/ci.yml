@@ -46,3 +46,12 @@ jobs:
       cd "$BUILD_SOURCESDIRECTORY"
       ./scripts/build.sh
     displayName: 'Run Build Script'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
+      ./scripts/acctest.sh
+    displayName: 'Run Acceptance Tests'
+    env:
+      AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
+      AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
