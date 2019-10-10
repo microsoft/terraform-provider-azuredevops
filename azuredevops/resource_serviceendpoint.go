@@ -89,7 +89,16 @@ func resourceServiceEndpointRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServiceEndpointUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceServiceEndpointRead(d, m)
+	clients := m.(*aggregatedClient)
+	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint, projectID)
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpoint(clients, d, updatedServiceEndpoint, projectID)
+	return nil
 }
 
 func resourceServiceEndpointDelete(d *schema.ResourceData, m interface{}) error {
@@ -120,6 +129,18 @@ func deleteServiceEndpoint(clients *aggregatedClient, project *string, endPointI
 		})
 
 	return err
+}
+
+func updateServiceEndpoint(clients *aggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
+		clients.ctx,
+		serviceendpoint.UpdateServiceEndpointArgs{
+			Endpoint:   endpoint,
+			Project:    project,
+			EndpointId: endpoint.Id,
+		})
+
+	return updatedServiceEndpoint, err
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
