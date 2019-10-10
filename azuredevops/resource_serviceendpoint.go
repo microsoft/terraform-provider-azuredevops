@@ -93,7 +93,10 @@ func resourceServiceEndpointUpdate(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceServiceEndpointDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	clients := m.(*aggregatedClient)
+	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
+
+	return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
 }
 
 // Make the Azure DevOps API call to create the endpoint
@@ -106,6 +109,17 @@ func createServiceEndpoint(clients *aggregatedClient, endpoint *serviceendpoint.
 		})
 
 	return createdServiceEndpoint, err
+}
+
+func deleteServiceEndpoint(clients *aggregatedClient, project *string, endPointId *uuid.UUID) error {
+	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+		clients.ctx,
+		serviceendpoint.DeleteServiceEndpointArgs{
+			Project:    project,
+			EndpointId: endPointId,
+		})
+
+	return err
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
