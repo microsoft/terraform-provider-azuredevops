@@ -281,7 +281,7 @@ func operationWithStatus(status operations.OperationStatus) operations.Operation
 // 	(4) TF destroy deletes project
 //	(5) project can no longer be queried by ID
 func TestAccAzureDevOpsProject_Create(t *testing.T) {
-	projectName := "test-acc-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfNode := "azuredevops_project.project"
 
 	resource.Test(t, resource.TestCase{
@@ -297,7 +297,7 @@ func TestAccAzureDevOpsProject_Create(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
-					testAccCheckProjectResourceExists(tfNode, projectName),
+					testAccCheckProjectResourceExists(projectName),
 				),
 			},
 		},
@@ -316,13 +316,13 @@ resource "azuredevops_project" "project" {
 }`, projectName, projectName)
 }
 
-// Given the name of a terraform state node, this will return a function that will check whether
-// or not the node (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func testAccCheckProjectResourceExists(tfNode string, expectedName string) resource.TestCheckFunc {
+// Given the name of an AzDO project, this will return a function that will check whether
+// or not the project (1) exists in the state and (2) exist in AzDO and (3) has the correct name
+func testAccCheckProjectResourceExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources[tfNode]
+		resource, ok := s.RootModule().Resources["azuredevops_project.project"]
 		if !ok {
-			return fmt.Errorf("Did not find an expected node in the TF state: %s", tfNode)
+			return fmt.Errorf("Did not find a project in the TF state")
 		}
 
 		clients := testAccProvider.Meta().(*aggregatedClient)

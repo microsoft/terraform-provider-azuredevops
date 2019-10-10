@@ -80,8 +80,10 @@ func testAccPreCheck(t *testing.T) {
 
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
+var testAccResourcePrefix string
 
 func init() {
+	testAccResourcePrefix = "test-acc-"
 	testAccProvider = provider
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"azuredevops": testAccProvider,

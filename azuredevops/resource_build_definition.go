@@ -185,9 +185,21 @@ func parseIdentifiers(d *schema.ResourceData) (string, int, error) {
 }
 
 func flattenRepository(buildDefiniton *build.BuildDefinition) interface{} {
-	process := buildDefiniton.Process.(map[string]interface{})
+	yamlFilePath := ""
+
+	// The process member can be of many types -- the only typing information
+	// available from the compiler is `interface{}` so we can probe for known
+	// implementations
+	if processMap, ok := buildDefiniton.Process.(map[string]interface{}); ok {
+		yamlFilePath = processMap["yamlFilename"].(string)
+	}
+
+	if yamlProcess, ok := buildDefiniton.Process.(*build.YamlProcess); ok {
+		yamlFilePath = *yamlProcess.YamlFilename
+	}
+
 	return []map[string]interface{}{{
-		"yml_path":              process["yamlFilename"].(string),
+		"yml_path":              yamlFilePath,
 		"repo_name":             *buildDefiniton.Repository.Name,
 		"repo_type":             *buildDefiniton.Repository.Type,
 		"branch_name":           *buildDefiniton.Repository.DefaultBranch,
@@ -198,6 +210,12 @@ func flattenRepository(buildDefiniton *build.BuildDefinition) interface{} {
 func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, string, error) {
 	projectID := d.Get("project_id").(string)
 	repositories := d.Get("repository").(*schema.Set).List()
+
+	// Note: If configured, this will be of length 1 based on the schema definition above.
+	if len(repositories) != 1 {
+		return nil, "", fmt.Errorf("Unexpectedly did not find repository metadata in the resource data")
+	}
+
 	repository := repositories[0].(map[string]interface{})
 
 	repoName := repository["repo_name"].(string)
