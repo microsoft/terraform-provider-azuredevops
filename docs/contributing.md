@@ -104,7 +104,7 @@ To learn more about the plugin discovery process, refer to the official [Terrafo
 You can then use the provider just like you normally would. You can try it out by using the project examples:
 
 ```bash
-$ cd examples/
+$ cd examples/github-based-cicd-simple/
 
 # AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
 # resources inside of.
