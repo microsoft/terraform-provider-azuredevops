@@ -21,6 +21,7 @@ func resourceServiceEndpoint() *schema.Resource {
 			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"service_endpoint_name": {
 				Type:     schema.TypeString,

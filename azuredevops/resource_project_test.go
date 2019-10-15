@@ -208,7 +208,7 @@ func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 	err := flattenProject(clients, resourceData, &testProject)
 	require.Nil(t, err)
 
-	projectAfterRoundTrip, err := expandProject(clients, resourceData)
+	projectAfterRoundTrip, err := expandProject(clients, resourceData, true)
 	require.Nil(t, err)
 	require.Equal(t, testProject, *projectAfterRoundTrip)
 }
@@ -278,10 +278,13 @@ func operationWithStatus(status operations.OperationStatus) operations.Operation
 //	(1) TF apply creates project
 //	(2) TF state values are set
 //	(3) project can be queried by ID and has expected name
-// 	(4) TF destroy deletes project
-//	(5) project can no longer be queried by ID
-func TestAccAzureDevOpsProject_Create(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+//  (4) TF apply update project with changing name
+//  (5) project can be queried by ID and has expected name
+// 	(6) TF destroy deletes project
+//	(7) project can no longer be queried by ID
+func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
+	projectNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfNode := "azuredevops_project.project"
 
 	resource.Test(t, resource.TestCase{
@@ -290,14 +293,25 @@ func TestAccAzureDevOpsProject_Create(t *testing.T) {
 		CheckDestroy: testAccProjectCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectResource(projectName),
+				Config: testAccProjectResource(projectNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameFirst),
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
-					testAccCheckProjectResourceExists(projectName),
+					testAccCheckProjectResourceExists(projectNameFirst),
+				),
+			},
+			{
+				Config: testAccProjectResource(projectNameSecond),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
+					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameSecond),
+					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
+					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
+					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
+					testAccCheckProjectResourceExists(projectNameSecond),
 				),
 			},
 		},
