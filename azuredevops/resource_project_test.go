@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/golang/mock/gomock"
@@ -44,7 +45,7 @@ func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedCreateCal
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient: coreClient,
 		ctx:        context.Background(),
@@ -68,8 +69,8 @@ func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedAsyncStat
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
-	operationsClient := NewMockOperationsClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
+	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
@@ -102,8 +103,8 @@ func TestAzureDevOpsProject_CreateProject_PollsUntilOperationIsSuccessful(t *tes
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
-	operationsClient := NewMockOperationsClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
+	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
@@ -143,8 +144,8 @@ func TestAzureDevOpsProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
-	operationsClient := NewMockOperationsClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
+	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
@@ -177,7 +178,7 @@ func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient: coreClient,
 		ctx:        context.Background(),
@@ -218,7 +219,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient: coreClient,
 		ctx:        context.Background(),
@@ -244,7 +245,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	coreClient := NewMockCoreClient(ctrl)
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	clients := &aggregatedClient{
 		CoreClient: coreClient,
 		ctx:        context.Background(),

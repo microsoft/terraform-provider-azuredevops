@@ -121,12 +121,12 @@ func createServiceEndpoint(clients *aggregatedClient, endpoint *serviceendpoint.
 	return createdServiceEndpoint, err
 }
 
-func deleteServiceEndpoint(clients *aggregatedClient, project *string, endPointId *uuid.UUID) error {
+func deleteServiceEndpoint(clients *aggregatedClient, project *string, endPointID *uuid.UUID) error {
 	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 		clients.ctx,
 		serviceendpoint.DeleteServiceEndpointArgs{
 			Project:    project,
-			EndpointId: endPointId,
+			EndpointId: endPointID,
 		})
 
 	return err

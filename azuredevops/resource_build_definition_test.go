@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"strconv"
 	"testing"
@@ -82,7 +83,7 @@ func TestAzureDevOpsBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
-	buildClient := NewMockBuildClient(ctrl)
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
 
 	expectedArgs := build.CreateDefinitionArgs{Definition: &testBuildDefinition, Project: &testProjectID}
@@ -104,7 +105,7 @@ func TestAzureDevOpsBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
-	buildClient := NewMockBuildClient(ctrl)
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
 
 	expectedArgs := build.GetDefinitionArgs{DefinitionId: testBuildDefinition.Id, Project: &testProjectID}
@@ -126,7 +127,7 @@ func TestAzureDevOpsBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
-	buildClient := NewMockBuildClient(ctrl)
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
 
 	expectedArgs := build.DeleteDefinitionArgs{DefinitionId: testBuildDefinition.Id, Project: &testProjectID}
@@ -148,7 +149,7 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
-	buildClient := NewMockBuildClient(ctrl)
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
 
 	expectedArgs := build.UpdateDefinitionArgs{
