@@ -1,5 +1,6 @@
 # Terraform Provider for Azure DevOps
 
+[![Gitter](https://badges.gitter.im/terraform-provider-azuredevops/community.svg)](https://gitter.im/terraform-provider-azuredevops/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://dev.azure.com/terraform-azdo/terraform-provider-azuredevops/_apis/build/status/Nightly%20Build?branchName=master)](https://dev.azure.com/terraform-azdo/terraform-provider-azuredevops/_build/latest?definitionId=27&branchName=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
 
