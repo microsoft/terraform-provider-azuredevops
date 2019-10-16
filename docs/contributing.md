@@ -14,6 +14,7 @@ If you are familiar with the technologies used for this project but are looking 
 * [Introduction to Provider Development](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers)
 * [Terraform provider discovery documentation](https://www.terraform.io/docs/extend/how-terraform-works.html#discovery)
 * [Terraform Acceptance Testing](https://www.terraform.io/docs/extend/best-practices/testing.html#built-in-patterns)
+* [Terraform Schema Behaviors](https://www.terraform.io/docs/extend/schemas/schema-behaviors.html)
 
 If you are still reading, then you are in the right place!
 
@@ -154,7 +155,19 @@ $ ./scripts/acctest.sh
 
 #### Writing your own tests
 
-We have a [great document](./testing.md) that covers this topic in more depth. 
+We have a [great document](./testing.md) that covers this topic in more depth.
+
+## Extending the provider
+
+Interested in extending the provider to support new resources and/or data sources? Great! We need your help! You should get started by following the official HashiCorp documentation on developing providers - [Introduction to Provider Development](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers). Next you should familiarize yourself with the [Terraform Schema Behaviors](https://www.terraform.io/docs/extend/schemas/schema-behaviors.html). While these guides are great, they don't give a complete picture of what developing a provider for this code-base looks like. For this reason, we are including a sample resource implementation that is more comprehensive and includes unit and acceptance tests.
+
+ - [Resource Implementation](../azuredevops/resource_build_definition.go). Note the following key patterns:
+   - [Flatten/Expand](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers#implementing-a-more-complex-read) is a common "idiom" used across terraform providers. It is a standard approach to marshaling and unmarshaling API data structures into the internal terraform state.
+   - **Don't repeat yourself**: Notice that shared behavior such as API calls and data transformations are only implemented once. This keeps the codebase minimal.
+ - [Resource Tests](../azuredevops/resource_build_definition_test.go)
+   - **Unit Tests**: are a common practice for Go code. In this project, we use them to test the flatten/expand code and to verify that the codebase properly handles service failure scenarios.
+   - [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html) are a common "idiom" used across terraform providers. It is a standard approach to integration testing and the provided frameworks provide a lot of built in capabilities. They are used by this provider to validate that E2E connectivity with AzDO and to make sure that expected terraform configurations are able to provision without error.
+
 
 ## Note about CLA
 
