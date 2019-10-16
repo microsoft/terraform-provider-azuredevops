@@ -26,10 +26,11 @@ resource "azuredevops_project" "project" {
 }
 
 // Defines a Git repository hosted in the project
-# resource "azuredevops_git_repo" "repository" {
-#   project_id = azuredevops_project.project.id
-#   name       = "super-cool-repository"
-# }
+resource "azuredevops_azure_git_repository" "repository" {
+  project        = azuredevops_project.project.id
+  name           = "main-repo"
+  default_branch = "master"
+}
 
 // Defines an ARM service connection
 # resource "azuredevops_serviceendpoint" "arm" {
