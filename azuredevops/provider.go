@@ -1,7 +1,7 @@
 package azuredevops
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
