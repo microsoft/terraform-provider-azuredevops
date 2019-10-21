@@ -2,6 +2,8 @@ package azuredevops
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -109,6 +111,15 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 			}
 
 			if *result.Status == operations.OperationStatusValues.Succeeded {
+				// Sometimes without the sleep, the subsequent operations won't find the project...
+				delay := os.Getenv("AZDO_PRJ_CREATE_DELAY")
+				settleDelay := time.Duration(0)
+				i, err := strconv.ParseInt(delay, 10, 64)
+				if err == nil {
+					settleDelay = time.Duration(i) * time.Second
+				}
+				fmt.Printf("Inserting artificial delay after project creation: %s\n", settleDelay.String())
+				time.Sleep(settleDelay)
 				return nil
 			}
 		case <-timeout:

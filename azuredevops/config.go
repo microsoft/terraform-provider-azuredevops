@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 )
@@ -22,6 +23,7 @@ import (
 type aggregatedClient struct {
 	CoreClient            core.Client
 	BuildClient           build.Client
+	GitReposClient        git.Client
 	OperationsClient      operations.Client
 	ServiceEndpointClient serviceendpoint.Client
 	ctx                   context.Context
@@ -68,9 +70,18 @@ func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, e
 		return nil, err
 	}
 
+	// client for these APIs:
+	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1
+	gitReposClient, err := git.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): git.NewClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &aggregatedClient{
 		CoreClient:            coreClient,
 		BuildClient:           buildClient,
+		GitReposClient:        gitReposClient,
 		OperationsClient:      operationsClient,
 		ServiceEndpointClient: serviceEndpointClient,
 		ctx:                   ctx,
