@@ -52,14 +52,14 @@ func resourceServiceEndpoint() *schema.Resource {
 
 func resourceServiceEndpointCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
-	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
+	serviceEndpoint, projectID := expandServiceEndpoint(d)
 
 	createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint, projectID)
 	if err != nil {
 		return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpoint(clients, d, createdServiceEndpoint, projectID)
+	flattenServiceEndpoint(d, createdServiceEndpoint, projectID)
 	return nil
 }
 
@@ -85,26 +85,26 @@ func resourceServiceEndpointRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v", serviceEndpointID, projectID, err)
 	}
 
-	flattenServiceEndpoint(clients, d, serviceEndpoint, projectID)
+	flattenServiceEndpoint(d, serviceEndpoint, projectID)
 	return nil
 }
 
 func resourceServiceEndpointUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
-	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
+	serviceEndpoint, projectID := expandServiceEndpoint(d)
 
 	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint, projectID)
 	if err != nil {
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpoint(clients, d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpoint(d, updatedServiceEndpoint, projectID)
 	return nil
 }
 
 func resourceServiceEndpointDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
-	serviceEndpoint, projectID := expandServiceEndpoint(clients, d)
+	serviceEndpoint, projectID := expandServiceEndpoint(d)
 
 	return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
 }
@@ -145,7 +145,7 @@ func updateServiceEndpoint(clients *aggregatedClient, endpoint *serviceendpoint.
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpoint(clients *aggregatedClient, d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+func expandServiceEndpoint(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
 	var serviceEndpointID *uuid.UUID
 	parsedID, err := uuid.Parse(d.Id())
@@ -172,7 +172,7 @@ func expandServiceEndpoint(clients *aggregatedClient, d *schema.ResourceData) (*
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpoint(clients *aggregatedClient, d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpoint(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	d.SetId(serviceEndpoint.Id.String())
 	d.Set("service_endpoint_name", *serviceEndpoint.Name)
 	d.Set("service_endpoint_type", *serviceEndpoint.Type)
