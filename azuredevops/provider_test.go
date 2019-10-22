@@ -70,6 +70,7 @@ func testAccPreCheck(t *testing.T) {
 	requiredEnvVars := []string{
 		"AZDO_ORG_SERVICE_URL",
 		"AZDO_PERSONAL_ACCESS_TOKEN",
+		"AZDO_GITHUB_SERVICE_CONNECTION_PAT",
 	}
 
 	for _, variable := range requiredEnvVars {

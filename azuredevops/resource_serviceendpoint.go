@@ -2,15 +2,21 @@ package azuredevops
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 )
 
 func resourceServiceEndpoint() *schema.Resource {
+
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("github_service_endpoint_pat")
+
 	return &schema.Resource{
 		Create: resourceServiceEndpointCreate,
 		Read:   resourceServiceEndpointRead,
@@ -40,12 +46,14 @@ func resourceServiceEndpoint() *schema.Resource {
 				Required: true,
 			},
 			"github_service_endpoint_pat": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
-				Description: "The GitHub personal access token which should be used.",
-				Sensitive:   true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DefaultFunc:      schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
+				Description:      "The GitHub personal access token which should be used.",
+				Sensitive:        true,
+				DiffSuppressFunc: tfhelper.DiffFuncSupressSecretChanged,
 			},
+			patHashKey: patHashSchema,
 		},
 	}
 }
@@ -152,7 +160,7 @@ func expandServiceEndpoint(d *schema.ResourceData) (*serviceendpoint.ServiceEndp
 	if err == nil {
 		serviceEndpointID = &parsedID
 	}
-
+	log.Printf("Updating github_service_endpoint_pat to %s", d.Get("github_service_endpoint_pat").(string))
 	projectID := converter.String(d.Get("project_id").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
 		Id:    serviceEndpointID,
@@ -178,6 +186,7 @@ func flattenServiceEndpoint(d *schema.ResourceData, serviceEndpoint *serviceendp
 	d.Set("service_endpoint_type", *serviceEndpoint.Type)
 	d.Set("service_endpoint_url", *serviceEndpoint.Url)
 	d.Set("service_endpoint_owner", *serviceEndpoint.Owner)
+	tfhelper.HelpFlattenSecret(d, "github_service_endpoint_pat")
 	d.Set("github_service_endpoint_pat", (*serviceEndpoint.Authorization.Parameters)["accessToken"])
 	d.Set("project_id", projectID)
 }

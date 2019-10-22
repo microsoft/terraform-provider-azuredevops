@@ -13,6 +13,7 @@ require (
 	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191014190507-26902c1d4325
 	github.com/stretchr/testify v1.3.0
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb // indirect
 	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa // indirect
 )
