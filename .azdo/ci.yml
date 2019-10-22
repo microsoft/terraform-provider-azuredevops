@@ -10,6 +10,8 @@ jobs:
 
 - job: build
   displayName: 'Build: '
+  variables:
+    GO_PATH_FOR_CACHE: '/home/vsts/go'
 
   # Build on each combination of supported OS and Go version
   strategy:
@@ -35,6 +37,12 @@ jobs:
       chmod +x ./scripts/*.sh
     displayName: 'Set Scripts as Executable'
 
+  - task: CacheBeta@0
+    inputs:
+      key: gopathpkgmod | "$(vmImage)" | "$(goVersion)"
+      path: $(GO_PATH_FOR_CACHE)/pkg/mod
+    displayName: Cache Go Modules
+    
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
