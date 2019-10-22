@@ -9,8 +9,7 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/terraform-plugin-sdk v1.1.1
-	github.com/mattn/go-colorable v0.1.1 // indirect
-	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191014190507-26902c1d4325
+	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191018194956-273e55a7119a
 	github.com/stretchr/testify v1.3.0
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586

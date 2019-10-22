@@ -13,6 +13,9 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint":      resourceServiceEndpoint(),
 			"azuredevops_azure_git_repository": resourceAzureGitRepository(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"azuredevops_group": dataGroup(),
+		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
 				Type:        schema.TypeString,

@@ -157,9 +157,10 @@ resource "azuredevops_azure_git_repository" "repository" {
 
 // add existing AAD group to AzDO
 //  https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/create?view=azure-devops-rest-5.0#add-an-aad-group-by-oid
-# resource "azuredevops_group" "aad_group" {
-#   originId = variables.aad_group_id
-# }
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
 
 # resource "azuredevops_group_membership" "membership" {
 #   group_descriptor = azuredevops_group.azdo_group.descriptor
