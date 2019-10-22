@@ -57,7 +57,7 @@ func resourceBuildDefinition() *schema.Resource {
 						"repo_type": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"GitHub"}, false),
+							ValidateFunc: validation.StringInSlice([]string{"GitHub", "TfsGit"}, false),
 						},
 						"branch_name": {
 							Type:     schema.TypeString,

@@ -56,6 +56,18 @@ var testBuildDefinition = build.BuildDefinition{
  * Begin unit tests
  */
 
+// validates that all supported repo types are allowed by the schema
+func TestAzureDevOpsBuildDefinition_RepoTypeListIsCorrect(t *testing.T) {
+	expectedRepoTypes := []string{"GitHub", "TfsGit"}
+	repoSchema := resourceBuildDefinition().Schema["repository"]
+	repoTypeSchema := repoSchema.Elem.(*schema.Resource).Schema["repo_type"]
+
+	for _, repoType := range expectedRepoTypes {
+		_, errors := repoTypeSchema.ValidateFunc(repoType, "")
+		require.Equal(t, 0, len(errors), "Repo type unexpectedly did not pass validation")
+	}
+}
+
 // verifies that the flatten/expand round trip yields the same build definition
 func TestAzureDevOpsBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
