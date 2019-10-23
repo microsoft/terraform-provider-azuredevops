@@ -168,6 +168,16 @@ Interested in extending the provider to support new resources and/or data source
    - **Unit Tests**: are a common practice for Go code. In this project, we use them to test the flatten/expand code and to verify that the codebase properly handles service failure scenarios.
    - [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html) are a common "idiom" used across terraform providers. It is a standard approach to integration testing and the provided frameworks provide a lot of built in capabilities. They are used by this provider to validate that E2E connectivity with AzDO and to make sure that expected terraform configurations are able to provision without error.
 
+## Documentation
+
+Most changes will involve updates to the reference documentation.
+
+| Name | Description | Link |
+| ---- | ----------- | ---- |
+| Index | Table of contents | [index.md](../website/index.md) |
+| Resources | Resources reference | [resources](../website/docs/r) |
+| Data Sources | Data Sources reference | [data sources](../website/docs/d) |
+| Guides | Guide and tutorial docs | [guides](../website/docs/guildes) |
 
 ## Note about CLA
 
