@@ -150,6 +150,22 @@ The integration tests for terraform providers are typically implemented as [Acce
 
 Acceptance tests can be invoked by running the following:
 ```bash
+# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
+# resources inside of.
+#   ex: https://dev.azure.com/<your org name>
+$ export AZDO_ORG_SERVICE_URL="..."
+
+# AZDO_PERSONAL_ACCESS_TOKEN will be the personal access token that grants access
+# to provision and manage resources in Azure DevOps.
+#   documentation: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops
+$ export AZDO_PERSONAL_ACCESS_TOKEN="..."
+
+# Note: AZDO_GITHUB_SERVICE_CONNECTION_PAT is not specifically required
+# by the provider, but it is required by the acceptance tests in order to test
+# the authentication with GitHub for build definitions hosted in GitHub.
+#   documentation: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+$ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
+
 $ ./scripts/acctest.sh
 ```
 

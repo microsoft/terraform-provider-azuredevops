@@ -22,6 +22,7 @@ This repository is a work in progress and is not yet suitable for production wor
 | --- | --- | --- | --- |
 | `AZDO_PERSONAL_ACCESS_TOKEN` | A personal access token that grants access to Azure DevOps APIs within the org specified by `AZDO_ORG_SERVICE_URL` | yes | `d7894a91db7610e39decbe09b2dfd449ed2ed5a` |
 | `AZDO_ORG_SERVICE_URL` | URL of the Azure DevOps org in which resources will be provisioned/managed | yes | `https://dev.azure.com/contoso-org` |
+| `AZDO_GITHUB_SERVICE_CONNECTION_PAT` | If running the acceptance tests, you will need this defined in order to validate the GitHub Service Connection resource | for acceptance tests only | `a9194a91d75643e39decbe09b2dfd558dd2abca` |
 | `AZDO_PRJ_CREATE_DELAY` | Delay (in seconds) to insert after creation of projects. This was determined to be useful based on observed behavior of the AzDO APIs | no | `10` |
 
 ## Usage Example
