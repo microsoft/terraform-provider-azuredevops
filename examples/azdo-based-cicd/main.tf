@@ -27,8 +27,11 @@ resource "azuredevops_project" "project" {
 
 // Defines a Git repository hosted in the project
 resource "azuredevops_azure_git_repository" "repository" {
-  project_id     = azuredevops_project.project.id
-  name           = "main-repo"
+  project_id = azuredevops_project.project.id
+  name       = "main-repo"
+  initialization {
+    init_type = "Clean"
+  }
 }
 
 // Defines an ARM service connection
@@ -158,8 +161,8 @@ resource "azuredevops_azure_git_repository" "repository" {
 // add existing AAD group to AzDO
 //  https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/create?view=azure-devops-rest-5.0#add-an-aad-group-by-oid
 data "azuredevops_group" "group" {
-	project_id = azuredevops_project.project.id
-	name       = "Build Administrators"
+  project_id = azuredevops_project.project.id
+  name       = "Build Administrators"
 }
 
 # resource "azuredevops_group_membership" "membership" {

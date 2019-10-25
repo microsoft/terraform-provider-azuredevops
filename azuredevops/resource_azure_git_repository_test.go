@@ -48,6 +48,7 @@ func TestAzureGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
 	flattenAzureGitRepository(resourceData, &testAzureGitRepository)
+	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
 	clients := &aggregatedClient{GitReposClient: reposClient, ctx: context.Background()}
@@ -78,6 +79,7 @@ func TestAzureGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
 	flattenAzureGitRepository(resourceData, &testAzureGitRepository)
+	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
 	clients := &aggregatedClient{GitReposClient: reposClient, ctx: context.Background()}
@@ -92,6 +94,14 @@ func TestAzureGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	require.Regexp(t, ".*UpdateAzureGitRepository\\(\\) Failed$", err.Error())
 }
 
+func configureCleanInitialization(d *schema.ResourceData) {
+	d.Set("initialization", &[]map[string]interface{}{
+		{
+			"init_type": "Clean",
+		},
+	})
+}
+
 // verifies that a round-trip flatten/expand sequence will not result in data loss of non-computed properties.
 //	Note: there is no need to expand computed properties, so they won't be tested here.
 func TestAzureGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
@@ -104,12 +114,16 @@ func TestAzureGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
 	flattenAzureGitRepository(resourceData, &gitRepo)
+	configureCleanInitialization(resourceData)
 
-	expandedGitRepo, expandedProjectID, err := expandAzureGitRepository(resourceData)
+	expandedGitRepo, repoInitialization, expandedProjectID, err := expandAzureGitRepository(resourceData)
 
 	require.Nil(t, err)
 	require.Equal(t, *expandedGitRepo.Id, repoID)
 	require.Equal(t, *expandedProjectID, projectID)
+	require.Equal(t, repoInitialization.initType, "Clean")
+	require.Equal(t, repoInitialization.sourceType, "")
+	require.Equal(t, repoInitialization.sourceURL, "")
 }
 
 // verifies that the read operation is considered failed if the initial API
@@ -245,7 +259,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoNameFirst),
+				Config: testAccAzureGitRepoResource(projectName, gitRepoNameFirst, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameFirst),
@@ -259,7 +273,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoNameSecond),
+				Config: testAccAzureGitRepoResource(projectName, gitRepoNameSecond, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameSecond),
@@ -303,12 +317,15 @@ func testAccCheckAzureGitRepoResourceExists(expectedName string) resource.TestCh
 	}
 }
 
-func testAccAzureGitRepoResource(projectName string, gitRepoName string) string {
+func testAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
 	azureGitRepoResource := fmt.Sprintf(`
 resource "azuredevops_azure_git_repository" "gitrepo" {
 	project_id      = azuredevops_project.project.id
 	name            = "%s"
-}`, gitRepoName)
+	initialization {
+		init_type = "%s"
+	}
+}`, gitRepoName, initType)
 
 	projectResource := testAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
@@ -333,4 +350,54 @@ func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+// Verifies that a newly created repo with init_type of "Clean" has the expected
+// master branch available
+func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
+	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccAzureGitRepoCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAzureGitRepoResource(projectName, gitRepoName, "Clean"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					testAccCheckAzureGitRepoResourceExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/master"),
+				),
+			},
+		},
+	})
+}
+
+// Verifies that a newly created repo with init_type of "Uninitialized" does NOT
+// have a master branch established
+func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
+	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccAzureGitRepoCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAzureGitRepoResource(projectName, gitRepoName, "Uninitialized"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					testAccCheckAzureGitRepoResourceExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", ""),
+				),
+			},
+		},
+	})
 }
