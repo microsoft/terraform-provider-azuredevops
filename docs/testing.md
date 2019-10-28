@@ -1,71 +1,86 @@
 # Testing
 
-* [Unit Tests](#unit-tests)
-* [Integration Tests](#integration-tests)
+- [Testing](#testing)
+- [Unit Tests](#unit-tests)
+- [Acceptance Tests](#acceptance-tests)
+
+Because Terraform plugins are written in Go, unit and integration tests are written using the standard [Go Test](https://golang.org/pkg/testing/) package. The basics of `go test` are not covered in this document but there are many great samples to be found online using your favorite search engine.
+
+Instead, this document focuses on what makes testing for this project unique.
+
+> Note: When naming your unit & acceptance tests, please follow the guidance from Hashicorp found [here](https://www.terraform.io/docs/extend/testing/unit-testing.html).
 
 # Unit Tests
 
-## Mocks
+**Running unit tests**
 
-The Azure DevOps Provider for Terraform has a strong dependency on the Azure DevOps Go API client. To test our providers, we utilize the GoMock mocking framework in addition to Go's built-in `testing` package. The GoMock framework allows us to mock any clients required from the Azure DevOps Go API (e.g., the `CoreClient` or `BuildClient`) so that we can isolate our unit test to the resource provider code by mocking operations of the Azure DevOps Go API client.
-
-### Generating Mocks
-
-The `generate-mocks.sh` script in the `scripts` directory can be run to generate the mocks required for testing this project. It should be run whenever a new AzDO SDK is pulled into the project. You may run the script either from the project root directory or from the scripts directory directly. The script will install GoMock if it has not been installed and will then automatically run `mockgen` to generate the mocks for every AzDO SDK that is a dependency of this project.
-
-### Writing Unit Tests
-
-When writing a unit test with a mocked client, GoMock will use the mocked clients from the `mockgen`-generated output. Additionally, `github.com/stretchr/testify/require` is used to stop test execution and fail if the assertion is not met.
-
-When naming your unit tests (and acceptance tests), please follow the guidance from Hashicorp found [here](https://www.terraform.io/docs/extend/testing/unit-testing.html).
-
-#### SampleClient interface
-```go
-type SampleClient interface {
-    SampleOperation(arg string) (string, error)
-}
+The unit tests are executed whenever `./scripts/build.sh` is run. This can be run locally, but will also be run on every automated build and will be a gate for any PR against this repository. The tests can also be run in isolation by running the following:
+```bash
+$ ./scripts/unittest.sh
 ```
 
-#### SampleClient usage
-```go
-func foo(client SampleClient, string bar) (string, error) {
-    return client.SampleOperation(bar)
-}
+**Azure DevOps Client SDK Mocks**
+
+This project has a strong dependency on Microsoft's [Azure DevOps Go SDK](https://github.com/microsoft/azure-devops-go-api). We can mock the behavior of the SDK in our unit tests by using [GoMock](https://github.com/golang/mock), a popular mocking library for Go. This tool allows us to validate business logic against different success/failure modes AzDO services.
+
+In order to use [GoMock](https://github.com/golang/mock) to mock an AzDO SDK, we must first generate a mock for that client. If you are mocking a client already used by the project then it is likely that the mock already exists. Otherwise, you can generate it yourself. The following command will auto-detect all AzDO Go SDKs used by the project and attempt to generate a mock for that client.
+
+```bash
+$ ./scripts/generate-mocks.sh
 ```
 
-#### Unit Test example with mocked SampleClient
+**Writing a test using a mock**
 
-```go
-import {
-    "errors"
-    "testing"
-    "github.com/microsoft/terraform-provider-azuredevops/samplemocks"
-    "github.com/golang/mock/gomock"
-    "github.com/stretchr/testify/require"
-}
+There is great documentation on [GoMock's GitHub](https://github.com/golang/mock), but here is test that validates that an error is not swallowed in a certain API failure mode:
 
-func foo_ReturnsErrorWhenGivenNil(t *testing.T) {
-    expectedErrorDescription := "Argument Nil"
+> Note: GoMock (and Go in general) is quite verbose!
 
-    // Setup GoMock Controller to defer until assertions may be invoked
-    controller := gomock.NewController(t)
-    defer controller.Finish()
+![Go Mock Example](https://user-images.githubusercontent.com/2497673/67523231-dbc05e00-f673-11e9-91c6-68a6684b3015.png)
 
-    // Setup mock client to handle assertion that Client.Operation with nil
-    // arguments will return an error and be called exactly once.
-    mockClient := samplemocks.NewMockSampleClient(controller)
-    mockClient.
-        EXPECT().
-        SampleOperation(gomock.Eq(gomock.Nil())).
-        Return(nil, errors.New(expectedErrorDescription)).
-        Times(1)
+Here are some important details:
+ - **Lines 92-93**: Defers the call to `Finish()`, which will verify that each expectation (see lines 102-106) set up on the mocks used by the test was met. This will be done *after* the function exits. See [defer behavior in Go](https://tour.golang.org/flowcontrol/12)
+ - **Lines 95-96**: Set up test data
+ - **Lines 98-99**: Configure mock client(s)
+ - **Lines 102-106**: Set an expectation for the mock. In this case, the expectation is that the `CreateDefinition` API will be called. If it is, it will return the specified parameters.
+ - **Lines 108-109**: Test response from business logic
 
-    // Execute the provider code, providing 'nil' as the argument
-    _, actualError := foo(mockClient, nil)
-    require.Equal(t, expectedErrorDescription, actualError.Error())
-}
+# Acceptance Tests
+
+**Running acceptance tests**
+
+> Note: Running acceptance tests provisions and deletes actual resources in AzDO. This can cost money and can be dangerous if you are not running them in isolation!
+
+Integration tests for terraform providers are typically implemented as [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). They have a special prefix - `TestAcc` - and will only be run when the `TEST_ACC` environment variable is set. They also rely on some environment variables. The following steps will run configure and run the acceptance tests:
+
+```bash
+# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
+# resources inside of.
+#   ex: https://dev.azure.com/<your org name>
+$ export AZDO_ORG_SERVICE_URL="..."
+
+# AZDO_PERSONAL_ACCESS_TOKEN will be the personal access token that grants access
+# to provision and manage resources in Azure DevOps.
+#   documentation: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops
+$ export AZDO_PERSONAL_ACCESS_TOKEN="..."
+
+# Note: AZDO_GITHUB_SERVICE_CONNECTION_PAT is not specifically required
+# by the provider, but it is required by the acceptance tests in order to test
+# the authentication with GitHub for build definitions hosted in GitHub.
+#   documentation: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+$ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
+
+$ ./scripts/acctest.sh
 ```
 
-# Integration Tests
+**Writing an acceptance test**
 
-The established integration testing pattern for Terraform Providers is to write [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). The process is well defined but can be a tad tricky to understand at fist. Given this, you may want to get started by reading through the excellent [guide](https://www.terraform.io/docs/extend/testing/acceptance-tests/testcase.html) published by Hashicorp.
+> Note: The established integration testing pattern for Terraform Providers is to write [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). The process is well defined but is complicated. Get started by reading through the excellent [guide](https://www.terraform.io/docs/extend/testing/acceptance-tests/testcase.html) published by Hashicorp.
+
+![Acceptance Test Example](https://user-images.githubusercontent.com/2497673/67523941-49b95500-f675-11e9-8345-21bda99ff1a4.png)
+
+Here are some important details:
+ - **Lines 190-192**: Set up resource names. The common prefix, `testAccResourcePrefix`, is used so that it is easy to identify any orphaned test resources in AzDO. This is defined in [provider_test.go](../azuredevops/provider_test.go).
+ - **Line 196**: `PreCheck` is a function that verifies that the required environment variables are set. This is configured in [provider_test.go](../azuredevops/provider_test.go).
+ - **Line 197**: `Providers` is the actual set of providers being tested. In this case, it is a fully configured `azuredevops` provider. This is configured in [provider_test.go](../azuredevops/provider_test.go).
+ - **Line 198**: `CheckDestroy` checks that, after a `terraform destroy` is called, that the resource is actually destroyed from AzDO.
+ - **Lines 199-217**: `Steps` is a list of steps that should be run. Each step will execute a `terraform apply` to apply the terraform stanza defined by the `Config` property. It then runs the checks specified by the `Check` property.

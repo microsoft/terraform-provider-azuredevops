@@ -12,7 +12,11 @@ Use Terraform logging to debug your code. (TBD: write this section).
 % export TF_LOG=DEBUG
 ~~~
 
-## Option 3 - Attaching a Debugger from VS Code
+## Option 3 - Debug acceptance tests from VS Code
+
+This option is well documented in the [AzureRM Contributing Guide](https://github.com/Azure/terraform/blob/master/provider/CONTRIBUTE.md#debug-the-azurerm-provider-using-visual-studio-code-and-delve)
+
+## Option 4 - Attaching a Debugger from VS Code
 This somewhat convoluted set of steps will allow you to attach the debugger to your provider and then examine variables, set breakpoints and single step.
 
 First, make sure that your `VS Code` environment is configured for debugging `go` programs. In some casees, you may need to install debugging components. As an example, on the Mac, you might get the error `"xcrun: error: invalid active developer path"`. This may indicate that you need to install the `Xcode Command Line Tools` with the following incantation:
@@ -83,7 +87,7 @@ As soon as the debugger attaches, hit the `pause` button. The debugger should no
 
 You are now ready to debug.
 
-## Option 4 - Use an HTTP Proxy to Impersonate Terraform
+## Option 5 - Use an HTTP Proxy to Impersonate Terraform
 TBD - write this section.
 
 Apparently Terraform providers are actually web services. They seem to know whether they were spawned by Terraform or started as top-level processes. When started as a top-level process, a provider prints
