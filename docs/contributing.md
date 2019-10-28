@@ -259,6 +259,10 @@ $ export AZDO_PERSONAL_ACCESS_TOKEN="..."
 #   documentation: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
 $ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
 
+# Note: AZDO_TEST_AAD_USER_EMAIL will be the e-mail address that is not included in the current organization 
+# ,but needs to be an account in the Azure Active Directory. The e-mail is used for acceptance testing of the User Entitlemen resource.
+$ export AZDO_TEST_AAD_USER_EMAIL="..."
+
 $ ./scripts/acctest.sh
 ```
 
@@ -279,7 +283,7 @@ Most changes should involve updates to the client-facing reference documentation
 | Index | Table of contents | [index.md](../website/index.md) |
 | Resources | Resources reference | [resources](../website/docs/r) |
 | Data Sources | Data Sources reference | [data sources](../website/docs/d) |
-| Guides | Guide and tutorial docs | [guides](../website/docs/guildes) |
+| Guides | Guide and tutorial docs | [guides](../website/docs/guides) |
 
 # Note about CLA
 
