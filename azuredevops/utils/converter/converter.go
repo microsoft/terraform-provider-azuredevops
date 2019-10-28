@@ -1,5 +1,11 @@
 package converter
 
+import (
+	"fmt"
+
+	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
+)
+
 // String Get a pointer to a string
 func String(value string) *string {
 	return &value
@@ -22,4 +28,26 @@ func ToString(value *string, defaultValue string) string {
 	}
 
 	return defaultValue
+}
+
+// AccountLicenseType Get a pointer to an AccountLicenseType
+func AccountLicenseType(accountLicenseTypeValue string) (*licensing.AccountLicenseType, error) {
+	var accountLicenseType licensing.AccountLicenseType
+	switch accountLicenseTypeValue {
+	case "none":
+		accountLicenseType = licensing.AccountLicenseTypeValues.None
+	case "earlyAdopter":
+		accountLicenseType = licensing.AccountLicenseTypeValues.EarlyAdopter
+	case "express":
+		accountLicenseType = licensing.AccountLicenseTypeValues.Express
+	case "professional":
+		accountLicenseType = licensing.AccountLicenseTypeValues.Professional
+	case "advanced":
+		accountLicenseType = licensing.AccountLicenseTypeValues.Advanced
+	case "stakeholder":
+		accountLicenseType = licensing.AccountLicenseTypeValues.Stakeholder
+	default:
+		return nil, fmt.Errorf("Error converting to AccountLicenseType in Azure DevOps: %+v", accountLicenseTypeValue)
+	}
+	return &accountLicenseType, nil
 }
