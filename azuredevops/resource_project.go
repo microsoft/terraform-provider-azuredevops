@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -17,8 +18,8 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 )
 
-var projectCreateTimeoutSeconds time.Duration = 30
-var projectDeleteTimeoutSeconds time.Duration = 30
+var projectCreateTimeoutSeconds time.Duration = 60
+var projectDeleteTimeoutSeconds time.Duration = 60
 
 func resourceProject() *schema.Resource {
 	return &schema.Resource{
@@ -118,7 +119,7 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 				if err == nil {
 					settleDelay = time.Duration(i) * time.Second
 				}
-				fmt.Printf("Inserting artificial delay after project creation: %s\n", settleDelay.String())
+				log.Printf("Inserting artificial delay after project creation: %s\n", settleDelay.String())
 				time.Sleep(settleDelay)
 				return nil
 			}

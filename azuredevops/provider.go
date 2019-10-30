@@ -13,6 +13,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint":      resourceServiceEndpoint(),
 			"azuredevops_azure_git_repository": resourceAzureGitRepository(),
 			"azuredevops_user_entitlement":     resourceUserEntitlement(),
+			"azuredevops_group_membership":     resourceGroupMembership(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_group": dataGroup(),

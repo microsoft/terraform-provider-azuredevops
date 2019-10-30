@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -244,7 +245,7 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 			return fmt.Errorf("UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
-		if *userEntitlement.User.PrincipalName != expectedPrincipalName {
+		if strings.ToLower(*userEntitlement.User.PrincipalName) != strings.ToLower(expectedPrincipalName) {
 			return fmt.Errorf("UserEntitlement with ID=%s has PrincipalName=%s, but expected Name=%s", resource.Primary.ID, *userEntitlement.User.PrincipalName, expectedPrincipalName)
 		}
 
