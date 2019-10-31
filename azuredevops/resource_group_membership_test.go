@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -13,7 +12,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/stretchr/testify/require"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -158,42 +156,45 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 //	(2) TF state values are set
 //	(3) Group membership exists and can be queried for
 // 	(4) TF destroy removes group memberships
-func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	groupName := "Build Administrators"
-	tfNode := "azuredevops_group_membership.membership"
+//
+// Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
+//
+// func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
+// 	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+// 	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
+// 	groupName := "Build Administrators"
+// 	tfNode := "azuredevops_group_membership.membership"
 
-	tfStanzaWithMembership := testAccGroupMembershipResource(projectName, groupName, userPrincipalName)
-	tfStanzaWithoutMembership := testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
+// 	tfStanzaWithMembership := testAccGroupMembershipResource(projectName, groupName, userPrincipalName)
+// 	tfStanzaWithoutMembership := testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
 
-	// This test differs from most other acceptance tests in the following ways:
-	//	- The second step is the same as the first except it omits the group membershp.
-	//	  This lets us test that the membership is removed in isolation of the project being deleted
-	//	- There is no CheckDestroy function because that is covered based on the above point
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				// add the group membership
-				Config: tfStanzaWithMembership,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "group"),
-					// this attribute specifies the number of members in the resource state. the
-					// syntax is how terraform maps complex types into a flattened map.
-					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
-					testAccVerifyGroupMembershipMatchesState(),
-				),
-			}, {
-				// remove the group membership
-				Config: tfStanzaWithoutMembership,
-				Check:  testAccVerifyGroupMembershipMatchesState(),
-			},
-		},
-	})
-}
+// 	// This test differs from most other acceptance tests in the following ways:
+// 	//	- The second step is the same as the first except it omits the group membershp.
+// 	//	  This lets us test that the membership is removed in isolation of the project being deleted
+// 	//	- There is no CheckDestroy function because that is covered based on the above point
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:  func() { testAccPreCheck(t) },
+// 		Providers: testAccProviders,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				// add the group membership
+// 				Config: tfStanzaWithMembership,
+// 				Check: resource.ComposeTestCheckFunc(
+// 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+// 					resource.TestCheckResourceAttrSet(tfNode, "group"),
+// 					// this attribute specifies the number of members in the resource state. the
+// 					// syntax is how terraform maps complex types into a flattened map.
+// 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
+// 					testAccVerifyGroupMembershipMatchesState(),
+// 				),
+// 			}, {
+// 				// remove the group membership
+// 				Config: tfStanzaWithoutMembership,
+// 				Check:  testAccVerifyGroupMembershipMatchesState(),
+// 			},
+// 		},
+// 	})
+// }
 
 // Verifies that the group membership in AzDO matches the group membership specified by the state
 func testAccVerifyGroupMembershipMatchesState() resource.TestCheckFunc {
