@@ -16,6 +16,10 @@ Checkout our [Project Roadmap](./docs/roadmap.md).
 ## Important!
 This repository is a work in progress and is not yet suitable for production workloads. Community contributions are welcome.
 
+## Resource Documentation
+
+Documentation for things like resource specific usage examples, required parameters and default values can be found in our [client facing docs](./website/index.md).
+
 ## Configuration Values
 
 | Environment Variable | Description | Required? | Example |
@@ -33,7 +37,7 @@ This repository is a work in progress and is not yet suitable for production wor
 ./scripts/local-install.sh  # install provider locally
 ```
 
-* Using the provider
+* Provision project, repository and build pipeline using the provider
 ```hcl
 # Make sure to set the following environment variables:
 #   AZDO_PERSONAL_ACCESS_TOKEN
@@ -43,24 +47,27 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  project_name       = "Test Project"
-  description        = "Test Project Description"
-  visibility         = "private"
-  version_control    = "Git"
-  work_item_template = "Agile"
+  project_name = "My Awesome Project"
+  description  = "All of my awesomee things"
+}
+
+resource "azuredevops_azure_git_repository" "repository" {
+  project_id = azuredevops_project.project.id
+  name       = "My Awesome Repo"
+  initialization {
+    init_type = "Clean"
+  }
 }
 
 resource "azuredevops_build_definition" "build_definition" {
-  project_id      = azuredevops_project.project.id
-  name            = "Test Pipeline"
-  agent_pool_name = "Hosted Ubuntu 1604"
+  project_id = azuredevops_project.project.id
+  name       = "My Awesome Build Pipeline"
 
   repository {
-    repo_type             = "GitHub"
-    repo_name             = "nmiodice/terraform-azure-devops-hack"
-    branch_name           = "master"
-    yml_path              = "azdo-api-samples/azure-pipeline.yml"
-    service_connection_id = "1a0e1da9-57a6-4470-8e96-160a622c4a17" # Note: Eventually this will come from a GitHub Service Connection resource...  
+    repo_type   = "TfsGit"
+    repo_name   = azuredevops_azure_git_repository.repository.name
+    branch_name = azuredevops_azure_git_repository.repository.default_branch
+    yml_path    = "azure-pipelines.yml"
   }
 }
 ```

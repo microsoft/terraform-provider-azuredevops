@@ -8,25 +8,10 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  project_name       = "Test Project"
-  description        = "Test Project Description"
+  project_name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-}
-
-resource "azuredevops_build_definition" "build_definition" {
-  project_id      = azuredevops_project.project.id
-  name            = "Test Pipeline"
-  agent_pool_name = "Hosted Ubuntu 1604"
-
-  repository {
-    repo_type             = "GitHub"
-    repo_name             = "nmiodice/terraform-azure-devops-hack"
-    branch_name           = "master"
-    yml_path              = "azdo-api-samples/azure-pipeline.yml"
-    service_connection_id = azuredevops_serviceendpoint.github_serviceendpoint.id
-  }
 }
 
 resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
@@ -35,4 +20,18 @@ resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
   service_endpoint_type  = "github"
   service_endpoint_url   = "http://github.com"
   service_endpoint_owner = "Library"
+}
+
+resource "azuredevops_build_definition" "nightly_build" {
+  project_id      = azuredevops_project.project.id
+  agent_pool_name = "Hosted Ubuntu 1604"
+  name            = "Nightly Build"
+
+  repository {
+    repo_type             = "GitHub"
+    repo_name             = "microsoft/terraform-provider-azuredevops"
+    branch_name           = "master"
+    yml_path              = ".azdo/azure-pipeline-nightly.yml"
+    service_connection_id = azuredevops_serviceendpoint.github_serviceendpoint.id
+  }
 }

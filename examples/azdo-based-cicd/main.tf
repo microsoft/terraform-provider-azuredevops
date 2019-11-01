@@ -1,173 +1,121 @@
-# Note: This template is *aspirational* and is included in order to exemplify the value that
-# this provider will eventually provide. Based on this, keep the following in mind:
-#  - Not every stanza is backed by an implementation in the provider
-#  - The schema for each resource/data source will almost certainly change once implemented
-
-# As the provider is built, the idea is that this file will slowly become uncommented and updated
-# once the features are implemented.
-
+# Make sure to set the following environment variables:
+#   AZDO_PERSONAL_ACCESS_TOKEN
+#   AZDO_ORG_SERVICE_URL
 provider "azuredevops" {
   version = ">= 0.0.1"
 }
 
 
-
-
-// The following section defines an AzDO project that hosts a repository and
-// a service connection
-
-// Defines the project in AzDO. This project will host Git repositories
+// This section creates a project
 resource "azuredevops_project" "project" {
-  project_name = "Super Awesome Project"
-  description  = "A project to track super awesome things."
-  visibility   = "private"
-  # enable_tfvc        = false
+  project_name       = "Sample Project"
+  visibility         = "private"
+  version_control    = "Git"
   work_item_template = "Agile"
 }
 
-// Defines a Git repository hosted in the project
-resource "azuredevops_azure_git_repository" "repository" {
-  project_id = azuredevops_project.project.id
-  name       = "main-repo"
-  initialization {
-    init_type = "Clean"
-  }
-}
 
-// Defines an ARM service connection
-# resource "azuredevops_serviceendpoint" "arm" {
-#   project_id            = azuredevops_project.project.id
-#   service_endpoint_name = "ARM Service Connection"
-#   service_endpoint_type = "arm"
-
-#   configuration = {
-#     service_principal_username = var.service_principal_username
-#     service_principal_password = var.service_principal_password
-#     subscription_id            = var.subscription_id
-#     tenant_id                  = var.tenant_id
-#   }
-# }
-
-
-
-
-// The following section defines a build pipeline that will use
-// some variable groups
-
-// Defines variable groups that can be used by builds/releases
-# resource "azuredevops_variable_group" "group1" {
-#   project_id = azuredevops_project.project.id
-#   name       = "My First Variable Group"
-#   values = [{
-#     name      = "SERVICE_CONNECTION_ID"
-#     value     = azuredevops_serviceendpoint.arm.id
-#     is_secret = false
-#     }, {
-#     name      = "MY_SECRET_1"
-#     value     = "foo"
-#     is_secret = true
-#   }]
-# }
-
-// Defines variable groups that can be used by builds/releases
-# resource "azuredevops_variable_group" "group2" {
-#   project_id = azuredevops_project.project.id
-#   name       = "My Second Variable Group"
-#   values = [{
-#     name      = "MY_SECRET_2"
-#     value     = "bar"
-#     is_secret = true
-#   }]
-# }
-
-// A build that kicks off an infrastructure provisioning pipeline, using variable groups
-# resource "azuredevops_build_definition" "cicd" {
-#   project_id            = azuredevops_project.project.id
-#   agent_pool_name       = "Hosted Ubuntu 1604"
-#   name                  = "CICD Pipeilne"
-
-#   # variables_groups = [
-#   #   azuredevops_variable_group.group1.id,
-#   #   azuredevops_variable_group.group2.id
-#   # ]
-
-#   repository {
-#     repo_type   = "GitHub"
-#     repo_name   = azuredevops_azure_git_repository.repository.name
-#     branch_name = azuredevops_azure_git_repository.repository.default_branch
-#     yml_path    = "cicd/azure-pipelines-infra.yml"
-#   }
-# }
-
-
-
-
-// The following section will configure branching policies for the created repositories
-// note: see the types of branch policies here:
-//   https://dev.azure.com/$ORG/$PROJECT/_apis/policy/types?api-version=5.0
-
-// Look up the ID of the branch policy that ensures each PR is linked to a work item, then
-// configure the policy
-# data "azuredevops_branch_policy_type" "work_item_policy" {
-#   name = "Work item linking"
-# }
-# resource "azuredevops_branch_policy" "work_item_linked_policy" {
-#   project_id    = azuredevops_project.project.id
-#   type          = azuredevops_branch_policy_type.work_item_policy.id
-#   repository_id = azuredevops_git_repo.repository.id
-#   branch        = azuredevops_git_repo.repository.default_branch
-# }
-
-// Look up the ID of the branch policy that ensures each PR reviewed by 2 people, then
-// configure the policy
-# data "azuredevops_branch_policy_type" "min_reviewer_count" {
-#   name = "Minimum number of reviewers"
-# }
-# resource "azuredevops_branch_policy" "min_reviewer_count_policy" {
-#   project_id    = azuredevops_project.project.id
-#   type          = azuredevops_branch_policy_type.min_reviewer_count.id
-#   repository_id = azuredevops_git_repo.repository.id
-#   branch        = azuredevops_git_repo.repository.default_branch
-#   settings = {
-#     "minimumApproverCount" = 2
-#   }
-# }
-
-// Look up the ID of the branch policy that ensures each PR does not break a build, then
-// configure the policy
-# data "azuredevops_branch_policy_type" "build" {
-#   name = "Minimum number of reviewers"
-# }
-# resource "azuredevops_branch_policy" "build_policy" {
-#   project_id    = azuredevops_project.project.id
-#   type          = azuredevops_branch_policy_type.build.id
-#   repository_id = azuredevops_git_repo.repository.id
-#   branch        = azuredevops_git_repo.repository.default_branch
-#   settings = {
-#     "buildDefinitionId" = azuredevops_build_definition.cicd.id
-#   }
-# }
-
-
-
-
-// The following section will import an AAD group into AzDO, and assign it to
-// a project specific group
-
-# data "azuredevops_group" "azdo_group" {
-#   principal_name = format("[%s]\\Build Administrators", azuredevops_project.project.name)
-# }
-
-// add existing AAD group to AzDO
-//  https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/create?view=azure-devops-rest-5.0#add-an-aad-group-by-oid
+// This section assigns users from AAD into a pre-existing group in AzDO
 data "azuredevops_group" "group" {
   project_id = azuredevops_project.project.id
   name       = "Build Administrators"
 }
+resource "azuredevops_user_entitlement" "users" {
+  principal_name = var.aad_users[count.index]
+  count          = length(var.aad_users)
+}
+resource "azuredevops_group_membership" "membership" {
+  group   = data.azuredevops_group.group.descriptor
+  members = azuredevops_user_entitlement.users.*.descriptor
+}
 
-# resource "azuredevops_group_membership" "membership" {
-#   group_descriptor = azuredevops_group.azdo_group.descriptor
-#   members = [
-#     azuredevops_group.aad_group.descriptor
-#   ]
+
+// This section configures variable groups and a build definition
+resource "azuredevops_build_definition" "build" {
+  project_id = azuredevops_project.project.id
+  name       = "Sample Build Definition"
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_name   = azuredevops_azure_git_repository.repository.name
+    branch_name = azuredevops_azure_git_repository.repository.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
+
+  # https://github.com/microsoft/terraform-provider-azuredevops/issues/171
+  # variables_groups = [azuredevops_variable_group.vg.id]
+}
+#
+# https://github.com/microsoft/terraform-provider-azuredevops/issues/170
+# resource "azuredevops_variable_group" "vg" {
+#   project_id   = azuredevops_project.id
+#   name         = "Sample VG 1"
+#   allow_access = true
+#   variables {
+#     key       = "key1"
+#     value     = "value1"
+#     is_secret = true
+#   }
+#   variables {
+#     key   = "key2"
+#     value = "value2"
+#   }
+# }
+
+
+// This section configures an Azure DevOps Git Repository with branch policies
+resource "azuredevops_azure_git_repository" "repository" {
+  project_id = azuredevops_project.project.id
+  name       = "Sample Repo"
+  initialization {
+    init_type = "Clean"
+  }
+}
+#
+# https://github.com/microsoft/terraform-provider-azuredevops/issues/83
+# resource "azuredevops_policy_build" "p1" {
+#   scope {
+#     repository_id  = azuredevops_azure_git_repository.repository.id
+#     repository_ref = azuredevops_azure_git_repository.repository.default_branch
+#     match_type     = "Exact"
+#   }
+#   settings {
+#     build_definition_id    = azuredevops_build_definition.build.id
+#     queue_on_source_update = true
+#   }
+# }
+# resource "azuredevops_policy_min_reviewers" "p1" {
+#   scope {
+#     repository_id  = azuredevops_azure_git_repository.repository.id
+#     repository_ref = azuredevops_azure_git_repository.repository.default_branch
+#     match_type     = "Exact"
+#   }
+#   settings {
+#     reviewer_count     = 2
+#     submitter_can_vote = false
+#   }
+# }
+
+
+// This section configures service connections to Azure and ACR
+#
+# https://github.com/microsoft/terraform-provider-azuredevops/issues/3
+# resource "azuredevops_serviceendpoint_azurerm" "arm" {
+#   project_id            = azuredevops_project.project.id
+#   service_endpoint_name = "Sample ARM Service Connection"
+
+#   configuration = {
+#     service_principal_username = "..."
+#     service_principal_password = "..."
+#     subscription_id            = "..."
+#     tenant_id                  = "..."
+#   }
+# }
+# resource "azuredevops_serviceendpoint_acr" "acr" {
+#   project_id            = azuredevops_project.project.id
+#   service_endpoint_name = "Sample ACR Service Connection"
+
+#   configuration = {
+#     ...
+#   }
 # }
