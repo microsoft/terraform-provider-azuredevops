@@ -14,6 +14,7 @@
   - [4. Test changes](#4-test-changes)
   - [5. Debug changes](#5-debug-changes)
   - [6. Document changes](#6-document-changes)
+  - [7. Explore the REST API's with Postman](#7-explore-with-postman)
 - [Note about CLA](#note-about-cla)
 
 This document is intended to be an introduction to contributing to the `terraform-provider-azuredevops` project. Links to background information about the project and general guidance on Terraform providers are included below:
@@ -259,7 +260,7 @@ $ export AZDO_PERSONAL_ACCESS_TOKEN="..."
 #   documentation: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
 $ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
 
-# Note: AZDO_TEST_AAD_USER_EMAIL will be the e-mail address that is not included in the current organization 
+# Note: AZDO_TEST_AAD_USER_EMAIL will be the e-mail address that is not included in the current organization
 # ,but needs to be an account in the Azure Active Directory. The e-mail is used for acceptance testing of the User Entitlemen resource.
 $ export AZDO_TEST_AAD_USER_EMAIL="..."
 
@@ -284,6 +285,14 @@ Most changes should involve updates to the client-facing reference documentation
 | Resources | Resources reference | [resources](../website/docs/r) |
 | Data Sources | Data Sources reference | [data sources](../website/docs/d) |
 | Guides | Guide and tutorial docs | [guides](../website/docs/guides) |
+
+## 7. Explore with postman
+
+Azure DevOps has a rich set of [REST API's](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1) available for integrating with Terraform.  A convenient way to explore the APIs is through [postman](https://www.getpostman.com/).  Once you have postman installed, you can clone/fork this [repo](https://github.com/rguthriemsft/azuredevops-postman-collections) and follow the instructions in the README to setup postman to be able to explore a large set of the rest API's.  A second resource that is very helpful in understanding how to call/use the apis is the Azure DevOps Cli extension found [here](https://github.com/Azure/azure-devops-cli-extension).
+
+### Contributing back
+
+If you find an api is missing from the postman collection, please submit a PR.  We intend make the collection as complete as possible over time.
 
 # Note about CLA
 
