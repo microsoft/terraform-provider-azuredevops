@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -33,7 +34,8 @@ func resourceProject() *schema.Resource {
 			"project_name": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: tfhelper.DiffFuncSupressCaseSensitivity,
+				ValidateFunc:     validate.NoEmptyStrings,
+				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -54,10 +56,12 @@ func resourceProject() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"Git", "Tfvc"}, true),
 			},
 			"work_item_template": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Default:  "Agile",
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				Optional:         true,
+				ValidateFunc:     validate.NoEmptyStrings,
+				DiffSuppressFunc: suppress.CaseDifference,
+				Default:          "Agile",
 			},
 			"process_template_id": {
 				Type:     schema.TypeString,
@@ -291,7 +295,8 @@ func lookupProcessTemplateID(clients *aggregatedClient, templateName string) (st
 	}
 
 	for _, p := range *processes {
-		if *p.Name == templateName {
+		// Process names are case insensitive
+		if strings.EqualFold(*p.Name, templateName) {
 			return p.Id.String(), nil
 		}
 	}

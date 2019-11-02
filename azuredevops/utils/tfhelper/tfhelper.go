@@ -3,19 +3,10 @@ package tfhelper
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
 )
-
-// DiffFuncSupressCaseSensitivity Suppress case sensitivity when comparing string values
-func DiffFuncSupressCaseSensitivity(k, old, new string, d *schema.ResourceData) bool {
-	if strings.ToLower(old) == strings.ToLower(new) {
-		return true
-	}
-	return false
-}
 
 func calcSecretHashKey(secretKey string) string {
 	return secretKey + "_hash"
