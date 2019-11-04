@@ -28,6 +28,9 @@ func resourceProject() *schema.Resource {
 		Read:   resourceProjectRead,
 		Update: resourceProjectUpdate,
 		Delete: resourceProjectDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		//https://godoc.org/github.com/hashicorp/terraform/helper/schema#Schema
 		Schema: map[string]*schema.Schema{

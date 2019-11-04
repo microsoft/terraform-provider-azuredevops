@@ -315,6 +315,12 @@ func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
 					testAccCheckProjectResourceExists(projectNameSecond),
 				),
 			},
+			{
+				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

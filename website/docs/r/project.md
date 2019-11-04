@@ -33,5 +33,10 @@ The following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-5.1)
 
 ## Import
+Azure DevOps Projects can be imported using the project name or by the project Guid id, e.g.
 
-Not supported.
+```
+terraform import azuredevops_project.project "Test Project"
+or
+terraform import azuredevops_project.project 782a8123-1019-xxxx-xxxx-xxxxxxxx
+```

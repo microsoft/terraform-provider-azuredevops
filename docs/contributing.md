@@ -58,11 +58,26 @@ You will need the following dependencies installed in order to get started:
 * [Go](https://golang.org/doc/install) version 1.12.x +
 * An editor of your choice. We recommend [Visual Studio Code](https://code.visualstudio.com/Download) but any editor will do.
 
-
 ## 2. Clone repository
 
 > Note: This project uses [Go Modules](https://blog.golang.org/using-go-modules) making it safe to work with it outside of your existing [GOPATH](http://golang.org/doc/code.html#GOPATH). The instructions that follow assume a directory in your home directory outside of the standard `GOPATH`.
 
+**Note** These steps assume you are running with `bash`. If you are using Windows, run all commands using WSL. They are not tested using GitBash.
+
+##### Note for Go 1.13 #####
+If you are using Go 1.13+ , you can get this below error during the execution of the provided compilation script
+
+```
+verifying golang.org/x/mod@v0.1.0: golang.org/x/mod@v0.1.0: open /mnt/d/Go/pkg/sumdb/sum.golang.org/latest: no such file or directory
+```
+As mentionned in the Changelog 1.13 https://golang.org/doc/go1.13#modules For solve it, run in your terminal the commands:
+
+```
+go env -w GOPROXY=direct
+go env -w GOSUMDB=off
+```
+
+#### Setup your workspace
 **Setup your workspace**
 ```bash
 $ DEV_ROOT="$HOME/workspace"
