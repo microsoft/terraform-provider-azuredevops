@@ -1,4 +1,6 @@
 .env
+#direnv files
+.envrc
 bin/
 
 terraform-provider-azure-devops
