@@ -1,5 +1,5 @@
 # user_entitlement
-Manages an user entitlement within Azure DevOps.
+Manages a user entitlement within Azure DevOps.
 
 ## Example Usage
 
@@ -36,3 +36,7 @@ The following attributes are exported:
 ## Import
 
 Not supported.
+
+## PAT Permissions Required
+
+- **Member Entitlement Management**: Read & Write

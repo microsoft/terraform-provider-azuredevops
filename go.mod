@@ -8,6 +8,7 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1
+	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/terraform-plugin-sdk v1.1.1
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191018194956-273e55a7119a

@@ -157,6 +157,7 @@ $ export AZDO_ORG_SERVICE_URL="..."
 
 # AZDO_PERSONAL_ACCESS_TOKEN will be the personal access token that grants access
 # to provision and manage resources in Azure DevOps.
+# You'll need to configure permissions for AzDO and Github PATS detailed in ./website/docs
 #   documentation: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops
 $ export AZDO_PERSONAL_ACCESS_TOKEN="..."
 
@@ -205,7 +206,7 @@ $ tree -L 2
 
 ## 3. Code for Terraform
 
-After you picked an issue and figured out where you will impelment it, you will quickly realize that HashCorp has take a very opinionated appraoch to building Terraform providers. The following section will outline a few common scenarios for terraform plugin development, and point you towards different pieces of the code that you may need to work with.
+After you picked an issue and figured out where you will impelment it, you will quickly realize that HashiCorp has take a very opinionated appraoch to building Terraform providers. The following section will outline a few common scenarios for terraform plugin development, and point you towards different pieces of the code that you may need to work with.
 
 If you have not already gone through the guide published by [HashiCorp](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers), now is a good time to do so.
 
@@ -309,6 +310,9 @@ $ ./scripts/unittest.sh
 > Note: Running acceptance tests provisions and deletes actual resources in AzDO. This can cost money and can be dangerous if you are not running them in isolation!
 
 The acceptance tests for terraform providers are typically implemented as [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). Acceptance tests can be invoked by running the following:
+
+> When generating a new PAT, the acceptance tests require the provisioning of certain resources this token will need to provide permission for creating. For simplicity you can authorize the scope of access associated with this token to `Full Access` with a short expiration date. For custom defined scope, refer to the [Azure DevOps Provider: Authenticating using the Personal Access Token](../website/docs/guides//authenticating_using_the_personal_access_token.md) document that provides more information on how to configure this correctly.
+
 ```bash
 # AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
 # resources inside of.

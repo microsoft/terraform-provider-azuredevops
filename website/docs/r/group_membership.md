@@ -44,3 +44,7 @@ The following attributes are exported:
 ## Import
 
 Not supported.
+
+## PAT Permissions Required
+
+- **Deployment Groups**: Read & Manage

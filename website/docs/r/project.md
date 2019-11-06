@@ -40,3 +40,7 @@ terraform import azuredevops_project.project "Test Project"
 or
 terraform import azuredevops_project.project 782a8123-1019-xxxx-xxxx-xxxxxxxx
 ```
+
+## PAT Permissions Required
+
+- **Project & Team**: Read, Write, & Manage
