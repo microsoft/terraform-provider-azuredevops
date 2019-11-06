@@ -243,6 +243,57 @@ This scenario is a mix of *Scenario 1* and *Scenario 2.* However, after implemen
 
 ![Provider Registration](https://user-images.githubusercontent.com/2497673/67520904-60f54400-f66f-11e9-93ee-43535c72e0da.png)
 
+In order to accelerate development and ensure a common structure of all components (resource, data source), the project offers several Visual Studio Code snippets that should preferably be used to create new code.
+
+General information about how to work with snippets inside Visual Studio Code are available in the [official documentation](https://code.visualstudio.com/docs/editor/userdefinedsnippets).
+
+**Visual Studio Code snippets:**
+
+**Shortcut:** `tf-azdo-rs`
+**Purpose:** Create new resource
+**How to use:**
+
+1. Create a new `.go` file, name it according to the naming scheme and save it.
+2. Type `tf-azdo-rs` + `[Ctrl+Space]`. The snippet will prompt you for the new name of the resource.
+3. Press `[ESC]`
+4. Save the file again
+
+**Shortcut:** `tf-azdo-ds`
+**Purpose:** Create new data source
+**How to use:**
+
+1. Create a new `.go` file, name it according to the naming scheme and save it.
+2. Type `tf-azdo-ds` + `[Ctrl+Space]`. The snippet will prompt you for the new name of the resource.
+3. Press `[ESC]`
+4. Save the file again
+
+**Shortcut:** `tf-azdo-test`
+**Purpose:** Create new test file
+**How to use:**
+
+1. Create a new `_test.go` file, name it according to the naming scheme and save it.
+2. Type `tf-azdo-test` + `[Ctrl+Space]`. The snippet will prompt you for the following parameters:  
+
+    * The name of the resource or data source which is under test
+    * The function to test
+    * Test test you want to perform
+
+3. Press `[ESC]`
+4. Save the file.
+
+**Shortcut:** `tf-azdo-test-func`
+**Purpose:** Create new test function
+**How to use:**
+
+1. Open an existing `_test.go` file, navigate to the end of the file
+2. Type `tf-azdo-test-func` + `[Ctrl+Space]`. The snippet will prompt you for the following parameters:  
+
+    * The name of the resource or data source which is under test
+    * The function to test
+    * Test test you want to perform 
+
+3. Press `[ESC]`
+4. Save the file.
 
 ## 4. Test changes
 
@@ -322,4 +373,3 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-

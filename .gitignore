@@ -1,5 +1,4 @@
 .env
-.vscode/
 bin/
 
 terraform-provider-azure-devops
