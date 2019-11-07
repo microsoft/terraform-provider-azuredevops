@@ -30,6 +30,15 @@ func ToString(value *string, defaultValue string) string {
 	return defaultValue
 }
 
+// ToBool Given a pointer return its value, or a default value of the pointer is nil
+func ToBool(value *bool, defaultValue bool) bool {
+	if value != nil {
+		return *value
+	}
+
+	return defaultValue
+}
+
 // AccountLicenseType Get a pointer to an AccountLicenseType
 func AccountLicenseType(accountLicenseTypeValue string) (*licensing.AccountLicenseType, error) {
 	var accountLicenseType licensing.AccountLicenseType

@@ -11,6 +11,7 @@ func Provider() *schema.Provider {
 			"azuredevops_build_definition":     resourceBuildDefinition(),
 			"azuredevops_project":              resourceProject(),
 			"azuredevops_serviceendpoint":      resourceServiceEndpoint(),
+			"azuredevops_variable_group":       resourceVariableGroup(),
 			"azuredevops_azure_git_repository": resourceAzureGitRepository(),
 			"azuredevops_user_entitlement":     resourceUserEntitlement(),
 			"azuredevops_group_membership":     resourceGroupMembership(),

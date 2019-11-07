@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -144,7 +145,7 @@ func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.Bui
 
 func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
-	projectID, buildDefinitionID, err := parseIdentifiers(d)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIdAndResourceId(d)
 
 	if err != nil {
 		return err
@@ -169,7 +170,7 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 	}
 
 	clients := m.(*aggregatedClient)
-	projectID, buildDefinitionID, err := parseIdentifiers(d)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIdAndResourceId(d)
 	if err != nil {
 		return err
 	}
@@ -201,13 +202,6 @@ func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error 
 
 	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
 	return nil
-}
-
-func parseIdentifiers(d *schema.ResourceData) (string, int, error) {
-	projectID := d.Get("project_id").(string)
-	buildDefinitionID, err := strconv.Atoi(d.Id())
-
-	return projectID, buildDefinitionID, err
 }
 
 func flattenRepository(buildDefiniton *build.BuildDefinition) interface{} {
