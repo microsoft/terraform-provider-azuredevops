@@ -3,8 +3,11 @@
 - [Contributing](#contributing)
   - [Looking for more?](#looking-for-more)
 - [Workspace Setup & Building Project](#workspace-setup--building-project)
+  - [0. (Optional) Docker](#0-optional-docker)
   - [1. Install dependencies](#1-install-dependencies)
   - [2. Clone repository](#2-clone-repository)
+        - [Note for Go 1.13](#note-for-go-113)
+      - [Setup your workspace](#setup-your-workspace)
   - [3. Build & Install Provider](#3-build--install-provider)
   - [4. Run provider locally](#4-run-provider-locally)
 - [Development SDLC](#development-sdlc)
@@ -14,7 +17,8 @@
   - [4. Test changes](#4-test-changes)
   - [5. Debug changes](#5-debug-changes)
   - [6. Document changes](#6-document-changes)
-  - [7. Explore the REST API's with Postman](#7-explore-with-postman)
+  - [7. Explore with postman](#7-explore-with-postman)
+    - [Contributing back](#contributing-back)
 - [Note about CLA](#note-about-cla)
 
 This document is intended to be an introduction to contributing to the `terraform-provider-azuredevops` project. Links to background information about the project and general guidance on Terraform providers are included below:
@@ -47,6 +51,25 @@ If, after reading through the content here, you are seeking more detailed inform
 This section describes how to get your developer workspace running for the first time so that you're ready to start making contributions. If you have already done this, check out [Development SDLC](#development-sdlc).
 
 > These steps assume you are running with `bash`. If you are using Windows, run all commands using WSL. They are not tested using GitBash.
+
+## 0. (Optional) Docker
+
+To develop using docker:
+
+> Note: It is highly recommended to use VSCode as described for rich intellisense, debugging, and access to standard go development tools.
+
+* Clone the repo: `git clone https://github.com/microsoft/terraform-provider-azuredevops.git`
+
+If using VSCode's [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack):
+* Open the project in VSCode
+* When prompted by VSCode, select "Reopen in Container"
+* When prompted by VSCode, install additional go tools in the container
+
+Without VSCode:
+* Build the development environment: `docker build -it dev .`
+* Mount the root directory into the docker container, and drop into a bash shell: `docker run -it -v ${PWD}:/root/workspace dev`
+
+Continue with the guide to [run the provider locally](#4-run-provider-locally).
 
 ## 1. Install dependencies
 

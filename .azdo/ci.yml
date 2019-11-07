@@ -56,3 +56,20 @@ jobs:
       AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
       AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
       AZDO_GITHUB_SERVICE_CONNECTION_PAT: $(ACC_TEST_GH_PAT)
+
+  - bash: docker build -t dev --build-arg GO_VERSION=${GO_VERSION} .
+    env:
+      GO_VERSION: $(goVersion)
+    displayName: 'Run Build Script in Docker'
+
+  - bash: |
+      docker run --env AZDO_ORG_SERVICE_URL=${AZDO_ORG_SERVICE_URL} \
+      --env AZDO_PERSONAL_ACCESS_TOKEN=${AZDO_PERSONAL_ACCESS_TOKEN} \
+      --env AZDO_GITHUB_SERVICE_CONNECTION_PAT=${AZDO_GITHUB_SERVICE_CONNECTION_PAT} \
+      --env AZDO_TEST_AAD_USER_EMAIL=${AZDO_TEST_AAD_USER_EMAIL} \
+      -v ${PWD}:/root/workspace dev ./scripts/acctest.sh
+    env:
+      AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
+      AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
+      AZDO_GITHUB_SERVICE_CONNECTION_PAT: $(ACC_TEST_GH_PAT)
+    displayName: 'Run Acceptance Tests in Docker'

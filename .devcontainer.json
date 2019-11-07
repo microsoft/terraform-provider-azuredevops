@@ -1,0 +1,19 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
+// https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
+{
+	"name": "Dev Dockerfile",
+	"dockerFile": "Dockerfile",
+	// The optional 'runArgs' property can be used to specify additional runtime arguments.
+	"runArgs": [
+		// Enable go debugger
+		"--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"
+	],
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"go.inferGopath": true,
+		"go.useLanguageServer": true
+	},
+	"extensions": [
+		"ms-vscode.go"
+	]
+}
