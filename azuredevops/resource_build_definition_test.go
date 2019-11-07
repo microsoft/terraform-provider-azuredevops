@@ -47,9 +47,10 @@ var testBuildDefinition = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus: &build.DefinitionQueueStatusValues.Enabled,
-	Type:        &build.DefinitionTypeValues.Build,
-	Quality:     &build.DefinitionQualityValues.Definition,
+	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+	Type:           &build.DefinitionTypeValues.Build,
+	Quality:        &build.DefinitionQualityValues.Definition,
+	VariableGroups: &[]build.VariableGroup{},
 }
 
 /**

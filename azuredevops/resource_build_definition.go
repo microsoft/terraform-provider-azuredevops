@@ -34,6 +34,15 @@ func resourceBuildDefinition() *schema.Resource {
 				Optional: true,
 				Default:  "",
 			},
+			"variable_groups": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:         schema.TypeInt,
+					ValidateFunc: validation.IntAtLeast(1),
+				},
+				MinItems: 1,
+				Optional: true,
+			},
 			"agent_pool_name": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -100,12 +109,28 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.Set("repository", flattenRepository(buildDefinition))
 	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
 
+	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
+
 	revision := 0
 	if buildDefinition.Revision != nil {
 		revision = *buildDefinition.Revision
 	}
 
 	d.Set("revision", revision)
+}
+
+func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
+	if buildDefinition.VariableGroups == nil {
+		return nil
+	}
+
+	variableGroups := make([]int, len(*buildDefinition.VariableGroups))
+
+	for i, variableGroup := range *buildDefinition.VariableGroups {
+		variableGroups[i] = *variableGroup.Id
+	}
+
+	return variableGroups
 }
 
 func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
@@ -212,6 +237,13 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	projectID := d.Get("project_id").(string)
 	repositories := d.Get("repository").(*schema.Set).List()
 
+	variableGroupsInterface := d.Get("variable_groups").(*schema.Set).List()
+	variableGroups := make([]build.VariableGroup, len(variableGroupsInterface))
+
+	for i, variableGroup := range variableGroupsInterface {
+		variableGroups[i] = *buildVariableGroup(variableGroup.(int))
+	}
+
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(repositories) != 1 {
 		return nil, "", fmt.Errorf("Unexpectedly did not find repository metadata in the resource data")
@@ -260,10 +292,17 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 				Name: &agentPoolName,
 			},
 		},
-		QueueStatus: &build.DefinitionQueueStatusValues.Enabled,
-		Type:        &build.DefinitionTypeValues.Build,
-		Quality:     &build.DefinitionQualityValues.Definition,
+		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+		Type:           &build.DefinitionTypeValues.Build,
+		Quality:        &build.DefinitionQualityValues.Definition,
+		VariableGroups: &variableGroups,
 	}
 
 	return &buildDefinition, projectID, nil
+}
+
+func buildVariableGroup(id int) *build.VariableGroup {
+	return &build.VariableGroup{
+		Id: &id,
+	}
 }

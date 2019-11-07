@@ -180,8 +180,8 @@ func expandGroupMemberships(d *schema.ResourceData) *[]graph.GraphMembership {
 
 func buildMembership(group string, member string) *graph.GraphMembership {
 	return &graph.GraphMembership{
-		ContainerDescriptor: converter.String(group),
-		MemberDescriptor:    converter.String(member),
+		ContainerDescriptor: &group,
+		MemberDescriptor:    &member,
 	}
 }
 
