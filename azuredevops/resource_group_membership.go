@@ -143,7 +143,7 @@ func addMemberships(clients *aggregatedClient, memberships *[]graph.GraphMembers
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Error adding member to group: %+v", err)
 		}
 	}
 
@@ -159,7 +159,7 @@ func removeMemberships(clients *aggregatedClient, memberships *[]graph.GraphMemb
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Error removing member from group: %+v", err)
 		}
 	}
 

@@ -80,12 +80,12 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*aggregatedClient)
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
 	}
 
 	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
 	}
 
 	flattenBuildDefinition(d, createdBuildDefinition, projectID)

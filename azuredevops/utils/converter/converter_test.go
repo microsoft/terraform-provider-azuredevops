@@ -49,7 +49,7 @@ func TestAccountLicenseType(t *testing.T) {
 	assertAccountLicenseType(t, licensing.AccountLicenseTypeValues.Professional)
 
 	_, err := AccountLicenseType("foo")
-	assert.Equal(t, err.Error(), "Error converting to AccountLicenseType in Azure DevOps: foo")
+	assert.Equal(t, err.Error(), "Error unable to match given AccountLicenseType:foo")
 }
 
 func assertAccountLicenseType(t *testing.T, accountLicenseType licensing.AccountLicenseType) {

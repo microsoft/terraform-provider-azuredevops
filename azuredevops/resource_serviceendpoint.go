@@ -64,7 +64,7 @@ func resourceServiceEndpointCreate(d *schema.ResourceData, m interface{}) error 
 
 	createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint, projectID)
 	if err != nil {
-		return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Error creating service endpoint: %v", err)
 	}
 
 	flattenServiceEndpoint(d, createdServiceEndpoint, projectID)
@@ -90,7 +90,7 @@ func resourceServiceEndpointRead(d *schema.ResourceData, m interface{}) error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v", serviceEndpointID, projectID, err)
+		return fmt.Errorf("Error looking up service endpoint given ID:(%v) and project ID:(%v): %v", serviceEndpointID, projectID, err)
 	}
 
 	flattenServiceEndpoint(d, serviceEndpoint, projectID)
@@ -103,7 +103,7 @@ func resourceServiceEndpointUpdate(d *schema.ResourceData, m interface{}) error 
 
 	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint, projectID)
 	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Error updating service endpoint: %v", err)
 	}
 
 	flattenServiceEndpoint(d, updatedServiceEndpoint, projectID)
@@ -114,7 +114,12 @@ func resourceServiceEndpointDelete(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*aggregatedClient)
 	serviceEndpoint, projectID := expandServiceEndpoint(d)
 
-	return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
+	err := deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
+	if err != nil {
+		return fmt.Errorf("Error deleting service endpoint: %v", err)
+	}
+
+	return nil
 }
 
 // Make the Azure DevOps API call to create the endpoint

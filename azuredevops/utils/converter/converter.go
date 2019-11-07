@@ -47,7 +47,7 @@ func AccountLicenseType(accountLicenseTypeValue string) (*licensing.AccountLicen
 	case "stakeholder":
 		accountLicenseType = licensing.AccountLicenseTypeValues.Stakeholder
 	default:
-		return nil, fmt.Errorf("Error converting to AccountLicenseType in Azure DevOps: %+v", accountLicenseTypeValue)
+		return nil, fmt.Errorf("Error unable to match given AccountLicenseType:%s", accountLicenseTypeValue)
 	}
 	return &accountLicenseType, nil
 }

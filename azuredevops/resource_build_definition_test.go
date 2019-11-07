@@ -106,7 +106,7 @@ func TestAzureDevOpsBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 		Times(1)
 
 	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.Equal(t, "CreateDefinition() Failed", err.Error())
+	require.Contains(t, err.Error(), "CreateDefinition() Failed")
 }
 
 // verifies that if an error is produced on a read, it is not swallowed

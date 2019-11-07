@@ -40,7 +40,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_DoNotAllowToSetOridinI
 
 	err := resourceUserEntitlementCreate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
-	require.Regexp(t, "Use origin_id or principal_name. You can not use both", err.Error())
+	require.Regexp(t, "Error creating user entitlement: Error both origin_id and principal_name set. You can not use both", err.Error())
 }
 
 // if origin_id is "" and principal_name is supplied, the principal_name will be used.
@@ -170,7 +170,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithEarlyAdopter(t *te
 		Times(1)
 
 	err := resourceUserEntitlementCreate(resourceData, clients)
-	assert.Equal(t, (expectedValue).(string), err.Error(), "Error should be reported")
+	require.Contains(t, err.Error(), "A user cannot be assigned an Account-EarlyAdopter license.")
 }
 
 func getMockUserEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, principalName string, descriptor string) *memberentitlementmanagement.UserEntitlement {

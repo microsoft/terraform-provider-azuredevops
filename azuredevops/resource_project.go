@@ -79,12 +79,12 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
 	project, err := expandProject(clients, d, true)
 	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
+		return fmt.Errorf("Error converting terraform data model to Azure DevOps project reference: %+v", err)
 	}
 
 	err = createProject(clients, project, projectCreateTimeoutSeconds)
 	if err != nil {
-		return fmt.Errorf("Error creating project in Azure DevOps: %+v", err)
+		return fmt.Errorf("Error creating project: %v", err)
 	}
 
 	d.Set("project_name", *project.Name)
@@ -178,7 +178,7 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 
 	err = updateProject(clients, project, projectCreateTimeoutSeconds)
 	if err != nil {
-		return fmt.Errorf("Error updating project in Azure DevOps: %+v", err)
+		return fmt.Errorf("Error updating project: %v", err)
 	}
 	return resourceProjectRead(d, m)
 }
@@ -203,7 +203,12 @@ func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
 	id := d.Id()
 
-	return deleteProject(clients, id, projectDeleteTimeoutSeconds)
+	err := deleteProject(clients, id, projectDeleteTimeoutSeconds)
+	if err != nil {
+		return fmt.Errorf("Error deleting project: %v", err)
+	}
+
+	return nil
 }
 
 func deleteProject(clients *aggregatedClient, id string, timeoutSeconds time.Duration) error {
