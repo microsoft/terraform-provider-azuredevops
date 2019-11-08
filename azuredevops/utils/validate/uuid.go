@@ -7,9 +7,10 @@ import (
 	"github.com/hashicorp/go-uuid"
 )
 
-//uuid regex helper
+// UUIDRegExp is a regex helper.
 var UUIDRegExp = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
+// UUID parses a UUID, returning warnings and errors.
 func UUID(i interface{}, k string) (warnings []string, errors []error) {
 	v, ok := i.(string)
 	if !ok {
@@ -23,6 +24,8 @@ func UUID(i interface{}, k string) (warnings []string, errors []error) {
 
 	return warnings, errors
 }
+
+// UUIDOrEmpty parses a UUID, returning nil for warnings if i is empty.
 func UUIDOrEmpty(i interface{}, k string) (warnings []string, errors []error) {
 	v, ok := i.(string)
 	if !ok {

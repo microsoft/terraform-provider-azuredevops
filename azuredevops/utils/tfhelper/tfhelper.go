@@ -64,7 +64,8 @@ func GenerateSecreteMemoSchema(secretKey string) (string, *schema.Schema) {
 	return calcSecretHashKey(secretKey), &out
 }
 
-func ParseProjectIdAndResourceId(d *schema.ResourceData) (string, int, error) {
+// ParseProjectIDAndResourceID parses from the schema's resource data.
+func ParseProjectIDAndResourceID(d *schema.ResourceData) (string, int, error) {
 	projectID := d.Get("project_id").(string)
 	resourceID, err := strconv.Atoi(d.Id())
 

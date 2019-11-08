@@ -38,6 +38,13 @@ jobs:
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
+      ./scripts/fmt-check-go.sh
+    displayName: 'Run Format Check'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
+      go get -u golang.org/x/lint/golint
       ./scripts/lint-check-go.sh
     displayName: 'Run Lint Check'
 

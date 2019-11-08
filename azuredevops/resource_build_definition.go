@@ -145,7 +145,7 @@ func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.Bui
 
 func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*aggregatedClient)
-	projectID, buildDefinitionID, err := tfhelper.ParseProjectIdAndResourceId(d)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 
 	if err != nil {
 		return err
@@ -170,7 +170,7 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 	}
 
 	clients := m.(*aggregatedClient)
-	projectID, buildDefinitionID, err := tfhelper.ParseProjectIdAndResourceId(d)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
 		return err
 	}
