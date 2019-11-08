@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
@@ -76,7 +77,7 @@ func resourceProject() *schema.Resource {
 }
 
 func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	project, err := expandProject(clients, d, true)
 	if err != nil {
 		return fmt.Errorf("Error converting terraform data model to Azure DevOps project reference: %+v", err)
@@ -92,8 +93,8 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 // Make API call to create the project and wait for an async success/fail response from the service
-func createProject(clients *aggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
-	operationRef, err := clients.CoreClient.QueueCreateProject(clients.ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
+func createProject(clients *config.AggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
+	operationRef, err := clients.CoreClient.QueueCreateProject(clients.Ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func createProject(clients *aggregatedClient, project *core.TeamProject, timeout
 	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
 }
 
-func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
+func waitForAsyncOperationSuccess(clients *config.AggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
 	timeout := time.After(timeoutSeconds * time.Second)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -109,7 +110,7 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 	for {
 		select {
 		case <-ticker.C:
-			result, err := clients.OperationsClient.GetOperation(clients.ctx, operations.GetOperationArgs{
+			result, err := clients.OperationsClient.GetOperation(clients.Ctx, operations.GetOperationArgs{
 				OperationId: operationRef.Id,
 				PluginId:    operationRef.PluginId,
 			})
@@ -137,7 +138,7 @@ func waitForAsyncOperationSuccess(clients *aggregatedClient, operationRef *opera
 }
 
 func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 
 	id := d.Id()
 	name := d.Get("project_name").(string)
@@ -156,13 +157,13 @@ func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 // Lookup a project using the ID, or name if the ID is not set. Note, usage of the name in place
 // of the ID is an explicitly stated supported behavior:
 //		https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.0
-func projectRead(clients *aggregatedClient, projectID string, projectName string) (*core.TeamProject, error) {
+func projectRead(clients *config.AggregatedClient, projectID string, projectName string) (*core.TeamProject, error) {
 	identifier := projectID
 	if identifier == "" {
 		identifier = projectName
 	}
 
-	return clients.CoreClient.GetProject(clients.ctx, core.GetProjectArgs{
+	return clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
 		ProjectId:           &identifier,
 		IncludeCapabilities: converter.Bool(true),
 		IncludeHistory:      converter.Bool(false),
@@ -170,7 +171,7 @@ func projectRead(clients *aggregatedClient, projectID string, projectName string
 }
 
 func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	project, err := expandProject(clients, d, false)
 	if err != nil {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
@@ -183,10 +184,10 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 	return resourceProjectRead(d, m)
 }
 
-func updateProject(clients *aggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
+func updateProject(clients *config.AggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
 
 	operationRef, err := clients.CoreClient.UpdateProject(
-		clients.ctx,
+		clients.Ctx,
 		core.UpdateProjectArgs{
 			ProjectUpdate: project,
 			ProjectId:     project.Id,
@@ -200,7 +201,7 @@ func updateProject(clients *aggregatedClient, project *core.TeamProject, timeout
 }
 
 func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	id := d.Id()
 
 	err := deleteProject(clients, id, projectDeleteTimeout)
@@ -211,13 +212,13 @@ func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func deleteProject(clients *aggregatedClient, id string, timeoutSeconds time.Duration) error {
+func deleteProject(clients *config.AggregatedClient, id string, timeoutSeconds time.Duration) error {
 	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return fmt.Errorf("Invalid project UUID: %s", id)
 	}
 
-	operationRef, err := clients.CoreClient.QueueDeleteProject(clients.ctx, core.QueueDeleteProjectArgs{
+	operationRef, err := clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
 		ProjectId: &uuid,
 	})
 
@@ -229,7 +230,7 @@ func deleteProject(clients *aggregatedClient, id string, timeoutSeconds time.Dur
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandProject(clients *aggregatedClient, d *schema.ResourceData, forCreate bool) (*core.TeamProject, error) {
+func expandProject(clients *config.AggregatedClient, d *schema.ResourceData, forCreate bool) (*core.TeamProject, error) {
 	workItemTemplate := d.Get("work_item_template").(string)
 	processTemplateID, err := lookupProcessTemplateID(clients, workItemTemplate)
 	if err != nil {
@@ -275,7 +276,7 @@ func convertVisibilty(v string) *core.ProjectVisibility {
 	return &core.ProjectVisibilityValues.Private
 }
 
-func flattenProject(clients *aggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
+func flattenProject(clients *config.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
 	description := converter.ToString(project.Description, "")
 	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
 	processTemplateName, err := lookupProcessTemplateName(clients, processTemplateID)
@@ -296,8 +297,8 @@ func flattenProject(clients *aggregatedClient, d *schema.ResourceData, project *
 }
 
 // given a process template name, get the process template ID
-func lookupProcessTemplateID(clients *aggregatedClient, templateName string) (string, error) {
-	processes, err := clients.CoreClient.GetProcesses(clients.ctx, core.GetProcessesArgs{})
+func lookupProcessTemplateID(clients *config.AggregatedClient, templateName string) (string, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
 	if err != nil {
 		return "", err
 	}
@@ -313,13 +314,13 @@ func lookupProcessTemplateID(clients *aggregatedClient, templateName string) (st
 }
 
 // given a process template ID, get the process template name
-func lookupProcessTemplateName(clients *aggregatedClient, templateID string) (string, error) {
+func lookupProcessTemplateName(clients *config.AggregatedClient, templateID string) (string, error) {
 	id, err := uuid.Parse(templateID)
 	if err != nil {
 		return "", fmt.Errorf("Error parsing Work Item Template ID, got %s: %v", templateID, err)
 	}
 
-	process, err := clients.CoreClient.GetProcessById(clients.ctx, core.GetProcessByIdArgs{
+	process, err := clients.CoreClient.GetProcessById(clients.Ctx, core.GetProcessByIdArgs{
 		ProcessId: &id,
 	})
 

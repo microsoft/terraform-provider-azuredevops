@@ -17,6 +17,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,9 +27,9 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_DoNotAllowToSetOridinI
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		MemberEntitleManagementClient: nil,
-		ctx:                           context.Background(),
+		Ctx:                           context.Background(),
 	}
 
 	originID := "e97b0e7f-0a61-41ad-860c-748ec5fcb20b"
@@ -48,10 +49,10 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *t
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	memberEntitleManagementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
-	clients := &aggregatedClient{
-		MemberEntitleManagementClient: memberEntitleManagementClient,
-		ctx:                           context.Background(),
+	client := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &config.AggregatedClient{
+		MemberEntitleManagementClient: client,
+		Ctx:                           context.Background(),
 	}
 
 	accountLicenseType := licensing.AccountLicenseTypeValues.Express
@@ -65,7 +66,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *t
 	resourceData := schema.TestResourceDataRaw(t, resourceUserEntitlement().Schema, nil)
 	resourceData.Set("principal_name", principalName)
 	expectedIsSuccess := true
-	memberEntitleManagementClient.
+	client.
 		EXPECT().
 		AddUserEntitlement(gomock.Any(), MatchAddUserEntitlementArgs(memberentitlementmanagement.AddUserEntitlementArgs{
 			UserEntitlement: mockUserEntitlement,
@@ -85,9 +86,9 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_Princ
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		MemberEntitleManagementClient: nil,
-		ctx:                           context.Background(),
+		Ctx:                           context.Background(),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, resourceUserEntitlement().Schema, nil)
@@ -104,10 +105,10 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithError(t *testing.T
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	memberEntitleManagementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
-	clients := &aggregatedClient{
-		MemberEntitleManagementClient: memberEntitleManagementClient,
-		ctx:                           context.Background(),
+	client := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &config.AggregatedClient{
+		MemberEntitleManagementClient: client,
+		Ctx:                           context.Background(),
 	}
 
 	principalName := "foobar@microsoft.com"
@@ -118,7 +119,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithError(t *testing.T
 	resourceData.Set("principal_name", principalName)
 
 	// No error but it has a error on the reponse.
-	memberEntitleManagementClient.
+	client.
 		EXPECT().
 		AddUserEntitlement(gomock.Any(), gomock.Any()).
 		Return(nil, fmt.Errorf("error foo")).
@@ -133,10 +134,10 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithEarlyAdopter(t *te
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	memberEntitleManagementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
-	clients := &aggregatedClient{
-		MemberEntitleManagementClient: memberEntitleManagementClient,
-		ctx:                           context.Background(),
+	client := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &config.AggregatedClient{
+		MemberEntitleManagementClient: client,
+		Ctx:                           context.Background(),
 	}
 
 	principalName := "foobar@microsoft.com"
@@ -157,7 +158,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithEarlyAdopter(t *te
 	expectedIsSuccess := false
 
 	// No error but it has a error on the reponse.
-	memberEntitleManagementClient.
+	client.
 		EXPECT().
 		AddUserEntitlement(gomock.Any(), gomock.Any()).
 		Return(&memberentitlementmanagement.UserEntitlementsPostResponse{
@@ -233,7 +234,7 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 			return fmt.Errorf("Did not find a UserEntitlement in the TF state")
 		}
 
-		clients := testAccProvider.Meta().(*aggregatedClient)
+		clients := testAccProvider.Meta().(*config.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
@@ -257,7 +258,7 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 // verifies that all projects referenced in the state are destroyed. This will be invoked
 // *after* terrafform destroys the resource but *before* the state is wiped clean.
 func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
-	clients := testAccProvider.Meta().(*aggregatedClient)
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
 	// verify that every project referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

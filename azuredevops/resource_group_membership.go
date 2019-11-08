@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"math/rand"
 
@@ -38,7 +39,7 @@ func resourceGroupMembership() *schema.Resource {
 }
 
 func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	memberships := expandGroupMemberships(d)
 
 	err := addMemberships(clients, memberships)
@@ -59,10 +60,10 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	group := d.Get("group").(string)
 	oldMembers, newMembers := getOldAndNewMemberSetsFromResourceData(d)
 	toAdd, toRemove := computeMembershipDiff(group, oldMembers, newMembers)
-	return applyMembershipUpdate(m.(*aggregatedClient), toAdd, toRemove)
+	return applyMembershipUpdate(m.(*config.AggregatedClient), toAdd, toRemove)
 }
 
-func applyMembershipUpdate(clients *aggregatedClient, toAdd *[]graph.GraphMembership, toRemove *[]graph.GraphMembership) error {
+func applyMembershipUpdate(clients *config.AggregatedClient, toAdd *[]graph.GraphMembership, toRemove *[]graph.GraphMembership) error {
 	err := removeMemberships(clients, toRemove)
 	if err != nil {
 		return fmt.Errorf("Error removing group memberships during update: %+v", err)
@@ -121,7 +122,7 @@ func toStringSet(items ...interface{}) map[string]bool {
 }
 
 func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	memberships := expandGroupMemberships(d)
 
 	err := removeMemberships(clients, memberships)
@@ -135,9 +136,9 @@ func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error 
 }
 
 // Add members to a group using the AzDO REST API. If any error is encountered, the function immediately returns.
-func addMemberships(clients *aggregatedClient, memberships *[]graph.GraphMembership) error {
+func addMemberships(clients *config.AggregatedClient, memberships *[]graph.GraphMembership) error {
 	for _, membership := range *memberships {
-		_, err := clients.GraphClient.AddMembership(clients.ctx, graph.AddMembershipArgs{
+		_, err := clients.GraphClient.AddMembership(clients.Ctx, graph.AddMembershipArgs{
 			SubjectDescriptor:   membership.MemberDescriptor,
 			ContainerDescriptor: membership.ContainerDescriptor,
 		})
@@ -151,9 +152,9 @@ func addMemberships(clients *aggregatedClient, memberships *[]graph.GraphMembers
 }
 
 // Remove members from a group using the AzDO REST API. If any error is encountered, the function immediately returns.
-func removeMemberships(clients *aggregatedClient, memberships *[]graph.GraphMembership) error {
+func removeMemberships(clients *config.AggregatedClient, memberships *[]graph.GraphMembership) error {
 	for _, membership := range *memberships {
-		err := clients.GraphClient.RemoveMembership(clients.ctx, graph.RemoveMembershipArgs{
+		err := clients.GraphClient.RemoveMembership(clients.Ctx, graph.RemoveMembershipArgs{
 			SubjectDescriptor:   membership.MemberDescriptor,
 			ContainerDescriptor: membership.ContainerDescriptor,
 		})
@@ -186,10 +187,10 @@ func buildMembership(group string, member string) *graph.GraphMembership {
 }
 
 func resourceGroupMembershipRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	group := d.Get("group").(string)
 
-	actualMemberships, err := clients.GraphClient.ListMemberships(clients.ctx, graph.ListMembershipsArgs{
+	actualMemberships, err := clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &group,
 		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),

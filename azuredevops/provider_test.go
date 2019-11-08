@@ -17,7 +17,8 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_build_definition",
 		"azuredevops_project",
-		"azuredevops_serviceendpoint",
+		"azuredevops_serviceendpoint_github",
+		"azuredevops_serviceendpoint_dockerhub",
 		"azuredevops_variable_group",
 		"azuredevops_azure_git_repository",
 		"azuredevops_user_entitlement",
@@ -89,6 +90,9 @@ func testAccPreCheck(t *testing.T) {
 		"AZDO_PERSONAL_ACCESS_TOKEN",
 		"AZDO_GITHUB_SERVICE_CONNECTION_PAT",
 		"AZDO_TEST_AAD_USER_EMAIL",
+		"AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME",
+		"AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL",
+		"AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD",
 	}
 
 	for _, variable := range requiredEnvVars {

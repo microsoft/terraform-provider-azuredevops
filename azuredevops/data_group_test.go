@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"testing"
 
@@ -37,12 +38,12 @@ func TestGroupDataSource_DoesNotSwallowProjectDescriptorLookupError(t *testing.T
 	resourceData := createResourceData(t, projectID.String(), "group-name")
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedArgs := graph.GetDescriptorArgs{StorageKey: &projectID}
 	graphClient.
 		EXPECT().
-		GetDescriptor(clients.ctx, expectedArgs).
+		GetDescriptor(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("GetDescriptor() Failed"))
 
 	err := dataSourceGroupRead(resourceData, clients)
@@ -58,20 +59,20 @@ func TestGroupDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 	resourceData := createResourceData(t, projectID.String(), "group-name")
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedProjectDescriptorLookupArgs := graph.GetDescriptorArgs{StorageKey: &projectID}
 	projectDescriptor := converter.String("descriptor")
 	projectDescriptorResponse := graph.GraphDescriptorResult{Value: projectDescriptor}
 	graphClient.
 		EXPECT().
-		GetDescriptor(clients.ctx, expectedProjectDescriptorLookupArgs).
+		GetDescriptor(clients.Ctx, expectedProjectDescriptorLookupArgs).
 		Return(&projectDescriptorResponse, nil)
 
 	expectedListGroupArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	graphClient.
 		EXPECT().
-		ListGroups(clients.ctx, expectedListGroupArgs).
+		ListGroups(clients.Ctx, expectedListGroupArgs).
 		Return(nil, errors.New("ListGroups() Failed"))
 
 	err := dataSourceGroupRead(resourceData, clients)
@@ -88,14 +89,14 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 	resourceData := createResourceData(t, projectID.String(), "name1")
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedProjectDescriptorLookupArgs := graph.GetDescriptorArgs{StorageKey: &projectID}
 	projectDescriptor := converter.String("descriptor")
 	projectDescriptorResponse := graph.GraphDescriptorResult{Value: projectDescriptor}
 	graphClient.
 		EXPECT().
-		GetDescriptor(clients.ctx, expectedProjectDescriptorLookupArgs).
+		GetDescriptor(clients.Ctx, expectedProjectDescriptorLookupArgs).
 		Return(&projectDescriptorResponse, nil)
 
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
@@ -103,14 +104,14 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1"})
 	firstCall := graphClient.
 		EXPECT().
-		ListGroups(clients.ctx, firstListGroupCallArgs).
+		ListGroups(clients.Ctx, firstListGroupCallArgs).
 		Return(firstListGroupCallResponse, nil)
 
 	secondListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor, ContinuationToken: &continuationToken}
 	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2"})
 	secondCall := graphClient.
 		EXPECT().
-		ListGroups(clients.ctx, secondListGroupCallArgs).
+		ListGroups(clients.Ctx, secondListGroupCallArgs).
 		Return(secondListGroupCallResponse, nil)
 
 	gomock.InOrder(firstCall, secondCall)

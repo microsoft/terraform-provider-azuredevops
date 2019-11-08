@@ -1,4 +1,4 @@
-package azuredevops
+package config
 
 import (
 	"context"
@@ -16,14 +16,14 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 )
 
-// Aggregates all of the underlying clients into a single data
+// AggregatedClient aggregates all of the underlying clients into a single data
 // type. Each client is ready to use and fully configured with the correct
 // AzDO PAT/organization
 //
 // AggregatedClient uses interfaces derived from the underlying client structs to
 // allow for mocking to support unit testing of the funcs that invoke the
 // Azure DevOps client.
-type aggregatedClient struct {
+type AggregatedClient struct {
 	CoreClient                    core.Client
 	BuildClient                   build.Client
 	GitReposClient                git.Client
@@ -32,10 +32,11 @@ type aggregatedClient struct {
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
-	ctx                           context.Context
+	Ctx                           context.Context
 }
 
-func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, error) {
+// GetAzdoClient builds and provides a connection to the Azure DevOps API
+func GetAzdoClient(azdoPAT string, organizationURL string) (*AggregatedClient, error) {
 	ctx := context.Background()
 
 	if azdoPAT == "" {
@@ -104,7 +105,7 @@ func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, e
 		return nil, err
 	}
 
-	aggregatedClient := &aggregatedClient{
+	aggregatedClient := &AggregatedClient{
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
@@ -113,7 +114,7 @@ func getAzdoClient(azdoPAT string, organizationURL string) (*aggregatedClient, e
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
-		ctx:                           ctx,
+		Ctx:                           ctx,
 	}
 
 	log.Printf("getAzdoClient(): Created core, build, operations, and serviceendpoint clients successfully!")

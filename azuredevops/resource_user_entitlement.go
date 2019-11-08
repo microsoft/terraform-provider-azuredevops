@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
 
@@ -53,7 +54,7 @@ func resourceUserEntitlement() *schema.Resource {
 }
 
 func resourceUserEntitlementCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	userEntitlement, err := expandUserEntitlement(d)
 	if err != nil {
 		return fmt.Errorf("Error creating user entitlement: %v", err)
@@ -109,8 +110,8 @@ func flattenUserEntitlement(d *schema.ResourceData, userEntitlement *memberentit
 	d.Set("descriptor", *userEntitlement.User.Descriptor)
 }
 
-func addUserEntitlement(clients *aggregatedClient, userEntitlement *memberentitlementmanagement.UserEntitlement) (*memberentitlementmanagement.UserEntitlement, error) {
-	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.ctx, memberentitlementmanagement.AddUserEntitlementArgs{
+func addUserEntitlement(clients *config.AggregatedClient, userEntitlement *memberentitlementmanagement.UserEntitlement) (*memberentitlementmanagement.UserEntitlement, error) {
+	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.Ctx, memberentitlementmanagement.AddUserEntitlementArgs{
 		UserEntitlement: userEntitlement,
 	})
 
@@ -130,7 +131,7 @@ func addUserEntitlement(clients *aggregatedClient, userEntitlement *memberentitl
 }
 
 func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
@@ -147,8 +148,8 @@ func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func readUserEntitlement(clients *aggregatedClient, id *uuid.UUID) (*memberentitlementmanagement.UserEntitlement, error) {
-	return clients.MemberEntitleManagementClient.GetUserEntitlement(clients.ctx, memberentitlementmanagement.GetUserEntitlementArgs{
+func readUserEntitlement(clients *config.AggregatedClient, id *uuid.UUID) (*memberentitlementmanagement.UserEntitlement, error) {
+	return clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
 		UserId: id,
 	})
 }
@@ -163,9 +164,9 @@ func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Error parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 
-	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*aggregatedClient).ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
+	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*config.AggregatedClient).Ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
 		UserId: &id,
 	})
 

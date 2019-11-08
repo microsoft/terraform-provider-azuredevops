@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/golang/mock/gomock"
@@ -51,7 +52,7 @@ func TestAzureGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{GitReposClient: reposClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GitReposClient: reposClient, Ctx: context.Background()}
 
 	expectedArgs := git.CreateRepositoryArgs{
 		GitRepositoryToCreate: &git.GitRepositoryCreateOptions{
@@ -63,7 +64,7 @@ func TestAzureGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	}
 	reposClient.
 		EXPECT().
-		CreateRepository(clients.ctx, expectedArgs).
+		CreateRepository(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("CreateAzureGitRepository() Failed")).
 		Times(1)
 
@@ -82,11 +83,11 @@ func TestAzureGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{GitReposClient: reposClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GitReposClient: reposClient, Ctx: context.Background()}
 
 	reposClient.
 		EXPECT().
-		UpdateRepository(clients.ctx, gomock.Any()).
+		UpdateRepository(clients.Ctx, gomock.Any()).
 		Return(nil, errors.New("UpdateAzureGitRepository() Failed")).
 		Times(1)
 
@@ -133,9 +134,9 @@ func TestAzureGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 	defer ctrl.Finish()
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		GitReposClient: reposClient,
-		ctx:            context.Background(),
+		Ctx:            context.Background(),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
@@ -145,7 +146,7 @@ func TestAzureGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 	expectedArgs := git.GetRepositoryArgs{RepositoryId: converter.String("an-id"), Project: converter.String("a-project")}
 	reposClient.
 		EXPECT().
-		GetRepository(clients.ctx, expectedArgs).
+		GetRepository(clients.Ctx, expectedArgs).
 		Return(nil, fmt.Errorf("GetRepository() Failed")).
 		Times(1)
 
@@ -159,9 +160,9 @@ func TestAzureGitRepo_Read_UsesIdIfSet(t *testing.T) {
 	defer ctrl.Finish()
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		GitReposClient: reposClient,
-		ctx:            context.Background(),
+		Ctx:            context.Background(),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
@@ -171,7 +172,7 @@ func TestAzureGitRepo_Read_UsesIdIfSet(t *testing.T) {
 	expectedArgs := git.GetRepositoryArgs{RepositoryId: converter.String("an-id"), Project: converter.String("a-project")}
 	reposClient.
 		EXPECT().
-		GetRepository(clients.ctx, expectedArgs).
+		GetRepository(clients.Ctx, expectedArgs).
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
@@ -182,7 +183,7 @@ func TestAzureGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
 	resourceData.SetId("not-a-uuid-id")
 
-	err := resourceAzureGitRepositoryDelete(resourceData, &aggregatedClient{})
+	err := resourceAzureGitRepositoryDelete(resourceData, &config.AggregatedClient{})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "Invalid repositoryId UUID")
 }
@@ -192,9 +193,9 @@ func TestAzureGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.
 	defer ctrl.Finish()
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		GitReposClient: reposClient,
-		ctx:            context.Background(),
+		Ctx:            context.Background(),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
@@ -204,7 +205,7 @@ func TestAzureGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.
 	expectedArgs := git.DeleteRepositoryArgs{RepositoryId: &id}
 	reposClient.
 		EXPECT().
-		DeleteRepository(clients.ctx, expectedArgs).
+		DeleteRepository(clients.Ctx, expectedArgs).
 		Return(fmt.Errorf("DeleteRepository() Failed")).
 		Times(1)
 
@@ -218,9 +219,9 @@ func TestAzureGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 	defer ctrl.Finish()
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		GitReposClient: reposClient,
-		ctx:            context.Background(),
+		Ctx:            context.Background(),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
@@ -230,7 +231,7 @@ func TestAzureGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 	expectedArgs := git.GetRepositoryArgs{RepositoryId: converter.String("a-name"), Project: converter.String("a-project")}
 	reposClient.
 		EXPECT().
-		GetRepository(clients.ctx, expectedArgs).
+		GetRepository(clients.Ctx, expectedArgs).
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
@@ -294,7 +295,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 // or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func testAccCheckAzureGitRepoResourceExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		clients := testAccProvider.Meta().(*aggregatedClient)
+		clients := testAccProvider.Meta().(*config.AggregatedClient)
 
 		gitRepo, ok := s.RootModule().Resources["azuredevops_azure_git_repository.gitrepo"]
 		if !ok {
@@ -332,7 +333,7 @@ resource "azuredevops_azure_git_repository" "gitrepo" {
 }
 
 func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
-	clients := testAccProvider.Meta().(*aggregatedClient)
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
 	// verify that every repository referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

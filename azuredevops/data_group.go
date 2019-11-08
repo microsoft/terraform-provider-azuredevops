@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 )
 
 func dataGroup() *schema.Resource {
@@ -38,7 +39,7 @@ func dataGroup() *schema.Resource {
 //		This involves querying a paginated API, so multiple API calls may be needed for this step.
 //	(3) Select group that has the name identified by the schema
 func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	groupName, projectID := d.Get("name").(string), d.Get("project_id").(string)
 
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
@@ -61,13 +62,13 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func getProjectDescriptor(clients *aggregatedClient, projectID string) (string, error) {
+func getProjectDescriptor(clients *config.AggregatedClient, projectID string) (string, error) {
 	projectUUID, err := uuid.Parse(projectID)
 	if err != nil {
 		return "", err
 	}
 
-	descriptor, err := clients.GraphClient.GetDescriptor(clients.ctx, graph.GetDescriptorArgs{StorageKey: &projectUUID})
+	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{StorageKey: &projectUUID})
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +76,7 @@ func getProjectDescriptor(clients *aggregatedClient, projectID string) (string, 
 	return *descriptor.Value, nil
 }
 
-func getGroupsForDescriptor(clients *aggregatedClient, projectDescriptor string) (*[]graph.GraphGroup, error) {
+func getGroupsForDescriptor(clients *config.AggregatedClient, projectDescriptor string) (*[]graph.GraphGroup, error) {
 	var groups []graph.GraphGroup
 	var currentToken string
 
@@ -93,13 +94,13 @@ func getGroupsForDescriptor(clients *aggregatedClient, projectDescriptor string)
 	return &groups, nil
 }
 
-func getGroupsWithContinuationToken(clients *aggregatedClient, projectDescriptor string, continuationToken string) (*[]graph.GraphGroup, string, error) {
+func getGroupsWithContinuationToken(clients *config.AggregatedClient, projectDescriptor string, continuationToken string) (*[]graph.GraphGroup, string, error) {
 	args := graph.ListGroupsArgs{ScopeDescriptor: &projectDescriptor}
 	if continuationToken != "" {
 		args.ContinuationToken = &continuationToken
 	}
 
-	response, err := clients.GraphClient.ListGroups(clients.ctx, args)
+	response, err := clients.GraphClient.ListGroups(clients.Ctx, args)
 	if err != nil {
 		return nil, "", err
 	}

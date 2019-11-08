@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 
@@ -87,7 +88,7 @@ func resourceBuildDefinition() *schema.Resource {
 }
 
 func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
 		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
@@ -134,8 +135,8 @@ func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
 	return variableGroups
 }
 
-func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
-	createdBuild, err := clients.BuildClient.CreateDefinition(clients.ctx, build.CreateDefinitionArgs{
+func createBuildDefinition(clients *config.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
+	createdBuild, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
 		Definition: buildDefinition,
 		Project:    &project,
 	})
@@ -144,14 +145,14 @@ func createBuildDefinition(clients *aggregatedClient, buildDefinition *build.Bui
 }
 
 func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 
 	if err != nil {
 		return err
 	}
 
-	buildDefinition, err := clients.BuildClient.GetDefinition(clients.ctx, build.GetDefinitionArgs{
+	buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
@@ -169,13 +170,13 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 		return nil
 	}
 
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
 		return err
 	}
 
-	err = clients.BuildClient.DeleteDefinition(m.(*aggregatedClient).ctx, build.DeleteDefinitionArgs{
+	err = clients.BuildClient.DeleteDefinition(m.(*config.AggregatedClient).Ctx, build.DeleteDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
@@ -184,13 +185,13 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
 		return err
 	}
 
-	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*aggregatedClient).ctx, build.UpdateDefinitionArgs{
+	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*config.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
 		Definition:   buildDefinition,
 		Project:      &projectID,
 		DefinitionId: buildDefinition.Id,

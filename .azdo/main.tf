@@ -11,12 +11,14 @@ resource "azuredevops_project" "project" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint" "github_serviceendpoint" {
+resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   project_id             = azuredevops_project.project.id
   service_endpoint_name  = "GitHub Service Connection"
-  service_endpoint_type  = "github"
-  service_endpoint_url   = "http://github.com"
-  service_endpoint_owner = "Library"
+}
+
+resource "azuredevops_serviceendpoint_dockerhub" "dockerhub_serviceendpoint" {
+  project_id             = azuredevops_project.project.id
+  service_endpoint_name  = "DockerHub Service Connection"
 }
 
 resource "azuredevops_build_definition" "nightly_build" {
@@ -29,6 +31,6 @@ resource "azuredevops_build_definition" "nightly_build" {
     repo_name             = "microsoft/terraform-provider-azuredevops"
     branch_name           = "master"
     yml_path              = ".azdo/azure-pipeline-nightly.yml"
-    service_connection_id = azuredevops_serviceendpoint.github_serviceendpoint.id
+    service_connection_id = azuredevops_serviceendpoint_github.github_serviceendpoint.id
   }
 }

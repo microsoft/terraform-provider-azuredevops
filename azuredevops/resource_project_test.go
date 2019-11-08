@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 
 	"github.com/golang/mock/gomock"
@@ -46,16 +47,16 @@ func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedCreateCal
 	defer ctrl.Finish()
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient: coreClient,
-		ctx:        context.Background(),
+		Ctx:        context.Background(),
 	}
 
 	expectedProjectCreateArgs := core.QueueCreateProjectArgs{ProjectToCreate: &testProject}
 
 	coreClient.
 		EXPECT().
-		QueueCreateProject(clients.ctx, expectedProjectCreateArgs).
+		QueueCreateProject(clients.Ctx, expectedProjectCreateArgs).
 		Return(nil, errors.New("QueueCreateProject() Failed")).
 		Times(1)
 
@@ -71,10 +72,10 @@ func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedAsyncStat
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
-		ctx:              context.Background(),
+		Ctx:              context.Background(),
 	}
 
 	expectedProjectCreateArgs := core.QueueCreateProjectArgs{ProjectToCreate: &testProject}
@@ -83,13 +84,13 @@ func TestAzureDevOpsProject_CreateProject_DoesNotSwallowErrorFromFailedAsyncStat
 
 	coreClient.
 		EXPECT().
-		QueueCreateProject(clients.ctx, expectedProjectCreateArgs).
+		QueueCreateProject(clients.Ctx, expectedProjectCreateArgs).
 		Return(&mockedOperationReference, nil).
 		Times(1)
 
 	operationsClient.
 		EXPECT().
-		GetOperation(clients.ctx, expectedOperationArgs).
+		GetOperation(clients.Ctx, expectedOperationArgs).
 		Return(nil, errors.New("GetOperation() failed")).
 		Times(1)
 
@@ -105,10 +106,10 @@ func TestAzureDevOpsProject_CreateProject_PollsUntilOperationIsSuccessful(t *tes
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
-		ctx:              context.Background(),
+		Ctx:              context.Background(),
 	}
 
 	expectedProjectCreateArgs := core.QueueCreateProjectArgs{ProjectToCreate: &testProject}
@@ -117,20 +118,20 @@ func TestAzureDevOpsProject_CreateProject_PollsUntilOperationIsSuccessful(t *tes
 
 	coreClient.
 		EXPECT().
-		QueueCreateProject(clients.ctx, expectedProjectCreateArgs).
+		QueueCreateProject(clients.Ctx, expectedProjectCreateArgs).
 		Return(&mockedOperationReference, nil).
 		Times(1)
 
 	firstStatus := operationWithStatus(operations.OperationStatusValues.InProgress)
 	firstPoll := operationsClient.
 		EXPECT().
-		GetOperation(clients.ctx, expectedOperationArgs).
+		GetOperation(clients.Ctx, expectedOperationArgs).
 		Return(&firstStatus, nil)
 
 	secondStatus := operationWithStatus(operations.OperationStatusValues.Succeeded)
 	secondPoll := operationsClient.
 		EXPECT().
-		GetOperation(clients.ctx, expectedOperationArgs).
+		GetOperation(clients.Ctx, expectedOperationArgs).
 		Return(&secondStatus, nil)
 
 	gomock.InOrder(firstPoll, secondPoll)
@@ -146,10 +147,10 @@ func TestAzureDevOpsProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
 	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient:       coreClient,
 		OperationsClient: operationsClient,
-		ctx:              context.Background(),
+		Ctx:              context.Background(),
 	}
 
 	expectedProjectCreateArgs := core.QueueCreateProjectArgs{ProjectToCreate: &testProject}
@@ -158,7 +159,7 @@ func TestAzureDevOpsProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *
 
 	coreClient.
 		EXPECT().
-		QueueCreateProject(clients.ctx, expectedProjectCreateArgs).
+		QueueCreateProject(clients.Ctx, expectedProjectCreateArgs).
 		Return(&mockedOperationReference, nil).
 		Times(1)
 
@@ -166,7 +167,7 @@ func TestAzureDevOpsProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *
 	status := operationWithStatus(operations.OperationStatusValues.InProgress)
 	operationsClient.
 		EXPECT().
-		GetOperation(clients.ctx, expectedOperationArgs).
+		GetOperation(clients.Ctx, expectedOperationArgs).
 		Return(&status, nil).
 		MinTimes(1)
 
@@ -179,9 +180,9 @@ func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 	defer ctrl.Finish()
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient: coreClient,
-		ctx:        context.Background(),
+		Ctx:        context.Background(),
 	}
 
 	expectedProcesses := []core.Process{
@@ -194,14 +195,14 @@ func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 	// mock the list of all process IDs. This is needed for the call to flattenProject()
 	coreClient.
 		EXPECT().
-		GetProcesses(clients.ctx, core.GetProcessesArgs{}).
+		GetProcesses(clients.Ctx, core.GetProcessesArgs{}).
 		Return(&expectedProcesses, nil).
 		Times(1)
 
 	// mock the lookup of a specific process. This is needed for the call to expandProject()
 	coreClient.
 		EXPECT().
-		GetProcessById(clients.ctx, core.GetProcessByIdArgs{ProcessId: &testID}).
+		GetProcessById(clients.Ctx, core.GetProcessByIdArgs{ProcessId: &testID}).
 		Return(&expectedProcesses[0], nil).
 		Times(1)
 
@@ -220,9 +221,9 @@ func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 	defer ctrl.Finish()
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient: coreClient,
-		ctx:        context.Background(),
+		Ctx:        context.Background(),
 	}
 
 	id := "id"
@@ -230,7 +231,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 
 	coreClient.
 		EXPECT().
-		GetProject(clients.ctx, core.GetProjectArgs{
+		GetProject(clients.Ctx, core.GetProjectArgs{
 			ProjectId:           &id,
 			IncludeCapabilities: converter.Bool(true),
 			IncludeHistory:      converter.Bool(false),
@@ -246,9 +247,9 @@ func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 	defer ctrl.Finish()
 
 	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
-	clients := &aggregatedClient{
+	clients := &config.AggregatedClient{
 		CoreClient: coreClient,
-		ctx:        context.Background(),
+		Ctx:        context.Background(),
 	}
 
 	id := ""
@@ -256,7 +257,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 
 	coreClient.
 		EXPECT().
-		GetProject(clients.ctx, core.GetProjectArgs{
+		GetProject(clients.Ctx, core.GetProjectArgs{
 			ProjectId:           &name,
 			IncludeCapabilities: converter.Bool(true),
 			IncludeHistory:      converter.Bool(false),
@@ -346,7 +347,7 @@ func testAccCheckProjectResourceExists(expectedName string) resource.TestCheckFu
 			return fmt.Errorf("Did not find a project in the TF state")
 		}
 
-		clients := testAccProvider.Meta().(*aggregatedClient)
+		clients := testAccProvider.Meta().(*config.AggregatedClient)
 		id := resource.Primary.ID
 		project, err := projectRead(clients, id, "")
 
@@ -366,7 +367,7 @@ func testAccCheckProjectResourceExists(expectedName string) resource.TestCheckFu
 // verifies that all projects referenced in the state are destroyed. This will be invoked
 // *after* terrafform destroys the resource but *before* the state is wiped clean.
 func testAccProjectCheckDestroy(s *terraform.State) error {
-	clients := testAccProvider.Meta().(*aggregatedClient)
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
 	// verify that every project referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

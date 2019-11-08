@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/stretchr/testify/require"
 
@@ -20,22 +21,22 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 )
 
-var testServiceEndpointID = uuid.New()
-var randomServiceEndpointProjectID = uuid.New().String()
-var testServiceEndpointProjectID = &randomServiceEndpointProjectID
+var ghTestServiceEndpointID = uuid.New()
+var ghRandomServiceEndpointProjectID = uuid.New().String()
+var ghTestServiceEndpointProjectID = &ghRandomServiceEndpointProjectID
 
-var testServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"accessToken": "UNIT_TEST_ACCESS_TOKEN",
 		},
 		Scheme: converter.String("PersonalAccessToken"),
 	},
-	Id:    &testServiceEndpointID,
+	Id:    &ghTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("UNIT_TEST_TYPE"),
-	Url:   converter.String("UNIT_TEST_URL"),
+	Owner: converter.String("library"),
+	Type:  converter.String("github"),
+	Url:   converter.String("http://github.com"),
 }
 
 /**
@@ -43,106 +44,110 @@ var testServiceEndpoint = serviceendpoint.ServiceEndpoint{
  */
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestAzureDevOpsServiceEndpoint_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpoint().Schema, nil)
-	flattenServiceEndpoint(resourceData, &testServiceEndpoint, testServiceEndpointProjectID)
+func TestAzureDevOpsServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpointGitHub().Schema, nil)
+	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpoint(resourceData)
+	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointGitHub(resourceData)
 
-	require.Equal(t, testServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, testServiceEndpointProjectID, projectID)
+	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, ghTestServiceEndpointProjectID, projectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestAzureDevOpsServiceEndpoint_Create_DoesNotSwallowError(t *testing.T) {
+func TestAzureDevOpsServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpoint().Schema, nil)
-	flattenServiceEndpoint(resourceData, &testServiceEndpoint, testServiceEndpointProjectID)
+	r := resourceServiceEndpointGitHub()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &aggregatedClient{ServiceEndpointClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &testServiceEndpoint, Project: testServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghTestServiceEndpoint, Project: ghTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
-		CreateServiceEndpoint(clients.ctx, expectedArgs).
+		CreateServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("CreateServiceEndpoint() Failed")).
 		Times(1)
 
-	err := resourceServiceEndpointCreate(resourceData, clients)
+	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestAzureDevOpsServiceEndpoint_Read_DoesNotSwallowError(t *testing.T) {
+func TestAzureDevOpsServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpoint().Schema, nil)
-	flattenServiceEndpoint(resourceData, &testServiceEndpoint, testServiceEndpointProjectID)
+	r := resourceServiceEndpointGitHub()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &aggregatedClient{ServiceEndpointClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: testServiceEndpoint.Id, Project: testServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
-		GetServiceEndpointDetails(clients.ctx, expectedArgs).
+		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("GetServiceEndpoint() Failed")).
 		Times(1)
 
-	err := resourceServiceEndpointRead(resourceData, clients)
+	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestAzureDevOpsServiceEndpoint_Delete_DoesNotSwallowError(t *testing.T) {
+func TestAzureDevOpsServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpoint().Schema, nil)
-	flattenServiceEndpoint(resourceData, &testServiceEndpoint, testServiceEndpointProjectID)
+	r := resourceServiceEndpointGitHub()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &aggregatedClient{ServiceEndpointClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: testServiceEndpoint.Id, Project: testServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
-		DeleteServiceEndpoint(clients.ctx, expectedArgs).
+		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
 		Times(1)
 
-	err := resourceServiceEndpointDelete(resourceData, clients)
+	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestAzureDevOpsServiceEndpoint_Update_DoesNotSwallowError(t *testing.T) {
+func TestAzureDevOpsServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpoint().Schema, nil)
-	flattenServiceEndpoint(resourceData, &testServiceEndpoint, testServiceEndpointProjectID)
+	r := resourceServiceEndpointGitHub()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &aggregatedClient{ServiceEndpointClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &testServiceEndpoint,
-		EndpointId: testServiceEndpoint.Id,
-		Project:    testServiceEndpointProjectID,
+		Endpoint:   &ghTestServiceEndpoint,
+		EndpointId: ghTestServiceEndpoint.Id,
+		Project:    ghTestServiceEndpointProjectID,
 	}
 
 	buildClient.
 		EXPECT().
-		UpdateServiceEndpoint(clients.ctx, expectedArgs).
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
 		Times(1)
 
-	err := resourceServiceEndpointUpdate(resourceData, clients)
+	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
@@ -152,36 +157,34 @@ func TestAzureDevOpsServiceEndpoint_Update_DoesNotSwallowError(t *testing.T) {
 
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
-func TestAccAzureDevOpsServiceEndpoint_CreateAndUpdate(t *testing.T) {
+func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	serviceEndpointNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	serviceEndpointNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	tfSvcEpNode := "azuredevops_serviceendpoint.serviceendpoint"
+	tfSvcEpNode := "azuredevops_serviceendpoint_github.serviceendpoint"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccServiceEndpointCheckDestroy,
+		CheckDestroy: testAccServiceEndpointGitHubCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceEndpointResource(projectName, serviceEndpointNameFirst),
+				Config: testAccServiceEndpointGitHubResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "github_service_endpoint_pat_hash"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_endpoint_owner"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
-					testAccCheckServiceEndpointResourceExists(serviceEndpointNameFirst),
+					testAccCheckServiceEndpointGitHubResourceExists(serviceEndpointNameFirst),
 				),
 			}, {
-				Config: testAccServiceEndpointResource(projectName, serviceEndpointNameSecond),
+				Config: testAccServiceEndpointGitHubResource(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "github_service_endpoint_pat_hash"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_endpoint_owner"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					testAccCheckServiceEndpointResourceExists(serviceEndpointNameSecond),
+					testAccCheckServiceEndpointGitHubResourceExists(serviceEndpointNameSecond),
 				),
 			},
 		},
@@ -189,14 +192,11 @@ func TestAccAzureDevOpsServiceEndpoint_CreateAndUpdate(t *testing.T) {
 }
 
 // HCL describing an AzDO service endpoint
-func testAccServiceEndpointResource(projectName string, serviceEndpointName string) string {
+func testAccServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	service_endpoint_type  = "github"
-	service_endpoint_url   = "http://github.com"
-	service_endpoint_owner = "Library"
 	
 }`, serviceEndpointName)
 
@@ -206,14 +206,14 @@ resource "azuredevops_serviceendpoint" "serviceendpoint" {
 
 // Given the name of an AzDO service endpoint, this will return a function that will check whether
 // or not the resource (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func testAccCheckServiceEndpointResourceExists(expectedName string) resource.TestCheckFunc {
+func testAccCheckServiceEndpointGitHubResourceExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		serviceEndpointDef, ok := s.RootModule().Resources["azuredevops_serviceendpoint.serviceendpoint"]
+		serviceEndpointDef, ok := s.RootModule().Resources["azuredevops_serviceendpoint_github.serviceendpoint"]
 		if !ok {
 			return fmt.Errorf("Did not find a service endpoint in the TF state")
 		}
 
-		serviceEndpoint, err := getServiceEndpointFromResource(serviceEndpointDef)
+		serviceEndpoint, err := getServiceEndpointGitHubFromResource(serviceEndpointDef)
 		if err != nil {
 			return err
 		}
@@ -228,14 +228,14 @@ func testAccCheckServiceEndpointResourceExists(expectedName string) resource.Tes
 
 // verifies that all service endpoints referenced in the state are destroyed. This will be invoked
 // *after* terrafform destroys the resource but *before* the state is wiped clean.
-func testAccServiceEndpointCheckDestroy(s *terraform.State) error {
+func testAccServiceEndpointGitHubCheckDestroy(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_serviceendpoint" {
+		if resource.Type != "azuredevops_serviceendpoint_github" {
 			continue
 		}
 
 		// indicates the service endpoint still exists - this should fail the test
-		if _, err := getServiceEndpointFromResource(resource); err == nil {
+		if _, err := getServiceEndpointGitHubFromResource(resource); err == nil {
 			return fmt.Errorf("Unexpectedly found a service endpoint that should be deleted")
 		}
 	}
@@ -244,15 +244,15 @@ func testAccServiceEndpointCheckDestroy(s *terraform.State) error {
 }
 
 // given a resource from the state, return a service endpoint (and error)
-func getServiceEndpointFromResource(resource *terraform.ResourceState) (*serviceendpoint.ServiceEndpoint, error) {
+func getServiceEndpointGitHubFromResource(resource *terraform.ResourceState) (*serviceendpoint.ServiceEndpoint, error) {
 	serviceEndpointDefID, err := uuid.Parse(resource.Primary.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testAccProvider.Meta().(*aggregatedClient)
-	return clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
+	return clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
 		Project:    &projectID,
 		EndpointId: &serviceEndpointDefID,
 	})

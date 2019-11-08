@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/stretchr/testify/require"
 	"strings"
@@ -88,7 +89,7 @@ func TestGroupMembership_Create_DoesNotSwallowErrors(t *testing.T) {
 	defer ctrl.Finish()
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedArgs := graph.AddMembershipArgs{
 		ContainerDescriptor: converter.String("TEST_GROUP"),
@@ -96,7 +97,7 @@ func TestGroupMembership_Create_DoesNotSwallowErrors(t *testing.T) {
 	}
 	graphClient.
 		EXPECT().
-		AddMembership(clients.ctx, expectedArgs).
+		AddMembership(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("AddMembership() Failed"))
 
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
@@ -109,7 +110,7 @@ func TestGroupMembership_Destroy_DoesNotSwallowErrors(t *testing.T) {
 	defer ctrl.Finish()
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedArgs := graph.RemoveMembershipArgs{
 		ContainerDescriptor: converter.String("TEST_GROUP"),
@@ -117,7 +118,7 @@ func TestGroupMembership_Destroy_DoesNotSwallowErrors(t *testing.T) {
 	}
 	graphClient.
 		EXPECT().
-		RemoveMembership(clients.ctx, expectedArgs).
+		RemoveMembership(clients.Ctx, expectedArgs).
 		Return(errors.New("RemoveMembership() Failed"))
 
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
@@ -130,7 +131,7 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 	defer ctrl.Finish()
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
-	clients := &aggregatedClient{GraphClient: graphClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
 
 	expectedArgs := graph.ListMembershipsArgs{
 		SubjectDescriptor: converter.String("TEST_GROUP"),
@@ -139,7 +140,7 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 	}
 	graphClient.
 		EXPECT().
-		ListMemberships(clients.ctx, expectedArgs).
+		ListMemberships(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("ListMemberships() Failed"))
 
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
@@ -240,8 +241,8 @@ func testAccVerifyGroupMembershipMatchesState() resource.TestCheckFunc {
 
 // call AzDO API to query for group members
 func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error) {
-	clients := testAccProvider.Meta().(*aggregatedClient)
-	return clients.GraphClient.ListMemberships(clients.ctx, graph.ListMembershipsArgs{
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
+	return clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &groupDescriptor,
 		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),

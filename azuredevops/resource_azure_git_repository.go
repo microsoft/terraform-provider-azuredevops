@@ -2,12 +2,12 @@ package azuredevops
 
 import (
 	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
 
@@ -93,7 +93,7 @@ type repoInitializationMeta struct {
 }
 
 func resourceAzureGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	repo, initialization, projectID, err := expandAzureGitRepository(d)
 	if err != nil {
 		return fmt.Errorf("Error expanding repository resource data: %+v", err)
@@ -116,7 +116,7 @@ func resourceAzureGitRepositoryCreate(d *schema.ResourceData, m interface{}) err
 	return resourceAzureGitRepositoryRead(d, m)
 }
 
-func createAzureGitRepository(clients *aggregatedClient, repoName *string, projectID *uuid.UUID) (*git.GitRepository, error) {
+func createAzureGitRepository(clients *config.AggregatedClient, repoName *string, projectID *uuid.UUID) (*git.GitRepository, error) {
 	args := git.CreateRepositoryArgs{
 		GitRepositoryToCreate: &git.GitRepositoryCreateOptions{
 			Name: repoName,
@@ -125,12 +125,12 @@ func createAzureGitRepository(clients *aggregatedClient, repoName *string, proje
 			},
 		},
 	}
-	createdRepository, err := clients.GitReposClient.CreateRepository(clients.ctx, args)
+	createdRepository, err := clients.GitReposClient.CreateRepository(clients.Ctx, args)
 
 	return createdRepository, err
 }
 
-func initializeAzureGitRepository(clients *aggregatedClient, repo *git.GitRepository) error {
+func initializeAzureGitRepository(clients *config.AggregatedClient, repo *git.GitRepository) error {
 	args := git.CreatePushArgs{
 		RepositoryId: repo.Name,
 		Project:      repo.Project.Name,
@@ -161,7 +161,7 @@ func initializeAzureGitRepository(clients *aggregatedClient, repo *git.GitReposi
 		},
 	}
 
-	_, err := clients.GitReposClient.CreatePush(clients.ctx, args)
+	_, err := clients.GitReposClient.CreatePush(clients.Ctx, args)
 
 	return err
 }
@@ -171,7 +171,7 @@ func resourceAzureGitRepositoryRead(d *schema.ResourceData, m interface{}) error
 	repoName := d.Get("name").(string)
 	projectID := d.Get("project_id").(string)
 
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	repo, err := azureGitRepositoryRead(clients, repoID, repoName, projectID)
 	if err != nil {
 		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
@@ -182,7 +182,7 @@ func resourceAzureGitRepositoryRead(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceAzureGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	repo, _, projectID, err := expandAzureGitRepository(d)
 	if err != nil {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
@@ -197,10 +197,10 @@ func resourceAzureGitRepositoryUpdate(d *schema.ResourceData, m interface{}) err
 	return resourceAzureGitRepositoryRead(d, m)
 }
 
-func updateAzureGitRepository(clients *aggregatedClient, repository *git.GitRepository, project *uuid.UUID) (*git.GitRepository, error) {
+func updateAzureGitRepository(clients *config.AggregatedClient, repository *git.GitRepository, project *uuid.UUID) (*git.GitRepository, error) {
 	projectID := project.String()
 	return clients.GitReposClient.UpdateRepository(
-		clients.ctx,
+		clients.Ctx,
 		git.UpdateRepositoryArgs{
 			NewRepositoryInfo: repository,
 			RepositoryId:      repository.Id,
@@ -210,29 +210,29 @@ func updateAzureGitRepository(clients *aggregatedClient, repository *git.GitRepo
 
 func resourceAzureGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	repoID := d.Id()
-	clients := m.(*aggregatedClient)
+	clients := m.(*config.AggregatedClient)
 	return deleteAzureGitRepository(clients, repoID)
 }
 
-func deleteAzureGitRepository(clients *aggregatedClient, repoID string) error {
+func deleteAzureGitRepository(clients *config.AggregatedClient, repoID string) error {
 	uuid, err := uuid.Parse(repoID)
 	if err != nil {
 		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
 	}
 
-	return clients.GitReposClient.DeleteRepository(clients.ctx, git.DeleteRepositoryArgs{
+	return clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &uuid,
 	})
 }
 
 // Lookup an Azure Git Repository using the ID, or name if the ID is not set.
-func azureGitRepositoryRead(clients *aggregatedClient, repoID string, repoName string, projectID string) (*git.GitRepository, error) {
+func azureGitRepositoryRead(clients *config.AggregatedClient, repoID string, repoName string, projectID string) (*git.GitRepository, error) {
 	identifier := repoID
 	if identifier == "" {
 		identifier = repoName
 	}
 
-	return clients.GitReposClient.GetRepository(clients.ctx, git.GetRepositoryArgs{
+	return clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
 		RepositoryId: converter.String(identifier),
 		Project:      converter.String(projectID),
 	})

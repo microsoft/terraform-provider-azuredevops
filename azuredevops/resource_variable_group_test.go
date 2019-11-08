@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/stretchr/testify/require"
 )
@@ -161,9 +162,9 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testAccProvider.Meta().(*aggregatedClient)
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
 	return clients.TaskAgentClient.GetVariableGroup(
-		clients.ctx,
+		clients.Ctx,
 		taskagent.GetVariableGroupArgs{
 			GroupId: &variableGroupID,
 			Project: &projectID,

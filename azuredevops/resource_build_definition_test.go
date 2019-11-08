@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,12 +98,12 @@ func TestAzureDevOpsBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
-	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.CreateDefinitionArgs{Definition: &testBuildDefinition, Project: &testProjectID}
 	buildClient.
 		EXPECT().
-		CreateDefinition(clients.ctx, expectedArgs).
+		CreateDefinition(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("CreateDefinition() Failed")).
 		Times(1)
 
@@ -119,12 +120,12 @@ func TestAzureDevOpsBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
-	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.GetDefinitionArgs{DefinitionId: testBuildDefinition.Id, Project: &testProjectID}
 	buildClient.
 		EXPECT().
-		GetDefinition(clients.ctx, expectedArgs).
+		GetDefinition(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("GetDefinition() Failed")).
 		Times(1)
 
@@ -141,12 +142,12 @@ func TestAzureDevOpsBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
-	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.DeleteDefinitionArgs{DefinitionId: testBuildDefinition.Id, Project: &testProjectID}
 	buildClient.
 		EXPECT().
-		DeleteDefinition(clients.ctx, expectedArgs).
+		DeleteDefinition(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteDefinition() Failed")).
 		Times(1)
 
@@ -163,7 +164,7 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
-	clients := &aggregatedClient{BuildClient: buildClient, ctx: context.Background()}
+	clients := &config.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.UpdateDefinitionArgs{
 		Definition:   &testBuildDefinition,
@@ -173,7 +174,7 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 
 	buildClient.
 		EXPECT().
-		UpdateDefinition(clients.ctx, expectedArgs).
+		UpdateDefinition(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("UpdateDefinition() Failed")).
 		Times(1)
 
@@ -286,8 +287,8 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testAccProvider.Meta().(*aggregatedClient)
-	return clients.BuildClient.GetDefinition(clients.ctx, build.GetDefinitionArgs{
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
+	return clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefID,
 	})

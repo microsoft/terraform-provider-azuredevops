@@ -2,19 +2,21 @@ package azuredevops
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"azuredevops_build_definition":     resourceBuildDefinition(),
-			"azuredevops_project":              resourceProject(),
-			"azuredevops_serviceendpoint":      resourceServiceEndpoint(),
-			"azuredevops_variable_group":       resourceVariableGroup(),
-			"azuredevops_azure_git_repository": resourceAzureGitRepository(),
-			"azuredevops_user_entitlement":     resourceUserEntitlement(),
-			"azuredevops_group_membership":     resourceGroupMembership(),
+			"azuredevops_build_definition":          resourceBuildDefinition(),
+			"azuredevops_project":                   resourceProject(),
+			"azuredevops_variable_group":            resourceVariableGroup(),
+			"azuredevops_serviceendpoint_github":    resourceServiceEndpointGitHub(),
+			"azuredevops_serviceendpoint_dockerhub": resourceServiceEndpointDockerHub(),
+			"azuredevops_azure_git_repository":      resourceAzureGitRepository(),
+			"azuredevops_user_entitlement":          resourceUserEntitlement(),
+			"azuredevops_group_membership":          resourceGroupMembership(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_group": dataGroup(),
@@ -43,7 +45,7 @@ func Provider() *schema.Provider {
 
 func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 	return func(d *schema.ResourceData) (interface{}, error) {
-		client, err := getAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string))
+		client, err := config.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string))
 		return client, err
 	}
 }
