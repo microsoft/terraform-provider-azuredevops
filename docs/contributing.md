@@ -63,11 +63,13 @@ To develop using docker:
 If using VSCode's [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack):
 * Open the project in VSCode
 * When prompted by VSCode, select "Reopen in Container"
-* When prompted by VSCode, install additional go tools in the container
+* In the command palette (ctrl+shift+p on Windows/Linux, command+shift+p on Mac) type: `Go: Install/Update tools` and select it
+* Note: SSH credentials are automatically mapped into the container
+* When committing, you will be prompted to configure git `user.name` and `user.email`
 
 Without VSCode:
-* Build the development environment: `docker build -it dev .`
-* Mount the root directory into the docker container, and drop into a bash shell: `docker run -it -v ${PWD}:/root/workspace dev`
+* Build the development environment: `docker build -f .devcontainer/Dockerfile -t dev .`
+* From bash or powershell, mount the root directory into the docker container, and drop into a bash shell in the container: `docker run -it -v ${PWD}:/workspaces/terraform-provider-azuredevops dev`
 
 Continue with the guide to [run the provider locally](#4-run-provider-locally).
 

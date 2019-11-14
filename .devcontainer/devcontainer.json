@@ -1,0 +1,34 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
+// https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
+{
+	"name": "Dev Dockerfile",
+	"dockerFile": "Dockerfile",
+	// The optional 'runArgs' property can be used to specify additional runtime arguments.
+	"runArgs": [
+		// Enable go debugger
+		"--cap-add=SYS_PTRACE",
+		"--security-opt",
+		"seccomp=unconfined",
+		// Enable SSH for git
+		"-v",
+		"${env:HOME}${env:USERPROFILE}/.ssh:/root/.ssh-localhost:ro"
+	],
+	"postCreateCommand": "mkdir -p /root/.ssh && cp -r /root/.ssh-localhost/* /root/.ssh && chmod 700 /root/.ssh && chmod 600 /root/.ssh/*",
+	"settings": {
+		"files.eol": "\n",
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"go.useLanguageServer": true,
+		"go.autocompleteUnimportedPackages": true,
+		"go.gotoSymbol.includeImports": true,
+		"go.gotoSymbol.includeGoroot": true,
+		"[go]": {
+			"editor.formatOnSave": true,
+			"editor.codeActionsOnSave": {
+				"source.organizeImports": true
+			}
+		}
+	},
+	"extensions": [
+		"ms-vscode.go"
+	]
+}
