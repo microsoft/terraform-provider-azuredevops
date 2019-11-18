@@ -279,6 +279,8 @@ golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0 h1:Dh6fw+p6FyRl5x/FvNswO1j
 golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20191107185733-c07e1c6ef61c h1:Qt1WYboHEeHaS/fP0fLmCKuwYQtLpZ4GkGewvC29TaE=
 golang.org/x/tools v0.0.0-20191107185733-c07e1c6ef61c/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
+golang.org/x/tools v0.0.0-20191107235519-f7ea15e60b12 h1:Em35dEjqsNULK9Md61nyJCwGaF+Ydf5CpLdiroCI++4=
+golang.org/x/tools v0.0.0-20191107235519-f7ea15e60b12/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
 google.golang.org/api v0.7.0/go.mod h1:WtwebWUNSVBH/HAw79HIFXZNqEvBhG+Ra+ax0hx3E3M=

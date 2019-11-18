@@ -51,7 +51,15 @@ The following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Variable Groups](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/variablegroups?view=azure-devops-rest-5.1)
 
 ## Import
-Azure DevOps Variable Groups import not supported at this time.
+Azure DevOps Variable groups can be imported using the project name/variable group Id or by the project Guid id/variable group Id, e.g.
+ 
+ ```
+ terraform import azuredevops_project.project "Test Project"/10
+ or
+ terraform import azuredevops_project.project 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+ ```
+
+*Note that for secret variables, the import command retrieve blank value in the tfstate.*
 
 ## PAT Permissions Required
 
