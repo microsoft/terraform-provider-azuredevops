@@ -1,6 +1,7 @@
 package tfhelper
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
@@ -70,6 +71,15 @@ func ParseProjectIDAndResourceID(d *schema.ResourceData) (string, int, error) {
 	resourceID, err := strconv.Atoi(d.Id())
 
 	return projectID, resourceID, err
+}
+
+//PrettyPrint json
+func PrettyPrint(v interface{}) (err error) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err == nil {
+		log.Printf(string(b))
+	}
+	return
 }
 
 // ParseImportedID parse the imported Id from the terraform import

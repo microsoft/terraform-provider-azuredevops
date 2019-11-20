@@ -12,6 +12,14 @@ Use Terraform logging to debug your code. (TBD: write this section).
 % export TF_LOG=DEBUG
 ~~~
 
+For display traces information durant the Terraform execution like the passed and response objects from the Azure DevOps API, add logs with the `tfhelpers.PrettyPrint` method like as the example below:
+~~~
+tfhelper.PrettyPrint(createdVariableGroup)
+~~~
+And during the Terraform execution we can see the logs:
+
+![logs](images/prettyprintlogs.png)
+
 ## Option 3 - Debug acceptance tests from VS Code
 
 This option is well documented in the [AzureRM Contributing Guide](https://github.com/Azure/terraform/blob/master/provider/CONTRIBUTE.md#debug-the-azurerm-provider-using-visual-studio-code-and-delve)

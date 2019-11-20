@@ -53,7 +53,7 @@ resource "azuredevops_variable_group" "vg" {
   project_id   = azuredevops_project.project.id
   name         = "Sample VG 1"
   description  = "A sample variable group."
-  //allow_access = true /* not supported by api */
+  allow_access = true
 
   variable {
     name      = "key1"

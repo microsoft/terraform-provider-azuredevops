@@ -5,6 +5,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"strconv"
 	"testing"
 
@@ -35,6 +36,13 @@ var testVariableGroup = taskagent.VariableGroup{
 		},
 	},
 }
+var resourceRefType = "variablegroup"
+var testDefinitionResource = build.DefinitionResourceReference{
+	Type:       &resourceRefType,
+	Authorized: converter.Bool(true),
+	Name:       testVariableGroup.Name,
+	Id:         converter.String("100"),
+}
 
 /**
  * Begin unit tests
@@ -43,13 +51,20 @@ var testVariableGroup = taskagent.VariableGroup{
 func TestAzureDevOpsVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceVariableGroup().Schema, nil)
 	flattenVariableGroup(resourceData, &testVariableGroup, &testVarGroupProjectID)
+	var testArrayDefinitionResourceReference []build.DefinitionResourceReference
+	testArrayDefinitionResourceReference = append(testArrayDefinitionResourceReference, testDefinitionResource)
+	flattenAllowAccess(resourceData, &testArrayDefinitionResourceReference)
 
 	variableGroupParams, projectID := expandVariableGroupParameters(resourceData)
+	definitionResourceReferenceArgs := expandDefinitionResourceAuth(resourceData, &testVariableGroup)
 
 	require.Equal(t, *testVariableGroup.Name, *variableGroupParams.Name)
 	require.Equal(t, *testVariableGroup.Description, *variableGroupParams.Description)
 	require.Equal(t, *testVariableGroup.Variables, *variableGroupParams.Variables)
 	require.Equal(t, testVarGroupProjectID, *projectID)
+
+	require.Equal(t, testDefinitionResource.Authorized, definitionResourceReferenceArgs[0].Authorized)
+	require.Equal(t, testDefinitionResource.Id, definitionResourceReferenceArgs[0].Id)
 }
 
 /**
@@ -60,6 +75,8 @@ func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	vargroupNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	vargroupNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	allowAccessFirst := true
+	allowAccessSecond := false
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 	resource.Test(t, resource.TestCase{
@@ -68,18 +85,18 @@ func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: testAccVariableGroupCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVariableGroupResource(projectName, vargroupNameFirst),
+				Config: testAccVariableGroupResource(projectName, vargroupNameFirst, allowAccessFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
-					testAccCheckVariableGroupResourceExists(vargroupNameFirst),
+					testAccCheckVariableGroupResourceExists(vargroupNameFirst, allowAccessFirst),
 				),
 			}, {
-				Config: testAccVariableGroupResource(projectName, vargroupNameSecond),
+				Config: testAccVariableGroupResource(projectName, vargroupNameSecond, allowAccessSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
-					testAccCheckVariableGroupResourceExists(vargroupNameSecond),
+					testAccCheckVariableGroupResourceExists(vargroupNameSecond, allowAccessSecond),
 				),
 			},
 			{
@@ -94,13 +111,13 @@ func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 }
 
 // HCL describing an AzDO variable group
-func testAccVariableGroupResource(projectName string, variableGroupName string) string {
+func testAccVariableGroupResource(projectName string, variableGroupName string, allowAccess bool) string {
 	variableGroupResource := fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
 	project_id  = azuredevops_project.project.id
 	name        = "%s"
 	description = "A sample variable group."
-
+	allow_access = %t
 	variable {
 		name      = "key1"
 		value     = "value1"
@@ -115,7 +132,7 @@ resource "azuredevops_variable_group" "vg" {
 	variable {
 		name = "key3"
 	}
-}`, variableGroupName)
+}`, variableGroupName, allowAccess)
 
 	projectResource := testAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
@@ -124,7 +141,7 @@ resource "azuredevops_variable_group" "vg" {
 // Given an AzDO variable group name, this will return a function that will check whether
 // or not the definition (1) exists in the state, (2) exists in AzDO, and (3) has the correct
 // or expected name
-func testAccCheckVariableGroupResourceExists(expectedName string) resource.TestCheckFunc {
+func testAccCheckVariableGroupResourceExists(expectedName string, expectedAllowAccess bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		varGroup, ok := s.RootModule().Resources["azuredevops_variable_group.vg"]
 		if !ok {
@@ -140,6 +157,25 @@ func testAccCheckVariableGroupResourceExists(expectedName string) resource.TestC
 			return fmt.Errorf("Variable Group has Name=%s, but expected %s", *variableGroup.Name, expectedName)
 		}
 
+		// testing Allow access with definition reference AzDo object
+		definitionReference, err := getDefinitionResourceFromVariableGroupResource(varGroup)
+		if err != nil {
+			return err
+		}
+
+		if !expectedAllowAccess {
+			if len(*definitionReference) > 0 {
+				return fmt.Errorf("Definition reference should be empty for allow access false")
+			}
+
+		} else {
+			if len(*definitionReference) == 0 {
+				return fmt.Errorf("Definition reference should be not empty for allow access true")
+			}
+			if len(*definitionReference) > 0 && *(*definitionReference)[0].Authorized != expectedAllowAccess {
+				return fmt.Errorf("Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
+			}
+		}
 		return nil
 	}
 }
@@ -155,6 +191,11 @@ func testAccVariableGroupCheckDestroy(s *terraform.State) error {
 		// Indicates the variable group still exists -- this should fail the test
 		if _, err := getVariableGroupFromResource(resource); err == nil {
 			return fmt.Errorf("Unexpectedly found a variable group that should be deleted")
+		}
+
+		// Indicates the definition reference still exists -- this should fail the test
+		if _, err := getDefinitionResourceFromVariableGroupResource(resource); err == nil {
+			return fmt.Errorf("Unexpectedly found a defintion reference for allow access that should be deleted")
 		}
 	}
 
@@ -175,6 +216,22 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 		taskagent.GetVariableGroupArgs{
 			GroupId: &variableGroupID,
 			Project: &projectID,
+		},
+	)
+}
+
+// Given a resource from the state, return a definition Reference (and error)
+func getDefinitionResourceFromVariableGroupResource(resource *terraform.ResourceState) (*[]build.DefinitionResourceReference, error) {
+
+	projectID := resource.Primary.Attributes["project_id"]
+	clients := testAccProvider.Meta().(*config.AggregatedClient)
+
+	return clients.BuildClient.GetProjectResources(
+		clients.Ctx,
+		build.GetProjectResourcesArgs{
+			Project: &projectID,
+			Type:    &resourceRefType,
+			Id:      &resource.Primary.ID,
 		},
 	)
 }
