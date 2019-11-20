@@ -20,11 +20,11 @@ func GenBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 		Read:   genServiceEndpointReadFunc(f),
 		Update: genServiceEndpointUpdateFunc(f, e),
 		Delete: genServiceEndpointDeleteFunc(e),
-		Schema: genBaseScema(),
+		Schema: genBaseSchema(),
 	}
 }
 
-func genBaseScema() map[string]*schema.Schema {
+func genBaseSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:     schema.TypeString,

@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -35,6 +36,12 @@ func resourceBuildDefinition() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
+			},
+			"path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "\\",
+				ValidateFunc: validate.FilePathOrEmpty,
 			},
 			"variable_groups": {
 				Type: schema.TypeSet,
@@ -267,6 +274,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
+		Path:     converter.String(d.Get("path").(string)),
 		Revision: converter.Int(d.Get("revision").(int)),
 		Repository: &build.BuildRepository{
 			Url:           &repoURL,

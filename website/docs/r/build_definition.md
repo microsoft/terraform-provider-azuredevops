@@ -22,6 +22,7 @@ resource "azuredevops_azure_git_repository" "repository" {
 resource "azuredevops_build_definition" "build" {
   project_id = azuredevops_project.project.id
   name       = "Sample Build Definition"
+  path       = "\\ExampleFolder"
 
   repository {
     repo_type   = "TfsGit"

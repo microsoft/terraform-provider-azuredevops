@@ -23,6 +23,7 @@ resource "azuredevops_build_definition" "nightly_build" {
   project_id      = azuredevops_project.project.id
   agent_pool_name = "Hosted Ubuntu 1604"
   name            = "Nightly Build"
+  path            = "\\"
 
   repository {
     repo_type             = "GitHub"

@@ -62,6 +62,7 @@ resource "azuredevops_azure_git_repository" "repository" {
 resource "azuredevops_build_definition" "build_definition" {
   project_id = azuredevops_project.project.id
   name       = "My Awesome Build Pipeline"
+  path       = "\\"
 
   repository {
     repo_type   = "TfsGit"

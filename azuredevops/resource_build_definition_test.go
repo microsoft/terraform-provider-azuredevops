@@ -7,6 +7,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -29,6 +30,7 @@ var testBuildDefinition = build.BuildDefinition{
 	Id:       converter.Int(100),
 	Revision: converter.Int(1),
 	Name:     converter.String("Name"),
+	Path:     converter.String("\\"),
 	Repository: &build.BuildRepository{
 		Url:           converter.String("https://github.com/RepoId.git"),
 		Id:            converter.String("RepoId"),
@@ -67,6 +69,17 @@ func TestAzureDevOpsBuildDefinition_RepoTypeListIsCorrect(t *testing.T) {
 	for _, repoType := range expectedRepoTypes {
 		_, errors := repoTypeSchema.ValidateFunc(repoType, "")
 		require.Equal(t, 0, len(errors), "Repo type unexpectedly did not pass validation")
+	}
+}
+
+// validates that and error is thrown if any of the un-supported file path characters are used
+func TestAzureDevOpsBuildDefinition_PathInvalidCharacterListIsError(t *testing.T) {
+	expectedInvalidPathCharacters := []string{"<", ">", "|", ":", "$", "@", "\"", "/", "%", "+", "*", "?"}
+	pathSchema := resourceBuildDefinition().Schema["path"]
+
+	for _, repoType := range expectedInvalidPathCharacters {
+		_, errors := pathSchema.ValidateFunc(repoType, "")
+		require.Equal(t, "<>|:$@\"/%+*? are not allowed", errors[0].Error())
 	}
 }
 
@@ -190,8 +203,15 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 // underlying terraform state.
 func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionPathEmpty := ""
 	buildDefinitionNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	buildDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	buildDefinitionPathThird := buildDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionPathFourth := buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
 	resource.Test(t, resource.TestCase{
@@ -200,20 +220,59 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: testAccBuildDefinitionCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst),
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameSecond),
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameSecond, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameSecond),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameSecond),
+				),
+			}, {
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFirst),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFirst),
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
+				),
+			}, {
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst,
+					buildDefinitionPathSecond),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathSecond),
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
+				),
+			}, {
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathThird),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathThird),
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
+				),
+			}, {
+				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFourth),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFourth),
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			},
 		},
@@ -221,12 +280,13 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 }
 
 // HCL describing an AzDO build definition
-func testAccBuildDefinitionResource(projectName string, buildDefinitionName string) string {
+func testAccBuildDefinitionResource(projectName string, buildDefinitionName string, buildPath string) string {
 	buildDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_build_definition" "build" {
 	project_id      = azuredevops_project.project.id
 	name            = "%s"
 	agent_pool_name = "Hosted Ubuntu 1604"
+	path			= "%s"
   
 	repository {
 	  repo_type             = "GitHub"
@@ -234,7 +294,7 @@ resource "azuredevops_build_definition" "build" {
 	  branch_name           = "branch"
 	  yml_path              = "path/to/yaml"
 	}
-}`, buildDefinitionName)
+}`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`))
 
 	projectResource := testAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
