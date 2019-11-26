@@ -20,7 +20,8 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pool":                resourceAzureAgentPool(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_group": dataGroup(),
+			"azuredevops_group":    dataGroup(),
+			"azuredevops_projects": dataProjects(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

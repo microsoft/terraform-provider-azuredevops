@@ -38,6 +38,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 func TestAzureDevOpsProvider_HasChildDataSources(t *testing.T) {
 	expectedDataSources := []string{
 		"azuredevops_group",
+		"azuredevops_projects",
 	}
 
 	dataSources := provider.DataSourcesMap
