@@ -8,6 +8,8 @@ schedules:
 jobs:
 - template: ./ci.yml
   parameters:
+    maxParallel: 1 # any more and we get throttled by AzDO!
+
     goVersions:
     - value: '1.12.1'
       ymlSafeName: '1_12_1'
