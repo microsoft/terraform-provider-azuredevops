@@ -8,17 +8,19 @@ The AzDO (Azure DevOps) Provider supports Terraform 0.11.x and later - but Terra
 
 * [Terraform Website](https://www.terraform.io)
 * [AzDO Website](https://azure.microsoft.com/en-us/services/devops/)
+* [AzDO Provider Documentation](website/index.html.markdown)
 * [AzDO Provider Usage Examples](./examples/)
-* [AzDO Provider Reference](./website/index.md)
 
 Checkout our [Project Roadmap](./docs/roadmap.md).
 
 ## Important!
 This repository is a work in progress and is not yet suitable for production workloads. Community contributions are welcome.
 
-## Resource Documentation
+## Looking for AzDO Provider Documentation?
 
-Documentation for things like resource specific usage examples, required parameters and default values can be found in our [client facing docs](./website/index.md).
+![docs](docs/images/terraform-docs-website.png)
+
+The documentation for things like resource specific usage examples, required parameters and default values can be found under the [/website](website) directory, which contains all of the [AzDO Provider Documentation](website/index.html.markdown).
 
 ## Configuration Values
 

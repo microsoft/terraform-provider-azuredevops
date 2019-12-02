@@ -13,19 +13,19 @@ resource "azuredevops_project" "project" {
 }
 ```
 
-## Arugument Reference
+## Argument Reference
 
 The following arguments are supported:
 
 * `project_name` - (Required) The Project Name.
 * `description` - (Optional) The Description of the Project.
-* `visibility` - (Optional) Specifies the visibility of the Project. Possible values are `private` or `public`. - private is the default.
-* `version_control` - (Optional) Specifies the version control system. Possible values are `Git` or `Tfvc`. - Git is the default. If you change this value on update, terraform will re-create the project.
-* `work_item_template` - (Optional) Specifies the work item template. - Agile is the default. If you change this value on update, terraform will re-create the project.
+* `visibility` - (Optional) Specifies the visibility of the Project. Valid values: `private` or `public`. Defaults to `private`.
+* `version_control` - (Optional) Specifies the version control system. Valid values: `Git` or `Tfvc`. Defaults to `Git`.
+* `work_item_template` - (Optional) Specifies the work item template. Defaults to `Agile`.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Project ID of the Project.
 

@@ -17,7 +17,7 @@ output "group_descriptor" {
 }
 ```
 
-## Arugument Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -29,7 +29,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The ID for this resource is the group descriptor. See below.
-* `descriptor` - The Descriptor is the primary way to reference the graph subject. This field will uniquely idenfity the same graph subject accross both Accounts and Organizations.
+* `descriptor` - The Descriptor is the primary way to reference the graph subject. This field will uniquely identify the same graph subject across both Accounts and Organizations.
 
 ## Relevant Links
 

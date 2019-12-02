@@ -27,11 +27,11 @@ resource "azuredevops_variable_group" "variablegroup" {
 }
 ```
 
-## Arugument Reference
+## Argument Reference
 
 The following arguments are supported:
 
-* `project_id` - (Required) The Project in which this Variable Group exists or will be created.
+* `project_id` - (Required) The project ID or project name.
 * `name` - (Required) The name of the Variable Group.
 * `description` - (Optional) The description of the Variable Group.
 * `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
@@ -45,7 +45,7 @@ A `variable` block supports the following:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the Variable Group returned after creation in Azure DevOps.
 

@@ -25,7 +25,7 @@ resource "azuredevops_group_membership" "membership" {
 }
 ```
 
-## Arugument Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - A random ID for this resource. There is no "natural" ID, so a random one is assigned.
 

@@ -1,4 +1,4 @@
-# azuredevops_project
+# azuredevops_agent_pool
 Manages an agent pool within Azure DevOps.
 
 ## Example Usage
@@ -7,22 +7,20 @@ Manages an agent pool within Azure DevOps.
 resource "azuredevops_agent_pool" "pool" {
     name = "staging_pool"
     auto_provision = false
-    is_hosted = false
 }
 ```
 
-## Arugument Reference
+## Argument Reference
 
 The following arguments are supported:
 
 * `name` - (Required) The name of the agent pool.
-* `auto_provision` - (Optional) Specifies whether to auto provision the agent pool in new projects. - default is false.
-* `is_hosted` - (Optional) Specifies whether the agent pool is hosted or private. - default is false
-* `pool_type` - (Optional) Specifies whether the agent pool type is Automation or Deployment.  default is "automation"
+* `auto_provision` - (Optional) Specifies whether or not a queue should be automatically provisioned for each project collection. Defaults to `false`.
+* `pool_type` - (Optional) Specifies whether the agent pool type is Automation or Deployment.  Defaults to `automation`.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the agent pool.
 
