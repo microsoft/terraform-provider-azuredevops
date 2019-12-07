@@ -1,3 +1,5 @@
+// +build all helper converter
+
 package converter
 
 import (
@@ -40,7 +42,7 @@ func TestBoolFalse(t *testing.T) {
 	}
 }
 
-func TestAccountLicenseType(t *testing.T) {
+func TestLicenseTypeAccount(t *testing.T) {
 	assertAccountLicenseType(t, licensing.AccountLicenseTypeValues.None)
 	assertAccountLicenseType(t, licensing.AccountLicenseTypeValues.EarlyAdopter)
 	assertAccountLicenseType(t, licensing.AccountLicenseTypeValues.Advanced)

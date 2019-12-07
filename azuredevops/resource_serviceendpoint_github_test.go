@@ -1,3 +1,5 @@
+// +build all resource_serviceendpoint_github
+
 package azuredevops
 
 import (
@@ -14,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
@@ -158,18 +161,18 @@ func TestAzureDevOpsServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	serviceEndpointNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	serviceEndpointNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	serviceEndpointNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	serviceEndpointNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	tfSvcEpNode := "azuredevops_serviceendpoint_github.serviceendpoint"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccServiceEndpointGitHubCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceEndpointGitHubResource(projectName, serviceEndpointNameFirst),
+				Config: testhelper.TestAccServiceEndpointGitHubResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
@@ -178,7 +181,7 @@ func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 					testAccCheckServiceEndpointGitHubResourceExists(serviceEndpointNameFirst),
 				),
 			}, {
-				Config: testAccServiceEndpointGitHubResource(projectName, serviceEndpointNameSecond),
+				Config: testhelper.TestAccServiceEndpointGitHubResource(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
@@ -189,19 +192,6 @@ func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO service endpoint
-func testAccServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
-	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	
-}`, serviceEndpointName)
-
-	projectResource := testAccProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
 // Given the name of an AzDO service endpoint, this will return a function that will check whether
@@ -256,4 +246,8 @@ func getServiceEndpointGitHubFromResource(resource *terraform.ResourceState) (*s
 		Project:    &projectID,
 		EndpointId: &serviceEndpointDefID,
 	})
+}
+
+func init() {
+	InitProvider()
 }

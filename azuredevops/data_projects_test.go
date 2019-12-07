@@ -1,3 +1,5 @@
+// +build all core data_projects
+
 package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out

@@ -1,5 +1,6 @@
 # Testing
 
+- [Authoring tests](#authoring-tests)
 - [Testing](#testing)
 - [Unit Tests](#unit-tests)
 - [Acceptance Tests](#acceptance-tests)
@@ -10,14 +11,50 @@ Instead, this document focuses on what makes testing for this project unique.
 
 > Note: When naming your unit & acceptance tests, please follow the guidance from Hashicorp found [here](https://www.terraform.io/docs/extend/testing/unit-testing.html).
 
+# Authoring Tests
+
+The Azure DevOps provider applies an approach to separate and group tests by using GO build tags or build constraints. [GO build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints).
+
+Thus each `_test.go` files must include a build tag with the following characteristics:
+
+1. The ``// +build`` constraint must include a tag named **all**.
+2. The ``// +build`` constraint must include a tag named after the terraform resource or data source which is under test in the specific `_test.go` file.
+3. Other build tags can be added as will. The administrators of the Azure DevOps Terraform Provider reserve the right to assign certain tags in the future to organize tests into logical groups.
+
+`_test.go` files which contain test helper routines **must not** include any build tag. Otherwise those routines aren't available during a test run because the GO compiler i.e. `go test` will only honor files that either contain the specified build tag or does not contain any build tag at all.
+
+If HCL code must be created for performing acceptance tests, add a function to `azuredevops\utils\testhelper\hcl.go` and try to reuse existing definitions.
+
+Furthermore use the `test-acc-` prefix for naming Terraform resources or data sources in all acceptance tests. It's preferred to reference the `testhelper.TestAccResourcePrefix` const instead of using strings in acceptance tests.
+
+```go
+func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+
+    ...
+}
+```
+
 # Unit Tests
 
 **Running unit tests**
 
 The unit tests are executed whenever `./scripts/build.sh` is run. This can be run locally, but will also be run on every automated build and will be a gate for any PR against this repository. The tests can also be run in isolation by running the following:
+
 ```bash
 $ ./scripts/unittest.sh
 ```
+
+To run only unit tests for a specific resource or data source add the name of the build tag for this Terraform object as parameter to the `unittest.sh` script.
+
+```bash
+$ ./scripts/unittest.sh resource_project
+```
+
+To run unit tests for multiple resources or data sources or for a logical group of tests you can specify multiple parameters to `unittest.sh`.
 
 **Azure DevOps Client SDK Mocks**
 
@@ -71,6 +108,14 @@ $ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
 
 $ ./scripts/acctest.sh
 ```
+
+To run only acceptance tests for a specific resource or data source add the name of the build tag for this Terraform object as parameter to the `acctest.sh` script.
+
+```bash
+$ ./scripts/acctest.sh resource_project
+```
+
+To run acceptance tests for multiple resources or data sources or for a logical group of tests you can specify multiple parameters to `acctest.sh`.
 
 **Writing an acceptance test**
 

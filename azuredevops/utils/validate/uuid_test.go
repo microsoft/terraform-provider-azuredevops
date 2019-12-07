@@ -1,3 +1,5 @@
+// +build all utils uuid
+
 package validate
 
 import "testing"

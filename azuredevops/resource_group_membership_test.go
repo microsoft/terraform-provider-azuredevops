@@ -1,3 +1,5 @@
+// +build all core resource_group_membership
+
 package azuredevops
 
 import (
@@ -249,38 +251,6 @@ func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error)
 	})
 }
 
-// full terraform stanza to standup a group membership
-func testAccGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
-	membershipDependenciesStanza := testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
-	membershipStanza := `
-resource "azuredevops_group_membership" "membership" {
-	group = data.azuredevops_group.group.descriptor
-	members = [azuredevops_user_entitlement.user.descriptor]
-}`
-
-	return membershipDependenciesStanza + "\n" + membershipStanza
-}
-
-// all the dependencies needed to configure a group membership
-func testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
-	project_name = "%s"
-}
-data "azuredevops_group" "group" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
-}
-resource "azuredevops_user_entitlement" "user" {
-	principal_name       = "%s"
-	account_license_type = "express"
-}
-
-output "group_descriptor" {
-	value = data.azuredevops_group.group.descriptor
-}
-output "user_descriptor" {
-	value = azuredevops_user_entitlement.user.descriptor
-}
-`, projectName, groupName, userPrincipalName)
+func init() {
+	InitProvider()
 }

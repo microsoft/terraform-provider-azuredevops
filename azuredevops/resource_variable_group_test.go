@@ -1,3 +1,5 @@
+// +build all resource_variable_group
+
 package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -17,6 +19,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -72,27 +75,27 @@ func TestAzureDevOpsVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
  */
 
 func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	vargroupNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	vargroupNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	vargroupNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	vargroupNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	allowAccessFirst := true
 	allowAccessSecond := false
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccVariableGroupCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVariableGroupResource(projectName, vargroupNameFirst, allowAccessFirst),
+				Config: testhelper.TestAccVariableGroupResource(projectName, vargroupNameFirst, allowAccessFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
 					testAccCheckVariableGroupResourceExists(vargroupNameFirst, allowAccessFirst),
 				),
 			}, {
-				Config: testAccVariableGroupResource(projectName, vargroupNameSecond, allowAccessSecond),
+				Config: testhelper.TestAccVariableGroupResource(projectName, vargroupNameSecond, allowAccessSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
@@ -108,34 +111,6 @@ func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO variable group
-func testAccVariableGroupResource(projectName string, variableGroupName string, allowAccess bool) string {
-	variableGroupResource := fmt.Sprintf(`
-resource "azuredevops_variable_group" "vg" {
-	project_id  = azuredevops_project.project.id
-	name        = "%s"
-	description = "A sample variable group."
-	allow_access = %t
-	variable {
-		name      = "key1"
-		value     = "value1"
-		is_secret = true
-	}
-	
-	variable {
-		name  = "key2"
-		value = "value2"
-	}
-
-	variable {
-		name = "key3"
-	}
-}`, variableGroupName, allowAccess)
-
-	projectResource := testAccProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
 
 // Given an AzDO variable group name, this will return a function that will check whether
@@ -245,4 +220,8 @@ func testAccImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 		}
 		return fmt.Sprintf("%s/%s", rs.Primary.Attributes["project_id"], rs.Primary.Attributes["id"]), nil
 	}
+}
+
+func init() {
+	InitProvider()
 }

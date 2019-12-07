@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -82,34 +83,15 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 	}
 }
 
-// The configuration below can be used for every acceptance test in the project. For that reason,
-// it will be defined once and will live in this file.
-
-// pre-check to validate that the correct environment variables are set prior to running any acceptance test
-func testAccPreCheck(t *testing.T) {
-	requiredEnvVars := []string{
-		"AZDO_ORG_SERVICE_URL",
-		"AZDO_PERSONAL_ACCESS_TOKEN",
-		"AZDO_GITHUB_SERVICE_CONNECTION_PAT",
-		"AZDO_TEST_AAD_USER_EMAIL",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD",
-	}
-
-	for _, variable := range requiredEnvVars {
-		if os.Getenv(variable) == "" {
-			t.Fatalf("`%s` must be set for acceptance tests!", variable)
-		}
-	}
+func init() {
+	InitProvider()
 }
 
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
-var testAccResourcePrefix string
+var testAccResourcePrefix = testhelper.TestAccResourcePrefix
 
-func init() {
-	testAccResourcePrefix = "test-acc-"
+func InitProvider() {
 	testAccProvider = provider
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"azuredevops": testAccProvider,

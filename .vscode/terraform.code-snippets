@@ -119,6 +119,8 @@
 		"scope": "go",
 		"prefix": "tf-azdo-test",
 		"body": [
+			"// +build all",
+			"",
 			"package azuredevops",
 			"",
 			"// The tests in this file use the mock clients in mock_client.go to mock out",

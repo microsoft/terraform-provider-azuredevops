@@ -1,3 +1,5 @@
+// +build all utils string
+
 package suppress
 
 import "testing"

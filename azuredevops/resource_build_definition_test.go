@@ -1,3 +1,5 @@
+// +build all resource_build_definition
+
 package azuredevops
 
 import (
@@ -6,8 +8,8 @@ import (
 	"fmt"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -202,10 +204,10 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionPathEmpty := ""
-	buildDefinitionNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	buildDefinitionNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	buildDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -215,12 +217,12 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccBuildDefinitionCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathEmpty),
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
@@ -229,7 +231,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameSecond, buildDefinitionPathEmpty),
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameSecond, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
@@ -238,7 +240,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameSecond),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFirst),
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
@@ -247,7 +249,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst,
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst,
 					buildDefinitionPathSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
@@ -257,7 +259,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathThird),
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathThird),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
@@ -266,7 +268,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
-				Config: testAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFourth),
+				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFourth),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
@@ -277,27 +279,6 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO build definition
-func testAccBuildDefinitionResource(projectName string, buildDefinitionName string, buildPath string) string {
-	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "build" {
-	project_id      = azuredevops_project.project.id
-	name            = "%s"
-	agent_pool_name = "Hosted Ubuntu 1604"
-	path			= "%s"
-  
-	repository {
-	  repo_type             = "GitHub"
-	  repo_name             = "repoOrg/repoName"
-	  branch_name           = "branch"
-	  yml_path              = "path/to/yaml"
-	}
-}`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`))
-
-	projectResource := testAccProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
 }
 
 // Given the name of an AzDO build definition, this will return a function that will check whether
@@ -352,4 +333,8 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 		Project:      &projectID,
 		DefinitionId: &buildDefID,
 	})
+}
+
+func init() {
+	InitProvider()
 }

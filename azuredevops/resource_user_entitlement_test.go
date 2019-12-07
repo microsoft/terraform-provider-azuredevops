@@ -1,3 +1,5 @@
+// +build all resource_user_entitlement
+
 package azuredevops
 
 import (
@@ -18,6 +20,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -201,12 +204,12 @@ func TestAccAzureDevOpsUserEntitlement_Create(t *testing.T) {
 	tfNode := "azuredevops_user_entitlement.user"
 	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccUserEntitlementCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccUserEntitlementResource(principalName),
+				Config: testhelper.TestAccUserEntitlementResource(principalName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 					testAccCheckUserEntitlementResourceExists(principalName),
@@ -214,15 +217,6 @@ func TestAccAzureDevOpsUserEntitlement_Create(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO project
-func testAccUserEntitlementResource(principalName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_user_entitlement" "user" {
-	principal_name     = "%s"
-	account_license_type = "express"
-}`, principalName)
 }
 
 // Given the principalName of an AzDO userEntitlement, this will return a function that will check whether
@@ -300,4 +294,8 @@ func (m *matchAddUserEntitlementArgs) Matches(x interface{}) bool {
 
 func (m *matchAddUserEntitlementArgs) String() string {
 	return fmt.Sprintf("origin_id: %s, principal_name: %s", *m.t.UserEntitlement.User.OriginId, *m.t.UserEntitlement.User.PrincipalName)
+}
+
+func init() {
+	InitProvider()
 }

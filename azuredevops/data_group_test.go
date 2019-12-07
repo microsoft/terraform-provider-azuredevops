@@ -1,12 +1,14 @@
+// +build all core data_group
+
 package azuredevops
 
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -157,11 +159,11 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 	tfBuildDefNode := "data.azuredevops_group.group"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testhelper.TestAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccGroupDataSource(projectName, group),
+				Config: testhelper.TestAccGroupDataSource(projectName, group),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
@@ -173,14 +175,6 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 	})
 }
 
-// HCL describing an AzDO build definition
-func testAccGroupDataSource(projectName string, groupName string) string {
-	dataSource := fmt.Sprintf(`
-data "azuredevops_group" "group" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
-}`, groupName)
-
-	projectResource := testAccProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
+func init() {
+	InitProvider()
 }

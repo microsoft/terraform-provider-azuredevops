@@ -1,3 +1,5 @@
+// +build all utils secretmemo
+
 package secretmemo
 
 import (

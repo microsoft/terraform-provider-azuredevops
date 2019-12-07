@@ -1,3 +1,5 @@
+// +build all core resource_git_repository
+
 package azuredevops
 
 import (
@@ -14,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -249,18 +252,18 @@ func TestAzureGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 // 	(4) TF destroy deletes resource
 //	(5) resource can no longer be queried by ID
 func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoNameFirst, "Uninitialized"),
+				Config: testhelper.TestAccAzureGitRepoResource(projectName, gitRepoNameFirst, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameFirst),
@@ -274,7 +277,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoNameSecond, "Uninitialized"),
+				Config: testhelper.TestAccAzureGitRepoResource(projectName, gitRepoNameSecond, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameSecond),
@@ -318,20 +321,6 @@ func testAccCheckAzureGitRepoResourceExists(expectedName string) resource.TestCh
 	}
 }
 
-func testAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
-	azureGitRepoResource := fmt.Sprintf(`
-resource "azuredevops_azure_git_repository" "gitrepo" {
-	project_id      = azuredevops_project.project.id
-	name            = "%s"
-	initialization {
-		init_type = "%s"
-	}
-}`, gitRepoName, initType)
-
-	projectResource := testAccProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
-}
-
 func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
@@ -356,17 +345,17 @@ func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 // Verifies that a newly created repo with init_type of "Clean" has the expected
 // master branch available
 func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoName, "Clean"),
+				Config: testhelper.TestAccAzureGitRepoResource(projectName, gitRepoName, "Clean"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
@@ -381,17 +370,17 @@ func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
 // Verifies that a newly created repo with init_type of "Uninitialized" does NOT
 // have a master branch established
 func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAzureGitRepoResource(projectName, gitRepoName, "Uninitialized"),
+				Config: testhelper.TestAccAzureGitRepoResource(projectName, gitRepoName, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
@@ -401,4 +390,8 @@ func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 			},
 		},
 	})
+}
+
+func init() {
+	InitProvider()
 }

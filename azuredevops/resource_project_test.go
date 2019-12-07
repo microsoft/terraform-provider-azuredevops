@@ -1,3 +1,5 @@
+// +build all core resource_project
+
 package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -12,6 +14,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -285,17 +288,17 @@ func operationWithStatus(status operations.OperationStatus) operations.Operation
 // 	(6) TF destroy deletes project
 //	(7) project can no longer be queried by ID
 func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
-	projectNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	projectNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfNode := "azuredevops_project.project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccProjectCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectResource(projectNameFirst),
+				Config: testhelper.TestAccProjectResource(projectNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
 					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameFirst),
@@ -306,7 +309,7 @@ func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectResource(projectNameSecond),
+				Config: testhelper.TestAccProjectResource(projectNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
 					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameSecond),
@@ -324,18 +327,6 @@ func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO project
-func testAccProjectResource(projectName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
-	project_name       = "%s"
-	description        = "%s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
-}`, projectName, projectName)
 }
 
 // Given the name of an AzDO project, this will return a function that will check whether
@@ -384,4 +375,8 @@ func testAccProjectCheckDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func init() {
+	InitProvider()
 }

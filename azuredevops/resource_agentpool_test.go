@@ -1,3 +1,5 @@
+// +build all resource_agentpool
+
 package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -15,6 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -186,17 +189,17 @@ func TestAzureDevOpsAgentPoolDefinition_WhenPoolTypeIsNotCorrect_ReturnsError(t 
 // 	(6) TF destroy deletes agent pool
 //	(7) Agent pool can no longer be queried by ID
 func TestAccAzureDevOpsAgentPool_CreateAndUpdate(t *testing.T) {
-	poolNameFirst := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	poolNameSecond := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	poolNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	poolNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	tfNode := "azuredevops_agent_pool.pool"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAgentPoolCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAgentPoolResource(poolNameFirst),
+				Config: testhelper.TestAccAgentPoolResource(poolNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", poolNameFirst),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
@@ -205,7 +208,7 @@ func TestAccAzureDevOpsAgentPool_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAgentPoolResource(poolNameSecond),
+				Config: testhelper.TestAccAgentPoolResource(poolNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", poolNameSecond),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
@@ -221,16 +224,6 @@ func TestAccAzureDevOpsAgentPool_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
-}
-
-// HCL describing an AzDO Agent Pool
-func testAccAgentPoolResource(poolName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_agent_pool" "pool" {
-	name           = "%s"
-	auto_provision = false
-	pool_type      = "automation"
-	}`, poolName)
 }
 
 // Given the name of an AzDO project, this will return a function that will check whether
@@ -281,4 +274,8 @@ func testAccAgentPoolCheckDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func init() {
+	InitProvider()
 }
