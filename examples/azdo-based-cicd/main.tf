@@ -20,14 +20,18 @@ data "azuredevops_group" "group" {
   project_id = azuredevops_project.project.id
   name       = "Build Administrators"
 }
+
 resource "azuredevops_user_entitlement" "users" {
-  principal_name = var.aad_users[count.index]
-  count          = length(var.aad_users)
+  for_each             = toset(var.aad_users)
+  principal_name       = "${each.value}"
+  account_license_type = "stakeholder"
 }
+
 resource "azuredevops_group_membership" "membership" {
   group   = data.azuredevops_group.group.descriptor
-  members = azuredevops_user_entitlement.users.*.descriptor
+  members = values(azuredevops_user_entitlement.users)[*].descriptor
 }
+
 
 
 // This section configures variable groups and a build definition

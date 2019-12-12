@@ -79,6 +79,9 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *t
 			UserEntitlement: mockUserEntitlement,
 		}, nil).
 		Times(1)
+	client.EXPECT().GetUserEntitlement(gomock.Any(), memberentitlementmanagement.GetUserEntitlementArgs{
+		UserId: mockUserEntitlement.Id,
+	}).Return(mockUserEntitlement, nil)
 
 	err := resourceUserEntitlementCreate(resourceData, clients)
 	assert.Nil(t, err, "err should not be nil")
@@ -250,11 +253,11 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 }
 
 // verifies that all projects referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
 	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
-	// verify that every project referenced in the state does not exist in AzDO
+	// verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_user_entitlement" {
 			continue
@@ -267,8 +270,8 @@ func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
 
 		userEntitlement, err := readUserEntitlement(clients, &id)
 		if err != nil {
-			if string(*userEntitlement.AccessLevel.Status) != "none" {
-				return fmt.Errorf("Status should be none : %s", string(*userEntitlement.AccessLevel.Status))
+			if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
+				return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
 			}
 		}
 	}

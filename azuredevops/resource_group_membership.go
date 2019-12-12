@@ -5,6 +5,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"math/rand"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -26,13 +27,13 @@ func resourceGroupMembership() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			"members": {
-				Type: schema.TypeSet,
+				Type:     schema.TypeSet,
+				MinItems: 1,
+				Required: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.NoZeroValues,
 				},
-				MinItems: 1,
-				Required: true,
 			},
 		},
 	}
@@ -49,10 +50,17 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
-	return nil
+
+	// sleep 10 sec for wait the creation of the groupMembership
+	time.Sleep(10 * time.Second)
+
+	return resourceGroupMembershipRead(d, m)
 }
 
 func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error {
+	// Enable partial state mode
+	d.Partial(true)
+
 	if !d.HasChange("members") {
 		return nil
 	}
@@ -60,20 +68,33 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	group := d.Get("group").(string)
 	oldMembers, newMembers := getOldAndNewMemberSetsFromResourceData(d)
 	toAdd, toRemove := computeMembershipDiff(group, oldMembers, newMembers)
-	return applyMembershipUpdate(m.(*config.AggregatedClient), toAdd, toRemove)
+
+	applyMembershipUpdate(m.(*config.AggregatedClient), toAdd, toRemove)
+
+	// We succeeded, disable partial mode. This causes Terraform to save
+	// all fields again.
+	d.Partial(false)
+
+	// sleep 10 sec for wait the update of the groupMembership
+	time.Sleep(10 * time.Second)
+
+	return resourceGroupMembershipRead(d, m)
 }
 
 func applyMembershipUpdate(clients *config.AggregatedClient, toAdd *[]graph.GraphMembership, toRemove *[]graph.GraphMembership) error {
-	err := removeMemberships(clients, toRemove)
-	if err != nil {
-		return fmt.Errorf("Error removing group memberships during update: %+v", err)
+	if len(*toRemove) > 0 {
+		err := removeMemberships(clients, toRemove)
+		if err != nil {
+			return fmt.Errorf("Error removing group memberships during update: %+v", err)
+		}
 	}
 
-	err = addMemberships(clients, toAdd)
-	if err != nil {
-		return fmt.Errorf("Error adding group memberships during update: %+v", err)
+	if len(*toAdd) > 0 {
+		err := addMemberships(clients, toAdd)
+		if err != nil {
+			return fmt.Errorf("Error adding group memberships during update: %+v", err)
+		}
 	}
-
 	return nil
 }
 
@@ -106,21 +127,23 @@ func computeMembershipDiff(group string, oldMembers map[string]bool, newMembers 
 //	https://stackoverflow.com/questions/34018908/golang-why-dont-we-have-a-set-datastructure
 func getOldAndNewMemberSetsFromResourceData(d *schema.ResourceData) (map[string]bool, map[string]bool) {
 	oldData, newData := d.GetChange("members")
-	oldMembers := toStringSet(oldData.([]interface{}))
-	newMembers := toStringSet(newData.([]interface{}))
+
+	oldMembers := toStringSet(oldData.(*schema.Set).List())
+	newMembers := toStringSet(newData.(*schema.Set).List())
+
 	return oldMembers, newMembers
 }
 
 // Convert a list of elements into a set of strings
-func toStringSet(items ...interface{}) map[string]bool {
+func toStringSet(items []interface{}) map[string]bool {
 	theSet := map[string]bool{}
-	for _, item := range items {
-		theSet[item.(string)] = true
+	for _, v := range items {
+		theSet[v.(string)] = true
 	}
-
 	return theSet
 }
 
+// Delete group membership
 func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
 	memberships := expandGroupMemberships(d)
@@ -160,7 +183,7 @@ func removeMemberships(clients *config.AggregatedClient, memberships *[]graph.Gr
 		})
 
 		if err != nil {
-			return fmt.Errorf("Error removing member from group: %+v", err)
+			return fmt.Errorf("Error removing user from group: %+v", err)
 		}
 	}
 
