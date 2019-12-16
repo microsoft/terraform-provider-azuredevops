@@ -83,7 +83,7 @@ func TestAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccVariableGroupCheckDestroy,
 		Steps: []resource.TestStep{

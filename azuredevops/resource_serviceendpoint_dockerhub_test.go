@@ -173,7 +173,13 @@ func TestAccAzureDevOpsServiceEndpointDockerHub_CreateAndUpdate(t *testing.T) {
 
 	tfSvcEpNode := "azuredevops_serviceendpoint_dockerhub.serviceendpoint"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck: func() {
+			testhelper.TestAccPreCheck(t, &[]string{
+				"AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME",
+				"AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL",
+				"AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD",
+			})
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccServiceEndpointDockerHubCheckDestroy,
 		Steps: []resource.TestStep{

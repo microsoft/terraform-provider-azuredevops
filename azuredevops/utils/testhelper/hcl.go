@@ -34,6 +34,9 @@ data "azuredevops_group" "group" {
 
 // TestAccProjectResource HCL describing an AzDO project
 func TestAccProjectResource(projectName string) string {
+	if projectName == "" {
+		return ""
+	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
 	project_name       = "%s"
@@ -171,4 +174,20 @@ output "user_descriptor" {
 	value = azuredevops_user_entitlement.user.descriptor
 }
 `, projectName, groupName, userPrincipalName)
+}
+
+// TestAccGroupResource HCL describing an AzDO group, if the projectName is empty, only a azuredevops_group instance is returned
+func TestAccGroupResource(groupResourceName, projectName, groupName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_group" "%s" {
+	scope        = azuredevops_project.project.id
+	display_name = "%s"
+}
+
+output "group_id_%s" {
+	value = azuredevops_group.%s.id
+}
+`, TestAccProjectResource(projectName), groupResourceName, groupName, groupResourceName, groupResourceName)
 }

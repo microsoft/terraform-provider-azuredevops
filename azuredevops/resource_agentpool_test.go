@@ -194,7 +194,7 @@ func TestAccAzureDevOpsAgentPool_CreateAndUpdate(t *testing.T) {
 	tfNode := "azuredevops_agent_pool.pool"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAgentPoolCheckDestroy,
 		Steps: []resource.TestStep{

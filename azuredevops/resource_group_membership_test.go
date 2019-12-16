@@ -24,62 +24,6 @@ import (
  * Begin unit tests
  */
 
-func TestGroupMembership_ComputeMembershipDiff_ResolvesDiffProperly(t *testing.T) {
-	// If you are curious about the use of map here, have a read through this article:
-	//	https://stackoverflow.com/questions/34018908/golang-why-dont-we-have-a-set-datastructure
-	type membershipsTestMeta struct {
-		old      map[string]bool
-		new      map[string]bool
-		toAdd    map[string]bool
-		toRemove map[string]bool
-	}
-
-	// table of tests for computing membership diffs
-	tests := []membershipsTestMeta{{
-		// add single member
-		old:      toStringSet([]interface{}{"A"}),
-		new:      toStringSet([]interface{}{"A", "B"}),
-		toAdd:    toStringSet([]interface{}{"B"}),
-		toRemove: toStringSet([]interface{}{}),
-	}, {
-		// remove single member
-		old:      toStringSet([]interface{}{"A", "B"}),
-		new:      toStringSet([]interface{}{"A"}),
-		toAdd:    toStringSet([]interface{}{}),
-		toRemove: toStringSet([]interface{}{"B"}),
-	}, {
-		// add and remove members
-		old:      toStringSet([]interface{}{}),
-		new:      toStringSet([]interface{}{"A", "B", "E", "F"}),
-		toAdd:    toStringSet([]interface{}{"A", "B", "E", "F"}),
-		toRemove: toStringSet([]interface{}{}),
-	}, {
-		// no change to members
-		old:      toStringSet([]interface{}{"A"}),
-		new:      toStringSet([]interface{}{"A"}),
-		toAdd:    toStringSet([]interface{}{}),
-		toRemove: toStringSet([]interface{}{}),
-	}}
-
-	for _, test := range tests {
-		toAdd, toRemove := computeMembershipDiff("", test.old, test.new)
-		require.Equal(t, len(test.toAdd), len(*toAdd))
-		require.Equal(t, len(test.toRemove), len(*toRemove))
-
-		for _, membership := range *toAdd {
-			if _, exists := test.toAdd[*membership.MemberDescriptor]; !exists {
-				require.Fail(t, fmt.Sprintf("%s was unexpectedly not in the list of membershps to add!", *membership.MemberDescriptor))
-			}
-		}
-
-		for _, membership := range *toRemove {
-			if _, exists := test.toRemove[*membership.MemberDescriptor]; !exists {
-				require.Fail(t, fmt.Sprintf("%s was unexpectedly not in the list of membershps to remove!", *membership.MemberDescriptor))
-			}
-		}
-	}
-}
-
 func getGroupMembershipResourceData(t *testing.T, group string, members ...string) *schema.ResourceData {
 	d := schema.TestResourceDataRaw(t, resourceGroupMembership().Schema, nil)
 	d.Set("group", group)

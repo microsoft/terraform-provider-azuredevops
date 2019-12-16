@@ -18,6 +18,7 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":          resourceUserEntitlement(),
 			"azuredevops_group_membership":          resourceGroupMembership(),
 			"azuredevops_agent_pool":                resourceAzureAgentPool(),
+			"azuredevops_group":                     resourceGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_group":    dataGroup(),

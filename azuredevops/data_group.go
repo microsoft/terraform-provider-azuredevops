@@ -2,6 +2,8 @@ package azuredevops
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -119,7 +121,7 @@ func getGroupsWithContinuationToken(clients *config.AggregatedClient, projectDes
 
 func selectGroup(groups *[]graph.GraphGroup, groupName string) *graph.GraphGroup {
 	for _, group := range *groups {
-		if *group.DisplayName == groupName {
+		if strings.EqualFold(*group.DisplayName, groupName) {
 			return &group
 		}
 	}

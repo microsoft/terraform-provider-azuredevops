@@ -273,6 +273,49 @@ In order to accelerate development and ensure a common structure of all componen
 
 General information about how to work with snippets inside Visual Studio Code are available in the [official documentation](https://code.visualstudio.com/docs/editor/userdefinedsnippets).
 
+If you are going to create a new data source care for the wording of your Go function and the Terraform data source name. If your data source is able to return more than one entity, be sure to use the plural form of the object you're returning with the data source. 
+
+**Example:** returning multiple groups from Azure DevOps
+
+Because the data source returns more than one group object from Azure DevOps
+
+* Data source name `azuredevops_groups`
+* Go function name `func dataGroups() *schema.Resource`
+
+**Reference:** [Terraform Data Source Names](https://www.terraform.io/docs/extend/best-practices/naming.html#data-source-names)
+
+If the new data source is able to return more than one object, be sure you are using a `schema.TypeSet` to return the elements.
+
+**Example:** returning multiple projects from Azure DevOps as set with `azuredevops_projects`
+
+```go
+"projects": {
+  Type:     schema.TypeSet,
+  Computed: true,
+  Set:      getProjectHash,
+  Elem: &schema.Resource{
+    Schema: map[string]*schema.Schema{
+      "name": {
+        Type:     schema.TypeString,
+        Computed: true,
+      },
+      "project_id": {
+        Type:     schema.TypeString,
+        Computed: true,
+      },
+      "project_url": {
+        Type:     schema.TypeString,
+        Computed: true,
+      },
+      "state": {
+        Type:     schema.TypeString,
+        Computed: true,
+      },
+    },
+  },
+},
+```
+
 **Visual Studio Code snippets:**
 
 **Shortcut:** `tf-azdo-rs`

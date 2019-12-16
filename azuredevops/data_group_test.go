@@ -159,7 +159,7 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 	tfBuildDefNode := "data.azuredevops_group.group"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

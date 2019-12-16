@@ -8,6 +8,9 @@ import (
 
 // String Get a pointer to a string
 func String(value string) *string {
+	if value == "" {
+		return nil
+	}
 	return &value
 }
 

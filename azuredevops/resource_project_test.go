@@ -293,7 +293,7 @@ func TestAccAzureDevOpsProject_CreateAndUpdate(t *testing.T) {
 	tfNode := "azuredevops_project.project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccProjectCheckDestroy,
 		Steps: []resource.TestStep{

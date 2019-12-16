@@ -167,7 +167,7 @@ func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 
 	tfSvcEpNode := "azuredevops_serviceendpoint_github.serviceendpoint"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccServiceEndpointGitHubCheckDestroy,
 		Steps: []resource.TestStep{

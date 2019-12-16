@@ -217,7 +217,7 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccBuildDefinitionCheckDestroy,
 		Steps: []resource.TestStep{

@@ -258,7 +258,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
@@ -350,7 +350,7 @@ func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{
@@ -375,7 +375,7 @@ func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccAzureGitRepoCheckDestroy,
 		Steps: []resource.TestStep{

@@ -207,7 +207,7 @@ func TestAccAzureDevOpsUserEntitlement_Create(t *testing.T) {
 	tfNode := "azuredevops_user_entitlement.user"
 	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t) },
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccUserEntitlementCheckDestroy,
 		Steps: []resource.TestStep{
@@ -273,6 +273,9 @@ func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
 			if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
 				return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
 			}
+		}
+		if string(*userEntitlement.AccessLevel.Status) != "none" {
+			return fmt.Errorf("Status should be none : %s", string(*userEntitlement.AccessLevel.Status))
 		}
 	}
 

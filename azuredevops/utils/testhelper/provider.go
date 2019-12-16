@@ -6,15 +6,13 @@ import (
 )
 
 // TestAccPreCheck pre-check to validate that the correct environment variables are set prior to running any acceptance test
-func TestAccPreCheck(t *testing.T) {
+func TestAccPreCheck(t *testing.T, additionalEnvVars *[]string) {
 	requiredEnvVars := []string{
 		"AZDO_ORG_SERVICE_URL",
 		"AZDO_PERSONAL_ACCESS_TOKEN",
-		"AZDO_GITHUB_SERVICE_CONNECTION_PAT",
-		"AZDO_TEST_AAD_USER_EMAIL",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL",
-		"AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD",
+	}
+	if additionalEnvVars != nil {
+		requiredEnvVars = append(requiredEnvVars, *additionalEnvVars...)
 	}
 
 	for _, variable := range requiredEnvVars {
