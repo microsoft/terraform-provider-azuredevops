@@ -1,0 +1,81 @@
+name: Build and Test Terraform provider AzDo
+on: [pull_request]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-16.04]
+        go-version: [1.12.10]
+
+
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Set Scripts as Executable
+      run : chmod +x ./scripts/*.sh
+
+    - name: Run Format Check
+      run: ./scripts/fmt-check-go.sh
+
+    - name: Run Lint Check
+      run: |
+        go get -u golang.org/x/lint/golint
+        ./scripts/lint-check-go.sh
+
+    - name: Run Build Script
+      run: ./scripts/build.sh
+
+    - name: Run Acceptance Tests
+      run: ./scripts/acctest.sh
+      env:
+        AZDO_ORG_SERVICE_URL: ${{ secrets.AZDO_ORG_SERVICE_URL }}
+        AZDO_PERSONAL_ACCESS_TOKEN: ${{ secrets.AZDO_PERSONAL_ACCESS_TOKEN }}
+        AZDO_GITHUB_SERVICE_CONNECTION_PAT: ${{ secrets.GITHUB_TOKEN }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD }}
+        AZDO_TEST_AAD_USER_EMAIL: ${{ secrets.AZDO_TEST_AAD_USER_EMAIL }}
+
+    - name: Run Build Script in Docker
+      run: docker build -f .devcontainer/Dockerfile -t dev --build-arg GO_VERSION=${GO_VERSION} .
+      env:
+        GO_VERSION: ${{ matrix.go-version }}
+
+    - name: Run Acceptance Tests in Docker
+      run: |
+        docker run --env AZDO_ORG_SERVICE_URL=${AZDO_ORG_SERVICE_URL} \
+        --env AZDO_PERSONAL_ACCESS_TOKEN=${AZDO_PERSONAL_ACCESS_TOKEN} \
+        --env AZDO_GITHUB_SERVICE_CONNECTION_PAT=${AZDO_GITHUB_SERVICE_CONNECTION_PAT} \
+        --env AZDO_TEST_AAD_USER_EMAIL=${AZDO_TEST_AAD_USER_EMAIL} \
+        --env AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME=${AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME} \
+        --env AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL=${AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL} \
+        --env AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD=${AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD} \
+        -v ${PWD}:/workspaces/terraform-provider-azuredevops dev ./scripts/acctest.sh
+      env:
+        AZDO_ORG_SERVICE_URL: ${{ secrets.AZDO_ORG_SERVICE_URL }}
+        AZDO_PERSONAL_ACCESS_TOKEN: ${{ secrets.AZDO_PERSONAL_ACCESS_TOKEN }}
+        AZDO_GITHUB_SERVICE_CONNECTION_PAT: ${{ secrets.GITHUB_TOKEN }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL }}
+        AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD: ${{ secrets.AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD }}
+        AZDO_TEST_AAD_USER_EMAIL: ${{ secrets.AZDO_TEST_AAD_USER_EMAIL }}
