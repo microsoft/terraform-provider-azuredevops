@@ -36,6 +36,7 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pool":                     taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                    taskagent.ResourceAgentQueue(),
 			"azuredevops_group":                          graph.ResourceGroup(),
+			"azuredevops_project_permissions":            resourceProjectPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),

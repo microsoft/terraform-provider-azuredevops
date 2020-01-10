@@ -27,6 +27,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_group",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_project_permissions",
 	}
 
 	resources := Provider().ResourcesMap
