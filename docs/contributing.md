@@ -6,14 +6,15 @@
   - [0. (Optional) Docker](#0-optional-docker)
   - [1. Install dependencies](#1-install-dependencies)
   - [2. Clone repository](#2-clone-repository)
-        - [Note for Go 1.13](#note-for-go-113)
-      - [Setup your workspace](#setup-your-workspace)
+    - [Note for Go 1.13](#note-for-go-113)
+    - [Setup your workspace](#setup-your-workspace)
   - [3. Build & Install Provider](#3-build--install-provider)
   - [4. Run provider locally](#4-run-provider-locally)
 - [Development SDLC](#development-sdlc)
   - [1. Pick an issue](#1-pick-an-issue)
   - [2. Repository Structure](#2-repository-structure)
   - [3. Code for Terraform](#3-code-for-terraform)
+    - [Don't use Sleep](#dont-use-sleep)
   - [4. Test changes](#4-test-changes)
   - [5. Debug changes](#5-debug-changes)
   - [6. Document changes](#6-document-changes)
@@ -316,7 +317,21 @@ If the new data source is able to return more than one object, be sure you are u
 },
 ```
 
-**Visual Studio Code snippets:**
+### Don't use Sleep
+
+Managing resources in the cloud often means using APIs that return a state even though the affected resource has not yet reached the expected state. One might be tempted to use the `Sleep` function to wait for the resource to be in the correct state for further actions. But that is considered **bad practice**, because the time how long a cloud resource needs to reach it's final (expected) state isn't really predictable since the deployment, removal or change of a cloud resource could depend on many factors, like replication, database locks, runtime etc. that, as said, the time how long the client must wait for a resource reaching a state isn't foreseeable. 
+
+Thus, as a provider developer, you should take delays in resource APIs into account in the CRUD functions of the resource. Terraform supports configurable timeouts to assist in these situations.
+
+Terraform provides the following mechanisms to wait for a state change of a resource:
+
+1. Using the `retry` mechanism of the `schema.Resource` ([Retry](https://www.terraform.io/docs/extend/resources/retries-and-customizable-timeouts.html#retry))
+
+2. Using the `WaitForState` function of `resource.StateChangeConf` ([StateChangeConf](https://www.terraform.io/docs/extend/resources/retries-and-customizable-timeouts.html#statechangeconf))
+
+Both means, if implemented correctly, guarantee that subsequent actions within the provider implementation can be confident that the affected resource has reached an expected state.
+
+### Visual Studio Code snippets
 
 **Shortcut:** `tf-azdo-rs`
 **Purpose:** Create new resource

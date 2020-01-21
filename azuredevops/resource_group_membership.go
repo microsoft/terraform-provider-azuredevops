@@ -2,11 +2,13 @@ package azuredevops
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"math/rand"
 	"time"
 
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
@@ -73,11 +75,38 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Error adding group memberships during create: %+v", err)
 	}
 
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			clients := m.(*config.AggregatedClient)
+			state := "Waiting"
+			actualMemberships, err := getGroupMemberships(clients, group)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading group memberships: %+v", err)
+			}
+			actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error converting membership list to set: %+v", err)
+			}
+			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
+				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 3,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
+	}
+
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
-
-	// sleep 10 sec for wait the creation of the groupMembership
-	time.Sleep(10 * time.Second)
 
 	return resourceGroupMembershipRead(d, m)
 }
@@ -108,8 +137,35 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	// all fields again.
 	d.Partial(false)
 
-	// sleep 10 sec for wait the update of the groupMembership
-	time.Sleep(10 * time.Second)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			clients := m.(*config.AggregatedClient)
+			state := "Waiting"
+			actualMemberships, err := getGroupMemberships(clients, group)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading group memberships: %+v", err)
+			}
+			actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error converting membership list to set: %+v", err)
+			}
+			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
+				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 3,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
+	}
 
 	return resourceGroupMembershipRead(d, m)
 }
