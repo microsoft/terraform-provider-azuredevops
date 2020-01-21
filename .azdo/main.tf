@@ -14,6 +14,9 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   project_id             = azuredevops_project.project.id
   service_endpoint_name  = "GitHub Service Connection"
+  authorization {
+    scheme = "PersonalAccessToken"
+  }
 }
 
 resource "azuredevops_serviceendpoint_dockerhub" "dockerhub_serviceendpoint" {

@@ -3,6 +3,7 @@ package tfhelper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
 	"log"
@@ -14,12 +15,12 @@ func calcSecretHashKey(secretKey string) string {
 	return secretKey + "_hash"
 }
 
-// DiffFuncSupressSecretChanged is used to supress unneeded `apply` updates to a resource.
+// DiffFuncSuppressSecretChanged is used to suppress unneeded `apply` updates to a resource.
 //
 // It returns `true` when `new` appears to be the same value
 // as a previously stored and bcrypt'd value stored in state during a previous `apply`.
 // Relies on flatten/expand logic to help store that hash. See FlattenSecret, below.*/
-func DiffFuncSupressSecretChanged(k, old, new string, d *schema.ResourceData) bool {
+func DiffFuncSuppressSecretChanged(k, old, new string, d *schema.ResourceData) bool {
 	memoKey := calcSecretHashKey(k)
 	memoValue := d.Get(memoKey).(string)
 
@@ -34,6 +35,23 @@ func DiffFuncSupressSecretChanged(k, old, new string, d *schema.ResourceData) bo
 	log.Printf("\nk: %s, old: %s, new: %s, memoKey: %s, memoValue: %s, isUnchanged: %t\n",
 		k, old, new, memoKey, memoValue, isUnchanged)
 	return isUnchanged
+}
+
+// HelpFlattenSecretNested is used to store a hashed secret value into `tfstate`
+func HelpFlattenSecretNested(d *schema.ResourceData, parentKey string, d2 map[string]interface{}, secretKey string) (string, string) {
+	hashKey := calcSecretHashKey(secretKey)
+	oldHash := d2[hashKey].(string)
+	if !d.HasChange(parentKey) {
+		log.Printf("key %s didn't get updated.", parentKey)
+		return oldHash, hashKey
+	}
+	newSecret := d2[secretKey].(string)
+	_, newHash, err := secretmemo.IsUpdating(newSecret, oldHash)
+	if nil != err {
+		log.Printf("Swallowing err while using secret hashing: %s", err)
+	}
+	log.Printf("Secret has changed. It's new hash value is %s.", newHash)
+	return newHash, hashKey
 }
 
 // HelpFlattenSecret is used to store a hashed secret value into `tfstate`
@@ -82,7 +100,7 @@ func PrettyPrint(v interface{}) (err error) {
 	return
 }
 
-// ParseImportedID parse the imported Id from the terraform import
+// ParseImportedID parse the imported int Id from the terraform import
 func ParseImportedID(id string) (string, int, error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
@@ -91,7 +109,21 @@ func ParseImportedID(id string) (string, int, error) {
 	project := parts[0]
 	resourceID, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return "", 0, fmt.Errorf("Error converting getting the resource id: %+v", err)
+		return "", 0, fmt.Errorf("error expected a number but got: %+v", err)
 	}
 	return project, resourceID, nil
+}
+
+// ParseImportedUUID parse the imported uuid Id from the terraform import
+func ParseImportedUUID(id string) (string, string, error) {
+	parts := strings.SplitN(id, "/", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceId", id)
+	}
+	project := parts[0]
+	resourceUUID, err := uuid.Parse(parts[1])
+	if err != nil {
+		return "", "", fmt.Errorf("error a uuid but got: %+v", err)
+	}
+	return project, resourceUUID.String(), nil
 }

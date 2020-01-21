@@ -41,11 +41,12 @@ var dhTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo change
 	Data: &map[string]string{
 		"registrytype": "DockerHub",
 	},
-	Id:    &dhTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("dockerregistry"),
-	Url:   converter.String("https://hub.docker.com/"),
+	Id:          &dhTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("dockerregistry"),
+	Url:         converter.String("https://hub.docker.com/"),
 }
 
 /**

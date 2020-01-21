@@ -27,6 +27,7 @@ The following arguments are supported:
 
 * `project_id` - (Required) The project ID or project name.
 * `service_endpoint_name` - (Required) The Service Endpoint name.
+* `description` - (Required) The Service Endpoint description.
 * `docker_username` - (Required) The username for Docker Hub account.
 * `docker_email` - (Required) The email for Docker Hub account.
 * `docker_password` - (Required) The password for Docker Hub account.

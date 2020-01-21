@@ -35,11 +35,12 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("PersonalAccessToken"),
 	},
-	Id:    &ghTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_NAME"),
-	Owner: converter.String("library"),
-	Type:  converter.String("github"),
-	Url:   converter.String("http://github.com"),
+	Id:          &ghTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_NAME"),
+	Description: converter.String("UNIT_TEST_DESCRIPTION"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("github"),
+	Url:         converter.String("http://github.com"),
 }
 
 /**
@@ -49,10 +50,10 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestAzureDevOpsServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpointGitHub().Schema, nil)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointGitHub(resourceData)
-
 	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, ghTestServiceEndpointProjectID, projectID)
 }
@@ -64,6 +65,7 @@ func TestAzureDevOpsServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.
 
 	r := resourceServiceEndpointGitHub()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -133,6 +135,7 @@ func TestAzureDevOpsServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.
 
 	r := resourceServiceEndpointGitHub()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -175,20 +178,27 @@ func TestAccAzureDevOpsServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 				Config: testhelper.TestAccServiceEndpointGitHubResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "github_service_endpoint_pat_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
 					testAccCheckServiceEndpointGitHubResourceExists(serviceEndpointNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccServiceEndpointGitHubResource(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "github_service_endpoint_pat", ""),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "github_service_endpoint_pat_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
 					testAccCheckServiceEndpointGitHubResourceExists(serviceEndpointNameSecond),
 				),
+			}, {
+				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+				ResourceName:            tfSvcEpNode,
+				ImportStateIdFunc:       testAccImportStateIDFunc(tfSvcEpNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"auth_personal"},
 			},
 		},
 	})
@@ -245,6 +255,14 @@ func getServiceEndpointGitHubFromResource(resource *terraform.ResourceState) (*s
 	return clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
 		Project:    &projectID,
 		EndpointId: &serviceEndpointDefID,
+	})
+}
+
+func configureAuthPersonal(d *schema.ResourceData) {
+	d.Set("auth_personal", &[]map[string]interface{}{
+		{
+			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
+		},
 	})
 }
 

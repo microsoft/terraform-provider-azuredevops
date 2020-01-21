@@ -6,7 +6,7 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-uuid v1.0.1
-	github.com/hashicorp/terraform v0.12.16
+	github.com/hashicorp/terraform v0.12.17
 	github.com/hashicorp/terraform-plugin-sdk v1.1.1
 	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191018194956-273e55a7119a
 	github.com/stretchr/testify v1.3.0

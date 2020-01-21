@@ -62,7 +62,8 @@ func TestAccServiceEndpointGitHubResource(projectName string, serviceEndpointNam
 resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-
+	auth_personal {
+	}
 }`, serviceEndpointName)
 
 	projectResource := TestAccProjectResource(projectName)

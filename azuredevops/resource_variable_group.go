@@ -21,8 +21,6 @@ func resourceVariableGroup() *schema.Resource {
 
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				// d.Id() here is the last argument passed to the `terraform import RESOURCE_TYPE.RESOURCE_NAME RESOURCE_ID` command
-				// Here we use a function to parse the import ID (like the example above) to simplify our logic
 				projectID, variableGroupID, err := ParseImportedProjectIDAndVariableGroupID(meta.(*config.AggregatedClient), d.Id())
 				if err != nil {
 					return nil, fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)

@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 
@@ -18,7 +19,7 @@ func makeProtectedSchema(r *schema.Resource, keyName, envVarName, description st
 		DefaultFunc:      schema.EnvDefaultFunc(envVarName, nil),
 		Description:      description,
 		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSupressSecretChanged,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
 
 	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(keyName)
@@ -35,7 +36,7 @@ func makeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description 
 }
 
 func resourceServiceEndpointDockerHub() *schema.Resource {
-	r := crud.GenBaseServiceEndpointResource(flattenServiceEndpointDockerHub, expandServiceEndpointDockerHub)
+	r := crud.GenBaseServiceEndpointResource(flattenServiceEndpointDockerHub, expandServiceEndpointDockerHub, parseImportedProjectIDAndServiceEndpointID)
 	makeUnprotectedSchema(r, "docker_username", "AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME", "The DockerHub username which should be used.")
 	makeUnprotectedSchema(r, "docker_email", "AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL", "The DockerHub email address which should be used.")
 	makeProtectedSchema(r, "docker_password", "AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD", "The DockerHub password which should be used.")
@@ -69,4 +70,20 @@ func flattenServiceEndpointDockerHub(d *schema.ResourceData, serviceEndpoint *se
 	d.Set("docker_username", (*serviceEndpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "docker_password")
 	d.Set("docker_password", (*serviceEndpoint.Authorization.Parameters)["password"])
+}
+
+// parseImportedProjectIDAndServiceEndpointID : Parse the Id (projectId/serviceEndpointId) or (projectName/serviceEndpointId)
+func parseImportedProjectIDAndServiceEndpointID(clients *config.AggregatedClient, id string) (string, string, error) {
+	project, resourceID, err := tfhelper.ParseImportedUUID(id)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Get the project ID
+	currentProject, err := projectRead(clients, project, project)
+	if err != nil {
+		return "", "", err
+	}
+
+	return currentProject.Id.String(), resourceID, nil
 }

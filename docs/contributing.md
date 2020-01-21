@@ -399,7 +399,7 @@ $ export AZDO_PERSONAL_ACCESS_TOKEN="..."
 $ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
 
 # Note: AZDO_TEST_AAD_USER_EMAIL will be the e-mail address that is not included in the current organization
-# ,but needs to be an account in the Azure Active Directory. The e-mail is used for acceptance testing of the User Entitlemen resource.
+# ,but needs to be an account in the Azure Active Directory. The e-mail is used for acceptance testing of the User Entitlement resource.
 $ export AZDO_TEST_AAD_USER_EMAIL="..."
 
 $ ./scripts/acctest.sh
