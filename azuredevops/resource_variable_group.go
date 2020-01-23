@@ -18,10 +18,9 @@ func resourceVariableGroup() *schema.Resource {
 		Read:   resourceVariableGroupRead,
 		Update: resourceVariableGroupUpdate,
 		Delete: resourceVariableGroupDelete,
-
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, variableGroupID, err := ParseImportedProjectIDAndVariableGroupID(meta.(*config.AggregatedClient), d.Id())
+				projectID, variableGroupID, err := ParseImportedProjectIDAndID(meta.(*config.AggregatedClient), d.Id())
 				if err != nil {
 					return nil, fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)
 				}
@@ -348,20 +347,4 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 		allowAccess = false
 	}
 	d.Set("allow_access", allowAccess)
-}
-
-// ParseImportedProjectIDAndVariableGroupID : Parse the Id (projectId/variableGroupId) or (projectName/variableGroupId)
-func ParseImportedProjectIDAndVariableGroupID(clients *config.AggregatedClient, id string) (string, int, error) {
-	project, resourceID, err := tfhelper.ParseImportedID(id)
-	if err != nil {
-		return "", 0, err
-	}
-
-	// Get the project ID
-	currentProject, err := projectRead(clients, project, project)
-	if err != nil {
-		return "", 0, err
-	}
-
-	return currentProject.Id.String(), resourceID, nil
 }

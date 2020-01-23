@@ -21,7 +21,18 @@ func resourceBuildDefinition() *schema.Resource {
 		Read:   resourceBuildDefinitionRead,
 		Update: resourceBuildDefinitionUpdate,
 		Delete: resourceBuildDefinitionDelete,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, buildDefinitionID, err := ParseImportedProjectIDAndID(meta.(*config.AggregatedClient), d.Id())
+				if err != nil {
+					return nil, fmt.Errorf("Error parsing the build definition ID from the Terraform resource data: %v", err)
+				}
+				d.Set("project_id", projectID)
+				d.SetId(fmt.Sprintf("%d", buildDefinitionID))
 
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -40,8 +51,8 @@ func resourceBuildDefinition() *schema.Resource {
 			"path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "\\",
-				ValidateFunc: validate.FilePathOrEmpty,
+				Default:      `\`,
+				ValidateFunc: validate.Path,
 			},
 			"variable_groups": {
 				Type: schema.TypeSet,
@@ -115,6 +126,7 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 
 	d.Set("project_id", projectID)
 	d.Set("name", *buildDefinition.Name)
+	d.Set("path", *buildDefinition.Path)
 	d.Set("repository", flattenRepository(buildDefinition))
 	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
 

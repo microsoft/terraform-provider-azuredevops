@@ -74,15 +74,22 @@ func TestAzureDevOpsBuildDefinition_RepoTypeListIsCorrect(t *testing.T) {
 	}
 }
 
-// validates that and error is thrown if any of the un-supported file path characters are used
+// validates that an error is thrown if any of the un-supported path characters are used
 func TestAzureDevOpsBuildDefinition_PathInvalidCharacterListIsError(t *testing.T) {
 	expectedInvalidPathCharacters := []string{"<", ">", "|", ":", "$", "@", "\"", "/", "%", "+", "*", "?"}
 	pathSchema := resourceBuildDefinition().Schema["path"]
 
-	for _, repoType := range expectedInvalidPathCharacters {
-		_, errors := pathSchema.ValidateFunc(repoType, "")
-		require.Equal(t, "<>|:$@\"/%+*? are not allowed", errors[0].Error())
+	for _, invalidCharacter := range expectedInvalidPathCharacters {
+		_, errors := pathSchema.ValidateFunc(`\`+invalidCharacter, "")
+		require.Equal(t, "<>|:$@\"/%+*? are not allowed in path", errors[0].Error())
 	}
+}
+
+// validates that an error is thrown if path does not start with slash
+func TestAzureDevOpsBuildDefinition_PathInvalidStartingSlashIsError(t *testing.T) {
+	pathSchema := resourceBuildDefinition().Schema["path"]
+	_, errors := pathSchema.ValidateFunc("dir\\dir", "")
+	require.Equal(t, "path must start with backslash", errors[0].Error())
 }
 
 // verifies that the flatten/expand round trip yields the same build definition
@@ -205,15 +212,15 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 // underlying terraform state.
 func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	buildDefinitionPathEmpty := ""
+	buildDefinitionPathEmpty := `\`
 	buildDefinitionNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	buildDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	buildDefinitionPathThird := buildDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	buildDefinitionPathFourth := buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionPathThird := `\` + buildDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionPathFourth := `\` + buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
 	resource.Test(t, resource.TestCase{
@@ -276,6 +283,12 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFourth),
 					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
+			}, {
+				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+				ResourceName:      tfBuildDefNode,
+				ImportStateIdFunc: testAccImportStateIDFunc(tfBuildDefNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

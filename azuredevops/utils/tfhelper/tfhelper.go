@@ -3,7 +3,7 @@ package tfhelper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
+	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
 	"log"
@@ -114,16 +114,16 @@ func ParseImportedID(id string) (string, int, error) {
 	return project, resourceID, nil
 }
 
-// ParseImportedUUID parse the imported uuid Id from the terraform import
+// ParseImportedUUID parse the imported uuid from the terraform import
 func ParseImportedUUID(id string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceId", id)
 	}
 	project := parts[0]
-	resourceUUID, err := uuid.Parse(parts[1])
+	_, err := uuid.ParseUUID(parts[1])
 	if err != nil {
-		return "", "", fmt.Errorf("error a uuid but got: %+v", err)
+		return "", "", fmt.Errorf("%s isn't a valid UUID", parts[1])
 	}
-	return project, resourceUUID.String(), nil
+	return project, parts[1], nil
 }

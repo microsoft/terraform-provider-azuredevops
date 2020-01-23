@@ -67,5 +67,10 @@ In addition to all arguments above, the following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-5.1)
 
 ## Import
-
-Not supported
+Azure DevOps Build Definitions can be imported using the project name/definitions Id or by the project Guid/definitions Id, e.g.
+ 
+ ```
+ terraform import azuredevops_build_definition.build "Test Project"/10
+ or
+ terraform import azuredevops_build_definition.build 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+ ```

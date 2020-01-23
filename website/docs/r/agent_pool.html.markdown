@@ -28,7 +28,7 @@ In addition to all arguments above, the following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/pools?view=azure-devops-rest-5.1)
 
 ## Import
-Azure DevOps Agent Pools can be imported using the agent pool id, e.g.
+Azure DevOps Agent Pools can be imported using the agent pool Id, e.g.
 
 ```
  terraform import azuredevops_agent_pool.pool 42
