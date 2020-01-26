@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
@@ -73,7 +74,9 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 	if !ok {
 		return fmt.Errorf("Failed to get 'project_id' from schema")
 	}
-	secns, err := clients.Security.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
+	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
+
+	secns, err := clients.SecurityClient.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
 		SecurityNamespaceId: &projectSecurityNamespaceID,
 	})
 	if err != nil {
@@ -88,8 +91,7 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 		actionMap[*action.Name] = action
 	}
 
-	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
-	aclProject, err := clients.Security.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
+	aclProject, err := clients.SecurityClient.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
 		SecurityNamespaceId: &projectSecurityNamespaceID,
 		Token:               converter.String(aclToken),
 	})
@@ -98,7 +100,7 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 	if aclProject == nil || len(*aclProject) != 1 {
-		return fmt.Errorf("Failed to load current ACL for project [%s]", projectID.(string))
+		return fmt.Errorf("Failed to load current ACL for token [%s]", aclToken)
 	}
 
 	principalList := d.Get("principals").(*schema.Set).List()
@@ -110,7 +112,7 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 			return r.(string) + "," + i.(string)
 		},
 	)
-	idlist, err := clients.Identity.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+	idlist, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 		SubjectDescriptors: converter.String(descriptors.(string)),
 	})
 
@@ -217,7 +219,7 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 	}
 
 	log.Printf("[TRACE]SetAccessControlEntries: %s", spew.Sdump(container))
-	_, err = clients.Security.SetAccessControlEntries(clients.Ctx, security.SetAccessControlEntriesArgs{
+	_, err = clients.SecurityClient.SetAccessControlEntries(clients.Ctx, security.SetAccessControlEntriesArgs{
 		SecurityNamespaceId: &projectSecurityNamespaceID,
 		Container:           container,
 	})
@@ -228,17 +230,28 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	//clients := m.(*config.AggregatedClient)
+	clients := m.(*config.AggregatedClient)
+	projectID, ok := d.GetOk("project_id")
+	if !ok {
+		return fmt.Errorf("Failed to get 'project_id' from schema")
+	}
+	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
+
+	ns, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	if err != nil {
+		return err
+	}
+	permissions, err := ns.GetPrincipalPermissions(&aclToken)
 
 	return nil
 }
 
 func resourceProjectPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceProjectPermissionsRead(d, m)
+	return errors.New("Not implemented")
 }
 
 func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	return errors.New("Not implemented")
 }
 
 func resourceProjectPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
