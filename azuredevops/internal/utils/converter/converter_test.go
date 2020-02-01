@@ -92,3 +92,22 @@ func TestASCIIToIntPtrErrorCase(t *testing.T) {
 		})
 	}
 }
+
+func TestStringFromInterface_StringValue(t *testing.T) {
+	value := "Hello World"
+	valuePtr := StringFromInterface(value)
+	if value != *valuePtr {
+		t.Errorf("The pointer returned references a different value")
+	}
+}
+
+func TestStringFromInterface_InterfaceValue(t *testing.T) {
+	value := "Hello World"
+	var interfaceValue interface{}
+
+	interfaceValue = value
+	valuePtr := StringFromInterface(interfaceValue)
+	if value != *valuePtr {
+		t.Errorf("The pointer returned references a different value")
+	}
+}
