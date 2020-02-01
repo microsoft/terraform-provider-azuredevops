@@ -1,6 +1,9 @@
 package azuredevops
 
 import (
+	"os"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service"
@@ -82,5 +85,15 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 		client, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
 
 		return client, err
+	}
+}
+
+var debugWaitPassed = false
+
+func debugWait(force ...bool) {
+	bForce := force != nil && force[0]
+	if (!debugWaitPassed || bForce) && "1" == os.Getenv("AZDO_PROVIDER_DEBUG") {
+		time.Sleep(20 * time.Second)
+		debugWaitPassed = true
 	}
 }
