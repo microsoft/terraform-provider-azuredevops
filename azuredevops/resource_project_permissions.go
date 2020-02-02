@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
@@ -12,8 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
-
-var projectSecurityNamespaceID = uuid.MustParse("52d39943-cb85-4d7f-8fa8-c6baac873819")
 
 func resourceProjectPermissions() *schema.Resource {
 	return &schema.Resource{
@@ -118,15 +115,21 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 	if !ok {
 		return fmt.Errorf("Failed to get 'project_id' from schema")
 	}
-	principal, ok := d.GetOk("principal")
-	if !ok {
-		return fmt.Errorf("Failed to get 'principal' from schema")
-	}
 
 	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
 	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
 	if err != nil {
 		return err
+	}
+
+	principal, ok := d.GetOk("principal")
+	if !ok {
+		return fmt.Errorf("Failed to get 'principal' from schema")
+	}
+
+	permissions, ok := d.GetOk("permissions")
+	if !ok {
+		return fmt.Errorf("Failed to get 'permissions' from schema")
 	}
 
 	principalList := []string{*converter.StringFromInterface(principal)}
@@ -138,9 +141,8 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf("Failed to retrive current permissions for principal [%s]", principalList[0])
 	}
 	d.SetId(fmt.Sprintf("%s/%s", aclToken, principal.(string)))
-	permissions := d.Get("permissions").(map[string]interface{})
 	for key := range ((*principalPermissions)[0]).Permissions {
-		if _, ok := permissions[string(key)]; !ok {
+		if _, ok := permissions.(map[string]interface{})[string(key)]; !ok {
 			delete(((*principalPermissions)[0]).Permissions, key)
 		}
 	}
