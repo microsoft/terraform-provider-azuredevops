@@ -189,6 +189,10 @@ github.com/hashicorp/logutils v1.0.0 h1:dLEQVugN8vlakKOUE3ihGLTZJRB4j+M2cdTm/ORI
 github.com/hashicorp/logutils v1.0.0/go.mod h1:QIAnNjmIWmVIIkWDTG1z5v++HQmx9WQRO+LraFDTW64=
 github.com/hashicorp/memberlist v0.1.0/go.mod h1:ncdBp14cuox2iFOq3kDiquKU6fqsTBc3W6JvZwjxxsE=
 github.com/hashicorp/serf v0.0.0-20160124182025-e4ec8cc423bb/go.mod h1:h/Ru6tmZazX7WO/GDmwdpS975F019L4t5ng5IgwbNrE=
+github.com/hashicorp/terraform v0.12.16 h1:YrIOUXUmOZws9cDzbq6F908tRo9tKDh93zCRlVm0PA4=
+github.com/hashicorp/terraform v0.12.16/go.mod h1:d9WgReBJXp2flEs5x4VyG4SznxezqJklqtdWnLEqCqI=
+github.com/hashicorp/terraform v0.12.18 h1:U9gd/12wfT0Q7JYM43Hob6rcirICKCnxSDY+sJlYh6A=
+github.com/hashicorp/terraform v0.12.18/go.mod h1:wA1HxKwR2a21mNFaKyv1lQ+dAwtQKCKFfUAuTqPeP2U=
 github.com/hashicorp/terraform v0.12.17 h1:U4gOJWeG1/ICNS4CHSTjFsM7hxOM1t+2GDTq2TDiCLg=
 github.com/hashicorp/terraform v0.12.17/go.mod h1:LQR1l9+qbkA0ZKujo+7dk3tSKhYmG5LQjogPW6DZblI=
 github.com/hashicorp/terraform-config-inspect v0.0.0-20190821133035-82a99dc22ef4 h1:fTkL0YwjohGyN7AqsDhz6bwcGBpT+xBqi3Qhpw58Juw=
@@ -241,8 +245,11 @@ github.com/mattn/go-isatty v0.0.5/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/mattn/go-shellwords v1.0.4/go.mod h1:3xCvwCdWdlDJUrvuMn7Wuy9eWs4pE8vqg+NOMyg4B2o=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
+github.com/microsoft/azure-devops-go-api v0.0.0-20191125191507-ad702f5ae0cd h1:02GtAx2PVjhd92CoTIyYB/gFbWGxxa6jEZE4E4ptjqA=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191018194956-273e55a7119a h1:+t1mM7zrb4HrBd0IdFrtFSvLiHfNNxQIEEeU6U9K81Y=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191018194956-273e55a7119a/go.mod h1:PoGiBqKSQK1vIfQ+yVaFcGjDySHvym6FM1cNYnwzbrY=
+github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191125191507-ad702f5ae0cd h1:+SP1ImizQl7sJczJlCgDos9xqt3rLqOZIqa3bXqd1N4=
+github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20191125191507-ad702f5ae0cd/go.mod h1:PoGiBqKSQK1vIfQ+yVaFcGjDySHvym6FM1cNYnwzbrY=
 github.com/miekg/dns v1.0.8/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/mitchellh/cli v1.0.0 h1:iGBIsUe3+HZ/AD/Vd7DErOt5sU9fa8Uj7A2s1aggv1Y=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=

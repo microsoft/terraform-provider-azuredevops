@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
@@ -103,6 +104,31 @@ func GetScheme(d *schema.ResourceData) (string, error) {
 	}
 	scheme := authorizationList[0].(map[string]interface{})["scheme"].(string)
 	return scheme, nil
+}
+
+// MakeProtectedSchema create protected schema
+func MakeProtectedSchema(r *schema.Resource, keyName, envVarName, description string) {
+	r.Schema[keyName] = &schema.Schema{
+		Type:             schema.TypeString,
+		Required:         true,
+		DefaultFunc:      schema.EnvDefaultFunc(envVarName, nil),
+		Description:      description,
+		Sensitive:        true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+	}
+
+	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(keyName)
+	r.Schema[secretHashKey] = secretHashSchema
+}
+
+// MakeUnprotectedSchema create unprotected schema
+func MakeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description string) {
+	r.Schema[keyName] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc(envVarName, nil),
+		Description: description,
+	}
 }
 
 // Make the Azure DevOps API call to create the endpoint

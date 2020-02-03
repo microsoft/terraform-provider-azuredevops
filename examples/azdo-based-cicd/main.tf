@@ -83,6 +83,19 @@ resource "azuredevops_azure_git_repository" "repository" {
     init_type = "Clean"
   }
 }
+
+// Configuration of AzureRm service end point
+resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
+  project_id                = azuredevops_project.project.id
+  service_endpoint_name     = "TestServiceAzureRM"
+  azurerm_spn_clientid      = "ee7f75a0-8553-4e6a-xxxx-xxxxxxxx"
+  azurerm_spn_clientsecret  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  azurerm_spn_tenantid      = "2e3a33f9-66b1-4xxx-xxxx-xxxxxxxxx"
+  azurerm_subscription_id   = "8a7aace5-xxxx-xxxx-xxxx-xxxxxxxxxx"
+  azurerm_subscription_name = "Microsoft Azure DEMO"
+  azurerm_scope             = "/subscriptions/1da42ac9-xxxx-xxxxx-xxxx-xxxxxxxxxxx"
+}
+
 #
 # https://github.com/microsoft/terraform-provider-azuredevops/issues/83
 # resource "azuredevops_policy_build" "p1" {

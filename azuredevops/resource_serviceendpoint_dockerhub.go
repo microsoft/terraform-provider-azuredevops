@@ -80,7 +80,7 @@ func parseImportedProjectIDAndServiceEndpointID(clients *config.AggregatedClient
 	}
 
 	// Get the project ID
-	currentProject, err := projectRead(clients, project, project)
+	currentProject, err := ProjectRead(clients, project, project)
 	if err != nil {
 		return "", "", err
 	}

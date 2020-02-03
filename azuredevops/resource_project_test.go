@@ -241,7 +241,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 		}).
 		Times(1)
 
-	projectRead(clients, id, name)
+	ProjectRead(clients, id, name)
 }
 
 // verifies that the project name is used for reads if the ID is not set
@@ -267,7 +267,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 		}).
 		Times(1)
 
-	projectRead(clients, id, name)
+	ProjectRead(clients, id, name)
 }
 
 // creates an operation given a status
@@ -340,7 +340,7 @@ func testAccCheckProjectResourceExists(expectedName string) resource.TestCheckFu
 
 		clients := testAccProvider.Meta().(*config.AggregatedClient)
 		id := resource.Primary.ID
-		project, err := projectRead(clients, id, "")
+		project, err := ProjectRead(clients, id, "")
 
 		if err != nil {
 			return fmt.Errorf("Project with ID=%s cannot be found!. Error=%v", id, err)
@@ -369,7 +369,7 @@ func testAccProjectCheckDestroy(s *terraform.State) error {
 		id := resource.Primary.ID
 
 		// indicates the project still exists - this should fail the test
-		if _, err := projectRead(clients, id, ""); err == nil {
+		if _, err := ProjectRead(clients, id, ""); err == nil {
 			return fmt.Errorf("project with ID %s should not exist", id)
 		}
 	}

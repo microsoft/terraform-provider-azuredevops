@@ -114,6 +114,18 @@ func ParseImportedID(id string) (string, int, error) {
 	return project, resourceID, nil
 }
 
+// ParseImportedName parse the imported Id (Name) from the terraform import
+func ParseImportedName(id string) (string, string, error) {
+	parts := strings.SplitN(id, "/", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceName", id)
+	}
+	project := parts[0]
+	resourceID := parts[1]
+
+	return project, resourceID, nil
+}
+
 // ParseImportedUUID parse the imported uuid from the terraform import
 func ParseImportedUUID(id string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
