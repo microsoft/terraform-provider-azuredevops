@@ -138,6 +138,12 @@ $ ./scripts/build.sh
 
 After this script runs you should see a `./bin/` directory with the compiled terraform provider.
 
+The `build.sh` suppports the following parameters:
+
+`-s | --SkipTests` : Skip executing the unit tests
+`-d | --DebugBuild`: Execute _go build_ with flags that disables optimization and adds debug symbols to the created binary
+`-i | --Install`   : After successful build perform a local install of the provider
+
 ```bash
 $ ls -lah ./bin/
 ...
