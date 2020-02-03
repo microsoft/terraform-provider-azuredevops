@@ -65,6 +65,8 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			return fmt.Errorf("Error converting membership list to set: %+v", err)
 		}
 		membersToRemove = membersToAdd.Difference(actualMembershipsSet)
+	} else {
+		membersToRemove, _ = getGroupMembershipSet(nil)
 	}
 
 	err := applyMembershipUpdate(m.(*config.AggregatedClient),

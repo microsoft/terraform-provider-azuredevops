@@ -51,7 +51,7 @@ func resourceGroup() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"mail", "display_name"},
+				ConflictsWith: []string{"mail", "display_name", "scope"},
 			},
 
 			"mail": {
@@ -60,7 +60,7 @@ func resourceGroup() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Computed:      true,
-				ConflictsWith: []string{"origin_id", "display_name"},
+				ConflictsWith: []string{"origin_id", "display_name", "scope"},
 			},
 
 			"display_name": {
