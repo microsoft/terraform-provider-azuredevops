@@ -30,11 +30,13 @@ resource "azuredevops_group_membership" "membership" {
 The following arguments are supported:
 
 * `group` - (Required) The descriptor of the group being managed.
-* `members` - (Required) A list of entity user or group descriptors that will become members of the group.
+* `members` - (Required) A list of user or group descriptors that will become members of the group.
 > NOTE: It's possible to define group members both within the azuredevops_group_membership resource via the members block and by using the azuredevops_group resource. However it's not possible to use both methods to manage group members, since there'll be conflicts.
 * `mode` - (Optional) The mode how the resource manages group members.
   * `mode == add`: the resource will ensure that all specified members will be part of the referenced group
   * `mode == overwrite`: the resource will replace all existing members with the members specied withing the `members` block 
+> NOTE: To clear all members from a group, specify an empty list of descriptors in the `members` attribute and set the `mode` member to `overwrite`.
+
 
 ## Attributes Reference
 

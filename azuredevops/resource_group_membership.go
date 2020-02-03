@@ -38,7 +38,6 @@ func resourceGroupMembership() *schema.Resource {
 			},
 			"members": {
 				Type:     schema.TypeSet,
-				MinItems: 1,
 				Required: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -89,8 +88,8 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", fmt.Errorf("Error converting membership list to set: %+v", err)
 			}
-			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
-				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+			if (membersToAdd == nil || actualMembershipsSet.Intersection(membersToAdd).Len() <= 0) &&
+				(membersToRemove == nil || actualMembershipsSet.Intersection(membersToRemove).Len() <= 0) {
 				state = "Synched"
 			}
 
