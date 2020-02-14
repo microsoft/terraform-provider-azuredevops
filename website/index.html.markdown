@@ -4,16 +4,17 @@ The Azure DevOps provider can be used to configure Azure DevOps project in [Micr
 
 ## Authenticating to Azure DevOps
 
-* [Azure DevOps Provider: Authenticating using the Personal Access Token](docs/guides/authenticating_using_the_personal_access_token.html.md)
+- [Azure DevOps Provider: Authenticating using the Personal Access Token](docs/guides/authenticating_using_the_personal_access_token.html.md)
 
 ## Data Sources
 
-* [azuredevops_group](docs/d/data_group.html.markdown)
+- [azuredevops_group](docs/d/data_group.html.markdown)
+- [azuredevops_project](docs/d/data_project.html.markdown)
 
 ## Resources
 
-* [azuredevops_build_definition](docs/r/build_definition.html.markdown)
-* [azuredevops_group_membership](docs/r/group_membership.html.markdown)
-* [azuredevops_project](docs/r/project.html.markdown)
-* [azuredevops_user_entitlement](docs/r/user_entitlement.html.markdown)
-* [azuredevops_agent_pool](docs/r/agent_pool.html.markdown)
+- [azuredevops_build_definition](docs/r/build_definition.html.markdown)
+- [azuredevops_group_membership](docs/r/group_membership.html.markdown)
+- [azuredevops_project](docs/r/project.html.markdown)
+- [azuredevops_user_entitlement](docs/r/user_entitlement.html.markdown)
+- [azuredevops_agent_pool](docs/r/agent_pool.html.markdown)
