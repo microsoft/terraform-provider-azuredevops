@@ -511,3 +511,45 @@ func (sn *securityNamespace) GetPrincipalPermissions(token *string, principal *[
 	}
 	return &permissions, nil
 }
+
+func (sn *securityNamespace) RemovePrincipalPermissions(token *string, principal *[]string) error {
+	if nil == token || len(*token) <= 0 {
+		return fmt.Errorf("token is nil or empty")
+	}
+
+	idList, err := sn.getIndentitiesFromSubjects(principal)
+	if err != nil {
+		return err
+	}
+	acl, err := sn.getAccessControlList(token, nil)
+	if err != nil {
+		return err
+	}
+
+	val := linq.From(*idList).
+		Where(func(i interface{}) bool {
+			_, ok := (*acl.AcesDictionary)[*i.(identity.Identity).Descriptor]
+			return ok
+		}).
+		Aggregate(func(r interface{}, i interface{}) interface{} {
+			desc := *i.(identity.Identity).Descriptor
+			if r.(string) == "" {
+				return desc
+			}
+			return r.(string) + "," + desc
+		}).(string)
+
+	log.Printf("[TRACE]RemovePrincipalPermissions: removing the following principals from the ACL %s", val)
+	bRet, err := sn.securityClient.RemoveAccessControlEntries(sn.context, security.RemoveAccessControlEntriesArgs{
+		SecurityNamespaceId: &sn.namespaceID,
+		Token:               token,
+		Descriptors:         &val,
+	})
+	if err != nil {
+		return err
+	}
+	if !(*bRet) {
+		return fmt.Errorf("Failed to remove ACL entries for principals %s", val)
+	}
+	return nil
+}
