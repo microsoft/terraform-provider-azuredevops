@@ -15,15 +15,16 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_github":    resourceServiceEndpointGitHub(),
 			"azuredevops_serviceendpoint_dockerhub": resourceServiceEndpointDockerHub(),
 			"azuredevops_serviceendpoint_azurerm":   resourceServiceEndpointAzureRM(),
-			"azuredevops_azure_git_repository":      resourceAzureGitRepository(),
+			"azuredevops_git_repository":            resourceGitRepository(),
 			"azuredevops_user_entitlement":          resourceUserEntitlement(),
 			"azuredevops_group_membership":          resourceGroupMembership(),
 			"azuredevops_agent_pool":                resourceAzureAgentPool(),
 			"azuredevops_group":                     resourceGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_group":    dataGroup(),
-			"azuredevops_projects": dataProjects(),
+			"azuredevops_group":            dataGroup(),
+			"azuredevops_projects":         dataProjects(),
+			"azuredevops_git_repositories": dataGitRepositories(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

@@ -8,7 +8,7 @@ import (
 // TestAccAzureGitRepoResource HCL describing an AzDO GIT repository resource
 func TestAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
 	azureGitRepoResource := fmt.Sprintf(`
-resource "azuredevops_azure_git_repository" "gitrepo" {
+resource "azuredevops_git_repository" "gitrepo" {
 	project_id      = azuredevops_project.project.id
 	name            = "%s"
 	initialization {

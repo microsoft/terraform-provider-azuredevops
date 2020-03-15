@@ -11,7 +11,7 @@ resource "azuredevops_project" "project" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_azure_git_repository" "repository" {
+resource "azuredevops_git_repository" "repository" {
   project_id = azuredevops_project.project.id
   name       = "Sample Repository"
   initialization {
@@ -26,8 +26,8 @@ resource "azuredevops_build_definition" "build" {
 
   repository {
     repo_type   = "TfsGit"
-    repo_name   = azuredevops_azure_git_repository.repository.name
-    branch_name = azuredevops_azure_git_repository.repository.default_branch
+    repo_name   = azuredevops_git_repository.repository.name
+    branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 

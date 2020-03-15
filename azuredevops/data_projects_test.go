@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 
 	"github.com/golang/mock/gomock"
@@ -25,33 +26,24 @@ func init() {
 	/* add code for test setup here */
 }
 
-var idList = []uuid.UUID{
-	uuid.New(),
-	uuid.New(),
-	uuid.New(),
-	uuid.New(),
-	uuid.New(),
-	uuid.New(),
-}
-
 var prjListEmpty = []core.TeamProjectReference{}
 
 var prjListStateMixed = []core.TeamProjectReference{
 	{
 		Name:  converter.String("vsteam-0177"),
-		Id:    &idList[0],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0178"),
-		Id:    &idList[1],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.Deleted,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0179"),
-		Id:    &idList[2],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.New,
 		Url:   nil,
 	},
@@ -60,19 +52,19 @@ var prjListStateMixed = []core.TeamProjectReference{
 var prjListStateWellFormed = []core.TeamProjectReference{
 	{
 		Name:  converter.String("vsteam-0177"),
-		Id:    &idList[0],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0178"),
-		Id:    &idList[1],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0179"),
-		Id:    &idList[2],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
@@ -81,40 +73,41 @@ var prjListStateWellFormed = []core.TeamProjectReference{
 var prjListStateWellFormed2 = []core.TeamProjectReference{
 	{
 		Name:  converter.String("vsteam-0277"),
-		Id:    &idList[0+len(prjListStateWellFormed)],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0278"),
-		Id:    &idList[1+len(prjListStateWellFormed)],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0279"),
-		Id:    &idList[2+len(prjListStateWellFormed)],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 }
 
+var duplicatePrjID *uuid.UUID = testhelper.CreateUUID()
 var prjListDoubleID = []core.TeamProjectReference{
 	{
 		Name:  converter.String("vsteam-0177"),
-		Id:    &idList[0],
+		Id:    duplicatePrjID,
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0178"),
-		Id:    &idList[1],
+		Id:    testhelper.CreateUUID(),
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
 	{
 		Name:  converter.String("vsteam-0179"),
-		Id:    &idList[0],
+		Id:    duplicatePrjID,
 		State: &core.ProjectStateValues.WellFormed,
 		Url:   nil,
 	},
@@ -160,7 +153,7 @@ func TestDataSourceProjects_Read_TestFindProjectByName(t *testing.T) {
 	projectReference := projectSet.List()[0].(map[string]interface{})
 	require.NotNil(t, projectReference)
 	require.Equal(t, "vsteam-0178", projectReference["name"])
-	require.Equal(t, idList[1].String(), projectReference["project_id"])
+	require.Equal(t, prjListStateWellFormed[1].Id.String(), projectReference["project_id"])
 	require.Equal(t, "wellFormed", projectReference["state"])
 }
 

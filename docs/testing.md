@@ -32,7 +32,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.gitrepo"
 
     ...
 }

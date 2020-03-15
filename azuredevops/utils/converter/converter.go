@@ -24,6 +24,11 @@ func Int(value int) *int {
 	return &value
 }
 
+// UInt64 Get a pointer to an uint64 value
+func UInt64(value uint64) *uint64 {
+	return &value
+}
+
 // ToString Given a pointer return its value, or a default value of the poitner is nil
 func ToString(value *string, defaultValue string) string {
 	if value != nil {

@@ -22,7 +22,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_dockerhub",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_variable_group",
-		"azuredevops_azure_git_repository",
+		"azuredevops_git_repository",
 		"azuredevops_user_entitlement",
 		"azuredevops_group_membership",
 		"azuredevops_group",
@@ -42,6 +42,7 @@ func TestAzureDevOpsProvider_HasChildDataSources(t *testing.T) {
 	expectedDataSources := []string{
 		"azuredevops_group",
 		"azuredevops_projects",
+		"azuredevops_git_repositories",
 	}
 
 	dataSources := provider.DataSourcesMap

@@ -50,8 +50,9 @@ func TestAzureGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
-	flattenAzureGitRepository(resourceData, &testAzureGitRepository)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
+	resourceData.SetId(testAzureGitRepository.Id.String())
+	flattenGitRepository(resourceData, &testAzureGitRepository)
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
@@ -71,7 +72,7 @@ func TestAzureGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 		Return(nil, errors.New("CreateAzureGitRepository() Failed")).
 		Times(1)
 
-	err := resourceAzureGitRepositoryCreate(resourceData, clients)
+	err := resourceGitRepositoryCreate(resourceData, clients)
 	require.Regexp(t, ".*CreateAzureGitRepository\\(\\) Failed$", err.Error())
 }
 
@@ -81,8 +82,9 @@ func TestAzureGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
-	flattenAzureGitRepository(resourceData, &testAzureGitRepository)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
+	resourceData.SetId(testAzureGitRepository.Id.String())
+	flattenGitRepository(resourceData, &testAzureGitRepository)
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
@@ -94,7 +96,7 @@ func TestAzureGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.
 		Return(nil, errors.New("UpdateAzureGitRepository() Failed")).
 		Times(1)
 
-	err := resourceAzureGitRepositoryUpdate(resourceData, clients)
+	err := resourceGitRepositoryUpdate(resourceData, clients)
 	require.Regexp(t, ".*UpdateAzureGitRepository\\(\\) Failed$", err.Error())
 }
 
@@ -116,15 +118,43 @@ func TestAzureGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	repoName := "name"
 	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
-	flattenAzureGitRepository(resourceData, &gitRepo)
-	configureCleanInitialization(resourceData)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
+	resourceData.SetId(gitRepo.Id.String())
+	flattenGitRepository(resourceData, &gitRepo)
 
-	expandedGitRepo, repoInitialization, expandedProjectID, err := expandAzureGitRepository(resourceData)
+	expandedGitRepo, repoInitialization, expandedProjectID, err := expandGitRepository(resourceData)
 
 	require.Nil(t, err)
+	require.NotNil(t, expandedGitRepo)
+	require.NotNil(t, expandedGitRepo.Id)
 	require.Equal(t, *expandedGitRepo.Id, repoID)
+	require.NotNil(t, expandedProjectID)
 	require.Equal(t, *expandedProjectID, projectID)
+	require.Nil(t, repoInitialization)
+}
+
+func TestAzureGitRepo_FlattenExpandInitialization_RoundTrip(t *testing.T) {
+	projectID := uuid.New()
+	project := core.TeamProjectReference{Id: &projectID}
+
+	repoID := uuid.New()
+	repoName := "name"
+	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
+
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
+	resourceData.SetId(gitRepo.Id.String())
+	flattenGitRepository(resourceData, &gitRepo)
+	configureCleanInitialization(resourceData)
+
+	expandedGitRepo, repoInitialization, expandedProjectID, err := expandGitRepository(resourceData)
+
+	require.Nil(t, err)
+	require.NotNil(t, expandedGitRepo)
+	require.NotNil(t, expandedGitRepo.Id)
+	require.Equal(t, *expandedGitRepo.Id, repoID)
+	require.NotNil(t, expandedProjectID)
+	require.Equal(t, *expandedProjectID, projectID)
+	require.NotNil(t, repoInitialization)
 	require.Equal(t, repoInitialization.initType, "Clean")
 	require.Equal(t, repoInitialization.sourceType, "")
 	require.Equal(t, repoInitialization.sourceURL, "")
@@ -142,7 +172,7 @@ func TestAzureGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
 	resourceData.SetId("an-id")
 	resourceData.Set("project_id", "a-project")
 
@@ -153,7 +183,7 @@ func TestAzureGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 		Return(nil, fmt.Errorf("GetRepository() Failed")).
 		Times(1)
 
-	err := resourceAzureGitRepositoryRead(resourceData, clients)
+	err := resourceGitRepositoryRead(resourceData, clients)
 	require.Contains(t, err.Error(), "GetRepository() Failed")
 }
 
@@ -168,7 +198,7 @@ func TestAzureGitRepo_Read_UsesIdIfSet(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
 	resourceData.SetId("an-id")
 	resourceData.Set("project_id", "a-project")
 
@@ -179,14 +209,14 @@ func TestAzureGitRepo_Read_UsesIdIfSet(t *testing.T) {
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
-	resourceAzureGitRepositoryRead(resourceData, clients)
+	resourceGitRepositoryRead(resourceData, clients)
 }
 
 func TestAzureGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
 	resourceData.SetId("not-a-uuid-id")
 
-	err := resourceAzureGitRepositoryDelete(resourceData, &config.AggregatedClient{})
+	err := resourceGitRepositoryDelete(resourceData, &config.AggregatedClient{})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "Invalid repositoryId UUID")
 }
@@ -201,7 +231,7 @@ func TestAzureGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.
 		Ctx:            context.Background(),
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
 	id := uuid.New()
 	resourceData.SetId(id.String())
 
@@ -212,7 +242,7 @@ func TestAzureGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.
 		Return(fmt.Errorf("DeleteRepository() Failed")).
 		Times(1)
 
-	err := resourceAzureGitRepositoryDelete(resourceData, clients)
+	err := resourceGitRepositoryDelete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteRepository() Failed")
 }
 
@@ -227,7 +257,7 @@ func TestAzureGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, resourceAzureGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, resourceGitRepository().Schema, nil)
 	resourceData.Set("name", "a-name")
 	resourceData.Set("project_id", "a-project")
 
@@ -238,7 +268,7 @@ func TestAzureGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
-	resourceAzureGitRepositoryRead(resourceData, clients)
+	resourceGitRepositoryRead(resourceData, clients)
 }
 
 /**
@@ -255,7 +285,7 @@ func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
@@ -300,7 +330,7 @@ func testAccCheckAzureGitRepoResourceExists(expectedName string) resource.TestCh
 	return func(s *terraform.State) error {
 		clients := testAccProvider.Meta().(*config.AggregatedClient)
 
-		gitRepo, ok := s.RootModule().Resources["azuredevops_azure_git_repository.gitrepo"]
+		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.gitrepo"]
 		if !ok {
 			return fmt.Errorf("Did not find a repo definition in the TF state")
 		}
@@ -308,7 +338,7 @@ func testAccCheckAzureGitRepoResourceExists(expectedName string) resource.TestCh
 		repoID := gitRepo.Primary.ID
 		projectID := gitRepo.Primary.Attributes["project_id"]
 
-		repo, err := azureGitRepositoryRead(clients, repoID, "", projectID)
+		repo, err := gitRepositoryRead(clients, repoID, "", projectID)
 		if err != nil {
 			return err
 		}
@@ -326,7 +356,7 @@ func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 
 	// verify that every repository referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_azure_git_repository" {
+		if resource.Type != "azuredevops_git_repository" {
 			continue
 		}
 
@@ -334,7 +364,7 @@ func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 		projectID := resource.Primary.Attributes["project_id"]
 
 		// indicates the git repository still exists - this should fail the test
-		if _, err := azureGitRepositoryRead(clients, repoID, "", projectID); err == nil {
+		if _, err := gitRepositoryRead(clients, repoID, "", projectID); err == nil {
 			return fmt.Errorf("repository with ID %s should not exist", repoID)
 		}
 	}
@@ -347,7 +377,7 @@ func testAccAzureGitRepoCheckDestroy(s *terraform.State) error {
 func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
@@ -372,7 +402,7 @@ func TestAccAzureGitRepo_RepoInitialization_Clean(t *testing.T) {
 func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfRepoNode := "azuredevops_azure_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.gitrepo"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },

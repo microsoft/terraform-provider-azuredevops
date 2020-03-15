@@ -42,8 +42,8 @@ resource "azuredevops_build_definition" "build" {
 
   repository {
     repo_type   = "TfsGit"
-    repo_name   = azuredevops_azure_git_repository.repository.name
-    branch_name = azuredevops_azure_git_repository.repository.default_branch
+    repo_name   = azuredevops_git_repository.repository.name
+    branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 
@@ -76,7 +76,7 @@ resource "azuredevops_variable_group" "vg" {
 }
 
 // This section configures an Azure DevOps Git Repository with branch policies
-resource "azuredevops_azure_git_repository" "repository" {
+resource "azuredevops_git_repository" "repository" {
   project_id = azuredevops_project.project.id
   name       = "Sample Repo"
   initialization {
@@ -100,8 +100,8 @@ resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
 # https://github.com/microsoft/terraform-provider-azuredevops/issues/83
 # resource "azuredevops_policy_build" "p1" {
 #   scope {
-#     repository_id  = azuredevops_azure_git_repository.repository.id
-#     repository_ref = azuredevops_azure_git_repository.repository.default_branch
+#     repository_id  = azuredevops_git_repository.repository.id
+#     repository_ref = azuredevops_git_repository.repository.default_branch
 #     match_type     = "Exact"
 #   }
 #   settings {
@@ -111,8 +111,8 @@ resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
 # }
 # resource "azuredevops_policy_min_reviewers" "p1" {
 #   scope {
-#     repository_id  = azuredevops_azure_git_repository.repository.id
-#     repository_ref = azuredevops_azure_git_repository.repository.default_branch
+#     repository_id  = azuredevops_git_repository.repository.id
+#     repository_ref = azuredevops_git_repository.repository.default_branch
 #     match_type     = "Exact"
 #   }
 #   settings {
