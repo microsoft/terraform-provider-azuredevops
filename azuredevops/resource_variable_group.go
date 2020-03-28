@@ -2,6 +2,8 @@ package azuredevops
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
@@ -9,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
-	"strconv"
 )
 
 func resourceVariableGroup() *schema.Resource {
@@ -74,10 +75,6 @@ func resourceVariableGroup() *schema.Resource {
 				},
 				Required: true,
 				MinItems: 1,
-				Set: func(i interface{}) int {
-					item := i.(map[string]interface{})
-					return schema.HashString(item["name"].(string))
-				},
 			},
 		},
 	}

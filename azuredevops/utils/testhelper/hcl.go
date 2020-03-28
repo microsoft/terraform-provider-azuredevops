@@ -129,6 +129,24 @@ resource "azuredevops_variable_group" "vg" {
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
 
+// TestAccVariableGroupResourceNoSecrets Similar to TestAccVariableGroupResource, but without a secret variable
+func TestAccVariableGroupResourceNoSecrets(projectName string, variableGroupName string, allowAccess bool) string {
+	variableGroupResource := fmt.Sprintf(`
+resource "azuredevops_variable_group" "vg" {
+	project_id  = azuredevops_project.project.id
+	name        = "%s"
+	description = "A sample variable group."
+	allow_access = %t
+	variable {
+		name      = "key1"
+		value     = "value1"
+	}
+}`, variableGroupName, allowAccess)
+
+	projectResource := TestAccProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
+}
+
 // TestAccAgentPoolResource HCL describing an AzDO Agent Pool
 func TestAccAgentPoolResource(poolName string) string {
 	return fmt.Sprintf(`

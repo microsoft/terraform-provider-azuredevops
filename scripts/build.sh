@@ -30,8 +30,8 @@ function clean() {
 }
 
 function compile() {
-  NAME=$(cat $PROVIDER_NAME_FILE)
-  VERSION=$(cat $PROVIDER_VERSION_FILE)
+  NAME=$(cat "$PROVIDER_NAME_FILE")
+  VERSION=$(cat "$PROVIDER_VERSION_FILE")
 
   BUILD_ARTIFACT="terraform-provider-${NAME}_v${VERSION}"
 
