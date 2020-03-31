@@ -3,6 +3,7 @@
 package secretmemo
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,21 +17,23 @@ func TestIsNewHappyPath(t *testing.T) {
 }
 
 func TestIsUpdatingHappyPath(t *testing.T) {
-	firstResult, firstMemo, err := IsUpdating("mysecret", "")
-	secondResult, secondMemo, err := IsUpdating("mychange", firstMemo)
+	firstResult, firstMemo, err1 := IsUpdating("mysecret", "")
+	secondResult, secondMemo, err2 := IsUpdating("mychange", firstMemo)
 	require.True(t, firstResult)
 	require.True(t, secondResult)
 	require.NotEqual(t, firstMemo, secondMemo)
-	require.Nil(t, err)
+	require.Nil(t, err1)
+	require.Nil(t, err2)
 }
 
 func TestIsSameValueAsBeforeHappyPath(t *testing.T) {
-	firstResult, firstMemo, err := IsUpdating("mysecret", "")
-	secondResult, secondMemo, err := IsUpdating("mysecret", firstMemo)
+	firstResult, firstMemo, err1 := IsUpdating("mysecret", "")
+	secondResult, secondMemo, err2 := IsUpdating("mysecret", firstMemo)
 	require.True(t, firstResult)
 	require.False(t, secondResult)
 	require.EqualValues(t, firstMemo, secondMemo)
-	require.Nil(t, err)
+	require.Nil(t, err1)
+	require.Nil(t, err2)
 }
 
 func TestIsRottenMemo(t *testing.T) {
@@ -52,4 +55,14 @@ func TestIsValidMemo(t *testing.T) {
 	require.True(t, isValidMemo("$2a$"))
 	require.True(t, isValidMemo("$2b$"))
 	require.True(t, isValidMemo("$2y$"))
+}
+
+func isValidMemo(memo string) bool {
+	validBcryptHashPrefixes := [3]string{"$2a$", "$2b$", "$2y$"}
+	for _, s := range validBcryptHashPrefixes {
+		if strings.HasPrefix(memo, s) {
+			return true
+		}
+	}
+	return false
 }

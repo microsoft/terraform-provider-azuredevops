@@ -11,11 +11,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
-
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -24,6 +19,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -219,7 +218,7 @@ func TestAzureDevOpsProject_FlattenExpand_RoundTrip(t *testing.T) {
 }
 
 // verifies that the project ID is used for reads if the ID is set
-func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
+func TestAccAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -241,7 +240,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesIdIfSet(t *testing.T) {
 		}).
 		Times(1)
 
-	ProjectRead(clients, id, name)
+	_, _ = ProjectRead(clients, id, name)
 }
 
 // verifies that the project name is used for reads if the ID is not set
@@ -267,7 +266,7 @@ func TestAzureDevOpsProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 		}).
 		Times(1)
 
-	ProjectRead(clients, id, name)
+	_, _ = ProjectRead(clients, id, name)
 }
 
 // creates an operation given a status
@@ -352,7 +351,6 @@ func testAccCheckProjectResourceExists(expectedName string) resource.TestCheckFu
 
 		return nil
 	}
-
 }
 
 // verifies that all projects referenced in the state are destroyed. This will be invoked

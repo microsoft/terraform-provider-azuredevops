@@ -5,10 +5,6 @@ package azuredevops
 import (
 	"context"
 	"errors"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -17,6 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -154,7 +154,7 @@ func createResourceData(t *testing.T, projectID string, groupName string) *schem
 // Validates that a configuration containing a project group lookup is able to read the resource correctly.
 // Because this is a data source, there are no resources to inspect in AzDO
 func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	group := "Build Administrators"
 	tfBuildDefNode := "data.azuredevops_group.group"
 

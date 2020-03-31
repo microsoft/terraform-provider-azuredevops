@@ -145,13 +145,20 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 	}
 	if *serviceEndpoint.Authorization.Scheme == "PersonalAccessToken" {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-		if len(authPersonalSet) == 1 {
-			if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessToken)
-				d.Set("auth_personal.0", &map[string]interface{}{
-					hashKey: newHash,
-				})
-			}
+		authPersonal := flattenAuthPerson(d, authPersonalSet)
+		if authPersonal != nil {
+			d.Set("auth_personal", authPersonal)
 		}
 	}
+}
+
+func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
+	if len(authPersonalSet) == 1 {
+		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
+			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessToken)
+			authPersonal[hashKey] = newHash
+			return []interface{}{authPersonal}
+		}
+	}
+	return nil
 }

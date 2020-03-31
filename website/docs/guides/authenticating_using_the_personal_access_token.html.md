@@ -38,4 +38,4 @@ resource "azuredevops_project" "project" {
 
 ## Custom Defined PAT Scopes
 
-Personal access tokens can be used to authorize full or scoped access associated with the token for deployment of different Azure DevOps resources. If you wish to limit the PAT scope select a custom defined authorization for the token and select the permisions required for management of the respective resource.
+Personal access tokens can be used to authorize full or scoped access associated with the token for deployment of different Azure DevOps resources. If you wish to limit the PAT scope select a custom defined authorization for the token and select the permission required for management of the respective resource.

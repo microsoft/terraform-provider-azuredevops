@@ -9,19 +9,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
-
-	"github.com/google/uuid"
-
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 )
 
 var azurermTestServiceEndpointAzureRMID = uuid.New()
@@ -93,7 +91,7 @@ func TestAzureDevOpsServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestAzureDevOpsServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
+func TestAccAzureDevOpsServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -186,6 +184,7 @@ func TestAccAzureDevOpsServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 			{
 				Config: testhelper.TestAccServiceEndpointAzureRMResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientid"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_spn_clientsecret", ""),
@@ -195,11 +194,11 @@ func TestAccAzureDevOpsServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_scope"),
-					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccServiceEndpointAzureRMResource(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientid"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_spn_clientsecret", ""),
@@ -209,7 +208,6 @@ func TestAccAzureDevOpsServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_scope"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameSecond),
 				),
 			},
 		},

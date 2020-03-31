@@ -12,10 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
@@ -133,7 +133,6 @@ type azDOGraphCreateGroupArgs struct {
 }
 
 func azDOGraphCreateGroup(ctx context.Context, client graph.Client, args azDOGraphCreateGroupArgs) (*graph.GraphGroup, error) {
-
 	if args.CreationContext == nil {
 		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.CreationContext"}
 	}
@@ -251,6 +250,10 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	}
 	group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	if group.Descriptor == nil {
@@ -330,36 +333,7 @@ func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// Convert internal Terraform data structure to an AzDO data structure
-func expandGroup(d *schema.ResourceData) (*graph.GraphGroup, *[]graph.GraphMembership, error) {
-
-	group := graph.GraphGroup{
-		Descriptor:    converter.String(d.Id()),
-		DisplayName:   converter.String(d.Get("display_name").(string)),
-		Url:           converter.String(d.Get("url").(string)),
-		Origin:        converter.String(d.Get("origin").(string)),
-		OriginId:      converter.String(d.Get("origin_id").(string)),
-		SubjectKind:   converter.String(d.Get("subject_kind").(string)),
-		Domain:        converter.String(d.Get("domain").(string)),
-		MailAddress:   converter.String(d.Get("mail").(string)),
-		PrincipalName: converter.String(d.Get("principal_name").(string)),
-		Description:   converter.String(d.Get("description").(string)),
-	}
-
-	stateMembers := d.Get("members")
-	dMembers := stateMembers.(*schema.Set).List()
-	members := make([]graph.GraphMembership, len(dMembers))
-	for i, e := range dMembers {
-		members[i] = graph.GraphMembership{
-			ContainerDescriptor: group.Descriptor,
-			MemberDescriptor:    converter.String(e.(string)),
-		}
-	}
-	return &group, &members, nil
-}
-
 func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) error {
-
 	if group.Descriptor != nil {
 		d.Set("descriptor", *group.Descriptor)
 		d.SetId(*group.Descriptor)

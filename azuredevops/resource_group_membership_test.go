@@ -6,7 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -14,10 +20,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
-	"time"
 )
 
 /**
@@ -107,8 +111,8 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 //
 // Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
 //
-/*func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
-	projectName := testAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	groupName := "Build Administrators"
 	tfNode := "azuredevops_group_membership.membership"
@@ -116,12 +120,12 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 	tfStanzaWithMembership := testAccGroupMembershipResource(projectName, groupName, userPrincipalName)
 	tfStanzaWithoutMembership := testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
 
-	// 	// This test differs from most other acceptance tests in the following ways:
-	// 	//	- The second step is the same as the first except it omits the group membershp.
-	// 	//	  This lets us test that the membership is removed in isolation of the project being deleted
-	// 	//	- There is no CheckDestroy function because that is covered based on the above point
+	// This test differs from most other acceptance tests in the following ways:
+	//	- The second step is the same as the first except it omits the group membershp.
+	//	  This lets us test that the membership is removed in isolation of the project being deleted
+	//	- There is no CheckDestroy function because that is covered based on the above point
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -136,13 +140,13 @@ func TestGroupMembership_Read_DoesNotSwallowErrors(t *testing.T) {
 					testAccVerifyGroupMembershipMatchesState(),
 				),
 			}, {
-				// 				// remove the group membership
+				// remove the group membership
 				Config: tfStanzaWithoutMembership,
 				Check:  testAccVerifyGroupMembershipMatchesState(),
 			},
 		},
 	})
-}*/
+}
 
 // Verifies that the group membership in AzDO matches the group membership specified by the state
 func testAccVerifyGroupMembershipMatchesState() resource.TestCheckFunc {
@@ -177,13 +181,12 @@ func testAccVerifyGroupMembershipMatchesState() resource.TestCheckFunc {
 		}
 
 		actualMemberDescriptor := *(*memberships)[0].MemberDescriptor
-		if strings.ToLower(actualMemberDescriptor) != strings.ToLower(memberDescriptor) {
+		if !strings.EqualFold(strings.ToLower(actualMemberDescriptor), strings.ToLower(memberDescriptor)) {
 			return fmt.Errorf("expected member with descriptor %s but member had descriptor %s", memberDescriptor, actualMemberDescriptor)
 		}
 
 		return nil
 	}
-
 }
 
 // call AzDO API to query for group members
@@ -198,4 +201,40 @@ func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error)
 
 func init() {
 	InitProvider()
+}
+
+// full terraform stanza to standup a group membership
+func testAccGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
+	membershipDependenciesStanza := testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
+	membershipStanza := `
+resource "azuredevops_group_membership" "membership" {
+	group = data.azuredevops_group.group.descriptor
+	members = [azuredevops_user_entitlement.user.descriptor]
+}`
+
+	return membershipDependenciesStanza + "\n" + membershipStanza
+}
+
+// all the dependencies needed to configure a group membership
+func testAccGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+	project_name = "%s"
+}
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+}
+resource "azuredevops_user_entitlement" "user" {
+	principal_name       = "%s"
+	account_license_type = "express"
+}
+
+output "group_descriptor" {
+	value = data.azuredevops_group.group.descriptor
+}
+output "user_descriptor" {
+	value = azuredevops_user_entitlement.user.descriptor
+}
+`, projectName, groupName, userPrincipalName)
 }

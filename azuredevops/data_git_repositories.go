@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
@@ -91,6 +92,10 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 
 	projectRepos, err := getGitRepositoriesByNameAndProject(d, clients)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding repositories. Error: %v", err)
 	}
 	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] Git repositories", len(*projectRepos))

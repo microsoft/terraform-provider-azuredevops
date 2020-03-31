@@ -3,9 +3,11 @@ package crudserviceendpoint
 import (
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
@@ -28,7 +30,7 @@ func GenBaseServiceEndpointResource(f flatFunc, e expandFunc, i importFunc) *sch
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, serviceEndpointID, err := i(meta.(*config.AggregatedClient), d.Id())
 				if err != nil {
-					return nil, fmt.Errorf("Error parsing the variable service endpoint ID from the Terraform resource data: %v", err)
+					return nil, fmt.Errorf("Error parsing the variable service endpoint ID from the Terraform resource data:  %v", err)
 				}
 				d.Set("project_id", projectID)
 				d.SetId(serviceEndpointID)
@@ -56,6 +58,14 @@ func genBaseSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			Default:  "Managed by Terraform",
+		},
+		"authorization": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 	}
 }
@@ -85,10 +95,8 @@ func DoBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	d.Set("service_endpoint_name", *serviceEndpoint.Name)
 	d.Set("project_id", projectID)
 	d.Set("description", *serviceEndpoint.Description)
-	d.Set("authorization", &[]map[string]interface{}{
-		{
-			"scheme": *serviceEndpoint.Authorization.Scheme,
-		},
+	d.Set("authorization", &map[string]interface{}{
+		"scheme": *serviceEndpoint.Authorization.Scheme,
 	})
 }
 
@@ -207,6 +215,10 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 			},
 		)
 		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil
+			}
 			return fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v", serviceEndpointID, projectID, err)
 		}
 

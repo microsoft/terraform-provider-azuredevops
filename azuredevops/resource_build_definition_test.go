@@ -6,9 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"strconv"
 	"testing"
 
@@ -19,7 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -231,57 +231,57 @@ func TestAccAzureDevOpsBuildDefinition_CreateAndUpdate(t *testing.T) {
 			{
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameSecond, buildDefinitionPathEmpty),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameSecond),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameSecond),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameSecond),
 				),
 			}, {
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFirst),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFirst),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst,
 					buildDefinitionPathSecond),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathSecond),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathThird),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathThird),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
 				Config: testhelper.TestAccBuildDefinitionResource(projectName, buildDefinitionNameFirst, buildDefinitionPathFourth),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFourth),
-					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameFirst),
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation

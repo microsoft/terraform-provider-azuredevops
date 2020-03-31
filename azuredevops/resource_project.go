@@ -2,23 +2,23 @@ package azuredevops
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
-
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
 var projectCreateTimeoutDuration time.Duration = 60
@@ -143,6 +143,10 @@ func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("project_name").(string)
 	project, err := ProjectRead(clients, id, name)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error looking up project with ID %s and Name %s", id, name)
 	}
 
@@ -184,7 +188,6 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateProject(clients *config.AggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
-
 	operationRef, err := clients.CoreClient.UpdateProject(
 		clients.Ctx,
 		core.UpdateProjectArgs{

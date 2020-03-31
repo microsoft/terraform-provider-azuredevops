@@ -14,16 +14,6 @@ func isBlank(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
 }
 
-func isValidMemo(memo string) bool {
-	validBcryptHashPrefixes := [3]string{"$2a$", "$2b$", "$2y$"}
-	for _, s := range validBcryptHashPrefixes {
-		if strings.HasPrefix(memo, s) {
-			return true
-		}
-	}
-	return false
-}
-
 func calcMementoForSecret(secret, memento string) (string, error) {
 	secretAsBytes := []byte(secret)
 	hash, err := bcrypt.GenerateFromPassword(secretAsBytes, bcrypt.MinCost)
@@ -40,11 +30,7 @@ func doesMemoMatchSecret(secret, memento string) bool {
 	secretAsBytes := []byte(secret)
 	mementoAsBytes := []byte(memento)
 	err := bcrypt.CompareHashAndPassword(mementoAsBytes, secretAsBytes)
-	if err != nil {
-		// ignoring the err
-		return false
-	}
-	return true
+	return err == nil
 }
 
 // IsUpdating is used to determine if the secret getting updated?
@@ -63,5 +49,4 @@ func IsUpdating(secret, oldMemo string) (bool, string, error) {
 	}
 
 	return isUpdating, newMemo, nil
-
 }

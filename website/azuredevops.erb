@@ -1,0 +1,85 @@
+
+<% wrap_layout :inner do %>
+    <% content_for :sidebar do %>
+        <div class="docs-sidebar hidden-print affix-top" role="complementary">
+          <ul class="nav docs-sidenav">
+            <li>
+              <a href="/docs/providers/index.html">All Providers</a>
+            </li>
+
+            <li>
+              <a href="#">Azure Providers</a>
+              <ul class="nav nav-visible">
+                <li>
+                   <a href="/docs/providers/azuread/index.html">Azure Active Directory</a>
+                </li>
+                <li>
+                   <a href="/docs/providers/azurerm/index.html">Azure</a>
+                </li>
+                <li>
+                   <a href="/docs/providers/azurestack/index.html">Azure Stack</a>
+                </li>
+                <li>
+                    <a href="/docs/providers/azuredevops/index.html">Azure DevOps</a>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <a href="#">Data Sources</a>
+              <ul class="nav">
+                <li>
+                    <a href="/docs/providers/github/d/data_group.html">azuredevops_group</a>
+                </li>
+
+                <li>
+                    <a href="/docs/providers/azuredevops/d/data_project.html">azuredevops_projects</a>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <a href="#">Resources</a>
+              <ul class="nav">
+                <li>
+                  <a href="/docs/providers/azuredevops/r/agent_pool.html">azuredevops_agent_pool</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/azure_git_repository.html">azuredevops_azure_git_repository</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/build_definition.html">azuredevops_build_definition</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/group.html">azuredevops_group</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/group_membership.html">azuredevops_group_membership</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/project.html">azuredevops_project</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/serviceendpoint_azurerm.html">azuredevops_serviceendpoint_azurerm</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/serviceendpoint_dockerhub.html">azuredevops_serviceendpoint_dockerhub</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/serviceendpoint_github.html">azuredevops_serviceendpoint_github</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/user_entitlement.html">azuredevops_user_entitlement</a>
+                </li>
+                <li>
+                  <a href="/docs/providers/azuredevops/r/variable_group.html.markdown">azuredevops_variable_group</a>
+                </li>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+    <% end %>
+
+    <%= yield %>
+<% end %>

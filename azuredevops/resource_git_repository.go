@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
@@ -209,6 +210,10 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
 	repo, err := gitRepositoryRead(clients, repoID, repoName, projectID)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
@@ -223,7 +228,7 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
 	}
 
-	repo, err = updateGitRepository(clients, repo, projectID)
+	_, err = updateGitRepository(clients, repo, projectID)
 	if err != nil {
 		return fmt.Errorf("Error updating repository in Azure DevOps: %+v", err)
 	}
@@ -231,7 +236,7 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	return resourceGitRepositoryRead(d, m)
 }
 
-func updateGitRepository(clients *config.AggregatedClient, repository *git.GitRepository, project *uuid.UUID) (*git.GitRepository, error) {
+func updateGitRepository(clients *config.AggregatedClient, repository *git.GitRepository, project fmt.Stringer) (*git.GitRepository, error) {
 	if nil == project {
 		return nil, fmt.Errorf("updateGitRepository: ID of project cannot be nil")
 	}

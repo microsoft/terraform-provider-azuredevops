@@ -34,7 +34,7 @@ The following arguments are supported:
 > NOTE: It's possible to define group members both within the azuredevops_group_membership resource via the members block and by using the azuredevops_group resource. However it's not possible to use both methods to manage group members, since there'll be conflicts.
 * `mode` - (Optional) The mode how the resource manages group members.
   * `mode == add`: the resource will ensure that all specified members will be part of the referenced group
-  * `mode == overwrite`: the resource will replace all existing members with the members specied withing the `members` block 
+  * `mode == overwrite`: the resource will replace all existing members with the members specified within the `members` block 
 > NOTE: To clear all members from a group, specify an empty list of descriptors in the `members` attribute and set the `mode` member to `overwrite`.
 
 

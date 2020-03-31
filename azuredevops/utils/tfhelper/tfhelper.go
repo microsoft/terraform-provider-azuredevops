@@ -1,14 +1,14 @@
 package tfhelper
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/secretmemo"
 )
 
 func calcSecretHashKey(secretKey string) string {
@@ -92,13 +92,13 @@ func ParseProjectIDAndResourceID(d *schema.ResourceData) (string, int, error) {
 }
 
 //PrettyPrint json
-func PrettyPrint(v interface{}) (err error) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err == nil {
-		log.Printf(string(b))
-	}
-	return
-}
+//func PrettyPrint(v interface{}) (err error) {
+//	b, err := json.MarshalIndent(v, "", "  ")
+//	if err == nil {
+//		log.Printf(string(b))
+//	}
+//	return
+//}
 
 // ParseImportedID parse the imported int Id from the terraform import
 func ParseImportedID(id string) (string, int, error) {

@@ -5,13 +5,13 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
 
 func resourceGroupMembership() *schema.Resource {
@@ -266,6 +266,10 @@ func resourceGroupMembershipRead(d *schema.ResourceData, m interface{}) error {
 
 	actualMemberships, err := getGroupMemberships(clients, group)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error reading group memberships during read: %+v", err)
 	}
 

@@ -8,33 +8,29 @@ package azuredevops
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
-
-	"github.com/golang/mock/gomock"
 )
 
-var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
-var origin = "TEST_ORIGIN"
+//var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
+//var origin = "TEST_ORIGIN"
 var originID = "5d466068-fe00-47c8-80d7-bb268165820c"
 var displayName = "TEST_GROUP"
-var description = "TEST_DESCRIPTION"
-var orgurl = "https://dev.azure.com/_test_organization"
+
+//var description = "TEST_DESCRIPTION"
+
+//var orgurl = "https://dev.azure.com/_test_organization"
 var email = "test_group@test.local"
-var subjectKind = "group"
-var domain = "test.domain.local"
-var principalName = "test@domain.local"
+
+//var subjectKind = "group"
+//var domain = "test.domain.local"
+//var principalName = "test@domain.local"
 
 func init() {
 	InitProvider()
@@ -251,7 +247,7 @@ func TestGroupResource_Create_TestMailContext(t *testing.T) {
 	*/
 }
 
-func TestGroupResource_Create_TestOriginIdContext(t *testing.T) {
+func TestAccGroupResource_Create_TestOriginIdContext(t *testing.T) {
 	t.Skip("Skipping test TestGroupResource_Create_TestOriginIdContext: broken graph implementation in Go Azure DevOps REST API")
 	/*
 		ctrl := gomock.NewController(t)
@@ -348,85 +344,84 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-var tfAccTestGroupNode = "azuredevops_group.mygroup"
-
 func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 	t.Skip("Skipping test TestAccGroupResource_CreateAndUpdate: broken graph implementation in Go Azure DevOps REST API")
 
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	groupName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccGroupCheckDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testhelper.TestAccGroupResource("mygroup", projectName, groupName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfAccTestGroupNode, "scope"),
-					resource.TestCheckResourceAttr(tfAccTestGroupNode, "display_name", groupName),
-					testAccCheckGroupResourceExists("mygroup", groupName),
-				),
-			},
-			{
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
-				ResourceName:      tfAccTestGroupNode,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
+	//projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//groupName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//
+	//resource.Test(t, resource.TestCase{
+	//	PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
+	//	Providers:    testAccProviders,
+	//	CheckDestroy: testAccGroupCheckDestroy,
+	//	Steps: []resource.TestStep{
+	//		{
+	//			Config: testhelper.TestAccGroupResource("mygroup", projectName, groupName),
+	//			Check: resource.ComposeTestCheckFunc(
+	//				testAccCheckGroupResourceExists("mygroup", groupName),
+	//				resource.TestCheckResourceAttrSet("azuredevops_group.mygroup", "scope"),
+	//				resource.TestCheckResourceAttr("azuredevops_group.mygroup", "display_name", groupName),
+	//			),
+	//		},
+	//		{
+	//			// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+	//			ResourceName:      "azuredevops_group.mygroup",
+	//			ImportState:       true,
+	//			ImportStateVerify: true,
+	//		},
+	//	},
+	//})
 }
 
-func testAccCheckGroupResourceExists(resourceName, expectedName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		varGroup, ok := s.RootModule().Resources[fmt.Sprintf("azuredevops_group.%s", resourceName)]
-		if !ok {
-			return fmt.Errorf("Did not find a group resource with name %s in the TF state", resourceName)
-		}
-
-		getGroupArgs := graph.GetGroupArgs{
-			GroupDescriptor: converter.String(varGroup.Primary.Attributes["display_name"]),
-		}
-		clients := testAccProvider.Meta().(*config.AggregatedClient)
-		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
-		if err != nil {
-			return err
-		}
-		if group == nil {
-			return fmt.Errorf("Group with Name=%s does not exit", varGroup.Primary.Attributes["display_name"])
-		}
-		if *group.DisplayName != expectedName {
-			return fmt.Errorf("Group has Name=%s, but expected %s", *group.DisplayName, expectedName)
-		}
-
-		return nil
-	}
-}
-
-func testAccGroupCheckDestroy(s *terraform.State) error {
-	clients := testAccProvider.Meta().(*config.AggregatedClient)
-
-	// verify that every project referenced in the state does not exist in AzDO
-	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_group" {
-			continue
-		}
-
-		id := resource.Primary.ID
-
-		getGroupArgs := graph.GetGroupArgs{
-			GroupDescriptor: converter.String(id),
-		}
-		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
-		if err != nil {
-			return err
-		}
-		if group.Descriptor != nil {
-			return fmt.Errorf("Group with ID %s should not exist in scope %s", id, resource.Primary.Attributes["scope"])
-		}
-	}
-
-	return nil
-}
+//
+//func testAccCheckGroupResourceExists(resourceName, expectedName string) resource.TestCheckFunc {
+//	return func(s *terraform.State) error {
+//		varGroup, ok := s.RootModule().Resources[fmt.Sprintf("azuredevops_group.%s", resourceName)]
+//		if !ok {
+//			return fmt.Errorf("Did not find a group resource with name %s in the TF state", resourceName)
+//		}
+//
+//		getGroupArgs := graph.GetGroupArgs{
+//			GroupDescriptor: converter.String(varGroup.Primary.Attributes["display_name"]),
+//		}
+//		clients := testAccProvider.Meta().(*config.AggregatedClient)
+//		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
+//		if err != nil {
+//			return err
+//		}
+//		if group == nil {
+//			return fmt.Errorf("Group with Name=%s does not exit", varGroup.Primary.Attributes["display_name"])
+//		}
+//		if *group.DisplayName != expectedName {
+//			return fmt.Errorf("Group has Name=%s, but expected %s", *group.DisplayName, expectedName)
+//		}
+//
+//		return nil
+//	}
+//}
+//
+//func testAccGroupCheckDestroy(s *terraform.State) error {
+//	clients := testAccProvider.Meta().(*config.AggregatedClient)
+//
+//	// verify that every project referenced in the state does not exist in AzDO
+//	for _, resource := range s.RootModule().Resources {
+//		if resource.Type != "azuredevops_group" {
+//			continue
+//		}
+//
+//		id := resource.Primary.ID
+//
+//		getGroupArgs := graph.GetGroupArgs{
+//			GroupDescriptor: converter.String(id),
+//		}
+//		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
+//		if err != nil {
+//			return err
+//		}
+//		if group.Descriptor != nil {
+//			return fmt.Errorf("Group with ID %s should not exist in scope %s", id, resource.Primary.Attributes["scope"])
+//		}
+//	}
+//
+//	return nil
+//}

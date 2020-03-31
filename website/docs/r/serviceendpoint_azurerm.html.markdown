@@ -4,7 +4,7 @@ Manages a AzureRM service endpoint within Azure DevOps.
 ## Requirements
 Before to create a service end point in Azure DevOps, you need to create a Service Principal in your Azure subscription.
 
-For detailled steps to create a service principal with Azure cli see the [documentation](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest)
+For detailed steps to create a service principal with Azure cli see the [documentation](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest)
 
 ## Example Usage
 

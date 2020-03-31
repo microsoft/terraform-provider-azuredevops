@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
@@ -70,6 +71,10 @@ func resourceAzureAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
 	agentPool, err := azureAgentPoolRead(clients, poolID)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error looking up agent pool with ID %d. Error: %v", poolID, err)
 	}
 
@@ -84,7 +89,7 @@ func resourceAzureAgentPoolUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error converting terraform data model to AzDO agent pool reference: %+v", err)
 	}
 
-	agentPool, err = azureAgentPoolUpdate(clients, agentPool)
+	_, err = azureAgentPoolUpdate(clients, agentPool)
 	if err != nil {
 		return fmt.Errorf("Error updating agent pool in Azure DevOps: %+v", err)
 	}
@@ -140,7 +145,6 @@ func flattenAzureAgentPool(d *schema.ResourceData, agentPool *taskagent.TaskAgen
 }
 
 func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAgentPool, error) {
-
 	poolID, err := strconv.Atoi(d.Id())
 	if !forCreate && err != nil {
 		return nil, fmt.Errorf("Error getting agent pool Id: %+v", err)

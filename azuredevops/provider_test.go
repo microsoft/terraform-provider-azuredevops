@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -76,10 +75,13 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 		require.Equal(t, test.sensitive, schema[test.name].Sensitive, "A property in the schema has an incorrect sensitivity value")
 
 		if test.defaultEnvVar != "" {
-			expectedValue := "foo-env-var"
-			os.Setenv(test.defaultEnvVar, expectedValue)
+			expectedValue := os.Getenv(test.defaultEnvVar)
 
 			actualValue, err := schema[test.name].DefaultFunc()
+			if actualValue == nil {
+				actualValue = ""
+			}
+
 			require.Nil(t, err, "An error occurred when getting the default value from the environment")
 			require.Equal(t, expectedValue, actualValue, "The default value pulled from the environment has the wrong value")
 		}
@@ -92,7 +94,6 @@ func init() {
 
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
-var testAccResourcePrefix = testhelper.TestAccResourcePrefix
 
 func InitProvider() {
 	testAccProvider = provider

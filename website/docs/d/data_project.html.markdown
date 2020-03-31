@@ -45,7 +45,7 @@ The following arguments are supported:
 
 - `state` - (Optional) State of the Project, if not specified all projects will be returned. Valid values are `all`, `deleting`, `new`, `wellFormed`, `createPending`, `unchanged`,`deleted`.
 
-DataSource without specifiying any arguments will return all projects.
+DataSource without specifying any arguments will return all projects.
 
 ## Attributes Reference
 

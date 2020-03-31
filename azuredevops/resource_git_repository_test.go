@@ -8,20 +8,18 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-
+	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
-
-	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/stretchr/testify/require"
 )
 
@@ -412,9 +410,9 @@ func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 			{
 				Config: testhelper.TestAccAzureGitRepoResource(projectName, gitRepoName, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAzureGitRepoResourceExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					testAccCheckAzureGitRepoResourceExists(gitRepoName),
 					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", ""),
 				),
 			},

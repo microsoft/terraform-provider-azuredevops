@@ -19,6 +19,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/assert"
@@ -124,7 +125,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithError(t *testing.T
 	resourceData.Set("account_license_type", "express")
 	resourceData.Set("principal_name", principalName)
 
-	// No error but it has a error on the reponse.
+	// No error but it has a error on the response.
 	client.
 		EXPECT().
 		AddUserEntitlement(gomock.Any(), gomock.Any()).
@@ -163,7 +164,7 @@ func TestAzureDevOpsUserEntitlement_CreateUserEntitlement_WithEarlyAdopter(t *te
 	}
 	expectedIsSuccess := false
 
-	// No error but it has a error on the reponse.
+	// No error but it has a error on the response.
 	client.
 		EXPECT().
 		AddUserEntitlement(gomock.Any(), gomock.Any()).
@@ -214,8 +215,8 @@ func TestAccAzureDevOpsUserEntitlement_Create(t *testing.T) {
 			{
 				Config: testhelper.TestAccUserEntitlementResource(principalName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 					testAccCheckUserEntitlementResourceExists(principalName),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 		},
@@ -243,13 +244,12 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 			return fmt.Errorf("UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
-		if strings.ToLower(*userEntitlement.User.PrincipalName) != strings.ToLower(expectedPrincipalName) {
+		if !strings.EqualFold(strings.ToLower(*userEntitlement.User.PrincipalName), strings.ToLower(expectedPrincipalName)) {
 			return fmt.Errorf("UserEntitlement with ID=%s has PrincipalName=%s, but expected Name=%s", resource.Primary.ID, *userEntitlement.User.PrincipalName, expectedPrincipalName)
 		}
 
 		return nil
 	}
-
 }
 
 // verifies that all projects referenced in the state are destroyed. This will be invoked
@@ -257,7 +257,7 @@ func testAccCheckUserEntitlementResourceExists(expectedPrincipalName string) res
 func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
 	clients := testAccProvider.Meta().(*config.AggregatedClient)
 
-	// verify that every users referenced in the state does not exist in AzDO
+	//verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_user_entitlement" {
 			continue
@@ -270,12 +270,14 @@ func testAccUserEntitlementCheckDestroy(s *terraform.State) error {
 
 		userEntitlement, err := readUserEntitlement(clients, &id)
 		if err != nil {
-			if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
-				return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
+			if utils.ResponseWasNotFound(err) {
+				return nil
 			}
+			return fmt.Errorf("Bad: Get UserEntitlment :  %+v", err)
 		}
-		if string(*userEntitlement.AccessLevel.Status) != "none" {
-			return fmt.Errorf("Status should be none : %s", string(*userEntitlement.AccessLevel.Status))
+
+		if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
+			return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
 		}
 	}
 

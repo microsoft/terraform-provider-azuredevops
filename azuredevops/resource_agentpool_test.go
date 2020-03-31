@@ -13,17 +13,16 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
-
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -142,7 +141,7 @@ func TestAzureDevOpsAgentPool_UpdateAgentPool_UpdateAndRead(t *testing.T) {
 	err := resourceAzureAgentPoolUpdate(resourceData, clients)
 	require.Nil(t, err)
 
-	updatedTaskAgent, err := expandAgentPool(resourceData, false)
+	updatedTaskAgent, _ := expandAgentPool(resourceData, false)
 	require.Equal(t, agentToUpdate.Id, updatedTaskAgent.Id)
 	require.Equal(t, agentToUpdate.Name, updatedTaskAgent.Name)
 	require.Equal(t, agentToUpdate.PoolType, updatedTaskAgent.PoolType)
@@ -237,9 +236,13 @@ func testAccCheckAgentPoolResourceExists(expectedName string) resource.TestCheck
 
 		clients := testAccProvider.Meta().(*config.AggregatedClient)
 		id, err := strconv.Atoi(resource.Primary.ID)
-		project, err := azureAgentPoolRead(clients, id)
-
 		if err != nil {
+			return fmt.Errorf("Parse ID error, ID:  %v !. Error= %v", resource.Primary.ID, err)
+		}
+
+		project, agentPoolErr := azureAgentPoolRead(clients, id)
+
+		if agentPoolErr != nil {
 			return fmt.Errorf("Agent Pool with ID=%d cannot be found!. Error=%v", id, err)
 		}
 

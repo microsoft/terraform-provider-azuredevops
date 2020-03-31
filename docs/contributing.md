@@ -440,7 +440,7 @@ Most changes should involve updates to the client-facing reference documentation
 
 | Name | Description | Link |
 | ---- | ----------- | ---- |
-| Index | Table of contents | [index.md](../website/index.html.markdown) |
+| Index | Table of contents | [index.md](../website/docs/index.html.markdown) |
 | Resources | Resources reference | [resources](../website/docs/r) |
 | Data Sources | Data Sources reference | [data sources](../website/docs/d) |
 | Guides | Guide and tutorial docs | [guides](../website/docs/guides) |

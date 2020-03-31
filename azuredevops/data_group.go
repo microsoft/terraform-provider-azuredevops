@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 )
 
@@ -46,6 +47,10 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding descriptor for project with ID %s. Error: %v", projectID, err)
 	}
 
