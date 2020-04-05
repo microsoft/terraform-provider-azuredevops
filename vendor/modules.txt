@@ -213,6 +213,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/operations
 github.com/microsoft/azure-devops-go-api/azuredevops/policy
 github.com/microsoft/azure-devops-go-api/azuredevops/profile
+github.com/microsoft/azure-devops-go-api/azuredevops/security
 github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint
 github.com/microsoft/azure-devops-go-api/azuredevops/system
 github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
