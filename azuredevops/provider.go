@@ -25,6 +25,7 @@ func Provider() *schema.Provider {
 			"azuredevops_group":            dataGroup(),
 			"azuredevops_projects":         dataProjects(),
 			"azuredevops_git_repositories": dataGitRepositories(),
+			"azuredevops_users":            dataUsers(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

@@ -8,6 +8,8 @@ cloud.google.com/go/internal/version
 cloud.google.com/go/storage
 # github.com/agext/levenshtein v1.2.2
 github.com/agext/levenshtein
+# github.com/ahmetb/go-linq v3.0.0+incompatible
+github.com/ahmetb/go-linq
 # github.com/apparentlymart/go-cidr v1.0.1
 github.com/apparentlymart/go-cidr/cidr
 # github.com/apparentlymart/go-textseg v1.0.0
@@ -129,7 +131,10 @@ github.com/hashicorp/logutils
 github.com/hashicorp/terraform/helper/hashcode
 # github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7
 github.com/hashicorp/terraform-config-inspect/tfconfig
-# github.com/hashicorp/terraform-plugin-sdk v1.6.0
+# github.com/hashicorp/terraform-json v0.4.0
+github.com/hashicorp/terraform-json
+# github.com/hashicorp/terraform-plugin-sdk v1.8.0
+github.com/hashicorp/terraform-plugin-sdk/acctest
 github.com/hashicorp/terraform-plugin-sdk/helper/acctest
 github.com/hashicorp/terraform-plugin-sdk/helper/hashcode
 github.com/hashicorp/terraform-plugin-sdk/helper/logging
@@ -174,6 +179,8 @@ github.com/hashicorp/terraform-plugin-sdk/internal/version
 github.com/hashicorp/terraform-plugin-sdk/meta
 github.com/hashicorp/terraform-plugin-sdk/plugin
 github.com/hashicorp/terraform-plugin-sdk/terraform
+# github.com/hashicorp/terraform-plugin-test v1.2.0
+github.com/hashicorp/terraform-plugin-test
 # github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596
 github.com/hashicorp/terraform-svchost
 github.com/hashicorp/terraform-svchost/auth
