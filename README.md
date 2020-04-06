@@ -1,6 +1,6 @@
 # Terraform Provider for Azure DevOps (Devops Resource Manager)
 
-The AzureRM Provider supports Terraform 0.10.x and later - but Terraform 0.12.x is recommended.
+The AzureRM Provider supports Terraform 0.12.x and later.
 
 * [Terraform Website](https://www.terraform.io)
 * [AzDO Website](https://azure.microsoft.com/en-us/services/devops/)

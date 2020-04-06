@@ -9,34 +9,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 )
 
-func makeProtectedSchema(r *schema.Resource, keyName, envVarName, description string) {
-	r.Schema[keyName] = &schema.Schema{
-		Type:             schema.TypeString,
-		Required:         true,
-		DefaultFunc:      schema.EnvDefaultFunc(envVarName, nil),
-		Description:      description,
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
-	}
-
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(keyName)
-	r.Schema[secretHashKey] = secretHashSchema
-}
-
-func makeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description string) {
-	r.Schema[keyName] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc(envVarName, nil),
-		Description: description,
-	}
-}
-
 func resourceServiceEndpointDockerHub() *schema.Resource {
 	r := crud.GenBaseServiceEndpointResource(flattenServiceEndpointDockerHub, expandServiceEndpointDockerHub, parseImportedProjectIDAndServiceEndpointID)
-	makeUnprotectedSchema(r, "docker_username", "AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME", "The DockerHub username which should be used.")
-	makeUnprotectedSchema(r, "docker_email", "AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL", "The DockerHub email address which should be used.")
-	makeProtectedSchema(r, "docker_password", "AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD", "The DockerHub password which should be used.")
+	crud.MakeUnprotectedSchema(r, "docker_username", "AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME", "The DockerHub username which should be used.")
+	crud.MakeUnprotectedSchema(r, "docker_email", "AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL", "The DockerHub email address which should be used.")
+	crud.MakeProtectedSchema(r, "docker_password", "AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD", "The DockerHub password which should be used.")
 	return r
 }
 
