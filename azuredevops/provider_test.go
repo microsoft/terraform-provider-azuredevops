@@ -20,6 +20,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_dockerhub",
 		"azuredevops_serviceendpoint_azurerm",
+		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_variable_group",
 		"azuredevops_git_repository",
 		"azuredevops_user_entitlement",
@@ -74,6 +75,7 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 		require.Contains(t, schema, test.name, "An expected property was not found in the schema")
 		require.NotNil(t, schema[test.name], "A property in the schema cannot have a nil value")
 		require.Equal(t, test.sensitive, schema[test.name].Sensitive, "A property in the schema has an incorrect sensitivity value")
+		require.Equal(t, test.required, schema[test.name].Required, "A property in the schema has an incorrect required value")
 
 		if test.defaultEnvVar != "" {
 			expectedValue := os.Getenv(test.defaultEnvVar)
