@@ -34,12 +34,6 @@ jobs:
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
-      chmod +x ./scripts/*.sh
-    displayName: 'Set Scripts as Executable'
-
-  - bash: |
-      #!/usr/bin/env bash
-      cd "$BUILD_SOURCESDIRECTORY"
       ./scripts/fmt-check-go.sh
     displayName: 'Run Format Check'
 

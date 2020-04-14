@@ -31,9 +31,6 @@ jobs:
             dep ensure
         fi
 
-    - name: Set Scripts as Executable
-      run : chmod +x ./scripts/*.sh
-
     - name: Run Format Check
       run: ./scripts/fmt-check-go.sh
 
