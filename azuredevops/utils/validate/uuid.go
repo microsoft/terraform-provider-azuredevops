@@ -3,6 +3,7 @@ package validate
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/go-uuid"
 )
@@ -33,7 +34,7 @@ func UUIDOrEmpty(i interface{}, k string) (warnings []string, errors []error) {
 		return
 	}
 
-	if v == "" {
+	if strings.EqualFold(v, "") {
 		return
 	}
 

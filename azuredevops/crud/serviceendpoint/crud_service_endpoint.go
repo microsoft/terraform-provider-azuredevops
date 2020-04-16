@@ -3,6 +3,7 @@ package crudserviceendpoint
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -141,7 +142,7 @@ func MakeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description 
 
 // Make the Azure DevOps API call to create the endpoint
 func createServiceEndpoint(clients *config.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
-	if *endpoint.Type == "github" && *endpoint.Authorization.Scheme == "InstallationToken" {
+	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps must be created on Github and then can be imported")
 	}
 	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
@@ -166,7 +167,7 @@ func deleteServiceEndpoint(clients *config.AggregatedClient, project *string, en
 }
 
 func updateServiceEndpoint(clients *config.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
-	if *endpoint.Type == "github" && *endpoint.Authorization.Scheme == "InstallationToken" {
+	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
 	}
 	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(

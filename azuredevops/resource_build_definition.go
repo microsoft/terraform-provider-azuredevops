@@ -189,7 +189,7 @@ func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
-	if d.Id() == "" {
+	if strings.EqualFold(d.Id(), "") {
 		return nil
 	}
 

@@ -103,7 +103,7 @@ func ParseProjectIDAndResourceID(d *schema.ResourceData) (string, int, error) {
 // ParseImportedID parse the imported int Id from the terraform import
 func ParseImportedID(id string) (string, int, error) {
 	parts := strings.SplitN(id, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
 		return "", 0, fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceId", id)
 	}
 	project := parts[0]
@@ -117,7 +117,7 @@ func ParseImportedID(id string) (string, int, error) {
 // ParseImportedName parse the imported Id (Name) from the terraform import
 func ParseImportedName(id string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
 		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceName", id)
 	}
 	project := parts[0]
@@ -129,7 +129,7 @@ func ParseImportedName(id string) (string, string, error) {
 // ParseImportedUUID parse the imported uuid from the terraform import
 func ParseImportedUUID(id string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
 		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceId", id)
 	}
 	project := parts[0]

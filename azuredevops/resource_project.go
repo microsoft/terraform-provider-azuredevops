@@ -272,7 +272,7 @@ func expandProject(clients *config.AggregatedClient, d *schema.ResourceData, for
 }
 
 func convertVisibility(v string) *core.ProjectVisibility {
-	if strings.ToLower(v) == "public" {
+	if strings.EqualFold(v, "public") {
 		return &core.ProjectVisibilityValues.Public
 	}
 	return &core.ProjectVisibilityValues.Private

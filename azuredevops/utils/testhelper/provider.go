@@ -2,6 +2,7 @@ package testhelper
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -16,7 +17,7 @@ func TestAccPreCheck(t *testing.T, additionalEnvVars *[]string) {
 	}
 
 	for _, variable := range requiredEnvVars {
-		if os.Getenv(variable) == "" {
+		if strings.EqualFold(os.Getenv(variable), "") {
 			t.Fatalf("`%s` must be set for acceptance tests!", variable)
 		}
 	}

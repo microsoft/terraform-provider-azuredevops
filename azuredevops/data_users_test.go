@@ -264,7 +264,7 @@ func TestDataSourceUser_Read_TestFilterByOrigin(t *testing.T) {
 	for _, elem := range usersSet.List() {
 		upn := elem.(map[string]interface{})["principal_name"].(string)
 		for _, usr := range usrList1 {
-			if "aad" == *usr.Origin && upn == *usr.PrincipalName {
+			if strings.EqualFold("aad", *usr.Origin) && strings.EqualFold(upn, *usr.PrincipalName) {
 				iFound++
 				break
 			}
@@ -311,7 +311,7 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 	for _, elem := range usersSet.List() {
 		upn := elem.(map[string]interface{})["principal_name"].(string)
 		for _, usr := range usrList1 {
-			if "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77" == *usr.OriginId && upn == *usr.PrincipalName {
+			if strings.EqualFold("8c840d92-f19e-4dfe-8eab-5a1fd67a3a77", *usr.OriginId) && strings.EqualFold(upn, *usr.PrincipalName) {
 				iFound++
 				break
 			}
@@ -359,7 +359,7 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 	for _, elem := range usersSet.List() {
 		upn := elem.(map[string]interface{})["principal_name"].(string)
 		for _, usr := range usrList1 {
-			if "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77" == *usr.OriginId && "aad" == *usr.Origin && upn == *usr.PrincipalName {
+			if strings.EqualFold("8c840d92-f19e-4dfe-8eab-5a1fd67a3a77", *usr.OriginId) && strings.EqualFold("aad", *usr.Origin) && strings.EqualFold(upn, *usr.PrincipalName) {
 				iFound++
 				break
 			}
@@ -415,7 +415,7 @@ func TestDataSourceUser_Read_TestFilterBySubjectType(t *testing.T) {
 	for _, elem := range usersSet.List() {
 		upn := elem.(map[string]interface{})["principal_name"].(string)
 		for _, usr := range usrList {
-			if upn == *usr.PrincipalName {
+			if strings.EqualFold(upn, *usr.PrincipalName) {
 				iFound++
 				break
 			}

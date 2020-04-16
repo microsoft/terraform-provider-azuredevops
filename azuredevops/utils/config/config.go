@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
@@ -39,11 +40,11 @@ type AggregatedClient struct {
 func GetAzdoClient(azdoPAT string, organizationURL string) (*AggregatedClient, error) {
 	ctx := context.Background()
 
-	if azdoPAT == "" {
+	if strings.EqualFold(azdoPAT, "") {
 		return nil, fmt.Errorf("the personal access token is required")
 	}
 
-	if organizationURL == "" {
+	if strings.EqualFold(organizationURL, "") {
 		return nil, fmt.Errorf("the url of the Azure DevOps is required")
 	}
 

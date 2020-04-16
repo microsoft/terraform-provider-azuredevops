@@ -3,6 +3,7 @@ package azuredevops
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -55,7 +56,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 	membersToAdd := d.Get("members").(*schema.Set)
 	var membersToRemove *schema.Set = nil
 
-	if "overwrite" == mode {
+	if strings.EqualFold("overwrite", mode) {
 		actualMemberships, err := getGroupMemberships(clients, group)
 		if err != nil {
 			return fmt.Errorf("Error reading group memberships during read: %+v", err)
@@ -277,7 +278,7 @@ func resourceGroupMembershipRead(d *schema.ResourceData, m interface{}) error {
 	stateMembers := d.Get("members").(*schema.Set)
 	members := make([]string, 0)
 	for _, membership := range *actualMemberships {
-		if "overwrite" == mode || stateMembers.Contains(*membership.MemberDescriptor) {
+		if strings.EqualFold("overwrite", mode) || stateMembers.Contains(*membership.MemberDescriptor) {
 			members = append(members, *membership.MemberDescriptor)
 		}
 	}

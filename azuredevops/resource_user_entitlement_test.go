@@ -295,9 +295,9 @@ func MatchAddUserEntitlementArgs(t memberentitlementmanagement.AddUserEntitlemen
 func (m *matchAddUserEntitlementArgs) Matches(x interface{}) bool {
 	args := x.(memberentitlementmanagement.AddUserEntitlementArgs)
 	return *args.UserEntitlement.AccessLevel.AccountLicenseType == *m.t.UserEntitlement.AccessLevel.AccountLicenseType &&
-		*args.UserEntitlement.User.Origin == *m.t.UserEntitlement.User.Origin &&
-		*args.UserEntitlement.User.OriginId == *m.t.UserEntitlement.User.OriginId &&
-		*args.UserEntitlement.User.PrincipalName == *m.t.UserEntitlement.User.PrincipalName
+		strings.EqualFold(*args.UserEntitlement.User.Origin, *m.t.UserEntitlement.User.Origin) &&
+		strings.EqualFold(*args.UserEntitlement.User.OriginId, *m.t.UserEntitlement.User.OriginId) &&
+		strings.EqualFold(*args.UserEntitlement.User.PrincipalName, *m.t.UserEntitlement.User.PrincipalName)
 }
 
 func (m *matchAddUserEntitlementArgs) String() string {

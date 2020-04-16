@@ -3,6 +3,7 @@ package azuredevops
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -134,7 +135,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
 	}
 
-	if initialization != nil && initialization.initType == "Clean" {
+	if initialization != nil && strings.EqualFold(initialization.initType, "Clean") {
 		err = initializeGitRepository(clients, createdRepo)
 		if err != nil {
 			if err := deleteGitRepository(clients, createdRepo.Id.String()); err != nil {
@@ -275,7 +276,7 @@ func deleteGitRepository(clients *config.AggregatedClient, repoID string) error 
 // Lookup an Azure Git Repository using the ID, or name if the ID is not set.
 func gitRepositoryRead(clients *config.AggregatedClient, repoID string, repoName string, projectID string) (*git.GitRepository, error) {
 	identifier := repoID
-	if identifier == "" {
+	if strings.EqualFold(identifier, "") {
 		identifier = repoName
 	}
 
@@ -303,7 +304,7 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
 	var repoID *uuid.UUID
 	id := d.Id()
-	if id == "" {
+	if strings.EqualFold(id, "") {
 		log.Print("[DEBUG] expandGitRepository: ID is empty (not set)")
 	} else {
 		parsedID, err := uuid.Parse(id)
@@ -336,11 +337,11 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			sourceURL:  initValues["source_url"].(string),
 		}
 
-		if initialization.initType == "Import" {
+		if strings.EqualFold(initialization.initType, "import") {
 			return nil, nil, nil, fmt.Errorf("Initialization strategy not implemented: %s", initialization.initType)
 		}
 
-		if initialization.initType == "Clean" {
+		if strings.EqualFold(initialization.initType, "clean") {
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
 		}

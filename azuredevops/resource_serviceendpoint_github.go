@@ -1,6 +1,8 @@
 package azuredevops
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	crud "github.com/microsoft/terraform-provider-azuredevops/azuredevops/crud/serviceendpoint"
@@ -136,14 +138,14 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	crud.DoBaseFlattening(d, serviceEndpoint, projectID)
-	if *serviceEndpoint.Authorization.Scheme == "OAuth" {
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
 		d.Set("auth_oath", &[]map[string]interface{}{
 			{
 				"oauth_configuration_id": (*serviceEndpoint.Authorization.Parameters)["ConfigurationId"],
 			},
 		})
 	}
-	if *serviceEndpoint.Authorization.Scheme == "PersonalAccessToken" {
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "PersonalAccessToken") {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 		authPersonal := flattenAuthPerson(d, authPersonalSet)
 		if authPersonal != nil {

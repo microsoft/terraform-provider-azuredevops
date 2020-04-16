@@ -34,7 +34,7 @@ data "azuredevops_group" "group" {
 
 // TestAccProjectResource HCL describing an AzDO project
 func TestAccProjectResource(projectName string) string {
-	if projectName == "" {
+	if strings.EqualFold(projectName, "") {
 		return ""
 	}
 	return fmt.Sprintf(`
