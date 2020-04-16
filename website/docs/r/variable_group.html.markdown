@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_variable_group"
+description: |-
+  Manages variable groups within Azure DevOps organization.
+---
+
 # azuredevops_variable_group
 Manages variable groups within Azure DevOps.
 

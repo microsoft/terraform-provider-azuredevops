@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_group"
+description: |-
+  Use this data source to access information about an existing Group within Azure DevOps.
+---
+
 # Data Source: azuredevops_group
 Use this data source to access information about an existing Group within Azure DevOps
 

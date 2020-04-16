@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_user_entitlement"
+description: |-
+  Manages a user entitlement within Azure DevOps organization.
+---
+
 # azuredevops_user_entitlement
 Manages a user entitlement within Azure DevOps.
 

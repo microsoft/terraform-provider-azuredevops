@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_build_definition"
+description: |-
+  Manages a Build Definition within Azure DevOps organization.
+---
+
 # azuredevops_build_definition
 Manages a Build Definition within Azure DevOps.
 

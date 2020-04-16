@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_users"
+description: |-
+  Use this data source to access information about an existing users within Azure DevOps.
+---
+
 # Data Source: azuredevops_users
 
 Use this data source to access information about an existing users within Azure DevOps.

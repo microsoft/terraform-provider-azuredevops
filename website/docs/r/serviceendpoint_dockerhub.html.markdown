@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_dockerhub"
+description: |-
+  Manages a Docker Hub service endpoint within Azure DevOps organization.
+---
+
 # azuredevops_serviceendpoint_dockerhub
 Manages a Docker Hub service endpoint within Azure DevOps.
 

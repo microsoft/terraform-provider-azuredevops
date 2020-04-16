@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_group"
+description: |-
+  Manages a group within Azure DevOps organization.
+---
+
 # azuredevops_group
 Manages a group within Azure DevOps.
 

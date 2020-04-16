@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_group_membership"
+description: |-
+  Manages group membership within Azure DevOps organization.
+---
+
 # azuredevops_group_membership
 Manages group membership within Azure DevOps.
 

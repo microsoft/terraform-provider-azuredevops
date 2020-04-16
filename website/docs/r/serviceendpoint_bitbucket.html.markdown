@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_bitbucket"
+description: |-
+  Manages a Bitbucket service endpoint within Azure DevOps organization.
+---
+
 # azuredevops_serviceendpoint_bitbucket
 Manages a Bitbucket service endpoint within Azure DevOps.
 

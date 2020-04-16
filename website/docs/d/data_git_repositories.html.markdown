@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_git_repositories"
+description: |-
+  Use this data source to access information about an existing Projects within Azure DevOps.
+---
+
 # Data Source: azuredevops_git_repositories
 
 Use this data source to access information about an existing Projects within Azure DevOps.

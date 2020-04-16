@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_agent_pool"
+description: |-
+  Manages an agent pool within Azure DevOps organization.
+---
+
 # azuredevops_agent_pool
 Manages an agent pool within Azure DevOps.
 

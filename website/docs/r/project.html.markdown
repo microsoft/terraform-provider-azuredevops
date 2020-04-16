@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_project"
+description: |-
+  Manages a project within Azure DevOps organization.
+---
+
 # azuredevops_project
 Manages a project within Azure DevOps.
 

@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_git_repository"
+description: |-
+  Manages a git repository within Azure DevOps organization.
+---
+
 # azuredevops_git_repository
 Manages a git repository within Azure DevOps.
 

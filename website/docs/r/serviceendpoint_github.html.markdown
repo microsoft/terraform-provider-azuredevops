@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_github"
+description: |-
+  Manages a GitHub service endpoint within Azure DevOps organization.
+---
+
 # azuredevops_serviceendpoint_github
 Manages a GitHub service endpoint within Azure DevOps.
 

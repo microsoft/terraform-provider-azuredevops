@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_azurerm"
+description: |-
+  Manages a AzureRM service endpoint within Azure DevOps organization.
+---
+
 # azuredevops_serviceendpoint_azurerm
 Manages a AzureRM service endpoint within Azure DevOps.
 
