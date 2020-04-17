@@ -21,7 +21,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
-var projectCreateTimeoutDuration time.Duration = 60
+var projectCreateTimeoutDuration time.Duration = 60 * 3
 var projectDeleteTimeoutDuration time.Duration = 60
 
 func resourceProject() *schema.Resource {
