@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/terraform v0.12.23
-	github.com/hashicorp/terraform-plugin-sdk v1.8.0
+	github.com/hashicorp/terraform-plugin-sdk v1.10.0
 	github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b3
 	github.com/microsoft/terraform-provider-azuredevops v0.1.3
 	github.com/stretchr/testify v1.4.0

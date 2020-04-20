@@ -41,7 +41,7 @@ func resourceGitPermissions() *schema.Resource {
 				ValidateFunc: validate.NoEmptyStrings,
 				Optional:     true,
 				ForceNew:     true,
-				AllOf:        []string{"repository_id"},
+				RequiredWith: []string{"repository_id"},
 			},
 		}),
 	}

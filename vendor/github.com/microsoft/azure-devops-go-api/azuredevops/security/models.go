@@ -104,7 +104,7 @@ type SecurityNamespaceDescription struct {
 	// The permission bits needed by a user in order to read security data on the Security Namespace.
 	ReadPermission *int `json:"readPermission,omitempty"`
 	// If the security tokens this namespace will be operating on need to be split on certain characters to determine its elements that character should be specified here. If not, this value will be the null character.
-	SeparatorValue *rune `json:"separatorValue,omitempty"`
+	SeparatorValue *string `json:"separatorValue,omitempty"`
 	// Used to send information about the structure of the security namespace over the web service.
 	StructureValue *int `json:"structureValue,omitempty"`
 	// The bits reserved by system store
