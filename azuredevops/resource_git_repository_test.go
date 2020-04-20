@@ -420,6 +420,34 @@ func TestAccAzureGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	})
 }
 
+// Verifies that a newly forked repo does NOT return an empty branch_name
+func TestAccAzureGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitForkedRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfRepoNode := "azuredevops_git_repository.gitrepo"
+	tfForkedRepoNode := "azuredevops_git_repository.gitforkedrepo"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccAzureGitRepoCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testhelper.TestAccAzureForkedGitRepoResource(projectName, gitRepoName, gitForkedRepoName, "Clean", "Uninitialized"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAzureGitRepoResourceExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttr(tfForkedRepoNode, "name", gitForkedRepoName),
+					resource.TestCheckResourceAttr(tfForkedRepoNode, "default_branch", "refs/heads/master"),
+				),
+			},
+		},
+	})
+}
+
 func init() {
 	InitProvider()
 }

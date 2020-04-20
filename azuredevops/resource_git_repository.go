@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -144,9 +146,43 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("Error initializing repository in Azure DevOps: %+v", err)
 		}
 	}
+	if !(strings.EqualFold(initialization.initType, "uninitialized") && parentRepoRef == nil) {
+		err := waitForBranch(clients, repo.Name, projectID)
+		if err != nil {
+			return err
+		}
+	}
 
 	d.SetId(createdRepo.Id.String())
 	return resourceGitRepositoryRead(d, m)
+}
+
+func waitForBranch(clients *config.AggregatedClient, repoName *string, projectID fmt.Stringer) error {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+			gitRepo, err := gitRepositoryRead(clients, "", *repoName, projectID.String())
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading repository: %+v", err)
+			}
+
+			if converter.ToString(gitRepo.DefaultBranch, "") != "" {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Second,
+		MinTimeout:                2 * time.Second,
+		Delay:                     1 * time.Second,
+		ContinuousTargetOccurence: 1,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error retrieving expected branch for repository [%s]: %+v", *repoName, err)
+	}
+	return nil
 }
 
 func createGitRepository(clients *config.AggregatedClient, repoName *string, projectID *uuid.UUID, parentRepo *git.GitRepositoryRef) (*git.GitRepository, error) {

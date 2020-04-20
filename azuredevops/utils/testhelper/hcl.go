@@ -20,6 +20,22 @@ resource "azuredevops_git_repository" "gitrepo" {
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
+// TestAccAzureForkedGitRepoResource HCL describing an AzDO GIT repository resource
+func TestAccAzureForkedGitRepoResource(projectName string, gitRepoName string, gitForkedRepoName string, initType string, forkedInitType string) string {
+	azureGitRepoResource := fmt.Sprintf(`
+resource "azuredevops_git_repository" "gitforkedrepo" {
+	project_id      		= azuredevops_project.project.id
+	parent_repository_id    = azuredevops_git_repository.gitrepo.id
+	name            		= "%s"
+	initialization {
+		init_type = "%s"
+	}
+}`, gitForkedRepoName, forkedInitType)
+
+	gitRepoResource := TestAccAzureGitRepoResource(projectName, gitRepoName, initType)
+	return fmt.Sprintf("%s\n%s", gitRepoResource, azureGitRepoResource)
+}
+
 // TestAccGroupDataSource HCL describing an AzDO Group Data Source
 func TestAccGroupDataSource(projectName string, groupName string) string {
 	dataSource := fmt.Sprintf(`
