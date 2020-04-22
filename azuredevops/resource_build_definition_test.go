@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"testing"
 
@@ -20,10 +21,76 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 	"github.com/stretchr/testify/require"
 )
 
 var testProjectID = uuid.New().String()
+
+var manualCiTrigger = map[string]interface{}{
+	"branchFilters": []interface{}{
+		"+develop",
+		"+feature",
+		"+master",
+		"-test",
+	},
+	"pathFilters": []interface{}{
+		"+Root/Child1/*",
+		"+Root/Child2",
+		"-Root/Child3/*",
+	},
+	"batchChanges":                 true,
+	"maxConcurrentBuildsPerBranch": 1,
+	"pollingInterval":              0,
+	"triggerType":                  "continuousIntegration",
+}
+
+var yamlCiTrigger = map[string]interface{}{
+	"branchFilters":                []interface{}{},
+	"pathFilters":                  []interface{}{},
+	"settingsSourceType":           float64(2),
+	"batchChanges":                 false,
+	"maxConcurrentBuildsPerBranch": 1,
+	"triggerType":                  "continuousIntegration",
+}
+
+var manualPrTrigger = map[string]interface{}{
+	"autoCancel": true,
+	"forks": map[string]interface{}{
+		"enabled":      false,
+		"allowSecrets": false,
+	},
+	"branchFilters": []interface{}{
+		"+develop",
+		"+master",
+	},
+	"pathFilters": []interface{}{
+		"+Root/Child1/*",
+		"+Root/Child2",
+		"-Root/Child3/*",
+	},
+	"isCommentRequiredForPullRequest":      true,
+	"requireCommentsForNonTeamMembersOnly": true,
+	"triggerType":                          "pullRequest",
+}
+
+var yamlPrTrigger = map[string]interface{}{
+	"forks": map[string]interface{}{
+		"enabled":      true,
+		"allowSecrets": true,
+	},
+	"branchFilters":                        []interface{}{"+develop"},
+	"pathFilters":                          []interface{}{},
+	"settingsSourceType":                   float64(2),
+	"requireCommentsForNonTeamMembersOnly": false,
+	"isCommentRequiredForPullRequest":      false,
+	"triggerType":                          "pullRequest",
+}
+
+var triggerGroups = [][]interface{}{
+	{manualCiTrigger, manualPrTrigger},
+	{yamlCiTrigger, yamlPrTrigger},
+}
 
 // This definition matches the overall structure of what a configured git repository would
 // look like. Note that the ID and Name attributes match -- this is the service-side behavior
@@ -55,6 +122,7 @@ var testBuildDefinition = build.BuildDefinition{
 	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
 	Type:           &build.DefinitionTypeValues.Build,
 	Quality:        &build.DefinitionQualityValues.Definition,
+	Triggers:       &[]interface{}{},
 	VariableGroups: &[]build.VariableGroup{},
 }
 
@@ -95,13 +163,16 @@ func TestAzureDevOpsBuildDefinition_PathInvalidStartingSlashIsError(t *testing.T
 // verifies that the flatten/expand round trip yields the same build definition
 func TestAzureDevOpsBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	for _, triggerGroup := range triggerGroups {
+		testBuildDefinitionWithCustomTriggers := testBuildDefinition
+		testBuildDefinitionWithCustomTriggers.Triggers = &triggerGroup
+		flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID)
+		buildDefinitionYamlAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
 
-	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
-
-	require.Nil(t, err)
-	require.Equal(t, testBuildDefinition, *buildDefinitionAfterRoundTrip)
-	require.Equal(t, testProjectID, projectID)
+		require.Nil(t, err)
+		require.Equal(t, sortBuildDefinition(testBuildDefinitionWithCustomTriggers), sortBuildDefinition(*buildDefinitionYamlAfterRoundTrip))
+		require.Equal(t, testProjectID, projectID)
+	}
 }
 
 // verifies that an expand will fail if there is insufficient configuration data found in the resource
@@ -346,6 +417,27 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 		Project:      &projectID,
 		DefinitionId: &buildDefID,
 	})
+}
+
+func sortBuildDefinition(b build.BuildDefinition) build.BuildDefinition {
+	if b.Triggers == nil {
+		return b
+	}
+	for _, t := range *b.Triggers {
+		if m, ok := t.(map[string]interface{}); ok {
+			if m2, ok := m["branchFilters"].([]interface{}); ok {
+				bf := tfhelper.ExpandStringList(m2)
+				sort.Strings(bf)
+				m["branchFilters"] = bf
+			}
+			if m3, ok := m["pathFilters"].([]interface{}); ok {
+				pf := tfhelper.ExpandStringList(m3)
+				sort.Strings(pf)
+				m["pathFilters"] = pf
+			}
+		}
+	}
+	return b
 }
 
 func init() {

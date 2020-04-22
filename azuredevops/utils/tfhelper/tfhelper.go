@@ -139,3 +139,20 @@ func ParseImportedUUID(id string) (string, string, error) {
 	}
 	return project, parts[1], nil
 }
+
+// ExpandStringList expand an array of interface into array of string
+func ExpandStringList(d []interface{}) []string {
+	vs := make([]string, 0, len(d))
+	for _, v := range d {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, v.(string))
+		}
+	}
+	return vs
+}
+
+// ExpandStringSet expand a set into array of string
+func ExpandStringSet(d *schema.Set) []string {
+	return ExpandStringList(d.List())
+}

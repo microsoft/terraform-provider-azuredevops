@@ -21,6 +21,19 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_git_repository" "repository" {
   project_id = azuredevops_project.project.id
   name       = "Sample Repository"
+
+  ci_trigger {
+    use_yaml = true
+  }
+
+  pull_request_trigger {
+    use_yaml = true
+    forks {
+        enabled       = false
+        share_secrets = false
+    }
+  }
+
   initialization {
     init_type = "Clean"
   }
@@ -30,6 +43,18 @@ resource "azuredevops_build_definition" "build" {
   project_id = azuredevops_project.project.id
   name       = "Sample Build Definition"
   path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = true
+  }
+
+  pull_request_trigger {
+    use_yaml = true
+    forks {
+        enabled       = false
+        share_secrets = false
+    }
+  }
 
   repository {
     repo_type   = "TfsGit"
@@ -53,6 +78,8 @@ The following arguments are supported:
 * `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Hosted Ubuntu 1604`.
 * `repository` - (Required) A `repository` block as documented below.
 * `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
+* `ci_trigger` - (Optional) Continuous Integration Integration trigger.
+* `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
 
 `repository` block supports the following:
 
@@ -62,6 +89,47 @@ The following arguments are supported:
 * `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub`.
 * `yml_path` - (Required) The path of the Yaml file describing the build definition.
 
+`ci_trigger` block supports the following:
+
+* `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
+* `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
+
+`ci_trigger` `override` block supports the following:
+
+* `batch` - (Optional) If you set batch to true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built. Defaults to `true`.
+* `branch_filter` - (Optional) The branches to include and exclude from the trigger.
+* `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+* `max_concurrent_builds_per_branch` - (Optional) The number of max builds per branch. Defaults to `1`.
+* `polling_interval` - (Optional) How often the external repository is polled. Defaults to `0`.
+* `polling_job_id` - (Computed) This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
+
+`pull_request_trigger` block supports the following:
+
+* `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
+* `initial_branch` - (Optional) When use_yaml is true set this to the name of the branch that the azure-pipelines.yml exists on. Defaults to `Managed by Terraform`.
+* `forks` - (Required) Set permissions for Forked repositories.
+* `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
+
+`forks` block supports the following:
+
+* `enabled` - (Required) Build pull requests form forms of this repository.
+* `share_secrets` - (Required) Make secrets available to builds of forks.
+
+`pull_request_trigger` `override` block supports the following:
+
+* `auto_cancel` - (Optional) . Defaults to `true`.
+* `branch_filter` - (Optional) The branches to include and exclude from the trigger.
+* `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+
+* `branch_filter` block supports the following:
+
+* `include` - (Optional) List of branch patterns to include.
+* `exclude` - (Optional) List of branch patterns to exclude.
+
+* `path_filter` block supports the following:
+
+* `include` - (Optional) List of path patterns to include.
+* `exclude` - (Optional) List of path patterns to exclude.
 
 ## Attributes Reference
 
