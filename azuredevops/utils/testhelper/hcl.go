@@ -173,8 +173,52 @@ resource "azuredevops_agent_pool" "pool" {
 	}`, poolName)
 }
 
+// TestAccBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
+func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
+	return TestAccBuildDefinitionResource(
+		projectName,
+		buildDefinitionName,
+		buildPath,
+		"GitHub",
+		"repoOrg/repoName",
+		"master",
+		"path/to/yaml",
+		"")
+}
+
+// TestAccBuildDefinitionResourceBitbucket HCL describing an AzDO build definition sourced from Bitbucket
+func TestAccBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName string, buildPath string, serviceConnectionID string) string {
+	return TestAccBuildDefinitionResource(
+		projectName,
+		buildDefinitionName,
+		buildPath,
+		"Bitbucket",
+		"repoOrg/repoName",
+		"master",
+		"path/to/yaml",
+		serviceConnectionID)
+}
+
 // TestAccBuildDefinitionResource HCL describing an AzDO build definition
-func TestAccBuildDefinitionResource(projectName string, buildDefinitionName string, buildPath string) string {
+func TestAccBuildDefinitionResource(
+	projectName string,
+	buildDefinitionName string,
+	buildPath string,
+	repoType string,
+	repoName string,
+	branchName string,
+	yamlPath string,
+	serviceConnectionID string,
+) string {
+	repositoryBlock := fmt.Sprintf(`
+repository {
+	repo_type             = "%s"
+	repo_name             = "%s"
+	branch_name           = "%s"
+	yml_path              = "%s"
+	service_connection_id = "%s"
+}`, repoType, repoName, branchName, yamlPath, serviceConnectionID)
+
 	buildDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_build_definition" "build" {
 	project_id      = azuredevops_project.project.id
@@ -182,13 +226,8 @@ resource "azuredevops_build_definition" "build" {
 	agent_pool_name = "Hosted Ubuntu 1604"
 	path			= "%s"
 
-	repository {
-	  repo_type             = "GitHub"
-	  repo_name             = "repoOrg/repoName"
-	  branch_name           = "branch"
-	  yml_path              = "path/to/yaml"
-	}
-}`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`))
+	%s
+}`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`), repositoryBlock)
 
 	projectResource := TestAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)

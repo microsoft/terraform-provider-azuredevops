@@ -1,6 +1,7 @@
 package azuredevops
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -122,7 +123,7 @@ func resourceBuildDefinition() *schema.Resource {
 						"repo_type": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"GitHub", "TfsGit"}, false),
+							ValidateFunc: validation.StringInSlice([]string{"GitHub", "TfsGit", "Bitbucket"}, false),
 						},
 						"branch_name": {
 							Type:     schema.TypeString,
@@ -250,6 +251,10 @@ func resourceBuildDefinition() *schema.Resource {
 
 func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
+	err := validateServiceConnectionIDExistsIfNeeded(d)
+	if err != nil {
+		return err
+	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
 		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
@@ -346,6 +351,10 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 
 func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
+	err := validateServiceConnectionIDExistsIfNeeded(d)
+	if err != nil {
+		return err
+	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
 		return err
@@ -706,6 +715,9 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	if strings.EqualFold(repoType, "github") {
 		repoURL = fmt.Sprintf("https://github.com/%s.git", repoName)
 	}
+	if strings.EqualFold(repoType, "bitbucket") {
+		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoName)
+	}
 
 	ciTriggers := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
@@ -761,6 +773,23 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	}
 
 	return &buildDefinition, projectID, nil
+}
+
+/**
+ * certain types of build definitions require a service connection to run. This function
+ * returns an error if a service connection was needed but not provided
+ */
+func validateServiceConnectionIDExistsIfNeeded(d *schema.ResourceData) error {
+	repositories := d.Get("repository").([]interface{})
+	repository := repositories[0].(map[string]interface{})
+
+	repoType := repository["repo_type"].(string)
+	serviceConnectionID := repository["service_connection_id"].(string)
+
+	if strings.EqualFold(repoType, "bitbucket") && serviceConnectionID == "" {
+		return errors.New("bitbucket repositories need a referenced service connection ID")
+	}
+	return nil
 }
 
 func buildVariableGroup(id int) *build.VariableGroup {
