@@ -13,7 +13,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
 
 func resourceUserEntitlement() *schema.Resource {
@@ -41,11 +40,18 @@ func resourceUserEntitlement() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"aad", "ghb"}, false),
 			},
 			"account_license_type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      "express",
-				ValidateFunc: validation.StringInSlice([]string{"advanced", "earlyAdopter", "express", "none", "professional", "stakeholder"}, false),
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  licensing.AccountLicenseTypeValues.Express,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(licensing.AccountLicenseTypeValues.None),
+					string(licensing.AccountLicenseTypeValues.Advanced),
+					string(licensing.AccountLicenseTypeValues.EarlyAdopter),
+					string(licensing.AccountLicenseTypeValues.Express),
+					string(licensing.AccountLicenseTypeValues.Professional),
+					string(licensing.AccountLicenseTypeValues.Stakeholder),
+				}, false),
 			},
 			"descriptor": {
 				Type:     schema.TypeString,
@@ -130,15 +136,12 @@ func expandUserEntitlement(d *schema.ResourceData) (*memberentitlementmanagement
 
 	subjectKind := "user"
 
-	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
-	if err != nil {
-		return nil, err
-	}
+	accountLicenseType := licensing.AccountLicenseType(d.Get("account_license_type").(string))
 
 	return &memberentitlementmanagement.UserEntitlement{
 
 		AccessLevel: &licensing.AccessLevel{
-			AccountLicenseType: accountLicenseType,
+			AccountLicenseType: &accountLicenseType,
 		},
 
 		// TODO check if it works in both case for GitHub and AzureDevOps

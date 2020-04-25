@@ -30,11 +30,14 @@ func resourceAzureAgentPool() *schema.Resource {
 				ValidateFunc: validate.NoEmptyStrings,
 			},
 			"pool_type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      taskagent.TaskAgentPoolTypeValues.Automation,
-				ValidateFunc: validation.StringInSlice([]string{string(taskagent.TaskAgentPoolTypeValues.Automation), string(taskagent.TaskAgentPoolTypeValues.Deployment)}, false),
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  taskagent.TaskAgentPoolTypeValues.Automation,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(taskagent.TaskAgentPoolTypeValues.Automation),
+					string(taskagent.TaskAgentPoolTypeValues.Deployment),
+				}, false),
 			},
 			"auto_provision": {
 				Type:     schema.TypeBool,

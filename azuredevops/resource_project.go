@@ -46,17 +46,23 @@ func resourceProject() *schema.Resource {
 				Default:  "",
 			},
 			"visibility": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "private",
-				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  core.ProjectVisibilityValues.Private,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(core.ProjectVisibilityValues.Private),
+					string(core.ProjectVisibilityValues.Public),
+				}, false),
 			},
 			"version_control": {
-				Type:         schema.TypeString,
-				ForceNew:     true,
-				Optional:     true,
-				Default:      "Git",
-				ValidateFunc: validation.StringInSlice([]string{"Git", "Tfvc"}, true),
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Default:  core.SourceControlTypesValues.Git,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(core.SourceControlTypesValues.Git),
+					string(core.SourceControlTypesValues.Tfvc),
+				}, true),
 			},
 			"work_item_template": {
 				Type:             schema.TypeString,
@@ -246,7 +252,7 @@ func expandProject(clients *config.AggregatedClient, d *schema.ResourceData, for
 		projectID = &parsedID
 	}
 
-	visibility := d.Get("visibility").(string)
+	visibility := core.ProjectVisibility(d.Get("visibility").(string))
 
 	var capabilities *map[string]map[string]string
 	if forCreate {
@@ -264,18 +270,11 @@ func expandProject(clients *config.AggregatedClient, d *schema.ResourceData, for
 		Id:           projectID,
 		Name:         converter.String(d.Get("project_name").(string)),
 		Description:  converter.String(d.Get("description").(string)),
-		Visibility:   convertVisibility(visibility),
+		Visibility:   &visibility,
 		Capabilities: capabilities,
 	}
 
 	return project, nil
-}
-
-func convertVisibility(v string) *core.ProjectVisibility {
-	if strings.EqualFold(v, "public") {
-		return &core.ProjectVisibilityValues.Public
-	}
-	return &core.ProjectVisibilityValues.Private
 }
 
 func flattenProject(clients *config.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {

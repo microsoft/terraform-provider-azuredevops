@@ -19,6 +19,24 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
+// RepoInitType strategy for initializing the repo
+type RepoInitType string
+
+type repoInitTypeValuesType struct {
+	Uninitialized RepoInitType
+	Clean         RepoInitType
+	Fork          RepoInitType
+	Import        RepoInitType
+}
+
+// RepoInitTypeValues enum of strategy for initializing the repo
+var RepoInitTypeValues = repoInitTypeValuesType{
+	Uninitialized: "Uninitialized",
+	Clean:         "Clean",
+	Fork:          "Fork",
+	Import:        "Import",
+}
+
 func resourceGitRepository() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGitRepositoryCreate,
@@ -84,9 +102,14 @@ func resourceGitRepository() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"init_type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"uninitialized", "clean", "import"}, true),
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								string(RepoInitTypeValues.Clean),
+								string(RepoInitTypeValues.Fork),
+								string(RepoInitTypeValues.Import),
+								string(RepoInitTypeValues.Uninitialized),
+							}, false),
 						},
 						"source_type": {
 							Type:     schema.TypeString,

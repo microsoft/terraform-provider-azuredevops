@@ -32,7 +32,7 @@ func dataProjects() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
-				Default:  "all",
+				Default:  core.ProjectStateValues.All,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(core.ProjectStateValues.Deleting),
 					string(core.ProjectStateValues.New),

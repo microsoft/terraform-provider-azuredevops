@@ -16,6 +16,22 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
+// RepoType the type of the repository
+type RepoType string
+
+type repoTypeValuesType struct {
+	GitHub    RepoType
+	TfsGit    RepoType
+	Bitbucket RepoType
+}
+
+// RepoTypeValues enum of the type of the repository
+var RepoTypeValues = repoTypeValuesType{
+	GitHub:    "GitHub",
+	TfsGit:    "TfsGit",
+	Bitbucket: "Bitbucket",
+}
+
 func resourceBuildDefinition() *schema.Resource {
 	filterSchema := map[string]*schema.Schema{
 		"include": {
@@ -62,7 +78,7 @@ func resourceBuildDefinition() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, buildDefinitionID, err := ParseImportedProjectIDAndID(meta.(*config.AggregatedClient), d.Id())
 				if err != nil {
-					return nil, fmt.Errorf("Error parsing the build definition ID from the Terraform resource data: %v", err)
+					return nil, fmt.Errorf("error parsing the build definition ID from the Terraform resource data: %v", err)
 				}
 				d.Set("project_id", projectID)
 				d.SetId(fmt.Sprintf("%d", buildDefinitionID))
@@ -121,9 +137,13 @@ func resourceBuildDefinition() *schema.Resource {
 							Required: true,
 						},
 						"repo_type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"GitHub", "TfsGit", "Bitbucket"}, false),
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								string(RepoTypeValues.GitHub),
+								string(RepoTypeValues.TfsGit),
+								string(RepoTypeValues.Bitbucket),
+							}, false),
 						},
 						"branch_name": {
 							Type:     schema.TypeString,
@@ -257,12 +277,12 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
+		return fmt.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
 	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
 	if err != nil {
-		return fmt.Errorf("Error creating resource Build Definition: %+v", err)
+		return fmt.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
 	flattenBuildDefinition(d, createdBuildDefinition, projectID)
@@ -282,10 +302,10 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 
 	if buildDefinition.Triggers != nil {
 		yamlCiTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.ContinuousIntegration, 2)
-		d.Set("ci_trigger", flattenReleaseDefinitionTriggers(buildDefinition.Triggers, yamlCiTrigger, build.DefinitionTriggerTypeValues.ContinuousIntegration))
+		d.Set("ci_trigger", flattenBuildDefinitionTriggers(buildDefinition.Triggers, yamlCiTrigger, build.DefinitionTriggerTypeValues.ContinuousIntegration))
 
 		yamlPrTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.PullRequest, 2)
-		d.Set("pull_request_trigger", flattenReleaseDefinitionTriggers(buildDefinition.Triggers, yamlPrTrigger, build.DefinitionTriggerTypeValues.PullRequest))
+		d.Set("pull_request_trigger", flattenBuildDefinitionTriggers(buildDefinition.Triggers, yamlPrTrigger, build.DefinitionTriggerTypeValues.PullRequest))
 	}
 
 	revision := 0
@@ -513,7 +533,7 @@ func hasSettingsSourceType(m *[]interface{}, t build.DefinitionTriggerType, sst 
 	hasSetting := false
 	for _, d := range *m {
 		if ms, ok := d.(map[string]interface{}); ok {
-			if ms["triggerType"].(string) == string(t) {
+			if strings.EqualFold(ms["triggerType"].(string), string(t)) {
 				if val, ok := ms["settingsSourceType"]; ok {
 					hasSetting = int(val.(float64)) == sst
 				}
@@ -523,7 +543,7 @@ func hasSettingsSourceType(m *[]interface{}, t build.DefinitionTriggerType, sst 
 	return hasSetting
 }
 
-func flattenReleaseDefinitionTriggers(m *[]interface{}, isYaml bool, t build.DefinitionTriggerType) []interface{} {
+func flattenBuildDefinitionTriggers(m *[]interface{}, isYaml bool, t build.DefinitionTriggerType) []interface{} {
 	ds := make([]interface{}, 0, len(*m))
 	for _, d := range *m {
 		f := flattenBuildDefinitionTrigger(d, isYaml, t)
@@ -710,12 +730,12 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	repository := repositories[0].(map[string]interface{})
 
 	repoName := repository["repo_name"].(string)
-	repoType := repository["repo_type"].(string)
+	repoType := RepoType(repository["repo_type"].(string))
 	repoURL := ""
-	if strings.EqualFold(repoType, "github") {
+	if strings.EqualFold(string(repoType), string(RepoTypeValues.GitHub)) {
 		repoURL = fmt.Sprintf("https://github.com/%s.git", repoName)
 	}
-	if strings.EqualFold(repoType, "bitbucket") {
+	if strings.EqualFold(string(repoType), string(RepoTypeValues.Bitbucket)) {
 		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoName)
 	}
 
@@ -751,7 +771,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 			Id:            &repoName,
 			Name:          &repoName,
 			DefaultBranch: converter.String(repository["branch_name"].(string)),
-			Type:          &repoType,
+			Type:          converter.String(string(repoType)),
 			Properties: &map[string]string{
 				"connectedServiceId": repository["service_connection_id"].(string),
 			},
@@ -786,7 +806,7 @@ func validateServiceConnectionIDExistsIfNeeded(d *schema.ResourceData) error {
 	repoType := repository["repo_type"].(string)
 	serviceConnectionID := repository["service_connection_id"].(string)
 
-	if strings.EqualFold(repoType, "bitbucket") && serviceConnectionID == "" {
+	if strings.EqualFold(repoType, string(RepoTypeValues.Bitbucket)) && serviceConnectionID == "" {
 		return errors.New("bitbucket repositories need a referenced service connection ID")
 	}
 	return nil

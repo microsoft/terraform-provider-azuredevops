@@ -24,7 +24,7 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	serviceEndpoint.Type = converter.String("bitbucket")
+	serviceEndpoint.Type = converter.String(string(RepoTypeValues.Bitbucket))
 	serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
 	return serviceEndpoint, projectID
 }
