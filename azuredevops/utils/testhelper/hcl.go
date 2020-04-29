@@ -63,6 +63,14 @@ resource "azuredevops_project" "project" {
 }`, projectName, projectName)
 }
 
+// TestAccProjectDataSource HCL describing a data source for an AzDO project
+func TestAccProjectDataSource(projectName string) string {
+	return fmt.Sprintf(`
+data "azuredevops_project" "project" {
+	project_name = "%s"
+}`, projectName)
+}
+
 // TestAccUserEntitlementResource HCL describing an AzDO UserEntitlement
 func TestAccUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`

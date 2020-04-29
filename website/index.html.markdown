@@ -10,6 +10,7 @@ The Azure DevOps provider can be used to configure Azure DevOps project in [Micr
 
 - [azuredevops_group](docs/d/data_group.html.markdown)
 - [azuredevops_project](docs/d/data_project.html.markdown)
+- [azuredevops_projects](docs/d/data_projects.html.markdown)
 - [azuredevops_git_repositories](docs/d/data_git_repositories.html.markdown)
 - [azuredevops_users](docs/d/data_users.html.markdown)
 

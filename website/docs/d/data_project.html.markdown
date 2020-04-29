@@ -2,45 +2,42 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_project"
 description: |-
-  Use this data source to access information about an existing Projects within Azure DevOps.
+  Use this data source to access information about an existing Project within Azure DevOps.
 ---
 
 # Data Source: azuredevops_project
 
-Use this data source to access information about an existing Projects within Azure DevOps.
+Use this data source to access information about an existing Project within Azure DevOps.
 
 ## Example Usage
 
 ```hcl
-
-data "azuredevops_projects" "test" {
-    project_name = "contoso"
-    state       = "wellFormed"
+data "azuredevops_project" "p" {
+  project_name = "Sample Project"
 }
 
-output "project_id" {
-  value = "${data.azuredevops_projects.test.projects.*.project_id}"
+output "id" {
+  value = data.azuredevops_project.p.id
 }
 
 output "project_name" {
-  value = "${data.azuredevops_projects.test.projects.*.name}"
+  value = data.azuredevops_project.p.project_name
 }
 
-output "project_url" {
-  value = "${data.azuredevops_projects.test.projects.*.project_url}"
+output "visibility" {
+  value = data.azuredevops_project.p.visibility
 }
 
-output "state" {
-  value = "${data.azuredevops_projects.test.projects.*.state}"
+output "version_control" {
+  value = data.azuredevops_project.p.version_control
 }
 
+output "work_item_template" {
+  value = data.azuredevops_project.p.work_item_template
+}
 
-output "project_url" {
-
-  value = { for project in data.azuredevops_projects.test.projects :
-    project.name => project.project_url
-  }
-
+output "process_template_id" {
+  value = data.azuredevops_project.p.process_template_id
 }
 ```
 
@@ -48,22 +45,18 @@ output "project_url" {
 
 The following arguments are supported:
 
-- `project_name` - (Optional) Name of the Project, if not specified all projects will be returned.
+- `project_name` - (Required) Name of the Project.
 
-- `state` - (Optional) State of the Project, if not specified all projects will be returned. Valid values are `all`, `deleting`, `new`, `wellFormed`, `createPending`, `unchanged`,`deleted`.
-
-DataSource without specifying any arguments will return all projects.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `projects` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
-
-  - `id` - Project identifier.
-  - `name` - Project name.
-  - `project_url` - Url to the full version of the object.
-  - `state` - Project state.
+`description` - The description of the referenced project
+`visibility` - The visibility of the referenced project
+`version_control` - The version control of the referenced project
+`work_item_template` - The work item template for the referenced project
+`process_template_id` - The process template ID for the referenced project
 
 ## Relevant Links
 
