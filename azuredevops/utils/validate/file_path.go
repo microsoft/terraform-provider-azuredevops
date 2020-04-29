@@ -20,7 +20,7 @@ func Path(i interface{}, k string) (warnings []string, errors []error) {
 		errors = append(errors, fmt.Errorf("path can not be empty"))
 	}
 
-	if v[:1] != `\` {
+	if len(v) >= 1 && v[:1] != `\` {
 		errors = append(errors, fmt.Errorf("path must start with backslash"))
 	}
 
