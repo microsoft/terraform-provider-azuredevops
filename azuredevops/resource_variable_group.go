@@ -259,26 +259,48 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 	d.SetId(fmt.Sprintf("%d", *variableGroup.Id))
 	d.Set("name", *variableGroup.Name)
 	d.Set("description", *variableGroup.Description)
-	d.Set("variable", flattenVariables(variableGroup))
+	d.Set("variable", flattenVariables(d, variableGroup))
 	d.Set("project_id", projectID)
 }
 
 // Convert AzDO Variables data structure to Terraform TypeSet
-func flattenVariables(variableGroup *taskagent.VariableGroup) interface{} {
+//
+// Note: The AzDO API does not return the value for variables marked as a secret. For this reason
+//		 variables marked as secret will need to be pulled from the state itself
+func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) interface{} {
 	// Preallocate list of variable prop maps
 	variables := make([]map[string]interface{}, len(*variableGroup.Variables))
 
 	index := 0
-	for k, v := range *variableGroup.Variables {
-		variables[index] = map[string]interface{}{
-			"name":      k,
-			"value":     converter.ToString(v.Value, ""),
-			"is_secret": converter.ToBool(v.IsSecret, false),
+	for varName, varVal := range *variableGroup.Variables {
+		var variable map[string]interface{}
+		if converter.ToBool(varVal.IsSecret, false) {
+			variable = findVariableFromState(d, varName)
+		} else {
+			variable = map[string]interface{}{
+				"name":      varName,
+				"value":     converter.ToString(varVal.Value, ""),
+				"is_secret": false,
+			}
 		}
+		variables[index] = variable
 		index = index + 1
 	}
 
 	return variables
+}
+
+// Pulls a variable with a given name from the state. If no such variable is found, nil
+// will be returned.
+func findVariableFromState(d *schema.ResourceData, name string) map[string]interface{} {
+	for _, variable := range d.Get("variable").(*schema.Set).List() {
+		asMap := variable.(map[string]interface{})
+		// Note: casing matters here so we will use `==` over `strings.EqualFold`
+		if asMap["name"] == name {
+			return asMap
+		}
+	}
+	return nil
 }
 
 // Convert internal Terraform data structure to an AzDO data structure for Allow Access

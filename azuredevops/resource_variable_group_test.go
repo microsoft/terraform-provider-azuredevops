@@ -94,8 +94,6 @@ func TestAccAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
 					testAccCheckVariableGroupResourceExists(vargroupNameFirst, allowAccessFirst),
 				),
-				// due to the value of "secret" variables not being returned in the API response.
-				ExpectNonEmptyPlan: true,
 			}, {
 				Config: testhelper.TestAccVariableGroupResource(projectName, vargroupNameSecond, allowAccessSecond),
 				Check: resource.ComposeTestCheckFunc(
@@ -103,8 +101,6 @@ func TestAccAccAzureDevOpsVariableGroup_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
 					testAccCheckVariableGroupResourceExists(vargroupNameSecond, allowAccessSecond),
 				),
-				// due to the value of "secret" variables not being returned in the API response.
-				ExpectNonEmptyPlan: true,
 			}, {
 				Config: testhelper.TestAccVariableGroupResourceNoSecrets(projectName, vargroupNameSecond, allowAccessSecond),
 				Check: resource.ComposeTestCheckFunc(
