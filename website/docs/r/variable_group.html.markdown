@@ -64,9 +64,9 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Variable groups can be imported using the project name/variable group Id or by the project Guid/variable group Id, e.g.
  
  ```
- terraform import azuredevops_project.project "Test Project"/10
+ terraform import azuredevops_variable_group.variablegroup "Test Project"/10
  or
- terraform import azuredevops_project.project 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+ terraform import azuredevops_variable_group.variablegroup 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
  ```
 
 *Note that for secret variables, the import command retrieve blank value in the tfstate.*
