@@ -15,15 +15,15 @@ func dataArea() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceAreaRead,
 		Schema: map[string]*schema.Schema{
-			"path": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.NoZeroValues,
-			},
 			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.UUID,
+			},
+			"path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.NoZeroValues,
 			},
 		},
 	}
@@ -31,16 +31,20 @@ func dataArea() *schema.Resource {
 
 func dataSourceAreaRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
-	path, projectID := d.Get("path").(string), d.Get("project_id").(string)
+	projectID := d.Get("project_id").(string)
 
-	getClassificationNodeArgs := workitemtracking.GetClassificationNodeArgs{
+	args := workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &path,
 		Depth:          converter.Int(999),
 	}
 
-	area, err := clients.WitClient.GetClassificationNode(clients.Ctx, getClassificationNodeArgs)
+	path, ok := d.GetOk("path")
+	if ok {
+		args.Path = converter.String(path.(string))
+	}
+
+	area, err := clients.WitClient.GetClassificationNode(clients.Ctx, args)
 	if err != nil {
 		return fmt.Errorf("Error getting Area with path %q: %+v", path, err)
 	}

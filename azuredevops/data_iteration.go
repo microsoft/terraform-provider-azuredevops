@@ -15,15 +15,15 @@ func dataIteration() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIterationRead,
 		Schema: map[string]*schema.Schema{
-			"path": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.NoZeroValues,
-			},
 			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.UUID,
+			},
+			"path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.NoZeroValues,
 			},
 		},
 	}
@@ -31,16 +31,20 @@ func dataIteration() *schema.Resource {
 
 func dataSourceIterationRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
-	path, projectID := d.Get("path").(string), d.Get("project_id").(string)
+	projectID := d.Get("project_id").(string)
 
-	getClassificationNodeArgs := workitemtracking.GetClassificationNodeArgs{
+	args := workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
-		Path:           &path,
 		Depth:          converter.Int(999),
 	}
 
-	iteration, err := clients.WitClient.GetClassificationNode(clients.Ctx, getClassificationNodeArgs)
+	path, ok := d.GetOk("path")
+	if ok {
+		args.Path = converter.String(path.(string))
+	}
+
+	iteration, err := clients.WitClient.GetClassificationNode(clients.Ctx, args)
 	if err != nil {
 		return fmt.Errorf("Error getting Iteration with path %q: %+v", path, err)
 	}
