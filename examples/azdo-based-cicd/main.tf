@@ -96,6 +96,20 @@ resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
   azurerm_scope             = "/subscriptions/1da42ac9-xxxx-xxxxx-xxxx-xxxxxxxxxxx"
 }
 
+resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {
+  project_id = "vanilla-sky"
+  username               = "xxxx"
+  password               = "xxxx"
+  service_endpoint_name  = "test-bitbucket"
+  description            = "test"
+}
+
+resource "azuredevops_resource_authorization" "bitbucket_account_authorization" {
+  project_id = azuredevops_project.project.id
+  resource_id = azuredevops_serviceendpoint_bitbucket.bitbucket_account.id
+  authorized = true
+}
+
 #
 # https://github.com/microsoft/terraform-provider-azuredevops/issues/83
 # resource "azuredevops_policy_build" "p1" {

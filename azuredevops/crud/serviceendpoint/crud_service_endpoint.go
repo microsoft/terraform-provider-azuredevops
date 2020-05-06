@@ -223,7 +223,12 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 			return fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v", serviceEndpointID, projectID, err)
 		}
 
-		flatFunc(d, serviceEndpoint, projectID)
+		if serviceEndpoint.Id == nil {
+			// e.g. service endpoint has been deleted separately without TF
+			d.SetId("")
+		} else {
+			flatFunc(d, serviceEndpoint, projectID)
+		}
 		return nil
 	}
 }

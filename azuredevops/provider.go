@@ -9,6 +9,7 @@ import (
 func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
+			"azuredevops_resource_authorization":    resourceResourceAuthorization(),
 			"azuredevops_build_definition":          resourceBuildDefinition(),
 			"azuredevops_project":                   resourceProject(),
 			"azuredevops_variable_group":            resourceVariableGroup(),
