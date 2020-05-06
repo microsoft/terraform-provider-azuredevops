@@ -88,7 +88,7 @@ func createGitToken(clients *config.AggregatedClient, d *schema.ResourceData) (*
 
 func getBranchByName(clients *config.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {
 	filter := "heads/" + *branchName
-	res, err := clients.GitClient.GetRefs(clients.Ctx, git.GetRefsArgs{
+	res, err := clients.GitReposClient.GetRefs(clients.Ctx, git.GetRefsArgs{
 		RepositoryId: repositoryID,
 		Filter:       &filter,
 	})
