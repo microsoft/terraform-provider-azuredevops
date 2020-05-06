@@ -256,6 +256,7 @@ github.com/mattn/go-isatty v0.0.5/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/mattn/go-shellwords v1.0.4/go.mod h1:3xCvwCdWdlDJUrvuMn7Wuy9eWs4pE8vqg+NOMyg4B2o=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
+github.com/microsoft/azure-devops-go-api v0.0.0-20200327121006-543de4815ec2 h1:fnxSwuNfBP3TlSHqbFxddzuYmRiJCCDrwE77U7X2mmI=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20200327121006-543de4815ec2 h1:Xi4UB142pCZ7i5UAvJO60PZQCCyQf+6uJ5/6aX/Z5bk=
 github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20200327121006-543de4815ec2/go.mod h1:PoGiBqKSQK1vIfQ+yVaFcGjDySHvym6FM1cNYnwzbrY=
 github.com/miekg/dns v1.0.8/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=

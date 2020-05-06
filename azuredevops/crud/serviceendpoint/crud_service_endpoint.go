@@ -54,6 +54,7 @@ func genBaseSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validate.NoEmptyStrings,
+			ForceNew:     true,
 		},
 		"description": {
 			Type:     schema.TypeString,

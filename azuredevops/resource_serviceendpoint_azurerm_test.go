@@ -26,30 +26,80 @@ var azurermTestServiceEndpointAzureRMID = uuid.New()
 var azurermRandomServiceEndpointAzureRMProjectID = uuid.New().String()
 var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
 
-var azurermTestServiceEndpointAzureRM = serviceendpoint.ServiceEndpoint{
-	Authorization: &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{
-			"authenticationType":  "spnKey",
-			"scope":               "/subscriptions/fa8e7d5e-84f9-4477-904f-852054f85586", //fake value
-			"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e",                //fake value
-			"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2",                //fake value
-			"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1",                //fake value
+var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  "",
+				"serviceprincipalkey": "",
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			},
+			Scheme: converter.String("ServicePrincipal"),
 		},
-		Scheme: converter.String("ServicePrincipal"),
+		Data: &map[string]string{
+			"creationMode":     "Automatic",
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
 	},
-	Data: &map[string]string{
-		"creationMode":     "Manual",
-		"environment":      "AzureCloud",
-		"scopeLevel":       "Subscription",
-		"SubscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
-		"SubscriptionName": "SUBSCRIPTION_TEST",
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
+				"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2", //fake value
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			},
+			Scheme: converter.String("ServicePrincipal"),
+		},
+		Data: &map[string]string{
+			"creationMode":     "Manual",
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
 	},
-	Id:          &azurermTestServiceEndpointAzureRMID,
-	Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-	Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("azurerm"),
-	Url:         converter.String("https://management.azure.com/"),
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  "",
+				"serviceprincipalkey": "",
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+			},
+			Scheme: converter.String("ServicePrincipal"),
+		},
+		Data: &map[string]string{
+			"creationMode":     "Automatic",
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+	},
 }
 
 /**
@@ -58,13 +108,14 @@ var azurermTestServiceEndpointAzureRM = serviceendpoint.ServiceEndpoint{
 
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestAzureDevOpsServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpointAzureRM().Schema, nil)
-	flattenServiceEndpointAzureRM(resourceData, &azurermTestServiceEndpointAzureRM, azurermTestServiceEndpointAzureRMProjectID)
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointAzureRM(resourceData)
 
-	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointAzureRM(resourceData)
-
-	require.Equal(t, azurermTestServiceEndpointAzureRM, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, projectID)
+		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
+		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, projectID)
+	}
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -73,21 +124,24 @@ func TestAzureDevOpsServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing
 	defer ctrl.Finish()
 
 	r := resourceServiceEndpointAzureRM()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureRM(resourceData, &azurermTestServiceEndpointAzureRM, azurermTestServiceEndpointAzureRMProjectID)
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
 
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azurermTestServiceEndpointAzureRM, Project: azurermTestServiceEndpointAzureRMProjectID}
-	buildClient.
-		EXPECT().
-		CreateServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("CreateServiceEndpoint() Failed")).
-		Times(1)
+		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource, Project: azurermTestServiceEndpointAzureRMProjectID}
+		buildClient.
+			EXPECT().
+			CreateServiceEndpoint(clients.Ctx, expectedArgs).
+			Return(nil, errors.New("CreateServiceEndpoint() Failed")).
+			Times(1)
 
-	err := r.Create(resourceData, clients)
-	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
+		err := r.Create(resourceData, clients)
+		require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
+
+	}
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
@@ -96,21 +150,23 @@ func TestAccAzureDevOpsServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testin
 	defer ctrl.Finish()
 
 	r := resourceServiceEndpointAzureRM()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureRM(resourceData, &azurermTestServiceEndpointAzureRM, azurermTestServiceEndpointAzureRMProjectID)
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
 
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: azurermTestServiceEndpointAzureRM.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
-	buildClient.
-		EXPECT().
-		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("GetServiceEndpoint() Failed")).
-		Times(1)
+		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		buildClient.
+			EXPECT().
+			GetServiceEndpointDetails(clients.Ctx, expectedArgs).
+			Return(nil, errors.New("GetServiceEndpoint() Failed")).
+			Times(1)
 
-	err := r.Read(resourceData, clients)
-	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
+		err := r.Read(resourceData, clients)
+		require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
+	}
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
@@ -119,21 +175,23 @@ func TestAzureDevOpsServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing
 	defer ctrl.Finish()
 
 	r := resourceServiceEndpointAzureRM()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureRM(resourceData, &azurermTestServiceEndpointAzureRM, azurermTestServiceEndpointAzureRMProjectID)
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
 
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: azurermTestServiceEndpointAzureRM.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
-	buildClient.
-		EXPECT().
-		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		buildClient.
+			EXPECT().
+			DeleteServiceEndpoint(clients.Ctx, expectedArgs).
+			Return(errors.New("DeleteServiceEndpoint() Failed")).
+			Times(1)
 
-	err := r.Delete(resourceData, clients)
-	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
+		err := r.Delete(resourceData, clients)
+		require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
+	}
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
@@ -142,26 +200,28 @@ func TestAzureDevOpsServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing
 	defer ctrl.Finish()
 
 	r := resourceServiceEndpointAzureRM()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureRM(resourceData, &azurermTestServiceEndpointAzureRM, azurermTestServiceEndpointAzureRMProjectID)
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
 
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &config.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &azurermTestServiceEndpointAzureRM,
-		EndpointId: azurermTestServiceEndpointAzureRM.Id,
-		Project:    azurermTestServiceEndpointAzureRMProjectID,
+		expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+			Endpoint:   &resource,
+			EndpointId: resource.Id,
+			Project:    azurermTestServiceEndpointAzureRMProjectID,
+		}
+
+		buildClient.
+			EXPECT().
+			UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+			Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+			Times(1)
+
+		err := r.Update(resourceData, clients)
+		require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 	}
-
-	buildClient.
-		EXPECT().
-		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
-		Times(1)
-
-	err := r.Update(resourceData, clients)
-	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
 /**
@@ -186,28 +246,50 @@ func TestAccAzureDevOpsServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientid"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_spn_clientsecret", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientsecret_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_scope"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalid"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", ""),
 				),
 			}, {
 				Config: testhelper.TestAccServiceEndpointAzureRMResource(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientid"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_spn_clientsecret", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_clientsecret_hash"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_scope"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalid"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", ""),
+				),
+			},
+			{
+				Config: testhelper.TestAccServiceEndpointAzureRMAutomaticResource(projectName, serviceEndpointNameSecond),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameSecond),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
+				),
+			},
+			{
+				Config: testhelper.TestAccServiceEndpointAzureRMAutomaticResource(projectName, serviceEndpointNameSecond),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServiceEndpointAzureRMResourceExists(serviceEndpointNameSecond),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
 				),
 			},
 		},
@@ -270,4 +352,12 @@ func getServiceEndpointAzureRMFromResource(resource *terraform.ResourceState) (*
 
 func init() {
 	InitProvider()
+}
+
+func getResourceData(t *testing.T, resource serviceendpoint.ServiceEndpoint) *schema.ResourceData {
+	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpointAzureRM().Schema, nil)
+	if key := (*resource.Authorization.Parameters)["serviceprincipalkey"]; key != "" {
+		resourceData.Set("credentials", []map[string]interface{}{{"serviceprincipalkey_hash": key}})
+	}
+	return resourceData
 }
