@@ -26,7 +26,35 @@ var azurermTestServiceEndpointAzureRMID = uuid.New()
 var azurermRandomServiceEndpointAzureRMProjectID = uuid.New().String()
 var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
 
+func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
+	return serviceendpoint.ServiceEndpoint{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
+				"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2", //fake value
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			},
+			Scheme: converter.String("ServicePrincipal"),
+		},
+		Data: &map[string]string{
+			"creationMode":     "Manual",
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+	}
+}
+
 var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
+	getManualAuthServiceEndpoint(),
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
@@ -39,30 +67,6 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		},
 		Data: &map[string]string{
 			"creationMode":     "Automatic",
-			"environment":      "AzureCloud",
-			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
-			"subscriptionName": "SUBSCRIPTION_TEST",
-		},
-		Id:          &azurermTestServiceEndpointAzureRMID,
-		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:        converter.String("azurerm"),
-		Url:         converter.String("https://management.azure.com/"),
-	},
-	{
-		Authorization: &serviceendpoint.EndpointAuthorization{
-			Parameters: &map[string]string{
-				"authenticationType":  "spnKey",
-				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
-				"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2", //fake value
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-			},
-			Scheme: converter.String("ServicePrincipal"),
-		},
-		Data: &map[string]string{
-			"creationMode":     "Manual",
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
@@ -222,6 +226,41 @@ func TestAzureDevOpsServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing
 		err := r.Update(resourceData, clients)
 		require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 	}
+}
+
+func TestAzureDevOpsServiceEndpointAzureRM_ExpandCredentials(t *testing.T) {
+	spnKeyExistsWithValue := map[string]interface{}{"serviceprincipalkey": "fake-spn-key"}
+	spnKeyExistsWithEmptyValue := map[string]interface{}{"serviceprincipalkey": ""}
+	spnKeyDoesNotExists := map[string]interface{}{}
+
+	require.Equal(t, expandSpnKey(spnKeyExistsWithValue), "fake-spn-key")
+	require.Equal(t, expandSpnKey(spnKeyExistsWithEmptyValue), "null")
+	require.Equal(t, expandSpnKey(spnKeyDoesNotExists), "null")
+}
+
+// This is a little different than most. The steps done, along with the motivation behind each, are as follows:
+//	(1) The service endpoint is configured. The `serviceprincipalkey` is set to `""`, which matches
+//		the Azure DevOps API behavior. The service will intentionally hide the value of
+//		`serviceprincipalkey` because it is a secret value
+//	(2) The resource is flattened/expanded
+//	(3) The `serviceprincipalkey` field is inspected and asserted to equal `"null"`. This special
+//		value, which is unfortunately not documented in the REST API, will be interpreted by the
+//		Azure DevOps API as an indicator to "not update" the field. The resulting behavior is that
+//		this Terraform Resource will be able to update the Service Endpoint without needing to
+//		pass the password along in each request.
+func TestAzureDevOpsServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
+	// step (1)
+	endpoint := getManualAuthServiceEndpoint()
+	resourceData := getResourceData(t, endpoint)
+	(*endpoint.Authorization.Parameters)["serviceprincipalkey"] = ""
+
+	// step (2)
+	flattenServiceEndpointAzureRM(resourceData, &endpoint, azurermTestServiceEndpointAzureRMProjectID)
+	expandedEndpoint, _ := expandServiceEndpointAzureRM(resourceData)
+
+	// step (3)
+	spnKeyProperty := (*expandedEndpoint.Authorization.Parameters)["serviceprincipalkey"]
+	require.Equal(t, "null", spnKeyProperty)
 }
 
 /**
