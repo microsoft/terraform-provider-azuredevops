@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 )
 
 func resourceUserEntitlement() *schema.Resource {
@@ -33,11 +34,12 @@ func resourceUserEntitlement() *schema.Resource {
 				ForceNew: true,
 			},
 			"origin": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      "aad",
-				ValidateFunc: validation.StringInSlice([]string{"aad", "ghb"}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Default:          "aad",
+				DiffSuppressFunc: suppress.CaseDifference,
+				ValidateFunc:     validation.StringInSlice([]string{"aad", "ghb"}, false),
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,

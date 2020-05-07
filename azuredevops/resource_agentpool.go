@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
@@ -30,10 +31,11 @@ func resourceAzureAgentPool() *schema.Resource {
 				ValidateFunc: validate.NoEmptyStrings,
 			},
 			"pool_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  taskagent.TaskAgentPoolTypeValues.Automation,
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Default:          taskagent.TaskAgentPoolTypeValues.Automation,
+				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(taskagent.TaskAgentPoolTypeValues.Automation),
 					string(taskagent.TaskAgentPoolTypeValues.Deployment),

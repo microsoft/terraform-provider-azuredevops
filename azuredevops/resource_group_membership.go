@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 )
 
 func resourceGroupMembership() *schema.Resource {
@@ -30,9 +31,10 @@ func resourceGroupMembership() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			"mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "add",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "add",
+				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc: validation.StringInSlice([]string{
 					"add", "overwrite",
 				}, true),

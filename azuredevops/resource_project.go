@@ -46,19 +46,21 @@ func resourceProject() *schema.Resource {
 				Default:  "",
 			},
 			"visibility": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  core.ProjectVisibilityValues.Private,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          core.ProjectVisibilityValues.Private,
+				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(core.ProjectVisibilityValues.Private),
 					string(core.ProjectVisibilityValues.Public),
 				}, false),
 			},
 			"version_control": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Default:  core.SourceControlTypesValues.Git,
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				Optional:         true,
+				Default:          core.SourceControlTypesValues.Git,
+				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(core.SourceControlTypesValues.Git),
 					string(core.SourceControlTypesValues.Tfvc),

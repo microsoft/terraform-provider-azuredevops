@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 )
 
 const msgErrorFailedResourceCreate = "error creating authorized resource: %+v"
@@ -35,11 +36,12 @@ func resourceResourceAuthorization() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "endpoint",
-				Description:  "type of the resource",
-				ValidateFunc: validation.StringInSlice([]string{"endpoint"}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "endpoint",
+				Description:      "type of the resource",
+				DiffSuppressFunc: suppress.CaseDifference,
+				ValidateFunc:     validation.StringInSlice([]string{"endpoint"}, false),
 			},
 			"authorized": {
 				Type:        schema.TypeBool,
