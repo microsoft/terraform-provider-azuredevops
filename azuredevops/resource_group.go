@@ -273,8 +273,6 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	// using: PATCH https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
 	// d.Get("descriptor").(string) => {groupDescriptor}
 
-	d.Partial(true)
-
 	if d.HasChange("description") {
 		description := d.Get("description")
 		uptGroupArgs := graph.UpdateGroupArgs{
@@ -293,8 +291,6 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-
-		d.SetPartial("description")
 	}
 
 	if d.HasChange("members") {
@@ -309,11 +305,8 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 			expandGroupMembers(group, membersToRemove)); err != nil {
 			return err
 		}
-
-		d.SetPartial("members")
 	}
 
-	d.Partial(false)
 	return resourceGroupRead(d, m)
 }
 

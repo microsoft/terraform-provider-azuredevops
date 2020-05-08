@@ -116,9 +116,6 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error {
-	// Enable partial state mode
-	d.Partial(true)
-
 	if !d.HasChange("members") {
 		return nil
 	}
@@ -136,10 +133,6 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	if err != nil {
 		return err
 	}
-
-	// We succeeded, disable partial mode. This causes Terraform to save
-	// all fields again.
-	d.Partial(false)
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"Waiting"},
