@@ -132,6 +132,10 @@ func resourceBuildDefinition() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
+						"repo_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
 						"repo_name": {
 							Type:     schema.TypeString,
 							Required: true,
@@ -424,6 +428,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 
 	return []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
+		"repo_id":               *buildDefinition.Repository.Id,
 		"repo_name":             *buildDefinition.Repository.Name,
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
@@ -729,6 +734,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 
 	repository := repositories[0].(map[string]interface{})
 
+	repoID := repository["repo_id"].(string)
 	repoName := repository["repo_name"].(string)
 	repoType := RepoType(repository["repo_type"].(string))
 	repoURL := ""
@@ -768,7 +774,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		Revision: converter.Int(d.Get("revision").(int)),
 		Repository: &build.BuildRepository{
 			Url:           &repoURL,
-			Id:            &repoName,
+			Id:            &repoID,
 			Name:          &repoName,
 			DefaultBranch: converter.String(repository["branch_name"].(string)),
 			Type:          converter.String(string(repoType)),

@@ -5,9 +5,12 @@ package azuredevops
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
@@ -111,9 +114,9 @@ func TestGitRepositoriesDataSource_Read_TestHandleError(t *testing.T) {
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.NotNil(t, err)
 	require.Zero(t, resourceData.Id())
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Zero(t, repos.Len())
+	require.Zero(t, len(repos))
 }
 
 func TestGitRepositoriesDataSource_Read_TestHandleErrorWithSpecificRepository(t *testing.T) {
@@ -146,9 +149,9 @@ func TestGitRepositoriesDataSource_Read_TestHandleErrorWithSpecificRepository(t 
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.NotNil(t, err)
 	require.Zero(t, resourceData.Id())
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Zero(t, repos.Len())
+	require.Zero(t, len(repos))
 }
 
 func TestGitRepositoriesDataSource_Read_NoRepositories(t *testing.T) {
@@ -178,9 +181,9 @@ func TestGitRepositoriesDataSource_Read_NoRepositories(t *testing.T) {
 
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.Nil(t, err)
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Zero(t, repos.Len())
+	require.Zero(t, len(repos))
 }
 
 func TestGitRepositoriesDataSource_Read_AllRepositories(t *testing.T) {
@@ -210,9 +213,9 @@ func TestGitRepositoriesDataSource_Read_AllRepositories(t *testing.T) {
 
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.Nil(t, err)
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Equal(t, repos.Len(), 3)
+	require.Equal(t, len(repos), 3)
 }
 
 func TestGitRepositoriesDataSource_Read_AllRepositoriesByProject(t *testing.T) {
@@ -247,11 +250,11 @@ func TestGitRepositoriesDataSource_Read_AllRepositoriesByProject(t *testing.T) {
 
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.Nil(t, err)
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Equal(t, repos.Len(), 2)
+	require.Equal(t, len(repos), 2)
 	repoMap := make(map[string]interface{})
-	for _, item := range repos.List() {
+	for _, item := range repos {
 		repoData := item.(map[string]interface{})
 		repoMap[repoData["name"].(string)] = repoData
 	}
@@ -293,7 +296,39 @@ func TestGitRepositoriesDataSource_Read_SingleRepository(t *testing.T) {
 
 	err := dataSourceGitRepositoriesRead(resourceData, clients)
 	require.Nil(t, err)
-	repos := resourceData.Get("repositories").(*schema.Set)
+	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
-	require.Equal(t, repos.Len(), 1)
+	require.Equal(t, len(repos), 1)
+}
+
+/**
+ * Begin acceptance tests
+ */
+
+// Verifies that the following sequence of events occurrs without error:
+//	(1) TF can create a project
+//	(2) A data source is added to the configuration, and that data source can find the created project
+func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfConfigStep1 := testhelper.TestAccAzureGitRepoResource(projectName, gitRepoName, "Clean")
+	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testhelper.TestAccProjectGitRepositories(projectName, gitRepoName))
+
+	tfNode := "data.azuredevops_git_repositories.repositories"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tfConfigStep1,
+			}, {
+				Config: tfConfigStep2,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfNode, "repositories.0.name", gitRepoName),
+					resource.TestCheckResourceAttr(tfNode, "repositories.0.default_branch", "refs/heads/master"),
+				),
+			},
+		},
+	})
 }

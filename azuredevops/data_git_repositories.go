@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
@@ -39,9 +38,8 @@ func dataGitRepositories() *schema.Resource {
 				Default:  false,
 			},
 			"repositories": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
-				Set:      getGitRepositoryHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -76,15 +74,15 @@ func dataGitRepositories() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+						"default_branch": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
 		},
 	}
-}
-
-func getGitRepositoryHash(v interface{}) int {
-	return hashcode.String(v.(map[string]interface{})["id"].(string))
 }
 
 func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error {
@@ -182,6 +180,10 @@ func flattenGitRepositories(repos *[]git.GitRepository) ([]interface{}, error) {
 
 		if element.Size != nil {
 			output["size"] = *element.Size
+		}
+
+		if element.DefaultBranch != nil {
+			output["default_branch"] = *element.DefaultBranch
 		}
 
 		results = append(results, output)

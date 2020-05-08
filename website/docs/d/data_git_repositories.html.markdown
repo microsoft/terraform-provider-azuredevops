@@ -86,6 +86,7 @@ The following attributes are exported:
   - `remote_url` - HTTPS Url to clone the Git repository
   - `project_id` - Project identifier to which the Git repository belongs.
   - `size` - Compressed size (bytes) of the repository.
+  - `default_branch` - The name of the default branch.
 
 ## Relevant Links
 

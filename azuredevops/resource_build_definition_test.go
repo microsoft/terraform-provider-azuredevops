@@ -362,9 +362,11 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 // underlying terraform state.
 func TestAccAzureDevOpsBuildDefinition_Create_Update_Import(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionPathEmpty := `\`
 	buildDefinitionNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	buildDefinitionNameThird := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	buildDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	buildDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -432,6 +434,17 @@ func TestAccAzureDevOpsBuildDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFourth),
+				),
+			}, {
+				Config: testhelper.TestAccBuildDefinitionResourceTfsGit(projectName, gitRepoName, buildDefinitionNameThird, buildDefinitionPathEmpty),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBuildDefinitionResourceExists(buildDefinitionNameThird),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "repository.0.repo_id"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "repository.0.repo_name", gitRepoName),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameThird),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation

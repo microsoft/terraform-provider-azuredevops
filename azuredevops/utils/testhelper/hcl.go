@@ -5,9 +5,8 @@ import (
 	"strings"
 )
 
-// TestAccAzureGitRepoResource HCL describing an AzDO GIT repository resource
-func TestAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
-	azureGitRepoResource := fmt.Sprintf(`
+func getAzureGitRepoResource(gitRepoName string, initType string) string {
+	return fmt.Sprintf(`
 resource "azuredevops_git_repository" "gitrepo" {
 	project_id      = azuredevops_project.project.id
 	name            = "%s"
@@ -15,6 +14,11 @@ resource "azuredevops_git_repository" "gitrepo" {
 		init_type = "%s"
 	}
 }`, gitRepoName, initType)
+}
+
+// TestAccAzureGitRepoResource HCL describing an AzDO GIT repository resource
+func TestAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
+	azureGitRepoResource := getAzureGitRepoResource(gitRepoName, initType)
 
 	projectResource := TestAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
@@ -23,15 +27,14 @@ resource "azuredevops_git_repository" "gitrepo" {
 // TestAccAzureForkedGitRepoResource HCL describing an AzDO GIT repository resource
 func TestAccAzureForkedGitRepoResource(projectName string, gitRepoName string, gitForkedRepoName string, initType string, forkedInitType string) string {
 	azureGitRepoResource := fmt.Sprintf(`
-resource "azuredevops_git_repository" "gitforkedrepo" {
-	project_id      		= azuredevops_project.project.id
-	parent_repository_id    = azuredevops_git_repository.gitrepo.id
-	name            		= "%s"
-	initialization {
-		init_type = "%s"
-	}
-}`, gitForkedRepoName, forkedInitType)
-
+	resource "azuredevops_git_repository" "gitforkedrepo" {
+		project_id      		= azuredevops_project.project.id
+		parent_repository_id    = azuredevops_git_repository.gitrepo.id
+		name            		= "%s"
+		initialization {
+			init_type = "%s"
+		}
+	}`, gitForkedRepoName, forkedInitType)
 	gitRepoResource := TestAccAzureGitRepoResource(projectName, gitRepoName, initType)
 	return fmt.Sprintf("%s\n%s", gitRepoResource, azureGitRepoResource)
 }
@@ -69,6 +72,19 @@ func TestAccProjectDataSource(projectName string) string {
 data "azuredevops_project" "project" {
 	project_name = "%s"
 }`, projectName)
+}
+
+// TestAccProjectGitRepositories HCL describing a data source for an AzDO git repo
+func TestAccProjectGitRepositories(projectName string, gitRepoName string) string {
+	return fmt.Sprintf(`
+data "azuredevops_project" "project" {
+	project_name = "%s"
+}
+
+data "azuredevops_git_repositories" "repositories" {
+	project_id = data.azuredevops_project.project.id
+	name = "%s"
+}`, projectName, gitRepoName)
 }
 
 // TestAccUserEntitlementResource HCL describing an AzDO UserEntitlement
@@ -206,6 +222,7 @@ func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionNam
 		buildPath,
 		"GitHub",
 		"repoOrg/repoName",
+		"repoOrg/repoName",
 		"master",
 		"path/to/yaml",
 		"")
@@ -219,9 +236,28 @@ func TestAccBuildDefinitionResourceBitbucket(projectName string, buildDefinition
 		buildPath,
 		"Bitbucket",
 		"repoOrg/repoName",
+		"repoOrg/repoName",
 		"master",
 		"path/to/yaml",
 		serviceConnectionID)
+}
+
+// TestAccBuildDefinitionResourceTfsGit HCL describing an AzDO build definition sourced from AzDo Git Repo
+func TestAccBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, buildDefinitionName string, buildPath string) string {
+	buildDefinitionResource := TestAccBuildDefinitionResource(
+		projectName,
+		buildDefinitionName,
+		buildPath,
+		"TfsGit",
+		"${azuredevops_git_repository.gitrepo.id}",
+		"${azuredevops_git_repository.gitrepo.name}",
+		"master",
+		"path/to/yaml",
+		"")
+
+	azureGitRepoResource := getAzureGitRepoResource(gitRepoName, "Clean")
+
+	return fmt.Sprintf("%s\n%s", azureGitRepoResource, buildDefinitionResource)
 }
 
 // TestAccBuildDefinitionResource HCL describing an AzDO build definition
@@ -230,6 +266,7 @@ func TestAccBuildDefinitionResource(
 	buildDefinitionName string,
 	buildPath string,
 	repoType string,
+	repoID string,
 	repoName string,
 	branchName string,
 	yamlPath string,
@@ -238,11 +275,12 @@ func TestAccBuildDefinitionResource(
 	repositoryBlock := fmt.Sprintf(`
 repository {
 	repo_type             = "%s"
+	repo_id               = "%s"
 	repo_name             = "%s"
 	branch_name           = "%s"
 	yml_path              = "%s"
 	service_connection_id = "%s"
-}`, repoType, repoName, branchName, yamlPath, serviceConnectionID)
+}`, repoType, repoID, repoName, branchName, yamlPath, serviceConnectionID)
 
 	buildDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_build_definition" "build" {
