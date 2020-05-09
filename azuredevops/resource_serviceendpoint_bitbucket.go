@@ -15,7 +15,7 @@ func resourceServiceEndpointBitBucket() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := crud.DoBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -26,7 +26,7 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 	}
 	serviceEndpoint.Type = converter.String(string(RepoTypeValues.Bitbucket))
 	serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
-	return serviceEndpoint, projectID
+	return serviceEndpoint, projectID, nil
 }
 
 func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {

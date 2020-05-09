@@ -115,7 +115,7 @@ func TestAzureDevOpsServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T)
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
 		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
-		serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointAzureRM(resourceData)
+		serviceEndpointAfterRoundTrip, projectID, _ := expandServiceEndpointAzureRM(resourceData)
 
 		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, projectID)
@@ -256,7 +256,7 @@ func TestAzureDevOpsServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIRespon
 
 	// step (2)
 	flattenServiceEndpointAzureRM(resourceData, &endpoint, azurermTestServiceEndpointAzureRMProjectID)
-	expandedEndpoint, _ := expandServiceEndpointAzureRM(resourceData)
+	expandedEndpoint, _, _ := expandServiceEndpointAzureRM(resourceData)
 
 	// step (3)
 	spnKeyProperty := (*expandedEndpoint.Authorization.Parameters)["serviceprincipalkey"]

@@ -51,7 +51,9 @@ func TestAzureDevOpsServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) 
 	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointGitHub(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHub(resourceData)
+
+	require.Nil(t, err)
 	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, ghTestServiceEndpointProjectID, projectID)
 }

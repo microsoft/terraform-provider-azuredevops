@@ -22,6 +22,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_dockerhub",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_bitbucket",
+		"azuredevops_serviceendpoint_kubernetes",
 		"azuredevops_variable_group",
 		"azuredevops_git_repository",
 		"azuredevops_user_entitlement",

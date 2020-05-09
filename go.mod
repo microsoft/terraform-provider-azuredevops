@@ -12,8 +12,7 @@ require (
 	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20200327121006-543de4815ec2
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
-	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	golang.org/x/sys v0.0.0-20200428200454-593003d681fa // indirect
-	golang.org/x/tools v0.0.0-20200505023115-26f46d2f7ef8 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )

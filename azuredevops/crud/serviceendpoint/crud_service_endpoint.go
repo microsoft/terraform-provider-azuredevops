@@ -15,8 +15,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
+const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
+
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
-type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string)
+type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
 type importFunc func(clients *config.AggregatedClient, id string) (string, string, error)
 
 //GenBaseServiceEndpointResource creates a Resource with the common parts
@@ -185,7 +187,10 @@ func updateServiceEndpoint(clients *config.AggregatedClient, endpoint *serviceen
 func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*config.AggregatedClient)
-		serviceEndpoint, projectID := expandFunc(d)
+		serviceEndpoint, projectID, err := expandFunc(d)
+		if err != nil {
+			return fmt.Errorf(errMsgTfConfigRead, err)
+		}
 
 		createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint, projectID)
 		if err != nil {
@@ -237,7 +242,10 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*config.AggregatedClient)
-		serviceEndpoint, projectID := expandFunc(d)
+		serviceEndpoint, projectID, err := expandFunc(d)
+		if err != nil {
+			return fmt.Errorf(errMsgTfConfigRead, err)
+		}
 
 		updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint, projectID)
 		if err != nil {
@@ -252,7 +260,10 @@ func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) sche
 func genServiceEndpointDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*config.AggregatedClient)
-		serviceEndpoint, projectID := expandFunc(d)
+		serviceEndpoint, projectID, err := expandFunc(d)
+		if err != nil {
+			return fmt.Errorf(errMsgTfConfigRead, err)
+		}
 
 		return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
 	}

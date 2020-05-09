@@ -55,7 +55,7 @@ func resourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := crud.DoBaseExpansion(d)
 
 	scope := fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
@@ -95,7 +95,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	serviceEndpoint.Type = converter.String("azurerm")
 	serviceEndpoint.Url = converter.String("https://management.azure.com/")
-	return serviceEndpoint, projectID
+	return serviceEndpoint, projectID, nil
 }
 
 func expandSpnKey(credentials map[string]interface{}) string {

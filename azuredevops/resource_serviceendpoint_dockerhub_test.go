@@ -56,8 +56,9 @@ func TestAzureDevOpsServiceEndpointDockerHub_ExpandFlatten_Roundtrip(t *testing.
 	resourceData := schema.TestResourceDataRaw(t, resourceServiceEndpointDockerHub().Schema, nil)
 	flattenServiceEndpointDockerHub(resourceData, &dhTestServiceEndpoint, dhTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointDockerHub(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointDockerHub(resourceData)
 
+	require.Nil(t, err)
 	require.Equal(t, dhTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, dhTestServiceEndpointProjectID, projectID)
 }
