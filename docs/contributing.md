@@ -453,6 +453,32 @@ Azure DevOps has a rich set of [REST API's](https://docs.microsoft.com/en-us/res
 
 If you find an api is missing from the postman collection, please submit a PR.  We intend make the collection as complete as possible over time.
 
+## 8. Creating a release
+
+You can create a github release of this project or a fork of this project using goreleaser. The gorelease will create binaries for Mac, Linux and Windows based of the fork you're making the release from. 
+To be able to make the release you need to have the required permissions to create a release for this project or a fork.
+
+> To make the release for your fork change the `owner` in `.goreleaser.yml` to be the name of the account holding the fork. 
+
+Making the release:
+1. Open this project in the dev container or [install gorelaser](https://goreleaser.com/install/)
+1. Create a Github PAT token with all of the `Repo` permissions
+1. Set `GITHUB_TOKEN` enviorment variable to the above PAT token
+    ```bash
+    export GITHUB_TOKEN=<Your PAT token>
+    ```
+1. Set the release version you would like to create
+    ```bash
+    RELEASE_VERSION="v0.1.7"
+    ```
+1. Create
+    ```bash
+    git tag $RELEASE_VERSION && ./bin/goreleaser release --rm-dist
+
+    ```
+
+> More information about using goreleaser here: https://goreleaser.com/
+
 # Note about CLA
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

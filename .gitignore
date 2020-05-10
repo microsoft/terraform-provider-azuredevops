@@ -19,6 +19,7 @@ crash.log
 
 # unwanted binary file
 **/debug.test
+dist
 
 
 #GoLand Editor configuration
