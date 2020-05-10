@@ -47,8 +47,8 @@ RUN \
     && rm -rf /go/src/ && rm -rf /go/pkg
 
 # Install AzDO terraform provider
-RUN git clone https://github.com/microsoft/terraform-provider-azuredevops.git \
-    && (cd ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME} && make build) \
+ADD . ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
+RUN (cd ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME} && make build) \
     && rm -rf ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
 
 # Git command prompt
