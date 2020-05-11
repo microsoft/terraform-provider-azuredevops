@@ -76,7 +76,7 @@ The following arguments are supported:
 * `apiserver_url` - (Required) The Service Endpoint description.
 * `authorization_type` - (Required) The authentication method used to authenticate on the Kubernetes cluster. The value should be one of AzureSubscription, Kubeconfig, ServiceAccount.
 * `azure_subscription` - (Optional) The configuration for authorization_type="AzureSubscription".
-  * `azure_environment` - (Optional) Azure environment refers to whether the public cloud offering or domestic (government) clouds are beeing used. Currently, only the public cloud is supported. The value must be AzureCloud. This is also the default-value.
+  * `azure_environment` - (Optional) Azure environment refers to whether the public cloud offering or domestic (government) clouds are being used. Currently, only the public cloud is supported. The value must be AzureCloud. This is also the default-value.
   * `cluster_name` - (Required) The name of the Kubernetes cluster.
   * `subscription_id` - (Required) The id of the Azure subscription.
   * `subscription_name` - (Required) The name of the Azure subscription.
