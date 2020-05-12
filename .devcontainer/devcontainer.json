@@ -3,6 +3,7 @@
 {
 	"name": "Dev Dockerfile",
 	"dockerFile": "Dockerfile",
+	"context": "..",
 	// The optional 'runArgs' property can be used to specify additional runtime arguments.
 	"runArgs": [
 		// Enable go debugger
