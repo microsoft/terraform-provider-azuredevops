@@ -67,8 +67,8 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 	}
 
 	tests := []testParams{
-		{"org_service_url", true, "AZDO_ORG_SERVICE_URL", false},
-		{"personal_access_token", true, "AZDO_PERSONAL_ACCESS_TOKEN", true},
+		{"org_service_url", false, "AZDO_ORG_SERVICE_URL", false},
+		{"personal_access_token", false, "AZDO_PERSONAL_ACCESS_TOKEN", true},
 	}
 
 	schema := provider.Schema
