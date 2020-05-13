@@ -473,7 +473,7 @@ Making the release:
     ```
 1. Create
     ```bash
-    git tag $RELEASE_VERSION && ./bin/goreleaser release --rm-dist
+    git tag $RELEASE_VERSION && goreleaser release --rm-dist
 
     ```
 

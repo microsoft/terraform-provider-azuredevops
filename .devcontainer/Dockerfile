@@ -61,4 +61,5 @@ RUN echo "alias tf=terraform" >> "/root/.bashrc"
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
 
-RUN curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- "v0.132.1"
+# Install goreleaser
+RUN (cd /usr/local && curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- "v0.132.1") 

@@ -1,13 +1,15 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 builds:
-- env:
+- binary: "{{ .ProjectName }}_{{ .Tag }}"
+  env:
   - CGO_ENABLED=0
   goos:
   - linux
   - windows
   - darwin
 archives:
-- format_overrides:
+- name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  format_overrides:
     - goos: windows
       format: zip
 checksum:
