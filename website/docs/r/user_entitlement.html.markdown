@@ -12,7 +12,7 @@ Manages a user entitlement within Azure DevOps.
 
 ```hcl
 resource "azuredevops_user_entitlement" "user" {
-    principal_name     = "foo@contoso.com"
+  principal_name = "foo@contoso.com"
 }
 ```
 

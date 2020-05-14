@@ -19,12 +19,12 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_serviceendpoint_dockerhub" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample Docker Hub"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample Docker Hub"
 
-    docker_username        = "sample"
-    docker_email           = "email@example.com" 
-    docker_password        = "12345"
+  docker_username = "sample"            # Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME` env var
+  docker_email    = "email@example.com" # Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL` env var
+  docker_password = "12345"             # Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD` env var
 }
 ```
 
@@ -35,9 +35,9 @@ The following arguments are supported:
 * `project_id` - (Required) The project ID or project name.
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 * `description` - (Required) The Service Endpoint description.
-* `docker_username` - (Required) The username for Docker Hub account.
-* `docker_email` - (Required) The email for Docker Hub account.
-* `docker_password` - (Required) The password for Docker Hub account.
+* `docker_username` - (Required) The username for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME` environment variable, if present.
+* `docker_email` - (Required) The email for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL` environment variable, if present.
+* `docker_password` - (Required) The password for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD` environment variable, if present.
 
 ## Attributes Reference
 

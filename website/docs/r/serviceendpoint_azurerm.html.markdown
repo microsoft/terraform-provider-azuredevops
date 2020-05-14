@@ -26,15 +26,15 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
-  project_id                = azuredevops_project.project.id
-  service_endpoint_name     = "TestServiceRM"
-  credentials{
-    serviceprincipalid      = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-    serviceprincipalkey  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "TestServiceRM"
+  credentials {
+    serviceprincipalid  = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
   azurerm_spn_tenantid      = "xxxxxxx-xxxx-xxx-xxxxx-xxxxxxxx"
   azurerm_subscription_id   = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-  azurerm_subscription_name = "Microsoft Azure DEMO"
+  azurerm_subscription_name = "Sample Subscription"
 }
 ```
 

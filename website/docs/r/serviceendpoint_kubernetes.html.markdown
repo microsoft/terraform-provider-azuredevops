@@ -4,24 +4,28 @@ Manages a Kubernetes service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+data "azuredevops_project" "p" {
+  project_name = "contoso"
+}
+
+resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
+  project_id            = data.azuredevops_project.p
   service_endpoint_name = "Sample Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "AzureSubscription"
 
   azure_subscription {
-    subscription_id   = "8a7aace5-xxxx-xxxx-xxxx-xxxxxxxxxx"
+    subscription_id   = "001ac454-bb17-475a-8648-82c4234545be" # fake value
     subscription_name = "Microsoft Azure DEMO"
-    tenant_id         = "2e3a33f9-66b1-4xxx-xxxx-xxxxxxxxx"
+    tenant_id         = "8c46c3eb-ca1f-4a0b-8dfa-7c3baaf69d45" # fake value
     resourcegroup_id  = "sample-rg"
     namespace         = "default"
     cluster_name      = "sample-aks"
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_serviceendpoint_kubernetes" "se_kubeconfig" {
+  project_id            = data.azuredevops_project.p
   service_endpoint_name = "Sample Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "Kubeconfig"
@@ -54,8 +58,8 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_serviceendpoint_kubernetes" "se_service_account" {
+  project_id            = data.azuredevops_project.p
   service_endpoint_name = "Sample Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "ServiceAccount"

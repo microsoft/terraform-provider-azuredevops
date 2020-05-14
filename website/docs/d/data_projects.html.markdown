@@ -12,35 +12,25 @@ Use this data source to access information about existing Projects within Azure 
 ## Example Usage
 
 ```hcl
-
 data "azuredevops_projects" "test" {
-    project_name = "contoso"
-    state       = "wellFormed"
+  project_name = "contoso"
+  state        = "wellFormed"
 }
 
 output "project_id" {
-  value = "${data.azuredevops_projects.test.projects.*.project_id}"
+  value = data.azuredevops_projects.test.projects.*.project_id
 }
 
 output "project_name" {
-  value = "${data.azuredevops_projects.test.projects.*.name}"
+  value = data.azuredevops_projects.test.projects.*.name
 }
 
 output "project_url" {
-  value = "${data.azuredevops_projects.test.projects.*.project_url}"
+  value = data.azuredevops_projects.test.projects.*.project_url
 }
 
 output "state" {
-  value = "${data.azuredevops_projects.test.projects.*.state}"
-}
-
-
-output "project_url" {
-
-  value = { for project in data.azuredevops_projects.test.projects :
-    project.name => project.project_url
-  }
-
+  value = data.azuredevops_projects.test.projects.*.state
 }
 ```
 
@@ -60,7 +50,7 @@ The following attributes are exported:
 
 - `projects` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
 
-  - `id` - Project identifier.
+  - `project_id` - Project identifier.
   - `name` - Project name.
   - `project_url` - Url to the full version of the object.
   - `state` - Project state.

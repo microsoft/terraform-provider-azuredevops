@@ -19,11 +19,11 @@ resource "azuredevops_project" "project" {
 }
 
 resource "azuredevops_serviceendpoint_bitbucket" "serviceendpoint" {
-    project_id             = azuredevops_project.project.id
-    username               = "xxxx"
-    password               = "xxxx"
-    service_endpoint_name  = "test-bitbucket"
-    description            = "test" 
+  project_id            = azuredevops_project.project.id
+  username              = "xxxx"
+  password              = "xxxx"
+  service_endpoint_name = "test-bitbucket"
+  description           = "test"
 }
 ```
 

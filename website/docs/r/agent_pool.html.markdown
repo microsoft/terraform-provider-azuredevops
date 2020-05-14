@@ -12,8 +12,8 @@ Manages an agent pool within Azure DevOps.
 
 ```hcl
 resource "azuredevops_agent_pool" "pool" {
-    name = "staging_pool"
-    auto_provision = false
+  name           = "sample-pool"
+  auto_provision = false
 }
 ```
 

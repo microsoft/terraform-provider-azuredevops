@@ -23,7 +23,7 @@ data "azuredevops_group" "group" {
 
 resource "azuredevops_user_entitlement" "users" {
   for_each             = toset(var.aad_users)
-  principal_name       = "${each.value}"
+  principal_name       = each.value
   account_license_type = "stakeholder"
 }
 
@@ -42,17 +42,16 @@ resource "azuredevops_build_definition" "build" {
 
   repository {
     repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.repository.id
     repo_name   = azuredevops_git_repository.repository.name
     branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 
-  # https://github.com/microsoft/terraform-provider-azuredevops/issues/171
-  # variables_groups = [azuredevops_variable_group.vg.id]
+  variable_groups = [azuredevops_variable_group.vg.id]
 }
 
 // This section configures an Azure DevOps Variable Group
-# https://github.com/microsoft/terraform-provider-azuredevops/issues/170
 resource "azuredevops_variable_group" "vg" {
   project_id   = azuredevops_project.project.id
   name         = "Sample VG 1"
@@ -66,12 +65,12 @@ resource "azuredevops_variable_group" "vg" {
   }
 
   variable {
-    name      = "key2"
-    value     = "value2"
+    name  = "key2"
+    value = "value2"
   }
 
   variable {
-    name      = "key3"
+    name = "key3"
   }
 }
 
@@ -86,54 +85,55 @@ resource "azuredevops_git_repository" "repository" {
 
 // Configuration of AzureRm service end point
 resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
-  project_id                = azuredevops_project.project.id
-  service_endpoint_name     = "TestServiceAzureRM"
-  azurerm_spn_clientid      = "ee7f75a0-8553-4e6a-xxxx-xxxxxxxx"
-  azurerm_spn_clientsecret  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "TestServiceAzureRM"
+  credentials {
+    serviceprincipalid  = "ee7f75a0-8553-4e6a-xxxx-xxxxxxxx"
+    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
   azurerm_spn_tenantid      = "2e3a33f9-66b1-4xxx-xxxx-xxxxxxxxx"
   azurerm_subscription_id   = "8a7aace5-xxxx-xxxx-xxxx-xxxxxxxxxx"
   azurerm_subscription_name = "Microsoft Azure DEMO"
-  azurerm_scope             = "/subscriptions/1da42ac9-xxxx-xxxxx-xxxx-xxxxxxxxxxx"
 }
 
 resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {
-  project_id = "vanilla-sky"
-  username               = "xxxx"
-  password               = "xxxx"
-  service_endpoint_name  = "test-bitbucket"
-  description            = "test"
+  project_id            = "vanilla-sky"
+  username              = "xxxx"
+  password              = "xxxx"
+  service_endpoint_name = "test-bitbucket"
+  description           = "test"
 }
 
 resource "azuredevops_resource_authorization" "bitbucket_account_authorization" {
-  project_id = azuredevops_project.project.id
+  project_id  = azuredevops_project.project.id
   resource_id = azuredevops_serviceendpoint_bitbucket.bitbucket_account.id
-  authorized = true
+  authorized  = true
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "Sample Kubernetes"
-  apiserver_url          = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
-  authorization_type = "AzureSubscription"
+resource "azuredevops_serviceendpoint_kubernetes" "kubeendpoint1" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample Kubernetes"
+  apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
+  authorization_type    = "AzureSubscription"
 
   azure_subscription {
-    subscription_id = "8a7aace5-xxxx-xxxx-xxxx-xxxxxxxxxx"
+    subscription_id   = "1c020621-d7a3-457d-b0cc-5d8e6e12d4e6" # a fake GUID
     subscription_name = "Microsoft Azure DEMO"
-    tenant_id = "2e3a33f9-66b1-4xxx-xxxx-xxxxxxxxx"
-    resourcegroup_id = "sample-rg"
-    namespace = "default"
-    cluster_name = "sample-aks"
+    tenant_id         = "e46643be-eb78-472f-9780-e01d8190ba10" # a fake GUID
+    resourcegroup_id  = "sample-rg"
+    namespace         = "default"
+    cluster_name      = "sample-aks"
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "Sample Kubernetes"
-  apiserver_url          = "https://sample-aks.hcp.westeurope.azmk8s.io"
-  authorization_type = "Kubeconfig"
+resource "azuredevops_serviceendpoint_kubernetes" "kubeendpoint2" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample Kubernetes"
+  apiserver_url         = "https://sample-aks.hcp.westeurope.azmk8s.io"
+  authorization_type    = "Kubeconfig"
 
   kubeconfig {
-    kube_config = <<EOT
+    kube_config            = <<EOT
                 apiVersion: v1
                 clusters:
                 - cluster:
@@ -156,67 +156,18 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
                     client-key: fake-key-file
                 EOT
     accept_untrusted_certs = true
-    cluster_context = "dev-frontend"
+    cluster_context        = "dev-frontend"
   }
 }
 
 resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "Sample Kubernetes"
-  apiserver_url          = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
-  authorization_type = "ServiceAccount"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample Kubernetes"
+  apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
+  authorization_type    = "ServiceAccount"
 
   service_account {
-    token = "bXktYXBw[...]K8bPxc2uQ=="
+    token   = "bXktYXBw[...]K8bPxc2uQ=="
     ca_cert = "Mzk1MjgkdmRnN0pi[...]mHHRUH14gw4Q=="
   }
 }
-
-#
-# https://github.com/microsoft/terraform-provider-azuredevops/issues/83
-# resource "azuredevops_policy_build" "p1" {
-#   scope {
-#     repository_id  = azuredevops_git_repository.repository.id
-#     repository_ref = azuredevops_git_repository.repository.default_branch
-#     match_type     = "Exact"
-#   }
-#   settings {
-#     build_definition_id    = azuredevops_build_definition.build.id
-#     queue_on_source_update = true
-#   }
-# }
-# resource "azuredevops_policy_min_reviewers" "p1" {
-#   scope {
-#     repository_id  = azuredevops_git_repository.repository.id
-#     repository_ref = azuredevops_git_repository.repository.default_branch
-#     match_type     = "Exact"
-#   }
-#   settings {
-#     reviewer_count     = 2
-#     submitter_can_vote = false
-#   }
-# }
-
-
-// This section configures service connections to Azure and ACR
-#
-# https://github.com/microsoft/terraform-provider-azuredevops/issues/3
-# resource "azuredevops_serviceendpoint_azurerm" "arm" {
-#   project_id            = azuredevops_project.project.id
-#   service_endpoint_name = "Sample ARM Service Connection"
-
-#   configuration = {
-#     service_principal_username = "..."
-#     service_principal_password = "..."
-#     subscription_id            = "..."
-#     tenant_id                  = "..."
-#   }
-# }
-# resource "azuredevops_serviceendpoint_acr" "acr" {
-#   project_id            = azuredevops_project.project.id
-#   service_endpoint_name = "Sample ACR Service Connection"
-
-#   configuration = {
-#     ...
-#   }
-# }

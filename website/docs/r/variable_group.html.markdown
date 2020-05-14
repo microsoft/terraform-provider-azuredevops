@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_variable_group"
 description: |-
-  Manages variable groups within Azure DevOps organization.
+  Manages variable groups within Azure DevOps project.
 ---
 
 # azuredevops_variable_group

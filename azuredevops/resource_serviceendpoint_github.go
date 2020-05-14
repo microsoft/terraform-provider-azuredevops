@@ -38,10 +38,10 @@ func resourceServiceEndpointGitHub() *schema.Resource {
 		MinItems:      1,
 		MaxItems:      1,
 		Elem:          authPersonal,
-		ConflictsWith: []string{"auth_oath"},
+		ConflictsWith: []string{"auth_oauth"},
 	}
 
-	r.Schema["auth_oath"] = &schema.Schema{
+	r.Schema["auth_oauth"] = &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
 		MinItems: 1,
@@ -113,7 +113,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 
 	parameters := &map[string]string{}
 	authPersonal := expandAuthPersonalSet(d.Get("auth_personal").(*schema.Set))
-	authGrant := expandAuthOauthSet(d.Get("auth_oath").(*schema.Set))
+	authGrant := expandAuthOauthSet(d.Get("auth_oauth").(*schema.Set))
 
 	if authPersonal != nil {
 		scheme = "PersonalAccessToken"
@@ -139,7 +139,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	crud.DoBaseFlattening(d, serviceEndpoint, projectID)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
-		d.Set("auth_oath", &[]map[string]interface{}{
+		d.Set("auth_oauth", &[]map[string]interface{}{
 			{
 				"oauth_configuration_id": (*serviceEndpoint.Authorization.Parameters)["ConfigurationId"],
 			},

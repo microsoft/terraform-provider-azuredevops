@@ -18,34 +18,34 @@ resource "azuredevops_project" "project" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample GithHub Personal Access Token"
-    
-    auth_personal {
-        personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    }
+resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_1" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample GithHub Personal Access Token"
+
+  auth_personal {
+    # Also can be set with AZDO_GITHUB_SERVICE_CONNECTION_PAT environment variable
+    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
 }
 ```
 
 ```hcl
-resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample GithHub Grant"
+resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample GithHub Grant"
 
-     auth_oauth {
-        oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    }
+  auth_oauth {
+    oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  }
 }
 ```
 
 ```hcl
-resource "azuredevops_serviceendpoint_github" "serviceendpoint_github" {
-	project_id             = azuredevops_project.project.id
-    # https://github.com/marketplace/azure-pipelines	
-    service_endpoint_name  = "Sample GithHub Apps: Azure Pipelines"
-    # Note Github Apps do not support a description and will always be empty string. Must be explicty set to override the default value.
-    description = ""
+resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_3" {
+  project_id = azuredevops_project.project.id
+  service_endpoint_name = "Sample GithHub Apps: Azure Pipelines"
+  # Note Github Apps do not support a description and will always be empty string. Must be explicty set to override the default value.
+  description = ""
 }
 ```
 

@@ -21,26 +21,13 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_git_repository" "repository" {
   project_id = azuredevops_project.project.id
   name       = "Sample Repository"
-
-  ci_trigger {
-    use_yaml = true
-  }
-
-  pull_request_trigger {
-    use_yaml = true
-    forks {
-        enabled       = false
-        share_secrets = false
-    }
-  }
-
   initialization {
     init_type = "Clean"
   }
 }
 
 resource "azuredevops_variable_group" "vars" {
-  project_id   = local.project_id
+  project_id   = azuredevops_project.project.id
   name         = "Infrastructure Pipeline Variables"
   description  = "Managed by Terraform"
   allow_access = true
@@ -63,8 +50,8 @@ resource "azuredevops_build_definition" "build" {
   pull_request_trigger {
     use_yaml = true
     forks {
-        enabled       = false
-        share_secrets = false
+      enabled       = false
+      share_secrets = false
     }
   }
 

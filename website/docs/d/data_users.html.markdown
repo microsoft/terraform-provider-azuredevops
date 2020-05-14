@@ -12,47 +12,30 @@ Use this data source to access information about an existing users within Azure 
 ## Example Usage
 
 ```hcl
-
-# Make sure to set the following environment variables:
-#   AZDO_PERSONAL_ACCESS_TOKEN
-#   AZDO_ORG_SERVICE_URL
-provider "azuredevops" {
-  version = ">= 0.0.1"
-}
-
-## Load single user by using it's principal name
+# Load single user by using it's principal name
 data "azuredevops_users" "user" {
-  principal_name = "azdevopsmgmt@contactophios.onmicrosoft.com"
+  principal_name = "contoso-user@contoso.onmicrosoft.com"
 }
 
-## Load all users know inside an organization
+# Load all users know inside an organization
 data "azuredevops_users" "all-users" {
 }
 
-# Build a local map, to access users by principalname
-locals {
-  project_map = {
-    for user in data.azuredevops_users.all-users.users : user["principal_name"] => user
-  }
-}
-
-## Load all users know inside an organization originating from a specific source (origin)
+# Load all users know inside an organization originating from a specific source (origin)
 data "azuredevops_users" "all-from-origin" {
   origin = "aad"
 }
 
-## Load all users know inside an organization filtered by their subject types
+# Load all users know inside an organization filtered by their subject types
 data "azuredevops_users" "all-from-subject_types" {
   subject_types = [ "aad", "msa" ]
 }
 
-## Load single user by using it's id in a specific origin.
-## Sample: Load user with objectid from Azure Active Directory
+# Load a single user by origin and origin ID
 data "azuredevops_users" "all-from-origin-id" {
   origin = "aad"
   origin_id = "a7ead982-8438-4cd2-b9e3-c3aa51a7b675"
 }
-
 ```
 
 ## Argument Reference
@@ -60,7 +43,7 @@ data "azuredevops_users" "all-from-origin-id" {
 The following arguments are supported:
 
 - `principal_name` - (Optional) The PrincipalName of this graph member from the source provider.
-- `subject_types` - (Optional) A list of user subject subtypes to reduce the retrieved results, e.g. msa’, ‘aad’, ‘svc’ (service identity), ‘imp’ (imported identity), etc. The supported subject types are listed below.
+- `subject_types` - (Optional) A list of user subject subtypes to reduce the retrieved results, e.g. `msa`, `aad`, `svc` (service identity), `imp` (imported identity), etc. The supported subject types are listed below.
 - `origin` - (Optional) The type of source provider for the `origin_id` parameter (ex:AD, AAD, MSA) The supported origins are listed below.
 - `origin_id` - (Optional) The unique identifier from the system of origin.
 

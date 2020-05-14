@@ -24,8 +24,9 @@ resource "azuredevops_git_repository" "repo" {
   project_id = azuredevops_project.project.id
   name       = "Sample Empty Git Repository"
   initialization {
-    init_type   = "Clean"
+    init_type = "Clean"
   }
+}
 ```
 
 ### Create Fork of another Azure DevOps Git repository
@@ -59,7 +60,7 @@ In addition to all arguments above, except `initialization`, the following attri
 
 * `id` - The ID of the Git repository.
 
-* `default_branch` - The name of the default branch.
+* `default_branch` - The ref of the default branch.
 * `is_fork` - True if the repository was created as a fork.
 * `remote_url` - Git HTTPS URL of the repository
 * `size` - Size in bytes.

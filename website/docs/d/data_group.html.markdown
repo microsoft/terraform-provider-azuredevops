@@ -11,16 +11,21 @@ Use this data source to access information about an existing Group within Azure 
 ## Example Usage
 
 ```hcl
+data "azuredevops_project" "p" {
+  project_name = "contoso-project"
+}
+
 data "azuredevops_group" "test" {
-    project_id = azuredevops_project.project.id
-    name       = "Test Group"
+  project_id = data.azuredevops_project.p.id
+  name       = "Test Group"
 }
 
 output "group_id" {
-    value = "${data.azuredevops_group.test.id}"
+  value = data.azuredevops_group.test.id
 }
+
 output "group_descriptor" {
-    value = "${data.azuredevops_group.test.descriptor}"
+  value = data.azuredevops_group.test.descriptor
 }
 ```
 

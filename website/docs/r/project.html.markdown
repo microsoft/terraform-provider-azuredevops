@@ -35,6 +35,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Project ID of the Project.
+* `process_template_id` - The Process Template ID used by the Project.
 
 ## Relevant Links
 * [Azure DevOps Service REST API 5.1 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-5.1)

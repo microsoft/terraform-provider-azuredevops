@@ -6,9 +6,11 @@
 The AzureRM Provider supports Terraform 0.12.x and later.
 
 * [Terraform Website](https://www.terraform.io)
-* [AzDO Website](https://azure.microsoft.com/en-us/services/devops/)
-* [AzDO Provider Documentation](website/docs/index.html.markdown)
-* [AzDO Provider Usage Examples](./examples/)
+* [Azure DevOps Website](https://azure.microsoft.com/en-us/services/devops/)
+* [Provider Documentation](./website/docs/index.html.markdown)
+* [Resources Documentation](./website/docs/r/)
+* [Data Sources Documentation](./website/docs/d/)
+* [Usage Examples](./examples/)
 * [Gitter Channel](https://gitter.im/terraform-provider-azuredevops/community)
 
 ## Usage Example
@@ -26,7 +28,7 @@ resource "azuredevops_project" "project" {
   description  = "All of my awesomee things"
 }
 
-resource "azuredevops_azure_git_repository" "repository" {
+resource "azuredevops_git_repository" "repository" {
   project_id = azuredevops_project.project.id
   name       = "My Awesome Repo"
   initialization {
@@ -41,8 +43,9 @@ resource "azuredevops_build_definition" "build_definition" {
 
   repository {
     repo_type   = "TfsGit"
-    repo_name   = azuredevops_azure_git_repository.repository.name
-    branch_name = azuredevops_azure_git_repository.repository.default_branch
+    repo_id     = azuredevops_git_repository.repository.id
+    repo_name   = azuredevops_git_repository.repository.name
+    branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 }
