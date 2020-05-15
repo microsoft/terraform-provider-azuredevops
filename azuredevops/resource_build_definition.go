@@ -136,10 +136,6 @@ func resourceBuildDefinition() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"repo_name": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
 						"repo_type": {
 							Type:     schema.TypeString,
 							Required: true,
@@ -429,7 +425,6 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	return []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
 		"repo_id":               *buildDefinition.Repository.Id,
-		"repo_name":             *buildDefinition.Repository.Name,
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
@@ -735,14 +730,16 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	repository := repositories[0].(map[string]interface{})
 
 	repoID := repository["repo_id"].(string)
-	repoName := repository["repo_name"].(string)
+	repoName := ""
 	repoType := RepoType(repository["repo_type"].(string))
 	repoURL := ""
 	if strings.EqualFold(string(repoType), string(RepoTypeValues.GitHub)) {
-		repoURL = fmt.Sprintf("https://github.com/%s.git", repoName)
+		repoURL = fmt.Sprintf("https://github.com/%s.git", repoID)
+		repoName = repoID
 	}
 	if strings.EqualFold(string(repoType), string(RepoTypeValues.Bitbucket)) {
-		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoName)
+		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoID)
+		repoName = repoID
 	}
 
 	ciTriggers := expandBuildDefinitionTriggerList(

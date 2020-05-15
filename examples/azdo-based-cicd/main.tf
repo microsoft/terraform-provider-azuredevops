@@ -43,7 +43,6 @@ resource "azuredevops_build_definition" "build" {
   repository {
     repo_type   = "TfsGit"
     repo_id     = azuredevops_git_repository.repository.id
-    repo_name   = azuredevops_git_repository.repository.name
     branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }

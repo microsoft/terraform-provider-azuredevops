@@ -58,7 +58,6 @@ resource "azuredevops_build_definition" "build" {
   repository {
     repo_type   = "TfsGit"
     repo_id     = azuredevops_git_repository.repository.id
-    repo_name   = azuredevops_git_repository.repository.name
     branch_name = azuredevops_git_repository.repository.default_branch
     yml_path    = "azure-pipelines.yml"
   }
@@ -85,7 +84,6 @@ The following arguments are supported:
 
 * `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
 * `repo_id` - (Required) The id of the repository.
-* `repo_name` - (Required) The name of the repository.
 * `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket`. Defaults to `Github`.
 * `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub`.
 * `yml_path` - (Required) The path of the Yaml file describing the build definition.

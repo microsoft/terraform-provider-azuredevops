@@ -37,7 +37,6 @@ resource "azuredevops_build_definition" "nightly_build" {
   repository {
     repo_type             = "GitHub"
     repo_id               = "microsoft/terraform-provider-azuredevops"
-    repo_name             = "microsoft/terraform-provider-azuredevops"
     branch_name           = "master"
     yml_path              = ".azdo/azure-pipeline-nightly.yml"
     service_connection_id = azuredevops_serviceendpoint_github.github_serviceendpoint.id

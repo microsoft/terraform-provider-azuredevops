@@ -442,7 +442,6 @@ func TestAccAzureDevOpsBuildDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "repository.0.repo_id"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "repository.0.repo_name", gitRepoName),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameThird),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
 				),

@@ -293,7 +293,6 @@ func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionNam
 		buildPath,
 		"GitHub",
 		"repoOrg/repoName",
-		"repoOrg/repoName",
 		"master",
 		"path/to/yaml",
 		"")
@@ -306,7 +305,6 @@ func TestAccBuildDefinitionResourceBitbucket(projectName string, buildDefinition
 		buildDefinitionName,
 		buildPath,
 		"Bitbucket",
-		"repoOrg/repoName",
 		"repoOrg/repoName",
 		"master",
 		"path/to/yaml",
@@ -321,7 +319,6 @@ func TestAccBuildDefinitionResourceTfsGit(projectName string, gitRepoName string
 		buildPath,
 		"TfsGit",
 		"${azuredevops_git_repository.gitrepo.id}",
-		"${azuredevops_git_repository.gitrepo.name}",
 		"master",
 		"path/to/yaml",
 		"")
@@ -338,7 +335,6 @@ func TestAccBuildDefinitionResource(
 	buildPath string,
 	repoType string,
 	repoID string,
-	repoName string,
 	branchName string,
 	yamlPath string,
 	serviceConnectionID string,
@@ -347,11 +343,10 @@ func TestAccBuildDefinitionResource(
 repository {
 	repo_type             = "%s"
 	repo_id               = "%s"
-	repo_name             = "%s"
 	branch_name           = "%s"
 	yml_path              = "%s"
 	service_connection_id = "%s"
-}`, repoType, repoID, repoName, branchName, yamlPath, serviceConnectionID)
+}`, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 
 	buildDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_build_definition" "build" {
