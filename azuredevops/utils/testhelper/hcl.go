@@ -413,3 +413,13 @@ output "group_id_%s" {
 }
 `, TestAccProjectResource(projectName), groupResourceName, groupName, groupResourceName, groupResourceName)
 }
+
+// TestAccResourceAuthorization HCL describing a resource authorization
+func TestAccResourceAuthorization(resourceID string, authorized bool) string {
+	return fmt.Sprintf(`
+resource "azuredevops_resource_authorization" "auth" {
+	project_id  = azuredevops_project.project.id
+	resource_id = %s
+	authorized  = %t
+}`, resourceID, authorized)
+}

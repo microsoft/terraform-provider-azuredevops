@@ -59,7 +59,7 @@ func resourceResourceAuthorizationCreate(d *schema.ResourceData, m interface{}) 
 		return fmt.Errorf(msgErrorFailedResourceCreate, err)
 	}
 
-	_, err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
+	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceCreate, err)
 	}
@@ -114,7 +114,7 @@ func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 	// because the resource to delete might have had this parameter set to true, we overwrite it
 	authorizedResource.Authorized = converter.Bool(false)
 
-	_, err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
+	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceDelete, err)
 	}
@@ -129,7 +129,7 @@ func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) 
 		return fmt.Errorf(msgErrorFailedResourceUpdate, err)
 	}
 
-	_, err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
+	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceUpdate, err)
 	}
@@ -156,19 +156,13 @@ func expandAuthorizedResource(d *schema.ResourceData) (*build.DefinitionResource
 	return &resourceRef, d.Get("project_id").(string), nil
 }
 
-func sendAuthorizedResourceToAPI(clients *config.AggregatedClient, resourceRef *build.DefinitionResourceReference, project string) (*build.DefinitionResourceReference, error) {
+func sendAuthorizedResourceToAPI(clients *config.AggregatedClient, resourceRef *build.DefinitionResourceReference, project string) error {
 	ctx := context.Background()
 
-	createdResourceRefs, err := clients.BuildClient.AuthorizeProjectResources(ctx, build.AuthorizeProjectResourcesArgs{
+	_, err := clients.BuildClient.AuthorizeProjectResources(ctx, build.AuthorizeProjectResourcesArgs{
 		Resources: &[]build.DefinitionResourceReference{*resourceRef},
 		Project:   &project,
 	})
 
-	if err != nil {
-		return nil, err
-	} else if len(*createdResourceRefs) == 0 {
-		return nil, fmt.Errorf("no project resources have been authorized")
-	}
-
-	return &(*createdResourceRefs)[0], err
+	return err
 }
