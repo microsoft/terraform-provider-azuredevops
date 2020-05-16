@@ -25,6 +25,7 @@ func Provider() *schema.Provider {
 			"azuredevops_group":                      resourceGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"azuredevops_client_config":    dataClientConfig(),
 			"azuredevops_group":            dataGroup(),
 			"azuredevops_project":          dataProject(),
 			"azuredevops_projects":         dataProjects(),

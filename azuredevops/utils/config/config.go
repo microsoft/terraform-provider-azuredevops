@@ -28,6 +28,7 @@ import (
 // allow for mocking to support unit testing of the funcs that invoke the
 // Azure DevOps client.
 type AggregatedClient struct {
+	OrganizationURL               string
 	CoreClient                    core.Client
 	BuildClient                   build.Client
 	GitReposClient                git.Client
@@ -111,6 +112,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	}
 
 	aggregatedClient := &AggregatedClient{
+		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
