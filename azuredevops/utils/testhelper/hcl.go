@@ -110,13 +110,14 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccServiceEndpointDockerHubResource HCL describing an AzDO service endpoint
-func TestAccServiceEndpointDockerHubResource(projectName string, serviceEndpointName string) string {
+// TestAccServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
+func TestAccServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string /*, username string, password string*/) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_dockerhub" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-}`, serviceEndpointName)
+
+}`, serviceEndpointName /*, username, password*/)
 
 	projectResource := TestAccProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)

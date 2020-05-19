@@ -20,13 +20,14 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   }
 }
 
-resource "azuredevops_serviceendpoint_dockerhub" "dockerhub_serviceendpoint" {
+resource "azuredevops_serviceendpoint_dockerregistry" "dockerregistry_serviceendpoint" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "DockerHub Service Connection"
+  service_endpoint_name = "DockerRegistry Service Connection"
 
-  # docker_username = "..." - Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME` env var
-  # docker_email    = "..." - Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL` env var
-  # docker_password = "..." - Or set with `AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD` env var
+  # docker_username = "..." - Or set with `AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME` env var
+  # docker_email    = "..." - Or set with `AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL` env var
+  # docker_password = "..." - Or set with `AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD` env var
+
 }
 
 resource "azuredevops_build_definition" "nightly_build" {
