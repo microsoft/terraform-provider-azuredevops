@@ -13,6 +13,8 @@ RUN apt-get update \
     && apt-get -y install git procps lsb-release unzip \
     # Install Editor
     && apt-get install vim -y \
+    # Install missing icu-devtools to be able to use liveshare. More info: https://stackoverflow.com/questions/58736399/how-to-get-vscode-liveshare-extension-working-when-running-inside-vscode-remote
+    && apt update && apt install icu-devtools -y \
     # Install Terraform, tflint
     && mkdir -p /tmp/docker-downloads \
     && curl -sSL -o /tmp/docker-downloads/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
@@ -51,12 +53,13 @@ ADD . ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
 RUN (cd ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME} && make build) \
     && rm -rf ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
 
-# Git command prompt
-RUN git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1 \
-    && echo "if [ -f \"$HOME/.bash-git-prompt/gitprompt.sh\" ]; then GIT_PROMPT_ONLY_IN_REPO=1 && source $HOME/.bash-git-prompt/gitprompt.sh; fi" >> "/root/.bashrc"
-
-# Add alias
-RUN echo "alias tf=terraform" >> "/root/.bashrc"
+# Customize bash
+RUN \
+    # Git command prompt
+    git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1 \
+    && echo "if [ -f \"$HOME/.bash-git-prompt/gitprompt.sh\" ]; then GIT_PROMPT_ONLY_IN_REPO=1 && source $HOME/.bash-git-prompt/gitprompt.sh; fi" >> "/root/.bashrc" \
+    # Add alias
+    && echo "alias tf=terraform" >> "/root/.bashrc"
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog

@@ -51,6 +51,13 @@
 		},
 	},
 	"extensions": [
-		"ms-vscode.go"
+		"ms-vscode.go",
+		"mauve.terraform",
+		"ms-vscode.powershell",
+		"ms-azuretools.vscode-docker",
+		"ms-vsliveshare.vsliveshare",
+		"streetsidesoftware.code-spell-checker",
+		"eamodio.gitlens",
+		"yzhang.markdown-all-in-one"
 	]
 }
