@@ -5,9 +5,11 @@ package azuredevops
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // ApiResourceLocation Information about the location of a REST API resource
@@ -32,19 +34,19 @@ type ApiResourceLocation struct {
 
 // WrappedImproperError
 type WrappedImproperError struct {
-	Count *int           `json:"count,omitEmpty"`
-	Value *ImproperError `json:"value,omitEmpty"`
+	Count *int           `json:"count,omitempty"`
+	Value *ImproperError `json:"value,omitempty"`
 }
 
 // ImproperError
 type ImproperError struct {
-	Message *string `json:"Message,omitEmpty"`
+	Message *string `json:"Message,omitempty"`
 }
 
 // KeyValuePair
 type KeyValuePair struct {
-	Key   *interface{} `json:"key,omitEmpty"`
-	Value *interface{} `json:"value,omitEmpty"`
+	Key   *interface{} `json:"key,omitempty"`
+	Value *interface{} `json:"value,omitempty"`
 }
 
 // ResourceAreaInfo
@@ -62,14 +64,26 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 	t2 := time.Time{}
 	err := json.Unmarshal(b, &t2)
 
-	// ignore errors for 0001-01-01T00:00:00 dates. The Azure DevOps service
-	// returns default dates in a format that is invalid for a time.Time. The
-	// correct value would have a 'z' at the end to represent utc. We are going
-	// to ignore this error, and set the value to the default time.Time value.
-	// https://github.com/microsoft/azure-devops-go-api/issues/17
 	if err != nil {
-		if parseError, ok := err.(*time.ParseError); ok && parseError.Value == "\"0001-01-01T00:00:00\"" {
-			err = nil
+		parseError, ok := err.(*time.ParseError)
+		if ok {
+			if parseError.Value == "\"0001-01-01T00:00:00\"" {
+				// ignore errors for 0001-01-01T00:00:00 dates. The Azure DevOps service
+				// returns default dates in a format that is invalid for a time.Time. The
+				// correct value would have a 'z' at the end to represent utc. We are going
+				// to ignore this error, and set the value to the default time.Time value.
+				// https://github.com/microsoft/azure-devops-go-api/issues/17
+				err = nil
+			} else {
+				// workaround for bug https://github.com/microsoft/azure-devops-go-api/issues/59
+				// policy.CreatePolicyConfiguration returns an invalid date format of form
+				// "2006-01-02T15:04:05.999999999"
+				var innerError error
+				t2, innerError = time.Parse("2006-01-02T15:04:05.999999999", strings.Trim(parseError.Value, "\""))
+				if innerError == nil {
+					err = nil
+				}
+			}
 		}
 	}
 

@@ -92,6 +92,14 @@ type EventScope struct {
 }
 
 type IdentityRef struct {
+	// This field contains zero or more interesting links about the graph subject. These links may be invoked to obtain additional relationships or more detailed information about this graph subject.
+	Links interface{} `json:"_links,omitempty"`
+	// The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
+	Descriptor *string `json:"descriptor,omitempty"`
+	// This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
+	DisplayName *string `json:"displayName,omitempty"`
+	// This url is the full route to the source resource of this graph subject.
+	Url *string `json:"url,omitempty"`
 	// Deprecated - Can be retrieved by querying the Graph user referenced in the "self" entry of the IdentityRef "_links" dictionary
 	DirectoryAlias *string `json:"directoryAlias,omitempty"`
 	Id             *string `json:"id,omitempty"`
@@ -111,6 +119,14 @@ type IdentityRef struct {
 }
 
 type IdentityRefWithEmail struct {
+	// This field contains zero or more interesting links about the graph subject. These links may be invoked to obtain additional relationships or more detailed information about this graph subject.
+	Links interface{} `json:"_links,omitempty"`
+	// The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
+	Descriptor *string `json:"descriptor,omitempty"`
+	// This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
+	DisplayName *string `json:"displayName,omitempty"`
+	// This url is the full route to the source resource of this graph subject.
+	Url *string `json:"url,omitempty"`
 	// Deprecated - Can be retrieved by querying the Graph user referenced in the "self" entry of the IdentityRef "_links" dictionary
 	DirectoryAlias *string `json:"directoryAlias,omitempty"`
 	Id             *string `json:"id,omitempty"`
@@ -143,6 +159,10 @@ type JsonPatchOperation struct {
 }
 
 type JsonWebToken struct {
+	// Gets a value indicating whether or not this token has been successfully authenticated with the remote server.
+	IsAuthenticated *bool `json:"isAuthenticated,omitempty"`
+	// Metadata about the token in a collection of properties.
+	Properties *map[string]string `json:"properties,omitempty"`
 }
 
 type JWTAlgorithm string

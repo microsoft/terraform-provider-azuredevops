@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/terraform v0.12.23
 	github.com/hashicorp/terraform-plugin-sdk v1.8.0
-	github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20200327121006-543de4815ec2
+	github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b2
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect

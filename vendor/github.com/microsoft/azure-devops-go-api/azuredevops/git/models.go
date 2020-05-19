@@ -533,6 +533,25 @@ type GitBranchStats struct {
 	Name *string `json:"name,omitempty"`
 }
 
+type GitChange struct {
+	// The type of change that was made to the item.
+	ChangeType *VersionControlChangeType `json:"changeType,omitempty"`
+	// Current version.
+	Item interface{} `json:"item,omitempty"`
+	// Content of the item after the change.
+	NewContent *ItemContent `json:"newContent,omitempty"`
+	// Path of the item on the server.
+	SourceServerItem *string `json:"sourceServerItem,omitempty"`
+	// URL to retrieve the item.
+	Url *string `json:"url,omitempty"`
+	// ID of the change within the group of changes.
+	ChangeId *int `json:"changeId,omitempty"`
+	// New Content template to be used when pushing new changes.
+	NewContentTemplate *GitTemplate `json:"newContentTemplate,omitempty"`
+	// Original path of item if different from current path.
+	OriginalPath *string `json:"originalPath,omitempty"`
+}
+
 // This object is returned from Cherry Pick operations and provides the id and status of the operation
 type GitCherryPick struct {
 	Links          interface{}                     `json:"_links,omitempty"`
@@ -1074,6 +1093,26 @@ type GitForkSyncRequestParameters struct {
 }
 
 type GitForkTeamProjectReference struct {
+	// Project abbreviation.
+	Abbreviation *string `json:"abbreviation,omitempty"`
+	// Url to default team identity image.
+	DefaultTeamImageUrl *string `json:"defaultTeamImageUrl,omitempty"`
+	// The project's description (if any).
+	Description *string `json:"description,omitempty"`
+	// Project identifier.
+	Id *uuid.UUID `json:"id,omitempty"`
+	// Project last update time.
+	LastUpdateTime *azuredevops.Time `json:"lastUpdateTime,omitempty"`
+	// Project name.
+	Name *string `json:"name,omitempty"`
+	// Project revision.
+	Revision *uint64 `json:"revision,omitempty"`
+	// Project state.
+	State *core.ProjectState `json:"state,omitempty"`
+	// Url to the full version of the object.
+	Url *string `json:"url,omitempty"`
+	// Project visibility.
+	Visibility *core.ProjectVisibility `json:"visibility,omitempty"`
 }
 
 // Accepted types of version
@@ -1402,6 +1441,22 @@ type GitPullRequest struct {
 
 // Change made in a pull request.
 type GitPullRequestChange struct {
+	// The type of change that was made to the item.
+	ChangeType *VersionControlChangeType `json:"changeType,omitempty"`
+	// Current version.
+	Item interface{} `json:"item,omitempty"`
+	// Content of the item after the change.
+	NewContent *ItemContent `json:"newContent,omitempty"`
+	// Path of the item on the server.
+	SourceServerItem *string `json:"sourceServerItem,omitempty"`
+	// URL to retrieve the item.
+	Url *string `json:"url,omitempty"`
+	// ID of the change within the group of changes.
+	ChangeId *int `json:"changeId,omitempty"`
+	// New Content template to be used when pushing new changes.
+	NewContentTemplate *GitTemplate `json:"newContentTemplate,omitempty"`
+	// Original path of item if different from current path.
+	OriginalPath *string `json:"originalPath,omitempty"`
 	// ID used to track files through multiple changes.
 	ChangeTrackingId *int `json:"changeTrackingId,omitempty"`
 }
@@ -2294,6 +2349,30 @@ type HistoryEntry struct {
 
 // Identity information including a vote on a pull request.
 type IdentityRefWithVote struct {
+	// This field contains zero or more interesting links about the graph subject. These links may be invoked to obtain additional relationships or more detailed information about this graph subject.
+	Links interface{} `json:"_links,omitempty"`
+	// The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
+	Descriptor *string `json:"descriptor,omitempty"`
+	// This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
+	DisplayName *string `json:"displayName,omitempty"`
+	// This url is the full route to the source resource of this graph subject.
+	Url *string `json:"url,omitempty"`
+	// Deprecated - Can be retrieved by querying the Graph user referenced in the "self" entry of the IdentityRef "_links" dictionary
+	DirectoryAlias *string `json:"directoryAlias,omitempty"`
+	Id             *string `json:"id,omitempty"`
+	// Deprecated - Available in the "avatar" entry of the IdentityRef "_links" dictionary
+	ImageUrl *string `json:"imageUrl,omitempty"`
+	// Deprecated - Can be retrieved by querying the Graph membership state referenced in the "membershipState" entry of the GraphUser "_links" dictionary
+	Inactive *bool `json:"inactive,omitempty"`
+	// Deprecated - Can be inferred from the subject type of the descriptor (Descriptor.IsAadUserType/Descriptor.IsAadGroupType)
+	IsAadIdentity *bool `json:"isAadIdentity,omitempty"`
+	// Deprecated - Can be inferred from the subject type of the descriptor (Descriptor.IsGroupType)
+	IsContainer       *bool `json:"isContainer,omitempty"`
+	IsDeletedInOrigin *bool `json:"isDeletedInOrigin,omitempty"`
+	// Deprecated - not in use in most preexisting implementations of ToIdentityRef
+	ProfileUrl *string `json:"profileUrl,omitempty"`
+	// Deprecated - use Domain+PrincipalName instead
+	UniqueName *string `json:"uniqueName,omitempty"`
 	// Indicates if this is a required reviewer for this pull request. <br /> Branches can have policies that require particular reviewers are required for pull requests.
 	IsRequired *bool `json:"isRequired,omitempty"`
 	// URL to retrieve information about this identity
@@ -2726,6 +2805,16 @@ type TfvcBranchRef struct {
 }
 
 type TfvcChange struct {
+	// The type of change that was made to the item.
+	ChangeType *VersionControlChangeType `json:"changeType,omitempty"`
+	// Current version.
+	Item interface{} `json:"item,omitempty"`
+	// Content of the item after the change.
+	NewContent *ItemContent `json:"newContent,omitempty"`
+	// Path of the item on the server.
+	SourceServerItem *string `json:"sourceServerItem,omitempty"`
+	// URL to retrieve the item.
+	Url *string `json:"url,omitempty"`
 	// List of merge sources in case of rename or branch creation.
 	MergeSources *[]TfvcMergeSource `json:"mergeSources,omitempty"`
 	// Version at which a (shelved) change was pended against
@@ -2822,6 +2911,12 @@ type TfvcCheckinEventData struct {
 }
 
 type TfvcHistoryEntry struct {
+	// The Change list (changeset/commit/shelveset) for this point in history
+	ChangeList interface{} `json:"changeList,omitempty"`
+	// The change made to the item from this change list (only relevant for File history, not folders)
+	ItemChangeType *VersionControlChangeType `json:"itemChangeType,omitempty"`
+	// The path of the item at this point in history (only relevant for File history, not folders)
+	ServerItem *string `json:"serverItem,omitempty"`
 	// The encoding of the item at this point in history (only relevant for File history, not folders)
 	Encoding *int `json:"encoding,omitempty"`
 	// The file id of the item at this point in history (only relevant for File history, not folders)

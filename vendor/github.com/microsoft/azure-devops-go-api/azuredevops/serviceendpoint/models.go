@@ -11,6 +11,7 @@ package serviceendpoint
 import (
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/forminput"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
 )
@@ -206,6 +207,32 @@ type DataSource struct {
 
 // Represents the data source binding of the endpoint.
 type DataSourceBinding struct {
+	// Pagination format supported by this data source(ContinuationToken/SkipTop).
+	CallbackContextTemplate *string `json:"callbackContextTemplate,omitempty"`
+	// Subsequent calls needed?
+	CallbackRequiredTemplate *string `json:"callbackRequiredTemplate,omitempty"`
+	// Gets or sets the name of the data source.
+	DataSourceName *string `json:"dataSourceName,omitempty"`
+	// Gets or sets the endpoint Id.
+	EndpointId *string `json:"endpointId,omitempty"`
+	// Gets or sets the url of the service endpoint.
+	EndpointUrl *string `json:"endpointUrl,omitempty"`
+	// Gets or sets the authorization headers.
+	Headers *[]distributedtaskcommon.AuthorizationHeader `json:"headers,omitempty"`
+	// Defines the initial value of the query params
+	InitialContextTemplate *string `json:"initialContextTemplate,omitempty"`
+	// Gets or sets the parameters for the data source.
+	Parameters *map[string]string `json:"parameters,omitempty"`
+	// Gets or sets http request body
+	RequestContent *string `json:"requestContent,omitempty"`
+	// Gets or sets http request verb
+	RequestVerb *string `json:"requestVerb,omitempty"`
+	// Gets or sets the result selector.
+	ResultSelector *string `json:"resultSelector,omitempty"`
+	// Gets or sets the result template.
+	ResultTemplate *string `json:"resultTemplate,omitempty"`
+	// Gets or sets the target of the data source.
+	Target *string `json:"target,omitempty"`
 }
 
 // Represents details of the service endpoint data source.

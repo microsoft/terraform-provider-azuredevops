@@ -11,6 +11,7 @@ package taskagent
 import (
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/forminput"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
 )
@@ -223,6 +224,32 @@ type DataSource struct {
 }
 
 type DataSourceBinding struct {
+	// Pagination format supported by this data source(ContinuationToken/SkipTop).
+	CallbackContextTemplate *string `json:"callbackContextTemplate,omitempty"`
+	// Subsequent calls needed?
+	CallbackRequiredTemplate *string `json:"callbackRequiredTemplate,omitempty"`
+	// Gets or sets the name of the data source.
+	DataSourceName *string `json:"dataSourceName,omitempty"`
+	// Gets or sets the endpoint Id.
+	EndpointId *string `json:"endpointId,omitempty"`
+	// Gets or sets the url of the service endpoint.
+	EndpointUrl *string `json:"endpointUrl,omitempty"`
+	// Gets or sets the authorization headers.
+	Headers *[]distributedtaskcommon.AuthorizationHeader `json:"headers,omitempty"`
+	// Defines the initial value of the query params
+	InitialContextTemplate *string `json:"initialContextTemplate,omitempty"`
+	// Gets or sets the parameters for the data source.
+	Parameters *map[string]string `json:"parameters,omitempty"`
+	// Gets or sets http request body
+	RequestContent *string `json:"requestContent,omitempty"`
+	// Gets or sets http request verb
+	RequestVerb *string `json:"requestVerb,omitempty"`
+	// Gets or sets the result selector.
+	ResultSelector *string `json:"resultSelector,omitempty"`
+	// Gets or sets the result template.
+	ResultTemplate *string `json:"resultTemplate,omitempty"`
+	// Gets or sets the target of the data source.
+	Target *string `json:"target,omitempty"`
 }
 
 type DataSourceDetails struct {
@@ -234,13 +261,24 @@ type DataSourceDetails struct {
 	ResultSelector *string                `json:"resultSelector,omitempty"`
 }
 
+type Demand struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
 type DemandEquals struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 type DemandExists struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 type DemandMinimumVersion struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 type DependencyBinding struct {
@@ -2171,6 +2209,18 @@ type TaskHubLicenseDetails struct {
 }
 
 type TaskInputDefinition struct {
+	Aliases      *[]string                                  `json:"aliases,omitempty"`
+	DefaultValue *string                                    `json:"defaultValue,omitempty"`
+	GroupName    *string                                    `json:"groupName,omitempty"`
+	HelpMarkDown *string                                    `json:"helpMarkDown,omitempty"`
+	Label        *string                                    `json:"label,omitempty"`
+	Name         *string                                    `json:"name,omitempty"`
+	Options      *map[string]string                         `json:"options,omitempty"`
+	Properties   *map[string]string                         `json:"properties,omitempty"`
+	Required     *bool                                      `json:"required,omitempty"`
+	Type         *string                                    `json:"type,omitempty"`
+	Validation   *distributedtaskcommon.TaskInputValidation `json:"validation,omitempty"`
+	VisibleRule  *string                                    `json:"visibleRule,omitempty"`
 }
 
 type TaskInstance struct {
@@ -2374,6 +2424,11 @@ var TaskResultValues = taskResultValuesType{
 }
 
 type TaskSourceDefinition struct {
+	AuthKey     *string `json:"authKey,omitempty"`
+	Endpoint    *string `json:"endpoint,omitempty"`
+	KeySelector *string `json:"keySelector,omitempty"`
+	Selector    *string `json:"selector,omitempty"`
+	Target      *string `json:"target,omitempty"`
 }
 
 type TaskStartedEvent struct {

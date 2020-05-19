@@ -44,8 +44,11 @@ var SessionId = uuid.New().String()
 var apiResourceLocationCache = make(map[string]*map[uuid.UUID]ApiResourceLocation)
 var apiResourceLocationCacheLock = sync.RWMutex{}
 
+var version = "5.1.0-b1" // todo: remove hardcoded version
+var versionSuffix = ""
+
 // Base user agent string.  The UserAgent set on the connection will be appended to this.
-var baseUserAgent = "go/" + runtime.Version() + " (" + runtime.GOOS + " " + runtime.GOARCH + ") azure-devops-go-api/0.0.0" // todo: get real version
+var baseUserAgent = "go/" + runtime.Version() + " (" + runtime.GOOS + " " + runtime.GOARCH + ") azure-devops-go-api/" + version + versionSuffix
 
 func NewClient(connection *Connection, baseUrl string) *Client {
 	client := &http.Client{}

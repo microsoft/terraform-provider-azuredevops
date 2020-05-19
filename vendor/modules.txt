@@ -193,7 +193,7 @@ github.com/jmespath/go-jmespath
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.5
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops v0.0.0-20200327121006-543de4815ec2
+# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b2
 github.com/microsoft/azure-devops-go-api/azuredevops
 github.com/microsoft/azure-devops-go-api/azuredevops/accounts
 github.com/microsoft/azure-devops-go-api/azuredevops/build
