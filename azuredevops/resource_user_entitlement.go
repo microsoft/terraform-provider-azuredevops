@@ -204,7 +204,9 @@ func flattenUserEntitlement(d *schema.ResourceData, userEntitlement *memberentit
 	d.SetId(userEntitlement.Id.String())
 	d.Set("descriptor", *userEntitlement.User.Descriptor)
 	d.Set("origin", *userEntitlement.User.Origin)
-	d.Set("origin_id", *userEntitlement.User.OriginId)
+	if userEntitlement.User.OriginId != nil {
+		d.Set("origin_id", *userEntitlement.User.OriginId)
+	}
 	d.Set("principal_name", *userEntitlement.User.PrincipalName)
 	d.Set("account_license_type", string(*userEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *userEntitlement.AccessLevel.LicensingSource)
@@ -219,7 +221,7 @@ func addUserEntitlement(clients *config.AggregatedClient, userEntitlement *membe
 		return nil, err
 	}
 
-	if *userEntitlementsPostResponse.IsSuccess == false {
+	if !*userEntitlementsPostResponse.IsSuccess {
 		opResults := []memberentitlementmanagement.UserEntitlementOperationResult{}
 		if userEntitlementsPostResponse.OperationResult != nil {
 			opResults = append(opResults, *userEntitlementsPostResponse.OperationResult)
@@ -383,5 +385,5 @@ func getAPIErrorMessage(operationResults *[]memberentitlementmanagement.UserEnti
 				return agg + "\n" + elem
 			}).(string)
 	}
-	return fmt.Sprintf("%s", errMsg)
+	return errMsg
 }
