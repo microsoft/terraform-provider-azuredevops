@@ -7,6 +7,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -23,8 +24,8 @@ import (
 //	(2) A data source is added to the configuration, and that data source can find the created project
 func TestAccAzureDevOpsProject_DataSource(t *testing.T) {
 	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfConfigStep1 := testhelper.TestAccProjectResource(projectName)
-	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testhelper.TestAccProjectDataSource(projectName))
+	projectResource := testhelper.TestAccProjectResource(projectName)
+	projectData := testhelper.TestAccProjectDataSource(projectName)
 
 	tfNode := "data.azuredevops_project.project"
 	resource.Test(t, resource.TestCase{
@@ -32,9 +33,9 @@ func TestAccAzureDevOpsProject_DataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tfConfigStep1,
+				Config: projectResource,
 			}, {
-				Config: tfConfigStep2,
+				Config: projectData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
 					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
@@ -42,6 +43,28 @@ func TestAccAzureDevOpsProject_DataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccAzureDevOpsProject_DataSource_IncorrectParameters(t *testing.T) {
+	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	dataProject := fmt.Sprintf(`
+	data "azuredevops_project" "project" {
+		project_name = "%s"
+		description = "A project description"
+	}`, projectName)
+
+	errorRegex, _ := regexp.Compile("config is invalid: \"description\": this field cannot be set")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      dataProject,
+				ExpectError: errorRegex,
 			},
 		},
 	})
