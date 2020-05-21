@@ -50,6 +50,14 @@ resource "azuredevops_build_definition" "build_definition" {
 }
 ```
 
+## Installation
+
+Currently, the provider is not available via the terraform provider registry yet. While this is in progress (https://github.com/microsoft/terraform-provider-azuredevops/issues/241), the provider needs to be installed manually:
+
+1. Download the latest version https://github.com/microsoft/terraform-provider-azuredevops/releases
+2. Unpack the contents into the plugin directory `terraform.d/plugins/<your platform>/`
+3. Run `terraform init`
+
 ## Developer Requirements
 
 * [Terraform](https://www.terraform.io/downloads.html) version 0.12.x +
