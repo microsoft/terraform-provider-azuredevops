@@ -354,6 +354,18 @@ func TestAzureDevOpsBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 	require.Equal(t, "UpdateDefinition() Failed", err.Error())
 }
 
+func TestExpandVariables_CatchesDuplicateVariables(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
+	resourceData.Set(bdVariable, []map[string]interface{}{
+		{bdVariableName: "var-name", bdVariableValue: "var-value-1", bdVariableIsSecret: false, bdVariableAllowOverride: false},
+		{bdVariableName: "var-name", bdVariableValue: "var-value-2", bdVariableIsSecret: false, bdVariableAllowOverride: false},
+	})
+
+	_, err := expandVariables(resourceData)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "Unexpectedly found duplicate variable with name")
+}
+
 /**
  * Begin acceptance tests
  */
@@ -473,6 +485,59 @@ func TestAccAzureDevOpsBuildDefinitionBitbucket_Create(t *testing.T) {
 			},
 		},
 	})
+}
+
+// Verifies a build for with variables can create and update, including secret variables
+func TestAccAzureDevOpsBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
+	name := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	tfNode := "azuredevops_build_definition.b"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccBuildDefinitionCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testhelper.TestAccBuildDefinitionWithVariables("foo1", "bar1", name),
+				Check:  testAccCheckForVariableValues(tfNode, "foo1", "bar1"),
+			}, {
+				Config: testhelper.TestAccBuildDefinitionWithVariables("foo2", "bar2", name),
+				Check:  testAccCheckForVariableValues(tfNode, "foo2", "bar2"),
+			},
+		},
+	})
+}
+
+// Checks that the expected variable values exist in the state
+func testAccCheckForVariableValues(tfNode string, expectedVals ...string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rootModule := s.RootModule()
+		resource, ok := rootModule.Resources[tfNode]
+		if !ok {
+			return fmt.Errorf("Did not find resource in TF state")
+		}
+
+		is := resource.Primary
+		if is == nil {
+			return fmt.Errorf("No primary instance: %s in %s", tfNode, rootModule.Path)
+		}
+
+		for _, expectedVal := range expectedVals {
+			found := false
+			for _, value := range is.Attributes {
+				if value == expectedVal {
+					found = true
+				}
+			}
+
+			if !found {
+				return fmt.Errorf("Did not find variable with value %s", expectedVal)
+			}
+
+		}
+
+		return nil
+	}
 }
 
 // Given the name of an AzDO build definition, this will return a function that will check whether

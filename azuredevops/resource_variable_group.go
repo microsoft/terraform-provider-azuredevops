@@ -14,60 +14,63 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
+const (
+	vgProjectID   = "project_id"
+	vgName        = "name"
+	vgDescription = "description"
+	vgAllowAccess = "allow_access"
+	vgVariable    = "variable"
+	vgValue       = "value"
+	vgIsSecret    = "is_secret"
+)
+
+const (
+	invalidVarGroupIDErrorMessageFormat = "Error parsing the variable group ID from the Terraform resource data: %v"
+)
+
 func resourceVariableGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVariableGroupCreate,
-		Read:   resourceVariableGroupRead,
-		Update: resourceVariableGroupUpdate,
-		Delete: resourceVariableGroupDelete,
-		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, variableGroupID, err := ParseImportedProjectIDAndID(meta.(*config.AggregatedClient), d.Id())
-				if err != nil {
-					return nil, fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)
-				}
-				d.Set("project_id", projectID)
-				d.SetId(fmt.Sprintf("%d", variableGroupID))
-
-				return []*schema.ResourceData{d}, nil
-			},
-		},
+		Create:   resourceVariableGroupCreate,
+		Read:     resourceVariableGroupRead,
+		Update:   resourceVariableGroupUpdate,
+		Delete:   resourceVariableGroupDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			vgProjectID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.UUID,
 			},
-			"name": {
+			vgName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.NoEmptyStrings,
 			},
-			"description": {
+			vgDescription: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
 			},
-			"allow_access": {
+			vgAllowAccess: {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
 			},
-			"variable": {
+			vgVariable: {
 				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						vgName: {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"value": {
+						vgValue: {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
 						},
-						"is_secret": {
+						vgIsSecret: {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  false,
@@ -109,7 +112,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)
+		return fmt.Errorf(invalidVarGroupIDErrorMessageFormat, err)
 	}
 
 	variableGroup, err := clients.TaskAgentClient.GetVariableGroup(
@@ -156,7 +159,7 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 
 	_, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)
+		return fmt.Errorf(invalidVarGroupIDErrorMessageFormat, err)
 	}
 
 	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
@@ -182,7 +185,7 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf("Error parsing the variable group ID from the Terraform resource data: %v", err)
+		return fmt.Errorf(invalidVarGroupIDErrorMessageFormat, err)
 	}
 	//delete the definition resource (allow access)
 	varGroupID := strconv.Itoa(variableGroupID)
@@ -232,22 +235,22 @@ func deleteVariableGroup(clients *config.AggregatedClient, project *string, vari
 
 // Convert internal Terraform data structure to an AzDO data structure
 func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableGroupParameters, *string) {
-	projectID := converter.String(d.Get("project_id").(string))
-	variables := d.Get("variable").(*schema.Set).List()
+	projectID := converter.String(d.Get(vgProjectID).(string))
+	variables := d.Get(vgVariable).(*schema.Set).List()
 
 	variableMap := make(map[string]taskagent.VariableValue)
 
 	for _, variable := range variables {
 		asMap := variable.(map[string]interface{})
-		variableMap[asMap["name"].(string)] = taskagent.VariableValue{
-			Value:    converter.String(asMap["value"].(string)),
-			IsSecret: converter.Bool(asMap["is_secret"].(bool)),
+		variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+			Value:    converter.String(asMap[vgValue].(string)),
+			IsSecret: converter.Bool(asMap[vgIsSecret].(bool)),
 		}
 	}
 
 	variableGroup := &taskagent.VariableGroupParameters{
-		Name:        converter.String(d.Get("name").(string)),
-		Description: converter.String(d.Get("description").(string)),
+		Name:        converter.String(d.Get(vgName).(string)),
+		Description: converter.String(d.Get(vgDescription).(string)),
 		Variables:   &variableMap,
 	}
 
@@ -257,10 +260,10 @@ func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableG
 // Convert AzDO data structure to internal Terraform data structure
 func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.VariableGroup, projectID *string) {
 	d.SetId(fmt.Sprintf("%d", *variableGroup.Id))
-	d.Set("name", *variableGroup.Name)
-	d.Set("description", *variableGroup.Description)
-	d.Set("variable", flattenVariables(d, variableGroup))
-	d.Set("project_id", projectID)
+	d.Set(vgName, *variableGroup.Name)
+	d.Set(vgDescription, *variableGroup.Description)
+	d.Set(vgVariable, flattenVariables(d, variableGroup))
+	d.Set(vgProjectID, projectID)
 }
 
 // Convert AzDO Variables data structure to Terraform TypeSet
@@ -275,12 +278,12 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 	for varName, varVal := range *variableGroup.Variables {
 		var variable map[string]interface{}
 		if converter.ToBool(varVal.IsSecret, false) {
-			variable = findVariableFromState(d, varName)
+			variable = tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName)
 		} else {
 			variable = map[string]interface{}{
-				"name":      varName,
-				"value":     converter.ToString(varVal.Value, ""),
-				"is_secret": false,
+				vgName:     varName,
+				vgValue:    converter.ToString(varVal.Value, ""),
+				vgIsSecret: false,
 			}
 		}
 		variables[index] = variable
@@ -288,19 +291,6 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 	}
 
 	return variables
-}
-
-// Pulls a variable with a given name from the state. If no such variable is found, nil
-// will be returned.
-func findVariableFromState(d *schema.ResourceData, name string) map[string]interface{} {
-	for _, variable := range d.Get("variable").(*schema.Set).List() {
-		asMap := variable.(map[string]interface{})
-		// Note: casing matters here so we will use `==` over `strings.EqualFold`
-		if asMap["name"] == name {
-			return asMap
-		}
-	}
-	return nil
 }
 
 // Convert internal Terraform data structure to an AzDO data structure for Allow Access
@@ -312,7 +302,7 @@ func expandDefinitionResourceAuth(d *schema.ResourceData, createdVariableGroup *
 
 	defResourceRef := build.DefinitionResourceReference{
 		Type:       &resourceRefType,
-		Authorized: converter.Bool(d.Get("allow_access").(bool)),
+		Authorized: converter.Bool(d.Get(vgAllowAccess).(bool)),
 		Name:       createdVariableGroup.Name,
 		Id:         &variableGroupID,
 	}
@@ -367,7 +357,7 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	} else {
 		allowAccess = false
 	}
-	d.Set("allow_access", allowAccess)
+	d.Set(vgAllowAccess, allowAccess)
 }
 
 // ParseImportedProjectIDAndVariableGroupID : Parse the Id (projectId/variableGroupId) or (projectName/variableGroupId)

@@ -47,14 +47,6 @@ resource "azuredevops_build_definition" "build" {
     use_yaml = true
   }
 
-  pull_request_trigger {
-    use_yaml = true
-    forks {
-      enabled       = false
-      share_secrets = false
-    }
-  }
-
   repository {
     repo_type   = "TfsGit"
     repo_id     = azuredevops_git_repository.repository.id
@@ -65,6 +57,17 @@ resource "azuredevops_build_definition" "build" {
   variable_groups = [
     azuredevops_variable_group.vars.id
   ]
+
+  variable {
+    name  = "PipelineVariable"
+    value = "Go Microsoft!"
+  }
+
+  variable {
+    name      = "PipelineSecret"
+    value     = "ZGV2cw"
+    is_secret = true
+  }
 }
 ```
 
@@ -76,9 +79,17 @@ The following arguments are supported:
 * `name` - (Optional) The name of the build definition.
 * `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Hosted Ubuntu 1604`.
 * `repository` - (Required) A `repository` block as documented below.
-* `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 * `ci_trigger` - (Optional) Continuous Integration Integration trigger.
 * `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
+* `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
+* `variable` - (Optional) A list of `variable` blocks, as documented below.
+
+`variable` block supports the following:
+
+* `name` - (Required) The name of the variable.
+* `value` - (Required) The value of the variable.
+* `is_secret` - (Optional) True if the variable is a secret. Defaults to `false`.
+* `allow_override` - (Optional) True if the variable can be overridden. Defaults to `true`.
 
 `repository` block supports the following:
 

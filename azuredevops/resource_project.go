@@ -17,7 +17,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
@@ -332,36 +331,4 @@ func lookupProcessTemplateName(clients *config.AggregatedClient, templateID stri
 	}
 
 	return *process.Name, nil
-}
-
-// ParseImportedProjectIDAndID : Parse the Id (projectId/int) or (projectName/int)
-func ParseImportedProjectIDAndID(clients *config.AggregatedClient, id string) (string, int, error) {
-	project, resourceID, err := tfhelper.ParseImportedID(id)
-	if err != nil {
-		return "", 0, err
-	}
-
-	// Get the project ID
-	currentProject, err := ProjectRead(clients, project, project)
-	if err != nil {
-		return "", 0, err
-	}
-
-	return currentProject.Id.String(), resourceID, nil
-}
-
-// ParseImportedProjectIDAndUUID : Parse the Id (projectId/uuid) or (projectName/uuid)
-func ParseImportedProjectIDAndUUID(clients *config.AggregatedClient, id string) (string, string, error) {
-	project, resourceID, err := tfhelper.ParseImportedUUID(id)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Get the project ID
-	currentProject, err := ProjectRead(clients, project, project)
-	if err != nil {
-		return "", "", err
-	}
-
-	return currentProject.Id.String(), resourceID, nil
 }

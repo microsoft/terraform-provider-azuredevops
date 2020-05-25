@@ -363,6 +363,45 @@ resource "azuredevops_build_definition" "build" {
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
 }
 
+// TestAccBuildDefinitionWithVariables A build definition with variables
+func TestAccBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+	project_name       = "%s"
+}
+
+resource "azuredevops_git_repository" "repository" {
+	project_id = azuredevops_project.project.id
+	name       = "%s-repo"
+	initialization {
+		init_type = "Clean"
+	}
+}
+
+resource "azuredevops_build_definition" "b" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+	
+	repository {
+		repo_type   = "TfsGit"
+		repo_id     = azuredevops_git_repository.repository.id
+		branch_name = azuredevops_git_repository.repository.default_branch
+		yml_path    = "azure-pipelines.yml"
+	}
+
+	variable {
+		name  = "FOO_VAR"
+		value = "%s"
+	}
+
+	variable {
+		name      = "BAR_VAR"
+		value     = "%s"
+		is_secret = true
+	}
+}`, name, name, name, varValue, secretVarValue)
+}
+
 // TestAccGroupMembershipResource full terraform stanza to standup a group membership
 func TestAccGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
 	membershipDependenciesStanza := TestAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)

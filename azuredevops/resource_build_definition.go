@@ -32,6 +32,14 @@ var RepoTypeValues = repoTypeValuesType{
 	Bitbucket: "Bitbucket",
 }
 
+const (
+	bdVariable              = "variable"
+	bdVariableName          = "name"
+	bdVariableValue         = "value"
+	bdVariableIsSecret      = "is_secret"
+	bdVariableAllowOverride = "allow_override"
+)
+
 func resourceBuildDefinition() *schema.Resource {
 	filterSchema := map[string]*schema.Schema{
 		"include": {
@@ -70,22 +78,11 @@ func resourceBuildDefinition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceBuildDefinitionCreate,
-		Read:   resourceBuildDefinitionRead,
-		Update: resourceBuildDefinitionUpdate,
-		Delete: resourceBuildDefinitionDelete,
-		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, buildDefinitionID, err := ParseImportedProjectIDAndID(meta.(*config.AggregatedClient), d.Id())
-				if err != nil {
-					return nil, fmt.Errorf("error parsing the build definition ID from the Terraform resource data: %v", err)
-				}
-				d.Set("project_id", projectID)
-				d.SetId(fmt.Sprintf("%d", buildDefinitionID))
-
-				return []*schema.ResourceData{d}, nil
-			},
-		},
+		Create:   resourceBuildDefinitionCreate,
+		Read:     resourceBuildDefinitionRead,
+		Update:   resourceBuildDefinitionUpdate,
+		Delete:   resourceBuildDefinitionDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -114,6 +111,34 @@ func resourceBuildDefinition() *schema.Resource {
 				Elem: &schema.Schema{
 					Type:         schema.TypeInt,
 					ValidateFunc: validation.IntAtLeast(1),
+				},
+			},
+			bdVariable: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						bdVariableName: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.NoEmptyStrings,
+						},
+						bdVariableValue: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.NoEmptyStrings,
+						},
+						bdVariableIsSecret: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						bdVariableAllowOverride: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+					},
 				},
 			},
 			"agent_pool_name": {
@@ -299,6 +324,7 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
 
 	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
+	d.Set(bdVariable, flattenBuildVariables(d, buildDefinition))
 
 	if buildDefinition.Triggers != nil {
 		yamlCiTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.ContinuousIntegration, 2)
@@ -314,6 +340,35 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	}
 
 	d.Set("revision", revision)
+}
+
+// Return an interface suitable for serialization into the resource state. This function ensures that
+// any secrets, for which values will not be returned by the service, are not overidden with null or
+// empty values
+func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildDefinition) interface{} {
+	if buildDefinition.Variables == nil {
+		return nil
+	}
+	variables := make([]map[string]interface{}, len(*buildDefinition.Variables))
+
+	index := 0
+	for varName, varVal := range *buildDefinition.Variables {
+		var variable map[string]interface{}
+		if converter.ToBool(varVal.IsSecret, false) {
+			variable = tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName)
+		} else {
+			variable = map[string]interface{}{
+				bdVariableName:          varName,
+				bdVariableValue:         converter.ToString(varVal.Value, ""),
+				bdVariableIsSecret:      false,
+				bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
+			}
+		}
+		variables[index] = variable
+		index = index + 1
+	}
+
+	return variables
 }
 
 func createBuildDefinition(clients *config.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
@@ -711,16 +766,50 @@ func expandBuildDefinitionTriggerList(d []interface{}, t build.DefinitionTrigger
 	return vs
 }
 
-func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, string, error) {
-	projectID := d.Get("project_id").(string)
-	repositories := d.Get("repository").([]interface{})
-
+func expandVariableGroups(d *schema.ResourceData) *[]build.VariableGroup {
 	variableGroupsInterface := d.Get("variable_groups").(*schema.Set).List()
 	variableGroups := make([]build.VariableGroup, len(variableGroupsInterface))
 
 	for i, variableGroup := range variableGroupsInterface {
 		variableGroups[i] = *buildVariableGroup(variableGroup.(int))
 	}
+
+	return &variableGroups
+}
+
+func expandVariables(d *schema.ResourceData) (*map[string]build.BuildDefinitionVariable, error) {
+	variables := d.Get(bdVariable)
+	if variables == nil {
+		return nil, nil
+	}
+
+	variablesList := variables.(*schema.Set).List()
+	if len(variablesList) == 0 {
+		return nil, nil
+	}
+
+	expandedVars := map[string]build.BuildDefinitionVariable{}
+	for _, variable := range variablesList {
+		varAsMap := variable.(map[string]interface{})
+		varName := varAsMap[bdVariableName].(string)
+
+		if _, ok := expandedVars[varName]; ok {
+			return nil, fmt.Errorf("Unexpectedly found duplicate variable with name %s", varName)
+		}
+
+		expandedVars[varName] = build.BuildDefinitionVariable{
+			AllowOverride: converter.Bool(varAsMap[bdVariableAllowOverride].(bool)),
+			IsSecret:      converter.Bool(varAsMap[bdVariableIsSecret].(bool)),
+			Value:         converter.String(varAsMap[bdVariableValue].(string)),
+		}
+	}
+
+	return &expandedVars, nil
+}
+
+func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, string, error) {
+	projectID := d.Get("project_id").(string)
+	repositories := d.Get("repository").([]interface{})
 
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(repositories) != 1 {
@@ -764,6 +853,11 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	}
 
 	agentPoolName := d.Get("agent_pool_name").(string)
+	variables, err := expandVariables(d)
+	if err != nil {
+		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
+	}
+
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
@@ -791,7 +885,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
 		Type:           &build.DefinitionTypeValues.Build,
 		Quality:        &build.DefinitionQualityValues.Definition,
-		VariableGroups: &variableGroups,
+		VariableGroups: expandVariableGroups(d),
+		Variables:      variables,
 		Triggers:       &buildTriggers,
 	}
 
