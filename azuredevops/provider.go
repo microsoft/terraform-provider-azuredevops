@@ -10,6 +10,8 @@ func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_resource_authorization":         resourceResourceAuthorization(),
+			"azuredevops_branch_policy_build_validation": resourceBranchPolicyBuildValidation(),
+			"azuredevops_branch_policy_min_reviewers":    resourceBranchPolicyMinReviewers(),
 			"azuredevops_build_definition":               resourceBuildDefinition(),
 			"azuredevops_project":                        resourceProject(),
 			"azuredevops_variable_group":                 resourceVariableGroup(),

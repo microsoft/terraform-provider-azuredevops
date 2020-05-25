@@ -13,6 +13,9 @@ func ResponseWasNotFound(err error) bool {
 
 // ResponseWasStatusCode was used for check if error status code was specific http status code
 func ResponseWasStatusCode(err error, statusCode int) bool {
+	if err == nil {
+		return false
+	}
 	if wrapperErr, ok := err.(azuredevops.WrappedError); ok {
 		if wrapperErr.StatusCode != nil && *wrapperErr.StatusCode == statusCode {
 			return true
