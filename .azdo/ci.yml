@@ -30,30 +30,31 @@ jobs:
     displayName: 'Install correct version of Go'
     inputs:
       version: $(goVersion)
+      GOPATH: '$(Pipeline.Workspace)/gopath'
+      GOBIN:  '$(GOPATH)/bin'
 
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
-      ./scripts/fmt-check-go.sh
+      make tools
+    displayName: 'Install Dependencies'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
+      make fmtcheck
     displayName: 'Run Format Check'
 
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
-      go get -u golang.org/x/lint/golint
-      ./scripts/lint-check-go.sh
+      make lint
     displayName: 'Run Lint Check'
 
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
-      ./scripts/build.sh
-    displayName: 'Run Build Script'
-
-  - bash: |
-      #!/usr/bin/env bash
-      cd "$BUILD_SOURCESDIRECTORY"
-      ./scripts/acctest.sh
+      make testacc
     displayName: 'Run Acceptance Tests'
     env:
       AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
