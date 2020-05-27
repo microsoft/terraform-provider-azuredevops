@@ -94,7 +94,7 @@ The following arguments are supported:
 `repository` block supports the following:
 
 * `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
-* `repo_id` - (Required) The id of the repository.
+* `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
 * `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket`. Defaults to `Github`.
 * `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub`.
 * `yml_path` - (Required) The path of the Yaml file describing the build definition.
