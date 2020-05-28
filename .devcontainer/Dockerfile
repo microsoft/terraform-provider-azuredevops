@@ -1,9 +1,11 @@
-FROM golang:1.13-stretch
+ARG GO_VERSION=1.13
+
+FROM golang:${GO_VERSION}-stretch
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG TERRAFORM_VERSION=0.12.24
+ARG TERRAFORM_VERSION=0.12.25
 ARG TFLINT_VERSION=0.15.3
 ARG TERRAFORM_PROVIDER_AZUREDEVOPS_NAME=terraform-provider-azuredevops
 
@@ -25,6 +27,8 @@ RUN apt-get update \
     && mv tflint /usr/local/bin \
     && cd ~ \ 
     && rm -rf /tmp/docker-downloads \
+    # Install goreleaser
+    && (cd /usr/local && curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- "v0.132.1") \
     #
     # Clean up
     && apt-get autoremove -y \
@@ -37,9 +41,9 @@ ENV GO111MODULE=on
 # Install Go tools
 RUN \
     # --> Delve for debugging
-    go get github.com/go-delve/delve/cmd/dlv@v1.4.0 \
+    go get github.com/go-delve/delve/cmd/dlv@v1.4.1 \
     # --> Go language server
-    && go get golang.org/x/tools/gopls@v0.3.4 \
+    && go get golang.org/x/tools/gopls@v0.4.1 \
     # --> GolangCI-lint
     && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sed 's/tar -/tar --no-same-owner -/g' | sh -s -- -b $(go env GOPATH)/bin \
     # --> Go-outline for extracting a JSON representation of the declarations in a Go source file
@@ -47,11 +51,6 @@ RUN \
     #
     # Clean up
     && rm -rf /go/src/ && rm -rf /go/pkg
-
-# Install AzDO terraform provider
-ADD . ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
-RUN (cd ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME} && make build) \
-    && rm -rf ${TERRAFORM_PROVIDER_AZUREDEVOPS_NAME}
 
 # Customize bash
 RUN \
@@ -63,6 +62,3 @@ RUN \
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
-
-# Install goreleaser
-RUN (cd /usr/local && curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- "v0.132.1") 
