@@ -24,7 +24,7 @@
     - [Tips for PR authors](#tips-for-pr-authors)
     - [Tips for PR reviewers](#tips-for-pr-reviewers)
     - [Contributing back](#contributing-back)
-  - [8. Creating a release](#8-creating-a-release)
+  - [9. Creating a release](#9-creating-a-release)
 - [Note about CLA](#note-about-cla)
 
 This document is intended to be an introduction to contributing to the `terraform-provider-azuredevops` project. Links to background information about the project and general guidance on Terraform providers are included below:
@@ -473,7 +473,7 @@ After the feature or bug is completed, you'll want to post a PR to get it review
 
 If you find an api is missing from the postman collection, please submit a PR.  We intend make the collection as complete as possible over time.
 
-## 8. Creating a release
+## 9. Creating a release
 
 You can create a github release of this project or a fork of this project using goreleaser. The gorelease will create binaries for Mac, Linux and Windows based of the fork you're making the release from. 
 To be able to make the release you need to have the required permissions to create a release for this project or a fork.
