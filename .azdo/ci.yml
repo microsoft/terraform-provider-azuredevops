@@ -42,6 +42,12 @@ jobs:
   - bash: |
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
+      make check-vendor-vs-mod
+    displayName: 'Verify Vendored Dependencies'
+
+  - bash: |
+      #!/usr/bin/env bash
+      cd "$BUILD_SOURCESDIRECTORY"
       make fmtcheck
     displayName: 'Run Format Check'
 
@@ -55,7 +61,7 @@ jobs:
       #!/usr/bin/env bash
       cd "$BUILD_SOURCESDIRECTORY"
       make testacc
-    displayName: 'Run Acceptance Tests'
+    displayName: 'Run All Tests'
     env:
       AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
       AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
@@ -72,4 +78,4 @@ jobs:
       fi
     env:
       GO_VERSION: $(goVersion)
-    displayName: 'Run Build Script in Docker'
+    displayName: 'Run Devcontainer Build'

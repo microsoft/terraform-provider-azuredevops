@@ -6,8 +6,8 @@
   - [0. (Optional) Docker](#0-optional-docker)
   - [1. Install dependencies](#1-install-dependencies)
   - [2. Clone repository](#2-clone-repository)
-    - [Note for Go 1.13](#note-for-go-113)
-    - [Setup your workspace](#setup-your-workspace)
+        - [Note for Go 1.13](#note-for-go-113)
+      - [Setup your workspace](#setup-your-workspace)
   - [3. Build & Install Provider](#3-build--install-provider)
   - [4. Run provider locally](#4-run-provider-locally)
 - [Development SDLC](#development-sdlc)
@@ -15,11 +15,16 @@
   - [2. Repository Structure](#2-repository-structure)
   - [3. Code for Terraform](#3-code-for-terraform)
     - [Don't use Sleep](#dont-use-sleep)
+    - [Visual Studio Code snippets](#visual-studio-code-snippets)
   - [4. Test changes](#4-test-changes)
   - [5. Debug changes](#5-debug-changes)
   - [6. Document changes](#6-document-changes)
   - [7. Explore with postman](#7-explore-with-postman)
+  - [8. Post a PR](#8-post-a-pr)
+    - [Tips for PR authors](#tips-for-pr-authors)
+    - [Tips for PR reviewers](#tips-for-pr-reviewers)
     - [Contributing back](#contributing-back)
+  - [8. Creating a release](#8-creating-a-release)
 - [Note about CLA](#note-about-cla)
 
 This document is intended to be an introduction to contributing to the `terraform-provider-azuredevops` project. Links to background information about the project and general guidance on Terraform providers are included below:
@@ -448,6 +453,21 @@ Most changes should involve updates to the client-facing reference documentation
 ## 7. Explore with postman
 
 Azure DevOps has a rich set of [REST API's](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1) available for integrating with Terraform.  A convenient way to explore the APIs is through [postman](https://www.getpostman.com/).  Once you have postman installed, you can clone/fork this [repo](https://github.com/rguthriemsft/azuredevops-postman-collections) and follow the instructions in the README to setup postman to be able to explore a large set of the rest API's.  A second resource that is very helpful in understanding how to call/use the apis is the Azure DevOps Cli extension found [here](https://github.com/Azure/azure-devops-cli-extension).
+
+## 8. Post a PR
+
+After the feature or bug is completed, you'll want to post a PR to get it reviewed by somebody in the core development team. Here are some useful tips to keep in mind:
+
+### Tips for PR authors
+
+- The steps run by the CI are located [here](./../.azdo/ci.yml). You should manually execute these commands to make sure that they pass before you post your PR.
+- The PR template for the repository is located [here](../.github/PULL_REQUEST_TEMPLATE.md). Please be ready to fill this template out when posting the PR.
+- If your PR is a draft, please mark it as a draft and put `WIP` (stands for "Work In Progress") in the title. This helps reviewers prioritize which reviews to look at.
+- If your PR contains changes to the `go.mod` or `go.sum` files, or the `vendor/` directory, please elaborate on why the change is being made.
+
+### Tips for PR reviewers
+
+- If a PR contains changes to the `go.mod` or `go.sum` files, or the `vendor/` directory, carefully understand them and make sure that these changes are (1) minimal and (2) necessary. This helps the stability of the product over time. Dependency upgrades to get off of old, deprecated or unsupported libraries should be done in isolated PRs, if possible.
 
 ### Contributing back
 
