@@ -3,6 +3,10 @@ WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=azuredevops
 TESTTIMEOUT=180m
 
+ifeq ($(GOPATH),)
+	GOPATH:=$(shell go env GOPATH)
+endif
+
 .EXPORT_ALL_VARIABLES:
   TF_SCHEMA_PANIC_ON_ERROR=1
   GO111MODULE=on
@@ -13,11 +17,11 @@ default: build
 tools:
 	@echo "==> installing required tooling..."
 	@sh "$(CURDIR)/scripts/gogetcookie.sh"
-	@echo $$GOPATH
+	@echo "GOPATH: $(GOPATH)"
 	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
 	GO111MODULE=off go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint
 	GO111MODULE=off go get -u github.com/bflad/tfproviderdocs
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$GOPATH/bin v1.27.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.27.0
 
 build: fmtcheck check-vendor-vs-mod
 	go install
@@ -32,7 +36,7 @@ fmtcheck:
 
 lint:
 	@echo "==> Checking source code against linters..."
-	$$GOPATH/bin/golangci-lint run ./...
+	$(GOPATH)/bin/golangci-lint run ./...
 
 test: fmtcheck
 	go test -tags "all" -i $(TEST) || exit 1
@@ -53,9 +57,9 @@ test-compile:
 check-vendor-vs-mod: ## Check that go modules and vendored code are on par
 	@echo "==> Checking that go modules and vendored dependencies match..."
 	go mod vendor
-	@if [[ `git status --porcelain vendor` ]]; then \
-		echo "ERROR: vendor dir is not on par with go modules definition." && \
-		exit 1; \
+	@if [ "$$(git status --porcelain vendor)" != "" ]; then \
+		echo "ERROR: vendor dir is not on par with go modules definition."; \
+	 	exit 1; \
 	fi
 
 vet:
