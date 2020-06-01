@@ -27,6 +27,8 @@ func Provider() *schema.Provider {
 			"azuredevops_group":                          resourceGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"azuredevops_agent_pool":       dataAzureAgentPool(),
+			"azuredevops_agent_pools":      dataAzureAgentPools(),
 			"azuredevops_client_config":    dataClientConfig(),
 			"azuredevops_group":            dataGroup(),
 			"azuredevops_project":          dataProject(),

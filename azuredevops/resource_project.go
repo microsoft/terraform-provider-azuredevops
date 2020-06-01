@@ -145,9 +145,9 @@ func waitForAsyncOperationSuccess(clients *config.AggregatedClient, operationRef
 
 func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*config.AggregatedClient)
-
 	id := d.Id()
 	name := d.Get("project_name").(string)
+
 	project, err := ProjectRead(clients, id, name)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {

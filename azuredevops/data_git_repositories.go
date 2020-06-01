@@ -12,6 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/datahelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
@@ -103,7 +104,7 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Error flattening projects. Error: %v", err)
 	}
 
-	repoNames, err := getAttributeValues(results, "name")
+	repoNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
 		return fmt.Errorf("Failed to get list of repository names: %v", err)
 	}

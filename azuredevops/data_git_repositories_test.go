@@ -25,8 +25,6 @@ func init() {
 	/* add code for test setup here */
 }
 
-var gitRepoListEmpty = []git.GitRepository{}
-
 var azProjectRef = &core.TeamProjectReference{
 	Id:   testhelper.CreateUUID(),
 	Name: converter.String("project-01"),
