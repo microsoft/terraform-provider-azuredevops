@@ -55,6 +55,14 @@ var AvatarSizeValues = avatarSizeValuesType{
 
 // A profile attribute which always has a value for each profile.
 type CoreProfileAttribute struct {
+	// The descriptor of the attribute.
+	Descriptor *AttributeDescriptor `json:"descriptor,omitempty"`
+	// The revision number of the attribute.
+	Revision *int `json:"revision,omitempty"`
+	// The time the attribute was last changed.
+	TimeStamp *azuredevops.Time `json:"timeStamp,omitempty"`
+	// The value of the attribute.
+	Value interface{} `json:"value,omitempty"`
 }
 
 type CreateProfileContext struct {
@@ -94,6 +102,14 @@ type Profile struct {
 
 // A named object associated with a profile.
 type ProfileAttribute struct {
+	// The descriptor of the attribute.
+	Descriptor *AttributeDescriptor `json:"descriptor,omitempty"`
+	// The revision number of the attribute.
+	Revision *int `json:"revision,omitempty"`
+	// The time the attribute was last changed.
+	TimeStamp *azuredevops.Time `json:"timeStamp,omitempty"`
+	// The value of the attribute.
+	Value interface{} `json:"value,omitempty"`
 }
 
 type ProfileAttributeBase struct {

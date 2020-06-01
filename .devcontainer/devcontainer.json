@@ -33,6 +33,7 @@
 			"-v",
 			"-tags=all"
 		],
+		"go.testTimeout": "90s",
 		"go.testEnvVars": {
 			"TF_ACC": "1"
 		},
@@ -58,6 +59,7 @@
 		"ms-vsliveshare.vsliveshare",
 		"streetsidesoftware.code-spell-checker",
 		"eamodio.gitlens",
-		"yzhang.markdown-all-in-one"
+		"yzhang.markdown-all-in-one",
+		"davidanson.vscode-markdownlint"
 	]
 }

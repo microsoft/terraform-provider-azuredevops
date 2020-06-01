@@ -276,6 +276,31 @@ resource "azuredevops_variable_group" "vg" {
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
 
+// TestAccVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
+func TestAccVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
+	projectAndServiceEndpoint := TestAccServiceEndpointAzureRMResource(projectName, "test-service-connection")
+
+	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, TestAccVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
+}
+
+// TestAccVariableGroupResourceKeyVault HCL describing an AzDO variable group with key vault
+func TestAccVariableGroupResourceKeyVault(variableGroupName string, allowAccess bool, keyVaultName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_variable_group" "vg" {
+	project_id  = azuredevops_project.project.id
+	name        = "%s"
+	description = "A sample variable group."
+	allow_access = %t
+	key_vault {
+        name = "%s"
+        service_endpoint_id  = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
+    }
+	variable {
+		name = "key1"
+	}
+}`, variableGroupName, allowAccess, keyVaultName)
+}
+
 // TestAccAgentPoolResource HCL describing an AzDO Agent Pool
 func TestAccAgentPoolResource(poolName string) string {
 	return fmt.Sprintf(`

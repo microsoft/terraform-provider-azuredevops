@@ -2465,33 +2465,33 @@ type TimelineAttempt struct {
 }
 
 type TimelineRecord struct {
-	Attempt          *int                      `json:"attempt,omitempty"`
-	ChangeId         *int                      `json:"changeId,omitempty"`
-	CurrentOperation *string                   `json:"currentOperation,omitempty"`
-	Details          *TimelineReference        `json:"details,omitempty"`
-	ErrorCount       *int                      `json:"errorCount,omitempty"`
-	FinishTime       *azuredevops.Time         `json:"finishTime,omitempty"`
-	Id               *uuid.UUID                `json:"id,omitempty"`
-	Identifier       *string                   `json:"identifier,omitempty"`
-	Issues           *[]Issue                  `json:"issues,omitempty"`
-	LastModified     *azuredevops.Time         `json:"lastModified,omitempty"`
-	Location         *string                   `json:"location,omitempty"`
-	Log              *TaskLogReference         `json:"log,omitempty"`
-	Name             *string                   `json:"name,omitempty"`
-	Order            *int                      `json:"order,omitempty"`
-	ParentId         *uuid.UUID                `json:"parentId,omitempty"`
-	PercentComplete  *int                      `json:"percentComplete,omitempty"`
-	PreviousAttempts *[]TimelineAttempt        `json:"previousAttempts,omitempty"`
-	RefName          *string                   `json:"refName,omitempty"`
-	Result           *TaskResult               `json:"result,omitempty"`
-	ResultCode       *string                   `json:"resultCode,omitempty"`
-	StartTime        *azuredevops.Time         `json:"startTime,omitempty"`
-	State            *TimelineRecordState      `json:"state,omitempty"`
-	Task             *TaskReference            `json:"task,omitempty"`
-	Type             *string                   `json:"type,omitempty"`
-	Variables        *map[string]VariableValue `json:"variables,omitempty"`
-	WarningCount     *int                      `json:"warningCount,omitempty"`
-	WorkerName       *string                   `json:"workerName,omitempty"`
+	Attempt          *int                    `json:"attempt,omitempty"`
+	ChangeId         *int                    `json:"changeId,omitempty"`
+	CurrentOperation *string                 `json:"currentOperation,omitempty"`
+	Details          *TimelineReference      `json:"details,omitempty"`
+	ErrorCount       *int                    `json:"errorCount,omitempty"`
+	FinishTime       *azuredevops.Time       `json:"finishTime,omitempty"`
+	Id               *uuid.UUID              `json:"id,omitempty"`
+	Identifier       *string                 `json:"identifier,omitempty"`
+	Issues           *[]Issue                `json:"issues,omitempty"`
+	LastModified     *azuredevops.Time       `json:"lastModified,omitempty"`
+	Location         *string                 `json:"location,omitempty"`
+	Log              *TaskLogReference       `json:"log,omitempty"`
+	Name             *string                 `json:"name,omitempty"`
+	Order            *int                    `json:"order,omitempty"`
+	ParentId         *uuid.UUID              `json:"parentId,omitempty"`
+	PercentComplete  *int                    `json:"percentComplete,omitempty"`
+	PreviousAttempts *[]TimelineAttempt      `json:"previousAttempts,omitempty"`
+	RefName          *string                 `json:"refName,omitempty"`
+	Result           *TaskResult             `json:"result,omitempty"`
+	ResultCode       *string                 `json:"resultCode,omitempty"`
+	StartTime        *azuredevops.Time       `json:"startTime,omitempty"`
+	State            *TimelineRecordState    `json:"state,omitempty"`
+	Task             *TaskReference          `json:"task,omitempty"`
+	Type             *string                 `json:"type,omitempty"`
+	Variables        *map[string]interface{} `json:"variables,omitempty"`
+	WarningCount     *int                    `json:"warningCount,omitempty"`
+	WorkerName       *string                 `json:"workerName,omitempty"`
 }
 
 type TimelineRecordFeedLinesWrapper struct {
@@ -2550,11 +2550,11 @@ type VariableGroup struct {
 	// Gets or sets name of the variable group.
 	Name *string `json:"name,omitempty"`
 	// Gets or sets provider data.
-	ProviderData *VariableGroupProviderData `json:"providerData,omitempty"`
+	ProviderData interface{} `json:"providerData,omitempty"`
 	// Gets or sets type of the variable group.
 	Type *string `json:"type,omitempty"`
 	// Gets or sets variables contained in the variable group.
-	Variables *map[string]VariableValue `json:"variables,omitempty"`
+	Variables *map[string]interface{} `json:"variables,omitempty"`
 }
 
 // [Flags]
@@ -2578,11 +2578,11 @@ type VariableGroupParameters struct {
 	// Sets name of the variable group.
 	Name *string `json:"name,omitempty"`
 	// Sets provider data.
-	ProviderData *VariableGroupProviderData `json:"providerData,omitempty"`
+	ProviderData interface{} `json:"providerData,omitempty"`
 	// Sets type of the variable group.
 	Type *string `json:"type,omitempty"`
 	// Sets variables contained in the variable group.
-	Variables *map[string]VariableValue `json:"variables,omitempty"`
+	Variables *map[string]interface{} `json:"variables,omitempty"`
 }
 
 // Defines provider data of the variable group.

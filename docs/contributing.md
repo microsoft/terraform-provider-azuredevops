@@ -125,9 +125,17 @@ $ cd terraform-provider-azuredevops/
 
 ## 3. Build & Install Provider
 
+To build and install the provider locally execute the `make install` command which will execute the `build.sh --Install --SkipTests` command for you. 
+
+```bash
+$ make install
+```
+
+For more information about the process see below.
+
 **Build & test the azure devops provider**
 
-Running the next command will orchestrate a few things for you:
+Running the `build.sh` script will orchestrate a few things for you:
 
 - Verify that all required Go packages are installed. This may take a few minutes the first time you run the script as the packages will be cached locally. Subsequent runs will be much faster
 - Run all unit tests
@@ -147,7 +155,7 @@ The `build.sh` suppports the following parameters:
 
 `-s | --SkipTests` : Skip executing the unit tests
 `-d | --DebugBuild`: Execute _go build_ with flags that disables optimization and adds debug symbols to the created binary
-`-i | --Install`   : After successful build perform a local install of the provider
+`-i | --Install`   : After successful build perform a local install of the provider by executing `local-install.sh`
 
 ```bash
 $ ls -lah ./bin/
@@ -443,12 +451,12 @@ There is a lot of context to cover here, so check out our dedicated [debugging d
 
 Most changes should involve updates to the client-facing reference documentation. Please update the existing documentation to reflect any changes you have made to the codebase.
 
-| Name | Description | Link |
-| ---- | ----------- | ---- |
-| Index | Table of contents | [index.md](../website/docs/index.html.markdown) |
-| Resources | Resources reference | [resources](../website/docs/r) |
-| Data Sources | Data Sources reference | [data sources](../website/docs/d) |
-| Guides | Guide and tutorial docs | [guides](../website/docs/guides) |
+| Name         | Description             | Link                                            |
+| ------------ | ----------------------- | ----------------------------------------------- |
+| Index        | Table of contents       | [index.md](../website/docs/index.html.markdown) |
+| Resources    | Resources reference     | [resources](../website/docs/r)                  |
+| Data Sources | Data Sources reference  | [data sources](../website/docs/d)               |
+| Guides       | Guide and tutorial docs | [guides](../website/docs/guides)                |
 
 ## 7. Explore with postman
 
@@ -461,6 +469,12 @@ After the feature or bug is completed, you'll want to post a PR to get it review
 ### Tips for PR authors
 
 - The steps run by the CI are located [here](./../.azdo/ci.yml). You should manually execute these commands to make sure that they pass before you post your PR.
+  - The below command runs everything, but the acceptance tests:
+
+    ```bash
+    $ make ci
+    ```
+
 - The PR template for the repository is located [here](../.github/PULL_REQUEST_TEMPLATE.md). Please be ready to fill this template out when posting the PR.
 - If your PR is a draft, please mark it as a draft and put `WIP` (stands for "Work In Progress") in the title. This helps reviewers prioritize which reviews to look at.
 - If your PR contains changes to the `go.mod` or `go.sum` files, or the `vendor/` directory, please elaborate on why the change is being made.

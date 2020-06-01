@@ -54,6 +54,9 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
+install:
+	./scripts/build.sh --SkipTests --Install
+
 check-vendor-vs-mod: ## Check that go modules and vendored code are on par
 	@echo "==> Checking that go modules and vendored dependencies match..."
 	go mod vendor
@@ -70,6 +73,8 @@ vet:
 		echo "and fix them if necessary before submitting the code for review."; \
 		exit 1; \
 	fi
+
+ci: check-vendor-vs-mod lint test
 
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))

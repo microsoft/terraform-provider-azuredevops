@@ -193,7 +193,7 @@ github.com/jmespath/go-jmespath
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.5
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b2
+# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b3
 github.com/microsoft/azure-devops-go-api/azuredevops
 github.com/microsoft/azure-devops-go-api/azuredevops/accounts
 github.com/microsoft/azure-devops-go-api/azuredevops/build
@@ -244,7 +244,7 @@ github.com/posener/complete/match
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/stretchr/testify v1.3.0
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/ulikunitz/xz v0.5.5
@@ -392,5 +392,5 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/test/bufconn
-# gopkg.in/yaml.v2 v2.2.2
+# gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
