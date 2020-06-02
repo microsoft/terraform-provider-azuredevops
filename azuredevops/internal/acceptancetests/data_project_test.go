@@ -1,37 +1,29 @@
 // +build all core data_sources resource_project data_project
 // +build !exclude_data_sources !exclude_data_project
 
-package azuredevops
-
-// The tests in this file use the mock clients in mock_client.go to mock out
-// the Azure DevOps client operations.
+package acceptancetests
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
-
-/**
- * Begin acceptance tests
- */
 
 // Verifies that the following sequence of events occurrs without error:
 //	(1) TF can create a project
 //	(2) A data source is added to the configuration, and that data source can find the created project
-func TestAccAzureDevOpsProject_DataSource(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	projectResource := testhelper.TestAccProjectResource(projectName)
-	projectData := testhelper.TestAccProjectDataSource(projectName)
+func TestAccProject_DataSource(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	projectResource := testutils.HclProjectResource(projectName)
+	projectData := testutils.HclProjectDataSource(projectName)
 
 	tfNode := "data.azuredevops_project.project"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
 				Config: projectResource,
@@ -49,8 +41,8 @@ func TestAccAzureDevOpsProject_DataSource(t *testing.T) {
 	})
 }
 
-func TestAccAzureDevOpsProject_DataSource_IncorrectParameters(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+func TestAccProject_DataSource_IncorrectParameters(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
 	dataProject := fmt.Sprintf(`
 	data "azuredevops_project" "project" {
 		project_name = "%s"
@@ -60,8 +52,8 @@ func TestAccAzureDevOpsProject_DataSource_IncorrectParameters(t *testing.T) {
 	errorRegex, _ := regexp.Compile("config is invalid: \"description\": this field cannot be set")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
 				Config:      dataProject,
@@ -69,8 +61,4 @@ func TestAccAzureDevOpsProject_DataSource_IncorrectParameters(t *testing.T) {
 			},
 		},
 	})
-}
-
-func init() {
-	InitProvider()
 }

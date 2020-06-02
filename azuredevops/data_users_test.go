@@ -23,12 +23,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	InitProvider()
-}
-
-var usrListEmpty = []graph.GraphUser{}
-
 var usrList1 = []graph.GraphUser{
 	{
 		Descriptor:    converter.String("aad.YWU4YzJkMTktOThmYS03ZDhmLWJhNTAtOWI4MWQzYTUxZjcy"),
@@ -84,11 +78,7 @@ var usrList2 = []graph.GraphUser{
 	},
 }
 
-/**
- * Begin unit tests
- */
-
-// TestDataSourceUser_Read_TestDoesNotSwallowError verfies that the data source propagates an error from the API correctly
+// verfies that the data source propagates an error from the API correctly
 func TestDataSourceUser_Read_TestDoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -113,7 +103,6 @@ func TestDataSourceUser_Read_TestDoesNotSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), "ListUsers() Failed")
 }
 
-// TestDataSourceUser_Read_HandlesContinuationToken
 func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -155,7 +144,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 	require.Nil(t, err)
 }
 
-// TestDataSourceUser_Read_TestReadUser verifies that a single user can be read successfully
+// verifies that a single user can be read successfully
 func TestDataSourceUser_Read_TestReadEmptyUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -174,7 +163,7 @@ func TestDataSourceUser_Read_TestReadEmptyUser(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrListEmpty,
+			GraphUsers: &[]graph.GraphUser{},
 		}, nil).
 		Times(1)
 

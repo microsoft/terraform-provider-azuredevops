@@ -10,20 +10,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
-
-/**
- * Begin unit tests
- */
 
 // A helper type that is used in some of these tests to make initializing
 // graph entities easier
@@ -146,36 +139,4 @@ func createResourceData(t *testing.T, projectID string, groupName string) *schem
 	resourceData.Set("project_id", projectID)
 	resourceData.Set("name", groupName)
 	return resourceData
-}
-
-/**
- * Begin acceptance tests
- */
-
-// Validates that a configuration containing a project group lookup is able to read the resource correctly.
-// Because this is a data source, there are no resources to inspect in AzDO
-func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	group := "Build Administrators"
-	tfBuildDefNode := "data.azuredevops_group.group"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testhelper.TestAccGroupDataSource(projectName, group),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
-				),
-			},
-		},
-	})
-}
-
-func init() {
-	InitProvider()
 }

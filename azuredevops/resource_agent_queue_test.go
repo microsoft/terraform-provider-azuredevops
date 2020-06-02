@@ -9,20 +9,13 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
-
-/**
- * Begin unit tests
- */
 
 var agentQueueProject = "project"
 var agentQueuePoolID = 100
@@ -148,37 +141,4 @@ func generateMocks(ctrl *gomock.Controller) (*azdosdkmocks.MockTaskagentClient, 
 		TaskAgentClient: agentClient,
 		Ctx:             context.Background(),
 	}
-}
-
-/**
- * Begin acceptance tests
- */
-func TestAccResourceAgentQueue_CreateAndUpdate(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	poolName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfNode := "azuredevops_agent_queue.q"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testhelper.TestAccAgentQueueResource(projectName, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "agent_pool_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			}, {
-				ResourceName:      tfNode,
-				ImportStateIdFunc: testAccImportStateIDFunc(tfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func init() {
-	InitProvider()
 }

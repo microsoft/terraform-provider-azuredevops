@@ -6,12 +6,9 @@ package azuredevops
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
@@ -21,10 +18,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	/* add code for test setup here */
-}
 
 var azProjectRef = &core.TeamProjectReference{
 	Id:   testhelper.CreateUUID(),
@@ -298,36 +291,4 @@ func TestGitRepositoriesDataSource_Read_SingleRepository(t *testing.T) {
 	repos := resourceData.Get("repositories").([]interface{})
 	require.NotNil(t, repos)
 	require.Equal(t, len(repos), 1)
-}
-
-/**
- * Begin acceptance tests
- */
-
-// Verifies that the following sequence of events occurrs without error:
-//	(1) TF can create a project
-//	(2) A data source is added to the configuration, and that data source can find the created project
-func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	tfConfigStep1 := testhelper.TestAccAzureGitRepoResource(projectName, gitRepoName, "Clean")
-	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testhelper.TestAccProjectGitRepositories(projectName, gitRepoName))
-
-	tfNode := "data.azuredevops_git_repositories.repositories"
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: tfConfigStep1,
-			}, {
-				Config: tfConfigStep2,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", gitRepoName),
-					resource.TestCheckResourceAttr(tfNode, "repositories.0.name", gitRepoName),
-					resource.TestCheckResourceAttr(tfNode, "repositories.0.default_branch", "refs/heads/master"),
-				),
-			},
-		},
-	})
 }

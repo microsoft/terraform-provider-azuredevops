@@ -1,7 +1,7 @@
 # Testing
 
-- [Authoring tests](#authoring-tests)
 - [Testing](#testing)
+- [Authoring Tests](#authoring-tests)
 - [Unit Tests](#unit-tests)
 - [Acceptance Tests](#acceptance-tests)
 
@@ -34,15 +34,15 @@ Thus each `_test.go` files must include a build tag with the following character
 
 `_test.go` files which contain test helper routines **must not** include any build tag. Otherwise those routines aren't available during a test run because the GO compiler i.e. `go test` will only honor files that either contain the specified build tag or does not contain any build tag at all.
 
-If HCL code must be created for performing acceptance tests, add a function to `azuredevops\utils\testhelper\hcl.go` and try to reuse existing definitions.
+If HCL code must be created for performing acceptance tests, add a function to `azuredevops/internal/acceptancetests/commons_hcl.go` and try to reuse existing definitions.
 
-Furthermore use the `test-acc-` prefix for naming Terraform resources or data sources in all acceptance tests. It's preferred to reference the `testhelper.TestAccResourcePrefix` const instead of using strings in acceptance tests.
+Furthermore use the `testutils.GenerateResourceName()` function to generate resource names. This function adds a prefix to a random ID, makign it easy to identify resources that were created from a test.
 
 ```go
 func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	gitRepoNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testutils.GenerateResourceName()
+	gitRepoNameFirst := testutils.GenerateResourceName()
+	gitRepoNameSecond := testutils.GenerateResourceName()
 	tfRepoNode := "azuredevops_git_repository.gitrepo"
 
     ...
@@ -132,11 +132,16 @@ To run acceptance tests for multiple resources or data sources or for a logical 
 
 > Note: The established integration testing pattern for Terraform Providers is to write [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). The process is well defined but is complicated. Get started by reading through the excellent [guide](https://www.terraform.io/docs/extend/testing/acceptance-tests/testcase.html) published by Hashicorp.
 
-![Acceptance Test Example](https://user-images.githubusercontent.com/2497673/67523941-49b95500-f675-11e9-8345-21bda99ff1a4.png)
+Acceptance tests should live under the [`acceptancetests`](../azuredevops/internal/acceptancetests) folder
+
+![Acceptance Test Example](https://user-images.githubusercontent.com/2497673/83199694-59b37e80-a107-11ea-9437-209c46f139ea.png)
 
 Here are some important details:
- - **Lines 190-192**: Set up resource names. The common prefix, `testAccResourcePrefix`, is used so that it is easy to identify any orphaned test resources in AzDO. This is defined in [provider_test.go](../azuredevops/provider_test.go).
- - **Line 196**: `PreCheck` is a function that verifies that the required environment variables are set. This is configured in [provider_test.go](../azuredevops/provider_test.go).
- - **Line 197**: `Providers` is the actual set of providers being tested. In this case, it is a fully configured `azuredevops` provider. This is configured in [provider_test.go](../azuredevops/provider_test.go).
- - **Line 198**: `CheckDestroy` checks that, after a `terraform destroy` is called, that the resource is actually destroyed from AzDO.
- - **Lines 199-217**: `Steps` is a list of steps that should be run. Each step will execute a `terraform apply` to apply the terraform stanza defined by the `Config` property. It then runs the checks specified by the `Check` property.
+ - **Line 14**: Set up resource names. The function `testutils.GenerateResourceName()`, is used so that it is easy to identify any orphaned test resources in AzDO. This is defined in [commons.go](../azuredevops/internal/acceptancetests/testutils/commons.go).
+ - **Line 19**: `PreCheck` is a function that verifies that the required environment variables are set. The referenced function `testutils.PreCheck` (note the lowercase `p`) is defined in [commons.go](../azuredevops/internal/acceptancetests/testutils/commons.go).
+ - **Line 20**: `Providers` is the actual set of providers being tested. The function `GetProviders()` will construct this for you, and it is defined in [commons.go](../azuredevops/internal/acceptancetests/testutils/commons.go).
+- **Lines 21**: `Steps` is a list of steps that should be run. Each step will execute a `terraform apply` to apply the terraform stanza defined by the `Config` property. It then runs the checks specified by the `Check` property.
+
+
+Note: while not pictured here, you may also want to check out the following:
+- `CheckDestroy` checks that, after a `terraform destroy` is called, that the resource is actually destroyed from AzDO.

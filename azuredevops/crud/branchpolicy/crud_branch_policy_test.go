@@ -20,10 +20,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 )
 
-/**
- * Begin unit tests
- */
-
 var projectID = uuid.New().String()
 var randomUUID = uuid.New()
 var testPolicy = &policy.PolicyConfiguration{

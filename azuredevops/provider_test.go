@@ -4,14 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/stretchr/testify/require"
 )
-
-var provider = Provider()
-
-// TestAzureDevOpsProvider_foo
 
 func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
@@ -34,7 +28,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 		"azuredevops_agent_queue",
 	}
 
-	resources := provider.ResourcesMap
+	resources := Provider().ResourcesMap
 	require.Equal(t, len(expectedResources), len(resources), "There are an unexpected number of registered resources")
 
 	for _, resource := range expectedResources {
@@ -55,7 +49,7 @@ func TestAzureDevOpsProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_agent_pools",
 	}
 
-	dataSources := provider.DataSourcesMap
+	dataSources := Provider().DataSourcesMap
 	require.Equal(t, len(expectedDataSources), len(dataSources), "There are an unexpected number of registered data sources")
 
 	for _, resource := range expectedDataSources {
@@ -77,7 +71,7 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 		{"personal_access_token", false, "AZDO_PERSONAL_ACCESS_TOKEN", true},
 	}
 
-	schema := provider.Schema
+	schema := Provider().Schema
 	require.Equal(t, len(tests), len(schema), "There are an unexpected number of properties in the schema")
 
 	for _, test := range tests {
@@ -97,19 +91,5 @@ func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
 			require.Nil(t, err, "An error occurred when getting the default value from the environment")
 			require.Equal(t, expectedValue, actualValue, "The default value pulled from the environment has the wrong value")
 		}
-	}
-}
-
-func init() {
-	InitProvider()
-}
-
-var testAccProviders map[string]terraform.ResourceProvider
-var testAccProvider *schema.Provider
-
-func InitProvider() {
-	testAccProvider = provider
-	testAccProviders = map[string]terraform.ResourceProvider{
-		"azuredevops": testAccProvider,
 	}
 }

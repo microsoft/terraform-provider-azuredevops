@@ -1,3 +1,6 @@
+// +build all resource_variable_group
+// +build !exclude_resource_variable_group
+
 package azuredevops
 
 // The tests in this file use the mock clients in mock_client.go to mock out

@@ -1,7 +1,7 @@
 // +build all resource_variable_group
 // +build !exclude_resource_variable_group
 
-package azuredevops
+package acceptancetests
 
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
@@ -11,22 +11,21 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
 )
 
 func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testutils.GenerateResourceName()
 
-	vargroupNameFirst := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	vargroupNameSecond := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	vargroupNameNoSecret := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	vargroupNameFirst := testutils.GenerateResourceName()
+	vargroupNameSecond := testutils.GenerateResourceName()
+	vargroupNameNoSecret := testutils.GenerateResourceName()
 
 	allowAccessTrue := true
 	allowAccessFalse := false
@@ -34,35 +33,35 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccVariableGroupCheckDestroy,
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testhelper.TestAccVariableGroupResource(projectName, vargroupNameFirst, allowAccessTrue),
+				Config: testutils.HclVariableGroupResource(projectName, vargroupNameFirst, allowAccessTrue),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
-					testAccCheckVariableGroupResourceExists(vargroupNameFirst, allowAccessTrue),
+					checkVariableGroupExists(vargroupNameFirst, allowAccessTrue),
 				),
 			}, {
-				Config: testhelper.TestAccVariableGroupResource(projectName, vargroupNameSecond, allowAccessFalse),
+				Config: testutils.HclVariableGroupResource(projectName, vargroupNameSecond, allowAccessFalse),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
-					testAccCheckVariableGroupResourceExists(vargroupNameSecond, allowAccessFalse),
+					checkVariableGroupExists(vargroupNameSecond, allowAccessFalse),
 				),
 			}, {
-				Config: testhelper.TestAccVariableGroupResourceNoSecrets(projectName, vargroupNameNoSecret, allowAccessFalse),
+				Config: testutils.HclVariableGroupResourceNoSecrets(projectName, vargroupNameNoSecret, allowAccessFalse),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameNoSecret),
-					testAccCheckVariableGroupResourceExists(vargroupNameNoSecret, allowAccessFalse),
+					checkVariableGroupExists(vargroupNameNoSecret, allowAccessFalse),
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:      tfVarGroupNode,
-				ImportStateIdFunc: testAccImportStateIDFunc(tfVarGroupNode),
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -71,29 +70,29 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
-	projectName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	projectName := testutils.GenerateResourceName()
 
-	vargroupKeyvault := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	vargroupKeyvault := testutils.GenerateResourceName()
 	keyVaultName := "key-vault-name"
 	allowAccessFalse := false
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccVariableGroupCheckDestroy,
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testhelper.TestAccVariableGroupResourceKeyVaultWithProject(projectName, vargroupKeyvault, allowAccessFalse, keyVaultName),
+				Config: testutils.HclVariableGroupResourceKeyVaultWithProject(projectName, vargroupKeyvault, allowAccessFalse, keyVaultName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupKeyvault),
-					testAccCheckVariableGroupResourceExists(vargroupKeyvault, allowAccessFalse),
+					checkVariableGroupExists(vargroupKeyvault, allowAccessFalse),
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:      tfVarGroupNode,
-				ImportStateIdFunc: testAccImportStateIDFunc(tfVarGroupNode),
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -104,7 +103,7 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 // Given an AzDO variable group name, this will return a function that will check whether
 // or not the definition (1) exists in the state, (2) exists in AzDO, and (3) has the correct
 // or expected name
-func testAccCheckVariableGroupResourceExists(expectedName string, expectedAllowAccess bool) resource.TestCheckFunc {
+func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		varGroup, ok := s.RootModule().Resources["azuredevops_variable_group.vg"]
 		if !ok {
@@ -144,7 +143,7 @@ func testAccCheckVariableGroupResourceExists(expectedName string, expectedAllowA
 
 // Verifies that all variable groups referenced in the state are destroyed. This will be
 // invoked *after* Terraform destroys the resource but *before* the state is wiped clean.
-func testAccVariableGroupCheckDestroy(s *terraform.State) error {
+func checkVariableGroupDestroyed(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_variable_group" {
 			continue
@@ -172,7 +171,7 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testAccProvider.Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
 	return clients.TaskAgentClient.GetVariableGroup(
 		clients.Ctx,
 		taskagent.GetVariableGroupArgs{
@@ -185,7 +184,7 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 // Given a resource from the state, return a definition Reference (and error)
 func getDefinitionResourceFromVariableGroupResource(resource *terraform.ResourceState) (*[]build.DefinitionResourceReference, error) {
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testAccProvider.Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
 
 	return clients.BuildClient.GetProjectResources(
 		clients.Ctx,
@@ -195,19 +194,4 @@ func getDefinitionResourceFromVariableGroupResource(resource *terraform.Resource
 			Id:      &resource.Primary.ID,
 		},
 	)
-}
-
-// Set the Imported ID
-func testAccImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return fmt.Sprintf("%s/%s", rs.Primary.Attributes["project_id"], rs.Primary.Attributes["id"]), nil
-	}
-}
-
-func init() {
-	InitProvider()
 }

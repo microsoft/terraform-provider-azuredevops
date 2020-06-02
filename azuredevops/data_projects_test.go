@@ -22,33 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	/* add code for test setup here */
-}
-
-var prjListEmpty = []core.TeamProjectReference{}
-
-var prjListStateMixed = []core.TeamProjectReference{
-	{
-		Name:  converter.String("vsteam-0177"),
-		Id:    testhelper.CreateUUID(),
-		State: &core.ProjectStateValues.WellFormed,
-		Url:   nil,
-	},
-	{
-		Name:  converter.String("vsteam-0178"),
-		Id:    testhelper.CreateUUID(),
-		State: &core.ProjectStateValues.Deleted,
-		Url:   nil,
-	},
-	{
-		Name:  converter.String("vsteam-0179"),
-		Id:    testhelper.CreateUUID(),
-		State: &core.ProjectStateValues.New,
-		Url:   nil,
-	},
-}
-
 var prjListStateWellFormed = []core.TeamProjectReference{
 	{
 		Name:  converter.String("vsteam-0177"),
@@ -113,10 +86,6 @@ var prjListDoubleID = []core.TeamProjectReference{
 	},
 }
 
-/**
- * Begin unit tests
- */
-
 func TestDataSourceProjects_Read_TestFindProjectByName(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -175,7 +144,7 @@ func TestDataSourceProjects_Read_TestEmptyProjectList(t *testing.T) {
 		EXPECT().
 		GetProjects(clients.Ctx, expectedGetProjectsArgs).
 		Return(&core.GetProjectsResponseValue{
-			Value:             prjListEmpty,
+			Value:             []core.TeamProjectReference{},
 			ContinuationToken: "",
 		}, nil).
 		Times(1)

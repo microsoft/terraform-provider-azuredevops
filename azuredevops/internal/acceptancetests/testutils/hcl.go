@@ -1,11 +1,11 @@
-package testhelper
+package testutils
 
 import (
 	"fmt"
 	"strings"
 )
 
-func getAzureGitRepoResource(gitRepoName string, initType string) string {
+func getGitRepoResource(gitRepoName string, initType string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_git_repository" "gitrepo" {
 	project_id      = azuredevops_project.project.id
@@ -16,16 +16,16 @@ resource "azuredevops_git_repository" "gitrepo" {
 }`, gitRepoName, initType)
 }
 
-// TestAccAzureGitRepoResource HCL describing an AzDO GIT repository resource
-func TestAccAzureGitRepoResource(projectName string, gitRepoName string, initType string) string {
-	azureGitRepoResource := getAzureGitRepoResource(gitRepoName, initType)
+// HclGitRepoResource HCL describing an AzDO GIT repository resource
+func HclGitRepoResource(projectName string, gitRepoName string, initType string) string {
+	azureGitRepoResource := getGitRepoResource(gitRepoName, initType)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
-// TestAccAzureForkedGitRepoResource HCL describing an AzDO GIT repository resource
-func TestAccAzureForkedGitRepoResource(projectName string, gitRepoName string, gitForkedRepoName string, initType string, forkedInitType string) string {
+// HclForkedGitRepoResource HCL describing an AzDO GIT repository resource
+func HclForkedGitRepoResource(projectName string, gitRepoName string, gitForkedRepoName string, initType string, forkedInitType string) string {
 	azureGitRepoResource := fmt.Sprintf(`
 	resource "azuredevops_git_repository" "gitforkedrepo" {
 		project_id      		= azuredevops_project.project.id
@@ -35,24 +35,24 @@ func TestAccAzureForkedGitRepoResource(projectName string, gitRepoName string, g
 			init_type = "%s"
 		}
 	}`, gitForkedRepoName, forkedInitType)
-	gitRepoResource := TestAccAzureGitRepoResource(projectName, gitRepoName, initType)
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, initType)
 	return fmt.Sprintf("%s\n%s", gitRepoResource, azureGitRepoResource)
 }
 
-// TestAccGroupDataSource HCL describing an AzDO Group Data Source
-func TestAccGroupDataSource(projectName string, groupName string) string {
+// HclGroupDataSource HCL describing an AzDO Group Data Source
+func HclGroupDataSource(projectName string, groupName string) string {
 	dataSource := fmt.Sprintf(`
 data "azuredevops_group" "group" {
 	project_id = azuredevops_project.project.id
 	name       = "%s"
 }`, groupName)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
 }
 
-// TestAccProjectResource HCL describing an AzDO project
-func TestAccProjectResource(projectName string) string {
+// HclProjectResource HCL describing an AzDO project
+func HclProjectResource(projectName string) string {
 	if strings.EqualFold(projectName, "") {
 		return ""
 	}
@@ -66,16 +66,16 @@ resource "azuredevops_project" "project" {
 }`, projectName, projectName)
 }
 
-// TestAccProjectDataSource HCL describing a data source for an AzDO project
-func TestAccProjectDataSource(projectName string) string {
+// HclProjectDataSource HCL describing a data source for an AzDO project
+func HclProjectDataSource(projectName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
 	project_name = "%s"
 }`, projectName)
 }
 
-// TestAccProjectGitRepositories HCL describing a data source for an AzDO git repo
-func TestAccProjectGitRepositories(projectName string, gitRepoName string) string {
+// HclProjectGitRepositories HCL describing a data source for an AzDO git repo
+func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
 	project_name = "%s"
@@ -87,8 +87,8 @@ data "azuredevops_git_repositories" "repositories" {
 }`, projectName, gitRepoName)
 }
 
-// TestAccUserEntitlementResource HCL describing an AzDO UserEntitlement
-func TestAccUserEntitlementResource(principalName string) string {
+// HclUserEntitlementResource HCL describing an AzDO UserEntitlement
+func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_user_entitlement" "user" {
 	principal_name     = "%s"
@@ -96,8 +96,8 @@ resource "azuredevops_user_entitlement" "user" {
 }`, principalName)
 }
 
-// TestAccServiceEndpointGitHubResource HCL describing an AzDO service endpoint
-func TestAccServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
+// HclServiceEndpointGitHubResource HCL describing an AzDO service endpoint
+func HclServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
@@ -106,12 +106,12 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	}
 }`, serviceEndpointName)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
-func TestAccServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string /*, username string, password string*/) string {
+// HclServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
+func HclServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string /*, username string, password string*/) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
@@ -119,12 +119,12 @@ resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 
 }`, serviceEndpointName /*, username, password*/)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccServiceEndpointKubernetesResource HCL describing an AzDO kubernetes service endpoint
-func TestAccServiceEndpointKubernetesResource(projectName string, serviceEndpointName string, authorizationType string) string {
+// HclServiceEndpointKubernetesResource HCL describing an AzDO kubernetes service endpoint
+func HclServiceEndpointKubernetesResource(projectName string, serviceEndpointName string, authorizationType string) string {
 	var serviceEndpointResource string
 	switch authorizationType {
 	case "AzureSubscription":
@@ -190,12 +190,12 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 	}
 }`, serviceEndpointName)
 	}
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
-func TestAccServiceEndpointAzureRMResource(projectName string, serviceEndpointName string) string {
+// HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	project_id             = azuredevops_project.project.id
@@ -210,12 +210,12 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 
 }`, serviceEndpointName)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccServiceEndpointAzureRMAutomaticResource HCL describing an AzDO service endpoint
-func TestAccServiceEndpointAzureRMAutomaticResource(projectName string, serviceEndpointName string) string {
+// HclServiceEndpointAzureRMAutomaticResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureRMAutomaticResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	project_id             = azuredevops_project.project.id
@@ -226,12 +226,12 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 
 }`, serviceEndpointName)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// TestAccVariableGroupResource HCL describing an AzDO variable group
-func TestAccVariableGroupResource(projectName string, variableGroupName string, allowAccess bool) string {
+// HclVariableGroupResource HCL describing an AzDO variable group
+func HclVariableGroupResource(projectName string, variableGroupName string, allowAccess bool) string {
 	variableGroupResource := fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
 	project_id  = azuredevops_project.project.id
@@ -254,12 +254,12 @@ resource "azuredevops_variable_group" "vg" {
 	}
 }`, variableGroupName, allowAccess)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
 
-// TestAccVariableGroupResourceNoSecrets Similar to TestAccVariableGroupResource, but without a secret variable
-func TestAccVariableGroupResourceNoSecrets(projectName string, variableGroupName string, allowAccess bool) string {
+// HclVariableGroupResourceNoSecrets Similar to HclVariableGroupResource, but without a secret variable
+func HclVariableGroupResourceNoSecrets(projectName string, variableGroupName string, allowAccess bool) string {
 	variableGroupResource := fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
 	project_id  = azuredevops_project.project.id
@@ -272,19 +272,19 @@ resource "azuredevops_variable_group" "vg" {
 	}
 }`, variableGroupName, allowAccess)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
 
-// TestAccVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
-func TestAccVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
-	projectAndServiceEndpoint := TestAccServiceEndpointAzureRMResource(projectName, "test-service-connection")
+// HclVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
+func HclVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
+	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection")
 
-	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, TestAccVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
+	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, HclVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
 }
 
-// TestAccVariableGroupResourceKeyVault HCL describing an AzDO variable group with key vault
-func TestAccVariableGroupResourceKeyVault(variableGroupName string, allowAccess bool, keyVaultName string) string {
+// HclVariableGroupResourceKeyVault HCL describing an AzDO variable group with key vault
+func HclVariableGroupResourceKeyVault(variableGroupName string, allowAccess bool, keyVaultName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
 	project_id  = azuredevops_project.project.id
@@ -301,8 +301,8 @@ resource "azuredevops_variable_group" "vg" {
 }`, variableGroupName, allowAccess, keyVaultName)
 }
 
-// TestAccAgentPoolResource HCL describing an AzDO Agent Pool
-func TestAccAgentPoolResource(poolName string) string {
+// HclAgentPoolResource HCL describing an AzDO Agent Pool
+func HclAgentPoolResource(poolName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_agent_pool" "pool" {
 	name           = "%s"
@@ -311,8 +311,8 @@ resource "azuredevops_agent_pool" "pool" {
 	}`, poolName)
 }
 
-// TestAccAgentPoolResourceAppendPoolNameToResourceName HCL describing an AzDO Agent Pool with agent pool name appended to resource name
-func TestAccAgentPoolResourceAppendPoolNameToResourceName(poolName string) string {
+// HclAgentPoolResourceAppendPoolNameToResourceName HCL describing an AzDO Agent Pool with agent pool name appended to resource name
+func HclAgentPoolResourceAppendPoolNameToResourceName(poolName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_agent_pool" "pool_%[1]s" {
 	name           = "%[1]s"
@@ -321,24 +321,24 @@ resource "azuredevops_agent_pool" "pool_%[1]s" {
 	}`, poolName)
 }
 
-// TestAccAgentPoolDataSource HCL describing a data source for an AzDO Agent Pool
-func TestAccAgentPoolDataSource() string {
+// HclAgentPoolDataSource HCL describing a data source for an AzDO Agent Pool
+func HclAgentPoolDataSource() string {
 	return `
 data "azuredevops_agent_pool" "pool" {
 	name = azuredevops_agent_pool.pool.name
 }`
 }
 
-// TestAccAgentPoolsDataSource HCL describing a data source for an AzDO Agent Pools
-func TestAccAgentPoolsDataSource() string {
+// HclAgentPoolsDataSource HCL describing a data source for an AzDO Agent Pools
+func HclAgentPoolsDataSource() string {
 	return `
 data "azuredevops_agent_pools" "pools" {	
 }`
 }
 
-// TestAccAgentQueueResource HCL describing an AzDO Agent Pool and Agent Queue
-func TestAccAgentQueueResource(projectName, poolName string) string {
-	poolHCL := TestAccAgentPoolResource(poolName)
+// HclAgentQueueResource HCL describing an AzDO Agent Pool and Agent Queue
+func HclAgentQueueResource(projectName, poolName string) string {
+	poolHCL := HclAgentPoolResource(poolName)
 	queueHCL := fmt.Sprintf(`
 resource "azuredevops_project" "p" {
 	project_name = "%s"
@@ -352,9 +352,9 @@ resource "azuredevops_agent_queue" "q" {
 	return fmt.Sprintf("%s\n%s", poolHCL, queueHCL)
 }
 
-// TestAccBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
-func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
-	return TestAccBuildDefinitionResource(
+// HclBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
+func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
+	return HclBuildDefinitionResource(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -365,9 +365,9 @@ func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionNam
 		"")
 }
 
-// TestAccBuildDefinitionResourceBitbucket HCL describing an AzDO build definition sourced from Bitbucket
-func TestAccBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName string, buildPath string, serviceConnectionID string) string {
-	return TestAccBuildDefinitionResource(
+// HclBuildDefinitionResourceBitbucket HCL describing an AzDO build definition sourced from Bitbucket
+func HclBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName string, buildPath string, serviceConnectionID string) string {
+	return HclBuildDefinitionResource(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -378,9 +378,9 @@ func TestAccBuildDefinitionResourceBitbucket(projectName string, buildDefinition
 		serviceConnectionID)
 }
 
-// TestAccBuildDefinitionResourceTfsGit HCL describing an AzDO build definition sourced from AzDo Git Repo
-func TestAccBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, buildDefinitionName string, buildPath string) string {
-	buildDefinitionResource := TestAccBuildDefinitionResource(
+// HclBuildDefinitionResourceTfsGit HCL describing an AzDO build definition sourced from AzDo Git Repo
+func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, buildDefinitionName string, buildPath string) string {
+	buildDefinitionResource := HclBuildDefinitionResource(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -390,13 +390,13 @@ func TestAccBuildDefinitionResourceTfsGit(projectName string, gitRepoName string
 		"path/to/yaml",
 		"")
 
-	azureGitRepoResource := getAzureGitRepoResource(gitRepoName, "Clean")
+	azureGitRepoResource := getGitRepoResource(gitRepoName, "Clean")
 
 	return fmt.Sprintf("%s\n%s", azureGitRepoResource, buildDefinitionResource)
 }
 
-// TestAccBuildDefinitionResource HCL describing an AzDO build definition
-func TestAccBuildDefinitionResource(
+// HclBuildDefinitionResource HCL describing an AzDO build definition
+func HclBuildDefinitionResource(
 	projectName string,
 	buildDefinitionName string,
 	buildPath string,
@@ -425,12 +425,12 @@ resource "azuredevops_build_definition" "build" {
 	%s
 }`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`), repositoryBlock)
 
-	projectResource := TestAccProjectResource(projectName)
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
 }
 
-// TestAccBuildDefinitionWithVariables A build definition with variables
-func TestAccBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
+// HclBuildDefinitionWithVariables A build definition with variables
+func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
 	project_name       = "%s"
@@ -468,9 +468,9 @@ resource "azuredevops_build_definition" "b" {
 }`, name, name, name, varValue, secretVarValue)
 }
 
-// TestAccGroupMembershipResource full terraform stanza to standup a group membership
-func TestAccGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
-	membershipDependenciesStanza := TestAccGroupMembershipDependencies(projectName, groupName, userPrincipalName)
+// HclGroupMembershipResource full terraform stanza to standup a group membership
+func HclGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
+	membershipDependenciesStanza := HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
 	membershipStanza := `
 resource "azuredevops_group_membership" "membership" {
 	group = data.azuredevops_group.group.descriptor
@@ -480,8 +480,8 @@ resource "azuredevops_group_membership" "membership" {
 	return membershipDependenciesStanza + "\n" + membershipStanza
 }
 
-// TestAccGroupMembershipDependencies all the dependencies needed to configure a group membership
-func TestAccGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
+// HclGroupMembershipDependencies all the dependencies needed to configure a group membership
+func HclGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
 	project_name = "%s"
@@ -504,8 +504,8 @@ output "user_descriptor" {
 `, projectName, groupName, userPrincipalName)
 }
 
-// TestAccGroupResource HCL describing an AzDO group, if the projectName is empty, only a azuredevops_group instance is returned
-func TestAccGroupResource(groupResourceName, projectName, groupName string) string {
+// HclGroupResource HCL describing an AzDO group, if the projectName is empty, only a azuredevops_group instance is returned
+func HclGroupResource(groupResourceName, projectName, groupName string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -517,11 +517,11 @@ resource "azuredevops_group" "%s" {
 output "group_id_%s" {
 	value = azuredevops_group.%s.id
 }
-`, TestAccProjectResource(projectName), groupResourceName, groupName, groupResourceName, groupResourceName)
+`, HclProjectResource(projectName), groupResourceName, groupName, groupResourceName, groupResourceName)
 }
 
-// TestAccResourceAuthorization HCL describing a resource authorization
-func TestAccResourceAuthorization(resourceID string, authorized bool) string {
+// HclResourceAuthorization HCL describing a resource authorization
+func HclResourceAuthorization(resourceID string, authorized bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_resource_authorization" "auth" {
 	project_id  = azuredevops_project.project.id

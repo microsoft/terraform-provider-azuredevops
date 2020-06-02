@@ -1,33 +1,24 @@
 // +build all resource_branchpolicy_acceptance_test
 // +build !exclude_resource_branchpolicy_acceptance_test
 
-package azuredevops
-
-// The tests in this file use the mock clients in mock_client.go to mock out
-// the Azure DevOps client operations.
+package acceptancetests
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/testhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
-
-/**
- * Begin acceptance tests
- */
 
 // Verifies that the following sequence of events occurrs without error:
 //	(1) Branch policies can be created with no errors
 //	(2) Branch policies can be updated with no errors
 //	(3) Branch policies can be deleted with no errors
-func TestAccAzureDevOpsBranchPolicy_CreateAndUpdate(t *testing.T) {
-	projName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := testhelper.TestAccResourcePrefix + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
+	projName := testutils.GenerateResourceName()
+	repoName := testutils.GenerateResourceName()
 	opts1 := hclOptions{
 		projectName:            projName,
 		repoName:               repoName,
@@ -46,8 +37,8 @@ func TestAccAzureDevOpsBranchPolicy_CreateAndUpdate(t *testing.T) {
 	buildVlidationTfNode := "azuredevops_branch_policy_build_validation.p"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testhelper.TestAccPreCheck(t, nil) },
-		Providers: testAccProviders,
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
 				Config: getHCL(opts1),
@@ -69,12 +60,12 @@ func TestAccAzureDevOpsBranchPolicy_CreateAndUpdate(t *testing.T) {
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
-				ImportStateIdFunc: testAccImportStateIDFunc(minReviewerTfNode),
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(minReviewerTfNode),
 				ImportState:       true,
 				ImportStateVerify: true,
 			}, {
 				ResourceName:      buildVlidationTfNode,
-				ImportStateIdFunc: testAccImportStateIDFunc(buildVlidationTfNode),
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(buildVlidationTfNode),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -104,7 +95,7 @@ type hclOptions struct {
 }
 
 func getHCL(opts hclOptions) string {
-	projectAndRepo := testhelper.TestAccAzureGitRepoResource(opts.projectName, opts.repoName, "Clean")
+	projectAndRepo := testutils.HclGitRepoResource(opts.projectName, opts.repoName, "Clean")
 	buildDef := `
 	resource "azuredevops_build_definition" "build" {
 		project_id = azuredevops_project.project.id
