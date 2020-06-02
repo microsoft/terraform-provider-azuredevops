@@ -29,31 +29,28 @@ func dataSourceAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 	agentPoolName := d.Get("name").(string)
 	clients := m.(*config.AggregatedClient)
 
-	agentPool, err := getAgentPoolByName(clients, &agentPoolName)
+	agentPools, err := getAgentsPoolByName(clients, &agentPoolName)
 	if err != nil {
 		return fmt.Errorf("Error getting agent pool by name: %v", err)
 	}
 
-	flattenAzureAgentPool(d, agentPool)
+	// too many agent pools found
+	if len(*agentPools) > 1 {
+		return fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %v", agentPoolName, agentPools)
+	}
+
+	// no agent pools found - handle gracefully
+	if len(*agentPools) == 0 {
+		d.SetId("")
+		return nil
+	}
+
+	flattenAzureAgentPool(d, &(*agentPools)[0])
 	return err
 }
 
-func getAgentPoolByName(clients *config.AggregatedClient, name *string) (*taskagent.TaskAgentPool, error) {
-	agentPools, err := clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
+func getAgentsPoolByName(clients *config.AggregatedClient, name *string) (*[]taskagent.TaskAgentPool, error) {
+	return clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
 		PoolName: name,
 	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(*agentPools) > 1 {
-		return nil, fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %v", *name, agentPools)
-	}
-
-	if len(*agentPools) == 0 {
-		return nil, fmt.Errorf("Unable to find agent pool with name: %s", *name)
-	}
-
-	return &(*agentPools)[0], nil
 }

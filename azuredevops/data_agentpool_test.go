@@ -40,7 +40,9 @@ func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, dataAzureAgentPool().Schema, nil)
 	resourceData.Set("name", &name)
 	err := dataSourceAgentPoolRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Unable to find agent pool")
+
+	// resource not found should handle gracefully, according to the terraform API contract
+	require.Nil(t, err)
 }
 
 func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {

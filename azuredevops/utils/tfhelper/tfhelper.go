@@ -167,6 +167,31 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 	}
 }
 
+// ImportProjectQualifiedResourceInteger Import a resource by an ID that looks like one of the following:
+//		<project ID>/<resource ID as integer>
+//		<project name>/<resource ID as integer>
+func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
+	return &schema.ResourceImporter{
+		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
+
+			if err != nil {
+				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
+			}
+
+			_, err = strconv.Atoi(resourceID)
+			if err != nil {
+				return nil, fmt.Errorf("resource ID was expected to be integer, but was not: %+v", err)
+			}
+
+			d.Set("project_id", projectNameOrID)
+			d.SetId(resourceID)
+
+			return []*schema.ResourceData{d}, nil
+		},
+	}
+}
+
 // FindMapInSetWithGivenKeyValue Pulls an element of `TypeSet` from the state. The values of this set are assumed to be
 // `TypeMap`. The maps in the set are searched until a map is found with a value for `keyName` equal to `keyValue`.
 //

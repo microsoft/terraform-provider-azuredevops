@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
@@ -23,6 +24,15 @@ func Bool(value bool) *bool {
 // Int Get a pointer to an integer value
 func Int(value int) *int {
 	return &value
+}
+
+// ASCIIToIntPtr Convert a string to an Int Pointer
+func ASCIIToIntPtr(value string) (*int, error) {
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return nil, err
+	}
+	return Int(i), nil
 }
 
 // UInt64 Get a pointer to an uint64 value

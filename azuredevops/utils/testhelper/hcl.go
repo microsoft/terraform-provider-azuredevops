@@ -336,6 +336,22 @@ data "azuredevops_agent_pools" "pools" {
 }`
 }
 
+// TestAccAgentQueueResource HCL describing an AzDO Agent Pool and Agent Queue
+func TestAccAgentQueueResource(projectName, poolName string) string {
+	poolHCL := TestAccAgentPoolResource(poolName)
+	queueHCL := fmt.Sprintf(`
+resource "azuredevops_project" "p" {
+	project_name = "%s"
+}
+
+resource "azuredevops_agent_queue" "q" {
+	project_id    = azuredevops_project.p.id
+	agent_pool_id = azuredevops_agent_pool.pool.id
+}`, projectName)
+
+	return fmt.Sprintf("%s\n%s", poolHCL, queueHCL)
+}
+
 // TestAccBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
 func TestAccBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
 	return TestAccBuildDefinitionResource(

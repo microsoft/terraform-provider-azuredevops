@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -14,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/tfhelper"
 )
 
 /**
@@ -62,7 +62,7 @@ func GenBasePolicyResource(crudArgs *PolicyCrudArgs) *schema.Resource {
 		Read:     genPolicyReadFunc(crudArgs),
 		Update:   genPolicyUpdateFunc(crudArgs),
 		Delete:   genPolicyDeleteFunc(crudArgs),
-		Importer: genPolicyImporter(),
+		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema:   genBaseSchema(),
 	}
 }
@@ -308,26 +308,5 @@ func genPolicyDeleteFunc(crudArgs *PolicyCrudArgs) schema.DeleteFunc {
 		}
 
 		return nil
-	}
-}
-
-func genPolicyImporter() *schema.ResourceImporter {
-	return &schema.ResourceImporter{
-		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-			id := d.Id()
-			parts := strings.SplitN(id, "/", 2)
-			if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
-				return nil, fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceId", id)
-			}
-
-			_, err := strconv.Atoi(parts[1])
-			if err != nil {
-				return nil, fmt.Errorf("Policy configuration ID (%s) isn't a valid Int", parts[1])
-			}
-
-			d.Set(SchemaProjectID, parts[0])
-			d.SetId(parts[1])
-			return []*schema.ResourceData{d}, nil
-		},
 	}
 }

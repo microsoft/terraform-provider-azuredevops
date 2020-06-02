@@ -33,7 +33,7 @@ func resourceResourceAuthorization() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "id of the resource",
-				ValidateFunc: validation.IsUUID,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -41,7 +41,7 @@ func resourceResourceAuthorization() *schema.Resource {
 				Default:          "endpoint",
 				Description:      "type of the resource",
 				DiffSuppressFunc: suppress.CaseDifference,
-				ValidateFunc:     validation.StringInSlice([]string{"endpoint"}, false),
+				ValidateFunc:     validation.StringInSlice([]string{"endpoint", "queue"}, false),
 			},
 			"authorized": {
 				Type:        schema.TypeBool,

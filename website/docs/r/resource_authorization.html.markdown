@@ -32,7 +32,7 @@ The following arguments are supported:
 * `project_id` - (Required) The project ID or project name. Type: string.
 * `resource_id` - (Required) The ID of the resource to authorize. Type: string.
 * `authorized` - (Required) Set to true to allow public access in the project. Type: boolean.
-* `type` - (Optional) The type of the resource to authorize. Type: string. Valid values: `endpoint`. Default value: `endpoint`.
+* `type` - (Optional) The type of the resource to authorize. Type: string. Valid values: `endpoint`, `queue`. Default value: `endpoint`.
 
 ## Attributes Reference
 
