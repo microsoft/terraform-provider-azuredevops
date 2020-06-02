@@ -1,4 +1,5 @@
-// +build all core resource_project
+// +build all core data_sources resource_project data_project
+// +build !exclude_data_sources !exclude_data_project
 
 package azuredevops
 

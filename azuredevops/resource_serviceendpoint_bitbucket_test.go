@@ -1,3 +1,6 @@
+// +build all serviceconnections azuredevops_serviceendpoint_bitbucket
+// +build !exclude_serviceendpoints
+
 package azuredevops
 
 import (

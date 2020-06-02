@@ -1,4 +1,5 @@
 // +build all resource_variable_group
+// +build !exclude_resource_variable_group
 
 package azuredevops
 

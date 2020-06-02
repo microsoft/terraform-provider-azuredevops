@@ -1,0 +1,6 @@
+{
+    "go.testTags": "all",
+    "gopls.env": {
+        "GOFLAGS": "-tags=all"
+    },    
+}

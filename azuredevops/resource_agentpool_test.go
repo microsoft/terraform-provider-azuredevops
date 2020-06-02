@@ -1,4 +1,5 @@
 // +build all resource_agentpool
+// +build !exclude_resource_agentpool
 
 package azuredevops
 

@@ -1,4 +1,5 @@
-// +build all core resource_project
+// +build all data_sources data_agent_pools
+// +build !exclude_data_sources !exclude_data_agent_pools
 
 package azuredevops
 

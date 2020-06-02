@@ -1,4 +1,5 @@
 // +build all resource_user_entitlement
+// +build !exclude_resource_user_entitlement
 
 package azuredevops
 

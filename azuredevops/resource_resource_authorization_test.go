@@ -1,4 +1,5 @@
 // +build all resource_resource_authorization
+// +build !exclude_resource_authorization
 
 package azuredevops
 

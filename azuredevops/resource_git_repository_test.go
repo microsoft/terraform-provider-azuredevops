@@ -1,4 +1,5 @@
 // +build all core resource_git_repository
+// +build !exclude_resource_git_repository
 
 package azuredevops
 

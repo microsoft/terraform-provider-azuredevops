@@ -1,4 +1,5 @@
 // +build all core resource_group
+// +build !exclude_resource_group
 
 package azuredevops
 

@@ -1,4 +1,5 @@
 // +build all resource_serviceendpoint_azurerm
+// +build !exclude_serviceendpoints
 
 package azuredevops
 

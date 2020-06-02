@@ -1,4 +1,5 @@
 // +build all resource_branchpolicy_acceptance_test
+// +build !exclude_resource_branchpolicy_acceptance_test
 
 package azuredevops
 
