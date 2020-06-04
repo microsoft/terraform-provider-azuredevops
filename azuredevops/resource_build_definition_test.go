@@ -103,6 +103,7 @@ var testBuildDefinition = build.BuildDefinition{
 		Type:          converter.String("GitHub"),
 		Properties: &map[string]string{
 			"connectedServiceId": "ServiceConnectionID",
+			"apiUrl":             "",
 		},
 	},
 	Process: &build.YamlProcess{
@@ -118,6 +119,42 @@ var testBuildDefinition = build.BuildDefinition{
 	Type:           &build.DefinitionTypeValues.Build,
 	Quality:        &build.DefinitionQualityValues.Definition,
 	Triggers:       &[]interface{}{},
+	VariableGroups: &[]build.VariableGroup{},
+}
+
+// This definition matches the overall structure of what a configured Bitbucket git repository would
+// look like.
+var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
+	Id:       converter.Int(100),
+	Revision: converter.Int(1),
+	Name:     converter.String("Name"),
+	Path:     converter.String("\\"),
+	Repository: &build.BuildRepository{
+		Url:           converter.String("https://bitbucket.org/RepoId.git"),
+		Id:            converter.String("RepoId"),
+		Name:          converter.String("RepoId"),
+		DefaultBranch: converter.String("RepoBranchName"),
+		Type:          converter.String("Bitbucket"),
+		Properties: &map[string]string{
+			"connectedServiceId": "ServiceConnectionID",
+			"apiUrl":             "https://api.bitbucket.org/2.0/repositories/RepoId",
+		},
+	},
+	Triggers: &[]interface{}{
+		yamlCiTrigger,
+	},
+	Process: &build.YamlProcess{
+		YamlFilename: converter.String("YamlFilename"),
+	},
+	Queue: &build.AgentPoolQueue{
+		Name: converter.String("BuildPoolName"),
+		Pool: &build.TaskAgentPoolReference{
+			Name: converter.String("BuildPoolName"),
+		},
+	},
+	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+	Type:           &build.DefinitionTypeValues.Build,
+	Quality:        &build.DefinitionQualityValues.Definition,
 	VariableGroups: &[]build.VariableGroup{},
 }
 
@@ -227,6 +264,28 @@ func TestAzureDevOpsBuildDefinition_ValidatesServiceConnection_Bitbucket(t *test
 	err = resourceBuildDefinitionUpdate(resourceData, clients)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "bitbucket repositories need a referenced service connection ID")
+}
+
+// verifies that create a build definition with Bitbucket and CI triggers
+func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	resourceData := schema.TestResourceDataRaw(t, resourceBuildDefinition().Schema, nil)
+	flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID)
+
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &config.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := build.CreateDefinitionArgs{Definition: &testBuildDefinitionBitbucketWithCITrigger, Project: &testProjectID}
+
+	buildClient.
+		EXPECT().
+		CreateDefinition(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("CreateDefinition() Failed")).
+		Times(1)
+	err := resourceBuildDefinitionCreate(resourceData, clients)
+	require.Contains(t, err.Error(), "CreateDefinition() Failed")
 }
 
 // verifies that the flatten/expand round trip yields the same build definition

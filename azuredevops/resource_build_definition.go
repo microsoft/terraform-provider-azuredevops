@@ -822,6 +822,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	repoName := ""
 	repoType := RepoType(repository["repo_type"].(string))
 	repoURL := ""
+	repoAPIURL := ""
 	if strings.EqualFold(string(repoType), string(RepoTypeValues.GitHub)) {
 		repoURL = fmt.Sprintf("https://github.com/%s.git", repoID)
 		repoName = repoID
@@ -829,6 +830,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	if strings.EqualFold(string(repoType), string(RepoTypeValues.Bitbucket)) {
 		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoID)
 		repoName = repoID
+
+		repoAPIURL = fmt.Sprintf("https://api.bitbucket.org/2.0/repositories/%s", repoName)
 	}
 
 	ciTriggers := expandBuildDefinitionTriggerList(
@@ -871,6 +874,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 			Type:          converter.String(string(repoType)),
 			Properties: &map[string]string{
 				"connectedServiceId": repository["service_connection_id"].(string),
+				"apiUrl":             repoAPIURL,
 			},
 		},
 		Process: &build.YamlProcess{
