@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
@@ -26,7 +27,7 @@ type groupMeta struct {
 }
 
 // verifies that the translation for project_id to project_descriptor has proper error handling
-func TestGroupDataSource_DoesNotSwallowProjectDescriptorLookupError(t *testing.T) {
+func TestGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_Generic(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -44,6 +45,29 @@ func TestGroupDataSource_DoesNotSwallowProjectDescriptorLookupError(t *testing.T
 
 	err := dataSourceGroupRead(resourceData, clients)
 	require.Contains(t, err.Error(), "GetDescriptor() Failed")
+}
+
+// verifies that the translation for project_id to project_descriptor has proper error handling
+func TestGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	projectID := uuid.New()
+	resourceData := createResourceData(t, projectID.String(), "group-name")
+
+	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
+	clients := &config.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
+
+	expectedArgs := graph.GetDescriptorArgs{StorageKey: &projectID}
+	graphClient.
+		EXPECT().
+		GetDescriptor(clients.Ctx, expectedArgs).
+		Return(nil, azuredevops.WrappedError{
+			StatusCode: converter.Int(404),
+		})
+
+	err := dataSourceGroupRead(resourceData, clients)
+	require.Contains(t, err.Error(), "was not found")
 }
 
 // verifies that the group lookup functionality has proper error handling

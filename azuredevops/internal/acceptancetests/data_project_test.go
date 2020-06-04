@@ -18,17 +18,18 @@ import (
 func TestAccProject_DataSource(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	projectResource := testutils.HclProjectResource(projectName)
-	projectData := testutils.HclProjectDataSource(projectName)
+	projectWithData := fmt.Sprintf("%s\n%s", testutils.HclProjectDataSource(projectName), projectResource)
 
 	tfNode := "data.azuredevops_project.project"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
+		PreCheck:                  func() { testutils.PreCheck(t, nil) },
+		Providers:                 testutils.GetProviders(),
+		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
 				Config: projectResource,
 			}, {
-				Config: projectData,
+				Config: projectWithData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
 					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),

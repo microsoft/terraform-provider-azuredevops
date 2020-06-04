@@ -1,5 +1,4 @@
-// +build all data_sources data_agent_pools
-// +build !exclude_data_sources !exclude_data_agent_pools
+// +build all core data_projects
 
 package azuredevops
 
@@ -41,9 +40,7 @@ func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, dataAzureAgentPool().Schema, nil)
 	resourceData.Set("name", &name)
 	err := dataSourceAgentPoolRead(resourceData, clients)
-
-	// resource not found should handle gracefully, according to the terraform API contract
-	require.Nil(t, err)
+	require.Contains(t, err.Error(), "Unable to find agent pool")
 }
 
 func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {

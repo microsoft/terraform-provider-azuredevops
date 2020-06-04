@@ -1,7 +1,11 @@
 package azuredevops
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
 )
 
 func dataProject() *schema.Resource {
@@ -15,7 +19,28 @@ func dataProject() *schema.Resource {
 		}
 	}
 	return &schema.Resource{
-		Read:   baseSchema.Read,
+		Read:   dataProjectRead,
 		Schema: baseSchema.Schema,
 	}
+}
+
+// Introducing a read method here which is almost the same code a in resource_project.go
+// but this follows the `A little copying is better than a little dependency.` GO proverb.
+func dataProjectRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*config.AggregatedClient)
+
+	name := d.Get("project_name").(string)
+	project, err := ProjectRead(clients, "", name)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			return fmt.Errorf("Project with name %s does not exist", name)
+		}
+		return fmt.Errorf("Error looking up project with Name %s, %w", name, err)
+	}
+
+	err = flattenProject(clients, d, project)
+	if err != nil {
+		return fmt.Errorf("Error flattening project: %v", err)
+	}
+	return nil
 }

@@ -22,8 +22,9 @@ func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
 
 	tfNode := "data.azuredevops_git_repositories.repositories"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
+		PreCheck:                  func() { testutils.PreCheck(t, nil) },
+		Providers:                 testutils.GetProviders(),
+		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
 				Config: tfConfigStep1,

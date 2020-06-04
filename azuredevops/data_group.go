@@ -48,8 +48,7 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
+			return fmt.Errorf("Project with with ID %s was not found. Error: %v", projectID, err)
 		}
 		return fmt.Errorf("Error finding descriptor for project with ID %s. Error: %v", projectID, err)
 	}
