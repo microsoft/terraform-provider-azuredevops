@@ -2,40 +2,49 @@ package azuredevops
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"azuredevops_resource_authorization":         resourceResourceAuthorization(),
-			"azuredevops_branch_policy_build_validation": resourceBranchPolicyBuildValidation(),
-			"azuredevops_branch_policy_min_reviewers":    resourceBranchPolicyMinReviewers(),
-			"azuredevops_build_definition":               resourceBuildDefinition(),
-			"azuredevops_project":                        resourceProject(),
-			"azuredevops_variable_group":                 resourceVariableGroup(),
-			"azuredevops_serviceendpoint_azurerm":        resourceServiceEndpointAzureRM(),
-			"azuredevops_serviceendpoint_bitbucket":      resourceServiceEndpointBitBucket(),
-			"azuredevops_serviceendpoint_dockerregistry": resourceServiceEndpointDockerRegistry(),
-			"azuredevops_serviceendpoint_github":         resourceServiceEndpointGitHub(),
-			"azuredevops_serviceendpoint_kubernetes":     resourceServiceEndpointKubernetes(),
-			"azuredevops_git_repository":                 resourceGitRepository(),
-			"azuredevops_user_entitlement":               resourceUserEntitlement(),
-			"azuredevops_group_membership":               resourceGroupMembership(),
-			"azuredevops_agent_pool":                     resourceAzureAgentPool(),
-			"azuredevops_agent_queue":                    resourceAgentQueue(),
-			"azuredevops_group":                          resourceGroup(),
+			"azuredevops_resource_authorization":         build.ResourceResourceAuthorization(),
+			"azuredevops_branch_policy_build_validation": policy.ResourceBranchPolicyBuildValidation(),
+			"azuredevops_branch_policy_min_reviewers":    policy.ResourceBranchPolicyMinReviewers(),
+			"azuredevops_build_definition":               build.ResourceBuildDefinition(),
+			"azuredevops_project":                        core.ResourceProject(),
+			"azuredevops_variable_group":                 taskagent.ResourceVariableGroup(),
+			"azuredevops_serviceendpoint_azurerm":        serviceendpoint.ResourceServiceEndpointAzureRM(),
+			"azuredevops_serviceendpoint_bitbucket":      serviceendpoint.ResourceServiceEndpointBitBucket(),
+			"azuredevops_serviceendpoint_dockerregistry": serviceendpoint.ResourceServiceEndpointDockerRegistry(),
+			"azuredevops_serviceendpoint_github":         serviceendpoint.ResourceServiceEndpointGitHub(),
+			"azuredevops_serviceendpoint_kubernetes":     serviceendpoint.ResourceServiceEndpointKubernetes(),
+			"azuredevops_git_repository":                 git.ResourceGitRepository(),
+			"azuredevops_user_entitlement":               memberentitlementmanagement.ResourceUserEntitlement(),
+			"azuredevops_group_membership":               graph.ResourceGroupMembership(),
+			"azuredevops_agent_pool":                     taskagent.ResourceAgentPool(),
+			"azuredevops_agent_queue":                    taskagent.ResourceAgentQueue(),
+			"azuredevops_group":                          graph.ResourceGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_agent_pool":       dataAzureAgentPool(),
-			"azuredevops_agent_pools":      dataAzureAgentPools(),
-			"azuredevops_client_config":    dataClientConfig(),
-			"azuredevops_group":            dataGroup(),
-			"azuredevops_project":          dataProject(),
-			"azuredevops_projects":         dataProjects(),
-			"azuredevops_git_repositories": dataGitRepositories(),
-			"azuredevops_users":            dataUsers(),
+			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
+			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
+			"azuredevops_client_config":    service.DataClientConfig(),
+			"azuredevops_group":            graph.DataGroup(),
+			"azuredevops_project":          core.DataProject(),
+			"azuredevops_projects":         core.DataProjects(),
+			"azuredevops_git_repositories": git.DataGitRepositories(),
+			"azuredevops_users":            graph.DataUsers(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
@@ -68,7 +77,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 			terraformVersion = "0.11+compatible"
 		}
 
-		client, err := config.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
+		client, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
 
 		return client, err
 	}

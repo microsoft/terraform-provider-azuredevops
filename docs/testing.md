@@ -39,7 +39,7 @@ If HCL code must be created for performing acceptance tests, add a function to `
 Furthermore use the `testutils.GenerateResourceName()` function to generate resource names. This function adds a prefix to a random ID, makign it easy to identify resources that were created from a test.
 
 ```go
-func TestAccAzureGitRepo_CreateAndUpdate(t *testing.T) {
+func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoNameFirst := testutils.GenerateResourceName()
 	gitRepoNameSecond := testutils.GenerateResourceName()

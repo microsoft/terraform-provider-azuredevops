@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // Verifies that the following sequence of events occurrs without error:
@@ -68,7 +68,7 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 // or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.gitrepo"]
 		if !ok {
@@ -92,7 +92,7 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 }
 
 func checkGitRepoDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	// verify that every repository referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
@@ -191,7 +191,7 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 }
 
 // Lookup an Azure Git Repository using the ID, or name if the ID is not set.
-func readGitRepo(clients *config.AggregatedClient, repoID string, projectID string) (*git.GitRepository, error) {
+func readGitRepo(clients *client.AggregatedClient, repoID string, projectID string) (*git.GitRepository, error) {
 	return clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
 		RepositoryId: converter.String(repoID),
 		Project:      converter.String(projectID),

@@ -15,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 func TestAccUserEntitlement_Create(t *testing.T) {
@@ -47,7 +47,7 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 			return fmt.Errorf("Did not find a UserEntitlement in the TF state")
 		}
 
-		clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
@@ -72,7 +72,7 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 // verifies that all projects referenced in the state are destroyed. This will be invoked
 // *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkUserEntitlementDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	//verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

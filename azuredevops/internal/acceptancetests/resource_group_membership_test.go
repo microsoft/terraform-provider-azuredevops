@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // Verifies that the following sequence of events occurrs without error:
@@ -107,7 +107,7 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 
 // call AzDO API to query for group members
 func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error) {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 	return clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &groupDescriptor,
 		Direction:         &graph.GraphTraversalDirectionValues.Down,

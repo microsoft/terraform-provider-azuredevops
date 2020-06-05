@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // Verifies that the following sequence of events occurrs without error:
@@ -74,7 +74,7 @@ func checkProjectExists(expectedName string) resource.TestCheckFunc {
 			return fmt.Errorf("Did not find a project in the TF state")
 		}
 
-		clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id := resource.Primary.ID
 		project, err := readProject(clients, id)
 
@@ -93,7 +93,7 @@ func checkProjectExists(expectedName string) resource.TestCheckFunc {
 // verifies that all projects referenced in the state are destroyed. This will be invoked
 // *after* terrafform destroys the resource but *before* the state is wiped clean.
 func checkProjectDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	// verify that every project referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
@@ -112,7 +112,7 @@ func checkProjectDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func readProject(clients *config.AggregatedClient, identifier string) (*core.TeamProject, error) {
+func readProject(clients *client.AggregatedClient, identifier string) (*core.TeamProject, error) {
 	return clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
 		ProjectId:           &identifier,
 		IncludeCapabilities: converter.Bool(true),

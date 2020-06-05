@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
+func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_resource_authorization",
 		"azuredevops_build_definition",
@@ -37,7 +37,7 @@ func TestAzureDevOpsProvider_HasChildResources(t *testing.T) {
 	}
 }
 
-func TestAzureDevOpsProvider_HasChildDataSources(t *testing.T) {
+func TestProvider_HasChildDataSources(t *testing.T) {
 	expectedDataSources := []string{
 		"azuredevops_client_config",
 		"azuredevops_group",
@@ -58,7 +58,7 @@ func TestAzureDevOpsProvider_HasChildDataSources(t *testing.T) {
 	}
 }
 
-func TestAzureDevOpsProvider_SchemaIsValid(t *testing.T) {
+func TestProvider_SchemaIsValid(t *testing.T) {
 	type testParams struct {
 		name          string
 		required      bool

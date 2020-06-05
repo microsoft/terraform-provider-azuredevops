@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // Verifies that the following sequence of events occurrs without error:
@@ -70,7 +70,7 @@ func checkAgentPoolExists(expectedName string) resource.TestCheckFunc {
 			return fmt.Errorf("Did not find a agent pool in the TF state")
 		}
 
-		clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := strconv.Atoi(resource.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Parse ID error, ID:  %v !. Error= %v", resource.Primary.ID, err)
@@ -93,7 +93,7 @@ func checkAgentPoolExists(expectedName string) resource.TestCheckFunc {
 // verifies that agent pool referenced in the state is destroyed. This will be invoked
 // *after* terrafform destroys the resource but *before* the state is wiped clean.
 func checkAgentPoolDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	// verify that every agent pool referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
@@ -53,7 +53,7 @@ func checkGroupExists(resourceName, expectedName string) resource.TestCheckFunc 
 		getGroupArgs := graph.GetGroupArgs{
 			GroupDescriptor: converter.String(varGroup.Primary.Attributes["display_name"]),
 		}
-		clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
 		if err != nil {
 			return err
@@ -70,7 +70,7 @@ func checkGroupExists(resourceName, expectedName string) resource.TestCheckFunc 
 }
 
 func checkGroupDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	// verify that every project referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {

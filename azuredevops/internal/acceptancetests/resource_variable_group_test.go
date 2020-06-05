@@ -16,8 +16,8 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
@@ -171,7 +171,7 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 	return clients.TaskAgentClient.GetVariableGroup(
 		clients.Ctx,
 		taskagent.GetVariableGroupArgs{
@@ -184,7 +184,7 @@ func getVariableGroupFromResource(resource *terraform.ResourceState) (*taskagent
 // Given a resource from the state, return a definition Reference (and error)
 func getDefinitionResourceFromVariableGroupResource(resource *terraform.ResourceState) (*[]build.DefinitionResourceReference, error) {
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	return clients.BuildClient.GetProjectResources(
 		clients.Ctx,

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
@@ -234,7 +234,7 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 	return clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefID,

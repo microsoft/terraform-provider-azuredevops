@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 const terraformServiceEndpointNode = "azuredevops_serviceendpoint_kubernetes.serviceendpoint"
@@ -145,7 +145,7 @@ func getServiceEndpointKubernetesFromResource(resource *terraform.ResourceState)
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := testutils.GetProvider().Meta().(*config.AggregatedClient)
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 	return clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
 		Project:    &projectID,
 		EndpointId: &serviceEndpointDefID,

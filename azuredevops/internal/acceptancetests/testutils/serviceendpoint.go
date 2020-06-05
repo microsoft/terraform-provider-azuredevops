@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // CheckServiceEndpointExistsWithName verifies that a service endpoint of a particular type exists in the state,
@@ -59,7 +59,7 @@ func getSvcEndpointFromState(resource *terraform.ResourceState) (*serviceendpoin
 	}
 
 	projectID := resource.Primary.Attributes["project_id"]
-	clients := GetProvider().Meta().(*config.AggregatedClient)
+	clients := GetProvider().Meta().(*client.AggregatedClient)
 	return clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
 		Project:    &projectID,
 		EndpointId: &serviceEndpointDefID,
