@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -20,8 +21,14 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
 )
 
-var projectCreateTimeoutDuration time.Duration = 60 * 3
-var projectDeleteTimeoutDuration time.Duration = 60
+// timeout used to wait for operations on projects to finish before executing an update or delete
+var projectBusyTimeoutDuration time.Duration = 60 * 6
+
+// timeout used to wait for a project to finish creating
+var projectCreateTimeoutDuration time.Duration = 60 * 10
+
+// timeout used to wait for a project to finish deleting
+var projectDeleteTimeoutDuration time.Duration = 60 * 10
 
 func resourceProject() *schema.Resource {
 	return &schema.Resource{
@@ -195,12 +202,21 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateProject(clients *config.AggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
-	operationRef, err := clients.CoreClient.UpdateProject(
-		clients.Ctx,
-		core.UpdateProjectArgs{
-			ProjectUpdate: project,
-			ProjectId:     project.Id,
-		})
+	var operationRef *operations.OperationReference
+
+	// project updates may fail if there is activity going on in the project. A retry can be employed
+	// to gracefully handle errors encountered for updates, up until a timeout is reached
+	err := resource.Retry(projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+		var updateErr error
+		operationRef, updateErr = clients.CoreClient.UpdateProject(
+			clients.Ctx,
+			core.UpdateProjectArgs{
+				ProjectUpdate: project,
+				ProjectId:     project.Id,
+			})
+
+		return resource.RetryableError(updateErr)
+	})
 
 	if err != nil {
 		return err
@@ -227,8 +243,17 @@ func deleteProject(clients *config.AggregatedClient, id string, timeoutSeconds t
 		return fmt.Errorf("Invalid project UUID: %s", id)
 	}
 
-	operationRef, err := clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
-		ProjectId: &uuid,
+	var operationRef *operations.OperationReference
+
+	// project deletes may fail if there is activity going on in the project. A retry can be employed
+	// to gracefully handle errors encountered for deletes, up until a timeout is reached
+	err = resource.Retry(projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+		var deleteErr error
+		operationRef, deleteErr = clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
+			ProjectId: &uuid,
+		})
+
+		return resource.RetryableError(deleteErr)
 	})
 
 	if err != nil {
