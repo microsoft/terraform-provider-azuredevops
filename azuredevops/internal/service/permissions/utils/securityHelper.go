@@ -1,12 +1,13 @@
-package securityhelper
+package utils
 
 import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+// SetPrincipalPermissions sets permissions for a specific security namespac
 func SetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclToken *string, forcePermission *PermissionType, forceReplace bool) error {
 	principal, ok := d.GetOk("principal")
 	if !ok {
@@ -42,6 +43,7 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclT
 	return sn.SetPrincipalPermissions(&setPermissions, aclToken)
 }
 
+// GetPrincipalPermissions gets permissions for a specific security namespac
 func GetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclToken *string) (*PrincipalPermission, error) {
 	principal, ok := d.GetOk("principal")
 	if !ok {

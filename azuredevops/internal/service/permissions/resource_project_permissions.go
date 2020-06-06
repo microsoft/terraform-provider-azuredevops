@@ -1,16 +1,18 @@
-package azuredevops
+package permissions
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityhelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
-func resourceProjectPermissions() *schema.Resource {
+// ResourceProjectPermissions schema and implementation for project permission resource
+func ResourceProjectPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceProjectPermissionsCreate,
 		Read:   resourceProjectPermissionsRead,
@@ -40,9 +42,9 @@ func createProjectToken(d *schema.ResourceData) (*string, error) {
 }
 
 func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project,
 		clients.Ctx,
@@ -66,9 +68,9 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
 	if err != nil {
@@ -90,15 +92,15 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceProjectPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
 	return resourceProjectPermissionsCreate(d, m)
 }
 
 func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
 	if err != nil {
@@ -119,7 +121,7 @@ func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceProjectPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	debugWait()
+	debug.Wait()
 
 	// $PROJECT:vstfs:///Classification/TeamProject/<ProjectId>/<SubjectDescriptor>
 	return nil, errors.New("resourceProjectPermissionsImporter: Not implemented")

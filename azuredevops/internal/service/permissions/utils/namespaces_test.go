@@ -1,3 +1,3 @@
 // +build all utils securitynamespaces
 
-package securityhelper
+package utils

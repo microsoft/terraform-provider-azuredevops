@@ -1,13 +1,13 @@
 // +build all utils securitynamespaces
 
-package securityhelper
+package utils
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,4 +1,4 @@
-package azuredevops
+package permissions
 
 import (
 	"errors"
@@ -8,13 +8,15 @@ import (
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityhelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
-func resourceGitPermissions() *schema.Resource {
+// ResourceGitPermissions schema and implementation for Git repository permission resource
+func ResourceGitPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGitPermissionsCreate,
 		Read:   resourceGitPermissionsRead,
@@ -47,7 +49,7 @@ func resourceGitPermissions() *schema.Resource {
 	}
 }
 
-func createGitToken(clients *config.AggregatedClient, d *schema.ResourceData) (*string, error) {
+func createGitToken(clients *client.AggregatedClient, d *schema.ResourceData) (*string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
 		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
@@ -86,7 +88,7 @@ func createGitToken(clients *config.AggregatedClient, d *schema.ResourceData) (*
 	return &aclToken, nil
 }
 
-func getBranchByName(clients *config.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {
+func getBranchByName(clients *client.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {
 	filter := "heads/" + *branchName
 	res, err := clients.GitReposClient.GetRefs(clients.Ctx, git.GetRefsArgs{
 		RepositoryId: repositoryID,
@@ -106,9 +108,9 @@ func getBranchByName(clients *config.AggregatedClient, repositoryID *string, bra
 }
 
 func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.GitRepositories,
 		clients.Ctx,
@@ -132,9 +134,9 @@ func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	aclToken, err := createGitToken(clients, d)
 	if err != nil {
@@ -159,15 +161,15 @@ func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
 	return resourceGitPermissionsCreate(d, m)
 }
 
 func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	debug.Wait()
 
-	clients := m.(*config.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
 
 	aclToken, err := createGitToken(clients, d)
 	if err != nil {
@@ -192,7 +194,7 @@ func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	debugWait()
+	debug.Wait()
 
 	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
 	return nil, errors.New("resourceGitPermissionsImporter: Not implemented")

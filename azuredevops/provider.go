@@ -1,9 +1,6 @@
 package azuredevops
 
 import (
-	"os"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service"
@@ -12,6 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/graph"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
@@ -39,8 +37,8 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pool":                     taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                    taskagent.ResourceAgentQueue(),
 			"azuredevops_group":                          graph.ResourceGroup(),
-			"azuredevops_project_permissions":            resourceProjectPermissions(),
-			"azuredevops_git_permissions":                resourceGitPermissions(),
+			"azuredevops_project_permissions":            permissions.ResourceProjectPermissions(),
+			"azuredevops_git_permissions":                permissions.ResourceGitPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
@@ -86,15 +84,5 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 		client, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
 
 		return client, err
-	}
-}
-
-var debugWaitPassed = false
-
-func debugWait(force ...bool) {
-	bForce := force != nil && force[0]
-	if (!debugWaitPassed || bForce) && "1" == os.Getenv("AZDO_PROVIDER_DEBUG") {
-		time.Sleep(20 * time.Second)
-		debugWaitPassed = true
 	}
 }
