@@ -593,3 +593,78 @@ resource "azuredevops_resource_authorization" "auth" {
 	authorized  = %t
 }`, resourceID, authorized)
 }
+
+// HclProjectPermissions creates HCL for testing to set permissions for a AzDO project
+func HclProjectPermissions(projectName string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_project_permissions" "project-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.tf-project-readers.id
+	permissions = {
+	  DELETE              = "Deny"
+	  EDIT_BUILD_STATUS   = "NotSet"
+	  WORK_ITEM_MOVE      = "Allow"
+	  DELETE_TEST_RESULTS = "Deny"
+	}
+}
+`, projectResource)
+}
+
+// HclGitPermissions creates HCl for testing to set permissions for a the all Git repositories of AzDO project
+func HclGitPermissions(projectName string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_git_permissions" "git-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.project-readers.id
+	permissions = {
+		CreateRepository = "Deny"
+		DeleteRepository = "Deny"
+		RenameRepository = "NotSet"
+	}
+}
+`, projectResource)
+}
+
+// HclGitPermissionsForRepository creates HCl for testing to set permissions for a the all Git repositories of AzDO project
+func HclGitPermissionsForRepository(projectName string, gitRepoName string) string {
+	projectResource := HclProjectResource(projectName)
+	gitRepository := getGitRepoResource(gitRepoName, "clean")
+
+	return fmt.Sprintf(`
+%s
+
+%s
+
+data "azuredevops_group" "project-readers" {
+	project_id = azuredevops_project.project.project_id
+	name       = "Readers"
+}
+
+resource "azuredevops_git_permissions" "git-permissions" {
+	project_id    = azuredevops_project.project.project_id
+	repository_id = azuredevops_git_repository.gitrepo.id
+	principal     = data.azuredevops_group.project-readers.id
+	permissions   = {
+		CreateRepository = "Deny"
+		DeleteRepository = "Deny"
+		RenameRepository = "NotSet"
+	}
+}
+`, projectResource, gitRepository)
+}

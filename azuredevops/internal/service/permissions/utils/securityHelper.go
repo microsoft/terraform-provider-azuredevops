@@ -61,7 +61,7 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclT
 		return nil, err
 	}
 	if principalPermissions == nil || len(*principalPermissions) != 1 {
-		return nil, fmt.Errorf("Failed to retrive current permissions for principal [%s]", principalList[0])
+		return nil, fmt.Errorf("Failed to retrieve current permissions for principal [%s]", principalList[0])
 	}
 	d.SetId(fmt.Sprintf("%s/%s", *aclToken, principal.(string)))
 	for key := range ((*principalPermissions)[0]).Permissions {

@@ -31,7 +31,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
-		CheckDestroy: checkProjectDestroyed,
+		CheckDestroy: testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclProjectResource(projectNameFirst),
@@ -41,7 +41,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
-					checkProjectExists(projectNameFirst),
+					testutils.CheckProjectExists(projectNameSecond),
 				),
 			},
 			{
@@ -52,7 +52,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
-					checkProjectExists(projectNameSecond),
+					testutils.CheckProjectExists(projectNameSecond),
 				),
 			},
 			{

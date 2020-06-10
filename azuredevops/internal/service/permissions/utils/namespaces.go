@@ -14,8 +14,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+// ActionName type for an permission actions
 type ActionName string
 
+// PermissionType type for a single permission
 type PermissionType string
 
 type permissionTypeValuesType struct {
@@ -24,12 +26,14 @@ type permissionTypeValuesType struct {
 	NotSet PermissionType
 }
 
+// PermissionTypeValues valid permission action values
 var PermissionTypeValues = permissionTypeValuesType{
 	Deny:   "deny",
 	Allow:  "allow",
 	NotSet: "notset",
 }
 
+// SecurityNamespaceID the type of a security namespace id
 type SecurityNamespaceID uuid.UUID
 
 type securityNamespaceIDValuesType struct {
@@ -275,6 +279,7 @@ func (sn *securityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[
 	return idlist, nil
 }
 
+/*
 func (sn *securityNamespace) getIndentitiesFromACL(acl *security.AccessControlList) (*[]identity.Identity, error) {
 	descriptorList := []string{}
 	descriptors := ""
@@ -299,6 +304,7 @@ func (sn *securityNamespace) getIndentitiesFromACL(acl *security.AccessControlLi
 
 	return idlist, nil
 }
+*/
 
 // SetAccessControlLists sets ACLs for specifc token inside a security namespace
 func (sn *securityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission, token *string) error {

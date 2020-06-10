@@ -63,14 +63,14 @@ func createGitToken(clients *client.AggregatedClient, d *schema.ResourceData) (*
 	 * ACL for a branch inside a Git repository in a project:     repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchID#
 	 */
 	aclToken := "repoV2/" + projectID.(string)
-	repositoryID, repoOk := d.GetOkExists("repository_id")
+	repositoryID, repoOk := d.GetOk("repository_id")
 	if repoOk {
 		aclToken += "/" + repositoryID.(string)
 	}
-	branchName, branchOk := d.GetOkExists("branch_name")
+	branchName, branchOk := d.GetOk("branch_name")
 	if branchOk {
 		if !repoOk {
-			return nil, fmt.Errorf("Unable to create ACL token for branch %s, because no respository is specified", branchName)
+			return nil, fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
 		}
 		branch, err := getBranchByName(clients,
 			converter.StringFromInterface(repositoryID),
@@ -90,21 +90,30 @@ func createGitToken(clients *client.AggregatedClient, d *schema.ResourceData) (*
 
 func getBranchByName(clients *client.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {
 	filter := "heads/" + *branchName
-	res, err := clients.GitReposClient.GetRefs(clients.Ctx, git.GetRefsArgs{
+	currentToken := ""
+	args := git.GetRefsArgs{
 		RepositoryId: repositoryID,
 		Filter:       &filter,
-	})
-	if err != nil {
-		return nil, err
 	}
-	item := linq.From(res.Value).FirstWith(func(elem interface{}) bool {
-		return strings.HasSuffix(*(elem.(git.GitRef).Name), *branchName)
-	})
-	if item == nil {
-		return nil, fmt.Errorf("No branch found with name [%s] in repository with id [%s]", *branchName, *repositoryID)
+	for hasMore := true; hasMore; {
+		if currentToken != "" {
+			args.ContinuationToken = &currentToken
+		}
+		res, err := clients.GitReposClient.GetRefs(clients.Ctx, args)
+		if err != nil {
+			return nil, err
+		}
+		currentToken = res.ContinuationToken
+		hasMore = currentToken != ""
+		item := linq.From(res.Value).FirstWith(func(elem interface{}) bool {
+			return strings.HasSuffix(*(elem.(git.GitRef).Name), *branchName)
+		})
+		if item != nil {
+			gitRef := item.(git.GitRef)
+			return &gitRef, nil
+		}
 	}
-	gitRef := item.(git.GitRef)
-	return &gitRef, nil
+	return nil, fmt.Errorf("No branch found with name [%s] in repository with id [%s]", *branchName, *repositoryID)
 }
 
 func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {

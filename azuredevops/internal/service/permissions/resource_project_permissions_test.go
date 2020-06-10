@@ -1,16 +1,17 @@
+// +build all permissions resource_project_permissions
+// +build !exclude_permissions !resource_project_permissions
+
 package permissions
 
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
 
 import (
-	"context"
+	"fmt"
 	"testing"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-
-	"github.com/golang/mock/gomock"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -21,15 +22,30 @@ func init() {
  * Begin unit tests
  */
 
-func TestAzureDevOpsProjectPermissions_Create_Test(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+var projectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
+var projectToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
 
-	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
-	clients := &client.AggregatedClient{
-		CoreClient: coreClient,
-		Ctx:        context.Background(),
+func getProjecPermissionsResource(t *testing.T, projectID string) *schema.ResourceData {
+	d := schema.TestResourceDataRaw(t, ResourceProjectPermissions().Schema, nil)
+	if projectID != "" {
+		d.Set("project_id", projectID)
 	}
+	return d
+}
 
-	/* start writing test here */
+func TestProjectPermissions_CreateProjectToken(t *testing.T) {
+	var d *schema.ResourceData
+	var token *string
+	var err error
+
+	d = getProjecPermissionsResource(t, projectID)
+	token, err = createProjectToken(d)
+	assert.NotNil(t, token)
+	assert.Nil(t, err)
+	assert.Equal(t, projectToken, *token)
+
+	d = getProjecPermissionsResource(t, "")
+	token, err = createProjectToken(d)
+	assert.Nil(t, token)
+	assert.NotNil(t, err)
 }
