@@ -343,7 +343,7 @@ func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableG
 func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.VariableGroup, projectID *string) error {
 	d.SetId(fmt.Sprintf("%d", *variableGroup.Id))
 	d.Set(vgName, *variableGroup.Name)
-	d.Set(vgDescription, *variableGroup.Description)
+	d.Set(vgDescription, converter.ToString(variableGroup.Description, ""))
 	d.Set(vgProjectID, projectID)
 
 	variables, err := flattenVariables(d, variableGroup)
