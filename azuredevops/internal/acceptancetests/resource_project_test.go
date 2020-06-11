@@ -41,7 +41,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
-					testutils.CheckProjectExists(projectNameSecond),
+					testutils.CheckProjectExists(projectNameFirst),
 				),
 			},
 			{
