@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
@@ -445,7 +444,6 @@ func (sn *securityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 			AccessControlEntries: &[]security.AccessControlEntry{*aceItem},
 		}
 
-		log.Printf("[TRACE]SetAccessControlEntries: %s", spew.Sdump(container))
 		_, err = sn.securityClient.SetAccessControlEntries(sn.context, security.SetAccessControlEntriesArgs{
 			SecurityNamespaceId: &sn.namespaceID,
 			Container:           container,
