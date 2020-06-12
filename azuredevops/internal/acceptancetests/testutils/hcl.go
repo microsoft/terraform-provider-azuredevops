@@ -138,7 +138,20 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 	}`
 }
 
-// HclProjectGitRepositories HCL describing a data source for an AzDO git repo
+// HclProjectGitRepository HCL describing a single-value data source for an AzDO git repository
+func HclProjectGitRepository(projectName string, gitRepoName string) string {
+	return fmt.Sprintf(`
+data "azuredevops_project" "project" {
+	project_name = "%s"
+}
+
+data "azuredevops_git_repository" "repository" {
+	project_id = data.azuredevops_project.project.id
+	name = "%s"
+}`, projectName, gitRepoName)
+}
+
+// HclProjectGitRepositories HCL describing a multivalue data source for AzDO git repositories
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {

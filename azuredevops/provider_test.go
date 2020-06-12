@@ -47,6 +47,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_project",
 		"azuredevops_projects",
 		"azuredevops_git_repositories",
+		"azuredevops_git_repository",
 		"azuredevops_users",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_pools",

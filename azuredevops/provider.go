@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project":          core.DataProject(),
 			"azuredevops_projects":         core.DataProjects(),
 			"azuredevops_git_repositories": git.DataGitRepositories(),
+			"azuredevops_git_repository":   git.DataGitRepository(),
 			"azuredevops_users":            graph.DataUsers(),
 		},
 		Schema: map[string]*schema.Schema{
