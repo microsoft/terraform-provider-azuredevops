@@ -1,5 +1,5 @@
-// +build all core data_sources resource_project data_project
-// +build !data_sources !exclude_data_project
+// +build all core data_sources resource_project data_projects
+// +build !data_sources !exclude_data_projects
 
 package core
 

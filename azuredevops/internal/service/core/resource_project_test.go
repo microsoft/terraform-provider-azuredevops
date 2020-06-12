@@ -15,10 +15,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -264,4 +266,86 @@ func TestProject_ProjectRead_UsesNameIfIdNotSet(t *testing.T) {
 // creates an operation given a status
 func operationWithStatus(status operations.OperationStatus) operations.Operation {
 	return operations.Operation{Status: &status}
+}
+
+func TestAzureDevOpsProject_ConfigureProjectFeatures_HandleErrorCorrectly(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	coreClient := azdosdkmocks.NewMockCoreClient(ctrl)
+	featureClient := azdosdkmocks.NewMockFeaturemanagementClient(ctrl)
+	operationsClient := azdosdkmocks.NewMockOperationsClient(ctrl)
+	clients := &client.AggregatedClient{
+		CoreClient:              coreClient,
+		OperationsClient:        operationsClient,
+		FeatureManagementClient: featureClient,
+		Ctx:                     context.Background(),
+	}
+
+	const projectName = "test.project"
+	const projectID = "925a1c6a-49f6-4a29-b3ae-f467a345545a"
+	const errMsg = "GOMOCK: SetFeatureStateForScope failed"
+
+	expectedGetProjectArgs := core.GetProjectArgs{
+		ProjectId:           converter.String(projectName),
+		IncludeCapabilities: converter.Bool(true),
+		IncludeHistory:      converter.Bool(false),
+	}
+
+	coreClient.
+		EXPECT().
+		GetProject(clients.Ctx, expectedGetProjectArgs).
+		Return(&core.TeamProject{
+			Id:   converter.UUID(projectID),
+			Name: converter.String(projectName),
+		}, nil).
+		Times(1)
+
+	featureClient.
+		EXPECT().
+		SetFeatureStateForScope(clients.Ctx, gomock.Any()).
+		Return(nil, errors.New(errMsg)).
+		Times(1)
+
+	expectedQueueDeleteProjectArgs := core.QueueDeleteProjectArgs{
+		ProjectId: converter.UUID(projectID),
+	}
+
+	const operationID = "83a87383-807e-46d0-b9c3-35cd5030017a"
+	const pluginID = "cbbbd22d-353a-474b-adb2-8e95945d58c3"
+
+	coreClient.
+		EXPECT().
+		QueueDeleteProject(clients.Ctx, expectedQueueDeleteProjectArgs).
+		Return(&operations.OperationReference{
+			Id:       converter.UUID(operationID),
+			PluginId: converter.UUID(pluginID),
+		}, nil).
+		Times(1)
+
+	expectedGetOperationArgs := operations.GetOperationArgs{
+		OperationId: converter.UUID(operationID),
+		PluginId:    converter.UUID(pluginID),
+	}
+
+	operationsClient.
+		EXPECT().
+		GetOperation(clients.Ctx, expectedGetOperationArgs).
+		Return(&operations.Operation{
+			Id:       converter.UUID(operationID),
+			PluginId: converter.UUID(pluginID),
+			Status:   &operations.OperationStatusValues.Succeeded,
+		}, nil).
+		Times(1)
+
+	featureIDs := *getProjectFeatureIDs()
+	featureMap := *getProjectFeatureNameMap()
+	idx := testhelper.RandInt(0, len(featureIDs)-1)
+
+	featureStatesMap := make(map[string]interface{}, 1)
+	featureStatesMap[string(featureMap[featureIDs[idx]])] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
+	featureStates := interface{}(featureStatesMap)
+
+	err := configureProjectFeatures(clients, "", projectName, &featureStates)
+	require.NotNil(t, err)
 }

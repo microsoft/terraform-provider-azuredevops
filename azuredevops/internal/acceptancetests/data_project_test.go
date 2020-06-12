@@ -17,8 +17,7 @@ import (
 //	(2) A data source is added to the configuration, and that data source can find the created project
 func TestAccProject_DataSource(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	projectResource := testutils.HclProjectResource(projectName)
-	projectWithData := fmt.Sprintf("%s\n%s", testutils.HclProjectDataSource(projectName), projectResource)
+	projectData := testutils.HclProjectDataSource(projectName)
 
 	tfNode := "data.azuredevops_project.project"
 	resource.Test(t, resource.TestCase{
@@ -27,9 +26,7 @@ func TestAccProject_DataSource(t *testing.T) {
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config: projectResource,
-			}, {
-				Config: projectWithData,
+				Config: projectData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
 					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),

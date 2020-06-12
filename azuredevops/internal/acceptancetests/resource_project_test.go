@@ -119,3 +119,42 @@ func readProject(clients *client.AggregatedClient, identifier string) (*core.Tea
 		IncludeHistory:      converter.Bool(false),
 	})
 }
+
+func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_project.project"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclProjectResourceWithFeature(projectName, "disabled", "disabled"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
+					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
+					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
+					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
+					resource.TestCheckResourceAttr(tfNode, "features.testplans", "disabled"),
+					resource.TestCheckResourceAttr(tfNode, "features.artifacts", "disabled"),
+					checkProjectExists(projectName),
+				),
+			},
+			{
+				Config: testutils.HclProjectResourceWithFeature(projectName, "enabled", "disabled"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
+					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
+					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
+					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
+					resource.TestCheckResourceAttr(tfNode, "features.testplans", "enabled"),
+					resource.TestCheckResourceAttr(tfNode, "features.artifacts", "disabled"),
+					checkProjectExists(projectName),
+				),
+			},
+		},
+	})
+}

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
 )
 
@@ -102,4 +103,10 @@ func AccountLicensingSource(licensingSourceValue string) (*licensing.LicensingSo
 		return nil, fmt.Errorf("Error unable to match given LicensingSource :%s", licensingSourceValue)
 	}
 	return &licensingSource, nil
+}
+
+// UUID converts a string to a pointer to a UUID, will panic if the string can't be parsed to a UUID
+func UUID(szuuid string) *uuid.UUID {
+	uuid := uuid.MustParse(szuuid)
+	return &uuid
 }

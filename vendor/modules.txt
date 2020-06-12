@@ -202,6 +202,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/commerce
 github.com/microsoft/azure-devops-go-api/azuredevops/core
 github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
 github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
+github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/forminput
 github.com/microsoft/azure-devops-go-api/azuredevops/git
 github.com/microsoft/azure-devops-go-api/azuredevops/graph

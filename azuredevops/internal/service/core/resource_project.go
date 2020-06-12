@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -83,8 +84,15 @@ func ResourceProject() *schema.Resource {
 			},
 			"process_template_id": {
 				Type:     schema.TypeString,
-				ForceNew: true,
 				Computed: true,
+			},
+			"features": {
+				Type:         schema.TypeMap,
+				Optional:     true,
+				ValidateFunc: validateProjectFeatures,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
@@ -102,6 +110,14 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating project: %v", err)
 	}
 
+	featureStates, ok := d.GetOk("features")
+	if ok {
+		err = configureProjectFeatures(clients, "", *project.Name, &featureStates)
+		if err != nil {
+			return err
+		}
+	}
+
 	d.Set("project_name", *project.Name)
 	return resourceProjectRead(d, m)
 }
@@ -114,6 +130,28 @@ func createProject(clients *client.AggregatedClient, project *core.TeamProject, 
 	}
 
 	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
+}
+
+// Configure projects features for a project. If projectID is "" then the projectName will be used to locate (read) the project
+func configureProjectFeatures(clients *client.AggregatedClient, projectID string, projectName string, featureStates *interface{}) error {
+	if featureStates == nil {
+		return nil
+	}
+	featureStateMap := (*featureStates).(map[string]interface{})
+	project, err := projectRead(clients, projectID, projectName)
+	if err != nil {
+		return err
+	}
+	projectID = project.Id.String()
+	err = setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStateMap)
+	if err != nil {
+		ierr := deleteProject(clients, projectID, projectDeleteTimeoutDuration)
+		if ierr != nil {
+			err = fmt.Errorf("failed to delete new project %v after failed to apply feature settings; %w", ierr, err)
+		}
+		return err
+	}
+	return nil
 }
 
 func waitForAsyncOperationSuccess(clients *client.AggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
@@ -195,10 +233,55 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
 	}
 
-	err = updateProject(clients, project, projectCreateTimeoutDuration)
-	if err != nil {
-		return fmt.Errorf("Error updating project: %v", err)
+	requiresUpdate := false
+	if !d.HasChange("project_name") {
+		project.Name = nil
+	} else {
+		requiresUpdate = true
 	}
+	if !d.HasChange("description") {
+		project.Description = nil
+	} else {
+		requiresUpdate = true
+	}
+	if !d.HasChange("visibility") {
+		project.Visibility = nil
+	} else {
+		requiresUpdate = true
+	}
+
+	if requiresUpdate {
+		log.Printf("[TRACE] resourceProjectUpdate: updating project")
+		err = updateProject(clients, project, projectCreateTimeoutDuration)
+		if err != nil {
+			return fmt.Errorf("Error updating project: %v", err)
+		}
+	}
+
+	if d.HasChange("features") {
+		log.Printf("[TRACE] resourceProjectUpdate: updating project features")
+
+		var featureStates map[string]interface{}
+		oldFeatureStates, newFeatureStates := d.GetChange("features")
+		if len(newFeatureStates.(map[string]interface{})) <= 0 {
+			log.Printf("[TRACE] resourceProjectUpdate: new feature definition is empty; resetting to defaults")
+
+			featureStates = oldFeatureStates.(map[string]interface{})
+			pfeatureStates, err := getDefaultProjectFeatureStates(&featureStates)
+			if err != nil {
+				return nil
+			}
+			featureStates = *pfeatureStates
+		} else {
+			featureStates = newFeatureStates.(map[string]interface{})
+		}
+
+		err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, project.Id.String(), &featureStates)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceProjectRead(d, m)
 }
 
@@ -305,7 +388,6 @@ func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, for
 }
 
 func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
-	description := converter.ToString(project.Description, "")
 	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
 	processTemplateName, err := lookupProcessTemplateName(clients, processTemplateID)
 
@@ -313,13 +395,25 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 		return err
 	}
 
+	var currentFeatureStates *map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue
+	features, ok := d.GetOk("features")
+	if ok {
+		featureStates := features.(map[string]interface{})
+		states, err := getConfiguredProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, &featureStates, project.Id.String())
+		if err != nil {
+			return nil
+		}
+		currentFeatureStates = states
+	}
+
 	d.SetId(project.Id.String())
-	d.Set("project_name", *project.Name)
-	d.Set("visibility", *project.Visibility)
-	d.Set("description", description)
+	d.Set("project_name", project.Name)
+	d.Set("visibility", project.Visibility)
+	d.Set("description", project.Description)
 	d.Set("version_control", (*project.Capabilities)["versioncontrol"]["sourceControlType"])
 	d.Set("process_template_id", processTemplateID)
 	d.Set("work_item_template", processTemplateName)
+	d.Set("features", currentFeatureStates)
 
 	return nil
 }

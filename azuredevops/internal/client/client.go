@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
@@ -39,6 +40,7 @@ type AggregatedClient struct {
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
+	FeatureManagementClient       featuremanagement.Client
 	Ctx                           context.Context
 }
 
@@ -120,6 +122,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	featuremanagement := featuremanagement.NewClient(ctx, connection)
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -131,6 +135,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
+		FeatureManagementClient:       featuremanagement,
 		Ctx:                           ctx,
 	}
 
