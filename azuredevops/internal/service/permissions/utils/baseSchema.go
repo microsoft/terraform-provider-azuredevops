@@ -6,7 +6,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
-// CreatePermissionResourceSchema creates a resources schema for a Terrform permission resource
+// CreatePermissionResourceSchema creates a resources schema for a Terraform permission resource
 func CreatePermissionResourceSchema(outer map[string]*schema.Schema) map[string]*schema.Schema {
 	baseSchema := map[string]*schema.Schema{
 		"principal": {
