@@ -12,7 +12,7 @@ var debugWaitPassed = false
 const defaultWait = 20
 
 // Wait wait to attach a debugger if the environment variable AZDO_PROVIDER_DEBUG is set to 1
-// In addtion the function supports reading the wait time from the AZDO_PROVIDER_DEBUG_WAIT environment variable
+// In addition the function supports reading the wait time from the AZDO_PROVIDER_DEBUG_WAIT environment variable
 // The default waiting time is 20 seconds
 func Wait(force ...bool) {
 	if "1" == os.Getenv("AZDO_PROVIDER_DEBUG") {
