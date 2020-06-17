@@ -65,7 +65,7 @@ resource "azuredevops_build_definition" "build" {
 
   variable {
     name      = "PipelineSecret"
-    value     = "ZGV2cw"
+    secret_value     = "ZGV2cw"
     is_secret = true
   }
 }
@@ -87,7 +87,8 @@ The following arguments are supported:
 `variable` block supports the following:
 
 * `name` - (Required) The name of the variable.
-* `value` - (Required) The value of the variable.
+* `value` - (Optional) The value of the variable.
+* `secret_value` - (Optional) The secret value of the variable. Used when `is_secret` set to `true`.
 * `is_secret` - (Optional) True if the variable is a secret. Defaults to `false`.
 * `allow_override` - (Optional) True if the variable can be overridden. Defaults to `true`.
 

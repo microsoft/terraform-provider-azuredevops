@@ -23,6 +23,7 @@ const (
 	vgAllowAccess       = "allow_access"
 	vgVariable          = "variable"
 	vgValue             = "value"
+	secretVgValue       = "secret_value"
 	vgIsSecret          = "is_secret"
 	vgKeyVault          = "key_vault"
 	vgServiceEndpointId = "service_endpoint_id"
@@ -81,6 +82,13 @@ func ResourceVariableGroup() *schema.Resource {
 						vgValue: {
 							Type:          schema.TypeString,
 							Optional:      true,
+							Default:       "",
+							ConflictsWith: []string{vgKeyVault},
+						},
+						secretVgValue: {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Sensitive:     true,
 							Default:       "",
 							ConflictsWith: []string{vgKeyVault},
 						},
@@ -305,9 +313,18 @@ func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableG
 
 	for _, variable := range variables {
 		asMap := variable.(map[string]interface{})
-		variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
-			Value:    converter.String(asMap[vgValue].(string)),
-			IsSecret: converter.Bool(asMap[vgIsSecret].(bool)),
+
+		isSecret := converter.Bool(asMap[vgIsSecret].(bool))
+		if *isSecret {
+			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+				Value:    converter.String(asMap[secretVgValue].(string)),
+				IsSecret: isSecret,
+			}
+		} else {
+			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+				Value:    converter.String(asMap[vgValue].(string)),
+				IsSecret: isSecret,
+			}
 		}
 	}
 
@@ -389,7 +406,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 		}
 
 		if isKeyVaultVariableGroupType(variableGroup.Type) {
-			variables[index], err = flattenKeyVaultVariable(d, variableAsJSON, varName)
+			variables[index], err = flattenKeyVaultVariable(variableAsJSON, varName)
 		} else {
 			variables[index], err = flattenVariable(d, variableAsJSON, varName)
 		}
@@ -404,7 +421,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 	return variables, nil
 }
 
-func flattenKeyVaultVariable(d *schema.ResourceData, variableAsJSON []byte, varName string) (map[string]interface{}, error) {
+func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]interface{}, error) {
 	var variable taskagent.AzureKeyVaultVariableValue
 	err := json.Unmarshal(variableAsJSON, &variable)
 	if err != nil {
@@ -414,6 +431,7 @@ func flattenKeyVaultVariable(d *schema.ResourceData, variableAsJSON []byte, varN
 	variableMap := map[string]interface{}{
 		vgName:        varName,
 		vgValue:       nil,
+		secretVgValue: nil,
 		vgIsSecret:    false,
 		vgEnabled:     converter.ToBool(variable.Enabled, false),
 		vgContentType: converter.ToString(variable.ContentType, ""),

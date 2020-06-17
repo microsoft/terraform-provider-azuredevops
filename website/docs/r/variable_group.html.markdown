@@ -48,6 +48,7 @@ A `variable` block supports the following:
 
 * `name` - (Required) The key value used for the variable. Must be unique within the Variable Group.
 * `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
+* `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
 * `is_secret` - (Optional) A boolean flag describing if the variable value is sensitive. Defaults to `false`.
 
 ## Attributes Reference

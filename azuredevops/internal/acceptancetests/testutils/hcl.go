@@ -304,7 +304,7 @@ resource "azuredevops_variable_group" "vg" {
 	allow_access = %t
 	variable {
 		name      = "key1"
-		value     = "value1"
+		secret_value  = "value1"
 		is_secret = true
 	}
 
@@ -526,7 +526,7 @@ resource "azuredevops_build_definition" "b" {
 
 	variable {
 		name      = "BAR_VAR"
-		value     = "%s"
+		secret_value     = "%s"
 		is_secret = true
 	}
 }`, name, name, name, varValue, secretVarValue)

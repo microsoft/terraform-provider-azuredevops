@@ -21,6 +21,7 @@ const (
 	bdVariable              = "variable"
 	bdVariableName          = "name"
 	bdVariableValue         = "value"
+	bdSecretVariableValue   = "secret_value"
 	bdVariableIsSecret      = "is_secret"
 	bdVariableAllowOverride = "allow_override"
 )
@@ -110,9 +111,15 @@ func ResourceBuildDefinition() *schema.Resource {
 							ValidateFunc: validate.NoEmptyStrings,
 						},
 						bdVariableValue: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validate.NoEmptyStrings,
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
+						bdSecretVariableValue: {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+							Default:   "",
 						},
 						bdVariableIsSecret: {
 							Type:     schema.TypeBool,
@@ -783,10 +790,18 @@ func expandVariables(d *schema.ResourceData) (*map[string]build.BuildDefinitionV
 			return nil, fmt.Errorf("Unexpectedly found duplicate variable with name %s", varName)
 		}
 
+		isSecret := converter.Bool(varAsMap[bdVariableIsSecret].(bool))
+		var val *string
+
+		if *isSecret {
+			val = converter.String(varAsMap[bdSecretVariableValue].(string))
+		} else {
+			val = converter.String(varAsMap[bdVariableValue].(string))
+		}
 		expandedVars[varName] = build.BuildDefinitionVariable{
 			AllowOverride: converter.Bool(varAsMap[bdVariableAllowOverride].(bool)),
-			IsSecret:      converter.Bool(varAsMap[bdVariableIsSecret].(bool)),
-			Value:         converter.String(varAsMap[bdVariableValue].(string)),
+			IsSecret:      isSecret,
+			Value:         val,
 		}
 	}
 
