@@ -2,16 +2,16 @@ package azuredevops
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/build"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/git"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/graph"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 )
 
 // Provider - The top level Azure DevOps Provider definition.

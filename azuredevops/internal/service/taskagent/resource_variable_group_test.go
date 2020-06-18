@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func TestVariableGroupAllowAccess_ExpandFlatten_Roundtrip(t *testing.T) {

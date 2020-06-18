@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataUsers schema and implementation for users data source

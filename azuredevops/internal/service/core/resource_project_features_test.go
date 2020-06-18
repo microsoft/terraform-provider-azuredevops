@@ -13,11 +13,11 @@ import (
 	"testing"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 
 	"github.com/golang/mock/gomock"
 )

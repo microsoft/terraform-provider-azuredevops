@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops"
 )
 
 // initialized once, so it can be shared by each acceptance test

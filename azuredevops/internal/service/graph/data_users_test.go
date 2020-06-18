@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"

@@ -11,10 +11,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 var agentQueueProject = "project"

@@ -1,7 +1,7 @@
 # Terraform Provider for Azure DevOps (Devops Resource Manager)
 
 [![Gitter](https://badges.gitter.im/terraform-provider-azuredevops/community.svg)](https://gitter.im/terraform-provider-azuredevops/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Go Report Card](https://goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
+[![Go Report Card](https://goreportcard.com/badge/github.com/terraform-providers/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/terraform-providers/terraform-provider-azuredevops)
 
 The AzureRM Provider supports Terraform 0.12.x and later.
 
@@ -52,9 +52,9 @@ resource "azuredevops_build_definition" "build_definition" {
 
 ## Installation
 
-Currently, the provider is not available via the terraform provider registry yet. While this is in progress (https://github.com/microsoft/terraform-provider-azuredevops/issues/241), the provider needs to be installed manually:
+Currently, the provider is not available via the terraform provider registry yet. While this is in progress (https://github.com/terraform-providers/terraform-provider-azuredevops/issues/241), the provider needs to be installed manually:
 
-1. Download the latest version https://github.com/microsoft/terraform-provider-azuredevops/releases
+1. Download the latest version https://github.com/terraform-providers/terraform-provider-azuredevops/releases
 2. Unpack the contents into the plugin directory `terraform.d/plugins/<your platform>/`
 3. Run `terraform init`
 
@@ -86,11 +86,11 @@ First clone the repository to: `$GOPATH/src/github.com/terraform-providers/terra
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers && cd "$_"
-$ git clone git@github.com:microsoft/terraform-provider-azuredevops.git
+$ git clone git@github.com:terraform-providers/terraform-provider-azuredevops.git
 $ cd terraform-provider-azuredevops
 ```
 
-Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/docs/contributing.md#3-build--install-provider).
+Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/terraform-providers/terraform-provider-azuredevops/blob/master/docs/contributing.md#3-build--install-provider).
 These commands will sideload the plugin for Terraform.
 
 ### Using a directory separate from GOPATH

@@ -19,7 +19,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/terraform-provider-azuredevops/version"
+	"github.com/terraform-providers/terraform-provider-azuredevops/version"
 )
 
 // AggregatedClient aggregates all of the underlying clients into a single data

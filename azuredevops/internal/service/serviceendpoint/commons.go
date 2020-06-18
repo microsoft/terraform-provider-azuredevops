@@ -7,11 +7,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"

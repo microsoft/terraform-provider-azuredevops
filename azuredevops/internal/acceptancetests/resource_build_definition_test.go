@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
