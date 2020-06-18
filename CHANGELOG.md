@@ -1,4 +1,4 @@
-## 0.0.1 (Unreleased)
+## 0.0.1 (June 18, 2020)
 
 NOTES:
 * The Azure DevOps provider can be used to configure Azure DevOps project in [Microsoft Azure](https://azure.microsoft.com/en-us/) using [Azure DevOps Service REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1)
