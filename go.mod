@@ -1,4 +1,4 @@
-module github.com/microsoft/terraform-provider-azuredevops
+module github.com/terraform-providers/terraform-provider-azuredevops
 
 go 1.13
 
