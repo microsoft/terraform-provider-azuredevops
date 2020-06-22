@@ -26,7 +26,7 @@ const (
 	secretVgValue       = "secret_value"
 	vgIsSecret          = "is_secret"
 	vgKeyVault          = "key_vault"
-	vgServiceEndpointId = "service_endpoint_id"
+	vgServiceEndpointID = "service_endpoint_id"
 	vgContentType       = "content_type"
 	vgEnabled           = "enabled"
 	vgExpires           = "expires"
@@ -124,7 +124,7 @@ func ResourceVariableGroup() *schema.Resource {
 							Required:     true,
 							ValidateFunc: validate.NoEmptyStrings,
 						},
-						vgServiceEndpointId: {
+						vgServiceEndpointID: {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validate.UUID,
@@ -334,19 +334,19 @@ func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableG
 		Variables:   &variableMap,
 	}
 
-	key_vault := d.Get(vgKeyVault).([]interface{})
+	keyVault := d.Get(vgKeyVault).([]interface{})
 
 	// Note: this will be of length 1 based on the schema definition above.
-	if len(key_vault) == 1 {
-		keyVaultValues := key_vault[0].(map[string]interface{})
+	if len(keyVault) == 1 {
+		keyVaultValues := keyVault[0].(map[string]interface{})
 
-		serviceEndpointId, err := uuid.Parse(keyVaultValues[vgServiceEndpointId].(string))
+		serviceEndpointID, err := uuid.Parse(keyVaultValues[vgServiceEndpointID].(string))
 		if err != nil {
 			return nil, nil, err
 		}
 
 		variableGroup.ProviderData = taskagent.AzureKeyVaultVariableGroupProviderData{
-			ServiceEndpointId: &serviceEndpointId,
+			ServiceEndpointId: &serviceEndpointID,
 			Vault:             converter.String(keyVaultValues[vgName].(string)),
 		}
 
@@ -473,7 +473,7 @@ func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGr
 
 	keyVault := []map[string]interface{}{{
 		vgName:              providerData.Vault,
-		vgServiceEndpointId: providerData.ServiceEndpointId.String(),
+		vgServiceEndpointID: providerData.ServiceEndpointId.String(),
 	}}
 
 	return keyVault, nil
