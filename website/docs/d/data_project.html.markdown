@@ -47,7 +47,6 @@ The following arguments are supported:
 
 - `project_name` - (Required) Name of the Project.
 
-
 ## Attributes Reference
 
 The following attributes are exported:
