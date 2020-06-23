@@ -6,6 +6,7 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_bitbucket
+
 Manages a Bitbucket service endpoint within Azure DevOps.
 
 ## Example Usage
@@ -29,28 +30,30 @@ resource "azuredevops_serviceendpoint_bitbucket" "serviceendpoint" {
 
 ## Argument Reference
 
-The following arguments are supported: 
+The following arguments are supported:
 
-* `project_id` - (Required) The project ID or project name.
-* `service_endpoint_name` - (Required) The Service Endpoint name.
-* `username` - (Required) Bitbucket account username.
-* `password` - (Required) Bitbucket account password.
-* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+- `project_id` - (Required) The project ID or project name.
+- `service_endpoint_name` - (Required) The Service Endpoint name.
+- `username` - (Required) Bitbucket account username.
+- `password` - (Required) Bitbucket account password.
+- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the service endpoint.
-* `project_id` - The project ID or project name.
-* `service_endpoint_name` - The Service Endpoint name.
+- `id` - The ID of the service endpoint.
+- `project_id` - The project ID or project name.
+- `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
-* [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+
+- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
 
 ## Import
+
 Azure DevOps Service Endpoint Bitbucket can be imported using the **projectID/serviceEndpointID**, e.g.
 
-```
+```sh
  terraform import azuredevops_serviceendpoint_bitbucket.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```

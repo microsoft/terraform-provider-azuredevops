@@ -16,9 +16,9 @@ Azure DevOps provider support personal access token for authenticating to Azure 
 Set the two environment variables. For more details, see the [Readme](../../../README.md).
 `AZDO_PERSONAL_ACCESS_TOKEN` and `AZDO_ORG_SERVICE_URL`. If you use bash, you can try this.
 
-```bash
-$ export AZDO_PERSONAL_ACCESS_TOKEN=<Personal Access Token>
-$ export AZDO_ORG_SERVICE_URL=https://dev.azure.com/<Your Org Name>
+```sh
+export AZDO_PERSONAL_ACCESS_TOKEN=<Personal Access Token>
+export AZDO_ORG_SERVICE_URL=https://dev.azure.com/<Your Org Name>
 ```
 
 ## Configuration
