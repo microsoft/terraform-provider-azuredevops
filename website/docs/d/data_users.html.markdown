@@ -51,7 +51,7 @@ DataSource without specifying any arguments will return all users inside an orga
 
 List of possible subject types
 
-```
+```hcl
 AadUser                 = "aad"    # Azure Active Directory Tenant
 MsaUser                 = "msa"    # Windows Live
 UnknownUser             = "unusr"
@@ -76,7 +76,7 @@ Unknown                 = "ukn"
 
 List of possible origins
 
-```
+```hcl
 ActiveDirectory          = "ad"   # Windows Active Directory
 AzureActiveDirectory     = "aad"  # Azure Active Directory
 MicrosoftAccount         = "msa"  # Windows Live Account

@@ -35,7 +35,6 @@ The following arguments are supported:
 
 - `name` - (Required) Name of the Agent Pool.
 
-
 ## Attributes Reference
 
 The following attributes are exported:
