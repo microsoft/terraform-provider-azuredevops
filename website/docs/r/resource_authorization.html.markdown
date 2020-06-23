@@ -1,4 +1,12 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_resource_authorization"
+description: |-
+  Manages authorization of resources within Azure DevOps organization.
+---
+
 # azuredevops_resource_authorization
+
 Manages authorization of resources, e.g. for access in build pipelines.
 
 Currently supported resources: service endpoint (aka service connection, endpoint).
@@ -36,9 +44,8 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported: 
-
-n/a
+No attributes are exported
 
 ## Relevant Links
+
 * [Azure DevOps Service REST API 5.1 - Authorize Definition Resource](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/resources/authorize%20definition%20resources?view=azure-devops-rest-5.1)
