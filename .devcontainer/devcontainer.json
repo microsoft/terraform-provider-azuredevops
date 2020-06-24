@@ -52,7 +52,7 @@
 		},
 	},
 	"extensions": [
-		"ms-vscode.go",
+		"golang.go",
 		"mauve.terraform",
 		"ms-vscode.powershell",
 		"ms-azuretools.vscode-docker",
