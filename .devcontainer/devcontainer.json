@@ -17,39 +17,7 @@
 	"postCreateCommand": "mkdir -p /root/.ssh && cp -r /root/.ssh-localhost/* /root/.ssh && chmod 700 /root/.ssh && chmod 600 /root/.ssh/*",
 	"settings": {
 		"files.eol": "\n",
-		"go.gopath": "/go",
 		"terminal.integrated.shell.linux": "/bin/bash",
-		"go.useLanguageServer": true,
-		"go.autocompleteUnimportedPackages": true,
-		"go.gotoSymbol.includeImports": true,
-		"go.gotoSymbol.includeGoroot": true,
-		"go.toolsEnvVars": {
-			"GO111MODULE": "on"
-		},
-		"go.lintFlags": [
-			"--fast"
-		],
-		"go.testFlags": [
-			"-v",
-			"-tags=all"
-		],
-		"go.testTimeout": "90s",
-		"go.testEnvVars": {
-			"TF_ACC": "1"
-		},
-		"go.testEnvFile": "${workspaceFolder}/.env",
-		"[go]": {
-			"editor.formatOnSave": true,
-			"editor.codeActionsOnSave": {
-				"source.organizeImports": true
-			}
-		},
-		"gopls": {
-			"usePlaceholders": true, // add parameter placeholders when completing a function
-			// Experimental settings
-			"completeUnimported": true, // autocomplete unimported packages
-			"deepCompletion": true // enable deep completion
-		},
 	},
 	"extensions": [
 		"ms-vscode.go",

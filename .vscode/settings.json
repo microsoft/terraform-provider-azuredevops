@@ -1,6 +1,34 @@
 {
-    "go.testTags": "all",
-    "gopls.env": {
-        "GOFLAGS": "-tags=all"
-    },    
+    "go.gopath": "/go",
+    "go.useLanguageServer": true,
+    "go.autocompleteUnimportedPackages": true,
+    "go.gotoSymbol.includeImports": true,
+    "go.gotoSymbol.includeGoroot": true,
+    "go.toolsEnvVars": {
+        "GO111MODULE": "on"
+    },
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "go.testFlags": [
+        "-v",
+        "-tags=all"
+    ],
+    "go.testTimeout": "90s",
+    "go.testEnvVars": {
+        "TF_ACC": "1"
+    },
+    "go.testEnvFile": "${workspaceFolder}/.env",
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "gopls": {
+        "usePlaceholders": true, // add parameter placeholders when completing a function
+        // Experimental settings
+        "completeUnimported": true, // autocomplete unimported packages
+        "deepCompletion": true // enable deep completion
+    },
 }
