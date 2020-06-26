@@ -22,7 +22,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-var projectId = "projectid"
+var projectID = "projectid"
+var definitionID = 666
 var endpointId = uuid.New()
 
 var resourceReferenceAuthorized = build.DefinitionResourceReference{
@@ -41,12 +42,13 @@ var resourceReferenceNotAuthorized = build.DefinitionResourceReference{
 
 func TestResourceAuthorization_FlattenExpand_RoundTrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceResourceAuthorization().Schema, nil)
-	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectId)
+	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectID, definitionID)
 
-	resourceReferenceAfterRoundtrip, projectIdAfterRoundtrip, err := expandAuthorizedResource(resourceData)
+	resourceReferenceAfterRoundtrip, projectIdAfterRoundtrip, definitionIDAfterRoundTrip, err := expandAuthorizedResource(resourceData)
 	require.Nil(t, err)
 	require.Equal(t, resourceReferenceAuthorized, *resourceReferenceAfterRoundtrip)
-	require.Equal(t, projectId, projectIdAfterRoundtrip)
+	require.Equal(t, projectID, projectIdAfterRoundtrip)
+	require.Equal(t, definitionID, definitionIDAfterRoundTrip)
 }
 
 func TestResourceAuthorization_Create_DoesNotSwallowError(t *testing.T) {
@@ -72,14 +74,14 @@ func TestResourceAuthorization_Update_DoesNotSwallowError(t *testing.T) {
 func prepareForCreateOrUpdate(t *testing.T, ctrl *gomock.Controller, expectedMessage string) (*schema.Resource, *schema.ResourceData, *client.AggregatedClient) {
 	r := ResourceResourceAuthorization()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectId)
+	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectID, 0)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.AuthorizeProjectResourcesArgs{
 		Resources: &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
-		Project:   &projectId,
+		Project:   &projectID,
 	}
 	buildClient.
 		EXPECT().
@@ -95,13 +97,13 @@ func TestResourceAuthorization_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceResourceAuthorization()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectId)
+	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectID, 0)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.GetProjectResourcesArgs{
-		Project: &projectId,
+		Project: &projectID,
 		Type:    resourceReferenceAuthorized.Type,
 		Id:      resourceReferenceAuthorized.Id,
 	}
@@ -121,14 +123,14 @@ func TestResourceAuthorization_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceResourceAuthorization()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuthorizedResource(resourceData, &resourceReferenceNotAuthorized, projectId)
+	flattenAuthorizedResource(resourceData, &resourceReferenceNotAuthorized, projectID, 0)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.AuthorizeProjectResourcesArgs{
 		Resources: &[]build.DefinitionResourceReference{resourceReferenceNotAuthorized},
-		Project:   &projectId,
+		Project:   &projectID,
 	}
 	buildClient.
 		EXPECT().
