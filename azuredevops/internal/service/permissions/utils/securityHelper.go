@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // SetPrincipalPermissions sets permissions for a specific security namespac
-func SetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclToken *string, forcePermission *PermissionType, forceReplace bool) error {
+func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string, forcePermission *PermissionType, forceReplace bool) error {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return fmt.Errorf("Failed to get 'principal' from schema")
@@ -44,7 +44,7 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclT
 }
 
 // GetPrincipalPermissions gets permissions for a specific security namespac
-func GetPrincipalPermissions(d *schema.ResourceData, sn *securityNamespace, aclToken *string) (*PrincipalPermission, error) {
+func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string) (*PrincipalPermission, error) {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return nil, fmt.Errorf("Failed to get 'principal' from schema")

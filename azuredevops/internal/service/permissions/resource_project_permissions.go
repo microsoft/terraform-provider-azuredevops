@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceProjectPermissions schema and implementation for project permission resource
@@ -46,8 +46,8 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.Project,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {
@@ -72,7 +72,10 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.Project,
+		clients.SecurityClient,
+		clients.IdentityClient)
 	if err != nil {
 		return err
 	}
@@ -102,7 +105,10 @@ func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) err
 
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.Project,
+		clients.SecurityClient,
+		clients.IdentityClient)
 	if err != nil {
 		return err
 	}

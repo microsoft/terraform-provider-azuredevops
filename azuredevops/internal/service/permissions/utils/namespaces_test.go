@@ -15,11 +15,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/assert"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 type isReadIdentitiesArgs struct{ t identity.ReadIdentitiesArgs }
@@ -304,7 +304,7 @@ func TestSecurityNamespace_GetActionDefinitions_HandleError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -332,7 +332,7 @@ func TestSecurityNamespace_GetActionDefinitions_EnsureExistingValuesUnchanged(t 
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -369,7 +369,7 @@ func TestSecurityNamespace_GetActionDefinitions_EmptyResultError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -398,7 +398,7 @@ func TestSecurityNamespace_GetActionDefinitions_ValidMapping(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -433,7 +433,7 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -466,7 +466,7 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -504,7 +504,7 @@ func TestSecurityNamespace_GetAccessControlList_VerifyReturn(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -543,7 +543,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleError(t *testing.T)
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -576,7 +576,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleEmptyReturn(t *test
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -611,7 +611,7 @@ func TestSecurityNamespace_GetIndentitiesFromSubjects_VerifyReturn(t *testing.T)
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -648,7 +648,7 @@ func TestSecurityNamespace_GetIndentitiesFromACL_HandleError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -676,7 +676,7 @@ func TestSecurityNamespace_GetIndentitiesFromACL_VerifyReturn(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -713,7 +713,7 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(SecurityNamespaceIDValues.Project, clients.Ctx, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 

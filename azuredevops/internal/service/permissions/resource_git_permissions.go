@@ -8,11 +8,11 @@ import (
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceGitPermissions schema and implementation for Git repository permission resource
@@ -121,8 +121,8 @@ func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
 
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.GitRepositories,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {
@@ -152,8 +152,8 @@ func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.GitRepositories,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {
@@ -185,8 +185,8 @@ func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.GitRepositories,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {

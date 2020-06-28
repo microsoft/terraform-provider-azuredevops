@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataGitRepository schema and implementation for Git repository data source

@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // ActionName type for an permission actions
@@ -174,7 +174,8 @@ type SetPrincipalPermission struct {
 	PrincipalPermission PrincipalPermission
 }
 
-type securityNamespace struct {
+// SecurityNamespace an Azure DevOps Security Namespace
+type SecurityNamespace struct {
 	namespaceID    uuid.UUID
 	context        context.Context
 	securityClient security.Client
@@ -183,7 +184,7 @@ type securityNamespace struct {
 }
 
 // NewSecurityNamespace Creates a new instance of a security namespace
-func NewSecurityNamespace(namespaceID SecurityNamespaceID, context context.Context, securityClient security.Client, identityClient identity.Client) (*securityNamespace, error) {
+func NewSecurityNamespace(context context.Context, namespaceID SecurityNamespaceID, securityClient security.Client, identityClient identity.Client) (*SecurityNamespace, error) {
 	if nil == context {
 		return nil, fmt.Errorf("context is nil")
 	}
@@ -193,7 +194,7 @@ func NewSecurityNamespace(namespaceID SecurityNamespaceID, context context.Conte
 	if nil == identityClient {
 		return nil, fmt.Errorf("identityClient is nil")
 	}
-	sn := new(securityNamespace)
+	sn := new(SecurityNamespace)
 	sn.context = context
 	sn.namespaceID = uuid.UUID(namespaceID)
 	sn.securityClient = securityClient
@@ -201,7 +202,7 @@ func NewSecurityNamespace(namespaceID SecurityNamespaceID, context context.Conte
 	return sn, nil
 }
 
-func (sn *securityNamespace) getActionDefinitions() (*map[string]security.ActionDefinition, error) {
+func (sn *SecurityNamespace) getActionDefinitions() (*map[string]security.ActionDefinition, error) {
 	if sn.actions == nil {
 		secns, err := sn.securityClient.QuerySecurityNamespaces(sn.context, security.QuerySecurityNamespacesArgs{
 			SecurityNamespaceId: &sn.namespaceID,
@@ -222,7 +223,7 @@ func (sn *securityNamespace) getActionDefinitions() (*map[string]security.Action
 	return sn.actions, nil
 }
 
-func (sn *securityNamespace) getAccessControlList(token *string, descriptorList *[]string) (*security.AccessControlList, error) {
+func (sn *SecurityNamespace) getAccessControlList(token *string, descriptorList *[]string) (*security.AccessControlList, error) {
 	var descriptors *string = nil
 	if descriptorList != nil && len(*descriptorList) > 0 {
 		val := linq.From(*descriptorList).
@@ -252,7 +253,7 @@ func (sn *securityNamespace) getAccessControlList(token *string, descriptorList 
 	return &(*acl)[0], nil
 }
 
-func (sn *securityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[]identity.Identity, error) {
+func (sn *SecurityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[]identity.Identity, error) {
 	if principal == nil || len(*principal) <= 0 {
 		return nil, fmt.Errorf("principal is nil or empty")
 	}
@@ -279,7 +280,7 @@ func (sn *securityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[
 }
 
 /*
-func (sn *securityNamespace) getIndentitiesFromACL(acl *security.AccessControlList) (*[]identity.Identity, error) {
+func (sn *SecurityNamespace) getIndentitiesFromACL(acl *security.AccessControlList) (*[]identity.Identity, error) {
 	descriptorList := []string{}
 	descriptors := ""
 	for key := range *acl.AcesDictionary {
@@ -305,8 +306,8 @@ func (sn *securityNamespace) getIndentitiesFromACL(acl *security.AccessControlLi
 }
 */
 
-// SetAccessControlLists sets ACLs for specifc token inside a security namespace
-func (sn *securityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission, token *string) error {
+// SetPrincipalPermissions sets ACLs for specifc token inside a security namespace
+func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission, token *string) error {
 	if nil == permissionList || len(*permissionList) <= 0 {
 		return fmt.Errorf("permissionMap is nil or empty")
 	}
@@ -456,7 +457,8 @@ func (sn *securityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 	return nil
 }
 
-func (sn *securityNamespace) GetPrincipalPermissions(token *string, principal *[]string) (*[]PrincipalPermission, error) {
+// GetPrincipalPermissions returns an array of PrincipalPermission for a Security Namespace token an a list of principals
+func (sn *SecurityNamespace) GetPrincipalPermissions(token *string, principal *[]string) (*[]PrincipalPermission, error) {
 	if nil == token || len(*token) <= 0 {
 		return nil, fmt.Errorf("token is nil or empty")
 	}
@@ -516,7 +518,8 @@ func (sn *securityNamespace) GetPrincipalPermissions(token *string, principal *[
 	return &permissions, nil
 }
 
-func (sn *securityNamespace) RemovePrincipalPermissions(token *string, principal *[]string) error {
+// RemovePrincipalPermissions removes all permissions for given principals and a Security Namespace token
+func (sn *SecurityNamespace) RemovePrincipalPermissions(token *string, principal *[]string) error {
 	if nil == token || len(*token) <= 0 {
 		return fmt.Errorf("token is nil or empty")
 	}

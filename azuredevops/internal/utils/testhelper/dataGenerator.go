@@ -9,7 +9,7 @@ func CreateUUID() *uuid.UUID {
 }
 
 // ToUUID creates a UUID from a string value
-func ToUUID(szUuid string) *uuid.UUID {
-	val := uuid.MustParse(szUuid)
+func ToUUID(szUUID string) *uuid.UUID {
+	val := uuid.MustParse(szUUID)
 	return &val
 }

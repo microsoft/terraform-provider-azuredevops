@@ -120,6 +120,7 @@ func UUID(szuuid string) *uuid.UUID {
 	return &uuid
 }
 
+// DecodeUtf16HexString decodes a binary representation of an UTF16 string
 func DecodeUtf16HexString(message string) (string, error) {
 	b, err := hex.DecodeString(message)
 	if err != nil {
@@ -132,6 +133,7 @@ func DecodeUtf16HexString(message string) (string, error) {
 	return string(utf16.Decode(ints)), nil
 }
 
+// EncodeUtf16HexString encodes a string into an binary representation with UTF16 enoding
 func EncodeUtf16HexString(message string) (string, error) {
 	runeByte := []rune(message)
 	encodedByte := utf16.Encode(runeByte)
