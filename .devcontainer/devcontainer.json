@@ -52,8 +52,8 @@
 		},
 	},
 	"extensions": [
-		"ms-vscode.go",
-		"mauve.terraform",
+		"golang.go",
+		"hashicorp.terraform",
 		"ms-vscode.powershell",
 		"ms-azuretools.vscode-docker",
 		"ms-vsliveshare.vsliveshare",
