@@ -40,6 +40,17 @@ var resourceReferenceNotAuthorized = build.DefinitionResourceReference{
 	Type:       converter.String("endpoint"),
 }
 
+var projectResourcesArgsAuthorized = build.AuthorizeProjectResourcesArgs{
+	Resources: &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
+	Project:   &projectID,
+}
+
+var definitionResourcesArgsAuthorized = build.AuthorizeDefinitionResourcesArgs{
+	Resources:    &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
+	Project:      &projectID,
+	DefinitionId: &definitionID,
+}
+
 func TestResourceAuthorization_FlattenExpand_RoundTrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceResourceAuthorization().Schema, nil)
 	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectID, definitionID)
@@ -60,11 +71,7 @@ var tests = []struct {
 	{
 		Name: "Create project resource authorizations",
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeProjectResourcesArgs{
-				Resources: &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
-				Project:   &projectID,
-			}
-			return mr.AuthorizeProjectResources(clients.Ctx, expectedArgs)
+			return mr.AuthorizeProjectResources(clients.Ctx, projectResourcesArgsAuthorized)
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Create(resourceData, clients)
@@ -74,12 +81,7 @@ var tests = []struct {
 		Name:         "Create pipeline resource authorizations",
 		DefinitionID: definitionID,
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeDefinitionResourcesArgs{
-				Resources:    &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
-				Project:      &projectID,
-				DefinitionId: &definitionID,
-			}
-			return mr.AuthorizeDefinitionResources(clients.Ctx, expectedArgs)
+			return mr.AuthorizeDefinitionResources(clients.Ctx, definitionResourcesArgsAuthorized)
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Create(resourceData, clients)
@@ -88,11 +90,7 @@ var tests = []struct {
 	{
 		Name: "Create project resource authorizations",
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeProjectResourcesArgs{
-				Resources: &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
-				Project:   &projectID,
-			}
-			return mr.AuthorizeProjectResources(clients.Ctx, expectedArgs)
+			return mr.AuthorizeProjectResources(clients.Ctx, projectResourcesArgsAuthorized)
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Update(resourceData, clients)
@@ -102,13 +100,7 @@ var tests = []struct {
 		Name:         "Create pipeline resource authorizations",
 		DefinitionID: definitionID,
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeDefinitionResourcesArgs{
-				Resources:    &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
-				Project:      &projectID,
-				DefinitionId: &definitionID,
-			}
-
-			return mr.AuthorizeDefinitionResources(clients.Ctx, expectedArgs)
+			return mr.AuthorizeDefinitionResources(clients.Ctx, definitionResourcesArgsAuthorized)
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Update(resourceData, clients)
@@ -117,13 +109,11 @@ var tests = []struct {
 	{
 		Name: "Read project resource authorizations",
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.GetProjectResourcesArgs{
+			return mr.GetProjectResources(clients.Ctx, build.GetProjectResourcesArgs{
 				Project: &projectID,
 				Type:    resourceReferenceAuthorized.Type,
 				Id:      resourceReferenceAuthorized.Id,
-			}
-
-			return mr.GetProjectResources(clients.Ctx, expectedArgs)
+			})
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Read(resourceData, clients)
@@ -133,12 +123,10 @@ var tests = []struct {
 		Name:         "Read pipeline resource authorizations",
 		DefinitionID: definitionID,
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.GetDefinitionResourcesArgs{
+			return mr.GetDefinitionResources(clients.Ctx, build.GetDefinitionResourcesArgs{
 				Project:      &projectID,
 				DefinitionId: &definitionID,
-			}
-
-			return mr.GetDefinitionResources(clients.Ctx, expectedArgs)
+			})
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Read(resourceData, clients)
@@ -147,11 +135,10 @@ var tests = []struct {
 	{
 		Name: "Delete project resource authorizations",
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeProjectResourcesArgs{
+			return mr.AuthorizeProjectResources(clients.Ctx, build.AuthorizeProjectResourcesArgs{
 				Resources: &[]build.DefinitionResourceReference{resourceReferenceNotAuthorized},
 				Project:   &projectID,
-			}
-			return mr.AuthorizeProjectResources(clients.Ctx, expectedArgs)
+			})
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Delete(resourceData, clients)
@@ -161,12 +148,11 @@ var tests = []struct {
 		Name:         "Delete pipeline resource authorizations",
 		DefinitionID: definitionID,
 		MockedFunction: func(mr *azdosdkmocks.MockBuildClientMockRecorder, clients *client.AggregatedClient) *gomock.Call {
-			expectedArgs := build.AuthorizeDefinitionResourcesArgs{
-				Resources:    &[]build.DefinitionResourceReference{resourceReferenceAuthorized},
+			return mr.AuthorizeDefinitionResources(clients.Ctx, build.AuthorizeDefinitionResourcesArgs{
+				Resources:    &[]build.DefinitionResourceReference{resourceReferenceNotAuthorized},
 				Project:      &projectID,
 				DefinitionId: &definitionID,
-			}
-			return mr.AuthorizeDefinitionResources(clients.Ctx, expectedArgs)
+			})
 		},
 		FunctionUnderTest: func(clients *client.AggregatedClient, r *schema.Resource, resourceData *schema.ResourceData) error {
 			return r.Delete(resourceData, clients)

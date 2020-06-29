@@ -147,7 +147,7 @@ func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 		return fmt.Errorf(msgErrorFailedResourceDelete, err)
 	}
 
-	return err
+	return nil
 }
 
 func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) error {
