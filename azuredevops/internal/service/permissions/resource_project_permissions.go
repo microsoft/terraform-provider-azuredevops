@@ -32,15 +32,6 @@ func ResourceProjectPermissions() *schema.Resource {
 	}
 }
 
-func createProjectToken(d *schema.ResourceData) (*string, error) {
-	projectID, ok := d.GetOk("project_id")
-	if !ok {
-		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
-	}
-	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
-	return &aclToken, nil
-}
-
 func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) error {
 	debug.Wait()
 
@@ -131,4 +122,13 @@ func resourceProjectPermissionsImporter(d *schema.ResourceData, m interface{}) (
 
 	// $PROJECT:vstfs:///Classification/TeamProject/<ProjectId>/<SubjectDescriptor>
 	return nil, errors.New("resourceProjectPermissionsImporter: Not implemented")
+}
+
+func createProjectToken(d *schema.ResourceData) (*string, error) {
+	projectID, ok := d.GetOk("project_id")
+	if !ok {
+		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
+	}
+	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
+	return &aclToken, nil
 }

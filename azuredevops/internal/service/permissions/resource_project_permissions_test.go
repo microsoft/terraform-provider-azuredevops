@@ -25,14 +25,6 @@ func init() {
 var projectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
 var projectToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
 
-func getProjecPermissionsResource(t *testing.T, projectID string) *schema.ResourceData {
-	d := schema.TestResourceDataRaw(t, ResourceProjectPermissions().Schema, nil)
-	if projectID != "" {
-		d.Set("project_id", projectID)
-	}
-	return d
-}
-
 func TestProjectPermissions_CreateProjectToken(t *testing.T) {
 	var d *schema.ResourceData
 	var token *string
@@ -48,4 +40,12 @@ func TestProjectPermissions_CreateProjectToken(t *testing.T) {
 	token, err = createProjectToken(d)
 	assert.Nil(t, token)
 	assert.NotNil(t, err)
+}
+
+func getProjecPermissionsResource(t *testing.T, projectID string) *schema.ResourceData {
+	d := schema.TestResourceDataRaw(t, ResourceProjectPermissions().Schema, nil)
+	if projectID != "" {
+		d.Set("project_id", projectID)
+	}
+	return d
 }

@@ -37,25 +37,6 @@ var gitBranchNameValid = "master"
 var gitTokenBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
 var gitBranchNameInValid = "@@invalid@@"
 
-func encodeBranchName(branchName string) string {
-	ret, _ := converter.EncodeUtf16HexString(branchName)
-	return ret
-}
-
-func getGitPermissionsResource(t *testing.T, gitProjectID string, repoID string, branchName string) *schema.ResourceData {
-	d := schema.TestResourceDataRaw(t, ResourceGitPermissions().Schema, nil)
-	if gitProjectID != "" {
-		d.Set("project_id", gitProjectID)
-	}
-	if repoID != "" {
-		d.Set("repository_id", repoID)
-	}
-	if branchName != "" {
-		d.Set("branch_name", branchName)
-	}
-	return d
-}
-
 func TestGitPermissions_CreateGitToken(t *testing.T) {
 	var d *schema.ResourceData
 	var token *string
@@ -257,4 +238,23 @@ func TestGitPermissions_GetBranchName_VerifyValue(t *testing.T) {
 	assert.NotNil(t, gitRef)
 	assert.Nil(t, err)
 	assert.Equal(t, gitBranchNameValid, *gitRef.Name)
+}
+
+func encodeBranchName(branchName string) string {
+	ret, _ := converter.EncodeUtf16HexString(branchName)
+	return ret
+}
+
+func getGitPermissionsResource(t *testing.T, gitProjectID string, repoID string, branchName string) *schema.ResourceData {
+	d := schema.TestResourceDataRaw(t, ResourceGitPermissions().Schema, nil)
+	if gitProjectID != "" {
+		d.Set("project_id", gitProjectID)
+	}
+	if repoID != "" {
+		d.Set("repository_id", repoID)
+	}
+	if branchName != "" {
+		d.Set("branch_name", branchName)
+	}
+	return d
 }
