@@ -1,4 +1,5 @@
 {
+    "files.eol": "\n",
     "go.gopath": "/go",
     "go.useLanguageServer": true,
     "go.autocompleteUnimportedPackages": true,
@@ -31,4 +32,8 @@
         "completeUnimported": true, // autocomplete unimported packages
         "deepCompletion": true // enable deep completion
     },
+    "cSpell.words": [
+        "hashicorp",
+        "azuredevops"
+    ]
 }
