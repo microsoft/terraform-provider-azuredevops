@@ -1,5 +1,4 @@
 {
-    "files.eol": "\n",
     "go.gopath": "/go",
     "go.useLanguageServer": true,
     "go.autocompleteUnimportedPackages": true,
