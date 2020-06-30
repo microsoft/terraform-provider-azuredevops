@@ -27,10 +27,24 @@
         }
     },
     "gopls": {
+        "env": {
+            "GOFLAGS": "-tags=all"
+        },
         "usePlaceholders": true, // add parameter placeholders when completing a function
         // Experimental settings
         "completeUnimported": true, // autocomplete unimported packages
         "deepCompletion": true // enable deep completion
+    },
+    "go.delveConfig": {
+        "dlvLoadConfig": {
+            "followPointers": true,
+            "maxVariableRecurse": 1,
+            "maxStringLen": 2055,
+            "maxArrayValues": 64,
+            "maxStructFields": -1
+        },
+        "apiVersion": 2,
+        "showGlobalVariables": true
     },
     "cSpell.words": [
         "hashicorp",
