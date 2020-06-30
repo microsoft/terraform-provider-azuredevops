@@ -6,6 +6,7 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_dockerhub
+
 Manages a Docker Hub service endpoint within Azure DevOps.
 
 ## Example Usage
@@ -32,20 +33,21 @@ resource "azuredevops_serviceendpoint_dockerhub" "serviceendpoint" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The project ID or project name.
-* `service_endpoint_name` - (Required) The Service Endpoint name.
-* `description` - (Required) The Service Endpoint description.
-* `docker_username` - (Required) The username for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME` environment variable, if present.
-* `docker_email` - (Required) The email for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL` environment variable, if present.
-* `docker_password` - (Required) The password for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD` environment variable, if present.
+- `project_id` - (Required) The project ID or project name.
+- `service_endpoint_name` - (Required) The Service Endpoint name.
+- `description` - (Required) The Service Endpoint description.
+- `docker_username` - (Required) The username for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_USERNAME` environment variable, if present.
+- `docker_email` - (Required) The email for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_EMAIL` environment variable, if present.
+- `docker_password` - (Required) The password for Docker Hub account. Defaults to `AZDO_DOCKERHUB_SERVICE_CONNECTION_PASSWORD` environment variable, if present.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the service endpoint.
-* `project_id` - The project ID or project name.
-* `service_endpoint_name` - The Service Endpoint name.
+- `id` - The ID of the service endpoint.
+- `project_id` - The project ID or project name.
+- `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
-* [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+
+- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
