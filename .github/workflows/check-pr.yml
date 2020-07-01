@@ -43,6 +43,9 @@ jobs:
 
     - name: Run Lint Check
       run: make lint
+
+    - name: Run Unit Test
+      run: make test
 #
 #    - name: Run All Tests
 #      run: make testacc
