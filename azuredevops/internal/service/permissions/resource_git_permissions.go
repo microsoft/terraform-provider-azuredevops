@@ -11,7 +11,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
@@ -50,8 +49,6 @@ func ResourceGitPermissions() *schema.Resource {
 }
 
 func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -76,8 +73,6 @@ func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	aclToken, err := createGitToken(clients, d)
@@ -103,14 +98,10 @@ func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	return resourceGitPermissionsCreate(d, m)
 }
 
 func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	aclToken, err := createGitToken(clients, d)
@@ -136,8 +127,6 @@ func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGitPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	debug.Wait()
-
 	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
 	return nil, errors.New("resourceGitPermissionsImporter: Not implemented")
 }

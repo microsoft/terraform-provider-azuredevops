@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
@@ -33,8 +32,6 @@ func ResourceProjectPermissions() *schema.Resource {
 }
 
 func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -59,8 +56,6 @@ func resourceProjectPermissionsCreate(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -86,14 +81,10 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceProjectPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	return resourceProjectPermissionsCreate(d, m)
 }
 
 func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -118,8 +109,6 @@ func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceProjectPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	debug.Wait()
-
 	// $PROJECT:vstfs:///Classification/TeamProject/<ProjectId>/<SubjectDescriptor>
 	return nil, errors.New("resourceProjectPermissionsImporter: Not implemented")
 }

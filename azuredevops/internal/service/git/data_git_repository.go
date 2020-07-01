@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/debug"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
@@ -61,8 +60,6 @@ func DataGitRepository() *schema.Resource {
 }
 
 func dataSourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
-	debug.Wait()
-
 	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("name").(string)
