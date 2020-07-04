@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
@@ -89,6 +90,10 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		})
 
 		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil
+			}
 			return err
 		}
 
