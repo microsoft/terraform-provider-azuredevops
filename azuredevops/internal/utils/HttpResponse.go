@@ -44,7 +44,7 @@ func ResponseContainsStatusMessage(err error, statusMessage string) bool {
 		return false
 	}
 	if wrapperErr, ok := err.(azuredevops.WrappedError); ok {
-		if wrapperErr.Message == nil{
+		if wrapperErr.Message == nil {
 			return false
 		}
 		return strings.Contains(*wrapperErr.Message, statusMessage)

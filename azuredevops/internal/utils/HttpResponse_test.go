@@ -1,32 +1,32 @@
 package utils
 
 import "testing"
-import 	"github.com/microsoft/azure-devops-go-api/azuredevops"
+import "github.com/microsoft/azure-devops-go-api/azuredevops"
 
 func TestResponseContainsStatusMessage(t *testing.T) {
 	cases := []struct {
-		Name string
-		Error  error
+		Name               string
+		Error              error
 		StatusMessageRegex string
-		Result bool
+		Result             bool
 	}{
 		{
-			Name: "ProjectNotFound",
-			Error:  GetError(400, "VS800075: The project with id"),
+			Name:               "ProjectNotFound",
+			Error:              GetError(400, "VS800075: The project with id"),
 			StatusMessageRegex: "VS800075",
-			Result: true,
+			Result:             true,
 		},
 		{
-			Name: "RandomError",
-			Error:  GetError(400, "VS800075: The project with id"),
+			Name:               "RandomError",
+			Error:              GetError(400, "VS800075: The project with id"),
 			StatusMessageRegex: "VS800076",
-			Result: false,
+			Result:             false,
 		},
 		{
-			Name: "MissingMessage",
-			Error:  azuredevops.WrappedError{},
+			Name:               "MissingMessage",
+			Error:              azuredevops.WrappedError{},
 			StatusMessageRegex: "VS800076",
-			Result: false,
+			Result:             false,
 		},
 	}
 
@@ -43,27 +43,27 @@ func TestResponseContainsStatusMessage(t *testing.T) {
 
 func TestResponseWasNotFound(t *testing.T) {
 	cases := []struct {
-		Name string
+		Name   string
 		Error  error
 		Result bool
 	}{
 		{
-			Name: "NoStatus",
+			Name:   "NoStatus",
 			Error:  azuredevops.WrappedError{},
 			Result: false,
 		},
 		{
-			Name: "404NotFound",
+			Name:   "404NotFound",
 			Error:  GetError(404, ""),
 			Result: true,
 		},
 		{
-			Name: "400NotFound",
+			Name:   "400NotFound",
 			Error:  GetError(400, "VS800075: The project with id"),
 			Result: true,
 		},
 		{
-			Name: "400Different",
+			Name:   "400Different",
 			Error:  GetError(400, "Some different issue"),
 			Result: false,
 		},
@@ -83,6 +83,6 @@ func TestResponseWasNotFound(t *testing.T) {
 func GetError(statusCode int, message string) azuredevops.WrappedError {
 	return azuredevops.WrappedError{
 		StatusCode: &statusCode,
-		Message: &message,
+		Message:    &message,
 	}
 }
