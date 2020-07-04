@@ -1,7 +1,10 @@
 package utils
 
-import "testing"
-import "github.com/microsoft/azure-devops-go-api/azuredevops"
+import (
+	"testing"
+
+	"github.com/microsoft/azure-devops-go-api/azuredevops"
+)
 
 func TestResponseContainsStatusMessage(t *testing.T) {
 	cases := []struct {
