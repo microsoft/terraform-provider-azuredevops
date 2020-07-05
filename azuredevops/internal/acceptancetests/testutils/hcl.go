@@ -187,6 +187,21 @@ resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointAwsResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAwsResource(projectName string, serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_aws" "serviceendpoint" {
+	project_id             = azuredevops_project.project.id
+	service_endpoint_name  = "%s"
+
+	access_key_id = "aws_TEST_access_key_id"
+	secret_access_key = "aws_TEST_secret_access_key"
+}`, serviceEndpointName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
 // HclServiceEndpointKubernetesResource HCL describing an AzDO kubernetes service endpoint
 func HclServiceEndpointKubernetesResource(projectName string, serviceEndpointName string, authorizationType string) string {
 	var serviceEndpointResource string
