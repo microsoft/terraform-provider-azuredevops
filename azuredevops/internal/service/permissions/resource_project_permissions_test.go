@@ -14,10 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	/* add code for test setup here */
-}
-
 /**
  * Begin unit tests
  */

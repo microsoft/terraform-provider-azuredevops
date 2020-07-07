@@ -279,33 +279,6 @@ func (sn *SecurityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[
 	return idlist, nil
 }
 
-/*
-func (sn *SecurityNamespace) getIndentitiesFromACL(acl *security.AccessControlList) (*[]identity.Identity, error) {
-	descriptorList := []string{}
-	descriptors := ""
-	for key := range *acl.AcesDictionary {
-		if descriptors == "" {
-			descriptors = key
-		} else {
-			descriptors += "," + key
-		}
-		descriptorList = append(descriptorList, key)
-	}
-	idlist, err := sn.identityClient.ReadIdentities(sn.context, identity.ReadIdentitiesArgs{
-		Descriptors: converter.String(descriptors),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	if idlist == nil || len(*idlist) != len(descriptorList) {
-		return nil, fmt.Errorf("Failed to load identity information for defined principals [%s]", descriptors)
-	}
-
-	return idlist, nil
-}
-*/
-
 // SetPrincipalPermissions sets ACLs for specifc token inside a security namespace
 func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission, token *string) error {
 	if nil == permissionList || len(*permissionList) <= 0 {
@@ -314,35 +287,6 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 	if nil == token || len(*token) <= 0 {
 		return fmt.Errorf("token is nil or empty")
 	}
-
-	/*
-		 * optional: checking for unique principal permissions
-		 *
-		var nonUniqPermissionGroups []linq.Group
-		linq.From(*permissionList).
-			GroupBy(func(item interface{}) interface{} {
-				return item.(SetPrincipalPermission).PrincipalPermission.SubjectDescriptor
-			},
-				func(item interface{}) interface{} { return item }).
-			Where(func(group interface{}) bool {
-				return len(group.(linq.Group).Group) > 1
-			}).
-			ToSlice(&nonUniqPermissionGroups)
-
-		if len(nonUniqPermissionGroups) > 0 {
-			descriptors := linq.From(nonUniqPermissionGroups).
-				Select(func(elem interface{}) interface{} {
-					return elem.(linq.Group).Key
-				}).
-				Aggregate(func(r interface{}, i interface{}) interface{} {
-					if r.(string) == "" {
-						return i
-					}
-					return r.(string) + "," + i.(string)
-				}).(string)
-			return fmt.Errorf("Non unique permissions for principals [%s]", descriptors)
-		}
-	*/
 
 	permissionMap := map[string]SetPrincipalPermission{}
 	linq.From(*permissionList).

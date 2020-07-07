@@ -98,14 +98,18 @@ resource "azuredevops_git_permissions" "project-git-root-permissions" {
   }
 }
 
-data "azuredevops_git_repository" "git-repo" {
+resource "azuredevops_git_repository" "git-repo" {
   project_id = azuredevops_project.project.id
-  name       = azuredevops_project.project.project_name
+  name = "TestRepo"
+  default_branch = "master"
+  initialization {
+    init_type = "Clean"
+  }
 }
 
 resource "azuredevops_git_permissions" "project-git-repo-permissions" {
-  project_id    = data.azuredevops_git_repository.git-repo.project_id
-  repository_id = data.azuredevops_git_repository.git-repo.id
+  project_id    = azuredevops_git_repository.git-repo.project_id
+  repository_id = azuredevops_git_repository.git-repo.id
   principal     = data.azuredevops_group.project-administrators.id
   permissions   = {
     RemoveOthersLocks = "Allow"
@@ -116,8 +120,8 @@ resource "azuredevops_git_permissions" "project-git-repo-permissions" {
 }
 
 resource "azuredevops_git_permissions" "project-git-branch-permissions" {
-  project_id    = data.azuredevops_git_repository.git-repo.project_id
-  repository_id = data.azuredevops_git_repository.git-repo.id
+  project_id    = azuredevops_git_repository.git-repo.project_id
+  repository_id = azuredevops_git_repository.git-repo.id
   branch_name   = "master"
   principal     = data.azuredevops_group.project-contributors.id
   permissions   = {

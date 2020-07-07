@@ -1,7 +1,6 @@
 package permissions
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -17,9 +16,6 @@ func ResourceProjectPermissions() *schema.Resource {
 		Read:   resourceProjectPermissionsRead,
 		Update: resourceProjectPermissionsUpdate,
 		Delete: resourceProjectPermissionsDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceProjectPermissionsImporter,
-		},
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -106,11 +102,6 @@ func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) err
 	}
 	d.SetId("")
 	return nil
-}
-
-func resourceProjectPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// $PROJECT:vstfs:///Classification/TeamProject/<ProjectId>/<SubjectDescriptor>
-	return nil, errors.New("resourceProjectPermissionsImporter: Not implemented")
 }
 
 func createProjectToken(d *schema.ResourceData) (*string, error) {

@@ -20,10 +20,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func init() {
-	/* add code for test setup here */
-}
-
 /**
  * Begin unit tests
  */

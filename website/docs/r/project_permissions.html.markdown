@@ -41,7 +41,7 @@ The following arguments are supported:
 * `project_id` - (Required) The ID of the project to assign the permissions.
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
-* `permissions` - (Required) the permissions to assign. The follwing permissions are available
+* `permissions` - (Required) the permissions to assign. The following permissions are available
 
 | Permission                   | Description                                  |
 |------------------------------|----------------------------------------------|
