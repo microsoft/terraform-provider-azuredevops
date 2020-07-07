@@ -101,7 +101,7 @@ resource "azuredevops_git_permissions" "project-git-root-permissions" {
 resource "azuredevops_git_repository" "git-repo" {
   project_id = azuredevops_project.project.id
   name = "TestRepo"
-  default_branch = "master"
+  default_branch = "refs/heads/master"
   initialization {
     init_type = "Clean"
   }
