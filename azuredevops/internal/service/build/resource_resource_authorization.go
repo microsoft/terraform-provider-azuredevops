@@ -104,31 +104,31 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 			}
 
 			flattenAuthorizedResource(d, &(*resourceRefs)[0], projectID, definitionID)
-			return nil
+		} else {
+			// flatten structure provided by user-configuration and not read from ado
+			flattenAuthorizedResource(d, authorizedResource, projectID, definitionID)
 		}
+	} else {
+		resourceRefs, err := clients.BuildClient.GetDefinitionResources(ctx, build.GetDefinitionResourcesArgs{
+			Project:      &projectID,
+			DefinitionId: &definitionID,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		for _, resource := range *resourceRefs {
+			if resource.Id == authorizedResource.Id {
+				flattenAuthorizedResource(d, &resource, projectID, definitionID)
+				return nil
+			}
+		}
+
 		// flatten structure provided by user-configuration and not read from ado
 		flattenAuthorizedResource(d, authorizedResource, projectID, definitionID)
-		return nil
 	}
 
-	resourceRefs, err := clients.BuildClient.GetDefinitionResources(ctx, build.GetDefinitionResourcesArgs{
-		Project:      &projectID,
-		DefinitionId: &definitionID,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	for _, resource := range *resourceRefs {
-		if resource.Id == authorizedResource.Id {
-			flattenAuthorizedResource(d, &resource, projectID, definitionID)
-			return nil
-		}
-	}
-
-	// flatten structure provided by user-configuration and not read from ado
-	flattenAuthorizedResource(d, authorizedResource, projectID, definitionID)
 	return nil
 }
 
