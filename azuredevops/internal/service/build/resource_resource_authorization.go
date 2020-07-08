@@ -3,6 +3,7 @@ package build
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -96,8 +97,8 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 				return err
 			}
 
-			// the authorization does no longer exist
 			if len(*resourceRefs) == 0 {
+				log.Printf("[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n", *(authorizedResource.Id))
 				d.SetId("")
 				return nil
 			}
