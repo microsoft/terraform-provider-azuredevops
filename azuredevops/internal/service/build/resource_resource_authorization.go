@@ -118,6 +118,12 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 			return err
 		}
 
+		if len(*resourceRefs) == 0 {
+			log.Printf("[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n", *(authorizedResource.Id))
+			d.SetId("")
+			return nil
+		}
+
 		for _, resource := range *resourceRefs {
 			if resource.Id == authorizedResource.Id {
 				flattenAuthorizedResource(d, &resource, projectID, definitionID)
@@ -188,19 +194,19 @@ func expandAuthorizedResource(d *schema.ResourceData) (*build.DefinitionResource
 
 func sendAuthorizedResourceToAPI(clients *client.AggregatedClient, resourceRef *build.DefinitionResourceReference, projectID string, definitionID int) error {
 	ctx := context.Background()
+	var err error
 	if definitionID == 0 {
-		_, err := clients.BuildClient.AuthorizeProjectResources(ctx, build.AuthorizeProjectResourcesArgs{
+		_, err = clients.BuildClient.AuthorizeProjectResources(ctx, build.AuthorizeProjectResourcesArgs{
 			Resources: &[]build.DefinitionResourceReference{*resourceRef},
 			Project:   &projectID,
 		})
-
-		return err
+	} else {
+		_, err = clients.BuildClient.AuthorizeDefinitionResources(ctx, build.AuthorizeDefinitionResourcesArgs{
+			Resources:    &[]build.DefinitionResourceReference{*resourceRef},
+			Project:      &projectID,
+			DefinitionId: &definitionID,
+		})
 	}
-	_, err := clients.BuildClient.AuthorizeDefinitionResources(ctx, build.AuthorizeDefinitionResourcesArgs{
-		Resources:    &[]build.DefinitionResourceReference{*resourceRef},
-		Project:      &projectID,
-		DefinitionId: &definitionID,
-	})
 
 	return err
 }
