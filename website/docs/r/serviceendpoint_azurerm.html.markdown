@@ -30,6 +30,7 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "TestServiceRM"
+  description = "Managed by Terraform" 
   credentials {
     serviceprincipalid  = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -53,6 +54,7 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   project_id                = azuredevops_project.project.id
   service_endpoint_name     = "TestServiceRM"
+  description = "Managed by Terraform" 
   azurerm_spn_tenantid      = "xxxxxxx-xxxx-xxx-xxxxx-xxxxxxxx"
   azurerm_subscription_id   = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
   azurerm_subscription_name = "Microsoft Azure DEMO"
@@ -68,6 +70,7 @@ The following arguments are supported:
 - `azurerm_spn_tenantid` - (Required) The tenant id if the service principal.
 - `azurerm_subscription_id` - (Required) The subscription Id of the Azure targets.
 - `azurerm_subscription_name` - (Required) The subscription Name of the targets.
+- `description` - (Optional) Service connection description.
 - `credentials` - (Optional) A `credentials` block.
 - `resource_group` - (Optional) The resource group used for scope of automatic service endpoint.
 
