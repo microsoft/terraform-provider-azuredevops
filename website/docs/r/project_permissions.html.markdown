@@ -1,3 +1,4 @@
+---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_project_permissions"
 description: |-
@@ -5,6 +6,10 @@ description: |-
 ---
 
 # azuredevops_project_permissions
+
+Manages permissions for a AzureDevOps project
+
+~> **Note** Permissions can be assigned to group principals and not to single user principals.
 
 ## Example Usage
 

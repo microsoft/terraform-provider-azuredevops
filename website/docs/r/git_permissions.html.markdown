@@ -1,3 +1,4 @@
+---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_git_permissions"
 description: |-
@@ -6,14 +7,20 @@ description: |-
 
 # azuredevops_git_permissions
 
+Manages permissions for Git repositories. 
+
+~> **Note** Permissions can be assigned to group principals and not to single user principals.
+
 ## Permission levels
 
 Permission for Git Repositories within Azure DevOps can be applied on three different levels.
 Those levels are reflected by specifying (or omitting) values for the arguments `project_id`, `repository_id` and `branch_name`.
 
-### Global level
+### Project level
 
-Permissions for all Git Repositories (existing or newly created ones) are specified if only the argument `project_id` has a value.
+Permissions for all Git Repositories inside a project (existing or newly created ones) are specified, if only the argument `project_id` has a value.
+
+#### Example usage
 
 ```hcl
 resource "azuredevops_git_permissions" "project-git-root-permissions" {
@@ -30,6 +37,8 @@ resource "azuredevops_git_permissions" "project-git-root-permissions" {
 ### Repository level
 
 Permissions for a specific Git Repository and all existing or newly created branches are specified if the arguments `project_id` and `repository_id` are set.
+
+#### Example usage
 
 ```hcl
 resource "azuredevops_git_permissions" "project-git-repo-permissions" {
@@ -49,11 +58,13 @@ resource "azuredevops_git_permissions" "project-git-repo-permissions" {
 
 Permissions for a specific branch inside a Git Repository are specified if all above mentioned the arguments are set.
 
+#### Example usage
+
 ```hcl
 resource "azuredevops_git_permissions" "project-git-branch-permissions" {
   project_id    = data.azuredevops_git_repository.git-repo.project_id
   repository_id = data.azuredevops_git_repository.git-repo.id
-  branch_name   = "master"
+  branch_name   = "refs/heads/master"
   principal     = data.azuredevops_group.project-contributors.id
   permissions   = {
     RemoveOthersLocks = "Allow"
@@ -135,11 +146,11 @@ resource "azuredevops_git_permissions" "project-git-branch-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Optional) The ID of the project to assign the permissions.
+* `project_id` - (Required) The ID of the project to assign the permissions.
 * `repository_id` - (Optional) The ID of the GIT repository to assign the permissions
 * `branch_name` - (Optional) The name of the branch to assign the permissions. 
 
-   > Note: to assign permissions to a branch, the `repository_id` must be set as well.
+   ~> **Note** to assign permissions to a branch, the `repository_id` must be set as well.
 
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
