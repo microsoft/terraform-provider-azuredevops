@@ -3,7 +3,10 @@
 package converter
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestString(t *testing.T) {
@@ -90,5 +93,56 @@ func TestASCIIToIntPtrErrorCase(t *testing.T) {
 				t.Fatalf("Expected output value to be %+v but was %+v", tc.outputVal, val)
 			}
 		})
+	}
+}
+
+func TestStringFromInterface_StringValue(t *testing.T) {
+	value := "Hello World"
+	valuePtr := StringFromInterface(value)
+	if value != *valuePtr {
+		t.Errorf("The pointer returned references a different value")
+	}
+}
+
+func TestStringFromInterface_InterfaceValue(t *testing.T) {
+	value := "Hello World"
+	var interfaceValue interface{}
+
+	interfaceValue = value
+	valuePtr := StringFromInterface(interfaceValue)
+	if value != *valuePtr {
+		t.Errorf("The pointer returned references a different value")
+	}
+}
+
+type encodeTestType struct {
+	plainString   string
+	encodedString string
+}
+
+var encodeTestCases = []encodeTestType{
+	{
+		plainString:   "branch_1_1",
+		encodedString: "6200720061006e00630068005f0031005f003100",
+	},
+	{
+		plainString:   "master",
+		encodedString: "6d0061007300740065007200",
+	},
+}
+
+func TestDecodeUtf16HexString(t *testing.T) {
+	for _, etest := range encodeTestCases {
+		val, err := DecodeUtf16HexString(etest.encodedString)
+		assert.Nil(t, err, fmt.Sprintf("Error should not thrown by %s", etest.encodedString))
+		assert.EqualValues(t, etest.plainString, val)
+	}
+}
+
+func TestEncodeUtf16HexString(t *testing.T) {
+	for _, etest := range encodeTestCases {
+		val, err := EncodeUtf16HexString(etest.plainString)
+		assert.Nil(t, err, fmt.Sprintf("Error should not thrown by %s", etest.plainString))
+		assert.EqualValues(t, etest.encodedString, val)
 	}
 }
