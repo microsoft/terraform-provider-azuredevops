@@ -294,9 +294,8 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// HclVariableGroupResourceWithProject HCL describing an AzDO variable group
-func HclVariableGroupResourceWithProject(projectName string, variableGroupName string, allowAccess bool) string {
-	variableGroupResource := fmt.Sprintf(`
+func HclVariableGroupResource(variableGroupName string, allowAccess bool) string {
+	return fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
 	project_id  = azuredevops_project.project.id
 	name        = "%s"
@@ -317,7 +316,11 @@ resource "azuredevops_variable_group" "vg" {
 		name = "key3"
 	}
 }`, variableGroupName, allowAccess)
+}
 
+// HclVariableGroupResourceWithProject HCL describing an AzDO variable group
+func HclVariableGroupResourceWithProject(projectName string, variableGroupName string, allowAccess bool) string {
+	variableGroupResource := HclVariableGroupResource(variableGroupName, allowAccess)
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
 }
@@ -470,14 +473,7 @@ func HclBuildDefinitionResource(
 	yamlPath string,
 	serviceConnectionID string,
 ) string {
-	repositoryBlock := fmt.Sprintf(`
-repository {
-	repo_type             = "%s"
-	repo_id               = "%s"
-	branch_name           = "%s"
-	yml_path              = "%s"
-	service_connection_id = "%s"
-}`, repoType, repoID, branchName, yamlPath, serviceConnectionID)
+	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
 
 	buildDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_build_definition" "build" {
@@ -486,8 +482,14 @@ resource "azuredevops_build_definition" "build" {
 	agent_pool_name = "Hosted Ubuntu 1604"
 	path			= "%s"
 
-	%s
-}`, buildDefinitionName, strings.ReplaceAll(buildPath, `\`, `\\`), repositoryBlock)
+	repository {
+		repo_type             = "%s"
+		repo_id               = "%s"
+		branch_name           = "%s"
+		yml_path              = "%s"
+		service_connection_id = "%s"
+	}
+}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
@@ -521,45 +523,6 @@ resource "azuredevops_build_definition" "b" {
 	repoResource := getGitRepoResource(name, "Clean")
 	projectResource := HclProjectResource(name)
 	return fmt.Sprintf("%s\n%s\n%s", projectResource, buildDefinitionResource, repoResource)
-}
-
-// HclBuildDefinitionWithVariables A build definition with variables
-func HclBuildDefinitionWithVariableGroup(varValue, secretVarValue, name string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
-	project_name       = "%s"
-}
-
-resource "azuredevops_git_repository" "repository" {
-	project_id = azuredevops_project.project.id
-	name       = "%s-repo"
-	initialization {
-		init_type = "Clean"
-	}
-}
-
-resource "azuredevops_build_definition" "b" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
-
-	repository {
-		repo_type   = "TfsGit"
-		repo_id     = azuredevops_git_repository.repository.id
-		branch_name = azuredevops_git_repository.repository.default_branch
-		yml_path    = "azure-pipelines.yml"
-	}
-
-	variable {
-		name  = "FOO_VAR"
-		value = "%s"
-	}
-
-	variable {
-		name      = "BAR_VAR"
-		secret_value     = "%s"
-		is_secret = true
-	}
-}`, name, name, name, varValue, secretVarValue)
 }
 
 // HclGroupMembershipResource full terraform stanza to standup a group membership
@@ -621,16 +584,18 @@ resource "azuredevops_resource_authorization" "auth" {
 	project_id  = azuredevops_project.project.id
 	resource_id = %s
 	authorized  = %t
+	type = "endpoint"
 }`, resourceID, authorized)
 }
 
 // HclResourceAuthorization HCL describing a resource authorization
-func HclDefinitionResourceAuthorization(resourceID, definitionID string, authorized bool) string {
+func HclDefinitionResourceAuthorization(resourceID, definitionID, resourceType string, authorized bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_resource_authorization" "auth" {
 	project_id  = azuredevops_project.project.id
 	resource_id = %s
 	definition_id = %s
+	type = "%s"
 	authorized  = %t
-}`, resourceID, definitionID, authorized)
+}`, resourceID, definitionID, resourceType, authorized)
 }
