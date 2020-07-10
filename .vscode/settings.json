@@ -14,7 +14,7 @@
         "-v",
         "-tags=all"
     ],
-    "go.testTimeout": "90s",
+    "go.testTimeout": "30m",
     "go.testEnvVars": {
         "TF_ACC": "1"
     },

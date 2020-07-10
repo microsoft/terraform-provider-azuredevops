@@ -21,7 +21,9 @@ func TestAccResourceAuthorization_CRUD(t *testing.T) {
 
 	tfAuthNode := "azuredevops_resource_authorization.auth"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"})
+		},
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
