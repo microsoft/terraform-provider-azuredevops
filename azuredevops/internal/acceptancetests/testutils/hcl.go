@@ -58,12 +58,12 @@ func HclProjectResource(projectName string) string {
 	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name       = "%s"
-	description        = "%s-description"
+	project_name       = "%[1]s"
+	description        = "%[1]s-description"
 	visibility         = "private"
 	version_control    = "Git"
 	work_item_template = "Agile"
-}`, projectName, projectName)
+}`, projectName)
 }
 
 // HclProjectDataSource HCL describing a data source for an AzDO project
@@ -498,7 +498,7 @@ resource "azuredevops_build_definition" "build" {
 // HclBuildDefinitionWithVariables A build definition with variables
 func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
 	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "b" {
+resource "azuredevops_build_definition" "build" {
 	project_id = azuredevops_project.project.id
 	name       = "%s"
 
@@ -520,9 +520,9 @@ resource "azuredevops_build_definition" "b" {
 		is_secret = true
 	}
 }`, name, varValue, secretVarValue)
-	repoResource := getGitRepoResource(name, "Clean")
+	repoResource := getGitRepoResource(name+"-repo", "Clean")
 	projectResource := HclProjectResource(name)
-	return fmt.Sprintf("%s\n%s\n%s", projectResource, buildDefinitionResource, repoResource)
+	return fmt.Sprintf("%s\n%s\n%s", projectResource, repoResource, buildDefinitionResource)
 }
 
 // HclGroupMembershipResource full terraform stanza to standup a group membership
