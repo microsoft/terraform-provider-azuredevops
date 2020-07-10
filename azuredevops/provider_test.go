@@ -13,6 +13,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_build_definition",
 		"azuredevops_branch_policy_build_validation",
 		"azuredevops_branch_policy_min_reviewers",
+		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_serviceendpoint_github",
