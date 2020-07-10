@@ -179,9 +179,9 @@ func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) 
 
 func flattenAuthorizedResource(d *schema.ResourceData, authorizedResource *build.DefinitionResourceReference, projectID string, definitionID int) {
 	d.SetId(*authorizedResource.Id)
-	d.Set("resource_id", *authorizedResource.Id)
-	d.Set("type", *authorizedResource.Type)
-	d.Set("authorized", *authorizedResource.Authorized)
+	d.Set("resource_id", authorizedResource.Id)
+	d.Set("type", authorizedResource.Type)
+	d.Set("authorized", authorizedResource.Authorized)
 	d.Set("project_id", projectID)
 	d.Set("definition_id", definitionID)
 }
