@@ -33,7 +33,7 @@ func ResourceResourceAuthorization() *schema.Resource {
 			},
 			"resource_id": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				Description:  "id of the resource",
 				ValidateFunc: validation.NoZeroValues,
 			},
