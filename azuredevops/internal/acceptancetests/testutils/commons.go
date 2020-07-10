@@ -51,7 +51,6 @@ func PreCheck(t *testing.T, additionalEnvVars *[]string) {
 	}
 
 	for _, variable := range requiredEnvVars {
-
 		if strings.EqualFold(os.Getenv(variable), "") {
 			// Skip tests with missing required environment variables when not in CI
 			if os.Getenv("CI") == "" {
