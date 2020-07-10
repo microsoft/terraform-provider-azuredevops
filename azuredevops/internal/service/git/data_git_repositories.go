@@ -90,7 +90,11 @@ func DataGitRepositories() *schema.Resource {
 func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectRepos, err := getGitRepositoriesByNameAndProject(d, clients)
+	name := d.Get("name").(string)
+	projectID := d.Get("project_id").(string)
+	includeHidden := d.Get("include_hidden").(bool)
+
+	projectRepos, err := getGitRepositoriesByNameAndProject(clients, name, projectID, includeHidden)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -194,11 +198,9 @@ func flattenGitRepositories(repos *[]git.GitRepository) ([]interface{}, error) {
 	return results, nil
 }
 
-func getGitRepositoriesByNameAndProject(d *schema.ResourceData, clients *client.AggregatedClient) (*[]git.GitRepository, error) {
+func getGitRepositoriesByNameAndProject(clients *client.AggregatedClient, name string, projectID string, includeHidden bool) (*[]git.GitRepository, error) {
 	var repos *[]git.GitRepository
 	var err error
-	name, projectID := d.Get("name").(string), d.Get("project_id").(string)
-	includeHidden := d.Get("include_hidden").(bool)
 
 	if name != "" && projectID != "" {
 		repo, err := gitRepositoryRead(clients, "", name, projectID)

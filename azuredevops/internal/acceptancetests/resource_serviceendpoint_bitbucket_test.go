@@ -58,6 +58,7 @@ func TestAccServiceEndpointBitBucket_complete(t *testing.T) {
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -94,6 +95,7 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -118,8 +120,6 @@ func TestAccServiceEndpointBitBucket_requiresImportErrorStep(t *testing.T) {
 				Config: hclSvcEndpointBitBucketResourceBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 				),
 			},
 			{
@@ -140,6 +140,8 @@ func hclSvcEndpointBitBucketResourceBasic(projectName string, serviceEndpointNam
 resource "azuredevops_serviceendpoint_bitbucket" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
+	username			   = "username"
+	password			   = "password"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -152,6 +154,8 @@ resource "azuredevops_serviceendpoint_bitbucket" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
+	username			   = "username"
+	password			   = "password"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -164,6 +168,8 @@ resource "azuredevops_serviceendpoint_bitbucket" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
+	username			   = "username"
+	password			   = "password"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -179,6 +185,8 @@ resource "azuredevops_serviceendpoint_bitbucket" "import" {
   service_endpoint_name = azuredevops_serviceendpoint_bitbucket.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_bitbucket.test.description
   authorization          = azuredevops_serviceendpoint_bitbucket.test.authorization
+  username          = azuredevops_serviceendpoint_bitbucket.test.username
+  password          = "password"
 }
 `, template)
 }

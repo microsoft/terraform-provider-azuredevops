@@ -138,7 +138,20 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 	}`
 }
 
-// HclProjectGitRepositories HCL describing a data source for an AzDO git repo
+// HclProjectGitRepository HCL describing a single-value data source for an AzDO git repository
+func HclProjectGitRepository(projectName string, gitRepoName string) string {
+	return fmt.Sprintf(`
+data "azuredevops_project" "project" {
+	project_name = "%s"
+}
+
+data "azuredevops_git_repository" "repository" {
+	project_id = data.azuredevops_project.project.id
+	name = "%s"
+}`, projectName, gitRepoName)
+}
+
+// HclProjectGitRepositories HCL describing a multivalue data source for AzDO git repositories
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
@@ -588,7 +601,7 @@ resource "azuredevops_resource_authorization" "auth" {
 }`, resourceID, authorized)
 }
 
-// HclResourceAuthorization HCL describing a resource authorization
+// HclDefinitionResourceAuthorization HCL describing a resource authorization
 func HclDefinitionResourceAuthorization(resourceID, definitionID, resourceType string, authorized bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_resource_authorization" "auth" {
@@ -598,4 +611,79 @@ resource "azuredevops_resource_authorization" "auth" {
 	type = "%s"
 	authorized  = %t
 }`, resourceID, definitionID, resourceType, authorized)
+}
+
+// HclProjectPermissions creates HCL for testing to set permissions for a AzDO project
+func HclProjectPermissions(projectName string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_project_permissions" "project-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.tf-project-readers.id
+	permissions = {
+	  DELETE              = "Deny"
+	  EDIT_BUILD_STATUS   = "NotSet"
+	  WORK_ITEM_MOVE      = "Allow"
+	  DELETE_TEST_RESULTS = "Deny"
+	}
+}
+`, projectResource)
+}
+
+// HclGitPermissions creates HCl for testing to set permissions for a the all Git repositories of AzDO project
+func HclGitPermissions(projectName string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_git_permissions" "git-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.project-readers.id
+	permissions = {
+		CreateRepository = "Deny"
+		DeleteRepository = "Deny"
+		RenameRepository = "NotSet"
+	}
+}
+`, projectResource)
+}
+
+// HclGitPermissionsForRepository creates HCl for testing to set permissions for a the all Git repositories of AzDO project
+func HclGitPermissionsForRepository(projectName string, gitRepoName string) string {
+	projectResource := HclProjectResource(projectName)
+	gitRepository := getGitRepoResource(gitRepoName, "clean")
+
+	return fmt.Sprintf(`
+%s
+
+%s
+
+data "azuredevops_group" "project-readers" {
+	project_id = azuredevops_project.project.project_id
+	name       = "Readers"
+}
+
+resource "azuredevops_git_permissions" "git-permissions" {
+	project_id    = azuredevops_project.project.project_id
+	repository_id = azuredevops_git_repository.gitrepo.id
+	principal     = data.azuredevops_group.project-readers.id
+	permissions   = {
+		CreateRepository = "Deny"
+		DeleteRepository = "Deny"
+		RenameRepository = "NotSet"
+	}
+}
+`, projectResource, gitRepository)
 }

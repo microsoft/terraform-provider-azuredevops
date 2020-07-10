@@ -9,6 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/graph"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
@@ -36,6 +37,8 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pool":                     taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                    taskagent.ResourceAgentQueue(),
 			"azuredevops_group":                          graph.ResourceGroup(),
+			"azuredevops_project_permissions":            permissions.ResourceProjectPermissions(),
+			"azuredevops_git_permissions":                permissions.ResourceGitPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
@@ -45,6 +48,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project":          core.DataProject(),
 			"azuredevops_projects":         core.DataProjects(),
 			"azuredevops_git_repositories": git.DataGitRepositories(),
+			"azuredevops_git_repository":   git.DataGitRepository(),
 			"azuredevops_users":            graph.DataUsers(),
 		},
 		Schema: map[string]*schema.Schema{

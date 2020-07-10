@@ -274,7 +274,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	if err != nil {
 		return err
 	}
-	licensingSource, ok := d.GetOkExists("licensing_source")
+	licensingSource, ok := d.GetOk("licensing_source")
 	if !ok {
 		return fmt.Errorf("Reading account licensing source for UserEntitlementID: %s", userEntitlementID)
 	}

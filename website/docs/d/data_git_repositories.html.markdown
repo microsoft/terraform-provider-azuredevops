@@ -2,12 +2,13 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_git_repositories"
 description: |-
-  Use this data source to access information about an existing Projects within Azure DevOps.
+  Use this data source to access information about existing Git Repositories within Azure DevOps.
 ---
 
 # Data Source: azuredevops_git_repositories
 
-Use this data source to access information about an existing Git Repositories within Azure DevOps.
+Use this data source to access information about **multiple** existing Git Repositories within Azure DevOps.
+To read informations about a **single** Git Repository use the data source [`azuredevops_git_repository`](data_git_repository.html)
 
 ## Example Usage
 

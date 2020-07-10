@@ -144,7 +144,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	var parentRepoRef *git.GitRepositoryRef = nil
-	if parentRepoID, ok := d.GetOkExists("parent_repository_id"); ok {
+	if parentRepoID, ok := d.GetOk("parent_repository_id"); ok {
 		parentRepo, err := gitRepositoryRead(clients, parentRepoID.(string), "", "")
 		if err != nil {
 			return fmt.Errorf("Failed to locate parent repository [%s]: %+v", parentRepoID, err)
@@ -278,7 +278,10 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
-	flattenGitRepository(d, repo)
+	err = flattenGitRepository(d, repo)
+	if err != nil {
+		return fmt.Errorf("Failed to flatten Git repository: %w", err)
+	}
 	return nil
 }
 
@@ -346,16 +349,22 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 	})
 }
 
-func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository) {
-	d.Set("name", converter.ToString(repository.Name, ""))
+func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository) error {
+	d.SetId(repository.Id.String())
+	d.Set("name", repository.Name)
+	if repository.Project == nil || repository.Project.Id == nil {
+		return fmt.Errorf("Unable to flatten Git repository without a valid projectID")
+	}
 	d.Set("project_id", repository.Project.Id.String())
-	d.Set("default_branch", converter.ToString(repository.DefaultBranch, ""))
+	d.Set("default_branch", repository.DefaultBranch)
 	d.Set("is_fork", repository.IsFork)
-	d.Set("remote_url", converter.ToString(repository.RemoteUrl, ""))
+	d.Set("remote_url", repository.RemoteUrl)
 	d.Set("size", repository.Size)
-	d.Set("ssh_url", converter.ToString(repository.SshUrl, ""))
-	d.Set("url", converter.ToString(repository.Url, ""))
-	d.Set("web_url", converter.ToString(repository.WebUrl, ""))
+	d.Set("ssh_url", repository.SshUrl)
+	d.Set("url", repository.Url)
+	d.Set("web_url", repository.WebUrl)
+
+	return nil
 }
 
 // Convert internal Terraform data structure to an AzDO data structure. Note: only the params that are
