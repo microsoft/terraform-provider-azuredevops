@@ -46,6 +46,9 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 go test -tags "all" $(TEST) -v $(TESTARGS) -timeout 120m
 
+testacc-skip-tests: fmtcheck
+	TF_ACC=1 SKIP_NOT_SET_TESTS=1 go test -tags "all" $(TEST) -v $(TESTARGS) -timeout 120m
+
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
 		echo "ERROR: Set TEST to a specific package. For example,"; \

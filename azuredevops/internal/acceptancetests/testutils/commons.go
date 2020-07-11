@@ -51,9 +51,9 @@ func PreCheck(t *testing.T, additionalEnvVars *[]string) {
 	}
 
 	for _, variable := range requiredEnvVars {
-		if strings.EqualFold(os.Getenv(variable), "") {
-			// Skip tests with missing required environment variables when not in CI
-			if os.Getenv("CI") == "" {
+		if _, ok := os.LookupEnv(variable); !ok {
+			// Skip tests with missing additional environment variables when SKIP_NOT_SET_TESTS set
+			if _, ok := os.LookupEnv("SKIP_NOT_SET_TESTS"); ok && additionalEnvVars != nil {
 				t.Skipf("Skipping test %s. `%s` not set and required to run this test.", t.Name(), variable)
 			}
 			t.Fatalf("`%s` must be set for this acceptance test!", variable)
