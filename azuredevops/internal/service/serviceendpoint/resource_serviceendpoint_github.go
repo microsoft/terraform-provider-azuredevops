@@ -63,6 +63,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 func expandAuthOauth(d map[string]interface{}) map[string]string {
 	return map[string]string{
 		"ConfigurationId": d["oauth_configuration_id"].(string),
+		"AccessToken":     "",
 	}
 }
 func expandAuthOauthList(d []interface{}) []map[string]string {
@@ -116,7 +117,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	authGrant := expandAuthOauthSet(d.Get("auth_oauth").(*schema.Set))
 
 	if authPersonal != nil {
-		scheme = "PersonalAccessToken"
+		scheme = "Token"
 		parameters = &authPersonal
 	}
 
