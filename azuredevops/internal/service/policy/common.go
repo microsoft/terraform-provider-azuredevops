@@ -63,7 +63,59 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 		Update:   genPolicyUpdateFunc(crudArgs),
 		Delete:   genPolicyDeleteFunc(crudArgs),
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
-		Schema:   genBaseSchema(),
+		Schema: map[string]*schema.Schema{
+			SchemaProjectID: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			SchemaEnabled: {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			SchemaBlocking: {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			SchemaSettings: {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						SchemaScope: {
+							Type: schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									SchemaRepositoryID: {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									SchemaRepositoryRef: {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									SchemaMatchType: {
+										Type:             schema.TypeString,
+										Optional:         true,
+										Default:          matchTypeExact,
+										DiffSuppressFunc: suppress.CaseDifference,
+										ValidateFunc: validation.StringInSlice([]string{
+											matchTypeExact, matchTypePrefix,
+										}, true),
+									},
+								},
+							},
+							Required: true,
+							MinItems: 1,
+						},
+					},
+				},
+				Required: true,
+				MinItems: 1,
+				MaxItems: 1,
+			},
+		},
 	}
 }
 
@@ -160,62 +212,6 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	}
 	return map[string]interface{}{
 		SchemaScope: scopes,
-	}
-}
-
-func genBaseSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		SchemaProjectID: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		SchemaEnabled: {
-			Type:     schema.TypeBool,
-			Optional: true,
-			Default:  true,
-		},
-		SchemaBlocking: {
-			Type:     schema.TypeBool,
-			Optional: true,
-			Default:  true,
-		},
-		SchemaSettings: {
-			Type: schema.TypeList,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					SchemaScope: {
-						Type: schema.TypeList,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								SchemaRepositoryID: {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								SchemaRepositoryRef: {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								SchemaMatchType: {
-									Type:             schema.TypeString,
-									Optional:         true,
-									Default:          matchTypeExact,
-									DiffSuppressFunc: suppress.CaseDifference,
-									ValidateFunc: validation.StringInSlice([]string{
-										matchTypeExact, matchTypePrefix,
-									}, true),
-								},
-							},
-						},
-						Required: true,
-						MinItems: 1,
-					},
-				},
-			},
-			Required: true,
-			MinItems: 1,
-			MaxItems: 1,
-		},
 	}
 }
 
