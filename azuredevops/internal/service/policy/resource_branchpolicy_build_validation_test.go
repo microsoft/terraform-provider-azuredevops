@@ -34,10 +34,11 @@ func TestBranchPolicyBuildValidation_ExpandFlatten_Roundtrip(t *testing.T) {
 				},
 			},
 			"buildDefinitionId":       77,
-			"displayName":             "Moo",
+			"displayName":             "test policy",
 			"manualQueueOnly":         true,
 			"queueOnSourceUpdateOnly": true,
 			"validDuration":           700,
+			"filenamePatterns":        &([]string{"*md"}),
 		},
 	}
 

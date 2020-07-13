@@ -17,14 +17,16 @@ const (
 	manualQueueOnly         = "manual_queue_only"
 	queueOnSourceUpdateOnly = "queue_on_source_update_only"
 	validDuration           = "valid_duration"
+	filenamePatterns        = "filename_patterns"
 )
 
 type buildValidationPolicySettings struct {
-	BuildDefinitionID       int    `json:"buildDefinitionId"`
-	PolicyDisplayName       string `json:"displayName"`
-	ManualQueueOnly         bool   `json:"manualQueueOnly"`
-	QueueOnSourceUpdateOnly bool   `json:"queueOnSourceUpdateOnly"`
-	ValidDuration           int    `json:"validDuration"`
+	BuildDefinitionID       int      `json:"buildDefinitionId"`
+	PolicyDisplayName       string   `json:"displayName"`
+	ManualQueueOnly         bool     `json:"manualQueueOnly"`
+	QueueOnSourceUpdateOnly bool     `json:"queueOnSourceUpdateOnly"`
+	ValidDuration           int      `json:"validDuration"`
+	FilenamePatterns        []string `json:"filenamePatterns"`
 }
 
 // ResourceBranchPolicyBuildValidation schema and implementation for build validation policy resource
@@ -61,6 +63,14 @@ func ResourceBranchPolicyBuildValidation() *schema.Resource {
 		Optional:     true,
 		ValidateFunc: validation.IntAtLeast(0),
 	}
+	settingsSchema[filenamePatterns] = &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type:         schema.TypeString,
+			ValidateFunc: validation.NoZeroValues,
+		},
+	}
 	return resource
 }
 
@@ -88,6 +98,7 @@ func buildValidationFlattenFunc(d *schema.ResourceData, policyConfig *policy.Pol
 	settings[manualQueueOnly] = policySettings.ManualQueueOnly
 	settings[queueOnSourceUpdateOnly] = policySettings.QueueOnSourceUpdateOnly
 	settings[validDuration] = policySettings.ValidDuration
+	settings[filenamePatterns] = policySettings.FilenamePatterns
 
 	d.Set(SchemaSettings, settingsList)
 	return nil
@@ -108,6 +119,18 @@ func buildValidationExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*polic
 	policySettings["manualQueueOnly"] = settings[manualQueueOnly].(bool)
 	policySettings["queueOnSourceUpdateOnly"] = settings[queueOnSourceUpdateOnly].(bool)
 	policySettings["validDuration"] = settings[validDuration].(int)
+	policySettings["filenamePatterns"] = expandFilenamePatterns(settings[filenamePatterns].(*schema.Set))
 
 	return policyConfig, projectID, nil
+}
+
+func expandFilenamePatterns(patterns *schema.Set) *[]string {
+	patternsList := patterns.List()
+	patternsArray := make([]string, len(patternsList))
+
+	for i, variableGroup := range patternsList {
+		patternsArray[i] = variableGroup.(string)
+	}
+
+	return &patternsArray
 }

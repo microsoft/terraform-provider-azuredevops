@@ -48,6 +48,7 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(buildVlidationTfNode, "filename_patterns"),
 				),
 			}, {
 				Config: getHCL(opts2),
@@ -57,6 +58,7 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttrSet(buildVlidationTfNode, "filename_patterns"),
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
@@ -141,6 +143,11 @@ func getHCL(opts hclOptions) string {
 			display_name = "%s"
 			valid_duration = %d
 			build_definition_id = azuredevops_build_definition.build.id
+			filename_patterns =  [
+				"/WebApp/*",
+				"!/WebApp/Tests/*",
+				"*.cs"
+			]
 			scope {
 				repository_id  = azuredevops_git_repository.gitrepo.id
 				repository_ref = azuredevops_git_repository.gitrepo.default_branch
