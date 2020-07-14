@@ -26,9 +26,7 @@ const TagSize = 16
 // 16-byte result into out. Authenticating two different messages with the same
 // key allows an attacker to forge messages at will.
 func Sum(out *[16]byte, m []byte, key *[32]byte) {
-	h := New(key)
-	h.Write(m)
-	h.Sum(out[:0])
+	sum(out, m, key)
 }
 
 // Verify returns true if mac is a valid authenticator for m with the given key.

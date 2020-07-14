@@ -59,9 +59,10 @@ The following arguments are supported:
 
 `settings` block supports the following:
 
-- `path_filters` - (Optional) Filter path(s) on which the policy is applied. Supports absolute paths, wildcards and multiple paths. Example: /WebApp/Models/Data.cs, /WebApp/* or *.cs,/WebApp/Models/Data.cs;ClientApp/Models/Data.cs.
 - `auto_reviewer_ids` - (Required) Required reviewers ids. Supports multiples user Ids.
+- `path_filters` - (Optional) Filter path(s) on which the policy is applied. Supports absolute paths, wildcards and multiple paths. Example: /WebApp/Models/Data.cs, /WebApp/* or *.cs,/WebApp/Models/Data.cs;ClientApp/Models/Data.cs.
 - `submitter_can_vote` - (Optional) Controls whether or not the submitter's vote counts. Defaults to `false`.
+- `message` - (Optional) Activity feed message, Message will appear in the activity feed of pull requests with automatically added reviewers.
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 
   `scope` block supports the following:
