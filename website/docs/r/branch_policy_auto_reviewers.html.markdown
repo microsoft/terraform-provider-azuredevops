@@ -24,6 +24,10 @@ resource "azuredevops_git_repository" "r" {
   }
 }
 
+resource "azuredevops_user_entitlement" "user" {
+  principal_name       = "mail@email.com"
+  account_license_type = "basic"
+}
 
 resource "azuredevops_branch_policy_auto_reviewers" "p" {
   project_id = azuredevops_project.p.id
@@ -32,13 +36,11 @@ resource "azuredevops_branch_policy_auto_reviewers" "p" {
   blocking = true
 
   settings {
-    auto_reviewer_ids  = [
-      "22650ead-XXXX-XXX-8139-7d7da25087b7",
-      "32550ead-XXXX-XXX-2339-7d7da2508437",
-      ]
+    auto_reviewer_ids  = [azuredevops_user_entitlement.user.id]
     submitter_can_vote = false
     message            = "Auto reviewer"
     path_filters       = ["*/src/*.ts"]
+
     scope {
       repository_id  = azuredevops_git_repository.r.id
       repository_ref = azuredevops_git_repository.r.default_branch
