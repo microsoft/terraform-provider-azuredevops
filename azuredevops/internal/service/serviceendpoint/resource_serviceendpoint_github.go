@@ -60,80 +60,46 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	return r
 }
 
-func expandAuthOauth(d map[string]interface{}) map[string]string {
-	return map[string]string{
-		"ConfigurationId": d["oauth_configuration_id"].(string),
-		"AccessToken":     "",
-	}
-}
-func expandAuthOauthList(d []interface{}) []map[string]string {
-	vs := make([]map[string]string, 0, len(d))
-	for _, v := range d {
-		val, ok := v.(map[string]interface{})
-		if ok {
-			vs = append(vs, expandAuthOauth(val))
-		}
-	}
-	return vs
-}
-func expandAuthOauthSet(d *schema.Set) map[string]string {
-	d2 := expandAuthOauthList(d.List())
-	if len(d2) != 1 {
-		return nil
-	}
-	return d2[0]
-}
-
-func expandAuthPersonal(d map[string]interface{}) map[string]string {
-	return map[string]string{
-		"accessToken": d[personalAccessToken].(string),
-	}
-}
-func expandAuthPersonalList(d []interface{}) []map[string]string {
-	vs := make([]map[string]string, 0, len(d))
-	for _, v := range d {
-		val, ok := v.(map[string]interface{})
-		if ok {
-			vs = append(vs, expandAuthPersonal(val))
-		}
-	}
-	return vs
-}
-func expandAuthPersonalSet(d *schema.Set) map[string]string {
-	d2 := expandAuthPersonalList(d.List())
-	if len(d2) != 1 {
-		return nil
-	}
-	return d2[0]
-}
-
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
-	parameters := &map[string]string{}
-	authPersonal := expandAuthPersonalSet(d.Get("auth_personal").(*schema.Set))
-	authGrant := expandAuthOauthSet(d.Get("auth_oauth").(*schema.Set))
+	parameters := map[string]string{}
 
-	if authPersonal != nil {
+	if config, ok := d.GetOk("auth_personal"); ok {
 		scheme = "Token"
-		parameters = &authPersonal
+		parameters = expandAuthPersonalSet(config.(*schema.Set))
 	}
 
-	if authGrant != nil {
+	if config, ok := d.GetOk("auth_oauth"); ok {
 		scheme = "OAuth"
-		parameters = &authGrant
+		parameters = expandAuthOauthSet(config.(*schema.Set))
 	}
 
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Parameters: parameters,
+		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
 	serviceEndpoint.Type = converter.String("github")
 	serviceEndpoint.Url = converter.String("http://github.com")
 
 	return serviceEndpoint, projectID, nil
+}
+
+func expandAuthPersonalSet(d *schema.Set) map[string]string {
+	authPerson := make(map[string]string)
+	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	authPerson["accessToken"] = val[personalAccessToken].(string)
+	return authPerson
+}
+
+func expandAuthOauthSet(d *schema.Set) map[string]string {
+	authConfig := make(map[string]string)
+	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	authConfig["ConfigurationId"] = val["oauth_configuration_id"].(string)
+	authConfig["AccessToken"] = ""
+	return authConfig
 }
 
 // Convert AzDO data structure to internal Terraform data structure
@@ -146,7 +112,7 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 			},
 		})
 	}
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "PersonalAccessToken") {
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 		authPersonal := flattenAuthPerson(d, authPersonalSet)
 		if authPersonal != nil {
