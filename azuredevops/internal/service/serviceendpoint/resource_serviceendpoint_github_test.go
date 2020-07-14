@@ -27,7 +27,7 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		Parameters: &map[string]string{
 			"accessToken": "UNIT_TEST_ACCESS_TOKEN",
 		},
-		Scheme: converter.String("PersonalAccessToken"),
+		Scheme: converter.String("Token"),
 	},
 	Id:          &ghTestServiceEndpointID,
 	Name:        converter.String("UNIT_TEST_NAME"),
