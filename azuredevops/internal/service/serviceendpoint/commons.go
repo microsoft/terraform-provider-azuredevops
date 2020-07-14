@@ -30,25 +30,28 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.NoEmptyStrings,
 			},
 			"service_endpoint_name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.NoEmptyStrings,
 				ForceNew:     true,
+				ValidateFunc: validate.NoEmptyStrings,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "Managed by Terraform",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Managed by Terraform",
+				ValidateFunc: validate.NoEmptyStrings,
 			},
 			"authorization": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeMap,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.NoEmptyStrings,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

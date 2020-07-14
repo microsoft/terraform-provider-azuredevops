@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 )
@@ -45,7 +46,7 @@ func ResourceBranchPolicyBuildValidation() *schema.Resource {
 	settingsSchema[policyDisplayName] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
-		ValidateFunc: validation.NoZeroValues,
+		ValidateFunc: validate.NoEmptyStrings,
 	}
 	settingsSchema[manualQueueOnly] = &schema.Schema{
 		Type:     schema.TypeBool,
@@ -68,7 +69,7 @@ func ResourceBranchPolicyBuildValidation() *schema.Resource {
 		Optional: true,
 		Elem: &schema.Schema{
 			Type:         schema.TypeString,
-			ValidateFunc: validation.NoZeroValues,
+			ValidateFunc: validate.NoEmptyStrings,
 		},
 	}
 	return resource
