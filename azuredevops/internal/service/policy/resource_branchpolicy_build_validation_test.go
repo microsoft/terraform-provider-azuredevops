@@ -1,5 +1,5 @@
 // +build all policy
-// +build !exlcude_policy
+// +build !exclude_policy
 
 package policy
 
