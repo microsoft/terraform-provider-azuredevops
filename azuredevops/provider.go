@@ -22,6 +22,7 @@ func Provider() *schema.Provider {
 			"azuredevops_resource_authorization":         build.ResourceResourceAuthorization(),
 			"azuredevops_branch_policy_build_validation": policy.ResourceBranchPolicyBuildValidation(),
 			"azuredevops_branch_policy_min_reviewers":    policy.ResourceBranchPolicyMinReviewers(),
+			"azuredevops_branch_policy_auto_reviewers":   policy.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_build_definition":               build.ResourceBuildDefinition(),
 			"azuredevops_project":                        core.ResourceProject(),
 			"azuredevops_project_features":               core.ResourceProjectFeatures(),
