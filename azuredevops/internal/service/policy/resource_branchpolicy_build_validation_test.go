@@ -1,5 +1,5 @@
-// +build all policy
-// +build !exclude_policy
+// +build all resource_branchpolicy_build_validation
+// +build !exclude_resource_branchpolicy_build_validation
 
 package policy
 
