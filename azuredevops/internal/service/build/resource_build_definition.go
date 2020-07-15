@@ -923,6 +923,9 @@ func validateServiceConnectionIDExistsIfNeeded(d *schema.ResourceData) error {
 	if strings.EqualFold(repoType, string(model.RepoTypeValues.Bitbucket)) && serviceConnectionID == "" {
 		return errors.New("bitbucket repositories need a referenced service connection ID")
 	}
+	if strings.EqualFold(repoType, string(model.RepoTypeValues.GitHubEnterprise)) && serviceConnectionID == "" {
+		return errors.New("GitHub Enterprise repositories need a referenced service connection ID")
+	}
 	return nil
 }
 
