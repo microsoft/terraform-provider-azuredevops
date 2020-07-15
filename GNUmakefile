@@ -2,6 +2,7 @@ TEST?=$$(go list ./... |grep -v 'vendor')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=azuredevops
 TESTTIMEOUT=180m
+TESTTAGS=all
 
 ifeq ($(GOPATH),)
 	GOPATH:=$(shell go env GOPATH)
@@ -45,11 +46,11 @@ test: fmtcheck
 
 testacc: fmtcheck
 	@echo "==> Sourcing .env file if avaliable"
-	if [ -f .env ]; then set -o allexport; source .env; set +o allexport; fi
-	TF_ACC=1 go test -tags "all" $(TEST) -v $(TESTARGS) -timeout 120m
+	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
+	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 
-testacc-skip-tests: fmtcheck
-	TF_ACC=1 SKIP_NOT_SET_TESTS=1 go test -tags "all" $(TEST) -v $(TESTARGS) -timeout 120m
+testacc-skip-tests: export SKIP_NOT_SET_TESTS=1
+testacc-skip-tests: testacc
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \

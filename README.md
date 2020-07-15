@@ -134,7 +134,7 @@ The several options to run the tests are:
 * Run a subset using a prefix
 
   ```sh
-  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create'
+  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create' TESTTAGS='resource_build_definition'
   ```
 
 * Run all tests, but skip tests that have missing additional environment variables
