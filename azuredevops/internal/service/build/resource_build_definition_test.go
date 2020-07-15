@@ -158,6 +158,42 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 	VariableGroups: &[]build.VariableGroup{},
 }
 
+// This definition matches the overall structure of what a configured git repository would
+// when configuring a GitHub Enterprise repo.
+var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
+	Id:       converter.Int(100),
+	Revision: converter.Int(1),
+	Name:     converter.String("Name"),
+	Path:     converter.String("\\"),
+	Repository: &build.BuildRepository{
+		Url:           converter.String("https://github.company.com/RepoId.git"),
+		Id:            converter.String("RepoId"),
+		Name:          converter.String("RepoId"),
+		DefaultBranch: converter.String("RepoBranchName"),
+		Type:          converter.String("GitHubEnterprise"),
+		Properties: &map[string]string{
+			"connectedServiceId": "ServiceConnectionID",
+			"apiUrl":             "https://github.company.com/api/v3/repos/RepoId",
+		},
+	},
+	Triggers: &[]interface{}{
+		yamlCiTrigger,
+	},
+	Process: &build.YamlProcess{
+		YamlFilename: converter.String("YamlFilename"),
+	},
+	Queue: &build.AgentPoolQueue{
+		Name: converter.String("BuildPoolName"),
+		Pool: &build.TaskAgentPoolReference{
+			Name: converter.String("BuildPoolName"),
+		},
+	},
+	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+	Type:           &build.DefinitionTypeValues.Build,
+	Quality:        &build.DefinitionQualityValues.Definition,
+	VariableGroups: &[]build.VariableGroup{},
+}
+
 // This definition matches the overall structure of what a configured Bitbucket git repository would
 // look like.
 func testBuildDefinitionBitbucket() build.BuildDefinition {
@@ -194,7 +230,7 @@ func testBuildDefinitionBitbucket() build.BuildDefinition {
 
 // validates that all supported repo types are allowed by the schema
 func TestBuildDefinition_RepoTypeListIsCorrect(t *testing.T) {
-	expectedRepoTypes := []string{"GitHub", "TfsGit", "Bitbucket"}
+	expectedRepoTypes := []string{"GitHub", "TfsGit", "Bitbucket", "GitHubEnterprise"}
 	repoSchema := ResourceBuildDefinition().Schema["repository"]
 	repoTypeSchema := repoSchema.Elem.(*schema.Resource).Schema["repo_type"]
 
@@ -245,6 +281,19 @@ func TestBuildDefinition_Expand_RepoUrl_Bitbucket(t *testing.T) {
 	require.Equal(t, testProjectID, projectID)
 }
 
+// verifies that GitHub Enterprise repo urls are expanded to URLs Azure DevOps expects
+func TestBuildDefinition_Expand_RepoUrl_GithubEnterprise(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
+
+	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
+
+	require.Nil(t, err)
+	require.Equal(t, *buildDefinitionAfterRoundTrip.Repository.Url, "https://github.company.com/RepoId.git")
+	require.Equal(t, testProjectID, projectID)
+}
+
 // verifies that a service connection is required for bitbucket repos
 func TestBuildDefinition_ValidatesServiceConnection_Bitbucket(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
@@ -264,6 +313,27 @@ func TestBuildDefinition_ValidatesServiceConnection_Bitbucket(t *testing.T) {
 	err = resourceBuildDefinitionUpdate(resourceData, clients)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "bitbucket repositories need a referenced service connection ID")
+}
+
+// verifies that a service connection is required for GitHub Enterprise repos
+func TestBuildDefinition_ValidatesServiceConnection_GitHubEnterprise(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
+	(*gitHubEnterpriseBuildDef.Repository.Properties)["connectedServiceId"] = ""
+	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
+	err := resourceBuildDefinitionCreate(resourceData, clients)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "GitHub Enterprise repositories need a referenced service connection ID")
+
+	err = resourceBuildDefinitionUpdate(resourceData, clients)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "GitHub Enterprise repositories need a referenced service connection ID")
 }
 
 // verifies that create a build definition with Bitbucket and CI triggers
