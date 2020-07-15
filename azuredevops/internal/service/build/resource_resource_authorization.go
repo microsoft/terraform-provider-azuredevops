@@ -17,6 +17,7 @@ import (
 const msgErrorFailedResourceCreate = "error creating authorized resource: %+v"
 const msgErrorFailedResourceUpdate = "error updating authorized resource: %+v"
 const msgErrorFailedResourceDelete = "error deleting authorized resource: %+v"
+const msgErrorAuthorizationNoLongerExists = "[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n"
 
 // ResourceResourceAuthorization schema and implementation for resource authorization resource
 func ResourceResourceAuthorization() *schema.Resource {
@@ -99,7 +100,7 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 			}
 
 			if len(*resourceRefs) == 0 {
-				log.Printf("[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n", *(authorizedResource.Id))
+				log.Printf(msgErrorAuthorizationNoLongerExists, *(authorizedResource.Id))
 				d.SetId("")
 				return nil
 			}
@@ -117,6 +118,7 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
+				log.Printf(msgErrorAuthorizationNoLongerExists, *(authorizedResource.Id))
 				d.SetId("")
 				return nil
 			}
@@ -124,7 +126,7 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		}
 
 		if len(*resourceRefs) == 0 {
-			log.Printf("[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n", *(authorizedResource.Id))
+			log.Printf(msgErrorAuthorizationNoLongerExists, *(authorizedResource.Id))
 			d.SetId("")
 			return nil
 		}
