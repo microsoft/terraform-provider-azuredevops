@@ -161,6 +161,7 @@ func ResourceBuildDefinition() *schema.Resource {
 								string(model.RepoTypeValues.GitHub),
 								string(model.RepoTypeValues.TfsGit),
 								string(model.RepoTypeValues.Bitbucket),
+								string(model.RepoTypeValues.GitHubEnterprise),
 							}, false),
 						},
 						"branch_name": {
@@ -169,6 +170,11 @@ func ResourceBuildDefinition() *schema.Resource {
 							Default:  "master",
 						},
 						"service_connection_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
+						"github_enterprise_url": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
@@ -830,6 +836,11 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	if strings.EqualFold(string(repoType), string(model.RepoTypeValues.Bitbucket)) {
 		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoID)
 		repoAPIURL = fmt.Sprintf("https://api.bitbucket.org/2.0/repositories/%s", repoID)
+	}
+	if strings.EqualFold(string(repoType), string(model.RepoTypeValues.GitHubEnterprise)) {
+		githubEnterpriseURL := repository["github_enterprise_url"].(string)
+		repoURL = fmt.Sprintf("%s/%s.git", githubEnterpriseURL, repoID)
+		repoAPIURL = fmt.Sprintf("%s/api/v3/repos/%s", githubEnterpriseURL, repoID)
 	}
 
 	ciTriggers := expandBuildDefinitionTriggerList(
