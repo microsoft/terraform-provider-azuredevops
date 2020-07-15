@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceProjectPermissions schema and implementation for project permission resource
@@ -19,7 +19,7 @@ func ResourceProjectPermissions() *schema.Resource {
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 				Required:     true,
 				ForceNew:     true,
 			},

@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 const (
@@ -52,12 +52,12 @@ func ResourceVariableGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 			},
 			vgName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			vgDescription: {
 				Type:     schema.TypeString,
@@ -122,12 +122,12 @@ func ResourceVariableGroup() *schema.Resource {
 						vgName: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validate.NoEmptyStrings,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
 						},
 						vgServiceEndpointID: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validate.UUID,
+							ValidateFunc: validation.IsUUID,
 						},
 					},
 				},

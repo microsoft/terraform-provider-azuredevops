@@ -108,7 +108,7 @@ func ResourceBuildDefinition() *schema.Resource {
 						bdVariableName: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validate.NoEmptyStrings,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
 						},
 						bdVariableValue: {
 							Type:     schema.TypeString,

@@ -14,7 +14,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataProjects schema and implementation for projects data source
@@ -27,7 +26,7 @@ func DataProjects() *schema.Resource {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"state": {

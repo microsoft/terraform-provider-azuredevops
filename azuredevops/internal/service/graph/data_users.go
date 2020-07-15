@@ -8,10 +8,10 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataUsers schema and implementation for users data source
@@ -24,7 +24,7 @@ func DataUsers() *schema.Resource {
 			"principal_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 				ConflictsWith: []string{"origin", "origin_id"},
 			},
 			"subject_types": {
@@ -38,13 +38,13 @@ func DataUsers() *schema.Resource {
 			"origin": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 				ConflictsWith: []string{"principal_name"},
 			},
 			"origin_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 				ConflictsWith: []string{"principal_name"},
 			},
 			"users": {

@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataGitRepositories schema and implementation for git repo data source
@@ -25,13 +25,13 @@ func DataGitRepositories() *schema.Resource {
 			"project_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validate.UUID,
+				ValidateFunc:     validation.IsUUID,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"name": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"include_hidden": {
