@@ -85,9 +85,9 @@ resource "azuredevops_workitemquery_permissions" "wiq-project-permissions" {
   project_id  = azuredevops_project.project.id
   principal   = data.azuredevops_group.project-administrators.id
   permissions = {
-    CreateRepository = "Deny"
-    DeleteRepository = "Deny"
-    RenameRepository = "NotSet"
+    Delete            = "Deny"
+    Contribute        = "Allow"
+    ManagePermissions = "NotSet"
   }
 }
 
@@ -96,7 +96,7 @@ resource "azuredevops_workitemquery_permissions" "wiq-sharedqueries-permissions"
   path = "/"
   principal   = data.azuredevops_group.project-contributors.id
   permissions = {
-    FullControl = "Allow"
+    FullControl              = "Allow"
     RecordQueryExecutionInfo = "Deny"
   }
 }
@@ -107,8 +107,8 @@ resource "azuredevops_workitemquery_permissions" "wiq-folder-permissions" {
   principal   = data.azuredevops_group.project-readers.id
   permissions = {
     Contribute = "Allow"
-    Delete = "Deny"
-    Read = "NotSet"
+    Delete     = "Deny"
+    Read       = "NotSet"
   }
 }
 
