@@ -219,6 +219,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/system
 github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/test
 github.com/microsoft/azure-devops-go-api/azuredevops/webapi
+github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking
 # github.com/mitchellh/cli v1.0.0
 github.com/mitchellh/cli
 # github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
