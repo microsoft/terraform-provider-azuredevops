@@ -434,7 +434,7 @@ resource "azuredevops_agent_queue" "q" {
 
 // HclBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
 func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
-	return HclBuildDefinitionResource(
+	return HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -447,7 +447,7 @@ func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName st
 
 // HclBuildDefinitionResourceBitbucket HCL describing an AzDO build definition sourced from Bitbucket
 func HclBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName string, buildPath string, serviceConnectionID string) string {
-	return HclBuildDefinitionResource(
+	return HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -460,7 +460,7 @@ func HclBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName
 
 // HclBuildDefinitionResourceTfsGit HCL describing an AzDO build definition sourced from AzDo Git Repo
 func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, buildDefinitionName string, buildPath string) string {
-	buildDefinitionResource := HclBuildDefinitionResource(
+	buildDefinitionResource := HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -475,8 +475,8 @@ func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, bu
 	return fmt.Sprintf("%s\n%s", azureGitRepoResource, buildDefinitionResource)
 }
 
-// HclBuildDefinitionResource HCL describing an AzDO build definition
-func HclBuildDefinitionResource(
+// HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition
+func HclBuildDefinitionResourceWithProject(
 	projectName string,
 	buildDefinitionName string,
 	buildPath string,
