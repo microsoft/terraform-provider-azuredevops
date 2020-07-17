@@ -1,21 +1,22 @@
-package azuredevops
+package permissions
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/commonhelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/config"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityhelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/validate"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func resourceAreaPermissions() *schema.Resource {
+func ResourceAreaPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAreaPermissionsCreate,
 		Read:   resourceAreaPermissionsRead,
@@ -27,13 +28,13 @@ func resourceAreaPermissions() *schema.Resource {
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 				Required:     true,
 				ForceNew:     true,
 			},
 			"path": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				ForceNew:     true,
 				Optional:     true,
 			},
@@ -41,40 +42,34 @@ func resourceAreaPermissions() *schema.Resource {
 	}
 }
 
-func getAreaIDbyPath(clients *config.AggregatedClient, d *schema.ResourceData, path string) (*string, error) {
-	var areaID string = ""
-	projectID := d.Get("project_id").(string)
-
-	args := workitemtracking.GetClassificationNodeArgs{
+func getAreaIDbyPath(context context.Context, workitemtrackingClient workitemtracking.Client, projectID string, path string) (*string, error) {
+	area, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		Path:           &path,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Depth:          converter.Int(999),
-	}
-
-	area, err := clients.WitClient.GetClassificationNode(clients.Ctx, args)
+		Depth:          converter.Int(1),
+	})
 	if err != nil {
-		return &areaID, fmt.Errorf("Error getting Area: %+v", err)
+		return nil, fmt.Errorf("Error getting Area: %w", err)
 	}
 
-	areaID = area.Identifier.String()
+	areaID := area.Identifier.String()
 	return &areaID, nil
 }
 
-func createAreaToken(clients *config.AggregatedClient, d *schema.ResourceData) (*string, error) {
+func createAreaToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
+	const aclTokenPrefix = "vstfs:///Classification/Node/"
+
 	var aclToken string
-	var aclTokenPrefix string = "vstfs:///Classification/Node/"
 	projectID := d.Get("project_id").(string)
 
 	// you have to ommit the path property to get the
 	// root area.
-	args := workitemtracking.GetClassificationNodeArgs{
-		Project:        &projectID,
+	rootArea, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
+		Project:        converter.String(projectID),
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Depth:          converter.Int(999),
-	}
-
-	rootArea, err := clients.WitClient.GetClassificationNode(clients.Ctx, args)
+		Depth:          converter.Int(1),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("Error getting Area: %+v", err)
 	}
@@ -84,30 +79,32 @@ func createAreaToken(clients *config.AggregatedClient, d *schema.ResourceData) (
 	 * Root area: vstfs:///Classification/Node/<AreaIdentifier>:vstfs:///Classification/Node/f8c5b667-91dd-4fe7-bf23-3138c439d07e"
 	 * 1st child: vstfs:///Classification/Node/<AreaIdentifier>:vstfs:///Classification/Node/<AreaIdentifier>
 	 */
-	path, ok := d.GetOk("path")
+	aclToken = aclTokenPrefix + rootArea.Identifier.String()
 
-	if !ok {
-		// no path was specified we use the root area
-		aclToken = "vstfs:///Classification/Node/" + rootArea.Identifier.String()
-	} else {
+	path, ok := d.GetOk("path")
+	if ok {
 		if !*rootArea.HasChildren {
-			return &aclToken, fmt.Errorf("A path was specified but the root area has no children")
+			return nil, fmt.Errorf("A path was specified but the root area has no children")
 		} else {
 			// get the id for each area in the provided path
 			// we do this by querying each path element
 			// 0: foo
 			// 1: foo/bar
 			// 3: foo/bar/baz
-			aclToken = aclTokenPrefix + rootArea.Identifier.String()
-			pathElem := strings.Split(path.(string), "/")
-			for i, v := range pathElem {
-				var pathQuery string
-				if i == 0 {
-					pathQuery = v
-				} else {
-					pathQuery = strings.Join(commonhelper.SelectArrayRange(pathElem, 0, i), "/")
+			var pathElem []string
+
+			linq.From(strings.Split(path.(string), "/")).
+				Where(func(elem interface{}) bool {
+					return len(elem.(string)) > 0
+				}).
+				ToSlice(&pathElem)
+
+			for i := range pathElem {
+				pathItem := strings.Join(pathElem[:i+1], "/")
+				currID, err := getAreaIDbyPath(context, workitemtrackingClient, projectID, pathItem)
+				if err != nil {
+					return nil, fmt.Errorf("Failed to get ID for area %s, %w", pathItem, err)
 				}
-				currID, _ := getAreaIDbyPath(clients, d, pathQuery)
 				aclToken = aclToken + ":" + aclTokenPrefix + *currID
 			}
 		}
@@ -118,19 +115,18 @@ func createAreaToken(clients *config.AggregatedClient, d *schema.ResourceData) (
 }
 
 func resourceAreaPermissionsCreate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	clients := m.(*client.AggregatedClient)
 
-	clients := m.(*config.AggregatedClient)
-
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.CSS,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.CSS,
 		clients.SecurityClient,
 		clients.IdentityClient)
+
 	if err != nil {
 		return err
 	}
 
-	aclToken, err := createAreaToken(clients, d)
+	aclToken, err := createAreaToken(clients.Ctx, clients.WorkItemTrackingClient, d)
 	if err != nil {
 		return err
 	}
@@ -144,17 +140,15 @@ func resourceAreaPermissionsCreate(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceAreaPermissionsRead(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	clients := m.(*client.AggregatedClient)
 
-	clients := m.(*config.AggregatedClient)
-
-	aclToken, err := createAreaToken(clients, d)
+	aclToken, err := createAreaToken(clients.Ctx, clients.WorkItemTrackingClient, d)
 	if err != nil {
 		return err
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.CSS,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.CSS,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {
@@ -171,23 +165,19 @@ func resourceAreaPermissionsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceAreaPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	debugWait()
-
 	return resourceAreaPermissionsCreate(d, m)
 }
 
 func resourceAREAPermissionsDelete(d *schema.ResourceData, m interface{}) error {
-	debugWait()
+	clients := m.(*client.AggregatedClient)
 
-	clients := m.(*config.AggregatedClient)
-
-	aclToken, err := createAreaToken(clients, d)
+	aclToken, err := createAreaToken(clients.Ctx, clients.WorkItemTrackingClient, d)
 	if err != nil {
 		return err
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(securityhelper.SecurityNamespaceIDValues.CSS,
-		clients.Ctx,
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.CSS,
 		clients.SecurityClient,
 		clients.IdentityClient)
 	if err != nil {
@@ -204,8 +194,6 @@ func resourceAREAPermissionsDelete(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceAreaPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	debugWait()
-
 	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
 	return nil, errors.New("resourceAreaPermissionsImporter: Not implemented")
 }
