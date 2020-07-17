@@ -121,7 +121,7 @@ With VSCode Golang extension you can also run and debug the tests using `run tes
 
 #### Acceptance tests
 
-The majority of tests in the provider are acceptance tests - which provisions real resources in Azure Devops and Azure. To run any acceptance tests you need to set `AZDO_ORG_SERVICE_URL`, `AZDO_PERSONAL_ACCESS_TOKEN` environment variables, some test have additional environment variables required to run. You can find out the required environment variables by running the test.
+The majority of tests in the provider are acceptance tests - which provisions real resources in Azure Devops and Azure. To run any acceptance tests you need to set `AZDO_ORG_SERVICE_URL`, `AZDO_PERSONAL_ACCESS_TOKEN` environment variables, some test have additional environment variables required to run. You can find out the required environment variables by running the test. Most of these variables can be set to dummy values.
 
 The several options to run the tests are:
 
@@ -135,12 +135,6 @@ The several options to run the tests are:
 
   ```sh
   make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create' TESTTAGS='resource_build_definition'
-  ```
-
-* Run all tests, but skip tests that have missing additional environment variables
-
-  ```sh
-  make testacc-skip-tests
   ```
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test

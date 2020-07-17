@@ -49,9 +49,6 @@ testacc: fmtcheck
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
 	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 
-testacc-skip-tests: export SKIP_NOT_SET_TESTS=1
-testacc-skip-tests: testacc
-
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
 		echo "ERROR: Set TEST to a specific package. For example,"; \
