@@ -97,7 +97,7 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 									SchemaRepositoryRef: {
 										Type:         schema.TypeString,
 										Optional:     true,
-										RequiredWith: []string{SchemaRepositoryID},
+										RequiredWith: []string{"settings.0.scope.0.repository_id"},
 										ValidateFunc: validation.StringIsNotEmpty,
 									},
 									SchemaMatchType: {
