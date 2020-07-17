@@ -56,6 +56,7 @@ resource "azuredevops_build_definition" "build_definition" {
 * [Go](https://golang.org/doc/install) version 1.13.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
+
 * [Git for Windows](https://git-scm.com/download/win)
 
 If you what to use the `makefile` build strategy on Windows it's required to install
@@ -138,10 +139,6 @@ The several options to run the tests are:
   ```
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
-
-##### Debugging acceptant tests
-
-With VSCode Golang extension you can also debug the acceptance tests by highlighting the test name and pressing `F5`. More information can be found at [Debug Terraform (Azure Devops) Provider with VSCode](https://dev.to/eliises/debug-terraform-azuredevops-provider-with-vscode-c24).
 
 ### Build using PowerShell scripts
 
