@@ -13,7 +13,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceWorkItemQueryPermissions schema and implementation for project permission resource
@@ -26,7 +25,7 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 				Required:     true,
 				ForceNew:     true,
 			},
