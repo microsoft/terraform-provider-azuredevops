@@ -56,6 +56,7 @@ resource "azuredevops_build_definition" "build_definition" {
 * [Go](https://golang.org/doc/install) version 1.13.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
+
 * [Git for Windows](https://git-scm.com/download/win)
 
 If you what to use the `makefile` build strategy on Windows it's required to install
@@ -109,17 +110,35 @@ You can also cross-compile if necessary:
 GOOS=windows GOARCH=amd64 make build
 ```
 
+#### Unit tests
+
 In order to run the Unit Tests for the provider, you can run:
 
 ```sh
 $ make test
 ```
 
-The majority of tests in the provider are Acceptance Tests - which provisions real resources in Azure. It's possible to run the entire acceptance test suite by running `make testacc` - however it's likely you'll want to run a subset, which you can do using a prefix, by running:
+With VSCode Golang extension you can also run and debug the tests using `run test`, `debug test` `run package tests`, `run file tests` buttons.
 
-```sh
-make testacc SERVICE='resource' TESTARGS='-run=TestAccAzureRMResourceGroup' TESTTIMEOUT='60m'
-```
+#### Acceptance tests
+
+The majority of tests in the provider are acceptance tests - which provisions real resources in Azure Devops and Azure. To run any acceptance tests you need to set `AZDO_ORG_SERVICE_URL`, `AZDO_PERSONAL_ACCESS_TOKEN` environment variables, some test have additional environment variables required to run. You can find out the required environment variables by running the test. Most of these variables can be set to dummy values.
+
+The several options to run the tests are:
+
+* Run the entire acceptance test suite
+
+  ```sh
+  make testacc
+  ```
+
+* Run a subset using a prefix
+
+  ```sh
+  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create' TESTTAGS='resource_build_definition'
+  ```
+
+* With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
 
 ### Build using PowerShell scripts
 
@@ -131,7 +150,7 @@ They don't offer the luxury of a Makefile environment but are quite sufficient t
 The `build.ps1`is used to build the provider. Aside this the script runs (if not skipped) the defined unit tests and is able to install the compiled provider locally.
 
 | Parameter   | Description                                                                               |
-|-------------|-------------------------------------------------------------------------------------------|
+| ----------- | ----------------------------------------------------------------------------------------- |
 | -SkipTests  | Skip running unit tests during build                                                      |
 | -Install    | Install the provider locally, after a successful build                                    |
 | -DebugBuild | Build the provider with extra debugging information                                       |
@@ -142,7 +161,7 @@ The `build.ps1`is used to build the provider. Aside this the script runs (if not
 The script is used to execute unit tests. The script is also executed by `build.ps1` if the `-SkipTest` are not specified.
 
 | Parameter   | Description                                                                                                                       |
-|-------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | -TestFilter | A GO regular expression which filters the test functions to be executed                                                           |
 | -Tag        | Tests in the provider project are organized with GO build tags. The parameter accepts a list of tag names which should be tested. |
 | -GoMod      | Control the `-mod` build parameter: Valid values: '' (Empty string), 'vendor', 'readonly'                                         |
@@ -152,7 +171,7 @@ The script is used to execute unit tests. The script is also executed by `build.
 The script is used to execute unit tests.
 
 | Parameter   | Description                                                                                                                       |
-|-------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | -TestFilter | A GO regular expression which filters the test functions to be executed                                                           |
 | -Tag        | Tests in the provider project are organized with GO build tags. The parameter accepts a list of tag names which should be tested. |
 | -GoMod      | Control the `-mod` build parameter: Valid values: '' (Empty string), 'vendor', 'readonly'                                         |
@@ -162,7 +181,7 @@ The script is used to execute unit tests.
 To validate if all `.go` files adhere to the required formatting rules, execute `gofmtcheck.ps1`
 
 | Parameter | Description                                                                                                    |
-|-----------|----------------------------------------------------------------------------------------------------------------|
+| --------- | -------------------------------------------------------------------------------------------------------------- |
 | -Fix      | Fix any formatting rule deviations automatically. If the parameter is not set, the script runs in report mode. |
 
 #### `scripts\lint-check-go.ps1`

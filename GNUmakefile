@@ -3,6 +3,7 @@ UNITTEST?=$$(go list ./... |grep -v 'vendor')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=azuredevops
 TESTTIMEOUT=180m
+TESTTAGS=all
 
 ifeq ($(GOPATH),)
 	GOPATH:=$(shell go env GOPATH)
@@ -45,7 +46,9 @@ test: fmtcheck
     		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=30s -parallel=4
 
 testacc: fmtcheck
-	TF_ACC=1 go test -tags "all" $(TEST) -v $(TESTARGS) -timeout 120m
+	@echo "==> Sourcing .env file if avaliable"
+	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
+	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \

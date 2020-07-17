@@ -10,7 +10,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// Verifies that the following sequence of events occurrs without error:
+// Verifies that the following sequence of events occurs without error:
 //	(1) TF apply creates project
 //	(2) TF state values are set
 //	(3) project can be queried by ID and has expected name

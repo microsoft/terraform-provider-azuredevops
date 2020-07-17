@@ -16,7 +16,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -63,7 +62,7 @@ func ResourceGitRepository() *schema.Resource {
 			"parent_repository_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validate.UUID,
+				ValidateFunc:     validation.IsUUID,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"default_branch": {

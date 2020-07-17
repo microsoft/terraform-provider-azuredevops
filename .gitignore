@@ -17,6 +17,9 @@ crash.log
 # .tfvars files
 *.tfvars
 
+# ignore tf files in the root directory
+/*.tf
+
 # unwanted binary file
 **/debug.test
 dist

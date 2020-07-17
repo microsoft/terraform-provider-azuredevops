@@ -51,8 +51,8 @@ func PreCheck(t *testing.T, additionalEnvVars *[]string) {
 	}
 
 	for _, variable := range requiredEnvVars {
-		if strings.EqualFold(os.Getenv(variable), "") {
-			t.Fatalf("`%s` must be set for acceptance tests!", variable)
+		if _, ok := os.LookupEnv(variable); !ok {
+			t.Fatalf("`%s` must be set for this acceptance test!", variable)
 		}
 	}
 }

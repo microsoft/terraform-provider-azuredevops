@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 const (
@@ -25,7 +25,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 				DefaultFunc:      schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
 				Description:      "The GitHub personal access token which should be used.",
 				Sensitive:        true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
 		},

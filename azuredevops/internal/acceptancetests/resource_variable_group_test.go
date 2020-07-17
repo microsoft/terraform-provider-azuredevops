@@ -38,21 +38,21 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclVariableGroupResource(projectName, vargroupNameFirst, allowAccessTrue),
+				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameFirst, allowAccessTrue),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
 					checkVariableGroupExists(vargroupNameFirst, allowAccessTrue),
 				),
 			}, {
-				Config: testutils.HclVariableGroupResource(projectName, vargroupNameSecond, allowAccessFalse),
+				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameSecond, allowAccessFalse),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
 					checkVariableGroupExists(vargroupNameSecond, allowAccessFalse),
 				),
 			}, {
-				Config: testutils.HclVariableGroupResourceNoSecrets(projectName, vargroupNameNoSecret, allowAccessFalse),
+				Config: testutils.HclVariableGroupResourceNoSecretsWithProject(projectName, vargroupNameNoSecret, allowAccessFalse),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameNoSecret),

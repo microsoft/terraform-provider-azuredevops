@@ -18,7 +18,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 var (
@@ -47,7 +46,7 @@ func ResourceUserEntitlement() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"origin_id", "origin"},
 				AtLeastOneOf:  configurationKeys,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin_id": {
 				Type:          schema.TypeString,
@@ -56,7 +55,7 @@ func ResourceUserEntitlement() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"principal_name"},
 				AtLeastOneOf:  configurationKeys,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
 				Type:          schema.TypeString,
@@ -65,7 +64,7 @@ func ResourceUserEntitlement() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"principal_name"},
 				AtLeastOneOf:  configurationKeys,
-				ValidateFunc:  validate.NoEmptyStrings,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,

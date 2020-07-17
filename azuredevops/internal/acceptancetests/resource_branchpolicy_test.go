@@ -127,7 +127,7 @@ func getHCL(opts hclOptions) string {
 
 		repository {
 			repo_type   = "TfsGit"
-			repo_id     = azuredevops_git_repository.gitrepo.id
+			repo_id     = azuredevops_git_repository.repository.id
 			yml_path    = "azure-pipelines.yml"
 		}
 	}
@@ -142,8 +142,8 @@ func getHCL(opts hclOptions) string {
 			reviewer_count     = %d
 			submitter_can_vote = %t
 			scope {
-				repository_id  = azuredevops_git_repository.gitrepo.id
-				repository_ref = azuredevops_git_repository.gitrepo.default_branch
+				repository_id  = azuredevops_git_repository.repository.id
+				repository_ref = azuredevops_git_repository.repository.default_branch
 				match_type     = "exact"
 			}
 		}
@@ -192,8 +192,8 @@ func getHCL(opts hclOptions) string {
 			valid_duration = %d
 			build_definition_id = azuredevops_build_definition.build.id
 			scope {
-				repository_id  = azuredevops_git_repository.gitrepo.id
-				repository_ref = azuredevops_git_repository.gitrepo.default_branch
+				repository_id  = azuredevops_git_repository.repository.id
+				repository_ref = azuredevops_git_repository.repository.default_branch
 				match_type     = "exact"
 			}
 		}

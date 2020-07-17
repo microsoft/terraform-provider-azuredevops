@@ -7,27 +7,27 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 func TestCreatePermissionResourceSchema(t *testing.T) {
 	schema := CreatePermissionResourceSchema(map[string]*schema.Schema{
 		"project_id": {
 			Type:         schema.TypeString,
-			ValidateFunc: validate.UUID,
+			ValidateFunc: validation.IsUUID,
 			Required:     true,
 			ForceNew:     true,
 		},
 		"repository_id": {
 			Type:         schema.TypeString,
-			ValidateFunc: validate.UUID,
+			ValidateFunc: validation.IsUUID,
 			Optional:     true,
 			ForceNew:     true,
 		},
 		"branch_name": {
 			Type:         schema.TypeString,
-			ValidateFunc: validate.NoEmptyStrings,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
 			Optional:     true,
 			ForceNew:     true,
 			RequiredWith: []string{"repository_id"},

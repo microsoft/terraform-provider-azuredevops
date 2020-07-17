@@ -137,7 +137,7 @@ func TestAccBuildDefinitionBitbucket_Create(t *testing.T) {
 // Verifies a build for with variables can create and update, including secret variables
 func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 	name := testutils.GenerateResourceName()
-	tfNode := "azuredevops_build_definition.b"
+	tfNode := "azuredevops_build_definition.build"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },

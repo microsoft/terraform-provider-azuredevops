@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataGitRepository schema and implementation for Git repository data source
@@ -18,13 +18,13 @@ func DataGitRepository() *schema.Resource {
 			"name": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"project_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validate.UUID,
+				ValidateFunc:     validation.IsUUID,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"default_branch": {
