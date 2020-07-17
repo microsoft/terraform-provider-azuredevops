@@ -57,7 +57,7 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "false"),
-					resource.TestCheckResourceAttrSet(buildVlidationTfNode, "filename_patterns"),
+resource.TestCheckResourceAttr(buildVlidationTfNode, "settings.0.filename_patterns.#", "3"),
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
