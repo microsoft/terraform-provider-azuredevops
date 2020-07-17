@@ -82,11 +82,16 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 				Default:  true,
 			},
 			SchemaSettings: {
-				Type: schema.TypeList,
+				Type:     schema.TypeList,
+				Required: true,
+				MinItems: 1,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						SchemaScope: {
-							Type: schema.TypeList,
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									SchemaRepositoryID: {
@@ -97,7 +102,6 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 									SchemaRepositoryRef: {
 										Type:         schema.TypeString,
 										Optional:     true,
-										RequiredWith: []string{"settings.0.scope.0.repository_id"},
 										ValidateFunc: validation.StringIsNotEmpty,
 									},
 									SchemaMatchType: {
@@ -111,14 +115,9 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 									},
 								},
 							},
-							Required: true,
-							MinItems: 1,
 						},
 					},
 				},
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
 			},
 		},
 	}
