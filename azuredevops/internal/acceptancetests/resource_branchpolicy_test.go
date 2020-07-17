@@ -40,7 +40,6 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 	buildVlidationTfNode := "azuredevops_branch_policy_build_validation.p"
 	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
-	fmt.Println(getHCL(opts1))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers: testutils.GetProviders(),

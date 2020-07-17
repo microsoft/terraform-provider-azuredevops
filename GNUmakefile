@@ -1,4 +1,5 @@
-TEST?=$$(go list ./... |grep -v 'vendor')
+TEST?=$$(go list ./azuredevops/internal/acceptancetests |grep -v 'vendor')
+UNITTEST?=$$(go list ./... |grep -v 'vendor')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=azuredevops
 TESTTIMEOUT=180m
@@ -39,8 +40,8 @@ lint:
 	$(GOPATH)/bin/golangci-lint run ./...
 
 test: fmtcheck
-	go test -tags "all" -i $(TEST) || exit 1
-	echo $(TEST) | \
+	go test -tags "all" -i $(UNITTEST) || exit 1
+	echo $(UNITTEST) | \
     		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=30s -parallel=4
 
 testacc: fmtcheck
