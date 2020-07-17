@@ -6,12 +6,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
@@ -33,25 +33,25 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"service_endpoint_name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Managed by Terraform",
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"authorization": {
 				Type:         schema.TypeMap,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

@@ -2,8 +2,8 @@ package utils
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // CreatePermissionResourceSchema creates a resources schema for a Terraform permission resource
@@ -11,7 +11,7 @@ func CreatePermissionResourceSchema(outer map[string]*schema.Schema) map[string]
 	baseSchema := map[string]*schema.Schema{
 		"principal": {
 			Type:         schema.TypeString,
-			ValidateFunc: validate.NoEmptyStrings,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
 			Required:     true,
 			ForceNew:     true,
 		},

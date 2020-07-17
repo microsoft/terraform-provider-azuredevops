@@ -14,12 +14,12 @@ Currently supported resources: service endpoint (aka service connection, endpoin
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "project" {
   project_name = "Test Project"
 }
 
 resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {
-  project_id            = azuredevops_project.p.id
+  project_id            = azuredevops_project.project.id
   username              = "xxxx"
   password              = "xxxx"
   service_endpoint_name = "test-bitbucket"
@@ -27,7 +27,7 @@ resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {
 }
 
 resource "azuredevops_resource_authorization" "auth" {
-  project_id  = azuredevops_project.p.id
+  project_id  = azuredevops_project.project.id
   resource_id = azuredevops_serviceendpoint_bitbucket.bitbucket_account.id
   authorized  = true
 }
@@ -39,8 +39,9 @@ The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name. Type: string.
 - `resource_id` - (Required) The ID of the resource to authorize. Type: string.
+- `definition_id` - (Optional) The ID of the build definition to authorize. Type: string.
 - `authorized` - (Required) Set to true to allow public access in the project. Type: boolean.
-- `type` - (Optional) The type of the resource to authorize. Type: string. Valid values: `endpoint`, `queue`. Default value: `endpoint`.
+- `type` - (Optional) The type of the resource to authorize. Type: string. Valid values: `endpoint`, `queue`, `variablegroup`. Default value: `endpoint`.
 
 ## Attributes Reference
 

@@ -25,7 +25,7 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoNameFirst := testutils.GenerateResourceName()
 	gitRepoNameSecond := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.repository"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -70,7 +70,7 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.gitrepo"]
+		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.repository"]
 		if !ok {
 			return fmt.Errorf("Did not find a repo definition in the TF state")
 		}
@@ -117,7 +117,7 @@ func checkGitRepoDestroyed(s *terraform.State) error {
 func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.repository"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -142,7 +142,7 @@ func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 func TestAccGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.repository"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -167,7 +167,7 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 	gitForkedRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.gitrepo"
+	tfRepoNode := "azuredevops_git_repository.repository"
 	tfForkedRepoNode := "azuredevops_git_repository.gitforkedrepo"
 
 	resource.Test(t, resource.TestCase{

@@ -5,7 +5,7 @@ FROM golang:${GO_VERSION}-stretch
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG TERRAFORM_VERSION=0.12.25
+ARG TERRAFORM_VERSION=0.12.28
 ARG TFLINT_VERSION=0.15.3
 ARG TERRAFORM_PROVIDER_AZUREDEVOPS_NAME=terraform-provider-azuredevops
 

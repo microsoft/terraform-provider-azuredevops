@@ -10,7 +10,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"gopkg.in/yaml.v2"
 )
 
@@ -113,7 +112,7 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 				Sensitive:    true,
 				Optional:     true,
 				Description:  "Service account certificate",
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return true
 				},
@@ -123,7 +122,7 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 				Sensitive:    true,
 				Optional:     true,
 				Description:  "Token",
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return true
 				},

@@ -7,11 +7,11 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceGitPermissions schema and implementation for Git repository permission resource
@@ -27,19 +27,19 @@ func ResourceGitPermissions() *schema.Resource {
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 				Required:     true,
 				ForceNew:     true,
 			},
 			"repository_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.UUID,
+				ValidateFunc: validation.IsUUID,
 				Optional:     true,
 				ForceNew:     true,
 			},
 			"branch_name": {
 				Type:         schema.TypeString,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
 				ForceNew:     true,
 				RequiredWith: []string{"repository_id"},

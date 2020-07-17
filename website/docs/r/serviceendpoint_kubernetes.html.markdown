@@ -93,7 +93,7 @@ The following arguments are supported:
   - `subscription_id` - (Required) The id of the Azure subscription.
   - `subscription_name` - (Required) The name of the Azure subscription.
   - `tenant_id` - (Required) The id of the tenant used by the subscription.
-  - `resourcegroup_id` - (Required) The resource group id, to which the Kubernetes cluster is deployed.
+  - `resourcegroup_id` - (Required) The resource group name, to which the Kubernetes cluster is deployed.
   - `namespace` - (Optional) The Kubernetes namespace. Default value is "default".
 - `kubeconfig` - (Optional) The configuration for authorization_type="Kubeconfig".
   - `kube_config` - (Required) The content of the kubeconfig in yaml notation to be used to communicate with the API-Server of Kubernetes.

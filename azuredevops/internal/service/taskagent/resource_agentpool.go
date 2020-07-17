@@ -11,7 +11,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceAgentPool schema and implementation for agent pool resource
@@ -29,7 +28,7 @@ func ResourceAgentPool() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     false,
 				Required:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"pool_type": {
 				Type:             schema.TypeString,

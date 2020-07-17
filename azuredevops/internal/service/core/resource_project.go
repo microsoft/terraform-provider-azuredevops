@@ -19,7 +19,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // timeout used to wait for operations on projects to finish before executing an update or delete
@@ -45,7 +44,7 @@ func ResourceProject() *schema.Resource {
 			"project_name": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"description": {
@@ -78,7 +77,7 @@ func ResourceProject() *schema.Resource {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
-				ValidateFunc:     validate.NoEmptyStrings,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 				Default:          "Agile",
 			},

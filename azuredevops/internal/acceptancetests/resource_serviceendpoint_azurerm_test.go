@@ -52,7 +52,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResource(projectName, serviceEndpointNameSecond),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -64,7 +64,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResource(projectName, serviceEndpointNameSecond),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
