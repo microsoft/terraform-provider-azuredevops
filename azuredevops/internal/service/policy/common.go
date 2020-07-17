@@ -14,7 +14,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 /**
@@ -70,7 +69,7 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.NoEmptyStrings,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			SchemaEnabled: {
 				Type:     schema.TypeBool,
@@ -93,13 +92,13 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 									SchemaRepositoryID: {
 										Type:         schema.TypeString,
 										Optional:     true,
-										ValidateFunc: validate.NoEmptyStrings,
+										ValidateFunc: validation.StringIsNotEmpty,
 									},
 									SchemaRepositoryRef: {
 										Type:         schema.TypeString,
 										Optional:     true,
 										RequiredWith: []string{SchemaRepositoryID},
-										ValidateFunc: validate.NoEmptyStrings,
+										ValidateFunc: validation.StringIsNotEmpty,
 									},
 									SchemaMatchType: {
 										Type:             schema.TypeString,
