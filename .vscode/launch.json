@@ -16,7 +16,7 @@
                 "^${selectedText}$"
             ],
             "env": {
-                "TF_ACC": "1",
+                "TF_ACC": "1"
             },
             "buildFlags": "-v -tags=all",
             "showLog": true,
