@@ -55,8 +55,7 @@ func TestResourceAuthorization_FlattenExpand_RoundTrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceResourceAuthorization().Schema, nil)
 	flattenAuthorizedResource(resourceData, &resourceReferenceAuthorized, projectID, definitionID)
 
-	resourceReferenceAfterRoundtrip, projectIdAfterRoundtrip, definitionIDAfterRoundTrip, err := expandAuthorizedResource(resourceData)
-	require.Nil(t, err)
+	resourceReferenceAfterRoundtrip, projectIdAfterRoundtrip, definitionIDAfterRoundTrip := expandAuthorizedResource(resourceData)
 	require.Equal(t, resourceReferenceAuthorized, *resourceReferenceAfterRoundtrip)
 	require.Equal(t, projectID, projectIdAfterRoundtrip)
 	require.Equal(t, definitionID, definitionIDAfterRoundTrip)

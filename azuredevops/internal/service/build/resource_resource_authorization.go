@@ -64,12 +64,9 @@ func ResourceResourceAuthorization() *schema.Resource {
 
 func resourceResourceAuthorizationCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	authorizedResource, projectID, definitionID, err := expandAuthorizedResource(d)
-	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceCreate, err)
-	}
+	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
 
-	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
+	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceCreate, err)
 	}
@@ -81,10 +78,7 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 	ctx := context.Background()
 	clients := m.(*client.AggregatedClient)
 
-	authorizedResource, projectID, definitionID, err := expandAuthorizedResource(d)
-	if err != nil {
-		return err
-	}
+	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
 
 	if definitionID == 0 {
 		if *authorizedResource.Authorized {
@@ -147,16 +141,13 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	authorizedResource, projectID, definitionID, err := expandAuthorizedResource(d)
-	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceDelete, err)
-	}
+	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
 
 	// deletion works only by setting authorized to false
 	// because the resource to delete might have had this parameter set to true, we overwrite it
 	authorizedResource.Authorized = converter.Bool(false)
 
-	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
+	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceDelete, err)
 	}
@@ -166,12 +157,9 @@ func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 
 func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	authorizedResource, projectID, definitionID, err := expandAuthorizedResource(d)
-	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceUpdate, err)
-	}
+	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
 
-	err = sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
+	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
 		return fmt.Errorf(msgErrorFailedResourceUpdate, err)
 	}
@@ -188,7 +176,7 @@ func flattenAuthorizedResource(d *schema.ResourceData, authorizedResource *build
 	d.Set("definition_id", definitionID)
 }
 
-func expandAuthorizedResource(d *schema.ResourceData) (*build.DefinitionResourceReference, string, int, error) {
+func expandAuthorizedResource(d *schema.ResourceData) (*build.DefinitionResourceReference, string, int) {
 	resourceRef := build.DefinitionResourceReference{
 		Authorized: converter.Bool(d.Get("authorized").(bool)),
 		Id:         converter.String(d.Get("resource_id").(string)),
@@ -196,7 +184,7 @@ func expandAuthorizedResource(d *schema.ResourceData) (*build.DefinitionResource
 		Type:       converter.String(d.Get("type").(string)),
 	}
 
-	return &resourceRef, d.Get("project_id").(string), d.Get("definition_id").(int), nil
+	return &resourceRef, d.Get("project_id").(string), d.Get("definition_id").(int)
 }
 
 func sendAuthorizedResourceToAPI(clients *client.AggregatedClient, resourceRef *build.DefinitionResourceReference, projectID string, definitionID int) error {
