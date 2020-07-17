@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -464,6 +465,7 @@ func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
 
 func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	yamlFilePath := ""
+	githubEnterpriseUrl := ""
 
 	// The process member can be of many types -- the only typing information
 	// available from the compiler is `interface{}` so we can probe for known
@@ -471,9 +473,17 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	if processMap, ok := buildDefinition.Process.(map[string]interface{}); ok {
 		yamlFilePath = processMap["yamlFilename"].(string)
 	}
-
 	if yamlProcess, ok := buildDefinition.Process.(*build.YamlProcess); ok {
 		yamlFilePath = *yamlProcess.YamlFilename
+	}
+
+	// Set github_enterprise_url value from buildDefinition.Repository URL
+	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
+		url, err := url.Parse(*buildDefinition.Repository.Url)
+		if err != nil {
+			return fmt.Errorf("Unable to parse repository URL")
+		}
+		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
 	return []map[string]interface{}{{
@@ -482,6 +492,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
+		"github_enterprise_url": githubEnterpriseUrl,
 	}}
 }
 

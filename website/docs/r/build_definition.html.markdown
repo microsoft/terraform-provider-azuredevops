@@ -11,6 +11,7 @@ Manages a Build Definition within Azure DevOps.
 
 ## Example Usage
 
+### Tfs
 ```hcl
 resource "azuredevops_project" "project" {
   project_name       = "Sample Project"
@@ -72,6 +73,29 @@ resource "azuredevops_build_definition" "build" {
 }
 ```
 
+### GitHub Enterprise
+```hcl
+resource "azuredevops_build_definition" "sample_dotnetcore_app_release" {
+  project_id = azuredevops_project.project.id
+  name       = "Sample Build Definition"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = true
+  }
+
+  repository {
+    repo_type             = "GitHubEnterprise"
+    repo_id               = "<GitHub Org>/<Repo Name>"
+    github_enterprise_url = "https://github.company.com"
+    branch_name           = "master"
+    yml_path              = "azure-pipelines.yml"
+    service_connection_id = "..."
+  }
+
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -98,9 +122,10 @@ The following arguments are supported:
 
 - `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
 - `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
-- `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket`. Defaults to `Github`.
-- `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub`.
+- `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise`. Defaults to `Github`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
+- `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
 - `yml_path` - (Required) The path of the Yaml file describing the build definition.
+- `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
 
 `ci_trigger` block supports the following:
 

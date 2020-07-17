@@ -158,7 +158,8 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 	VariableGroups: &[]build.VariableGroup{},
 }
 
-// This definition matches the overall structure of what a configured git repository would
+// This definition matches the overall structure of what a configured GitHub Enterprise git repository would
+// look like. Note that the ID and Name attributes match -- this is the service-side behavior
 // when configuring a GitHub Enterprise repo.
 var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
 	Id:       converter.Int(100),
@@ -210,6 +211,41 @@ func testBuildDefinitionBitbucket() build.BuildDefinition {
 			Type:          converter.String("Bitbucket"),
 			Properties: &map[string]string{
 				"connectedServiceId": "ServiceConnectionID",
+			},
+		},
+		Process: &build.YamlProcess{
+			YamlFilename: converter.String("YamlFilename"),
+		},
+		Queue: &build.AgentPoolQueue{
+			Name: converter.String("BuildPoolName"),
+			Pool: &build.TaskAgentPoolReference{
+				Name: converter.String("BuildPoolName"),
+			},
+		},
+		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+		Type:           &build.DefinitionTypeValues.Build,
+		Quality:        &build.DefinitionQualityValues.Definition,
+		VariableGroups: &[]build.VariableGroup{},
+	}
+}
+
+// This definition matches the overall structure of what a configured Github Enterprise git repository would
+// look like.
+func testBuildDefinitionGitHubEnterprise() build.BuildDefinition {
+	return build.BuildDefinition{
+		Id:       converter.Int(100),
+		Revision: converter.Int(1),
+		Name:     converter.String("Name"),
+		Path:     converter.String("\\"),
+		Repository: &build.BuildRepository{
+			Url:           converter.String("https://github.company.com/RepoId.git"),
+			Id:            converter.String("RepoId"),
+			Name:          converter.String("RepoId"),
+			DefaultBranch: converter.String("RepoBranchName"),
+			Type:          converter.String("GitHubEnterprise"),
+			Properties: &map[string]string{
+				"connectedServiceId": "ServiceConnectionID",
+				"apiUrl":             "https://github.company.com/api/v3/repos/RepoId",
 			},
 		},
 		Process: &build.YamlProcess{
@@ -348,6 +384,28 @@ func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := build.CreateDefinitionArgs{Definition: &testBuildDefinitionBitbucketWithCITrigger, Project: &testProjectID}
+
+	buildClient.
+		EXPECT().
+		CreateDefinition(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("CreateDefinition() Failed")).
+		Times(1)
+	err := resourceBuildDefinitionCreate(resourceData, clients)
+	require.Contains(t, err.Error(), "CreateDefinition() Failed")
+}
+
+// verifies that create a build definition with GitHub Enterprise and CI triggers
+func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID)
+
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := build.CreateDefinitionArgs{Definition: &testBuildDefinitionGitHubEnterpriseWithCITrigger, Project: &testProjectID}
 
 	buildClient.
 		EXPECT().
