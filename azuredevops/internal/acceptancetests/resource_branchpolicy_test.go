@@ -54,7 +54,7 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttrSet(buildVlidationTfNode, "filename_patterns"),
+					resource.TestCheckResourceAttr(buildVlidationTfNode, "settings.0.filename_patterns.#", "3"),
 				),
 			}, {
 				Config: getHCL(opts2),
@@ -121,18 +121,14 @@ func getHCL(opts hclOptions) string {
 	projectAndRepo := testutils.HclGitRepoResource(opts.projectName, opts.repoName, "Clean")
 	userEmail := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	userEntitlement := testutils.HclUserEntitlementResource(userEmail)
-	buildDef := `
-	resource "azuredevops_build_definition" "build" {
-		project_id = azuredevops_project.project.id
-		name       = "Sample Build Definition"
-
-		repository {
-			repo_type   = "TfsGit"
-			repo_id     = azuredevops_git_repository.repository.id
-			yml_path    = "azure-pipelines.yml"
-		}
-	}
-`
+	buildDef := testutils.HclBuildDefinitionResource(
+		"Sample Build Definition",
+		`\`,
+		"TfsGit",
+		"${azuredevops_git_repository.repository.id}",
+		"master",
+		"path/to/yaml",
+		"")
 
 	minReviewCountPolicyFmt := `
 	resource "azuredevops_branch_policy_min_reviewers" "p" {
@@ -168,8 +164,8 @@ func getHCL(opts hclOptions) string {
 				message = "%s"
 				path_filters = [%s]
 				scope {
-					repository_id  = azuredevops_git_repository.gitrepo.id
-					repository_ref = azuredevops_git_repository.gitrepo.default_branch
+					repository_id  = azuredevops_git_repository.repository.id
+					repository_ref = azuredevops_git_repository.repository.default_branch
 					match_type     = "exact"
 				}
 			}

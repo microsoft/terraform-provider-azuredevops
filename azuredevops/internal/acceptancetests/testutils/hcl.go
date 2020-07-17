@@ -475,7 +475,36 @@ func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, bu
 	return fmt.Sprintf("%s\n%s", azureGitRepoResource, buildDefinitionResource)
 }
 
-// HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition
+// HclBuildDefinitionResource HCL describing an AzDO build definition
+func HclBuildDefinitionResource(
+	buildDefinitionName string,
+	buildPath string,
+	repoType string,
+	repoID string,
+	branchName string,
+	yamlPath string,
+	serviceConnectionID string,
+) string {
+	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
+
+	return fmt.Sprintf(`
+	resource "azuredevops_build_definition" "build" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		agent_pool_name = "Hosted Ubuntu 1604"
+		path			= "%s"
+
+		repository {
+			repo_type             = "%s"
+			repo_id               = "%s"
+			branch_name           = "%s"
+			yml_path              = "%s"
+			service_connection_id = "%s"
+		}
+	}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
+}
+
+// HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition and a project
 func HclBuildDefinitionResourceWithProject(
 	projectName string,
 	buildDefinitionName string,
@@ -487,24 +516,9 @@ func HclBuildDefinitionResourceWithProject(
 	serviceConnectionID string,
 ) string {
 	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
-
-	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "build" {
-	project_id      = azuredevops_project.project.id
-	name            = "%s"
-	agent_pool_name = "Hosted Ubuntu 1604"
-	path			= "%s"
-
-	repository {
-		repo_type             = "%s"
-		repo_id               = "%s"
-		branch_name           = "%s"
-		yml_path              = "%s"
-		service_connection_id = "%s"
-	}
-}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
-
+	buildDefinitionResource := HclBuildDefinitionResource(buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 	projectResource := HclProjectResource(projectName)
+
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
 }
 
