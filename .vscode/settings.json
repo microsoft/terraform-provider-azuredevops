@@ -1,7 +1,6 @@
 {
     "files.trimFinalNewlines": true,
     "files.insertFinalNewline": true,
-    "go.gopath": "/go",
     "go.useLanguageServer": true,
     "go.autocompleteUnimportedPackages": true,
     "go.gotoSymbol.includeImports": true,
