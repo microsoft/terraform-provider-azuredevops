@@ -43,7 +43,7 @@ func ResourceResourceAuthorization() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Description:  "id of the build definition",
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"type": {
 				Type:             schema.TypeString,
