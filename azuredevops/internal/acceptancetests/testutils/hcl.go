@@ -511,31 +511,31 @@ resource "azuredevops_build_definition" "build" {
 // HclBuildDefinitionWithVariables A build definition with variables
 func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
 	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "build" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
+	resource "azuredevops_build_definition" "build" {
+		project_id = azuredevops_project.project.id
+		name       = "%s"
 
-	repository {
-		repo_type   = "TfsGit"
-		repo_id     = azuredevops_git_repository.repository.id
-		branch_name = azuredevops_git_repository.repository.default_branch
-		yml_path    = "azure-pipelines.yml"
-	}
+		repository {
+			repo_type   = "TfsGit"
+			repo_id     = azuredevops_git_repository.repository.id
+			branch_name = azuredevops_git_repository.repository.default_branch
+			yml_path    = "azure-pipelines.yml"
+		}
 
-	variable {
-		name  = "FOO_VAR"
-		value = "%s"
-	}
+		variable {
+			name  = "FOO_VAR"
+			value = "%s"
+		}
 
-	variable {
-		name      = "BAR_VAR"
-		secret_value     = "%s"
-		is_secret = true
-	}
-}`, name, varValue, secretVarValue)
-	repoResource := getGitRepoResource(name+"-repo", "Clean")
-	projectResource := HclProjectResource(name)
-	return fmt.Sprintf("%s\n%s\n%s", projectResource, repoResource, buildDefinitionResource)
+		variable {
+			name      = "BAR_VAR"
+			secret_value     = "%s"
+			is_secret = true
+		}
+	}`, name, varValue, secretVarValue)
+	repoAndProjectResource := HclGitRepoResource(name, name+"-repo", "Clean")
+
+	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
 }
 
 // HclGroupMembershipResource full terraform stanza to standup a group membership
