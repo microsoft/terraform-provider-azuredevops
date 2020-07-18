@@ -2,7 +2,6 @@ package permissions
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -16,15 +15,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+const aclIterationTokenPrefix = "vstfs:///Classification/Node/"
+
 func ResourceIterationPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceIterationPermissionsCreate,
 		Read:   resourceIterationPermissionsRead,
 		Update: resourceIterationPermissionsUpdate,
 		Delete: resourceIterationPermissionsDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceIterationPermissionsImporter,
-		},
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -60,7 +58,6 @@ func getIterationIDbyPath(context context.Context, workitemtrackingClient workit
 }
 
 func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
-	const aclTokenPrefix = "vstfs:///Classification/Node/"
 	var aclToken string
 	projectID := d.Get("project_id").(string)
 
@@ -80,13 +77,14 @@ func createIterationToken(context context.Context, workitemtrackingClient workit
 	 * Root Iteration: vstfs:///Classification/Node/<IterationIdentifier>:vstfs:///Classification/Node/f8c5b667-91dd-4fe7-bf23-3138c439d07e"
 	 * 1st child: vstfs:///Classification/Node/<IterationIdentifier>:vstfs:///Classification/Node/<IterationIdentifier>
 	 */
-	aclToken = aclTokenPrefix + rootIteration.Identifier.String()
+	aclToken = aclIterationTokenPrefix + rootIteration.Identifier.String()
 	path, ok := d.GetOk("path")
 
 	if ok {
-		if !*rootIteration.HasChildren {
+		path = strings.TrimLeft(strings.TrimSpace(path.(string)), "/")
+		if path.(string) != "" && (rootIteration.HasChildren == nil || !*rootIteration.HasChildren) {
 			return nil, fmt.Errorf("A path was specified but the root Iteration has no children")
-		} else {
+		} else if path.(string) != "" {
 			// get the id for each Iteration in the provided path
 			// we do this by querying each path element
 			// 0: foo
@@ -106,7 +104,7 @@ func createIterationToken(context context.Context, workitemtrackingClient workit
 				if err != nil {
 					return nil, fmt.Errorf("Failed to get ID for iteration %s, %w", pathItem, err)
 				}
-				aclToken = aclToken + ":" + aclTokenPrefix + *currID
+				aclToken = aclToken + ":" + aclIterationTokenPrefix + *currID
 			}
 		}
 	}
@@ -191,9 +189,4 @@ func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) e
 
 	d.SetId("")
 	return nil
-}
-
-func resourceIterationPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
-	return nil, errors.New("resourceIterationPermissionsImporter: Not implemented")
 }
