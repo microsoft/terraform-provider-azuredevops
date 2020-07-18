@@ -1,5 +1,5 @@
-// +build all resource_branchpolicy_acceptance_test
-// +build !exclude_resource_branchpolicy_acceptance_test
+// +build all resource_branchpolicy_acceptance_test policy
+// +build !exclude_resource_branchpolicy_acceptance_test !exclude_policy
 
 package acceptancetests
 
