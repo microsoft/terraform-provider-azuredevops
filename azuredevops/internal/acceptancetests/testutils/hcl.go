@@ -434,7 +434,7 @@ resource "azuredevops_agent_queue" "q" {
 
 // HclBuildDefinitionResourceGitHub HCL describing an AzDO build definition sourced from GitHub
 func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName string, buildPath string) string {
-	return HclBuildDefinitionResource(
+	return HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -447,7 +447,7 @@ func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName st
 
 // HclBuildDefinitionResourceBitbucket HCL describing an AzDO build definition sourced from Bitbucket
 func HclBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName string, buildPath string, serviceConnectionID string) string {
-	return HclBuildDefinitionResource(
+	return HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -460,7 +460,7 @@ func HclBuildDefinitionResourceBitbucket(projectName string, buildDefinitionName
 
 // HclBuildDefinitionResourceTfsGit HCL describing an AzDO build definition sourced from AzDo Git Repo
 func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, buildDefinitionName string, buildPath string) string {
-	buildDefinitionResource := HclBuildDefinitionResource(
+	buildDefinitionResource := HclBuildDefinitionResourceWithProject(
 		projectName,
 		buildDefinitionName,
 		buildPath,
@@ -477,7 +477,6 @@ func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, bu
 
 // HclBuildDefinitionResource HCL describing an AzDO build definition
 func HclBuildDefinitionResource(
-	projectName string,
 	buildDefinitionName string,
 	buildPath string,
 	repoType string,
@@ -488,54 +487,69 @@ func HclBuildDefinitionResource(
 ) string {
 	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
 
-	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "build" {
-	project_id      = azuredevops_project.project.id
-	name            = "%s"
-	agent_pool_name = "Hosted Ubuntu 1604"
-	path			= "%s"
+	return fmt.Sprintf(`
+	resource "azuredevops_build_definition" "build" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		agent_pool_name = "Hosted Ubuntu 1604"
+		path			= "%s"
 
-	repository {
-		repo_type             = "%s"
-		repo_id               = "%s"
-		branch_name           = "%s"
-		yml_path              = "%s"
-		service_connection_id = "%s"
-	}
-}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
+		repository {
+			repo_type             = "%s"
+			repo_id               = "%s"
+			branch_name           = "%s"
+			yml_path              = "%s"
+			service_connection_id = "%s"
+		}
+	}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
+}
 
+// HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition and a project
+func HclBuildDefinitionResourceWithProject(
+	projectName string,
+	buildDefinitionName string,
+	buildPath string,
+	repoType string,
+	repoID string,
+	branchName string,
+	yamlPath string,
+	serviceConnectionID string,
+) string {
+	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
+	buildDefinitionResource := HclBuildDefinitionResource(buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 	projectResource := HclProjectResource(projectName)
+
 	return fmt.Sprintf("%s\n%s", projectResource, buildDefinitionResource)
 }
 
 // HclBuildDefinitionWithVariables A build definition with variables
 func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) string {
 	buildDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_build_definition" "build" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
+	resource "azuredevops_build_definition" "build" {
+		project_id = azuredevops_project.project.id
+		name       = "%s"
 
-	repository {
-		repo_type   = "TfsGit"
-		repo_id     = azuredevops_git_repository.repository.id
-		branch_name = azuredevops_git_repository.repository.default_branch
-		yml_path    = "azure-pipelines.yml"
-	}
+		repository {
+			repo_type   = "TfsGit"
+			repo_id     = azuredevops_git_repository.repository.id
+			branch_name = azuredevops_git_repository.repository.default_branch
+			yml_path    = "azure-pipelines.yml"
+		}
 
-	variable {
-		name  = "FOO_VAR"
-		value = "%s"
-	}
+		variable {
+			name  = "FOO_VAR"
+			value = "%s"
+		}
 
-	variable {
-		name      = "BAR_VAR"
-		secret_value     = "%s"
-		is_secret = true
-	}
-}`, name, varValue, secretVarValue)
-	repoResource := getGitRepoResource(name+"-repo", "Clean")
-	projectResource := HclProjectResource(name)
-	return fmt.Sprintf("%s\n%s\n%s", projectResource, repoResource, buildDefinitionResource)
+		variable {
+			name      = "BAR_VAR"
+			secret_value     = "%s"
+			is_secret = true
+		}
+	}`, name, varValue, secretVarValue)
+	repoAndProjectResource := HclGitRepoResource(name, name+"-repo", "Clean")
+
+	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
 }
 
 // HclGroupMembershipResource full terraform stanza to standup a group membership

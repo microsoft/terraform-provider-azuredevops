@@ -47,15 +47,13 @@ func TestAccProject_DataSource_IncorrectParameters(t *testing.T) {
 		description = "A project description"
 	}`, projectName)
 
-	errorRegex, _ := regexp.Compile("config is invalid: \"description\": this field cannot be set")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
 				Config:      dataProject,
-				ExpectError: errorRegex,
+				ExpectError: regexp.MustCompile(`config is invalid: "description": this field cannot be set`),
 			},
 		},
 	})

@@ -1,11 +1,10 @@
-// +build all resource_branchpolicy_acceptance_test
-// +build !exclude_resource_branchpolicy_acceptance_test
+// +build all resource_branchpolicy_acceptance_test policy
+// +build !exclude_resource_branchpolicy_acceptance_test !exclude_policy
 
 package acceptancetests
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -13,72 +12,30 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// Verifies that the following sequence of events occurrs without error:
-//	(1) Branch policies can be created with no errors
-//	(2) Branch policies can be updated with no errors
-//	(3) Branch policies can be deleted with no errors
-func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
-	projName := testutils.GenerateResourceName()
-	repoName := testutils.GenerateResourceName()
-	opts1 := hclOptions{
-		projectName:            projName,
-		repoName:               repoName,
-		minReviewerOptions:     minReviewPolicyOpts{true, true, 1, false},
-		autoReviewerOptions:    autoReviewPolicyOpts{true, true, false, "auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md")},
-		buildValidationOptions: buildValidationPolicyOpts{true, true, "build validation", 0},
-	}
-
-	opts2 := hclOptions{
-		projectName:            projName,
-		repoName:               repoName,
-		minReviewerOptions:     minReviewPolicyOpts{false, false, 2, true},
-		autoReviewerOptions:    autoReviewPolicyOpts{false, false, true, "new auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md")},
-		buildValidationOptions: buildValidationPolicyOpts{false, false, "build validation rename", 720},
-	}
-
+func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
-	buildVlidationTfNode := "azuredevops_branch_policy_build_validation.p"
-	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getHCL(opts1),
+				Config: getMinReviewersHcl(true, true, 1, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "true"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
-					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "true"),
 				),
 			}, {
-				Config: getHCL(opts2),
+				Config: getMinReviewersHcl(false, false, 2, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
-					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "false"),
-					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "false"),
-					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "false"),
-					resource.TestCheckResourceAttr(buildVlidationTfNode, "enabled", "false"),
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(minReviewerTfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			}, {
-				ResourceName:      buildVlidationTfNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(buildVlidationTfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			}, {
-				ResourceName:      autoReviewerTfNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(autoReviewerTfNode),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -86,54 +43,8 @@ func TestAccBranchPolicy_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-type minReviewPolicyOpts struct {
-	enabled          bool
-	blocking         bool
-	reviewers        int
-	submitterCanVote bool
-}
-
-type autoReviewPolicyOpts struct {
-	enabled          bool
-	blocking         bool
-	submitterCanVote bool
-	message          string
-	pathFilters      string
-}
-
-type buildValidationPolicyOpts struct {
-	enabled       bool
-	blocking      bool
-	displayName   string
-	validDuration int
-}
-
-type hclOptions struct {
-	projectName            string
-	repoName               string
-	minReviewerOptions     minReviewPolicyOpts
-	buildValidationOptions buildValidationPolicyOpts
-	autoReviewerOptions    autoReviewPolicyOpts
-}
-
-func getHCL(opts hclOptions) string {
-	projectAndRepo := testutils.HclGitRepoResource(opts.projectName, opts.repoName, "Clean")
-	userEmail := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	userEntitlement := testutils.HclUserEntitlementResource(userEmail)
-	buildDef := `
-	resource "azuredevops_build_definition" "build" {
-		project_id = azuredevops_project.project.id
-		name       = "Sample Build Definition"
-
-		repository {
-			repo_type   = "TfsGit"
-			repo_id     = azuredevops_git_repository.repository.id
-			yml_path    = "azure-pipelines.yml"
-		}
-	}
-`
-
-	minReviewCountPolicyFmt := `
+func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, submitterCanVote bool) string {
+	minReviewCountPolicy := fmt.Sprintf(`
 	resource "azuredevops_branch_policy_min_reviewers" "p" {
 		project_id = azuredevops_project.project.id
 		enabled  = %t
@@ -148,41 +59,105 @@ func getHCL(opts hclOptions) string {
 			}
 		}
 	}
-`
-	minReviewCountPolicy := fmt.Sprintf(
-		minReviewCountPolicyFmt,
-		opts.minReviewerOptions.enabled,
-		opts.minReviewerOptions.blocking,
-		opts.minReviewerOptions.reviewers,
-		opts.minReviewerOptions.submitterCanVote)
+	`, enabled, blocking, reviewers, submitterCanVote)
 
-	autoReviewerPolicyFmt := `
-		resource "azuredevops_branch_policy_auto_reviewers" "p" {
-			project_id = azuredevops_project.project.id
-			enabled  = %t
-			blocking = %t
-			settings {
-				auto_reviewer_ids     = [azuredevops_user_entitlement.user.id]
-				submitter_can_vote = %t
-				message = "%s"
-				path_filters = [%s]
-				scope {
-					repository_id  = azuredevops_git_repository.gitrepo.id
-					repository_ref = azuredevops_git_repository.gitrepo.default_branch
-					match_type     = "exact"
-				}
+	return strings.Join(
+		[]string{
+			getProjectRepoBuildUserEntitlementResource(),
+			minReviewCountPolicy,
+		},
+		"\n",
+	)
+}
+
+func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
+	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getAutoReviewersHcl(true, true, false, "auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
+				),
+			}, {
+				Config: getAutoReviewersHcl(false, false, true, "new auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "false"),
+				),
+			}, {
+				ResourceName:      autoReviewerTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(autoReviewerTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, message string, pathFilters string) string {
+	autoReviewerPolicy := fmt.Sprintf(`
+	resource "azuredevops_branch_policy_auto_reviewers" "p" {
+		project_id = azuredevops_project.project.id
+		enabled  = %t
+		blocking = %t
+		settings {
+			auto_reviewer_ids     = [azuredevops_user_entitlement.user.id]
+			submitter_can_vote = %t
+			message = "%s"
+			path_filters = [%s]
+			scope {
+				repository_id  = azuredevops_git_repository.repository.id
+				repository_ref = azuredevops_git_repository.repository.default_branch
+				match_type     = "exact"
 			}
 		}
-	`
-	autoReviewerPolicy := fmt.Sprintf(
-		autoReviewerPolicyFmt,
-		opts.autoReviewerOptions.enabled,
-		opts.autoReviewerOptions.blocking,
-		opts.autoReviewerOptions.submitterCanVote,
-		opts.autoReviewerOptions.message,
-		opts.autoReviewerOptions.pathFilters)
+	}
+	`, enabled, blocking, submitterCanVote, message, pathFilters)
 
-	buildValidationPolicyFmt := `
+	return strings.Join(
+		[]string{
+			getProjectRepoBuildUserEntitlementResource(),
+			autoReviewerPolicy,
+		},
+		"\n",
+	)
+}
+
+func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
+	buildValidationTfNode := "azuredevops_branch_policy_build_validation.p"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getBuildValidationHcl(true, true, "build validation", 0),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
+				),
+			}, {
+				Config: getBuildValidationHcl(false, false, "build validation rename", 720),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
+				),
+			}, {
+				ResourceName:      buildValidationTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(buildValidationTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func getBuildValidationHcl(enabled bool, blocking bool, displayName string, validDuration int) string {
+	buildValidationPolicy := fmt.Sprintf(`
 	resource "azuredevops_branch_policy_build_validation" "p" {
 		project_id = azuredevops_project.project.id
 		enabled  = %t
@@ -191,6 +166,11 @@ func getHCL(opts hclOptions) string {
 			display_name = "%s"
 			valid_duration = %d
 			build_definition_id = azuredevops_build_definition.build.id
+			filename_patterns =  [
+				"/WebApp/*",
+				"!/WebApp/Tests/*",
+				"*.cs"
+			]
 			scope {
 				repository_id  = azuredevops_git_repository.repository.id
 				repository_ref = azuredevops_git_repository.repository.default_branch
@@ -198,24 +178,35 @@ func getHCL(opts hclOptions) string {
 			}
 		}
 	}
-`
-	buildValidationPolicy := fmt.Sprintf(
-		buildValidationPolicyFmt,
-		opts.buildValidationOptions.enabled,
-		opts.buildValidationOptions.blocking,
-		opts.buildValidationOptions.displayName,
-		opts.buildValidationOptions.validDuration)
+	`, enabled, blocking, displayName, validDuration)
+
+	return strings.Join(
+		[]string{
+			getProjectRepoBuildUserEntitlementResource(),
+			buildValidationPolicy,
+		},
+		"\n",
+	)
+}
+
+func getProjectRepoBuildUserEntitlementResource() string {
+	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
+	userEntitlement := testutils.HclUserEntitlementResource("acc@test.com")
+	buildDef := testutils.HclBuildDefinitionResource(
+		"Sample Build Definition",
+		`\`,
+		"TfsGit",
+		"${azuredevops_git_repository.repository.id}",
+		"master",
+		"path/to/yaml",
+		"")
 
 	return strings.Join(
 		[]string{
 			projectAndRepo,
 			userEntitlement,
 			buildDef,
-			minReviewCountPolicy,
-			buildValidationPolicy,
-			autoReviewerPolicy,
 		},
 		"\n",
 	)
-
 }

@@ -28,34 +28,33 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 		Update:   genServiceEndpointUpdateFunc(f, e),
 		Delete:   genServiceEndpointDeleteFunc(e),
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
-		Schema:   genBaseSchema(),
-	}
-}
-
-func genBaseSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		"service_endpoint_name": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringIsNotWhiteSpace,
-			ForceNew:     true,
-		},
-		"description": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Default:  "Managed by Terraform",
-		},
-		"authorization": {
-			Type:     schema.TypeMap,
-			Optional: true,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
+		Schema: map[string]*schema.Schema{
+			"project_id": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"service_endpoint_name": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"description": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Managed by Terraform",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"authorization": {
+				Type:         schema.TypeMap,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
