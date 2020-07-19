@@ -228,13 +228,17 @@ func createGitRepository(clients *client.AggregatedClient, repoName *string, pro
 }
 
 func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepository, defaultBranch *string) error {
+	branchName := converter.ToString(defaultBranch, "")
+	if strings.EqualFold(branchName, "") {
+		branchName = "master"
+	}
 	args := git.CreatePushArgs{
 		RepositoryId: repo.Name,
 		Project:      repo.Project.Name,
 		Push: &git.GitPush{
 			RefUpdates: &[]git.GitRefUpdate{
 				{
-					Name:        converter.String("refs/heads/" + *defaultBranch),
+					Name:        converter.String("refs/heads/" + branchName),
 					OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 				},
 			},
