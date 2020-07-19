@@ -1,11 +1,11 @@
 dist: xenial
-sudo: required
 services:
-- docker
+  - docker
 language: go
 go:
-- "1.13.x"
-
+  - "1.13.x"
+"os":
+  "linux"
 branches:
   only:
     - master
@@ -22,7 +22,7 @@ install:
   - bash scripts/gogetcookie.sh
   - make tools
 
-matrix:
+jobs:
   fast_finish: true
   allow_failures:
     - go: tip
