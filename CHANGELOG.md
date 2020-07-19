@@ -1,4 +1,20 @@
 ## 0.0.2 (Unreleased)
+
+FEATURES:
+* **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/18)
+* **New Resource**  `azuredevops_project_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
+* **New Resource**  `azuredevops_serviceendpoint_aws` [#58](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/58)
+* **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/71)
+* **New Data Resource**  `azuredevops_git_repository` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
+
+IMPROVEMENTS:
+* **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/25)
+* **Add `path_filter` support for repository build policy** [#62](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/62)
+
+BUG FIXS:
+* **GitHub service connection API breaking change** [#72](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/72)
+* **Terraform crash when the service connection description is set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
+
 ## 0.0.1 (June 18, 2020)
 
 NOTES:
