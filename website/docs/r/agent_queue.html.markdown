@@ -7,10 +7,10 @@ description: |-
 
 # azuredevops_agent_queue
 
-Manages an agent queue within Azure DevOps. In the UI, this is equivelant to adding an
+Manages an agent queue within Azure DevOps. In the UI, this is equivalent to adding an
 Organization defined pool to a project.
 
-The created queue is not authorized for use by all pipeliens in the project. However,
+The created queue is not authorized for use by all pipelines in the project. However,
 the `azuredevops_resource_authorization` resource can be used to grant authorization.
 
 ## Example Usage
