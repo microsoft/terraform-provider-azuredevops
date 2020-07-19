@@ -162,7 +162,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if initialization != nil && strings.EqualFold(initialization.initType, "Clean") {
-		err = initializeGitRepository(clients, createdRepo)
+		err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
 		if err != nil {
 			if err := deleteGitRepository(clients, createdRepo.Id.String()); err != nil {
 				log.Printf("[WARN] Unable to delete new Git Repository after initialization failed: %+v", err)
@@ -227,14 +227,14 @@ func createGitRepository(clients *client.AggregatedClient, repoName *string, pro
 	return createdRepository, nil
 }
 
-func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepository) error {
+func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepository, defaultBranch *string) error {
 	args := git.CreatePushArgs{
 		RepositoryId: repo.Name,
 		Project:      repo.Project.Name,
 		Push: &git.GitPush{
 			RefUpdates: &[]git.GitRefUpdate{
 				{
-					Name:        converter.String("refs/heads/master"),
+					Name:        converter.String("refs/heads/" + *defaultBranch),
 					OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 				},
 			},
