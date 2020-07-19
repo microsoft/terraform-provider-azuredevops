@@ -485,7 +485,7 @@ func HclBuildDefinitionResource(
 	yamlPath string,
 	serviceConnectionID string,
 ) string {
-	escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
+	//escapedBuildPath := strings.ReplaceAll(buildPath, `\`, `\\`)
 
 	return fmt.Sprintf(`
 	resource "azuredevops_build_definition" "build" {
@@ -501,7 +501,7 @@ func HclBuildDefinitionResource(
 			yml_path              = "%s"
 			service_connection_id = "%s"
 		}
-	}`, buildDefinitionName, escapedBuildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
+	}`, buildDefinitionName, buildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 }
 
 // HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition and a project
