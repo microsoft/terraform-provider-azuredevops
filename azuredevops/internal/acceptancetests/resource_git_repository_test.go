@@ -5,6 +5,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -64,7 +65,32 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-// Given the name of an AzDO git repository, this will return a function that will check whether
+// Verifies that the create operation fails if the initialization is
+// not specified.
+func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	azureGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "repository" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+	}`, gitRepoName)
+	projectResource := testutils.HclProjectResource(projectName)
+	gitRepoResource := fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config:      gitRepoResource,
+				ExpectError: regexp.MustCompile(`config is invalid: "initialization": required field is not set`),
+			},
+		},
+	})
+
+}
+
 // or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

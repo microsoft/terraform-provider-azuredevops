@@ -97,7 +97,7 @@ func ResourceGitRepository() *schema.Resource {
 			},
 			"initialization": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Required: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -394,7 +394,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 
 	var initialization *repoInitializationMeta = nil
 	initData := d.Get("initialization").(*schema.Set).List()
-
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})
