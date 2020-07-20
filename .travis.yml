@@ -11,8 +11,6 @@ branches:
 env:
   global:
   - GOFLAGS=-mod=vendor
-  - secure: z4qBa34hUjtttF61e38SS9VdmKt5FMBOj07sMIipO6KjbklTdx8DA7LSg0fHvIaDsAO99UrBd8ADUn+s1zdz3MU0j1ZQ7ZAOHC+evMFfGAfJ2b68r3Lgl9mcvla5uxVAOVSaehp50RQwYNRd2Xvah0TxGxUqXwiC/iUfGwr/ZScWuTPjnQUBbUrroQyxjijrBTLu2m+X+asq8CTDZqCCIszBqs0HLGBQutfBASxqFBO02V0r1DWD/MZcY3UxoaMZlUkabtfiaNHTQSj8COlwRYVA1cSfL+Zdah/fEEFXAGNAx1oxGhzCWI8wAwIUelzyMZvuvQsK4IDpDUmHaJFHYMdI7pq07vFu0BUffy3P4c9rs/8LYuFHeiJPk05jue+cBbOyGSrCZekVX00BkYJQkI9eFzkYfjuAxBMIoQY3sMD1ulPKIMZ/KU2e6sEfJ8fTy6OVf0uW+ZvbHE3VlVkBjHc1UQFt9r6GGxFdWp96d5ehCRw8nWPIRuGQz4pDThDvHWrklqe9mj4VFjHSfUhSGQ3BEZwUjBTs+jRsOuEUKZidl4XVGynRp4K13nuYqoIfkfyEBOKNIVb3D0kb0nx7hQBKxGxh/n6Wea+8aBEcshc4M+PMBJ65A1c327kyxO/TM3Zdpf/Ko1cSChUqqP1Whaoo+cUtaglkB7mUihoIerI=
-  - secure: W8Z+pvnNfrPXTNb7hrkbz1pkdRHX643/eIE8yMOGq+SZAxgz7IB7YrqpCqWJmyvZpEL2jkrYbt0rZyKkNQUa6nnRAUm6IM0u6RolQUABrQWh65I5MtcTfoiZtTHN0BVYZFnddK1ac0KRJGRvkDCaG+198cWo4VCq1k/n7mGB1GR3nrJEX+SBxrrzhGSiPKp5iTukvKJBHlRpJigZqa22CAv0YMNUJ8+oXLXRx5kE0Z0w/ydF9gLrzLGLLSjFEdT0xShkrgE74iMEH3L//TOgp8WeFfj0hMoC1CbsQYA0tYzyNXPS0DtWmvtOaU+RX2cSjs4ipVsou8Oo+lIAOXQ7eA0PgzJVKnmsrpsl96KtTvHS8rf7m1gychpcDlZsNfpzcDde3s+M+Q3wDQUovTyeC19SPkVBwfzlqBXIbMLzgnRigbYmlzl0IZmWM1b6oGTpV8QeCD3wvrqrUu/DPyL2l/pNWhWvZwENob5W8IQ4VvIgBchS+P++nvHoocBWnKw10kkkaHLE2ZibhPBFiK6+RtoUz8aJpTESRR5NzCDd5LxWS+dvMybXZz6Ne3neDQP2vQKHlLmidktikFhrh8fgLWeKpL1PdSN6Q7lDSbUgh9PV+JNny7g6XG1dcRrFo1tkrc73pCkV/GijvQCzZroXgkEpAEbfsGCvAv7qBcn9vwg=
 install:
 - bash scripts/gogetcookie.sh
 - make tools
@@ -33,5 +31,5 @@ jobs:
     script: make website-lint
   - name: make website-test
     script: make website-test
-  - name: Run AccTests
-    script: make testacc
+#  - name: Run AccTests
+#    script: make testacc
