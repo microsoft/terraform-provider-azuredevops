@@ -5,6 +5,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
@@ -191,7 +192,8 @@ func getBuildValidationHcl(enabled bool, blocking bool, displayName string, vali
 
 func getProjectRepoBuildUserEntitlementResource() string {
 	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
-	userEntitlement := testutils.HclUserEntitlementResource("acc@test.com")
+	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
+	userEntitlement := testutils.HclUserEntitlementResource(userPrincipalName)
 	buildDef := testutils.HclBuildDefinitionResource(
 		"Sample Build Definition",
 		`\\`,
