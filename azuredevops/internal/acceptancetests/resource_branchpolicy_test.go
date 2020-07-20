@@ -194,7 +194,7 @@ func getProjectRepoBuildUserEntitlementResource() string {
 	userEntitlement := testutils.HclUserEntitlementResource("acc@test.com")
 	buildDef := testutils.HclBuildDefinitionResource(
 		"Sample Build Definition",
-		`\`,
+		`\\`,
 		"TfsGit",
 		"${azuredevops_git_repository.repository.id}",
 		"master",

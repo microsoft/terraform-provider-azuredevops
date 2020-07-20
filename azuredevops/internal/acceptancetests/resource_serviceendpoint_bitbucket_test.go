@@ -105,7 +105,7 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointBitBucket_requiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointBitBucket_RequiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
@@ -184,7 +184,6 @@ resource "azuredevops_serviceendpoint_bitbucket" "import" {
   project_id                = azuredevops_serviceendpoint_bitbucket.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_bitbucket.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_bitbucket.test.description
-  authorization          = azuredevops_serviceendpoint_bitbucket.test.authorization
   username          = azuredevops_serviceendpoint_bitbucket.test.username
   password          = "password"
 }
