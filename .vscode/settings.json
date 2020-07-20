@@ -13,7 +13,9 @@
     ],
     "go.testFlags": [
         "-v",
-        "-tags=all"
+        "-tags=all",
+        "-args",
+        "-test.v"
     ],
     "go.testTimeout": "30m",
     "go.testEnvVars": {
