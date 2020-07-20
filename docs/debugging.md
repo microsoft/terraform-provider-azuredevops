@@ -26,7 +26,11 @@ And during the Terraform execution we can see the logs:
 
 ## Option 3 - Debug acceptance tests from VS Code
 
-With VSCode Golang extension you can also debug the acceptance tests by highlighting the test name and pressing `F5`. More information can be found at [Debug Terraform (Azure Devops) Provider with VSCode](https://dev.to/eliises/debug-terraform-azuredevops-provider-with-vscode-c24).
+With VSCode Golang extension you can also debug the acceptance tests by highlighting the test name and pressing `F5`. 
+Or you can use the `codelens` feature of VSCode, which displays the texts `run test` and `debug test` right above every (test) function inside a `_test.go` file.
+
+More information can be found at [Debug Terraform (Azure Devops) Provider with VSCode](https://dev.to/eliises/debug-terraform-azuredevops-provider-with-vscode-c24).
+
 
 ## Option 4 - Attaching a Debugger from VS Code
 
