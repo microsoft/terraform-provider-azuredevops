@@ -111,31 +111,8 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
 	resourceData.SetId(gitRepo.Id.String())
-	flattenGitRepository(resourceData, &gitRepo)
-
-	expandedGitRepo, repoInitialization, expandedProjectID, err := expandGitRepository(resourceData)
-
-	require.Nil(t, err)
-	require.NotNil(t, expandedGitRepo)
-	require.NotNil(t, expandedGitRepo.Id)
-	require.Equal(t, *expandedGitRepo.Id, repoID)
-	require.NotNil(t, expandedProjectID)
-	require.Equal(t, *expandedProjectID, projectID)
-	require.Nil(t, repoInitialization)
-}
-
-func TestGitRepo_FlattenExpandInitialization_RoundTrip(t *testing.T) {
-	projectID := uuid.New()
-	project := core.TeamProjectReference{Id: &projectID}
-
-	repoID := uuid.New()
-	repoName := "name"
-	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
-
-	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
-	resourceData.SetId(gitRepo.Id.String())
-	flattenGitRepository(resourceData, &gitRepo)
 	configureCleanInitialization(resourceData)
+	flattenGitRepository(resourceData, &gitRepo)
 
 	expandedGitRepo, repoInitialization, expandedProjectID, err := expandGitRepository(resourceData)
 
