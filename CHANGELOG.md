@@ -15,6 +15,9 @@ BUG FIXS:
 * **GitHub service connection API breaking change** [#72](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/72)
 * **Terraform crash when the service connection description is set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
 
+BREAKING CHANGES:
+* `azuredevops_git_repository` - `initialization` now is a required configuration.  [#54](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/54)
+
 ## 0.0.1 (June 18, 2020)
 
 NOTES:
