@@ -192,9 +192,9 @@ func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
 	repoName := "test-repository"
 	projectName := "test-project"
 
-	repo := git.GitRepository {
+	repo := git.GitRepository{
 		Name: &repoName,
-		Project: &core.TeamProjectReference {
+		Project: &core.TeamProjectReference{
 			Name: &projectName,
 		},
 	}
