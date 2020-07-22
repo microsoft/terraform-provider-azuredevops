@@ -10,10 +10,11 @@ FEATURES:
 IMPROVEMENTS:
 * **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/25)
 * **Add `path_filter` support for repository build policy** [#62](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/62)
+* **Use `default_branch` as the name of an initialized branch**[#89](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/89)
 
 BUG FIXS:
 * **GitHub service connection API breaking change** [#72](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/72)
-* **Terraform crash when the service connection description is set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
+* **Terraform crash when the service connection description set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
 
 BREAKING CHANGES:
 * `azuredevops_git_repository` - `initialization` now is a required configuration.  [#54](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/54)
