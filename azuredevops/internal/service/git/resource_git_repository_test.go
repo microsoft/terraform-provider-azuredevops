@@ -155,6 +155,68 @@ func TestGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 	require.Contains(t, err.Error(), "GetRepository() Failed")
 }
 
+// verifies that 'Clean' repo initalization uses default branch name
+func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
+	clients := &client.AggregatedClient{
+		GitReposClient: reposClient,
+		Ctx:            context.Background(),
+	}
+
+	repoName := "test-repository"
+	projectName := "test-project"
+
+	repo := git.GitRepository{
+		Name: &repoName,
+		Project: &core.TeamProjectReference{
+			Name: &projectName,
+		},
+	}
+
+	defaultBranch := "refs/heads/main"
+
+	expectedArgs := git.CreatePushArgs{
+		RepositoryId: repo.Name,
+		Project:      repo.Project.Name,
+		Push: &git.GitPush{
+			RefUpdates: &[]git.GitRefUpdate{
+				{
+					Name:        converter.String(defaultBranch),
+					OldObjectId: converter.String("0000000000000000000000000000000000000000"),
+				},
+			},
+			Commits: &[]git.GitCommitRef{
+				{
+					Comment: converter.String("Initial commit."),
+					Changes: &[]interface{}{
+						git.Change{
+							ChangeType: &git.VersionControlChangeTypeValues.Add,
+							Item: git.GitItem{
+								Path: converter.String("/readme.md"),
+							},
+							NewContent: &git.ItemContent{
+								ContentType: &git.ItemContentTypeValues.RawText,
+								Content:     repo.Project.Name,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	reposClient.
+		EXPECT().
+		CreatePush(clients.Ctx, expectedArgs).
+		Return(nil, nil).
+		Times(1)
+
+	err := initializeGitRepository(clients, &repo, &defaultBranch)
+	require.Nil(t, err, fmt.Sprintf("Error was %v", err))
+}
+
 // verifies that the resource ID is used for reads if the ID is set
 func TestGitRepo_Read_UsesIdIfSet(t *testing.T) {
 	ctrl := gomock.NewController(t)

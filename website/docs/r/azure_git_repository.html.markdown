@@ -64,7 +64,7 @@ In addition to all arguments above, except `initialization`, the following attri
 
 - `id` - The ID of the Git repository.
 
-- `default_branch` - The ref of the default branch.
+- `default_branch` - The ref of the default branch. Will be used as the branch name for initialized repositories.
 - `is_fork` - True if the repository was created as a fork.
 - `remote_url` - Git HTTPS URL of the repository
 - `size` - Size in bytes.
