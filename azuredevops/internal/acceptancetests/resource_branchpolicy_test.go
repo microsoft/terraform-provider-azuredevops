@@ -17,7 +17,7 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
@@ -61,10 +61,11 @@ func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, submitterCan
 		}
 	}
 	`, enabled, blocking, reviewers, submitterCanVote)
+	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
 
 	return strings.Join(
 		[]string{
-			getProjectRepoBuildUserEntitlementResource(),
+			projectAndRepo,
 			minReviewCountPolicy,
 		},
 		"\n",
@@ -75,7 +76,7 @@ func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
 	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
@@ -119,11 +120,15 @@ func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, mes
 		}
 	}
 	`, enabled, blocking, submitterCanVote, message, pathFilters)
+	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
+	userEntitlement := testutils.HclUserEntitlementResource(userPrincipalName)
+	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
 
 	return strings.Join(
 		[]string{
-			getProjectRepoBuildUserEntitlementResource(),
+			userEntitlement,
 			autoReviewerPolicy,
+			projectAndRepo,
 		},
 		"\n",
 	)
@@ -180,20 +185,7 @@ func getBuildValidationHcl(enabled bool, blocking bool, displayName string, vali
 		}
 	}
 	`, enabled, blocking, displayName, validDuration)
-
-	return strings.Join(
-		[]string{
-			getProjectRepoBuildUserEntitlementResource(),
-			buildValidationPolicy,
-		},
-		"\n",
-	)
-}
-
-func getProjectRepoBuildUserEntitlementResource() string {
 	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
-	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	userEntitlement := testutils.HclUserEntitlementResource(userPrincipalName)
 	buildDef := testutils.HclBuildDefinitionResource(
 		"Sample Build Definition",
 		`\\`,
@@ -205,8 +197,8 @@ func getProjectRepoBuildUserEntitlementResource() string {
 
 	return strings.Join(
 		[]string{
+			buildValidationPolicy,
 			projectAndRepo,
-			userEntitlement,
 			buildDef,
 		},
 		"\n",

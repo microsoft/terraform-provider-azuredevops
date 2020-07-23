@@ -188,7 +188,6 @@ resource "azuredevops_serviceendpoint_aws" "import" {
   project_id                = azuredevops_serviceendpoint_aws.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_aws.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_aws.test.description
-  authorization          = azuredevops_serviceendpoint_aws.test.authorization
 }
 `, template)
 }
