@@ -18,9 +18,9 @@ import (
 // ResourceWorkItemQueryPermissions schema and implementation for project permission resource
 func ResourceWorkItemQueryPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceWorkItemQueryPermissionsCreate,
+		Create: ResourceWorkItemQueryPermissionsCreateOrUpdate,
 		Read:   ResourceWorkItemQueryPermissionsRead,
-		Update: ResourceWorkItemQueryPermissionsUpdate,
+		Update: ResourceWorkItemQueryPermissionsCreateOrUpdate,
 		Delete: ResourceWorkItemQueryPermissionsDelete,
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
@@ -32,7 +32,6 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 			"path": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Optional:     true,
 				Required:     false,
 				ForceNew:     true,
 			},
@@ -40,7 +39,7 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 	}
 }
 
-func ResourceWorkItemQueryPermissionsCreate(d *schema.ResourceData, m interface{}) error {
+func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -87,10 +86,6 @@ func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{})
 
 	d.Set("permissions", principalPermissions.Permissions)
 	return nil
-}
-
-func ResourceWorkItemQueryPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	return ResourceWorkItemQueryPermissionsCreate(d, m)
 }
 
 func ResourceWorkItemQueryPermissionsDelete(d *schema.ResourceData, m interface{}) error {
