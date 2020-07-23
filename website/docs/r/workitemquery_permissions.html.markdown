@@ -97,18 +97,6 @@ resource "azuredevops_workitemquery_permissions" "wiq-sharedqueries-permissions"
   principal   = data.azuredevops_group.project-contributors.id
   permissions = {
     FullControl              = "Allow"
-    RecordQueryExecutionInfo = "Deny"
-  }
-}
-
-resource "azuredevops_workitemquery_permissions" "wiq-folder-permissions" {
-  project_id = azuredevops_project.project.id
-  path = "/Team"
-  principal   = data.azuredevops_group.project-readers.id
-  permissions = {
-    Contribute = "Allow"
-    Delete     = "Deny"
-    Read       = "NotSet"
   }
 }
 
@@ -132,7 +120,6 @@ The following arguments are supported:
 | Delete                   | Delete                             |
 | ManagePermissions        | Manage Permissions                 |
 | FullControl              | Full Control                       |
-| RecordQueryExecutionInfo | Record query execution information |
 
 ## Relevant Links
 
