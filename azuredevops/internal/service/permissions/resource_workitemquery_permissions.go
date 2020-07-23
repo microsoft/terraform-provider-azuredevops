@@ -32,7 +32,7 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 			"path": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Required:     false,
+				Optional:     true,
 				ForceNew:     true,
 			},
 		}),
