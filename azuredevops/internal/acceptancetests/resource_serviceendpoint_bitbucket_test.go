@@ -24,7 +24,7 @@ func TestAccServiceEndpointBitBucket_basic(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_bitbucket"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, requiredTestEnvVars) },
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -48,7 +48,7 @@ func TestAccServiceEndpointBitBucket_complete(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_bitbucket"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, requiredTestEnvVars) },
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -78,7 +78,7 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_bitbucket"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, requiredTestEnvVars) },
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -108,11 +108,11 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 func TestAccServiceEndpointBitBucket_RequiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-
 	resourceType := "azuredevops_serviceendpoint_bitbucket"
 	tfSvcEpNode := resourceType + ".test"
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, requiredTestEnvVars) },
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
