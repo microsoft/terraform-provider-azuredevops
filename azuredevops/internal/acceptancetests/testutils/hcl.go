@@ -191,6 +191,9 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 func HclServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string /*, username string, password string*/) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
+	docker_email           = "test@email.com"
+	docker_username        = "testuser"
+	docker_password        = "secret"
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 

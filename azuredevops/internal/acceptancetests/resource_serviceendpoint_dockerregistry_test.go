@@ -21,11 +21,7 @@ func TestAccServiceEndpointDockerRegistry_CreateAndUpdate(t *testing.T) {
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			testutils.PreCheck(t, &[]string{
-				"AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME",
-				"AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL",
-				"AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD",
-			})
+			testutils.PreCheck(t, nil)
 		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -34,8 +30,8 @@ func TestAccServiceEndpointDockerRegistry_CreateAndUpdate(t *testing.T) {
 				Config: testutils.HclServiceEndpointDockerRegistryResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "docker_username"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "docker_email"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "docker_username", "testuser"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "docker_email", "test@email.com"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "docker_password", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "docker_password_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
