@@ -31,6 +31,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_azurerm":        serviceendpoint.ResourceServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":      serviceendpoint.ResourceServiceEndpointBitBucket(),
 			"azuredevops_serviceendpoint_dockerregistry": serviceendpoint.ResourceServiceEndpointDockerRegistry(),
+			"azuredevops_serviceendpoint_azurecr":        serviceendpoint.ResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_github":         serviceendpoint.ResourceServiceEndpointGitHub(),
 			"azuredevops_serviceendpoint_kubernetes":     serviceendpoint.ResourceServiceEndpointKubernetes(),
 			"azuredevops_git_repository":                 git.ResourceGitRepository(),

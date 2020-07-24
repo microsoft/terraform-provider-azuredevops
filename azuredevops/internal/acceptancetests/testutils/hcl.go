@@ -188,13 +188,30 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 }
 
 // HclServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
-func HclServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string /*, username string, password string*/) string {
+func HclServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 
-}`, serviceEndpointName /*, username, password*/)
+}`, serviceEndpointName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+// HclServiceEndpointAzureCRResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureCRResource(projectName string, serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+	resource "azuredevops_serviceendpoint_azurecr" "serviceendpoint" {
+		project_id                = azuredevops_project.project.id
+		service_endpoint_name     = "%s"
+		azurecr_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+		azurecr_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+		azurecr_subscription_name = "Microsoft Azure DEMO"
+		resource_group            = "testrg"
+		azurecr_name              = "testacr"
+	  }`, serviceEndpointName)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
