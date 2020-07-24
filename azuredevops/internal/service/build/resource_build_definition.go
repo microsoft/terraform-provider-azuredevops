@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -161,6 +162,7 @@ func ResourceBuildDefinition() *schema.Resource {
 								string(model.RepoTypeValues.GitHub),
 								string(model.RepoTypeValues.TfsGit),
 								string(model.RepoTypeValues.Bitbucket),
+								string(model.RepoTypeValues.GitHubEnterprise),
 							}, false),
 						},
 						"branch_name": {
@@ -169,6 +171,11 @@ func ResourceBuildDefinition() *schema.Resource {
 							Default:  "master",
 						},
 						"service_connection_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
+						"github_enterprise_url": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
@@ -458,6 +465,7 @@ func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
 
 func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	yamlFilePath := ""
+	githubEnterpriseUrl := ""
 
 	// The process member can be of many types -- the only typing information
 	// available from the compiler is `interface{}` so we can probe for known
@@ -465,9 +473,17 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	if processMap, ok := buildDefinition.Process.(map[string]interface{}); ok {
 		yamlFilePath = processMap["yamlFilename"].(string)
 	}
-
 	if yamlProcess, ok := buildDefinition.Process.(*build.YamlProcess); ok {
 		yamlFilePath = *yamlProcess.YamlFilename
+	}
+
+	// Set github_enterprise_url value from buildDefinition.Repository URL
+	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
+		url, err := url.Parse(*buildDefinition.Repository.Url)
+		if err != nil {
+			return fmt.Errorf("Unable to parse repository URL")
+		}
+		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
 	return []map[string]interface{}{{
@@ -476,6 +492,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
+		"github_enterprise_url": githubEnterpriseUrl,
 	}}
 }
 
@@ -831,6 +848,11 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoID)
 		repoAPIURL = fmt.Sprintf("https://api.bitbucket.org/2.0/repositories/%s", repoID)
 	}
+	if strings.EqualFold(string(repoType), string(model.RepoTypeValues.GitHubEnterprise)) {
+		githubEnterpriseURL := repository["github_enterprise_url"].(string)
+		repoURL = fmt.Sprintf("%s/%s.git", githubEnterpriseURL, repoID)
+		repoAPIURL = fmt.Sprintf("%s/api/v3/repos/%s", githubEnterpriseURL, repoID)
+	}
 
 	ciTriggers := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
@@ -908,6 +930,9 @@ func validateServiceConnectionIDExistsIfNeeded(d *schema.ResourceData) error {
 
 	if strings.EqualFold(repoType, string(model.RepoTypeValues.Bitbucket)) && serviceConnectionID == "" {
 		return errors.New("bitbucket repositories need a referenced service connection ID")
+	}
+	if strings.EqualFold(repoType, string(model.RepoTypeValues.GitHubEnterprise)) && serviceConnectionID == "" {
+		return errors.New("GitHub Enterprise repositories need a referenced service connection ID")
 	}
 	return nil
 }
