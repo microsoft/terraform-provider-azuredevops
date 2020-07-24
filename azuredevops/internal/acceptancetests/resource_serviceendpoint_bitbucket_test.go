@@ -12,11 +12,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-var requiredTestEnvVars = &[]string{
-	"AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME",
-	"AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD",
-}
-
 func TestAccServiceEndpointBitBucket_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
