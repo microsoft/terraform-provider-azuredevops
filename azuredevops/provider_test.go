@@ -48,6 +48,9 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_workitemquery_permissions",
 		"azuredevops_area_permissions",
 		"azuredevops_iteration_permissions",
+		"azuredevops_team",
+		"azuredevops_team_members",
+		"azuredevops_team_administrators",
 	}
 
 	resources := Provider().ResourcesMap
@@ -73,6 +76,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_agent_queue",
 		"azuredevops_area",
 		"azuredevops_iteration",
+		"azuredevops_team",
 	}
 
 	dataSources := Provider().DataSourcesMap

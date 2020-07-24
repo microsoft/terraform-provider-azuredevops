@@ -59,6 +59,9 @@ func Provider() *schema.Provider {
 			"azuredevops_area_permissions":                  permissions.ResourceAreaPermissions(),
 			"azuredevops_iteration_permissions":             permissions.ResourceIterationPermissions(),
 			"azuredevops_build_definition_permissions":      permissions.ResourceBuildDefinitionPermissions(),
+			"azuredevops_team":                              core.ResourceTeam(),
+			"azuredevops_team_members":                      core.ResourceTeamMembers(),
+			"azuredevops_team_administrators":               core.ResourceTeamAdministrators(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
@@ -73,6 +76,7 @@ func Provider() *schema.Provider {
 			"azuredevops_users":            graph.DataUsers(),
 			"azuredevops_area":             workitemtracking.DataArea(),
 			"azuredevops_iteration":        workitemtracking.DataIteration(),
+			"azuredevops_team":             core.DataTeam(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
