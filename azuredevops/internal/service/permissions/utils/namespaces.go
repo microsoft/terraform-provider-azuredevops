@@ -239,7 +239,7 @@ func (sn *SecurityNamespace) getActionDefinitions() (*map[string]security.Action
 	return sn.actions, nil
 }
 
-func (sn *SecurityNamespace) getAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
+func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
 	var descriptors *string = nil
 	if descriptorList != nil && len(*descriptorList) > 0 {
 		val := linq.From(*descriptorList).
@@ -336,7 +336,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		}).
 		ToSlice(&descriptorList)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	if err != nil {
 		return err
 	}
@@ -438,7 +438,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 			return *elem.(identity.Identity).Descriptor
 		}).
 		ToSlice(&descriptorList)
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	if err != nil {
 		return nil, err
 	}
@@ -485,7 +485,7 @@ func (sn *SecurityNamespace) RemovePrincipalPermissions(principal *[]string) err
 	if err != nil {
 		return err
 	}
-	acl, err := sn.getAccessControlList(nil)
+	acl, err := sn.GetAccessControlList(nil)
 	if err != nil {
 		return err
 	}
