@@ -1,19 +1,16 @@
 package core
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 func DataTeam() *schema.Resource {
 	baseSchema := ResourceTeam()
-	for k, v := range baseSchema.Schema {
+	for k := range baseSchema.Schema {
 		if k != "name" && k != "project_id" {
-			baseSchema.Schema[k] = &schema.Schema{
-				Type:     v.Type,
-				Computed: true,
-			}
+			baseSchema.Schema[k].Computed = true
+			baseSchema.Schema[k].Required = false
 		}
 	}
 	return &schema.Resource{
@@ -23,5 +20,16 @@ func DataTeam() *schema.Resource {
 }
 
 func dataTeamRead(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Not implemented")
+	clients := m.(*client.AggregatedClient)
+
+	projectID := d.Get("project_id").(string)
+	teamName := d.Get("name").(string)
+
+	team, members, administrators, err := readTeam(clients, projectID, teamName)
+	if err != nil {
+		return err
+	}
+
+	flattenTeam(d, team, members, administrators)
+	return nil
 }
