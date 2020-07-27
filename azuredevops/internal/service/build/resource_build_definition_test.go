@@ -103,7 +103,7 @@ var testBuildDefinition = build.BuildDefinition{
 		Type:          converter.String("GitHub"),
 		Properties: &map[string]string{
 			"connectedServiceId": "ServiceConnectionID",
-			"apiUrl":             "",
+			"apiUrl":             "https://api.github.com/repos/RepoId",
 		},
 	},
 	Process: &build.YamlProcess{
