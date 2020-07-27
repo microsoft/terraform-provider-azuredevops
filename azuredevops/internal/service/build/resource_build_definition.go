@@ -843,6 +843,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 
 	if strings.EqualFold(string(repoType), string(model.RepoTypeValues.GitHub)) {
 		repoURL = fmt.Sprintf("https://github.com/%s.git", repoID)
+		repoAPIURL = fmt.Sprintf("https://api.github.com/repos/%s", repoID)
 	}
 	if strings.EqualFold(string(repoType), string(model.RepoTypeValues.Bitbucket)) {
 		repoURL = fmt.Sprintf("https://bitbucket.org/%s.git", repoID)
