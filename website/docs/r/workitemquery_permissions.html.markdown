@@ -76,18 +76,14 @@ data "azuredevops_group" "project-contributors" {
   name       = "Contributors"
 }
 
-data "azuredevops_group" "project-administrators" {
-  project_id = azuredevops_project.project.id
-  name       = "Project administrators"
-}
-
 resource "azuredevops_workitemquery_permissions" "wiq-project-permissions" {
   project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-administrators.id
+  principal   = data.azuredevops_group.project-readers.id
   permissions = {
+    Read              = "Allow"
     Delete            = "Deny"
-    Contribute        = "Allow"
-    ManagePermissions = "NotSet"
+    Contribute        = "Deny"
+    ManagePermissions = "Deny"
   }
 }
 
