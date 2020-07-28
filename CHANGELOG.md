@@ -9,12 +9,14 @@ FEATURES:
 
 IMPROVEMENTS:
 * **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/25)
-* **Add `path_filter` support for repository build policy** [#62](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/62)
-* **Use `default_branch` as the name of an initialized branch** [#89](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/89)
+* **`azuredevops_branch_policy_build_validation`: Add `filename_patterns` support for repository build policy** [#62](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/62)
+* **`azuredevops_git_repository`: Use `default_branch` as the name of an initialized branch** [#89](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/89)
+* **`azuredevops_build_definition`: Add Support for GitHub enterprise as a build definition repository type** [##97](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/97)
 
-BUG FIXS:
-* **GitHub service connection API breaking change** [#72](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/72)
-* **Terraform crash when the service connection description set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
+BUG FIX:
+* **`azuredevops_serviceendpoint_github`: GitHub service connection API breaking change** [#72](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/72)
+* **All service connection resources: Terraform crashes when the service connection description is set to an empty string** [#60](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/60)
+* **`azuredevops_build_definition`: Build Definition creation failed when repository type is GitHub** [#65](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/65)
 
 BREAKING CHANGES:
 * `azuredevops_git_repository` - `initialization` now is a required configuration.  [#54](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/54)
