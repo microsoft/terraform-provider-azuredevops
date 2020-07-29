@@ -126,6 +126,7 @@ The following arguments are supported:
 - `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
 - `yml_path` - (Required) The path of the Yaml file describing the build definition.
 - `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
+- `report_build_status` - (Optional) Report build status. Default is true.
 
 `ci_trigger` block supports the following:
 
