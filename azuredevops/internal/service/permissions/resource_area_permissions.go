@@ -2,7 +2,6 @@ package permissions
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -22,9 +21,6 @@ func ResourceAreaPermissions() *schema.Resource {
 		Read:   resourceAreaPermissionsRead,
 		Update: resourceAreaPermissionsUpdate,
 		Delete: resourceAREAPermissionsDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceAreaPermissionsImporter,
-		},
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -191,9 +187,4 @@ func resourceAREAPermissionsDelete(d *schema.ResourceData, m interface{}) error 
 
 	d.SetId("")
 	return nil
-}
-
-func resourceAreaPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
-	return nil, errors.New("resourceAreaPermissionsImporter: Not implemented")
 }
