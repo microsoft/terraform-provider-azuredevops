@@ -18,7 +18,6 @@ func TestAccIterationDataSource_Read(t *testing.T) {
 
 data "azuredevops_iteration" "root-iteration" {
 	project_id     = azuredevops_project.project.id
-	fetch_children = true
 }
 
 `, testutils.HclProjectResource(projectName))
@@ -37,6 +36,38 @@ data "azuredevops_iteration" "root-iteration" {
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttr(tfNode, "has_children", "true"),
 					resource.TestCheckResourceAttr(tfNode, "children.#", "3"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIterationDataSource_ReadNoChildren(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	config := fmt.Sprintf(`
+%s
+
+data "azuredevops_iteration" "root-iteration" {
+	project_id     = azuredevops_project.project.id
+	fetch_children = false
+}
+
+`, testutils.HclProjectResource(projectName))
+
+	tfNode := "data.azuredevops_iteration.root-iteration"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "path"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckResourceAttr(tfNode, "has_children", "true"),
+					resource.TestCheckResourceAttr(tfNode, "children.#", "0"),
 				),
 			},
 		},
