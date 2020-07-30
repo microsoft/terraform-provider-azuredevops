@@ -21,6 +21,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
 	"github.com/terraform-providers/terraform-provider-azuredevops/version"
 )
 
@@ -45,6 +46,7 @@ type AggregatedClient struct {
 	FeatureManagementClient       featuremanagement.Client
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
+	WorkItemTrackingClient        workitemtracking.Client
 	Ctx                           context.Context
 }
 
@@ -133,7 +135,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	featuremanagement := featuremanagement.NewClient(ctx, connection)
+	featuremanagementClient := featuremanagement.NewClient(ctx, connection)
+
+	workitemtrackingClient, err := workitemtracking.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): workitemtracking.NewClient failed.")
+		return nil, err
+	}
 
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
@@ -146,9 +154,10 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
-		FeatureManagementClient:       featuremanagement,
+		FeatureManagementClient:       featuremanagementClient,
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
+		WorkItemTrackingClient:        workitemtrackingClient,
 		Ctx:                           ctx,
 	}
 
