@@ -7,13 +7,30 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccIterationPermissions_SetPermissions(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	config := fmt.Sprintf(`
+func hclIterationPermissions(projectName string, permissions map[string]map[string]string) string {
+	createPermissions := func(permissions map[string]string) string {
+		return linq.From(permissions).
+			Select(func(i interface{}) interface{} {
+				kv := i.(linq.KeyValue)
+				return fmt.Sprintf(`%s = "%s"`, kv.Key, kv.Value)
+			}).
+			Aggregate(func(r interface{}, i interface{}) interface{} {
+				if r.(string) == "" {
+					return i
+				}
+				return r.(string) + "\n" + i.(string)
+			}).(string)
+	}
+
+	rootPermissions := createPermissions(permissions["root"])
+	iterationPermissions := createPermissions(permissions["iteration"])
+
+	return fmt.Sprintf(`
 %s
 
 data "azuredevops_group" "tf-project-readers" {
@@ -25,9 +42,7 @@ resource "azuredevops_iteration_permissions" "root-permissions" {
 	project_id  = azuredevops_project.project.id
 	principal   = data.azuredevops_group.tf-project-readers.id
 	permissions = {
-	  CREATE_CHILDREN = "Deny"
-	  GENERIC_READ    = "NotSet"
-	  DELETE          = "Deny"
+		%s
 	}
 }
 
@@ -36,15 +51,30 @@ resource "azuredevops_iteration_permissions" "iteration-permissions" {
 	principal   = data.azuredevops_group.tf-project-readers.id
 	path        = "Iteration 1"
 	permissions = {
-	  CREATE_CHILDREN = "Allow"
-	  GENERIC_READ    = "NotSet"
-	  DELETE          = "Allow"
+		%s
 	}
 }
 
-`, testutils.HclProjectResource(projectName))
+`, testutils.HclProjectResource(projectName), rootPermissions, iterationPermissions)
+}
 
-	tfNode := "azuredevops_iteration_permissions.iteration-permissions"
+func TestAccIterationPermissions_SetPermissions(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	config := hclIterationPermissions(projectName, map[string]map[string]string{
+		"root": {
+			"CREATE_CHILDREN": "Deny",
+			"GENERIC_READ":    "NotSet",
+			"DELETE":          "Deny",
+		},
+		"iteration": {
+			"CREATE_CHILDREN": "Allow",
+			"GENERIC_READ":    "NotSet",
+			"DELETE":          "Allow",
+		},
+	})
+	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
+	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
@@ -54,10 +84,98 @@ resource "azuredevops_iteration_permissions" "iteration-permissions" {
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
-					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "principal"),
-					resource.TestCheckResourceAttr(tfNode, "path", "Iteration 1"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.%", "3"),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
+					resource.TestCheckNoResourceAttr(tfNodeRoot, "path"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.CREATE_CHILDREN", "deny"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.GENERIC_READ", "notset"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DELETE", "deny"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "principal"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "path", "Iteration 1"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.CREATE_CHILDREN", "allow"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.GENERIC_READ", "notset"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.DELETE", "allow"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIterationPermissions_UpdatePermissions(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	config1 := hclIterationPermissions(projectName, map[string]map[string]string{
+		"root": {
+			"CREATE_CHILDREN": "Deny",
+			"GENERIC_READ":    "NotSet",
+			"DELETE":          "Deny",
+		},
+		"iteration": {
+			"CREATE_CHILDREN": "Allow",
+			"GENERIC_READ":    "NotSet",
+			"DELETE":          "Allow",
+		},
+	})
+	config2 := hclIterationPermissions(projectName, map[string]map[string]string{
+		"root": {
+			"CREATE_CHILDREN": "Allow",
+			"GENERIC_READ":    "NotSet",
+			"DELETE":          "Deny",
+		},
+		"iteration": {
+			"CREATE_CHILDREN": "Deny",
+			"GENERIC_READ":    "Allow",
+			"DELETE":          "NotSet",
+		},
+	})
+	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
+	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: config1,
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckProjectExists(projectName),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
+					resource.TestCheckNoResourceAttr(tfNodeRoot, "path"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.CREATE_CHILDREN", "deny"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.GENERIC_READ", "notset"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DELETE", "deny"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "principal"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "path", "Iteration 1"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.CREATE_CHILDREN", "allow"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.GENERIC_READ", "notset"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.DELETE", "allow"),
+				),
+			},
+			{
+				Config: config2,
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckProjectExists(projectName),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
+					resource.TestCheckNoResourceAttr(tfNodeRoot, "path"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.CREATE_CHILDREN", "allow"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.GENERIC_READ", "notset"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DELETE", "deny"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNodeIteration, "principal"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "path", "Iteration 1"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.%", "3"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.CREATE_CHILDREN", "deny"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.GENERIC_READ", "allow"),
+					resource.TestCheckResourceAttr(tfNodeIteration, "permissions.DELETE", "notset"),
 				),
 			},
 		},
