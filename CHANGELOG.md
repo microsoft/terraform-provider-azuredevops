@@ -5,6 +5,7 @@ FEATURES:
 * **New Resource**  `azuredevops_project_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_serviceendpoint_aws` [#58](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/58)
 * **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/71)
+* **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/79)
 * **New Data Resource**  `azuredevops_git_repository` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 
 IMPROVEMENTS:
