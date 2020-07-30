@@ -143,12 +143,6 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	workitemtrackingClient, err := workitemtracking.NewClient(ctx, connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): workitemtracking.NewClient failed.")
-		return nil, err
-	}
-
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
