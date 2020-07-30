@@ -113,7 +113,6 @@ func TestAccWorkItemQueryPermissions_UpdateProjectPermissions(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "permissions.Delete", "deny"),
 					resource.TestCheckResourceAttr(tfNode, "permissions.ManagePermissions", "notset"),
 				),
-				Destroy: false,
 			},
 			{
 				Config: config2,
