@@ -92,7 +92,8 @@ resource "azuredevops_workitemquery_permissions" "wiq-sharedqueries-permissions"
   path = "/"
   principal   = data.azuredevops_group.project-contributors.id
   permissions = {
-    FullControl              = "Allow"
+    Read              = "Allow"
+    Delete            = "Deny"
   }
 }
 
