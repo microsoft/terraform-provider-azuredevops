@@ -106,8 +106,7 @@ The following arguments are supported:
 * `path` - (Optional) Path to a query or folder beneath `Shared Queries`
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
-* `permissions` - (Required) the permissions to assign. The follwing permissions are available
-
+* `permissions` - (Required) the permissions to assign. The following permissions are available
 
 | Permissions              | Description                        |
 |--------------------------|------------------------------------|
@@ -115,7 +114,6 @@ The following arguments are supported:
 | Contribute               | Contribute                         |
 | Delete                   | Delete                             |
 | ManagePermissions        | Manage Permissions                 |
-| FullControl              | Full Control                       |
 
 ## Relevant Links
 
