@@ -112,14 +112,18 @@ func ResourceGitRepository() *schema.Resource {
 							}, false),
 						},
 						"source_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
+							Default:      "Git",
 						},
 						"source_url": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ForceNew:     true,
+							Default:      "",
+							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 						},
 					},
 				},
@@ -158,6 +162,23 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	createdRepo, err := createGitRepository(clients, repo.Name, projectID, parentRepoRef)
 	if err != nil {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
+	}
+
+	if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) {
+		if strings.EqualFold(initialization.sourceType, "Git") {
+			importRequest := git.GitImportRequest{
+				Parameters: &git.GitImportRequestParameters{
+					GitSource: &git.GitImportGitSource{
+						Url: &initialization.sourceURL,
+					},
+				},
+				Repository: createdRepo,
+			}
+			_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
+			if importErr != nil {
+				return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
+			}
+		}
 	}
 
 	if initialization != nil && strings.EqualFold(initialization.initType, "Clean") {
@@ -206,6 +227,16 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 		return fmt.Errorf("Error retrieving expected branch for repository [%s]: %+v", *repoName, err)
 	}
 	return nil
+}
+
+func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryId string) (*git.GitImportRequest, error) {
+	args := git.CreateImportRequestArgs{
+		ImportRequest: &gitImportRequest,
+		Project:       &project,
+		RepositoryId:  &repositoryId,
+	}
+
+	return clients.GitReposClient.CreateImportRequest(clients.Ctx, args)
 }
 
 func createGitRepository(clients *client.AggregatedClient, repoName *string, projectID *uuid.UUID, parentRepo *git.GitRepositoryRef) (*git.GitRepository, error) {
@@ -406,10 +437,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			initType:   initValues["init_type"].(string),
 			sourceType: initValues["source_type"].(string),
 			sourceURL:  initValues["source_url"].(string),
-		}
-
-		if strings.EqualFold(initialization.initType, "import") {
-			return nil, nil, nil, fmt.Errorf("Initialization strategy not implemented: %s", initialization.initType)
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {

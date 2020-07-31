@@ -43,6 +43,20 @@ resource "azuredevops_git_repository" "repo" {
 }
 ```
 
+### Create Import from another Git repository
+
+```hcl
+resource "azuredevops_git_repository" "repo" {
+  project_id           = azuredevops_project.project.id
+  name                 = "Sample Import an Existing Repository"
+  initialization {
+    init_type = "Import"
+    source_type = "Git"
+    source_url = "https://github.com/terraform-providers/terraform-provider-azuredevops.git"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -55,10 +69,8 @@ The following arguments are supported:
 `initialization` - (Required) block supports the following:
 
 - `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized` or `Clean`. Defaults to `Uninitialized`.
-<!---
-- `source_type` - (Optional) Type type of the source repository. Used if the `init_type` is `Import`.
+- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`. Defaults to `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
--->
 
 ## Attributes Reference
 

@@ -164,6 +164,21 @@ data "azuredevops_git_repositories" "repositories" {
 }`, gitRepoName)
 }
 
+func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
+	azureGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "repository" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		initialization {
+		   init_type = "Import"
+		   source_type = "Git"
+		   source_url = "https://github.com/terraform-providers/terraform-provider-azuredevops.git"
+		 }
+	}`, gitRepoName)
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
+}
+
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
 func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
