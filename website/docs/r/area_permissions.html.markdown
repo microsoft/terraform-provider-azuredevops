@@ -9,6 +9,8 @@ description: |-
 
 Manages permissions for an Area (Component)
 
+~> **Note** Permissions can be assigned to group principals and not to single user principals.
+
 ## Permission levels
 
 Permission for Areas within Azure DevOps can be applied on two different levels.
