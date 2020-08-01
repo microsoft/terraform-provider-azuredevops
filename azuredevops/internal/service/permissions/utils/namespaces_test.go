@@ -460,7 +460,7 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.NotNil(t, err)
 	assert.Nil(t, acl)
 	assert.EqualError(t, err, errMsg)
@@ -501,7 +501,7 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Return(&projectAccessControlListEmpty, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
@@ -541,7 +541,7 @@ func TestSecurityNamespace_GetAccessControlList_NilResult(t *testing.T) {
 		Return(nil, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
@@ -581,7 +581,7 @@ func TestSecurityNamespace_GetAccessControlList_VerifyReturn(t *testing.T) {
 		Return(&projectAccessControlList, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.NotNil(t, acl)
 	assert.Equal(t, &projectAccessControlList[0], acl)
