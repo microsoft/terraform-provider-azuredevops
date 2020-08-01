@@ -1,4 +1,4 @@
-// +build all utils securitynamespaces
+// +build all utils classification_helper
 
 package utils
 
@@ -46,7 +46,7 @@ func TestClassificationNode_CreateIterationToken_RootIteration(t *testing.T) {
 
 		token, err := CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, iterationProjectID, path)
 		assert.Nil(t, err)
-		ref := fmt.Sprintf("%s%s", aclIterationTokenPrefix, iterationRootID)
+		ref := fmt.Sprintf("%s%s", aclClassificationNodeTokenPrefix, iterationRootID)
 		assert.Equal(t, ref, token)
 	}
 }
@@ -198,11 +198,11 @@ func TestClassificationNode_CreateIterationToken_ValidToken(t *testing.T) {
 			}, nil).
 			Times(1)
 
-		idList[i] = aclIterationTokenPrefix + idList[i]
+		idList[i] = aclClassificationNodeTokenPrefix + idList[i]
 	}
 
 	token, err := CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, iterationProjectID, path)
 	assert.Nil(t, err)
-	ref := fmt.Sprintf("%s%s:%s", aclIterationTokenPrefix, iterationRootID, strings.Join(idList, ":"))
+	ref := fmt.Sprintf("%s%s:%s", aclClassificationNodeTokenPrefix, iterationRootID, strings.Join(idList, ":"))
 	assert.Equal(t, ref, token)
 }
