@@ -8,26 +8,14 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
 func hclWorkItemQueryPermissions(projectName string, path string, permissions map[string]string) string {
 	projectResource := testutils.HclProjectResource(projectName)
-
-	szPermissions := linq.From(permissions).
-		Select(func(i interface{}) interface{} {
-			kv := i.(linq.KeyValue)
-			return fmt.Sprintf(`%s = "%s"`, kv.Key, kv.Value)
-		}).
-		Aggregate(func(r interface{}, i interface{}) interface{} {
-			if r.(string) == "" {
-				return i
-			}
-			return r.(string) + "\n" + i.(string)
-		}).(string)
-
+	szPermissions := datahelper.JoinMap(permissions, "=", "\n")
 	szPath := ""
 	if path != "" {
 		szPath = fmt.Sprintf("path = \"%s\"", path)
