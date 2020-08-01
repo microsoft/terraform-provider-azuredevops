@@ -8,3 +8,82 @@ description: |-
 # azuredevops_area_permissions
 
 Manages permissions for an Area (Component)
+
+## Permission levels
+
+Permission for Areas within Azure DevOps can be applied on two different levels.
+Those levels are reflected by specifying (or omitting) values for the arguments `project_id` and `path`.
+
+## Example Usage
+
+```hcl
+resource "random_id" "rand_id" {
+  keepers = {
+    seed = var.random-anchor
+  }
+
+  byte_length = 6
+}
+
+locals {
+  project_name = "test-acc-project-${random_id.rand_id.hex}"
+}
+
+resource "azuredevops_project" "project" {
+  project_name       = local.project_name
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "My first project"
+}
+
+data "azuredevops_group" "project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_area_permissions" "root-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.project-readers.id
+	path        = "/"
+	permissions = {
+	  CREATE_CHILDREN = "Deny"
+	  GENERIC_READ    = "Allow"
+	  DELETE          = "Deny"
+	  WORK_ITEM_READ  = "Allow"
+	}
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) The ID of the project to assign the permissions.
+* `path` - (Optional) The name of the branch to assign the permissions. 
+* `principal` - (Required) The **group** principal to assign the permissions.
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
+* `permissions` - (Required) the permissions to assign. The follwing permissions are available
+
+| Permission         | Description                    |
+|--------------------|--------------------------------|
+| GENERIC_READ       | View permissions for this node |
+| GENERIC_WRITE      | Edit this node                 |
+| CREATE_CHILDREN    | Create child nodes             |
+| DELETE             | Delete this node               |
+| WORK_ITEM_READ     | View work items in this node   |
+| WORK_ITEM_WRITE    | Edit work items in this node   |
+| MANAGE_TEST_PLANS  | Manage test plans              |
+| MANAGE_TEST_SUITES | Manage test suites             |
+
+## Relevant Links
+
+* [Azure DevOps Service REST API 5.1 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-5.1)
+
+## Import
+
+The resource does not support import.
+
+## PAT Permissions Required
+
+- **Project & Team**: vso.security_manage - Grants the ability to read, write, and manage security permissions.
