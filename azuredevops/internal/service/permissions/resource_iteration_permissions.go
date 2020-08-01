@@ -2,26 +2,19 @@ package permissions
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"strings"
 
-	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
-
-const aclIterationTokenPrefix = "vstfs:///Classification/Node/"
 
 func ResourceIterationPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIterationPermissionsCreate,
+		Create: resourceIterationPermissionsCreateOrUpdate,
 		Read:   resourceIterationPermissionsRead,
-		Update: resourceIterationPermissionsUpdate,
+		Update: resourceIterationPermissionsCreateOrUpdate,
 		Delete: resourceIterationPermissionsDelete,
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
@@ -33,6 +26,7 @@ func ResourceIterationPermissions() *schema.Resource {
 			"path": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Default:      "",
 				ForceNew:     true,
 				Optional:     true,
 			},
@@ -40,80 +34,17 @@ func ResourceIterationPermissions() *schema.Resource {
 	}
 }
 
-func getIterationIDbyPath(context context.Context, workitemtrackingClient workitemtracking.Client, projectID string, path string) (*string, error) {
-	var IterationID string = ""
-
-	Iteration, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
-		Project:        &projectID,
-		Path:           &path,
-		StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
-		Depth:          converter.Int(1),
-	})
-	if err != nil {
-		return &IterationID, fmt.Errorf("Error getting Iteration: %w", err)
-	}
-
-	IterationID = Iteration.Identifier.String()
-	return &IterationID, nil
-}
-
 func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
-	var aclToken string
 	projectID := d.Get("project_id").(string)
-
-	// you have to ommit the path property to get the
-	// root Iteration.
-	rootIteration, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
-		Project:        &projectID,
-		StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
-		Depth:          converter.Int(1),
-	})
+	path := d.Get("path").(string)
+	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting Iteration: %w", err)
+		return nil, err
 	}
-
-	/*
-	 * Token format
-	 * Root Iteration: vstfs:///Classification/Node/<IterationIdentifier>:vstfs:///Classification/Node/f8c5b667-91dd-4fe7-bf23-3138c439d07e"
-	 * 1st child: vstfs:///Classification/Node/<IterationIdentifier>:vstfs:///Classification/Node/<IterationIdentifier>
-	 */
-	aclToken = aclIterationTokenPrefix + rootIteration.Identifier.String()
-	path, ok := d.GetOk("path")
-
-	if ok {
-		path = strings.TrimLeft(strings.TrimSpace(path.(string)), "/")
-		if path.(string) != "" && (rootIteration.HasChildren == nil || !*rootIteration.HasChildren) {
-			return nil, fmt.Errorf("A path was specified but the root Iteration has no children")
-		} else if path.(string) != "" {
-			// get the id for each Iteration in the provided path
-			// we do this by querying each path element
-			// 0: foo
-			// 1: foo/bar
-			// 3: foo/bar/baz
-			var pathElem []string
-
-			linq.From(strings.Split(path.(string), "/")).
-				Where(func(elem interface{}) bool {
-					return len(elem.(string)) > 0
-				}).
-				ToSlice(&pathElem)
-
-			for i := range pathElem {
-				pathItem := strings.Join(pathElem[:i+1], "/")
-				currID, err := getIterationIDbyPath(context, workitemtrackingClient, projectID, pathItem)
-				if err != nil {
-					return nil, fmt.Errorf("Failed to get ID for iteration %s, %w", pathItem, err)
-				}
-				aclToken = aclToken + ":" + aclIterationTokenPrefix + *currID
-			}
-		}
-	}
-
-	log.Printf("[DEBUG] createIterationToken(): Discovered aclToken %q", aclToken)
 	return &aclToken, nil
 }
 
-func resourceIterationPermissionsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
@@ -160,10 +91,6 @@ func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) err
 
 	d.Set("permissions", principalPermissions.Permissions)
 	return nil
-}
-
-func resourceIterationPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceIterationPermissionsCreate(d, m)
 }
 
 func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) error {
