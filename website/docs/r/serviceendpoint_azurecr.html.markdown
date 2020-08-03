@@ -21,8 +21,8 @@ resource "azuredevops_project" "project" {
 
 # azure container registry service connection
 resource "azuredevops_serviceendpoint_azurecr" "azurecr" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample AzureCR"
+  project_id             = azuredevops_project.project.id
+  service_endpoint_name  = "Sample AzureCR"
   resource_group            = "sample-rg"
   azurecr_spn_tenantid      = "72f987tg-95f1-87af-91bh-2d8jd091db47"
   azurecr_name              = "sampleAcr"
@@ -37,12 +37,12 @@ The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
-- `description` - (Optional) The name you will use to refer to this service connection in task inputs.
 - `resource_group` - (Required) The resource group to which the container registry belongs.
 - `azurecr_spn_tenantid` - (Required) The tenant id of the service principal.
 - `azurecr_name` - (Required) The Azure container registry name.
 - `azurecr_subscription_id` - (Required) The subscription id of the Azure targets.
 - `azurecr_subscription_name` - (Required) The subscription name of the Azure targets.
+- `description` - (Optional) The name you will use to refer to this service connection in task inputs.
 
 ## Attributes Reference
 
