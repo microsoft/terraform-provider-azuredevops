@@ -104,6 +104,7 @@ var testBuildDefinition = build.BuildDefinition{
 		Properties: &map[string]string{
 			"connectedServiceId": "ServiceConnectionID",
 			"apiUrl":             "https://api.github.com/repos/RepoId",
+			"reportBuildStatus":  "true",
 		},
 	},
 	Process: &build.YamlProcess{
@@ -138,6 +139,7 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 		Properties: &map[string]string{
 			"connectedServiceId": "ServiceConnectionID",
 			"apiUrl":             "https://api.bitbucket.org/2.0/repositories/RepoId",
+			"reportBuildStatus":  "true",
 		},
 	},
 	Triggers: &[]interface{}{
@@ -175,6 +177,7 @@ var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
 		Properties: &map[string]string{
 			"connectedServiceId": "ServiceConnectionID",
 			"apiUrl":             "https://github.company.com/api/v3/repos/RepoId",
+			"reportBuildStatus":  "true",
 		},
 	},
 	Triggers: &[]interface{}{
@@ -211,6 +214,7 @@ func testBuildDefinitionBitbucket() build.BuildDefinition {
 			Type:          converter.String("Bitbucket"),
 			Properties: &map[string]string{
 				"connectedServiceId": "ServiceConnectionID",
+				"reportBuildStatus":  "true",
 			},
 		},
 		Process: &build.YamlProcess{
@@ -246,6 +250,7 @@ func testBuildDefinitionGitHubEnterprise() build.BuildDefinition {
 			Properties: &map[string]string{
 				"connectedServiceId": "ServiceConnectionID",
 				"apiUrl":             "https://github.company.com/api/v3/repos/RepoId",
+				"reportBuildStatus":  "true",
 			},
 		},
 		Process: &build.YamlProcess{

@@ -180,6 +180,11 @@ func ResourceBuildDefinition() *schema.Resource {
 							Optional: true,
 							Default:  "",
 						},
+						"report_build_status": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
 					},
 				},
 			},
@@ -481,11 +486,15 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
 		url, err := url.Parse(*buildDefinition.Repository.Url)
 		if err != nil {
-			return fmt.Errorf("Unable to parse repository URL")
+			return fmt.Errorf("Unable to parse repository URL: %+v ", err)
 		}
 		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
+	reportBuildStatus, err := strconv.ParseBool((*buildDefinition.Repository.Properties)["reportBuildStatus"])
+	if err != nil {
+		return fmt.Errorf("Unable to parse `reportBuildStatus` property: %+v ", err)
+	}
 	return []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
 		"repo_id":               *buildDefinition.Repository.Id,
@@ -493,6 +502,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
 		"github_enterprise_url": githubEnterpriseUrl,
+		"report_build_status":   reportBuildStatus,
 	}}
 }
 
@@ -896,6 +906,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 			Properties: &map[string]string{
 				"connectedServiceId": repository["service_connection_id"].(string),
 				"apiUrl":             repoAPIURL,
+				"reportBuildStatus":  strconv.FormatBool(repository["report_build_status"].(bool)),
 			},
 		},
 		Process: &build.YamlProcess{
