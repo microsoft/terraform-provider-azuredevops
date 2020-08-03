@@ -116,6 +116,7 @@ func ResourceGitRepository() *schema.Resource {
 							Optional:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
+							RequiredWith: []string{"initialization.0.source_url"},
 							Default:      "Git",
 						},
 						"source_url": {
@@ -123,6 +124,7 @@ func ResourceGitRepository() *schema.Resource {
 							Optional:     true,
 							ForceNew:     true,
 							Default:      "",
+							RequiredWith: []string{"initialization.0.source_type"},
 							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 						},
 					},
@@ -164,20 +166,19 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
 	}
 
-	if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) {
-		if strings.EqualFold(initialization.sourceType, "Git") {
-			importRequest := git.GitImportRequest{
-				Parameters: &git.GitImportRequestParameters{
-					GitSource: &git.GitImportGitSource{
-						Url: &initialization.sourceURL,
-					},
+	if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
+		strings.EqualFold(initialization.sourceType, "Git") {
+		importRequest := git.GitImportRequest{
+			Parameters: &git.GitImportRequestParameters{
+				GitSource: &git.GitImportGitSource{
+					Url: &initialization.sourceURL,
 				},
-				Repository: createdRepo,
-			}
-			_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
-			if importErr != nil {
-				return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
-			}
+			},
+			Repository: createdRepo,
+		}
+		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
+		if importErr != nil {
+			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
 		}
 	}
 
