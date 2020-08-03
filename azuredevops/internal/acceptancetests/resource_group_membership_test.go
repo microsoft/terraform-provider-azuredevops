@@ -18,7 +18,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// Verifies that the following sequence of events occurrs without error:
+// Verifies that the following sequence of events occurs without error:
 //	(1) TF apply creates resource
 //	(2) TF state values are set
 //	(3) Group membership exists and can be queried for
@@ -27,7 +27,6 @@ import (
 // Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
 //
 func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
-	t.Skip("Skipping test TestAccGroupMembership_CreateAndRemove: https://github.com/terraform-providers/terraform-provider-azuredevops/issues/174")
 	projectName := testutils.GenerateResourceName()
 	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	groupName := "Build Administrators"
@@ -37,7 +36,7 @@ func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
 	tfStanzaWithoutMembership := testutils.HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
 
 	// This test differs from most other acceptance tests in the following ways:
-	//	- The second step is the same as the first except it omits the group membershp.
+	//	- The second step is the same as the first except it omits the group membership.
 	//	  This lets us test that the membership is removed in isolation of the project being deleted
 	//	- There is no CheckDestroy function because that is covered based on the above point
 	resource.Test(t, resource.TestCase{
@@ -45,13 +44,10 @@ func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				// add the group membership
 				Config: tfStanzaWithMembership,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "group"),
-					// this attribute specifies the number of members in the resource state. the
-					// syntax is how terraform maps complex types into a flattened map.
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
 					checkGroupMembershipMatchesState(),
 				),
@@ -71,7 +67,7 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 		groupDescriptor := s.RootModule().Outputs["group_descriptor"].Value.(string)
 		_, expectingMembership := s.RootModule().Resources["azuredevops_group_membership.membership"]
 
-		// The sleep here is to take into account some propegation delay that can happen with Group Membership APIs.
+		// The sleep here is to take into account some propagation delay that can happen with Group Membership APIs.
 		// If we want to go inspect the behavior of the service after a Terraform Apply, we'll need to wait a little bit
 		// before making the API call.
 		//
