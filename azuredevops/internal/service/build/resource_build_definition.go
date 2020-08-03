@@ -493,7 +493,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 
 	reportBuildStatus, err := strconv.ParseBool((*buildDefinition.Repository.Properties)["reportBuildStatus"])
 	if err != nil {
-		return fmt.Errorf("Unable to parse report build status: %+v ", err)
+		return fmt.Errorf("Unable to parse `reportBuildStatus` property: %+v ", err)
 	}
 	return []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
