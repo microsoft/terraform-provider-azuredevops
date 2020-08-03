@@ -35,30 +35,30 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-	subscription_id := d.Get("azurecr_subscription_id")
+	subscriptionId := d.Get("azurecr_subscription_id")
 	scope := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerRegistry/registries/%s",
-		subscription_id, d.Get("resource_group"), d.Get("azurecr_name"),
+		subscriptionId, d.Get("resource_group"), d.Get("azurecr_name"),
 	)
-	login_server := fmt.Sprintf("%s.azurecr.io", d.Get("azurecr_name"))
+	loginServer := fmt.Sprintf("%s.azurecr.io", d.Get("azurecr_name"))
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"authenticationType": "spnKey",
 			"tenantId":           d.Get("azurecr_spn_tenantid").(string),
-			"loginServer":        login_server,
+			"loginServer":        loginServer,
 			"scope":              scope,
 		},
 		Scheme: converter.String("ServicePrincipal"),
 	}
 	serviceEndpoint.Data = &map[string]string{
 		"registryId":       scope,
-		"subscriptionId":   subscription_id.(string),
+		"subscriptionId":   subscriptionId.(string),
 		"subscriptionName": d.Get("azurecr_subscription_name").(string),
 		"registrytype":     "ACR",
 	}
 	serviceEndpoint.Type = converter.String("dockerregistry")
-	azurecr_url := fmt.Sprintf("https://%s", login_server)
-	serviceEndpoint.Url = converter.String(azurecr_url)
+	azurecrUrl := fmt.Sprintf("https://%s", loginServer)
+	serviceEndpoint.Url = converter.String(azurecrUrl)
 
 	return serviceEndpoint, projectID, nil
 }
