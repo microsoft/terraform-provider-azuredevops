@@ -323,10 +323,16 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.SetId(strconv.Itoa(*buildDefinition.Id))
 
 	d.Set("project_id", projectID)
-	d.Set("name", *buildDefinition.Name)
-	d.Set("path", *buildDefinition.Path)
+	d.Set("name", buildDefinition.Name)
+	d.Set("path", buildDefinition.Path)
 	d.Set("repository", flattenRepository(buildDefinition))
-	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
+
+	pool := buildDefinition.Queue.Pool
+	if pool != nil {
+		d.Set("agent_pool_name", pool.Name)
+	} else {
+		d.Set("agent_pool_name", "") //trick for state diff
+	}
 
 	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
 	d.Set(bdVariable, flattenBuildVariables(d, buildDefinition))
