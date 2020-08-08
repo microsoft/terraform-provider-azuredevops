@@ -5,7 +5,7 @@ description: |-
   Manages a Docker Registry service endpoint within Azure DevOps organization.
 ---
 
-# azuredevops_serviceendpoint_dockerhub
+# azuredevops_serviceendpoint_dockerregistry
 
 Manages a Docker Registry service endpoint within Azure DevOps.
 
