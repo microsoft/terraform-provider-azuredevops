@@ -15,6 +15,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_min_reviewers",
 		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_branch_policy_work_item_linking",
+		"azuredevops_branch_policy_comment_resolution",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_serviceendpoint_github",

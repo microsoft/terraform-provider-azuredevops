@@ -178,6 +178,34 @@ func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
 	})
 }
 
+func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
+	resourceName := "azuredevops_branch_policy_comment_resolution"
+	workItemLinkingTfNode := fmt.Sprintf("%s.p", resourceName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getBranchPolicyHcl(resourceName, true, true, ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "true"),
+				),
+			}, {
+				Config: getBranchPolicyHcl(resourceName, false, false, ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "false"),
+				),
+			}, {
+				ResourceName:      workItemLinkingTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(workItemLinkingTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settings string) string {
 	branchPolicy := fmt.Sprintf(`
 	resource "%s" "p" {
