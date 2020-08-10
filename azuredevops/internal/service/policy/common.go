@@ -29,6 +29,7 @@ var (
 	MinReviewerCount = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
 	BuildValidation  = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
 	AutoReviewers    = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
+	WorkItemLinking  = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
 )
 
 // Keys for schema elements
