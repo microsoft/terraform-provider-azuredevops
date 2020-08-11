@@ -21,17 +21,17 @@ import (
 var classificationProjectName = "test-acc-project-0fu72ecbiu"
 var classificationProjectID = "9c3a5552-268c-423c-a9cd-7de0b36b7035"
 
-type classificationNodeDefintion struct {
+type classificationNodeDefinition struct {
 	id         string
 	name       string
 	pathNative string
 	path       string
-	children   []*classificationNodeDefintion
+	children   []*classificationNodeDefinition
 }
 
-func newClassificationTestNode(structureType workitemtracking.TreeStructureGroup, parent *classificationNodeDefintion) *classificationNodeDefintion {
+func newClassificationTestNode(structureType workitemtracking.TreeStructureGroup, parent *classificationNodeDefinition) *classificationNodeDefinition {
 	nodeName := "test-acc-node-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	node := classificationNodeDefintion{
+	node := classificationNodeDefinition{
 		id:         testhelper.CreateUUID().String(),
 		name:       nodeName,
 		pathNative: "\\" + classificationProjectName + "\\" + string(structureType) + "\\" + nodeName,
@@ -45,15 +45,15 @@ func newClassificationTestNode(structureType workitemtracking.TreeStructureGroup
 	return &node
 }
 
-func newClassificationTestNodes(structureType workitemtracking.TreeStructureGroup, parent *classificationNodeDefintion, size int) *[]*classificationNodeDefintion {
-	ret := make([]*classificationNodeDefintion, size)
+func newClassificationTestNodes(structureType workitemtracking.TreeStructureGroup, parent *classificationNodeDefinition, size int) *[]*classificationNodeDefinition {
+	ret := make([]*classificationNodeDefinition, size)
 	for i := 0; i < size; i++ {
 		ret[i] = newClassificationTestNode(structureType, parent)
 	}
 	return &ret
 }
 
-func convertClassificationTestNode(testNode *classificationNodeDefintion) *workitemtracking.WorkItemClassificationNode {
+func convertClassificationTestNode(testNode *classificationNodeDefinition) *workitemtracking.WorkItemClassificationNode {
 	node := workitemtracking.WorkItemClassificationNode{
 		Identifier: converter.UUID(testNode.id),
 		Name:       converter.String(testNode.name),
@@ -72,7 +72,7 @@ func convertClassificationTestNode(testNode *classificationNodeDefintion) *worki
 	return &node
 }
 
-func TestClassifcation_Read_DontSwallowError(t *testing.T) {
+func TestClassification_Read_DontSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -102,7 +102,7 @@ func TestClassifcation_Read_DontSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), errMsg)
 }
 
-func TestClassifcation_Read(t *testing.T) {
+func TestClassification_Read(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -152,7 +152,7 @@ func TestClassifcation_Read(t *testing.T) {
 	require.Len(t, v, len(node.children))
 }
 
-func TestClassifcation_Read_Children(t *testing.T) {
+func TestClassification_Read_Children(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

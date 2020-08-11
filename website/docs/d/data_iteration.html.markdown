@@ -12,24 +12,12 @@ Use this data source to access information about an existing Iteration (Sprint) 
 ## Example Usage
 
 ```hcl
-resource "random_id" "rand_id" {
-  keepers = {
-    seed = var.random-anchor
-  }
-
-  byte_length = 6
-}
-
-locals {
-  project_name = "test-acc-project-${random_id.rand_id.hex}"
-}
-
 resource "azuredevops_project" "project" {
-  project_name       = local.project_name
+  project_name       = "Sample Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
 data "azuredevops_iteration" "root-iteration" {

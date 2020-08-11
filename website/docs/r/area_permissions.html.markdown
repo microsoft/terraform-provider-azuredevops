@@ -19,24 +19,12 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-resource "random_id" "rand_id" {
-  keepers = {
-    seed = var.random-anchor
-  }
-
-  byte_length = 6
-}
-
-locals {
-  project_name = "test-acc-project-${random_id.rand_id.hex}"
-}
-
 resource "azuredevops_project" "project" {
-  project_name       = local.project_name
+  project_name       = "Sample Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
 data "azuredevops_group" "project-readers" {
@@ -62,10 +50,10 @@ resource "azuredevops_area_permissions" "root-permissions" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
-* `path` - (Optional) The name of the branch to assign the permissions. 
 * `principal` - (Required) The **group** principal to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 * `permissions` - (Required) the permissions to assign. The follwing permissions are available
+* `path` - (Optional) The name of the branch to assign the permissions. 
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
 | Permission         | Description                    |
 |--------------------|--------------------------------|

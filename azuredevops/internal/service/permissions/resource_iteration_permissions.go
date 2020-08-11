@@ -34,34 +34,15 @@ func ResourceIterationPermissions() *schema.Resource {
 	}
 }
 
-func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
-	projectID := d.Get("project_id").(string)
-	path := d.Get("path").(string)
-	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
-	if err != nil {
-		return nil, err
-	}
-	return &aclToken, nil
-}
-
 func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Iteration,
-		clients.SecurityClient,
-		clients.IdentityClient)
+	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
 	if err != nil {
 		return err
 	}
 
-	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
-	if err != nil {
-		return err
-	}
-
-	err = securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false)
-	if err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
 		return err
 	}
 
@@ -71,15 +52,7 @@ func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interf
 func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Iteration,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return err
-	}
-
-	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
 	if err != nil {
 		return err
 	}
@@ -96,24 +69,42 @@ func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) err
 func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Iteration,
-		clients.SecurityClient,
-		clients.IdentityClient)
+	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
 	if err != nil {
 		return err
 	}
 
-	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
-	if err != nil {
-		return err
-	}
-
-	err = securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true)
-	if err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 
 	d.SetId("")
 	return nil
+}
+
+func initializeIterationSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient) (*securityhelper.SecurityNamespace, *string, error) {
+	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
+		securityhelper.SecurityNamespaceIDValues.Iteration,
+		clients.SecurityClient,
+		clients.IdentityClient)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sn, aclToken, nil
+}
+
+func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
+	projectID := d.Get("project_id").(string)
+	path := d.Get("path").(string)
+	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
+	if err != nil {
+		return nil, err
+	}
+	return &aclToken, nil
 }

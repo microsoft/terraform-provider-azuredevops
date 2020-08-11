@@ -19,18 +19,23 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "project" {
-    project_name = "MyProject"
+
+resource "azuredevops_project" "project" {
+  project_name       = "Sample Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
 data "azuredevops_group" "project-readers" {
-	project_id = data.azuredevops_project.project.id
+	project_id = azuredevops_project.project.id
 	name       = "Readers"
 }
 
 resource "azuredevops_iteration_permissions" "root-permissions" {
-	project_id  = data.azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
+	project_id  = azuredevops_project.project.id
+	principal   = azuredevops_group.project-readers.id
 	permissions = {
 	  CREATE_CHILDREN = "Deny"
 	  GENERIC_READ    = "NotSet"
@@ -39,20 +44,9 @@ resource "azuredevops_iteration_permissions" "root-permissions" {
 }
 
 resource "azuredevops_iteration_permissions" "iteration-permissions" {
-	project_id  = data.azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
+	project_id  = azuredevops_project.project.id
+	principal   = azuredevops_group.project-readers.id
 	path        = "Iteration 1"
-	permissions = {
-	  CREATE_CHILDREN = "Allow"
-	  GENERIC_READ    = "NotSet"
-	  DELETE          = "Allow"
-	}
-}
-
-resource "azuredevops_iteration_permissions" "iteration-path-permissions" {
-	project_id  = data.azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
-	path        = "Iteration 1/Iteration 1_1/Iteration 1_1_2"
 	permissions = {
 	  CREATE_CHILDREN = "Allow"
 	  GENERIC_READ    = "NotSet"
@@ -66,10 +60,10 @@ resource "azuredevops_iteration_permissions" "iteration-path-permissions" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
-* `path` - (Optional) The name of the branch to assign the permissions. 
 * `principal` - (Required) The **group** principal to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 * `permissions` - (Required) the permissions to assign. The follwing permissions are available
+* `path` - (Optional) The name of the branch to assign the permissions. 
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
 | Permission      | Description                    |
 |-----------------|--------------------------------|
