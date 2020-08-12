@@ -25,7 +25,7 @@ var ghTestServiceEndpointProjectID = &ghRandomServiceEndpointProjectID
 var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"accessToken": "UNIT_TEST_ACCESS_TOKEN",
+			"AccessToken": "UNIT_TEST_ACCESS_TOKEN",
 		},
 		Scheme: converter.String("Token"),
 	},
@@ -34,7 +34,7 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	Owner:       converter.String("library"),
 	Type:        converter.String("github"),
-	Url:         converter.String("http://github.com"),
+	Url:         converter.String("https://github.com"),
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
