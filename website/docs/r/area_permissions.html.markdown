@@ -51,9 +51,9 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
 * `principal` - (Required) The **group** principal to assign the permissions.
-* `permissions` - (Required) the permissions to assign. The follwing permissions are available
+* `permissions` - (Required) the permissions to assign. The following permissions are available.
 * `path` - (Optional) The name of the branch to assign the permissions. 
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`.
 
 | Permission         | Description                    |
 |--------------------|--------------------------------|

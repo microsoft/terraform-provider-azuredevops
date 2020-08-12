@@ -43,7 +43,7 @@ The following attributes are exported:
 
 - `id` - The id of the Area node
 - `name` - The name of the Area node
-- `has_children` - Indicator if a Area node has child nodes
+- `has_children` - Indicator if an Area node has child nodes
 - `children` - A list of `children` blocks as defined below, empty if `has_children == false`
 
 A `children` block supports the following:
