@@ -182,7 +182,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%[1]s"
 	auth_personal {
-		personal_access_token= "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+		personal_access_token= "test_token_basic"
 	}
 }`, serviceEndpointName)
 
@@ -197,7 +197,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%[1]s"
 	auth_personal {
-		personal_access_token= "xxxxxxxxxxxxxxx"
+		personal_access_token= "test_token_update"
 	}
 	description = "%[2]s"
 }`, serviceEndpointName, description)

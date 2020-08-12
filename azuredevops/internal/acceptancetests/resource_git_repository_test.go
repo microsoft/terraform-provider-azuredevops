@@ -91,51 +91,30 @@ func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
 
 }
 
-// or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+func TestAccGitRepo_Create_Import(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	repoImportConfig := testutils.HclProjectGitRepositoryImport(gitRepoName, projectName)
+	tfRepoNode := "azuredevops_git_repository.repository"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: repoImportConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "is_fork"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "remote_url"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "size"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "ssh_url"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "url"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "web_url"),
+					resource.TestCheckResourceAttr(tfRepoNode, "initialization.#", "1"),
+					checkGitRepoExists(gitRepoName),
+				)},
+		},
+	})
 
-		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.repository"]
-		if !ok {
-			return fmt.Errorf("Did not find a repo definition in the TF state")
-		}
-
-		repoID := gitRepo.Primary.ID
-		projectID := gitRepo.Primary.Attributes["project_id"]
-
-		repo, err := readGitRepo(clients, repoID, projectID)
-		if err != nil {
-			return err
-		}
-
-		if *repo.Name != expectedName {
-			return fmt.Errorf("AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
-		}
-
-		return nil
-	}
-}
-
-func checkGitRepoDestroyed(s *terraform.State) error {
-	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-
-	// verify that every repository referenced in the state does not exist in AzDO
-	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_git_repository" {
-			continue
-		}
-
-		repoID := resource.Primary.ID
-		projectID := resource.Primary.Attributes["project_id"]
-
-		// indicates the git repository still exists - this should fail the test
-		if _, err := readGitRepo(clients, repoID, projectID); err == nil {
-			return fmt.Errorf("repository with ID %s should not exist", repoID)
-		}
-	}
-
-	return nil
 }
 
 // Verifies that a newly created repo with init_type of "Clean" has the expected
@@ -214,6 +193,53 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 			},
 		},
 	})
+}
+
+// or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
+func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+
+		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.repository"]
+		if !ok {
+			return fmt.Errorf("Did not find a repo definition in the TF state")
+		}
+
+		repoID := gitRepo.Primary.ID
+		projectID := gitRepo.Primary.Attributes["project_id"]
+
+		repo, err := readGitRepo(clients, repoID, projectID)
+		if err != nil {
+			return err
+		}
+
+		if *repo.Name != expectedName {
+			return fmt.Errorf("AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
+		}
+
+		return nil
+	}
+}
+
+func checkGitRepoDestroyed(s *terraform.State) error {
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+
+	// verify that every repository referenced in the state does not exist in AzDO
+	for _, resource := range s.RootModule().Resources {
+		if resource.Type != "azuredevops_git_repository" {
+			continue
+		}
+
+		repoID := resource.Primary.ID
+		projectID := resource.Primary.Attributes["project_id"]
+
+		// indicates the git repository still exists - this should fail the test
+		if _, err := readGitRepo(clients, repoID, projectID); err == nil {
+			return fmt.Errorf("repository with ID %s should not exist", repoID)
+		}
+	}
+
+	return nil
 }
 
 // Lookup an Azure Git Repository using the ID, or name if the ID is not set.

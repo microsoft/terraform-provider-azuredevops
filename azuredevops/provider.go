@@ -13,6 +13,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -43,6 +44,8 @@ func Provider() *schema.Provider {
 			"azuredevops_project_permissions":            permissions.ResourceProjectPermissions(),
 			"azuredevops_git_permissions":                permissions.ResourceGitPermissions(),
 			"azuredevops_workitemquery_permissions":      permissions.ResourceWorkItemQueryPermissions(),
+			"azuredevops_area_permissions":               permissions.ResourceAreaPermissions(),
+			"azuredevops_iteration_permissions":          permissions.ResourceIterationPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
@@ -54,6 +57,8 @@ func Provider() *schema.Provider {
 			"azuredevops_git_repositories": git.DataGitRepositories(),
 			"azuredevops_git_repository":   git.DataGitRepository(),
 			"azuredevops_users":            graph.DataUsers(),
+			"azuredevops_area":             workitemtracking.DataArea(),
+			"azuredevops_iteration":        workitemtracking.DataIteration(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

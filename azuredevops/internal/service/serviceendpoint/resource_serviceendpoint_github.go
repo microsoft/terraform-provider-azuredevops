@@ -20,13 +20,12 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			personalAccessToken: {
-				Type:             schema.TypeString,
-				Required:         true,
-				DefaultFunc:      schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
-				Description:      "The GitHub personal access token which should be used.",
-				Sensitive:        true,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Type:         schema.TypeString,
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
+				Description:  "The GitHub personal access token which should be used.",
+				Sensitive:    true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 		},
 	}
@@ -82,7 +81,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 		Scheme:     &scheme,
 	}
 	serviceEndpoint.Type = converter.String("github")
-	serviceEndpoint.Url = converter.String("http://github.com")
+	serviceEndpoint.Url = converter.String("https://github.com")
 
 	return serviceEndpoint, projectID, nil
 }
@@ -90,7 +89,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 func expandAuthPersonalSet(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	authPerson["accessToken"] = val[personalAccessToken].(string)
+	authPerson["AccessToken"] = val[personalAccessToken].(string)
 	return authPerson
 }
 

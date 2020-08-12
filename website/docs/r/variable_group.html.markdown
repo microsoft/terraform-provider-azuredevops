@@ -65,10 +65,10 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Azure DevOps Variable groups can be imported using the project name/variable group Id or by the project Guid/variable group Id, e.g.
+Azure DevOps Variable groups can be imported using the project name/variable group ID or by the project Guid/variable group ID, e.g.
 
 ```sh
-terraform import azuredevops_variable_group.variablegroup "Test Project"/10
+terraform import azuredevops_variable_group.variablegroup "Test Project/10"
 ```
 
 or
