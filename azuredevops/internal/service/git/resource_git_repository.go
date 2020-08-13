@@ -166,7 +166,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
 	}
 
-	if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
+	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
 		strings.EqualFold(initialization.sourceType, "Git") {
 		importRequest := git.GitImportRequest{
 			Parameters: &git.GitImportRequestParameters{
@@ -182,7 +182,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if initialization != nil && strings.EqualFold(initialization.initType, "Clean") {
+	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
 		err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
 		if err != nil {
 			if err := deleteGitRepository(clients, createdRepo.Id.String()); err != nil {
@@ -191,7 +191,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("Error initializing repository in Azure DevOps: %+v", err)
 		}
 	}
-	if !(strings.EqualFold(initialization.initType, "uninitialized") && parentRepoRef == nil) {
+	if initialization != nil && !(strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) && parentRepoRef == nil) {
 		err := waitForBranch(clients, repo.Name, projectID)
 		if err != nil {
 			return err
