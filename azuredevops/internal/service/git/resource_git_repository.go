@@ -520,13 +520,11 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})
 
-		authenticationSchema := initValues["source_authentication"].(schema.ResourceData)
-
 		initialization = &repoInitializationMeta{
 			initType:             initValues["init_type"].(string),
 			sourceType:           initValues["source_type"].(string),
 			sourceURL:            initValues["source_url"].(string),
-			sourceAuthentication: expandImportAuthentication(&authenticationSchema),
+			sourceAuthentication: expandImportAuthentication(d),
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
