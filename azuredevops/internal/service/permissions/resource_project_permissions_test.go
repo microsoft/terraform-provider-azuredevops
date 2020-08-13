@@ -27,13 +27,13 @@ func TestProjectPermissions_CreateProjectToken(t *testing.T) {
 	var err error
 
 	d = getProjecPermissionsResource(t, projectID)
-	token, err = createProjectToken(d)
+	token, err = createProjectToken(d, nil)
 	assert.NotNil(t, token)
 	assert.Nil(t, err)
 	assert.Equal(t, projectToken, *token)
 
 	d = getProjecPermissionsResource(t, "")
-	token, err = createProjectToken(d)
+	token, err = createProjectToken(d, nil)
 	assert.Nil(t, token)
 	assert.NotNil(t, err)
 }

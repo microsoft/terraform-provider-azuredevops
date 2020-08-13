@@ -1,8 +1,8 @@
 package permissions
 
 import (
-	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ahmetb/go-linq"
@@ -17,13 +17,10 @@ import (
 // ResourceGitPermissions schema and implementation for Git repository permission resource
 func ResourceGitPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGitPermissionsCreate,
+		Create: resourceGitPermissionsCreateOrUpdate,
 		Read:   resourceGitPermissionsRead,
-		Update: resourceGitPermissionsUpdate,
+		Update: resourceGitPermissionsCreateOrUpdate,
 		Delete: resourceGitPermissionsDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceGitPermissionsImporter,
-		},
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -48,24 +45,15 @@ func ResourceGitPermissions() *schema.Resource {
 	}
 }
 
-func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceGitPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.SecurityClient,
-		clients.IdentityClient)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
 
-	aclToken, err := createGitToken(clients, d)
-	if err != nil {
-		return err
-	}
-
-	err = securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false)
-	if err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
 		return err
 	}
 
@@ -75,15 +63,7 @@ func resourceGitPermissionsCreate(d *schema.ResourceData, m interface{}) error {
 func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	aclToken, err := createGitToken(clients, d)
-	if err != nil {
-		return err
-	}
-
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.SecurityClient,
-		clients.IdentityClient)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
@@ -92,33 +72,25 @@ func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+	if principalPermissions == nil {
+		d.SetId("")
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		return nil
+	}
 
 	d.Set("permissions", principalPermissions.Permissions)
 	return nil
 }
 
-func resourceGitPermissionsUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceGitPermissionsCreate(d, m)
-}
-
 func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	aclToken, err := createGitToken(clients, d)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.GitRepositories,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return err
-	}
-
-	err = securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true)
-	if err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 
@@ -126,12 +98,7 @@ func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceGitPermissionsImporter(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// repoV2/#ProjectID#/#RepositoryID#/refs/heads/#BranchName#/#SubjectDescriptor#
-	return nil, errors.New("resourceGitPermissionsImporter: Not implemented")
-}
-
-func createGitToken(clients *client.AggregatedClient, d *schema.ResourceData) (*string, error) {
+func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
 		return nil, fmt.Errorf("Failed to get 'project_id' from schema")

@@ -1,7 +1,7 @@
 package permissions
 
 import (
-	"context"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -36,7 +36,7 @@ func ResourceAreaPermissions() *schema.Resource {
 func resourceAreaPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeAreaSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.CSS, createAreaToken)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func resourceAreaPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}
 func resourceAreaPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeAreaSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.CSS, createAreaToken)
 	if err != nil {
 		return err
 	}
@@ -59,6 +59,11 @@ func resourceAreaPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
 	if err != nil {
 		return err
+	}
+	if principalPermissions == nil {
+		d.SetId("")
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		return nil
 	}
 
 	d.Set("permissions", principalPermissions.Permissions)
@@ -68,13 +73,12 @@ func resourceAreaPermissionsRead(d *schema.ResourceData, m interface{}) error {
 func resourceAreaPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeAreaSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.CSS, createAreaToken)
 	if err != nil {
 		return err
 	}
 
-	err = securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true)
-	if err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 
@@ -82,27 +86,10 @@ func resourceAreaPermissionsDelete(d *schema.ResourceData, m interface{}) error 
 	return nil
 }
 
-func initializeAreaSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient) (*securityhelper.SecurityNamespace, *string, error) {
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.CSS,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	aclToken, err := createAreaToken(clients.Ctx, clients.WorkItemTrackingClient, d)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return sn, aclToken, nil
-}
-
-func createAreaToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
+func createAreaToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
 	projectID := d.Get("project_id").(string)
 	path := d.Get("path").(string)
-	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Areas, projectID, path)
+	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Areas, projectID, path)
 	if err != nil {
 		return nil, err
 	}

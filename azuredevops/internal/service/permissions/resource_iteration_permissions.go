@@ -1,7 +1,7 @@
 package permissions
 
 import (
-	"context"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -37,7 +37,7 @@ func ResourceIterationPermissions() *schema.Resource {
 func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interf
 func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
@@ -60,6 +60,11 @@ func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) err
 	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
 	if err != nil {
 		return err
+	}
+	if principalPermissions == nil {
+		d.SetId("")
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		return nil
 	}
 
 	d.Set("permissions", principalPermissions.Permissions)
@@ -69,7 +74,7 @@ func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) err
 func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
@@ -82,27 +87,10 @@ func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func initializeIterationSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient) (*securityhelper.SecurityNamespace, *string, error) {
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Iteration,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return sn, aclToken, nil
-}
-
-func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
+func createIterationToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
 	projectID := d.Get("project_id").(string)
 	path := d.Get("path").(string)
-	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
+	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ProjectGlobal(t *test
 	}
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 	ref := fmt.Sprintf("$/%s", wiqProjectID)
@@ -66,7 +66,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_SharedQueries(t *test
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 	ref := fmt.Sprintf("$/%s/%s", wiqProjectID, wiqSharedQueryID)
@@ -95,7 +95,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleError(t *testin
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, token)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, errMsg)
@@ -143,7 +143,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleErrorInPath(t *
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, token)
 	assert.NotNil(t, err)
 }
@@ -191,7 +191,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ChildDoesNotExist(t *
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder/child")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.NotNil(t, err)
 	assert.Nil(t, token)
 }
@@ -239,7 +239,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ValidToken(t *testing
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")
-	token, err := createWorkItemQueryToken(clients.Ctx, clients.WorkItemTrackingClient, d)
+	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 	ref := fmt.Sprintf("$/%s/%s/%s", wiqProjectID, wiqSharedQueryID, wiqFldrID)
