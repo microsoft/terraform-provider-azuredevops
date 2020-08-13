@@ -103,7 +103,7 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `name` - (Optional) The name of the build definition.
 - `path` - (Optional) The folder path of the build definition.
-- `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Hosted Ubuntu 1604`.
+- `agent_pool_name` - (Optional) The agent pool that should execute the build.
 - `repository` - (Required) A `repository` block as documented below.
 - `ci_trigger` - (Optional) Continuous Integration trigger.
 - `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
