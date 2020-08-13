@@ -138,7 +138,6 @@ func ResourceBuildDefinition() *schema.Resource {
 			"agent_pool_name": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Hosted Ubuntu 1604",
 			},
 			"repository": {
 				Type:     schema.TypeList,
@@ -886,7 +885,6 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		buildDefinitionReference = nil
 	}
 
-	agentPoolName := d.Get("agent_pool_name").(string)
 	variables, err := expandVariables(d)
 	if err != nil {
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
@@ -912,18 +910,21 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		Process: &build.YamlProcess{
 			YamlFilename: converter.String(repository["yml_path"].(string)),
 		},
-		Queue: &build.AgentPoolQueue{
-			Name: &agentPoolName,
-			Pool: &build.TaskAgentPoolReference{
-				Name: &agentPoolName,
-			},
-		},
 		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
 		Type:           &build.DefinitionTypeValues.Build,
 		Quality:        &build.DefinitionQualityValues.Definition,
 		VariableGroups: expandVariableGroups(d),
 		Variables:      variables,
 		Triggers:       &buildTriggers,
+	}
+
+	if agentPoolName, ok := d.GetOk("agent_pool_name"); ok {
+		buildDefinition.Queue = &build.AgentPoolQueue{
+			Name: converter.StringFromInterface(agentPoolName),
+			Pool: &build.TaskAgentPoolReference{
+				Name: converter.StringFromInterface(agentPoolName),
+			},
+		}
 	}
 
 	return &buildDefinition, projectID, nil
