@@ -247,8 +247,11 @@ func (sn *SecurityNamespace) getAccessControlList(token *string, descriptorList 
 	if err != nil {
 		return nil, err
 	}
-	if acl == nil || len(*acl) != 1 {
-		return nil, fmt.Errorf("Failed to load current ACL for token [%s]. Result set is nil or contains more than one ACL", *token)
+	if acl == nil || len(*acl) <= 0 {
+		return nil, nil
+	}
+	if len(*acl) != 1 {
+		return nil, fmt.Errorf("Failed to load current ACL for token [%s]. Result set contains more than one ACL", *token)
 	}
 	return &(*acl)[0], nil
 }
@@ -323,6 +326,9 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 	acl, err := sn.getAccessControlList(token, &descriptorList)
 	if err != nil {
 		return err
+	}
+	if acl == nil {
+		return fmt.Errorf("Failed to load ACL for token %q", *token)
 	}
 	aceMap := *acl.AcesDictionary
 
@@ -427,7 +433,9 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(token *string, principal *[
 	if err != nil {
 		return nil, err
 	}
-
+	if acl == nil {
+		return nil, nil
+	}
 	idMap := map[string]identity.Identity{}
 	linq.From(*idList).
 		ToMapBy(&idMap,
@@ -475,6 +483,9 @@ func (sn *SecurityNamespace) RemovePrincipalPermissions(token *string, principal
 	acl, err := sn.getAccessControlList(token, nil)
 	if err != nil {
 		return err
+	}
+	if acl == nil {
+		return nil
 	}
 
 	val := linq.From(*idList).

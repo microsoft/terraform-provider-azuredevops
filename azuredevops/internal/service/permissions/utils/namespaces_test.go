@@ -489,7 +489,45 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Times(1)
 
 	acl, err := sn.getAccessControlList(&projectAccessToken, &descriptorList)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
+	assert.Nil(t, acl)
+}
+
+func TestSecurityNamespace_GetAccessControlList_NilResult(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	securityClient := azdosdkmocks.NewMockSecurityClient(ctrl)
+	clients := &client.AggregatedClient{
+		SecurityClient: securityClient,
+		IdentityClient: azdosdkmocks.NewMockIdentityClient(ctrl),
+		Ctx:            context.Background(),
+	}
+
+	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	assert.Nil(t, err)
+	assert.NotNil(t, sn)
+
+	// QueryAccessControlLists
+	var descriptors string
+	var descriptorList []string
+	for _, identity := range projectIdentityList {
+		descriptorList = append(descriptorList, *identity.Descriptor)
+	}
+	descriptors = strings.Join(descriptorList, ",")
+	securityClient.
+		EXPECT().
+		QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
+			SecurityNamespaceId: &securityNamespaceDescriptionProjectId,
+			Token:               &projectAccessToken,
+			Descriptors:         &descriptors,
+			IncludeExtendedInfo: converter.Bool(true),
+		}).
+		Return(nil, nil).
+		Times(1)
+
+	acl, err := sn.getAccessControlList(&projectAccessToken, &descriptorList)
+	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
 
