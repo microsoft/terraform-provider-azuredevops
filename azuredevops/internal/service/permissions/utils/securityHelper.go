@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -40,7 +41,11 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 			},
 		}}
 
-	return sn.SetPrincipalPermissions(&setPermissions, aclToken)
+	if err := sn.SetPrincipalPermissions(&setPermissions, aclToken); err != nil {
+		return err
+	}
+	d.SetId(fmt.Sprintf("%s/%s", *aclToken, principal.(string)))
+	return nil
 }
 
 // GetPrincipalPermissions gets permissions for a specific security namespac
@@ -60,14 +65,33 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 	if err != nil {
 		return nil, err
 	}
-	if principalPermissions == nil || len(*principalPermissions) != 1 {
+	if principalPermissions == nil || len(*principalPermissions) <= 0 {
+		return nil, nil
+	}
+	if len(*principalPermissions) != 1 {
 		return nil, fmt.Errorf("Failed to retrieve current permissions for principal [%s]", principalList[0])
 	}
-	d.SetId(fmt.Sprintf("%s/%s", *aclToken, principal.(string)))
 	for key := range ((*principalPermissions)[0]).Permissions {
 		if _, ok := permissions.(map[string]interface{})[string(key)]; !ok {
 			delete(((*principalPermissions)[0]).Permissions, key)
 		}
 	}
 	return &(*principalPermissions)[0], nil
+}
+
+func InitializeSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient, namespaceID SecurityNamespaceID, tokenCreator func(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error)) (*SecurityNamespace, *string, error) {
+	sn, err := NewSecurityNamespace(clients.Ctx,
+		namespaceID,
+		clients.SecurityClient,
+		clients.IdentityClient)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	aclToken, err := tokenCreator(d, clients)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sn, aclToken, nil
 }
