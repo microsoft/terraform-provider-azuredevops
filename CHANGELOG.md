@@ -1,18 +1,26 @@
 ## 0.0.2 (Unreleased)
 
 FEATURES:
-* **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/18)
+* **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_project_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_serviceendpoint_aws` [#58](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/58)
-* **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/71)
-* **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/79)
-* **New Resource** `azuredevops_serviceendpoint_azurecr` [#119](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/119/)
+* **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/71)
+* **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/79)
+* **New Resource** `azuredevops_serviceendpoint_azurecr` [#119](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/119/)
+* **New Resource** `azuredevops_area_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Resource** `azuredevops_iteration_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Resource** `azuredevops_branch_policy_work_item_linking` [#144](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/144)
+* **New Resource** `azuredevops_branch_policy_comment_resolution` [#144](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/144)
 * **New Data Resource**  `azuredevops_git_repository` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
+* **New Data Resource**  `azuredevops_area` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Data Resource**  `azuredevops_iteration` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
 
 IMPROVEMENTS:
 * **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/25)
 * **`azuredevops_branch_policy_build_validation`: Add `filename_patterns` support for repository build policy** [#62](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/62)
-* **`azuredevops_git_repository`: Use `default_branch` as the name of an initialized branch** [#89](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/89)
+* **`azuredevops_git_repository`: 
+    - Use `default_branch` as the name of an initialized branch [#89](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/89)
+    - Add support for import Git repository [#45](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/45)
 * **`azuredevops_build_definition`:**
     - Add Support for GitHub enterprise as a build definition repository type [#97](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/97)
     - Add Support for report build status configuration [#63](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/63)
