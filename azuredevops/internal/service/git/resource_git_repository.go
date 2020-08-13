@@ -2,12 +2,13 @@ package git
 
 import (
 	"fmt"
-	se_sdk "github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	se_resource "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	se_sdk "github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	se_resource "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
