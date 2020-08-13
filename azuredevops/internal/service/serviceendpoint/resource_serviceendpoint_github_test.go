@@ -43,7 +43,7 @@ func TestServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
 	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHub(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := ExpandServiceEndpointGitHub(doBaseExpansion, "")(resourceData)
 
 	require.Nil(t, err)
 	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
