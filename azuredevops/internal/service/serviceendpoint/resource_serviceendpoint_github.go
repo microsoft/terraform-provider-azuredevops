@@ -16,7 +16,10 @@ const (
 
 // ResourceServiceEndpointGitHub schema and implementation for github service endpoint resource
 func ResourceServiceEndpointGitHub() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHub, expandServiceEndpointGitHub)
+	return GitHubSchemaFields(genBaseServiceEndpointResource(flattenServiceEndpointGitHub, ExpandServiceEndpointGitHub(doBaseExpansion, "")))
+}
+
+func GitHubSchemaFields(r *schema.Resource) *schema.Resource {
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			personalAccessToken: {
@@ -60,30 +63,33 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
-	scheme := "InstallationToken"
+func ExpandServiceEndpointGitHub(seFunc serviceEndpointFunc, schemaPrefix string) func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+	return func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+		serviceEndpoint, projectID := seFunc(d)
 
-	parameters := map[string]string{}
+		scheme := "InstallationToken"
 
-	if config, ok := d.GetOk("auth_personal"); ok {
-		scheme = "Token"
-		parameters = expandAuthPersonalSet(config.(*schema.Set))
+		parameters := map[string]string{}
+
+		if config, ok := d.GetOk(schemaPrefix + "auth_personal"); ok {
+			scheme = "Token"
+			parameters = expandAuthPersonalSet(config.(*schema.Set))
+		}
+
+		if config, ok := d.GetOk(schemaPrefix + "auth_oauth"); ok {
+			scheme = "OAuth"
+			parameters = expandAuthOauthSet(config.(*schema.Set))
+		}
+
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &parameters,
+			Scheme:     &scheme,
+		}
+		serviceEndpoint.Type = converter.String("github")
+		serviceEndpoint.Url = converter.String("https://github.com")
+
+		return serviceEndpoint, projectID, nil
 	}
-
-	if config, ok := d.GetOk("auth_oauth"); ok {
-		scheme = "OAuth"
-		parameters = expandAuthOauthSet(config.(*schema.Set))
-	}
-
-	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Parameters: &parameters,
-		Scheme:     &scheme,
-	}
-	serviceEndpoint.Type = converter.String("github")
-	serviceEndpoint.Url = converter.String("https://github.com")
-
-	return serviceEndpoint, projectID, nil
 }
 
 func expandAuthPersonalSet(d *schema.Set) map[string]string {

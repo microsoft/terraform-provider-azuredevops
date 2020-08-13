@@ -18,6 +18,7 @@ const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
 type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
+type serviceEndpointFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string)
 
 // genBaseServiceEndpointResource creates a Resource with the common parts
 // that all Service Endpoints require.
@@ -116,7 +117,7 @@ func makeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description 
 }
 
 // Make the Azure DevOps API call to create the endpoint
-func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+func CreateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
 	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps must be created on Github and then can be imported")
 	}
@@ -164,7 +165,7 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 			return fmt.Errorf(errMsgTfConfigRead, err)
 		}
 
-		createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint, projectID)
+		createdServiceEndpoint, err := CreateServiceEndpoint(clients, serviceEndpoint, projectID)
 		if err != nil {
 			return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 		}

@@ -2,7 +2,10 @@ package git
 
 import (
 	"fmt"
+	se_sdk "github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	se_resource "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"log"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -38,6 +41,8 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
+	sourceAuthenticationKeys := []string{"bitbucket", "github"}
+
 	return &schema.Resource{
 		Create: resourceGitRepositoryCreate,
 		Read:   resourceGitRepositoryRead,
@@ -127,6 +132,31 @@ func ResourceGitRepository() *schema.Resource {
 							RequiredWith: []string{"initialization.0.source_type"},
 							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 						},
+						"source_authentication": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bitbucket": {
+										Type:          schema.TypeSet,
+										Optional:      true,
+										MaxItems:      1,
+										AtLeastOneOf:  sourceAuthenticationKeys,
+										ConflictsWith: []string{"github"},
+										Elem:          se_resource.BitbucketSchemaFields(&schema.Resource{}),
+									},
+									"github": {
+										Type:          schema.TypeSet,
+										Optional:      true,
+										MaxItems:      1,
+										AtLeastOneOf:  sourceAuthenticationKeys,
+										ConflictsWith: []string{"bitbucket"},
+										Elem:          se_resource.GitHubSchemaFields(&schema.Resource{}),
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -136,9 +166,15 @@ func ResourceGitRepository() *schema.Resource {
 
 // A helper type that is used for transient info only used during repo creation
 type repoInitializationMeta struct {
-	initType   string
-	sourceType string
-	sourceURL  string
+	initType             string
+	sourceType           string
+	sourceURL            string
+	sourceAuthentication *repoImportAuthentication
+}
+
+type repoImportAuthentication struct {
+	bitbucketAuthentication *schema.ResourceData
+	githubAuthentication    *schema.ResourceData
 }
 
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
@@ -176,6 +212,18 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			},
 			Repository: createdRepo,
 		}
+
+		if initialization.sourceAuthentication != nil {
+			serviceEndpointId, err := getImportRequestAuthorizationServiceEndpoint(initialization.sourceAuthentication, m.(*client.AggregatedClient), converter.String(projectID.String()))
+
+			if err != nil {
+				return fmt.Errorf("Error while creating service endpoint required for authentication to imported repository: %+v ", err)
+			}
+
+			importRequest.Parameters.ServiceEndpointId = serviceEndpointId
+			importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(true)
+		}
+
 		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 		if importErr != nil {
 			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
@@ -200,6 +248,43 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(createdRepo.Id.String())
 	return resourceGitRepositoryRead(d, m)
+}
+
+func baseServiceEndpointForImportAuthentication(_ *schema.ResourceData) (*se_sdk.ServiceEndpoint, *string) {
+	return &se_sdk.ServiceEndpoint{
+		Name:        converter.String(fmt.Sprintf("terraform-repo-import-%d", rand.Int())),
+		Owner:       converter.String("library"),
+		Description: converter.String("Temporarily used for repository import by Terraform"),
+	}, nil
+}
+
+func getImportRequestAuthorizationServiceEndpoint(authInfo *repoImportAuthentication, clients *client.AggregatedClient, projectId *string) (*uuid.UUID, error) {
+	var serviceEndpoint *se_sdk.ServiceEndpoint
+
+	if authInfo.bitbucketAuthentication != nil {
+		var err error
+		serviceEndpoint, _, err = se_resource.ExpandServiceEndpointBitbucket(baseServiceEndpointForImportAuthentication, "initialization.source_authentication.bitbucket.")(authInfo.bitbucketAuthentication)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if authInfo.githubAuthentication != nil {
+		var err error
+		serviceEndpoint, _, err = se_resource.ExpandServiceEndpointGitHub(baseServiceEndpointForImportAuthentication, "initialization.source_authentication.github.")(authInfo.githubAuthentication)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	createdServiceEndpoint, err := se_resource.CreateServiceEndpoint(clients, serviceEndpoint, projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdServiceEndpoint.Id, nil
 }
 
 func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID fmt.Stringer) error {
@@ -434,10 +519,13 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})
 
+		authenticationSchema := initValues["source_authentication"].(schema.ResourceData)
+
 		initialization = &repoInitializationMeta{
-			initType:   initValues["init_type"].(string),
-			sourceType: initValues["source_type"].(string),
-			sourceURL:  initValues["source_url"].(string),
+			initType:             initValues["init_type"].(string),
+			sourceType:           initValues["source_type"].(string),
+			sourceURL:            initValues["source_url"].(string),
+			sourceAuthentication: expandImportAuthentication(&authenticationSchema),
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
@@ -449,4 +537,18 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	}
 
 	return repo, initialization, &projectID, nil
+}
+
+func expandImportAuthentication(d *schema.ResourceData) *repoImportAuthentication {
+	authInfo := &repoImportAuthentication{}
+
+	if _, ok := d.GetOk("initialization.source_authentication.bitbucket"); ok {
+		authInfo.bitbucketAuthentication = d
+	}
+
+	if _, ok := d.GetOk("initialization.source_authentication.github"); ok {
+		authInfo.githubAuthentication = d
+	}
+
+	return authInfo
 }

@@ -10,24 +10,29 @@ import (
 
 // ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
 func ResourceServiceEndpointBitBucket() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointBitBucket, expandServiceEndpointBitBucket)
+	return BitbucketSchemaFields(genBaseServiceEndpointResource(flattenServiceEndpointBitBucket, ExpandServiceEndpointBitbucket(doBaseExpansion, "")))
+}
+
+func BitbucketSchemaFields(r *schema.Resource) *schema.Resource {
 	makeUnprotectedSchema(r, "username", "AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", "The bitbucket username which should be used.")
 	makeProtectedSchema(r, "password", "AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", "The bitbucket password whi|ch should be used.")
 	return r
 }
 
-func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
-	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{
-			"username": d.Get("username").(string),
-			"password": d.Get("password").(string),
-		},
-		Scheme: converter.String("UsernamePassword"),
+func ExpandServiceEndpointBitbucket(seFunc serviceEndpointFunc, schemaPrefix string) func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+	return func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+		serviceEndpoint, projectID := seFunc(d)
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"username": d.Get(schemaPrefix + "username").(string),
+				"password": d.Get(schemaPrefix + "password").(string),
+			},
+			Scheme: converter.String("UsernamePassword"),
+		}
+		serviceEndpoint.Type = converter.String(string(model.RepoTypeValues.Bitbucket))
+		serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
+		return serviceEndpoint, projectID, nil
 	}
-	serviceEndpoint.Type = converter.String(string(model.RepoTypeValues.Bitbucket))
-	serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
-	return serviceEndpoint, projectID, nil
 }
 
 func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
