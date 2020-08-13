@@ -1,17 +1,19 @@
 ## 0.0.2 (Unreleased)
 
 FEATURES:
-* **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/18)
+* **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_project_permissions` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_serviceendpoint_aws` [#58](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/58)
-* **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/71)
-* **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/79)
-* **New Resource** `azuredevops_serviceendpoint_azurecr` [#119](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/119/)
-* **New Resource** `azuredevops_area_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/85)
-* **New Resource** `azuredevops_iteration_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/85)
+* **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/71)
+* **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/79)
+* **New Resource** `azuredevops_serviceendpoint_azurecr` [#119](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/119/)
+* **New Resource** `azuredevops_area_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Resource** `azuredevops_iteration_permissions` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Resource** `azuredevops_branch_policy_work_item_linking` [#144](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/144)
+* **New Resource** `azuredevops_branch_policy_comment_resolution` [#144](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/144)
 * **New Data Resource**  `azuredevops_git_repository` [#18](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/18)
-* **New Data Resource**  `azuredevops_area` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/85)
-* **New Data Resource**  `azuredevops_iteration` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/pull/85)
+* **New Data Resource**  `azuredevops_area` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
+* **New Data Resource**  `azuredevops_iteration` [#85](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/85)
 
 IMPROVEMENTS:
 * **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/terraform-providers/terraform-provider-azuredevops/issues/25)
