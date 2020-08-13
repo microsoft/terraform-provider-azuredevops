@@ -145,7 +145,9 @@ func ResourceGitRepository() *schema.Resource {
 										MaxItems:      1,
 										AtLeastOneOf:  sourceAuthenticationKeys,
 										ConflictsWith: []string{"github"},
-										Elem:          se_resource.BitbucketSchemaFields(&schema.Resource{}),
+										Elem: se_resource.BitbucketSchemaFields(&schema.Resource{
+											Schema: map[string]*schema.Schema{},
+										}),
 									},
 									"github": {
 										Type:          schema.TypeSet,
@@ -153,7 +155,9 @@ func ResourceGitRepository() *schema.Resource {
 										MaxItems:      1,
 										AtLeastOneOf:  sourceAuthenticationKeys,
 										ConflictsWith: []string{"bitbucket"},
-										Elem:          se_resource.GitHubSchemaFields(&schema.Resource{}),
+										Elem: se_resource.GitHubSchemaFields(&schema.Resource{
+											Schema: map[string]*schema.Schema{},
+										}),
 									},
 								},
 							},
