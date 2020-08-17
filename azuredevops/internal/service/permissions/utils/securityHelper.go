@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // SetPrincipalPermissions sets permissions for a specific security namespac
-func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string, forcePermission *PermissionType, forceReplace bool) error {
+func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forcePermission *PermissionType, forceReplace bool) error {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return fmt.Errorf("Failed to get 'principal' from schema")
@@ -41,15 +40,15 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 			},
 		}}
 
-	if err := sn.SetPrincipalPermissions(&setPermissions, aclToken); err != nil {
+	if err := sn.SetPrincipalPermissions(&setPermissions); err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%s/%s", *aclToken, principal.(string)))
+	d.SetId(fmt.Sprintf("%s/%s", sn.token, principal.(string)))
 	return nil
 }
 
 // GetPrincipalPermissions gets permissions for a specific security namespac
-func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string) (*PrincipalPermission, error) {
+func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace) (*PrincipalPermission, error) {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return nil, fmt.Errorf("Failed to get 'principal' from schema")
@@ -61,7 +60,7 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 	}
 
 	principalList := []string{*converter.StringFromInterface(principal)}
-	principalPermissions, err := sn.GetPrincipalPermissions(aclToken, &principalList)
+	principalPermissions, err := sn.GetPrincipalPermissions(&principalList)
 	if err != nil {
 		return nil, err
 	}
@@ -77,21 +76,4 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 		}
 	}
 	return &(*principalPermissions)[0], nil
-}
-
-func InitializeSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient, namespaceID SecurityNamespaceID, tokenCreator func(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error)) (*SecurityNamespace, *string, error) {
-	sn, err := NewSecurityNamespace(clients.Ctx,
-		namespaceID,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	aclToken, err := tokenCreator(d, clients)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return sn, aclToken, nil
 }

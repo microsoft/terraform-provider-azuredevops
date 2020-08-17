@@ -48,12 +48,12 @@ func ResourceGitPermissions() *schema.Resource {
 func resourceGitPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, nil, false); err != nil {
 		return err
 	}
 
@@ -63,18 +63,18 @@ func resourceGitPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{})
 func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
 
-	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
+	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn)
 	if err != nil {
 		return err
 	}
 	if principalPermissions == nil {
 		d.SetId("")
-		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", sn.GetToken())
 		return nil
 	}
 
@@ -85,12 +85,12 @@ func resourceGitPermissionsRead(d *schema.ResourceData, m interface{}) error {
 func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.GitRepositories, createGitToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 
@@ -98,10 +98,10 @@ func resourceGitPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
+func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
-		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
+		return "", fmt.Errorf("Failed to get 'project_id' from schema")
 	}
 
 	/*
@@ -119,22 +119,22 @@ func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (*
 	branchName, branchOk := d.GetOk("branch_name")
 	if branchOk {
 		if !repoOk {
-			return nil, fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
+			return "", fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
 		}
 		branch, err := getBranchByName(clients,
 			converter.StringFromInterface(repositoryID),
 			converter.StringFromInterface(branchName))
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		branchPath := strings.Split(*branch.Name, "/")
 		branchName, err = converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		aclToken += "/refs/heads/" + branchName.(string)
 	}
-	return &aclToken, nil
+	return aclToken, nil
 }
 
 func getBranchByName(clients *client.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {

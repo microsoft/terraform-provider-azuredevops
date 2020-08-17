@@ -43,12 +43,12 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, nil, false); err != nil {
 		return err
 	}
 
@@ -58,18 +58,18 @@ func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m in
 func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
 	if err != nil {
 		return err
 	}
 
-	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
+	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn)
 	if err != nil {
 		return err
 	}
 	if principalPermissions == nil {
 		d.SetId("")
-		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", sn.GetToken())
 		return nil
 	}
 
@@ -80,34 +80,34 @@ func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{})
 func ResourceWorkItemQueryPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.WorkItemQueryFolders, createWorkItemQueryToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 	d.SetId("")
 	return nil
 }
 
-func createWorkItemQueryToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
+func createWorkItemQueryToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
-		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
+		return "", fmt.Errorf("Failed to get 'project_id' from schema")
 	}
 	aclToken := fmt.Sprintf("$/%s", projectID.(string))
 	path, ok := d.GetOk("path")
 	if ok {
 		idList, err := getQueryIDsFromPath(clients.Ctx, clients.WorkItemTrackingClient, projectID.(string), path.(string))
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		aclToken = fmt.Sprintf("%s/%s", aclToken, strings.Join(*idList, "/"))
 	}
-	return &aclToken, nil
+	return aclToken, nil
 }
 
 func getQueryIDsFromPath(context context.Context, wiqClient workitemtracking.Client, projectID string, path string) (*[]string, error) {

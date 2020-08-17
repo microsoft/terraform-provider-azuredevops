@@ -37,9 +37,9 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ProjectGlobal(t *test
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "")
 	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
-	assert.NotNil(t, token)
+	assert.NotEmpty(t, token)
 	ref := fmt.Sprintf("$/%s", wiqProjectID)
-	assert.Equal(t, ref, *token)
+	assert.Equal(t, ref, token)
 }
 
 func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_SharedQueries(t *testing.T) {
@@ -68,9 +68,9 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_SharedQueries(t *test
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
 	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
-	assert.NotNil(t, token)
+	assert.NotEmpty(t, token)
 	ref := fmt.Sprintf("$/%s/%s", wiqProjectID, wiqSharedQueryID)
-	assert.Equal(t, ref, *token)
+	assert.Equal(t, ref, token)
 }
 
 func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleError(t *testing.T) {
@@ -96,7 +96,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleError(t *testin
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
 	token, err := createWorkItemQueryToken(d, clients)
-	assert.Nil(t, token)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, errMsg)
 }
@@ -144,7 +144,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleErrorInPath(t *
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")
 	token, err := createWorkItemQueryToken(d, clients)
-	assert.Nil(t, token)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 }
 
@@ -193,7 +193,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ChildDoesNotExist(t *
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder/child")
 	token, err := createWorkItemQueryToken(d, clients)
 	assert.NotNil(t, err)
-	assert.Nil(t, token)
+	assert.Empty(t, token)
 }
 
 func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ValidToken(t *testing.T) {
@@ -241,9 +241,9 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_ValidToken(t *testing
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")
 	token, err := createWorkItemQueryToken(d, clients)
 	assert.Nil(t, err)
-	assert.NotNil(t, token)
+	assert.NotEmpty(t, token)
 	ref := fmt.Sprintf("$/%s/%s/%s", wiqProjectID, wiqSharedQueryID, wiqFldrID)
-	assert.Equal(t, ref, *token)
+	assert.Equal(t, ref, token)
 }
 
 func getWorkItemQueryPermissionsResource(t *testing.T, projectID string, path string) *schema.ResourceData {

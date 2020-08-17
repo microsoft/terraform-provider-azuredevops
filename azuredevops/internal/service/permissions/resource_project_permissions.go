@@ -31,12 +31,12 @@ func ResourceProjectPermissions() *schema.Resource {
 func resourceProjectPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, nil, false); err != nil {
 		return err
 	}
 
@@ -46,18 +46,18 @@ func resourceProjectPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
 	if err != nil {
 		return err
 	}
 
-	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
+	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn)
 	if err != nil {
 		return err
 	}
 	if principalPermissions == nil {
 		d.SetId("")
-		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", *aclToken)
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", sn.GetToken())
 		return nil
 	}
 
@@ -68,23 +68,23 @@ func resourceProjectPermissionsRead(d *schema.ResourceData, m interface{}) error
 func resourceProjectPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := securityhelper.InitializeSecurityNamespaceAndToken(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Project, createProjectToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 	d.SetId("")
 	return nil
 }
 
-func createProjectToken(d *schema.ResourceData, clients *client.AggregatedClient) (*string, error) {
+func createProjectToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
-		return nil, fmt.Errorf("Failed to get 'project_id' from schema")
+		return "", fmt.Errorf("Failed to get 'project_id' from schema")
 	}
 	aclToken := fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID.(string))
-	return &aclToken, nil
+	return aclToken, nil
 }
