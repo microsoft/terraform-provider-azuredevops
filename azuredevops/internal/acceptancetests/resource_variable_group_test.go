@@ -27,9 +27,6 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 	vargroupNameSecond := testutils.GenerateResourceName()
 	vargroupNameNoSecret := testutils.GenerateResourceName()
 
-	allowAccessTrue := true
-	allowAccessFalse := false
-
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
 	resource.Test(t, resource.TestCase{
@@ -38,25 +35,25 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameFirst, allowAccessTrue),
+				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameFirst, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
-					checkVariableGroupExists(vargroupNameFirst, allowAccessTrue),
+					checkVariableGroupExists(vargroupNameFirst, true),
 				),
 			}, {
-				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameSecond, allowAccessFalse),
+				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameSecond, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
-					checkVariableGroupExists(vargroupNameSecond, allowAccessFalse),
+					checkVariableGroupExists(vargroupNameSecond, false),
 				),
 			}, {
-				Config: testutils.HclVariableGroupResourceNoSecretsWithProject(projectName, vargroupNameNoSecret, allowAccessFalse),
+				Config: testutils.HclVariableGroupResourceNoSecretsWithProject(projectName, vargroupNameNoSecret, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
 					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameNoSecret),
-					checkVariableGroupExists(vargroupNameNoSecret, allowAccessFalse),
+					checkVariableGroupExists(vargroupNameNoSecret, false),
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
