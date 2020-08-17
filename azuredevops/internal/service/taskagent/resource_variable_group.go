@@ -539,9 +539,11 @@ func deleteDefinitionResourceAuth(clients *client.AggregatedClient, variableGrou
 func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.DefinitionResourceReference) {
 	vgId := d.Id()
 	var allowAccess = false
-	for _, authResource := range *definitionResource {
-		if vgId == *authResource.Id {
-			allowAccess = *authResource.Authorized
+	if definitionResource != nil {
+		for _, authResource := range *definitionResource {
+			if vgId == *authResource.Id {
+				allowAccess = *authResource.Authorized
+			}
 		}
 	}
 	d.Set(vgAllowAccess, allowAccess)
