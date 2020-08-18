@@ -23,18 +23,18 @@ var projectToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s"
 
 func TestProjectPermissions_CreateProjectToken(t *testing.T) {
 	var d *schema.ResourceData
-	var token *string
+	var token string
 	var err error
 
 	d = getProjecPermissionsResource(t, projectID)
-	token, err = createProjectToken(d)
-	assert.NotNil(t, token)
+	token, err = createProjectToken(d, nil)
+	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, projectToken, *token)
+	assert.Equal(t, projectToken, token)
 
 	d = getProjecPermissionsResource(t, "")
-	token, err = createProjectToken(d)
-	assert.Nil(t, token)
+	token, err = createProjectToken(d, nil)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 }
 
