@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // DataProject schema and implementation for project data source
@@ -17,7 +19,21 @@ func DataProject() *schema.Resource {
 				Type:     v.Type,
 				Computed: true,
 			}
+		} else {
+			v.Required = false
+			v.Optional = true
+			v.ConflictsWith = []string{
+				"project_id",
+			}
+			baseSchema.Schema[k] = v
 		}
+	}
+
+	baseSchema.Schema["project_id"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateFunc:     validation.StringIsNotWhiteSpace,
+		DiffSuppressFunc: suppress.CaseDifference,
 	}
 	return &schema.Resource{
 		Read:   dataProjectRead,
@@ -31,7 +47,13 @@ func dataProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("project_name").(string)
-	project, err := projectRead(clients, "", name)
+	id := d.Get("project_id").(string)
+
+	if name == "" && id == "" {
+		return fmt.Errorf("Either project_id or project_name must be set")
+	}
+
+	project, err := projectRead(clients, id, name)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return fmt.Errorf("Project with name %s does not exist", name)
