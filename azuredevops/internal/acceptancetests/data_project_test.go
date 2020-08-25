@@ -67,6 +67,24 @@ func TestAccProject_DataSource(t *testing.T) {
 }
 
 func TestAccProject_DataSource_ErrorWhenNoFieldsSet(t *testing.T) {
+	dataProject := `data "azuredevops_project" "project" {
+		project_name = "name"
+		project_id = "id"
+	}`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config:      dataProject,
+				ExpectError: regexp.MustCompile(`config is invalid: "project_id": conflicts with project_name`),
+			},
+		},
+	})
+}
+
+func TestAccProject_DataSource_ErrorWhenBothNameAndIdSet(t *testing.T) {
 	dataProject := `data "azuredevops_project" "project" {}`
 
 	resource.Test(t, resource.TestCase{

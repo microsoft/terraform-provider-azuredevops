@@ -14,18 +14,15 @@ import (
 func DataProject() *schema.Resource {
 	baseSchema := ResourceProject()
 	for k, v := range baseSchema.Schema {
-		if k != "project_name" {
+		if k == "project_name" {
+			v.Required = false
+			v.Optional = true
+			baseSchema.Schema[k] = v
+		} else {
 			baseSchema.Schema[k] = &schema.Schema{
 				Type:     v.Type,
 				Computed: true,
 			}
-		} else {
-			v.Required = false
-			v.Optional = true
-			v.ConflictsWith = []string{
-				"project_id",
-			}
-			baseSchema.Schema[k] = v
 		}
 	}
 
@@ -34,7 +31,11 @@ func DataProject() *schema.Resource {
 		Optional:         true,
 		ValidateFunc:     validation.StringIsNotWhiteSpace,
 		DiffSuppressFunc: suppress.CaseDifference,
+		ConflictsWith: []string{
+			"project_name",
+		},
 	}
+
 	return &schema.Resource{
 		Read:   dataProjectRead,
 		Schema: baseSchema.Schema,
