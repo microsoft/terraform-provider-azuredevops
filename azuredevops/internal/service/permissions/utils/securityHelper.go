@@ -8,7 +8,7 @@ import (
 )
 
 // SetPrincipalPermissions sets permissions for a specific security namespac
-func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string, forcePermission *PermissionType, forceReplace bool) error {
+func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forcePermission *PermissionType, forceReplace bool) error {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return fmt.Errorf("Failed to get 'principal' from schema")
@@ -40,11 +40,15 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 			},
 		}}
 
-	return sn.SetPrincipalPermissions(&setPermissions, aclToken)
+	if err := sn.SetPrincipalPermissions(&setPermissions); err != nil {
+		return err
+	}
+	d.SetId(fmt.Sprintf("%s/%s", sn.token, principal.(string)))
+	return nil
 }
 
 // GetPrincipalPermissions gets permissions for a specific security namespac
-func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclToken *string) (*PrincipalPermission, error) {
+func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace) (*PrincipalPermission, error) {
 	principal, ok := d.GetOk("principal")
 	if !ok {
 		return nil, fmt.Errorf("Failed to get 'principal' from schema")
@@ -56,14 +60,16 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, aclT
 	}
 
 	principalList := []string{*converter.StringFromInterface(principal)}
-	principalPermissions, err := sn.GetPrincipalPermissions(aclToken, &principalList)
+	principalPermissions, err := sn.GetPrincipalPermissions(&principalList)
 	if err != nil {
 		return nil, err
 	}
-	if principalPermissions == nil || len(*principalPermissions) != 1 {
+	if principalPermissions == nil || len(*principalPermissions) <= 0 {
+		return nil, nil
+	}
+	if len(*principalPermissions) != 1 {
 		return nil, fmt.Errorf("Failed to retrieve current permissions for principal [%s]", principalList[0])
 	}
-	d.SetId(fmt.Sprintf("%s/%s", *aclToken, principal.(string)))
 	for key := range ((*principalPermissions)[0]).Permissions {
 		if _, ok := permissions.(map[string]interface{})[string(key)]; !ok {
 			delete(((*principalPermissions)[0]).Permissions, key)

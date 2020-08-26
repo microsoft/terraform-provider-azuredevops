@@ -45,7 +45,8 @@ output "process_template_id" {
 
 The following arguments are supported:
 
-- `project_name` - (Required) Name of the Project.
+- `project_name` - (Required if `project_id` not set) Name of the Project.
+- `project_id` - (Required if `project_name` not set) Id of the Project.
 
 ## Attributes Reference
 
