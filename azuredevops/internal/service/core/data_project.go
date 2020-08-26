@@ -14,16 +14,19 @@ import (
 func DataProject() *schema.Resource {
 	baseSchema := ResourceProject()
 	for k, v := range baseSchema.Schema {
-		if k == "project_name" {
-			v.Required = false
-			v.Optional = true
-			baseSchema.Schema[k] = v
-		} else {
+		if k != "project_name" {
 			baseSchema.Schema[k] = &schema.Schema{
 				Type:     v.Type,
 				Computed: true,
 			}
 		}
+	}
+
+	baseSchema.Schema["project_name"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateFunc:     validation.StringIsNotWhiteSpace,
+		DiffSuppressFunc: suppress.CaseDifference,
 	}
 
 	baseSchema.Schema["project_id"] = &schema.Schema{
