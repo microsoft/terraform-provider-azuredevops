@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // DataProject schema and implementation for project data source
@@ -23,17 +22,15 @@ func DataProject() *schema.Resource {
 	}
 
 	baseSchema.Schema["project_name"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		DiffSuppressFunc: suppress.CaseDifference,
+		Type:         schema.TypeString,
+		Optional:     true,
+		ValidateFunc: validation.StringIsNotWhiteSpace,
 	}
 
 	baseSchema.Schema["project_id"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		DiffSuppressFunc: suppress.CaseDifference,
+		Type:         schema.TypeString,
+		Optional:     true,
+		ValidateFunc: validation.StringIsNotWhiteSpace,
 		ConflictsWith: []string{
 			"project_name",
 		},
