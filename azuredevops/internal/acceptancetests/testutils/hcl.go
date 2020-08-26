@@ -66,17 +66,6 @@ resource "azuredevops_project" "project" {
 }`, projectName)
 }
 
-// HclProjectDataSource HCL describing a data source for an AzDO project
-func HclProjectDataSource(projectName string) string {
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_project" "project" {
-	project_name = azuredevops_project.project.project_name
-}`, projectResource)
-}
-
 // HclProjectResourceWithFeature HCL describing an AzDO project including internal feature setup
 func HclProjectResourceWithFeature(projectName string, featureStateTestplans string, featureStateArtifacts string) string {
 	if projectName == "" {
