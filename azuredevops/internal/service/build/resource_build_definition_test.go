@@ -121,6 +121,7 @@ var testBuildDefinition = build.BuildDefinition{
 	Quality:        &build.DefinitionQualityValues.Definition,
 	Triggers:       &[]interface{}{},
 	VariableGroups: &[]build.VariableGroup{},
+	Tags:           &[]string{},
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would

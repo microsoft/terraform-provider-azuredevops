@@ -294,6 +294,7 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"tags": model.TagsSchema,
 		},
 	}
 }
@@ -329,6 +330,8 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	if buildDefinition.Queue != nil && buildDefinition.Queue.Pool != nil {
 		d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
 	}
+
+	d.Set("path", *buildDefinition.Path)
 
 	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
 	d.Set(bdVariable, flattenBuildVariables(d, buildDefinition))
@@ -893,6 +896,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
 	}
 
+	tags := tfhelper.ExpandStringList(d.Get("tags").([]interface{}))
+
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
@@ -919,6 +924,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		VariableGroups: expandVariableGroups(d),
 		Variables:      variables,
 		Triggers:       &buildTriggers,
+		Tags:           &tags,
 	}
 
 	if agentPoolName, ok := d.GetOk("agent_pool_name"); ok {
