@@ -159,6 +159,7 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 	Type:           &build.DefinitionTypeValues.Build,
 	Quality:        &build.DefinitionQualityValues.Definition,
 	VariableGroups: &[]build.VariableGroup{},
+	Tags:           &[]string{},
 }
 
 // This definition matches the overall structure of what a configured GitHub Enterprise git repository would
@@ -197,6 +198,7 @@ var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
 	Type:           &build.DefinitionTypeValues.Build,
 	Quality:        &build.DefinitionQualityValues.Definition,
 	VariableGroups: &[]build.VariableGroup{},
+	Tags:           &[]string{},
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would
