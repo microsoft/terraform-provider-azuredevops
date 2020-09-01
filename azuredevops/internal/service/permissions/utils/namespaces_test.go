@@ -616,7 +616,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleError(t *testing.T)
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.Nil(t, idList)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, errMsg)
@@ -654,7 +654,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleEmptyReturn(t *test
 		Return(&projectIdentityListEmpty, nil).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.Nil(t, idList)
 	assert.NotNil(t, err)
 }
@@ -691,7 +691,7 @@ func TestSecurityNamespace_GetIndentitiesFromSubjects_VerifyReturn(t *testing.T)
 		Return(&projectIdentityList, nil).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.NotNil(t, idList)
 	assert.Nil(t, err)
 	assert.Equal(t, projectIdentityList, *idList)
@@ -722,7 +722,7 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Return(&securityNamespaceDescriptionProject, nil).
 		Times(1)
 
-	// getIndentitiesFromSubjects => ReadIdentities
+	// getIdentitiesFromSubjects => ReadIdentities
 	var subjectDescriptorList []string
 	subjectDescriptorMap := map[string]string{}
 	for _, identity := range projectIdentityList {

@@ -537,11 +537,11 @@ func deleteDefinitionResourceAuth(clients *client.AggregatedClient, variableGrou
 
 // Convert AzDO data structure allow_access to internal Terraform data structure
 func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.DefinitionResourceReference) {
-	vgId := d.Id()
+	variableGroupID := d.Id()
 	var allowAccess = false
 	if definitionResource != nil {
 		for _, authResource := range *definitionResource {
-			if vgId == *authResource.Id {
+			if variableGroupID == *authResource.Id {
 				allowAccess = *authResource.Authorized
 			}
 		}

@@ -11,6 +11,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+// CreateClassificationNodeSchema schema for classification node
 func CreateClassificationNodeSchema(outer map[string]*schema.Schema) map[string]*schema.Schema {
 	baseSchema := map[string]*schema.Schema{
 		"project_id": {

@@ -230,11 +230,11 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 	return nil
 }
 
-func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryId string) (*git.GitImportRequest, error) {
+func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryID string) (*git.GitImportRequest, error) {
 	args := git.CreateImportRequestArgs{
 		ImportRequest: &gitImportRequest,
 		Project:       &project,
-		RepositoryId:  &repositoryId,
+		RepositoryId:  &repositoryID,
 	}
 
 	return clients.GitReposClient.CreateImportRequest(clients.Ctx, args)

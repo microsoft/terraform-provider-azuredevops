@@ -140,7 +140,7 @@ data "azuredevops_git_repository" "repository" {
 }`, projectName, gitRepoName)
 }
 
-// HclProjectGitRepositories HCL describing a multivalue data source for AzDO git repositories
+// HclProjectGitRepositories HCL describing a multi value data source for AzDO git repositories
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
@@ -153,6 +153,7 @@ data "azuredevops_git_repositories" "repositories" {
 }`, gitRepoName)
 }
 
+// HclProjectGitRepositoryImport HCL describing a AzDO git repositories
 func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
 	azureGitRepoResource := fmt.Sprintf(`
 	resource "azuredevops_git_repository" "repository" {
@@ -331,6 +332,7 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclVariableGroupResource HCL describing an AzDO group
 func HclVariableGroupResource(variableGroupName string, allowAccess bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
