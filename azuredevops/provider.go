@@ -11,6 +11,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
+	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/release"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
@@ -27,6 +28,7 @@ func Provider() *schema.Provider {
 			"azuredevops_branch_policy_work_item_linking":  policy.ResourceBranchPolicyWorkItemLinking(),
 			"azuredevops_branch_policy_comment_resolution": policy.ResourceBranchPolicyCommentResolution(),
 			"azuredevops_build_definition":                 build.ResourceBuildDefinition(),
+			"azuredevops_release_definition":               release.ResourceReleaseDefinition(),
 			"azuredevops_project":                          core.ResourceProject(),
 			"azuredevops_project_features":                 core.ResourceProjectFeatures(),
 			"azuredevops_variable_group":                   taskagent.ResourceVariableGroup(),
