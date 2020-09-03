@@ -294,7 +294,7 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
-			"tags": model.TagsSchema,
+			"tags": &model.TagsSchema,
 		},
 	}
 }
