@@ -857,7 +857,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 											Type:     schema.TypeInt,
 											Required: true,
 										},
-										"tags": model.TagsSchema,
+										"tags": &model.TagsSchema,
 										"multiple": {
 											Type:     schema.TypeList,
 											Optional: true,
@@ -1099,7 +1099,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"tags":       model.TagsSchema,
+			"tags":       &model.TagsSchema,
 			"properties": releaseDefinitionProperties,
 			"comment": {
 				Type:             schema.TypeString,
@@ -1474,7 +1474,7 @@ func expandStringMapString(d map[string]interface{}) map[string]string {
 		if s, ok := v.(string); ok {
 			vs[k] = s
 		} else if s, ok := v.(int); ok {
-			vs[k] = string(s)
+			vs[k] = fmt.Sprint(s)
 		} else if b, ok := v.(bool); ok {
 			vs[k] = strconv.FormatBool(b)
 		} else if f, ok := v.(float64); ok {
