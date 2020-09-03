@@ -11,7 +11,7 @@ The Azure DevOps provider can be used to configure Azure DevOps project in [Micr
 
 Use the navigation to the left to read about the available resources.
 
-Interested in the provider's latest features, or want to make sure you're up to date? Check out the [changelog](https://github.com/terraform-providers/terraform-provider-azuredevops/blob/master/CHANGELOG.md) for version information and release notes.
+Interested in the provider's latest features, or want to make sure you're up to date? Check out the [changelog](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/CHANGELOG.md) for version information and release notes.
 
 ## Example Usage
 
