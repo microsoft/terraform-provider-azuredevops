@@ -109,6 +109,7 @@ The following arguments are supported:
 - `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
+- `tags` - (Optional) A list of tags.
 
 `variable` block supports the following:
 

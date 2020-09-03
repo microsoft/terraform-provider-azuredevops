@@ -294,6 +294,7 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"tags": &model.TagsSchema,
 		},
 	}
 }
@@ -328,6 +329,12 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 
 	if buildDefinition.Queue != nil && buildDefinition.Queue.Pool != nil {
 		d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
+	}
+
+	d.Set("path", *buildDefinition.Path)
+
+	if buildDefinition.Tags != nil {
+		d.Set("tags", *buildDefinition.Tags)
 	}
 
 	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
@@ -472,7 +479,7 @@ func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
 
 func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	yamlFilePath := ""
-	githubEnterpriseUrl := ""
+	githubEnterpriseURL := ""
 
 	// The process member can be of many types -- the only typing information
 	// available from the compiler is `interface{}` so we can probe for known
@@ -490,7 +497,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		if err != nil {
 			return fmt.Errorf("Unable to parse repository URL: %+v ", err)
 		}
-		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
+		githubEnterpriseURL = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
 	reportBuildStatus, err := strconv.ParseBool((*buildDefinition.Repository.Properties)["reportBuildStatus"])
@@ -503,7 +510,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
-		"github_enterprise_url": githubEnterpriseUrl,
+		"github_enterprise_url": githubEnterpriseURL,
 		"report_build_status":   reportBuildStatus,
 	}}
 }
@@ -893,6 +900,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
 	}
 
+	tags := tfhelper.ExpandStringList(d.Get("tags").([]interface{}))
+
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
@@ -919,6 +928,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		VariableGroups: expandVariableGroups(d),
 		Variables:      variables,
 		Triggers:       &buildTriggers,
+		Tags:           &tags,
 	}
 
 	if agentPoolName, ok := d.GetOk("agent_pool_name"); ok {
