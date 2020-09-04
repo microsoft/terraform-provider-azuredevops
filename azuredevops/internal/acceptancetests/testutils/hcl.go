@@ -747,3 +747,300 @@ resource "azuredevops_git_permissions" "git-permissions" {
 }
 `, projectResource, gitRepository)
 }
+
+// TestAccReleaseDefinitionTasks yaml of release tasks
+func YamlReleaseJobTasks() string {
+	return `
+#refName: ''
+# definitionType: task
+# taskId: a433f589-fce1-4460-9ee6-44a624aeb1fb
+# version: 0.*
+- task: DownloadBuildArtifacts@0
+  displayName: "Download Build Artifacts"        # name: Download Build Artifacts
+  environment:			                        # default nil
+    FOO: bar
+  enabled: true				                    # default
+#  alwaysRun: false			                    # default
+  continueOnError: false	                     # default
+  timeoutInMinutes: 0
+  overrideInputs:			                    # default nil
+    version: abc
+  condition: succeeded()	                    # default
+  inputs:
+    buildType: current                          # default
+    project: 0350d34d-fc00-4e9d-b1c5-78f8a7350b25
+    definition: 80
+    specificBuildWithTriggering: false          # default
+    buildVersionToDownload: specific            # default
+    allowPartiallySucceededBuilds: false        # default
+    branchName: refs/heads/master
+    buildId: ''                                 # default
+    tags: ''                                    # default
+    downloadType: specific                      # default
+    artifactName: ''
+    itemPattern: "**"
+    downloadPath: "$(System.DefaultWorkingDirectory)"
+    parallelizationLimit: '8'
+# taskId: d9bafed4-0b18-4f58-968d-86655b4d2ce9
+# version: 2.*
+- task: CmdLine@2
+  displayName: Add Permissions to AWS Provider Plugin Facility
+  inputs:
+    script: |
+      ls -R
+      chmod 0777 -R .terraform/plugins
+    workingDirectory: "$(System.DefaultWorkingDirectory)/Infrastructure/AWS/environments/dev-1/us-west-2/service_facility/"
+    failOnStderr: false
+- task: TerraformInstaller@0
+  displayName: "Install Terraform 0.12.13"
+  inputs:
+    terraformVersion: '0.12.13'
+- task: AWSShellScript@1
+  displayName: "Terraform Apply Tenant"
+  inputs:
+    awsCredentials: 'merlin-shared-azure-pipelines-build'
+    regionName: 'us-west-2'
+    scriptType: 'inline'
+    inlineScript: |
+      terraform apply tfplan
+    disableAutoCwd: true
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Infrastructure/AWS/environments/dev-1/us-west-2/service_tenant/'
+`
+}
+
+// HclReleaseDefinition HCL describing an AzDO release definition with agent jobs
+func HclReleaseDefinitionAgent(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	tasks := YamlReleaseJobTasks()
+	releaseDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_release_definition" "release" {
+  project_id = "DevOps"
+  name = "%s"
+  path = "\\"
+
+  stage {
+    name = "Stage 1"
+    rank = 1
+
+    agent_job {
+      name = "Agent job 1"
+      rank = 1
+ 	  demand {
+		name =  "equals_condition_name"
+		value = "x"
+	  }
+      demand {
+		name =  "exists_condition_name"
+	  }
+      agent_pool_hosted_azure_pipelines {
+        agent_pool_id = 2069
+        agent_specification = "ubuntu-18.04"
+      }
+      timeout_in_minutes = 0
+      max_execution_time_in_minutes = 1
+      condition = "succeeded()"
+		// overrideInput {} // TODO
+		// enable_access_token ? Do we need this on this level?
+    }
+
+	agent_job {
+      name = "Agent job 3"
+      rank = 3
+      agent_pool_hosted_azure_pipelines {
+        agent_pool_id = 2069
+        agent_specification = "ubuntu-18.04"
+      }
+	
+	  multi_configuration {
+		multipliers = "OperatingSystem"
+		number_of_agents = 1
+	  }
+
+      condition = "succeeded()"
+		// overrideInput {} // TODO
+		// enable_access_token ? Do we need this on this level?
+    }
+
+	agent_job {
+      name = "Agent job 2"
+      rank = 2
+      agent_pool_hosted_azure_pipelines {
+        agent_pool_id = 2069
+        agent_specification = "ubuntu-18.04"
+      }
+	  multi_agent {
+		max_number_of_agents = 1
+	  }
+      condition = "succeeded()"
+   	  // overrideInput {} // TODO
+	  // enable_access_token ? Do we need this on this level?
+
+	  dynamic "task" {
+	    for_each = local.tasks
+		content {
+		  always_run =           lookup(task.value, "alwaysRun", null)
+		  condition =            lookup(task.value, "condition", null)
+		  continue_on_error =    lookup(task.value, "continueOnError", null)
+		  enabled =              lookup(task.value, "enabled", null)
+		  display_name =         lookup(task.value, "displayName", null)
+          override_input =       lookup(task.value, "overrideInput", null)
+          inputs =               lookup(task.value, "inputs", null)
+          timeout_in_minutes =   lookup(task.value, "timeoutInMinutes", null)
+          // task MUST come last as it overwites the task
+          task =                 lookup(task.value, "task", null)
+        }
+	  }
+    }
+
+    pre_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    retention_policy {
+      days_to_keep = 1
+      releases_to_keep = 1
+    }
+  }
+}
+
+locals {
+  tasks = yamldecode(<<YAML
+%s
+YAML
+  )
+}
+
+`, releaseDefinitionName, tasks)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
+}
+
+// HclReleaseDefinition HCL describing an AzDO release definition with deployment group jobs
+func HclReleaseDefinitionDeploymentGroup(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	releaseDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_release_definition" "release" {
+  project_id = "DevOps" // TODO: revert this back to azuredevops_project.project.id
+  name = "%s"
+  path = "\\"
+
+  stage {
+    name = "Stage 1"
+    rank = 1
+
+    deployment_group_job {
+      name = "Deployment group job 1"
+      rank = 1
+      deployment_group_id = 1619 // QueueID
+      //DeploymentHealthOption: OneAtATime
+      tags = ["deployment_group_job_1"]
+      timeout_in_minutes = 0
+      max_execution_time_in_minutes = 1
+      // download_artifact = {}
+      allow_scripts_to_access_oauth_token = true
+      condition = "succeedeed()"
+    }
+
+	deployment_group_job {
+      name = "Deployment group job 2"
+      rank = 2
+      deployment_group_id = 1619
+      tags = ["deployment_group_job_2"]
+      multiple { //DeploymentHealthOption: Custom
+        max_targets_in_parallel = 0 // HealthPercent
+      }
+      timeout_in_minutes = 0
+      max_execution_time_in_minutes = 1
+      // download_artifact = {}
+      allow_scripts_to_access_oauth_token = true
+      condition = "succeedeed()"
+    }
+
+    pre_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    retention_policy {
+      days_to_keep = 1
+      releases_to_keep = 1
+    }
+  }
+}`, releaseDefinitionName)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
+}
+
+// HclReleaseDefinition HCL describing an AzDO build definition with agentless jobs
+func HclReleaseDefinitionAgentless(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	releaseDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_release_definition" "release" {
+  project_id = "DevOps"
+  name = "%s"
+  path = "\\"
+
+  stage {
+    name = "Stage 1"
+    rank = 1
+
+    agentless_job {
+      name = "Agentless job 1"
+      rank = 1
+      
+      max_execution_time_in_minutes = 1
+      timeout_in_minutes = 0
+      condition = "succeeded()"
+    }
+
+    agentless_job {
+      name = "Agentless job 2"
+      rank = 2
+
+      multi_configuration {
+        multipliers = "OperatingSystem"
+      }
+	  max_execution_time_in_minutes = 1
+      timeout_in_minutes = 0
+      condition = "succeeded()"
+    }
+
+    pre_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    retention_policy {
+      days_to_keep = 1
+      releases_to_keep = 1
+    }
+  }
+}`, releaseDefinitionName)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
+}
