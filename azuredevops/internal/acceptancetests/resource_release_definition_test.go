@@ -23,7 +23,7 @@ func TestAccReleaseDefinition_Create_Update_Import(t *testing.T) {
 	releaseDefinitionPathEmpty := `\`
 	releaseDefinitionNameFirst := testutils.GenerateResourceName()
 	releaseDefinitionNameSecond := testutils.GenerateResourceName()
-	//releaseDefinitionNameThird := testutils.GenerateResourceName()
+	releaseDefinitionNameThird := testutils.GenerateResourceName()
 
 	releaseDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	releaseDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -92,19 +92,17 @@ func TestAccReleaseDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathFourth),
 				),
-			},
-			//{
-			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, gitRepoName, releaseDefinitionNameThird, releaseDefinitionPathEmpty),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		checkReleaseDefinitionExists(releaseDefinitionNameThird),
-			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "repository.0.repo_id"),
-			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameThird),
-			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
-			//	),
-			//},
-			{
+			}, {
+				Config: testutils.HclReleaseDefinitionAgentless(projectName, gitRepoName, releaseDefinitionNameThird, releaseDefinitionPathEmpty),
+				Check: resource.ComposeTestCheckFunc(
+					checkReleaseDefinitionExists(releaseDefinitionNameThird),
+					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "repository.0.repo_id"),
+					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameThird),
+					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
+				),
+			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:      tfReleaseDefNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfReleaseDefNode),

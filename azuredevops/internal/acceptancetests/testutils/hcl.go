@@ -813,14 +813,21 @@ func HclReleaseDefinitionAgent(projectName string, releaseDefinitionName string,
 	projectResource := HclProjectResource(projectName)
 	tasks := YamlReleaseJobTasks()
 	releaseDefinitionResource := fmt.Sprintf(`
+
+resource "azuredevops_group" "release" {
+	scope        = azuredevops_project.project.id
+	display_name = "release"
+}
+
 resource "azuredevops_release_definition" "release" {
-  project_id = "DevOps"
+  project_id = azuredevops_project.project.id
   name = "%s"
   path = "\\"
 
   stage {
     name = "Stage 1"
     rank = 1
+    owner_id = azuredevops_group.release.id
 
     agent_job {
       name = "Agent job 1"
@@ -920,7 +927,7 @@ YAML
   )
 }
 
-`, releaseDefinitionName, tasks)
+`, releaseDefinitionName, releasePath, tasks)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
@@ -929,17 +936,15 @@ func HclReleaseDefinitionDeploymentGroup(projectName string, releaseDefinitionNa
 	projectResource := HclProjectResource(projectName)
 	releaseDefinitionResource := fmt.Sprintf(`
 resource "azuredevops_release_definition" "release" {
-  project_id = "DevOps" // TODO: revert this back to azuredevops_project.project.id
+  project_id = azuredevops_project.project.id
   name = "%s"
-  path = "\\"
+  path = "%s"
 
   stage {
     name = "Stage 1"
-    rank = 1
 
     deployment_group_job {
       name = "Deployment group job 1"
-      rank = 1
       deployment_group_id = 1619 // QueueID
       //DeploymentHealthOption: OneAtATime
       tags = ["deployment_group_job_1"]
@@ -952,7 +957,6 @@ resource "azuredevops_release_definition" "release" {
 
 	deployment_group_job {
       name = "Deployment group job 2"
-      rank = 2
       deployment_group_id = 1619
       tags = ["deployment_group_job_2"]
       multiple { //DeploymentHealthOption: Custom
@@ -984,55 +988,62 @@ resource "azuredevops_release_definition" "release" {
       releases_to_keep = 1
     }
   }
-}`, releaseDefinitionName)
+}`, releaseDefinitionName, releasePath)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
 // HclReleaseDefinition HCL describing an AzDO build definition with agentless jobs
 func HclReleaseDefinitionAgentless(projectName string, releaseDefinitionName string, releasePath string) string {
 	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
 	releaseDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_group" "release" {
+  scope        = azuredevops_project.project.id
+  display_name = "release"
+}
+
 resource "azuredevops_release_definition" "release" {
-  project_id = "DevOps"
+  project_id = azuredevops_project.project.id
   name = "%s"
-  path = "\\"
+  path = "%s"
 
   stage {
     name = "Stage 1"
-    rank = 1
+	owner_id = azuredevops_group.release.origin_id
 
-    agentless_job {
-      name = "Agentless job 1"
-      rank = 1
+	job {
+      agentless {
+      	name = "Agentless job 1"
       
-      max_execution_time_in_minutes = 1
-      timeout_in_minutes = 0
-      condition = "succeeded()"
-    }
+      	max_execution_time_in_minutes = 1
+      	timeout_in_minutes = 0
+      	condition = "succeeded()"
+	  }
+	}
+	
+	job {
+      agentless {
+        name = "Agentless job 2"
 
-    agentless_job {
-      name = "Agentless job 2"
-      rank = 2
-
-      multi_configuration {
-        multipliers = "OperatingSystem"
+        multi_configuration {
+          multipliers = "OperatingSystem"
+        }
+	    max_execution_time_in_minutes = 1
+        timeout_in_minutes = 0
+        condition = "succeeded()"
       }
-	  max_execution_time_in_minutes = 1
-      timeout_in_minutes = 0
-      condition = "succeeded()"
-    }
+	}
+
+	deploy_step {
+	}
 
     pre_deploy_approval {
       approval {
-        is_automated = true
-        rank = 1
       }
     }
 
     post_deploy_approval {
       approval {
-        is_automated = true
-        rank = 1
       }
     }
 
@@ -1040,7 +1051,13 @@ resource "azuredevops_release_definition" "release" {
       days_to_keep = 1
       releases_to_keep = 1
     }
+
+ 	pre_deploy_gate {
+	}
+
+    post_deploy_gate {
+	}
   }
-}`, releaseDefinitionName)
+}`, releaseDefinitionName, escapedReleasePath)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
