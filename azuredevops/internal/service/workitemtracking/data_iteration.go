@@ -7,6 +7,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking/utils"
 )
 
+// DataIteration schema for iteration data
 func DataIteration() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceIterationRead,

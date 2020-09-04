@@ -7,6 +7,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking/utils"
 )
 
+// DataArea schema for data area
 func DataArea() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceAreaRead,

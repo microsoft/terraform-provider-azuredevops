@@ -10,6 +10,7 @@ import (
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 )
 
+// ResourceIterationPermissions schema and implementation for iteration permission resource
 func ResourceIterationPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceIterationPermissionsCreateOrUpdate,

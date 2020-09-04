@@ -186,6 +186,7 @@ type SecurityNamespace struct {
 	token          string
 }
 
+// TokenCreatorFunc signature for creating namespace tokens
 type TokenCreatorFunc func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error)
 
 // NewSecurityNamespace Creates a new instance of a security namespace
@@ -212,6 +213,7 @@ func NewSecurityNamespace(d *schema.ResourceData, clients *client.AggregatedClie
 	return sn, nil
 }
 
+// GetToken return namespace tokens
 func (sn *SecurityNamespace) GetToken() string {
 	return sn.token
 }
@@ -270,7 +272,7 @@ func (sn *SecurityNamespace) getAccessControlList(descriptorList *[]string) (*se
 	return &(*acl)[0], nil
 }
 
-func (sn *SecurityNamespace) getIndentitiesFromSubjects(principal *[]string) (*[]identity.Identity, error) {
+func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]identity.Identity, error) {
 	if principal == nil || len(*principal) <= 0 {
 		return nil, fmt.Errorf("principal is nil or empty")
 	}
@@ -317,7 +319,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		}).
 		ToSlice(&subjectList)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectList)
 	if err != nil {
 		return err
 	}
@@ -425,7 +427,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 		return nil, err
 	}
 
-	idList, err := sn.getIndentitiesFromSubjects(principal)
+	idList, err := sn.getIdentitiesFromSubjects(principal)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +481,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 
 // RemovePrincipalPermissions removes all permissions for given principals and a Security Namespace token
 func (sn *SecurityNamespace) RemovePrincipalPermissions(principal *[]string) error {
-	idList, err := sn.getIndentitiesFromSubjects(principal)
+	idList, err := sn.getIdentitiesFromSubjects(principal)
 	if err != nil {
 		return err
 	}

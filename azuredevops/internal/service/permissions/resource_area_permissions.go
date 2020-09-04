@@ -10,6 +10,7 @@ import (
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 )
 
+// ResourceAreaPermissions schema and implementation for area permission resource
 func ResourceAreaPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAreaPermissionsCreateOrUpdate,

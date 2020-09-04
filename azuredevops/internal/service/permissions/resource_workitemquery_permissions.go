@@ -40,6 +40,7 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 	}
 }
 
+// ResourceWorkItemQueryPermissionsCreateOrUpdate create or update project permissions
 func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
@@ -55,6 +56,7 @@ func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m in
 	return ResourceWorkItemQueryPermissionsRead(d, m)
 }
 
+// ResourceWorkItemQueryPermissionsRead read project permissions
 func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
@@ -77,6 +79,7 @@ func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
+// ResourceWorkItemQueryPermissionsDelete remove project permissions
 func ResourceWorkItemQueryPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
