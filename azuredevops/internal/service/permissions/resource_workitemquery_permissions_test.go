@@ -12,10 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 var wiqProjectID = "f454422e-57b3-442a-8dde-b1b6b7c40b95"

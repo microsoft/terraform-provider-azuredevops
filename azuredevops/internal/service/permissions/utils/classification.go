@@ -8,7 +8,7 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 const aclClassificationNodeTokenPrefix = "vstfs:///Classification/Node/"

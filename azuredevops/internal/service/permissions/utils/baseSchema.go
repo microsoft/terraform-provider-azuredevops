@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // CreatePermissionResourceSchema creates a resources schema for a Terraform permission resource

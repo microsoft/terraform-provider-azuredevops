@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
 // Verifies that the following sequence of events occurrs without error:
@@ -38,7 +38,7 @@ func TestAccProject_DataSource(t *testing.T) {
 			projectName := testutils.GenerateResourceName()
 			projectData := fmt.Sprintf(`
 			%s
-		
+
 			data "azuredevops_project" "project" {
 				%s = azuredevops_project.project.%s
 			}`, testutils.HclProjectResource(projectName), tc.Identifier, tc.IdentifierOnProject)
