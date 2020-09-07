@@ -27,6 +27,7 @@ import (
 // Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
 //
 func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
+	t.Skip("Skipping test TestAccGroupMembership_CreateAndRemove due to service inconsistent")
 	projectName := testutils.GenerateResourceName()
 	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	groupName := "Build Administrators"
