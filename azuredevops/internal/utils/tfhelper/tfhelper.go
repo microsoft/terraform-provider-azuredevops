@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/secretmemo"
 )
 
@@ -159,10 +162,14 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
 
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err == nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			} else {
+				return nil, err
+			}
 		},
 	}
 }
@@ -184,10 +191,13 @@ func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 				return nil, fmt.Errorf("resource ID was expected to be integer, but was not: %+v", err)
 			}
 
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
-
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err == nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			} else {
+				return nil, err
+			}
 		},
 	}
 }
@@ -204,11 +214,34 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
 
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err != nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			} else {
+				return nil, err
+			}
 		},
 	}
+}
+
+//Get real project ID
+func getRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
+	//if request params is project name ,try get the project ID
+	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {
+		clients := meta.(*client.AggregatedClient)
+		project, err := clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+			ProjectId:           &projectNameOrID,
+			IncludeCapabilities: converter.Bool(true),
+			IncludeHistory:      converter.Bool(false),
+		})
+		if err != nil {
+			return "", fmt.Errorf(" Failed to get the project with specified projectNameOrID: %s , %+v", projectNameOrID, err)
+		}
+		return (*project.Id).String(), nil
+	}
+	return projectNameOrID, nil
+
 }
 
 // FindMapInSetWithGivenKeyValue Pulls an element of `TypeSet` from the state. The values of this set are assumed to be
