@@ -241,7 +241,6 @@ func getRealProjectId(projectNameOrID string, meta interface{}) (string, error) 
 		return (*project.Id).String(), nil
 	}
 	return projectNameOrID, nil
-
 }
 
 // FindMapInSetWithGivenKeyValue Pulls an element of `TypeSet` from the state. The values of this set are assumed to be
