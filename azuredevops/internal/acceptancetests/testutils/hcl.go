@@ -811,111 +811,68 @@ func YamlReleaseJobTasks() string {
 // HclReleaseDefinition HCL describing an AzDO release definition with agent jobs
 func HclReleaseDefinitionAgent(projectName string, releaseDefinitionName string, releasePath string) string {
 	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
 	tasks := YamlReleaseJobTasks()
 	releaseDefinitionResource := fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
 
-resource "azuredevops_group" "release" {
-	scope        = azuredevops_project.project.id
-	display_name = "release"
+data "azuredevops_agent_pool" "pool" {
+  name = "Azure Pipelines"
+}
+
+data "azuredevops_agent_queue" "queue" {
+	project_id    = azuredevops_project.project.id
+	name = "Azure Pipelines"
 }
 
 resource "azuredevops_release_definition" "release" {
   project_id = azuredevops_project.project.id
   name = "%s"
-  path = "\\"
+  path = "%s"
 
   stage {
     name = "Stage 1"
-    rank = 1
-    owner_id = azuredevops_group.release.id
+    owner_id = data.azuredevops_group.group.origin_id
+    variable_groups = []
 
-    agent_job {
-      name = "Agent job 1"
-      rank = 1
- 	  demand {
-		name =  "equals_condition_name"
-		value = "x"
-	  }
-      demand {
-		name =  "exists_condition_name"
-	  }
-      agent_pool_hosted_azure_pipelines {
-        agent_pool_id = 2069
-        agent_specification = "ubuntu-18.04"
-      }
-      timeout_in_minutes = 0
-      max_execution_time_in_minutes = 1
-      condition = "succeeded()"
-		// overrideInput {} // TODO
-		// enable_access_token ? Do we need this on this level?
-    }
+    job {
+      agent {
+        name = "Agent job 1"
+        timeout_in_minutes = 0
+        max_execution_time_in_minutes = 1
+        allow_scripts_to_access_oauth_token = false
+        skip_artifacts_download = false
 
-	agent_job {
-      name = "Agent job 3"
-      rank = 3
-      agent_pool_hosted_azure_pipelines {
-        agent_pool_id = 2069
-        agent_specification = "ubuntu-18.04"
-      }
-	
-	  multi_configuration {
-		multipliers = "OperatingSystem"
-		number_of_agents = 1
-	  }
-
-      condition = "succeeded()"
-		// overrideInput {} // TODO
-		// enable_access_token ? Do we need this on this level?
-    }
-
-	agent_job {
-      name = "Agent job 2"
-      rank = 2
-      agent_pool_hosted_azure_pipelines {
-        agent_pool_id = 2069
-        agent_specification = "ubuntu-18.04"
-      }
-	  multi_agent {
-		max_number_of_agents = 1
-	  }
-      condition = "succeeded()"
-   	  // overrideInput {} // TODO
-	  // enable_access_token ? Do we need this on this level?
-
-	  dynamic "task" {
-	    for_each = local.tasks
-		content {
-		  always_run =           lookup(task.value, "alwaysRun", null)
-		  condition =            lookup(task.value, "condition", null)
-		  continue_on_error =    lookup(task.value, "continueOnError", null)
-		  enabled =              lookup(task.value, "enabled", null)
-		  display_name =         lookup(task.value, "displayName", null)
-          override_input =       lookup(task.value, "overrideInput", null)
-          inputs =               lookup(task.value, "inputs", null)
-          timeout_in_minutes =   lookup(task.value, "timeoutInMinutes", null)
-          // task MUST come last as it overwites the task
-          task =                 lookup(task.value, "task", null)
+        agent_pool_hosted_azure_pipelines {
+          agent_pool_id = data.azuredevops_agent_queue.queue.id
+          agent_specification = "ubuntu-18.04"
         }
-	  }
+      }
+    }
+
+    deploy_step {
     }
 
     pre_deploy_approval {
       approval {
-        is_automated = true
-        rank = 1
       }
     }
 
     post_deploy_approval {
       approval {
-        is_automated = true
-        rank = 1
       }
     }
 
     retention_policy {
-      days_to_keep = 1
-      releases_to_keep = 1
+    }
+
+    pre_deploy_gate {
+    }
+
+    post_deploy_gate {
     }
   }
 }
@@ -927,14 +884,20 @@ YAML
   )
 }
 
-`, releaseDefinitionName, releasePath, tasks)
+`, releaseDefinitionName, escapedReleasePath, tasks)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
 // HclReleaseDefinition HCL describing an AzDO release definition with deployment group jobs
 func HclReleaseDefinitionDeploymentGroup(projectName string, releaseDefinitionName string, releasePath string) string {
 	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
 	releaseDefinitionResource := fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
+
 resource "azuredevops_release_definition" "release" {
   project_id = azuredevops_project.project.id
   name = "%s"
@@ -942,6 +905,7 @@ resource "azuredevops_release_definition" "release" {
 
   stage {
     name = "Stage 1"
+	owner_id = data.azuredevops_group.group.origin_id
 
     deployment_group_job {
       name = "Deployment group job 1"
@@ -988,7 +952,7 @@ resource "azuredevops_release_definition" "release" {
       releases_to_keep = 1
     }
   }
-}`, releaseDefinitionName, releasePath)
+}`, releaseDefinitionName, escapedReleasePath)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
@@ -997,9 +961,9 @@ func HclReleaseDefinitionAgentless(projectName string, releaseDefinitionName str
 	projectResource := HclProjectResource(projectName)
 	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
 	releaseDefinitionResource := fmt.Sprintf(`
-resource "azuredevops_group" "release" {
-  scope        = azuredevops_project.project.id
-  display_name = "release"
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
 }
 
 resource "azuredevops_release_definition" "release" {
@@ -1009,7 +973,7 @@ resource "azuredevops_release_definition" "release" {
 
   stage {
     name = "Stage 1"
-	owner_id = azuredevops_group.release.origin_id
+	owner_id = data.azuredevops_group.group.origin_id
 
 	job {
       agentless {

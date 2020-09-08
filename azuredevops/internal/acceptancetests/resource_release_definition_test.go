@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
@@ -22,15 +21,16 @@ func TestAccReleaseDefinition_Create_Update_Import(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	releaseDefinitionPathEmpty := `\`
 	releaseDefinitionNameFirst := testutils.GenerateResourceName()
-	releaseDefinitionNameSecond := testutils.GenerateResourceName()
-	releaseDefinitionNameThird := testutils.GenerateResourceName()
+	//releaseDefinitionNameSecond := testutils.GenerateResourceName()
+	//releaseDefinitionNameThird := testutils.GenerateResourceName()
 
-	releaseDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	releaseDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//releaseDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//releaseDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	releaseDefinitionPathThird := `\` + releaseDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	releaseDefinitionPathFourth := `\` + releaseDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//releaseDefinitionPathThird := `\` + releaseDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	//releaseDefinitionPathFourth := `\` + releaseDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
+	c1 := testutils.HclReleaseDefinitionAgent(projectName, releaseDefinitionNameFirst, releaseDefinitionPathEmpty)
 	tfReleaseDefNode := "azuredevops_release_definition.release"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -38,7 +38,7 @@ func TestAccReleaseDefinition_Create_Update_Import(t *testing.T) {
 		CheckDestroy: checkReleaseDefinitionDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathEmpty),
+				Config: c1,
 				Check: resource.ComposeTestCheckFunc(
 					checkReleaseDefinitionExists(releaseDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
@@ -46,69 +46,70 @@ func TestAccReleaseDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
 					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
 				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameSecond, releaseDefinitionPathEmpty),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameSecond),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameSecond),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
-				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathFirst),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathFirst),
-				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst,
-					releaseDefinitionPathSecond),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathSecond),
-				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathThird),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathThird),
-				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathFourth),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathFourth),
-				),
-			}, {
-				Config: testutils.HclReleaseDefinitionAgentless(projectName, gitRepoName, releaseDefinitionNameThird, releaseDefinitionPathEmpty),
-				Check: resource.ComposeTestCheckFunc(
-					checkReleaseDefinitionExists(releaseDefinitionNameThird),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
-					resource.TestCheckResourceAttrSet(tfReleaseDefNode, "repository.0.repo_id"),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameThird),
-					resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
-				),
-			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
-				ResourceName:      tfReleaseDefNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfReleaseDefNode),
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
+			//{
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameSecond, releaseDefinitionPathEmpty),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameSecond),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameSecond),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
+			//	),
+			//}, {
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathFirst),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathFirst),
+			//	),
+			//}, {
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst,
+			//		releaseDefinitionPathSecond),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathSecond),
+			//	),
+			//}, {
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathThird),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathThird),
+			//	),
+			//}, {
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, releaseDefinitionNameFirst, releaseDefinitionPathFourth),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameFirst),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathFourth),
+			//	),
+			//}, {
+			//	Config: testutils.HclReleaseDefinitionAgentless(projectName, gitRepoName, releaseDefinitionNameThird, releaseDefinitionPathEmpty),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		checkReleaseDefinitionExists(releaseDefinitionNameThird),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "project_id"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "revision"),
+			//		resource.TestCheckResourceAttrSet(tfReleaseDefNode, "repository.0.repo_id"),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "name", releaseDefinitionNameThird),
+			//		resource.TestCheckResourceAttr(tfReleaseDefNode, "path", releaseDefinitionPathEmpty),
+			//	),
+			//}, {
+			//	// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+			//	ResourceName:      tfReleaseDefNode,
+			//	ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfReleaseDefNode),
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//},
 		},
 	})
 }
