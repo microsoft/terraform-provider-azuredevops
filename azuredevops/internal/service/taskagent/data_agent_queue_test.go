@@ -17,9 +17,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
-	agentPoolListEmpty := []taskagent.TaskAgentPool{}
-	name := "nonexistentAgentPool"
+func TestDataSourceAgentQueue_Read_TestAgentQueueNotFound(t *testing.T) {
+	agentQueueListEmpty := []taskagent.TaskAgentQueue{}
+	name := "nonexistentAgentQueue"
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -31,21 +31,23 @@ func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
 
 	taskAgentClient.
 		EXPECT().
-		GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
-			PoolName: &name,
+		GetAgentQueues(clients.Ctx, taskagent.GetAgentQueuesArgs{
+			Project:   &agentQueueProject,
+			QueueName: &name,
 		}).
-		Return(&agentPoolListEmpty, nil).
+		Return(&agentQueueListEmpty, nil).
 		Times(1)
 
-	resourceData := schema.TestResourceDataRaw(t, DataAgentPool().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, DataAgentQueue().Schema, nil)
 	resourceData.Set("name", &name)
-	err := dataSourceAgentPoolRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Unable to find agent pool")
+	resourceData.Set("project_id", &agentQueueProject)
+	err := dataSourceAgentQueueRead(resourceData, clients)
+	require.Contains(t, err.Error(), "Unable to find agent queue")
 }
 
-func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {
-	agentPoolList := []taskagent.TaskAgentPool{{}, {}}
-	name := "multiplePools"
+func TestDataSourceAgentQueue_Read_TestMultipleAgentQueuesFound(t *testing.T) {
+	agentQueueList := []taskagent.TaskAgentQueue{{}, {}}
+	name := "multipleQueues"
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -57,14 +59,16 @@ func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {
 
 	taskAgentClient.
 		EXPECT().
-		GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
-			PoolName: &name,
+		GetAgentQueues(clients.Ctx, taskagent.GetAgentQueuesArgs{
+			Project:   &agentQueueProject,
+			QueueName: &name,
 		}).
-		Return(&agentPoolList, nil).
+		Return(&agentQueueList, nil).
 		Times(1)
 
-	resourceData := schema.TestResourceDataRaw(t, DataAgentPool().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, DataAgentQueue().Schema, nil)
 	resourceData.Set("name", &name)
-	err := dataSourceAgentPoolRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Found multiple agent pools for name")
+	resourceData.Set("project_id", &agentQueueProject)
+	err := dataSourceAgentQueueRead(resourceData, clients)
+	require.Contains(t, err.Error(), "Found multiple agent queues for name")
 }
