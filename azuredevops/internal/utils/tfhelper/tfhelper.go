@@ -163,13 +163,12 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
 
-			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err == nil {
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
 				d.Set("project_id", projectNameOrID)
 				d.SetId(resourceID)
 				return []*schema.ResourceData{d}, nil
-			} else {
-				return nil, err
 			}
+			return nil, err
 		},
 	}
 }
@@ -191,13 +190,12 @@ func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 				return nil, fmt.Errorf("resource ID was expected to be integer, but was not: %+v", err)
 			}
 
-			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err == nil {
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
 				d.Set("project_id", projectNameOrID)
 				d.SetId(resourceID)
 				return []*schema.ResourceData{d}, nil
-			} else {
-				return nil, err
 			}
+			return nil, err
 		},
 	}
 }
@@ -214,20 +212,19 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
 
-			if projectNameOrID, err = getRealProjectId(projectNameOrID, meta); err != nil {
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err != nil {
 				d.Set("project_id", projectNameOrID)
 				d.SetId(resourceID)
 				return []*schema.ResourceData{d}, nil
-			} else {
-				return nil, err
 			}
+			return nil, err
 		},
 	}
 }
 
 //Get real project ID
-func getRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
-	//if request params is project name ,try get the project ID
+func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
+	//If request params is project name, try get the project ID
 	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {
 		clients := meta.(*client.AggregatedClient)
 		project, err := clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
