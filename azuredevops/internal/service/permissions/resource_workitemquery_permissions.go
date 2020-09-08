@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // ResourceWorkItemQueryPermissions schema and implementation for project permission resource
@@ -40,6 +40,7 @@ func ResourceWorkItemQueryPermissions() *schema.Resource {
 	}
 }
 
+// ResourceWorkItemQueryPermissionsCreateOrUpdate create or update project permissions
 func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
@@ -55,6 +56,7 @@ func ResourceWorkItemQueryPermissionsCreateOrUpdate(d *schema.ResourceData, m in
 	return ResourceWorkItemQueryPermissionsRead(d, m)
 }
 
+// ResourceWorkItemQueryPermissionsRead read project permissions
 func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
@@ -77,6 +79,7 @@ func ResourceWorkItemQueryPermissionsRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
+// ResourceWorkItemQueryPermissionsDelete remove project permissions
 func ResourceWorkItemQueryPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
