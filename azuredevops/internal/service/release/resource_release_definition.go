@@ -14,18 +14,12 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
-	"log"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
-
-func Log(i interface{}) {
-	d, _ := json.MarshalIndent(i, "", "  ")
-	log.Println(string(d))
-}
 
 /*
 NOTE : https://www.terraform.io/docs/extend/writing-custom-providers.html
@@ -253,15 +247,6 @@ func ResourceReleaseDefinition() *schema.Resource {
 				"enforce_identity_revalidation": {
 					Type:     schema.TypeBool,
 					Optional: true,
-				},
-				"execution_order": {
-					Type:     schema.TypeString,
-					Required: true,
-					ValidateFunc: validation.StringInSlice([]string{
-						string(release.ApprovalExecutionOrderValues.AfterGatesAlways),
-						string(release.ApprovalExecutionOrderValues.AfterSuccessfulGates),
-						string(release.ApprovalExecutionOrderValues.BeforeGates),
-					}, false),
 				},
 				"release_creator_can_be_approver": {
 					Type:     schema.TypeBool,
@@ -1676,9 +1661,10 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	demands := expandReleaseDefinitionDemandList(d["demand"].([]interface{}))
 	environmentOptions := expandReleaseEnvironmentOptionsListFirstOrNil(d["environment_options"].([]interface{}))
 	retentionPolicy := expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d["retention_policy"].([]interface{}))
-	approvalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}))
-	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}), approvalOptions)
-	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}), approvalOptions)
+	preApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.BeforeGates)
+	postApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.AfterSuccessfulGates)
+	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}), preApprovalOptions)
+	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}), postApprovalOptions)
 	properties := expandReleaseEnvironmentPropertiesListFirstOrNil(d["properties"].([]interface{}))
 	deployPhases := expandJobsList(d["job"].([]interface{}))
 	preDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["pre_deploy_gate"].([]interface{}))
@@ -2287,8 +2273,7 @@ func expandReleaseDefinitionApprovalStepList(d []interface{}) []release.ReleaseD
 	return vs
 }
 
-func expandReleaseApprovalOptions(d map[string]interface{}) release.ApprovalOptions {
-	executionOrder := release.ApprovalExecutionOrder(d["execution_order"].(string))
+func expandReleaseApprovalOptions(d map[string]interface{}, executionOrder release.ApprovalExecutionOrder) release.ApprovalOptions {
 	return release.ApprovalOptions{
 		AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(d["auto_triggered_and_previous_environment_approved_can_be_skipped"].(bool)),
 		EnforceIdentityRevalidation:                             converter.Bool(d["enforce_identity_revalidation"].(bool)),
@@ -2298,17 +2283,17 @@ func expandReleaseApprovalOptions(d map[string]interface{}) release.ApprovalOpti
 		TimeoutInMinutes:                                        converter.Int(d["timeout_in_minutes"].(int)),
 	}
 }
-func expandReleaseApprovalOptionsList(d []interface{}) []release.ApprovalOptions {
+func expandReleaseApprovalOptionsList(d []interface{}, executionOrder release.ApprovalExecutionOrder) []release.ApprovalOptions {
 	vs := make([]release.ApprovalOptions, 0, len(d))
 	for _, v := range d {
 		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseApprovalOptions(val))
+			vs = append(vs, expandReleaseApprovalOptions(val, executionOrder))
 		}
 	}
 	return vs
 }
-func expandReleaseApprovalOptionsListFirstOrNil(d []interface{}) *release.ApprovalOptions {
-	d2 := expandReleaseApprovalOptionsList(d)
+func expandReleaseApprovalOptionsListFirstOrNil(d []interface{}, executionOrder release.ApprovalExecutionOrder) *release.ApprovalOptions {
+	d2 := expandReleaseApprovalOptionsList(d, executionOrder)
 	if len(d2) != 1 {
 		return nil
 	}
@@ -2700,7 +2685,6 @@ func flattenApprovalOptions(m1, m2 *release.ApprovalOptions) []map[string]interf
 	return []map[string]interface{}{{
 		"auto_triggered_and_previous_environment_approved_can_be_skipped": m.AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped,
 		"enforce_identity_revalidation":                                   m.EnforceIdentityRevalidation,
-		"execution_order":                                                 m.ExecutionOrder,
 		"release_creator_can_be_approver":                                 m.ReleaseCreatorCanBeApprover,
 		"required_approver_count":                                         m.RequiredApproverCount,
 		"timeout_in_minutes":                                              m.TimeoutInMinutes,
@@ -2868,7 +2852,6 @@ func flattenReleaseDefinitionEnvironmentList(m *[]release.ReleaseDefinitionEnvir
 	})
 	ds := make([]interface{}, 0, len(*m))
 	for _, d := range m2 {
-		Log(d.Rank)
 		ds = append(ds, flattenReleaseDefinitionEnvironment(d))
 	}
 	return ds

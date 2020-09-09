@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
+	_tmp "github.com/microsoft/terraform-provider-azuredevops/.tmp"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/stretchr/testify/require"
@@ -24,15 +25,6 @@ var testReleaseProjectID = uuid.New().String()
 var now, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
 var properties interface{}
-
-var approvalOptions = release.ApprovalOptions{
-	RequiredApproverCount:                                   converter.Int(1),
-	ReleaseCreatorCanBeApprover:                             converter.Bool(false),
-	AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
-	EnforceIdentityRevalidation:                             converter.Bool(false),
-	TimeoutInMinutes:                                        converter.Int(0),
-	ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.AfterSuccessfulGates,
-}
 
 var testReleaseDefinition = release.ReleaseDefinition{
 	Id:             converter.Int(100),
@@ -71,7 +63,14 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					IsAutomated:      converter.Bool(true),
 					IsNotificationOn: converter.Bool(false),
 				}},
-				ApprovalOptions: &approvalOptions,
+				ApprovalOptions: &release.ApprovalOptions{
+					RequiredApproverCount:                                   converter.Int(1),
+					ReleaseCreatorCanBeApprover:                             converter.Bool(false),
+					AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
+					EnforceIdentityRevalidation:                             converter.Bool(false),
+					TimeoutInMinutes:                                        converter.Int(0),
+					ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.BeforeGates,
+				},
 			},
 			PostDeployApprovals: &release.ReleaseDefinitionApprovals{
 				Approvals: &[]release.ReleaseDefinitionApprovalStep{{
@@ -80,7 +79,14 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					IsAutomated:      converter.Bool(true),
 					IsNotificationOn: converter.Bool(false),
 				}},
-				ApprovalOptions: &approvalOptions,
+				ApprovalOptions: &release.ApprovalOptions{
+					RequiredApproverCount:                                   converter.Int(1),
+					ReleaseCreatorCanBeApprover:                             converter.Bool(false),
+					AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
+					EnforceIdentityRevalidation:                             converter.Bool(false),
+					TimeoutInMinutes:                                        converter.Int(0),
+					ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.AfterSuccessfulGates,
+				},
 			},
 			DeployStep: &release.ReleaseDefinitionDeployStep{
 				Id:    converter.Int(303),
@@ -375,6 +381,9 @@ func TestAzureDevOpsReleaseDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	sortedExpected := sortReleaseDefinition(testReleaseDefinition)
 	sortedActual := sortReleaseDefinition(*releaseDefinitionAfterRoundTrip)
+
+	_tmp.Log(sortedExpected)
+	_tmp.Log(sortedActual)
 
 	require.Nil(t, err)
 	require.Equal(t, sortedExpected, sortedActual)
