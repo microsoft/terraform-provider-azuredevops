@@ -99,18 +99,6 @@ func ResourceReleaseDefinition() *schema.Resource {
 		},
 	}
 
-	// TODO : import these from YAML
-	//taskInputValidation := map[string]*schema.Schema{
-	//	"expression": {
-	//		Type:     schema.TypeString,
-	//		Required: true,
-	//	},
-	//	"message": {
-	//		Type:     schema.TypeString,
-	//		Optional: true,
-	//	},
-	//}
-
 	demand := map[string]*schema.Schema{
 		"name": {
 			Type:     schema.TypeString,
@@ -662,7 +650,6 @@ func ResourceReleaseDefinition() *schema.Resource {
 			},
 		},
 		// TODO : How to solve "ignore" if empty and new is isAutomated?
-		// NOTE : Currently the compare between Set is not showing partial update but is complete remove and add.
 	}
 
 	retentionPolicy := &schema.Schema{
@@ -2047,7 +2034,6 @@ func expandReleaseHostedAzurePipelinesSet(d *schema.Set) (*release.AgentSpecific
 
 func expandReleaseMachineGroupDeploymentInput(d map[string]interface{}) *release.MachineGroupDeploymentInput {
 	tags := tfhelper.ExpandStringList(d["tags"].([]interface{}))
-	// TODO : Which demand expansion is correct for this?
 	multiple := expandReleaseMachineGroupDeploymentInputMultipleListFirstOrNil(d["multiple"].([]interface{}))
 	deploymentHealthOption := DeploymentHealthOptionTypeValues.OneTargetAtATime
 	if multiple != nil {
@@ -2058,16 +2044,12 @@ func expandReleaseMachineGroupDeploymentInput(d map[string]interface{}) *release
 		JobCancelTimeoutInMinutes: converter.Int(d["max_execution_time_in_minutes"].(int)),
 		OverrideInputs:            nil, // TODO : OverrideInputs
 		TimeoutInMinutes:          converter.Int(d["timeout_in_minutes"].(int)),
-		ArtifactsDownloadInput:    &release.ArtifactsDownloadInput{
-			// DownloadInputs: &downloadInputs,
-		},
-		//Demands:                   &demands,
-		EnableAccessToken:      converter.Bool(d["allow_scripts_to_access_oauth_token"].(bool)), // TODO : enable_access_token
-		QueueId:                converter.Int(d["deployment_group_id"].(int)),
-		SkipArtifactsDownload:  converter.Bool(d["skip_artifacts_download"].(bool)),
-		DeploymentHealthOption: converter.String(string(deploymentHealthOption)),
-		//HealthPercent:
-		Tags: &tags,
+		ArtifactsDownloadInput:    &release.ArtifactsDownloadInput{},
+		EnableAccessToken:         converter.Bool(d["allow_scripts_to_access_oauth_token"].(bool)),
+		QueueId:                   converter.Int(d["deployment_group_id"].(int)),
+		SkipArtifactsDownload:     converter.Bool(d["skip_artifacts_download"].(bool)),
+		DeploymentHealthOption:    converter.String(string(deploymentHealthOption)),
+		Tags:                      &tags,
 	}
 }
 func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeploymentInput {
@@ -2108,12 +2090,11 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 		OverrideInputs:            nil, // TODO : OverrideInputs
 		TimeoutInMinutes:          converter.Int(d["timeout_in_minutes"].(int)),
 		Demands:                   &demands,
-		EnableAccessToken:         converter.Bool(d["allow_scripts_to_access_oauth_token"].(bool)), // TODO : enable_access_token
+		EnableAccessToken:         converter.Bool(d["allow_scripts_to_access_oauth_token"].(bool)),
 		QueueID:                   &queueID,
 		SkipArtifactsDownload:     converter.Bool(d["skip_artifacts_download"].(bool)),
 		AgentSpecification:        agentSpecification,
-		// ImageID: ,
-		ParallelExecution: &parallelExecution,
+		ParallelExecution:         &parallelExecution,
 		ArtifactsDownloadInput: &release.ArtifactsDownloadInput{
 			DownloadInputs: &downloadInputs,
 		},
@@ -2382,7 +2363,6 @@ func expandReleaseDefinitionGatesStep(d map[string]interface{}) release.ReleaseD
 	return release.ReleaseDefinitionGatesStep{
 		Id:    converter.Int(d["id"].(int)),
 		Gates: &gates,
-		// GatesOptions: expandReleaseDefinitionGatesOptionsList(d["gates_options"].([]interface{})),
 	}
 }
 func expandReleaseDefinitionGatesStepList(d []interface{}) []release.ReleaseDefinitionGatesStep {
@@ -2612,10 +2592,6 @@ func flattenReleaseAgentDeploymentInput(rdp *release.ReleaseDeployPhase, rai *re
 		"skip_artifacts_download":             rai.SkipArtifactsDownload,
 		"allow_scripts_to_access_oauth_token": rai.EnableAccessToken,
 		"demand":                              flattenReleaseDeployPhaseDemandList(rai.Demands),
-		//"override_inputs":                      overrideInputs, // rai.OverrideInputs
-		//"agent_pool_private":                  "array",  // ???
-		//"multi_configuration":                 "array", // ???
-		//"multi_agent":                         "array", // ???
 	}
 	return d
 }
@@ -2628,25 +2604,8 @@ func flattenReleaseServerInput(rdp *release.ReleaseDeployPhase, rai *release.Ser
 		"timeout_in_minutes":            rai.TimeoutInMinutes,
 		"max_execution_time_in_minutes": rai.JobCancelTimeoutInMinutes,
 		"condition":                     rai.Condition,
-		//"override_inputs":                      overrideInputs, // rai.OverrideInputs
-		//"multi_configuration":                 "array", // ???
 	}
 	return d
-}
-
-func flattenReleaseGatesDeploymentInput(m *release.GatesDeploymentInput) interface{} {
-	// TODO :
-	return map[string]interface{}{}
-}
-
-func flattenReleaseMachineGroupDeploymentInput(m *release.MachineGroupDeploymentInput) interface{} {
-	// TODO :
-	return map[string]interface{}{}
-}
-
-func flattenReleaseServerDeploymentInput(m *release.ServerDeploymentInput) interface{} {
-	// TODO :
-	return map[string]interface{}{}
 }
 
 func unmarshalAgentDeploymentInput(deployPhase []byte, agentDeploymentInput []byte, workflowTasks []byte) (*release.ReleaseDeployPhase, *release.AgentDeploymentInput, *[]release.WorkflowTask) {
