@@ -11,23 +11,43 @@ import (
 
 // DataProject schema and implementation for project data source
 func DataProject() *schema.Resource {
-	baseSchema := ResourceProject()
-	for k, v := range baseSchema.Schema {
-		baseSchema.Schema[k] = &schema.Schema{
-			Type:     v.Type,
-			Computed: true,
-		}
-	}
-
-	baseSchema.Schema["project_identifier"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-	}
-
 	return &schema.Resource{
-		Read:   dataProjectRead,
-		Schema: baseSchema.Schema,
+		Read: dataProjectRead,
+		Schema: map[string]*schema.Schema{
+			"project_identifier": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"project_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"visibility": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"version_control": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"work_item_template": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"process_template_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"features": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+		},
 	}
 }
 
