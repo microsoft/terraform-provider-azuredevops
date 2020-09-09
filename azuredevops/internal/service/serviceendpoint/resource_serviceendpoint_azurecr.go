@@ -6,10 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// ResourceServiceEndpointACR schema and implementation for ACR service endpoint resource
+// ResourceServiceEndpointAzureCR schema and implementation for ACR service endpoint resource
 func ResourceServiceEndpointAzureCR() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureCR, expandServiceEndpointAzureCR)
 	makeUnprotectedSchema(r, "azurecr_spn_tenantid", "ACR_TENANT_ID", "The service principal tenant id which should be used.")
@@ -35,10 +35,10 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-	subscriptionId := d.Get("azurecr_subscription_id")
+	subscriptionID := d.Get("azurecr_subscription_id")
 	scope := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerRegistry/registries/%s",
-		subscriptionId, d.Get("resource_group"), d.Get("azurecr_name"),
+		subscriptionID, d.Get("resource_group"), d.Get("azurecr_name"),
 	)
 	loginServer := fmt.Sprintf("%s.azurecr.io", d.Get("azurecr_name"))
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -52,13 +52,13 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 	}
 	serviceEndpoint.Data = &map[string]string{
 		"registryId":       scope,
-		"subscriptionId":   subscriptionId.(string),
+		"subscriptionId":   subscriptionID.(string),
 		"subscriptionName": d.Get("azurecr_subscription_name").(string),
 		"registrytype":     "ACR",
 	}
 	serviceEndpoint.Type = converter.String("dockerregistry")
-	azurecrUrl := fmt.Sprintf("https://%s", loginServer)
-	serviceEndpoint.Url = converter.String(azurecrUrl)
+	azureContainerRegistryURL := fmt.Sprintf("https://%s", loginServer)
+	serviceEndpoint.Url = converter.String(azureContainerRegistryURL)
 
 	return serviceEndpoint, projectID, nil
 }

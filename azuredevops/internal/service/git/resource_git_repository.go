@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -230,11 +230,11 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 	return nil
 }
 
-func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryId string) (*git.GitImportRequest, error) {
+func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryID string) (*git.GitImportRequest, error) {
 	args := git.CreateImportRequestArgs{
 		ImportRequest: &gitImportRequest,
 		Project:       &project,
-		RepositoryId:  &repositoryId,
+		RepositoryId:  &repositoryID,
 	}
 
 	return clients.GitReposClient.CreateImportRequest(clients.Ctx, args)

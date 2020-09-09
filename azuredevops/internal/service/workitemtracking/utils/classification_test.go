@@ -11,11 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 var classificationProjectName = "test-acc-project-0fu72ecbiu"

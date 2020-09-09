@@ -2,13 +2,14 @@ package taskagent
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"strconv"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // DataAgentQueue schema and implementation for agent queue source
@@ -48,13 +49,13 @@ func flattenAzureAgentQueue(d *schema.ResourceData, agentQueue *taskagent.TaskAg
 	d.SetId(strconv.Itoa(*agentQueue.Id))
 	d.Set("name", converter.ToString(agentQueue.Name, ""))
 	d.Set("pool_id", strconv.Itoa(*agentQueue.Pool.Id))
-	//d.Set("project_id", *agentQueue.ProjectId)
+	d.Set("project_id", *agentQueue.ProjectId)
 }
 
 func getAgentQueueByName(clients *client.AggregatedClient, name, projectID *string) (*taskagent.TaskAgentQueue, error) {
-	agentQueues, err := clients.TaskAgentClient.GetAgentQueuesByNames(clients.Ctx, taskagent.GetAgentQueuesByNamesArgs{
-		Project:    projectID,
-		QueueNames: &[]string{*name},
+	agentQueues, err := clients.TaskAgentClient.GetAgentQueues(clients.Ctx, taskagent.GetAgentQueuesArgs{
+		Project:   projectID,
+		QueueName: name,
 	})
 
 	if err != nil {
@@ -62,11 +63,11 @@ func getAgentQueueByName(clients *client.AggregatedClient, name, projectID *stri
 	}
 
 	if len(*agentQueues) > 1 {
-		return nil, fmt.Errorf("Found multiple agent queue for name: %s. Agent queues found: %v", *name, agentQueues)
+		return nil, fmt.Errorf("Found multiple agent queues for name: %s. Agent queues found: %v", *name, agentQueues)
 	}
 
 	if len(*agentQueues) == 0 {
-		return nil, fmt.Errorf("Unable to find agent queue with name: %s", *name)
+		return nil, fmt.Errorf("Unable to find agent queues with name: %s", *name)
 	}
 
 	return &(*agentQueues)[0], nil
