@@ -33,7 +33,7 @@ Due to the limitation of tf-11115 it is not possible to nest maps. So the workar
 
 TODO : Based on the info above any of the Min: 1, Max: 1, items will MOST LIKELY become TypeList instead of TypeSet.
 TODO : Otherwise a custom schema.Schema.Set function will need to be created to identify them in the set.
-This fixes the behaviour of apply. Otherwise sometimes apply marking data as changed because of nexted children.
+This fixes the behaviour of apply. Otherwise apply will sometimes result in changes.
 */
 
 func ResourceReleaseDefinition() *schema.Resource {
