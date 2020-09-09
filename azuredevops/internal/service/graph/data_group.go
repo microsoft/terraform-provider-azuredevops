@@ -33,6 +33,10 @@ func DataGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"origin": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"origin_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -70,6 +74,9 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(*targetGroup.Descriptor)
 	d.Set("descriptor", *targetGroup.Descriptor)
+	if targetGroup.Origin != nil {
+		d.Set("origin", *targetGroup.Origin)
+	}
 	if targetGroup.OriginId != nil {
 		d.Set("origin_id", *targetGroup.OriginId)
 	}
