@@ -64,6 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 - [Azure DevOps Service REST API 5.1 - Authorized Resources](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/authorizedresources?view=azure-devops-rest-5.1)
 
 ## Import
+**Variable groups containing secret values cannot be imported.**
 
 Azure DevOps Variable groups can be imported using the project name/variable group ID or by the project Guid/variable group ID, e.g.
 
