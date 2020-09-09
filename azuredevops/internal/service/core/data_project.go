@@ -13,27 +13,16 @@ import (
 func DataProject() *schema.Resource {
 	baseSchema := ResourceProject()
 	for k, v := range baseSchema.Schema {
-		if k != "project_name" {
-			baseSchema.Schema[k] = &schema.Schema{
-				Type:     v.Type,
-				Computed: true,
-			}
+		baseSchema.Schema[k] = &schema.Schema{
+			Type:     v.Type,
+			Computed: true,
 		}
 	}
 
-	baseSchema.Schema["project_name"] = &schema.Schema{
+	baseSchema.Schema["project_identifier"] = &schema.Schema{
 		Type:         schema.TypeString,
-		Optional:     true,
+		Required:     true,
 		ValidateFunc: validation.StringIsNotWhiteSpace,
-	}
-
-	baseSchema.Schema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		ConflictsWith: []string{
-			"project_name",
-		},
 	}
 
 	return &schema.Resource{
@@ -47,19 +36,14 @@ func DataProject() *schema.Resource {
 func dataProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	name := d.Get("project_name").(string)
-	id := d.Get("project_id").(string)
+	identifier := d.Get("project_identifier").(string)
 
-	if name == "" && id == "" {
-		return fmt.Errorf("Either project_id or project_name must be set")
-	}
-
-	project, err := projectRead(clients, id, name)
+	project, err := projectRead(clients, identifier, identifier)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Project with name %s does not exist", name)
+			return fmt.Errorf("Project with name or ID %s does not exist", identifier)
 		}
-		return fmt.Errorf("Error looking up project with Name %s, %w", name, err)
+		return fmt.Errorf("Error looking up project with Name or ID %s, %w", identifier, err)
 	}
 
 	err = flattenProject(clients, d, project)

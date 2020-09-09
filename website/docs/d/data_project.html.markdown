@@ -13,7 +13,7 @@ Use this data source to access information about an existing Project within Azur
 
 ```hcl
 data "azuredevops_project" "p" {
-  project_name = "Sample Project"
+  project_identify = "Sample Project"
 }
 
 output "id" {
@@ -45,13 +45,13 @@ output "process_template_id" {
 
 The following arguments are supported:
 
-- `project_name` - (Required if `project_id` not set) Name of the Project.
-- `project_id` - (Required if `project_name` not set) Id of the Project.
+- `project_identify` - (Required) Name or ID of the Project.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
+`project_name` - The name of the referenced project
 `description` - The description of the referenced project
 `visibility` - The visibility of the referenced project
 `version_control` - The version control of the referenced project
