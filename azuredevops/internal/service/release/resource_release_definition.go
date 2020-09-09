@@ -1689,8 +1689,9 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	demands := expandReleaseDefinitionDemandList(d["demand"].([]interface{}))
 	environmentOptions := expandReleaseEnvironmentOptionsListFirstOrNil(d["environment_options"].([]interface{}))
 	retentionPolicy := expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d["retention_policy"].([]interface{}))
-	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}))
-	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}))
+	approvalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}))
+	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}), approvalOptions)
+	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}), approvalOptions)
 	properties := expandReleaseEnvironmentPropertiesListFirstOrNil(d["properties"].([]interface{}))
 	deployPhases := expandJobsList(d["job"].([]interface{}))
 	preDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["pre_deploy_gate"].([]interface{}))
@@ -2333,20 +2334,18 @@ func expandReleaseApprovalOptionsListFirstOrNil(d []interface{}) *release.Approv
 	return &d2[0]
 }
 
-func expandReleaseDefinitionApprovals(d map[string]interface{}) release.ReleaseDefinitionApprovals {
+func expandReleaseDefinitionApprovals(d map[string]interface{}, approvalOptions *release.ApprovalOptions) release.ReleaseDefinitionApprovals {
 	approvals := expandReleaseDefinitionApprovalStepList(d["approval"].([]interface{}))
-	// TODO : expand approval Options first and then pass them into this method.
-	//approvalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}))
 	return release.ReleaseDefinitionApprovals{
-		Approvals: &approvals,
-		// ApprovalOptions: approvalOptions,
+		Approvals:       &approvals,
+		ApprovalOptions: approvalOptions,
 	}
 }
-func expandReleaseDefinitionApprovalsList(d []interface{}) []release.ReleaseDefinitionApprovals {
+func expandReleaseDefinitionApprovalsList(d []interface{}, approvalOptions *release.ApprovalOptions) []release.ReleaseDefinitionApprovals {
 	vs := make([]release.ReleaseDefinitionApprovals, 0, len(d))
 	for _, v := range d {
 		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionApprovals(val))
+			vs = append(vs, expandReleaseDefinitionApprovals(val, approvalOptions))
 		}
 	}
 	if len(vs) == 0 {
@@ -2354,8 +2353,8 @@ func expandReleaseDefinitionApprovalsList(d []interface{}) []release.ReleaseDefi
 	}
 	return vs
 }
-func expandReleaseDefinitionApprovalsListFirstOrNil(d []interface{}) *release.ReleaseDefinitionApprovals {
-	d2 := expandReleaseDefinitionApprovalsList(d)
+func expandReleaseDefinitionApprovalsListFirstOrNil(d []interface{}, approvalOptions *release.ApprovalOptions) *release.ReleaseDefinitionApprovals {
+	d2 := expandReleaseDefinitionApprovalsList(d, approvalOptions)
 	if len(d2) != 1 {
 		return nil
 	}
@@ -2727,6 +2726,28 @@ func flattenReleaseDefinitionApprovalStepList(m *[]release.ReleaseDefinitionAppr
 	return ds
 }
 
+func flattenApprovalOptions(m1, m2 *release.ApprovalOptions) []map[string]interface{} {
+	var m *release.ApprovalOptions
+	if m1 != nil && m2 == nil {
+		m = m1
+	} else if m2 != nil {
+		m = m2
+	}
+
+	if m == nil {
+		return nil
+	}
+
+	return []map[string]interface{}{{
+		"auto_triggered_and_previous_environment_approved_can_be_skipped": m.AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped,
+		"enforce_identity_revalidation":                                   m.EnforceIdentityRevalidation,
+		"execution_order":                                                 m.ExecutionOrder,
+		"release_creator_can_be_approver":                                 m.ReleaseCreatorCanBeApprover,
+		"required_approver_count":                                         m.RequiredApproverCount,
+		"timeout_in_minutes":                                              m.TimeoutInMinutes,
+	}}
+}
+
 func flattenReleaseDefinitionApprovals(m *release.ReleaseDefinitionApprovals) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"approval": flattenReleaseDefinitionApprovalStepList(m.Approvals),
@@ -2866,6 +2887,7 @@ func flattenReleaseDefinitionEnvironment(m release.ReleaseDefinitionEnvironment)
 		"owner_id":             ownerID,
 		"variable":             flattenReleaseDefinitionVariables(m.Variables),
 		"variable_groups":      m.VariableGroups,
+		"approval_options":     flattenApprovalOptions(m.PreDeployApprovals.ApprovalOptions, m.PostDeployApprovals.ApprovalOptions),
 		"pre_deploy_approval":  flattenReleaseDefinitionApprovals(m.PreDeployApprovals),
 		"deploy_step":          flattenReleaseDefinitionDeployStep(m.DeployStep),
 		"post_deploy_approval": flattenReleaseDefinitionApprovals(m.PostDeployApprovals),

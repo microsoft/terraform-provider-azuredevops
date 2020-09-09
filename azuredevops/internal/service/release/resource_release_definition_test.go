@@ -25,6 +25,15 @@ var now, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
 var properties interface{}
 
+var approvalOptions = release.ApprovalOptions{
+	RequiredApproverCount:                                   converter.Int(1),
+	ReleaseCreatorCanBeApprover:                             converter.Bool(false),
+	AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
+	EnforceIdentityRevalidation:                             converter.Bool(false),
+	TimeoutInMinutes:                                        converter.Int(0),
+	ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.AfterSuccessfulGates,
+}
+
 var testReleaseDefinition = release.ReleaseDefinition{
 	Id:             converter.Int(100),
 	Revision:       converter.Int(1),
@@ -62,6 +71,7 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					IsAutomated:      converter.Bool(true),
 					IsNotificationOn: converter.Bool(false),
 				}},
+				ApprovalOptions: &approvalOptions,
 			},
 			PostDeployApprovals: &release.ReleaseDefinitionApprovals{
 				Approvals: &[]release.ReleaseDefinitionApprovalStep{{
@@ -70,6 +80,7 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					IsAutomated:      converter.Bool(true),
 					IsNotificationOn: converter.Bool(false),
 				}},
+				ApprovalOptions: &approvalOptions,
 			},
 			DeployStep: &release.ReleaseDefinitionDeployStep{
 				Id:    converter.Int(303),
@@ -362,8 +373,11 @@ func TestAzureDevOpsReleaseDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	releaseDefinitionAfterRoundTrip, projectID, err := expandReleaseDefinition(resourceData)
 
+	sortedExpected := sortReleaseDefinition(testReleaseDefinition)
+	sortedActual := sortReleaseDefinition(*releaseDefinitionAfterRoundTrip)
+
 	require.Nil(t, err)
-	require.Equal(t, sortReleaseDefinition(testReleaseDefinition), sortReleaseDefinition(*releaseDefinitionAfterRoundTrip))
+	require.Equal(t, sortedExpected, sortedActual)
 	require.Equal(t, testReleaseProjectID, projectID)
 }
 
