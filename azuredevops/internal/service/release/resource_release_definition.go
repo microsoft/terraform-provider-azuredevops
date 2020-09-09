@@ -10,7 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/distributedtask"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
@@ -174,7 +174,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 				}
 				task := strings.Split(v, "@")
 				taskName := task[0]
-				if _, ok := distributedtask.TaskNameToUUID[taskName]; !ok {
+				if _, ok := taskagent.TaskNameToUUID[taskName]; !ok {
 					return nil, []error{fmt.Errorf("unkown task %q", taskName)}
 				}
 				return nil, nil
@@ -2207,7 +2207,7 @@ func expandReleaseDefinitionDemandList(d []interface{}) []interface{} {
 func expandReleaseWorkFlowTask(d map[string]interface{}) release.WorkflowTask {
 	task := strings.Split(d["task"].(string), "@")
 	taskName, version := task[0], task[1]
-	taskID := distributedtask.TaskNameToUUID[taskName]
+	taskID := taskagent.TaskNameToUUID[taskName]
 
 	inputs := expandStringMapString(d["inputs"].(map[string]interface{}))
 	environment := expandStringMapString(d["environment"].(map[string]interface{}))
@@ -2515,7 +2515,7 @@ func flattenReleaseDefinitionProperties(m interface{}) interface{} {
 }
 
 func flattenReleaseWorkflowTask(m release.WorkflowTask) map[string]interface{} {
-	task := distributedtask.TaskUUIDToName[*m.TaskId] + "@" + *m.Version
+	task := taskagent.TaskUUIDToName[*m.TaskId] + "@" + *m.Version
 	return map[string]interface{}{
 		"task":               task,
 		"display_name":       m.Name,

@@ -1,4 +1,4 @@
-package distributedtask
+package taskagent
 
 import "github.com/google/uuid"
 
