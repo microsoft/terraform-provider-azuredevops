@@ -22,7 +22,7 @@ func DataProjects() *schema.Resource {
 		Read: dataSourceProjectsRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_name": {
+			"name": {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
@@ -81,7 +81,7 @@ func getProjectHash(v interface{}) int {
 func dataSourceProjectsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	state := d.Get("state").(string)
-	name := d.Get("project_name").(string)
+	name := d.Get("name").(string)
 
 	projects, err := getProjectsForStateAndName(clients, state, name)
 	if err != nil {

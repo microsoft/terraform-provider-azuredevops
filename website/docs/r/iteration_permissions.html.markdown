@@ -21,7 +21,7 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ```hcl
 
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"

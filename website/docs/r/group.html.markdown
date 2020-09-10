@@ -13,7 +13,7 @@ Manages a group within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "p" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 data "azuredevops_group" "tf-project-readers" {

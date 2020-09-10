@@ -24,7 +24,7 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  project_name = "My Awesome Project"
+  name = "My Awesome Project"
   description  = "All of my awesomee things"
 }
 

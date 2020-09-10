@@ -14,7 +14,7 @@ Manages a Build Definition within Azure DevOps.
 ### Tfs
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"

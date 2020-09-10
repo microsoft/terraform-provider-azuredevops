@@ -15,7 +15,7 @@ To read informations about a **single** Git Repository use the data source [`azu
 ```hcl
 # Load all projects of an organization, that are accessible by the current user
 data "azuredevops_project" "p" {
-  project_name = "contoso-project"
+  name = "contoso-project"
 }
 
 # Load all Git repositories of a project, which are accessible for the current user
