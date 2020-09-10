@@ -68,7 +68,7 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					ReleaseCreatorCanBeApprover:                             converter.Bool(false),
 					AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
 					EnforceIdentityRevalidation:                             converter.Bool(false),
-					TimeoutInMinutes:                                        converter.Int(0),
+					TimeoutInMinutes:                                        converter.Int(120),
 					ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.BeforeGates,
 				},
 			},
@@ -84,7 +84,7 @@ var testReleaseDefinition = release.ReleaseDefinition{
 					ReleaseCreatorCanBeApprover:                             converter.Bool(false),
 					AutoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped: converter.Bool(false),
 					EnforceIdentityRevalidation:                             converter.Bool(false),
-					TimeoutInMinutes:                                        converter.Int(0),
+					TimeoutInMinutes:                                        converter.Int(60),
 					ExecutionOrder:                                          &release.ApprovalExecutionOrderValues.AfterSuccessfulGates,
 				},
 			},
@@ -386,7 +386,7 @@ func TestAzureDevOpsReleaseDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	_tmp.Log(sortedActual)
 
 	require.Nil(t, err)
-	require.Equal(t, sortedExpected, sortedActual)
+	require.Equal(t, sortedActual, sortedExpected)
 	require.Equal(t, testReleaseProjectID, projectID)
 }
 

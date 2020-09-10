@@ -256,7 +256,6 @@ func ResourceReleaseDefinition() *schema.Resource {
 					Type:     schema.TypeInt,
 					Optional: true,
 				},
-				"timeout_in_minutes": timeoutInMinutes,
 			},
 		},
 	}
@@ -631,7 +630,8 @@ func ResourceReleaseDefinition() *schema.Resource {
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"approval": approval,
+				"approval":           approval,
+				"timeout_in_minutes": timeoutInMinutes,
 			},
 		},
 		// TODO : How to solve "ignore" if empty and new is isAutomated?
@@ -2280,7 +2280,6 @@ func expandReleaseApprovalOptions(d map[string]interface{}, executionOrder relea
 		ExecutionOrder:                                          &executionOrder,
 		ReleaseCreatorCanBeApprover:                             converter.Bool(d["release_creator_can_be_approver"].(bool)),
 		RequiredApproverCount:                                   converter.Int(d["required_approver_count"].(int)),
-		TimeoutInMinutes:                                        converter.Int(d["timeout_in_minutes"].(int)),
 	}
 }
 func expandReleaseApprovalOptionsList(d []interface{}, executionOrder release.ApprovalExecutionOrder) []release.ApprovalOptions {
@@ -2302,6 +2301,10 @@ func expandReleaseApprovalOptionsListFirstOrNil(d []interface{}, executionOrder 
 
 func expandReleaseDefinitionApprovals(d map[string]interface{}, approvalOptions *release.ApprovalOptions) release.ReleaseDefinitionApprovals {
 	approvals := expandReleaseDefinitionApprovalStepList(d["approval"].([]interface{}))
+	timeoutInMinutes := converter.Int(d["timeout_in_minutes"].(int))
+	if timeoutInMinutes != nil && approvalOptions != nil {
+		approvalOptions.TimeoutInMinutes = timeoutInMinutes
+	}
 	return release.ReleaseDefinitionApprovals{
 		Approvals:       &approvals,
 		ApprovalOptions: approvalOptions,
@@ -2408,11 +2411,19 @@ func flattenReleaseDefinitionVariables(m *map[string]release.ConfigurationVariab
 	}
 	d := make([]map[string]interface{}, len(*m))
 	index := 0
-	for k, v := range *m {
+
+	keys := make([]string, 0, len(*m))
+	for k := range *m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		m2 := (*m)[k]
 		d[index] = map[string]interface{}{
 			"name":      k,
-			"value":     converter.ToString(v.Value, ""),
-			"is_secret": converter.ToBool(v.IsSecret, false),
+			"value":     converter.ToString(m2.Value, ""),
+			"is_secret": converter.ToBool(m2.IsSecret, false),
 		}
 		index = index + 1
 	}
@@ -2687,13 +2698,17 @@ func flattenApprovalOptions(m1, m2 *release.ApprovalOptions) []map[string]interf
 		"enforce_identity_revalidation":                                   m.EnforceIdentityRevalidation,
 		"release_creator_can_be_approver":                                 m.ReleaseCreatorCanBeApprover,
 		"required_approver_count":                                         m.RequiredApproverCount,
-		"timeout_in_minutes":                                              m.TimeoutInMinutes,
 	}}
 }
 
 func flattenReleaseDefinitionApprovals(m *release.ReleaseDefinitionApprovals) []map[string]interface{} {
+	timeoutInMinutes := 0
+	if m.ApprovalOptions != nil {
+		timeoutInMinutes = *m.ApprovalOptions.TimeoutInMinutes
+	}
 	return []map[string]interface{}{{
-		"approval": flattenReleaseDefinitionApprovalStepList(m.Approvals),
+		"approval":           flattenReleaseDefinitionApprovalStepList(m.Approvals),
+		"timeout_in_minutes": timeoutInMinutes,
 	}}
 }
 
