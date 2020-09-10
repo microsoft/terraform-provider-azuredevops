@@ -13,7 +13,7 @@ Manages group membership within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 resource "azuredevops_user_entitlement" "user" {

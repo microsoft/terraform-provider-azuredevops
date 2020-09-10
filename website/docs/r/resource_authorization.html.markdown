@@ -15,7 +15,7 @@ Currently supported resources: service endpoint (aka service connection, endpoin
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {

@@ -4,7 +4,7 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  project_name       = "terraform-provider-azuredevops"
+  name       = "terraform-provider-azuredevops"
   description        = ""
   visibility         = "private"
   version_control    = "Git"

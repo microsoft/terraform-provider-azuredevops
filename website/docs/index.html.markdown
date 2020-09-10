@@ -21,7 +21,7 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  project_name       = "Project Name"
+  name       = "Project Name"
   description        = "Project Description"
 }
 ```

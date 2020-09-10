@@ -13,7 +13,7 @@ Manages variable groups within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 resource "azuredevops_variable_group" "variablegroup" {
