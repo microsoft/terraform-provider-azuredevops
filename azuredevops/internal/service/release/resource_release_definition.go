@@ -634,6 +634,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 				"timeout_in_minutes": timeoutInMinutes,
 			},
 		},
+		// RequiredWith: []string{"stage.$.pre_deploy_approval.0.approval", "stage.$.pre_deploy_approval.0.timeout_in_minutes", "stage.$.post_deploy_approval.0.approval", "stage.$.post_deploy_approval.0.timeout_in_minutes"}},
 		// TODO : How to solve "ignore" if empty and new is isAutomated?
 	}
 

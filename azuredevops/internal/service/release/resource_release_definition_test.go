@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
-	_tmp "github.com/microsoft/terraform-provider-azuredevops/.tmp"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/stretchr/testify/require"
@@ -381,9 +380,6 @@ func TestAzureDevOpsReleaseDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	sortedExpected := sortReleaseDefinition(testReleaseDefinition)
 	sortedActual := sortReleaseDefinition(*releaseDefinitionAfterRoundTrip)
-
-	_tmp.Log(sortedExpected)
-	_tmp.Log(sortedActual)
 
 	require.Nil(t, err)
 	require.Equal(t, sortedActual, sortedExpected)
