@@ -24,6 +24,8 @@ import (
 type groupMeta struct {
 	name       string
 	descriptor string
+	origin     string
+	originId   string
 }
 
 // verifies that the translation for project_id to project_descriptor has proper error handling
@@ -106,6 +108,7 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 	defer ctrl.Finish()
 
 	projectID := uuid.New()
+	originID := uuid.New()
 	resourceData := createResourceData(t, projectID.String(), "name1")
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
@@ -121,14 +124,14 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	continuationToken := "continuation-token"
-	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1"})
+	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()})
 	firstCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, firstListGroupCallArgs).
 		Return(firstListGroupCallResponse, nil)
 
 	secondListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor, ContinuationToken: &continuationToken}
-	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2"})
+	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()})
 	secondCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, secondListGroupCallArgs).
@@ -139,6 +142,8 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 	err := dataSourceGroupRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "descriptor1", resourceData.Id())
+	require.Equal(t, "vsts", resourceData.Get("origin").(string))
+	require.Equal(t, originID.String(), resourceData.Get("origin_id").(string))
 }
 
 func createPaginatedResponse(continuationToken string, groups ...groupMeta) *graph.PagedGraphGroups {
@@ -152,7 +157,7 @@ func createPaginatedResponse(continuationToken string, groups ...groupMeta) *gra
 func createGroupsWithDescriptors(groups ...groupMeta) *[]graph.GraphGroup {
 	var graphs []graph.GraphGroup
 	for _, group := range groups {
-		graphs = append(graphs, graph.GraphGroup{Descriptor: &group.descriptor, DisplayName: &group.name})
+		graphs = append(graphs, graph.GraphGroup{Descriptor: &group.descriptor, DisplayName: &group.name, Origin: &group.origin, OriginId: &group.originId})
 	}
 
 	return &graphs

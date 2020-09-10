@@ -28,6 +28,8 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
 				),
 			},
 		},
