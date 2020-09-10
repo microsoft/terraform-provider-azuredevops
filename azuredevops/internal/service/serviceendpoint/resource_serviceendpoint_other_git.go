@@ -3,20 +3,20 @@ package serviceendpoint
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-// ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
-func ResourceServiceEndpointBitBucket() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointBitBucket, expandServiceEndpointBitBucket)
+// ResourceServiceEndpointOtherGit schema and implementation for bitbucket service endpoint resource
+func ResourceServiceEndpointOtherGit() *schema.Resource {
+	r := genBaseServiceEndpointResource(flattenServiceEndpointOtherGit, expandServiceEndpointOtherGit)
 	makeUnprotectedSchema(r, "username", "AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", "The bitbucket username which should be used.")
+	makeUnprotectedSchema(r, "url", "AZDO_OTHER_GIT_SERVICE_CONNECTION_URL", "The HTTPS URL for the repo.")
 	makeProtectedSchema(r, "password", "AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", "The bitbucket password whi|ch should be used.")
 	return r
 }
 
-func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointOtherGit(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -26,11 +26,11 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 		Scheme: converter.String("UsernamePassword"),
 	}
 	serviceEndpoint.Type = converter.String(string("git"))
-	serviceEndpoint.Url = converter.String("")
+	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointOtherGit(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
