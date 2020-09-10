@@ -16,22 +16,26 @@ FEATURES:
 * **New Data Resource**  `azuredevops_iteration` [#85](https://github.com/microsoft/terraform-provider-azuredevops/issues/85)
 
 IMPROVEMENTS:
-* **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/microsoft/terraform-provider-azuredevops/issues/25)
-* **`azuredevops_branch_policy_build_validation`: Add `filename_patterns` support for repository build policy** [#62](https://github.com/microsoft/terraform-provider-azuredevops/issues/62)
-* **`azuredevops_git_repository`: 
+* All resources - remove from `.tfstate` if project has been deleted [#25](https://github.com/microsoft/terraform-provider-azuredevops/issues/25)
+* `azuredevops_branch_policy_build_validation`  - add `filename_patterns` support for repository build policy [#62](https://github.com/microsoft/terraform-provider-azuredevops/issues/62)
+* `azuredevops_git_repository`
     - Use `default_branch` as the name of an initialized branch [#89](https://github.com/microsoft/terraform-provider-azuredevops/pull/89)
     - Add support for import Git repository [#45](https://github.com/microsoft/terraform-provider-azuredevops/issues/45)
-* **`azuredevops_build_definition`:**
+* `azuredevops_build_definition`
     - Add Support for GitHub enterprise as a build definition repository type [#97](https://github.com/microsoft/terraform-provider-azuredevops/pull/97)
     - Add Support for report build status configuration [#63](https://github.com/microsoft/terraform-provider-azuredevops/issues/63)
+* **Data source** `azuredevops_build_definition`: Support export `origin` and `origin_id` [#177](https://github.com/microsoft/terraform-provider-azuredevops/pull/177)
+
 
 BUG FIX:
-* **`azuredevops_serviceendpoint_github`: GitHub service connection API breaking change** [#72](https://github.com/microsoft/terraform-provider-azuredevops/issues/72)
-* **All service connection resources: Terraform crashes when the service connection description is set to an empty string** [#60](https://github.com/microsoft/terraform-provider-azuredevops/pull/60)
-* **`azuredevops_build_definition`: Build Definition creation failed when repository type is GitHub** [#65](https://github.com/microsoft/terraform-provider-azuredevops/issues/65)
+* All service connection resources - Terraform crashes when the service connection description is set to an empty string [#60](https://github.com/microsoft/terraform-provider-azuredevops/pull/60)
+* Resource f - set the project ID to `project_id` [#172](https://github.com/microsoft/terraform-provider-azuredevops/pull/172)
+* `azuredevops_build_definition` - Build Definition creation failed when repository type is GitHub [#65](https://github.com/microsoft/terraform-provider-azuredevops/issues/65)
+* `azuredevops_serviceendpoint_github` - GitHub service connection API breaking change [#72](https://github.com/microsoft/terraform-provider-azuredevops/issues/72)
 
 BREAKING CHANGES:
 * `azuredevops_git_repository` - `initialization` now is a required configuration.  [#54](https://github.com/microsoft/terraform-provider-azuredevops/issues/54)
+* `azuredevops_project` - support read project by ID or name.  [#176](https://github.com/microsoft/terraform-provider-azuredevops/issues/176)
 
 ## 0.0.1 (June 18, 2020)
 
