@@ -13,7 +13,7 @@ Use this data source to access information about an existing Group within Azure 
 
 ```hcl
 data "azuredevops_project" "p" {
-  project_name = "contoso-project"
+  name = "contoso-project"
 }
 
 data "azuredevops_group" "test" {

@@ -20,8 +20,8 @@ output "id" {
   value = data.azuredevops_project.p.id
 }
 
-output "project_name" {
-  value = data.azuredevops_project.p.project_name
+output "name" {
+  value = data.azuredevops_project.p.name
 }
 
 output "visibility" {
@@ -51,7 +51,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-`project_name` - The name of the referenced project
+`name` - The name of the referenced project
 `description` - The description of the referenced project
 `visibility` - The visibility of the referenced project
 `version_control` - The version control of the referenced project

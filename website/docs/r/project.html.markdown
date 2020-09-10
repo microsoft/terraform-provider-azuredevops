@@ -13,7 +13,7 @@ Manages a project within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Test Project"
+  name       = "Test Project"
   description        = "Test Project Description"
   visibility         = "private"
   version_control    = "Git"
@@ -30,7 +30,7 @@ resource "azuredevops_project" "project" {
 
 The following arguments are supported:
 
-- `project_name` - (Required) The Project Name.
+- `name` - (Required) The Project Name.
 - `description` - (Optional) The Description of the Project.
 - `visibility` - (Optional) Specifies the visibility of the Project. Valid values: `private` or `public`. Defaults to `private`.
 - `version_control` - (Optional) Specifies the version control system. Valid values: `Git` or `Tfvc`. Defaults to `Git`.
