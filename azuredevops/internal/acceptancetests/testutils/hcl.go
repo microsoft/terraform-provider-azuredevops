@@ -446,7 +446,7 @@ data "azuredevops_agent_pools" "pools" {
 func HclAgentQueueDataSource(projectName, queueName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name = "%s"
+	name = "%s"
 }
 
 data "azuredevops_agent_queue" "queue" {
