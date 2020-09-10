@@ -10,9 +10,9 @@ import (
 // ResourceServiceEndpointOtherGit schema and implementation for bitbucket service endpoint resource
 func ResourceServiceEndpointOtherGit() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointOtherGit, expandServiceEndpointOtherGit)
-	makeUnprotectedSchema(r, "username", "AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", "The bitbucket username which should be used.")
+	makeUnprotectedSchema(r, "username", "AZDO_OTHER_GIT_SERVICE_CONNECTION_USERNAME", "The bitbucket username which should be used.")
 	makeUnprotectedSchema(r, "url", "AZDO_OTHER_GIT_SERVICE_CONNECTION_URL", "The HTTPS URL for the repo.")
-	makeProtectedSchema(r, "password", "AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", "The bitbucket password whi|ch should be used.")
+	makeProtectedSchema(r, "password", "AZDO_OTHER_GIT_SERVICE_CONNECTION_PASSWORD", "The bitbucket password whi|ch should be used.")
 	return r
 }
 
