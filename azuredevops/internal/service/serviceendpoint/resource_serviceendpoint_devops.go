@@ -1,7 +1,9 @@
 package serviceendpoint
 
 import (
+	"fmt"
 	"strings"
+	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -17,12 +19,17 @@ const (
 // ResourceServiceEndpointAzureDevOps schema and implementation for Azure DevOps service endpoint resource
 func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps)
+	r.Schema["organization"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "Azure DevOps organization name",
+	}
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			personalAccessToken: {
 				Type:         schema.TypeString,
 				Required:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SERVICE_CONNECTION_PAT", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
 				Description:  "The Azure DevOps personal access token which should be used.",
 				Sensitive:    true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -59,8 +66,15 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
-	serviceEndpoint.Type = converter.String("Azure DevOps")
-	serviceEndpoint.Url = converter.String("https://dev.azure.com/")
+
+	serviceEndpoint.Type = converter.String("azdoapi")
+	serviceUrl := fmt.Sprintf("https://dev.azure.com/%s", d.Get("organization"))
+	serviceEndpoint.Url = &serviceUrl
+
+	data := map[string]string{}
+	releaseUrl := fmt.Sprintf("https://vsrm.dev.azure.com/%s", d.Get("organization"))
+	data["releaseUrl"] = releaseUrl
+	serviceEndpoint.Data = &data
 
 	return serviceEndpoint, projectID, nil
 }
@@ -68,9 +82,22 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	authPerson["AccessToken"] = val[azdoPersonalAccessToken].(string)
+	authPerson["apitoken"] = val[azdoPersonalAccessToken].(string)
 	return authPerson
 }
+
+func azdoExtractOranizationName(d *schema.ResourceData) string {
+	// authPerson := make(map[string]string)
+	// val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	// authPerson["apitoken"] = val[azdoPersonalAccessToken].(string)
+	serviceUrl, err := url.Parse(d.Get("url").(string))
+	if err != nil {
+		fmt.Errorf("URL %s cannot be parsed!. Error=%v", serviceUrl, err)
+	}
+	organization := strings.Trim(serviceUrl.Path, "\\")
+	return organization
+}
+
 
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
