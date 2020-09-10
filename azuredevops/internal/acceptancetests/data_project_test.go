@@ -29,7 +29,7 @@ func TestAccProject_DataSource(t *testing.T) {
 		{
 			Name:                "Get project with name",
 			Identifier:          "project_identifier",
-			IdentifierOnProject: "project_name",
+			IdentifierOnProject: "name",
 		},
 	}
 
@@ -53,7 +53,7 @@ func TestAccProject_DataSource(t *testing.T) {
 						Config: projectData,
 						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-							resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+							resource.TestCheckResourceAttr(tfNode, "name", projectName),
 							resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 							resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 							resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),

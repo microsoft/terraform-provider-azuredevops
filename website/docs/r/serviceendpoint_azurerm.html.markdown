@@ -21,7 +21,7 @@ For detailed steps to create a service principal with Azure cli see the [documen
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -45,7 +45,7 @@ resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"

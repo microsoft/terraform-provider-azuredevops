@@ -13,7 +13,7 @@ Manages a GitHub service endpoint within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"

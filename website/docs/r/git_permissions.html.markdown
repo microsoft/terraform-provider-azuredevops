@@ -77,7 +77,7 @@ resource "azuredevops_git_permissions" "project-git-branch-permissions" {
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Test Project"
+  name       = "Test Project"
   description        = "Test Project Description"
   visibility         = "private"
   version_control    = "Git"
