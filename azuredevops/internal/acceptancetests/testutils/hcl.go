@@ -131,7 +131,7 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 func HclProjectGitRepository(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = "%s"
+	project_identifier = "%s"
 }
 
 data "azuredevops_git_repository" "repository" {
@@ -144,7 +144,7 @@ data "azuredevops_git_repository" "repository" {
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = azuredevops_project.project.project_name
+	project_identifier = azuredevops_project.project.project_name
 }
 
 data "azuredevops_git_repositories" "repositories" {
