@@ -17,7 +17,7 @@ provider "azuredevops" {
 }
 
 data "azuredevops_project" "tf-project-test-001" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 resource "azuredevops_project_features" "my-project-features" {

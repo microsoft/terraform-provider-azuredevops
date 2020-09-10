@@ -58,7 +58,7 @@ func HclProjectResource(projectName string) string {
 	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name       = "%[1]s"
+	name       = "%[1]s"
 	description        = "%[1]s-description"
 	visibility         = "private"
 	version_control    = "Git"
@@ -79,7 +79,7 @@ func HclProjectResourceWithFeature(projectName string, featureStateTestplans str
 	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name       = "%s"
+	name       = "%s"
 	description        = "%s-description"
 	visibility         = "private"
 	version_control    = "Git"
@@ -114,7 +114,7 @@ func HclProjectsDataSource(projectName string) string {
 %s
 
 data "azuredevops_projects" "project-list" {
-	project_name = azuredevops_project.project.project_name
+	name = azuredevops_project.project.name
 }
 `, projectResource)
 }
@@ -122,7 +122,7 @@ data "azuredevops_projects" "project-list" {
 // HclProjectsDataSourceWithStateAndInvalidName creates HCL for a multi value data source for AzDo projects
 func HclProjectsDataSourceWithStateAndInvalidName() string {
 	return `data "azuredevops_projects" "project-list" {
-		project_name = "_invalid_project_name"
+		name = "invalid_name"
 		state = "wellFormed"
 	}`
 }
@@ -131,7 +131,7 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 func HclProjectGitRepository(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = "%s"
+	project_identifier = "%s"
 }
 
 data "azuredevops_git_repository" "repository" {
@@ -144,7 +144,7 @@ data "azuredevops_git_repository" "repository" {
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = azuredevops_project.project.project_name
+	project_identifier = azuredevops_project.project.name
 }
 
 data "azuredevops_git_repositories" "repositories" {
@@ -460,7 +460,7 @@ func HclAgentQueueResource(projectName, poolName string) string {
 	poolHCL := HclAgentPoolResource(poolName)
 	queueHCL := fmt.Sprintf(`
 resource "azuredevops_project" "p" {
-	project_name = "%s"
+	name = "%s"
 }
 
 resource "azuredevops_agent_queue" "q" {
@@ -605,7 +605,7 @@ resource "azuredevops_group_membership" "membership" {
 func HclGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-  project_name = "%s"
+  name = "%s"
 }
 data "azuredevops_group" "group" {
   project_id = azuredevops_project.project.id

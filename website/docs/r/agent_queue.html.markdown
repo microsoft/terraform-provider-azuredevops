@@ -17,7 +17,7 @@ the `azuredevops_resource_authorization` resource can be used to grant authoriza
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name = "Sample Project"
+  name = "Sample Project"
 }
 
 data "azuredevops_agent_pool" "pool" {
