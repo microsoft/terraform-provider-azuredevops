@@ -4,6 +4,7 @@ FEATURES:
 * **New Resource**  `azuredevops_git_permissions` [#18](https://github.com/microsoft/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_project_permissions` [#18](https://github.com/microsoft/terraform-provider-azuredevops/issues/18)
 * **New Resource**  `azuredevops_serviceendpoint_aws` [#58](https://github.com/microsoft/terraform-provider-azuredevops/issues/58)
+* **New Resource**  `azuredevops_serviceendpoint_devops` [#58](https://github.com/microsoft/terraform-provider-azuredevops/issues/182)
 * **New Resource** `azuredevops_branch_policy_auto_reviewers` [#71](https://github.com/microsoft/terraform-provider-azuredevops/issues/71)
 * **New Resource** `azuredevops_workitemquery_permissions` [#79](https://github.com/microsoft/terraform-provider-azuredevops/issues/79)
 * **New Resource** `azuredevops_serviceendpoint_azurecr` [#119](https://github.com/microsoft/terraform-provider-azuredevops/issues/119/)
@@ -18,7 +19,7 @@ FEATURES:
 IMPROVEMENTS:
 * **All resources: Remove from `.state` if project has been deleted** [#25](https://github.com/microsoft/terraform-provider-azuredevops/issues/25)
 * **`azuredevops_branch_policy_build_validation`: Add `filename_patterns` support for repository build policy** [#62](https://github.com/microsoft/terraform-provider-azuredevops/issues/62)
-* **`azuredevops_git_repository`: 
+* **`azuredevops_git_repository`:
     - Use `default_branch` as the name of an initialized branch [#89](https://github.com/microsoft/terraform-provider-azuredevops/pull/89)
     - Add support for import Git repository [#45](https://github.com/microsoft/terraform-provider-azuredevops/issues/45)
 * **`azuredevops_build_definition`:**
@@ -37,7 +38,7 @@ BREAKING CHANGES:
 
 NOTES:
 * The Azure DevOps provider can be used to configure Azure DevOps project in [Microsoft Azure](https://azure.microsoft.com/en-us/) using [Azure DevOps Service REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1)
-    
+
 FEATURES:
 * **New Resource** `azuredevops_build_definition`                               
 * **New Resource** `azuredevops_project`                                                 
