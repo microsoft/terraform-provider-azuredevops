@@ -27,6 +27,10 @@ func DataAgentQueue() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			agentPoolID: {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -48,7 +52,7 @@ func dataSourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 func flattenAzureAgentQueue(d *schema.ResourceData, agentQueue *taskagent.TaskAgentQueue) {
 	d.SetId(strconv.Itoa(*agentQueue.Id))
 	d.Set("name", converter.ToString(agentQueue.Name, ""))
-	d.Set("pool_id", strconv.Itoa(*agentQueue.Pool.Id))
+	d.Set(agentPoolID, *agentQueue.Pool.Id)
 	d.Set("project_id", *agentQueue.ProjectId)
 }
 
@@ -63,7 +67,7 @@ func getAgentQueueByName(clients *client.AggregatedClient, name, projectID *stri
 	}
 
 	if len(*agentQueues) > 1 {
-		return nil, fmt.Errorf("Found multiple agent queues for name: %s. Agent queues found: %v", *name, agentQueues)
+		return nil, fmt.Errorf("Found multiple agent queues for name: %s. Agent queues found: %+v", *name, agentQueues)
 	}
 
 	if len(*agentQueues) == 0 {
