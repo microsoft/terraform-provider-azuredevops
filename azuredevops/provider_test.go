@@ -59,6 +59,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_users",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_pools",
+		"azuredevops_agent_queue",
 		"azuredevops_area",
 		"azuredevops_iteration",
 	}
