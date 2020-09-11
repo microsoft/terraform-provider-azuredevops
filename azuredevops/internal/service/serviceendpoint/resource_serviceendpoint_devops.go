@@ -3,7 +3,6 @@ package serviceendpoint
 import (
 	"fmt"
 	"strings"
-	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -22,6 +21,7 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	r.Schema["organization"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
+		Default:     "",
 		Description: "Azure DevOps organization name",
 	}
 	authPersonal := &schema.Resource{
@@ -50,7 +50,17 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	return r
 }
 
-// Convert internal Terraform data structure to an AzDO data structure
+// Convert internal Terraform data structure to an AzDO data structure:
+//
+// resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
+// 	project_id             = azuredevops_project.project.id
+// 	organization					 = "example"
+// 	service_endpoint_name  = "azure-devops-service-connection"
+// 	auth_personal {
+// 		personal_access_token= "test_token"
+// 	}
+// 	description = "Managed by Terraform"
+// }
 func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
@@ -68,14 +78,15 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 	}
 
 	serviceEndpoint.Type = converter.String("azdoapi")
-	serviceUrl := fmt.Sprintf("https://dev.azure.com/%s", d.Get("organization"))
+
+	org := d.Get("organization").(string)
+	serviceUrl := fmt.Sprint("https://dev.azure.com/", org)
 	serviceEndpoint.Url = &serviceUrl
 
 	data := map[string]string{}
-	releaseUrl := fmt.Sprintf("https://vsrm.dev.azure.com/%s", d.Get("organization"))
+	releaseUrl := fmt.Sprint("https://vsrm.dev.azure.com/", org)
 	data["releaseUrl"] = releaseUrl
 	serviceEndpoint.Data = &data
-
 	return serviceEndpoint, projectID, nil
 }
 
@@ -86,20 +97,41 @@ func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func azdoExtractOranizationName(d *schema.ResourceData) string {
-	// authPerson := make(map[string]string)
-	// val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	// authPerson["apitoken"] = val[azdoPersonalAccessToken].(string)
-	serviceUrl, err := url.Parse(d.Get("url").(string))
-	if err != nil {
-		fmt.Errorf("URL %s cannot be parsed!. Error=%v", serviceUrl, err)
-	}
-	organization := strings.Trim(serviceUrl.Path, "\\")
-	return organization
-}
-
-
 // Convert AzDO data structure to internal Terraform data structure
+//
+// example for $serviceUrl/_apis/serviceendpoint/endpoints 
+// {
+//   "administratorsGroup": null,
+//   "authorization": {
+//     "scheme": "Token",
+//     "parameters": {
+//       "apitoken": "PAT"
+//     }
+//   },
+//   "createdBy": null,
+//   "data": {
+//     "releaseUrl": "https://vsrm.dev.azure.com/example"
+//   },
+//   "description": "",
+//   "groupScopeId": null,
+//   "name": "test",
+//   "operationStatus": null,
+//   "readersGroup": null,
+//   "serviceEndpointProjectReferences": [
+//     {
+//       "description": "",
+//       "name": "test",
+//       "projectReference": {
+//         "id": "c60cfaaf-63ea-45ac-90e5-2d595275ea42",
+//         "name": "test-acc-9k3j7jasp7"
+//       }
+//     }
+//   ],
+//   "type": "AZDOAPI",
+//   "url": "https://dev.azure.com/example",
+//   "isShared": false,
+//   "owner": "library"
+// }
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {

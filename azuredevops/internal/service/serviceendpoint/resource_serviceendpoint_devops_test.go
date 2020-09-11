@@ -25,22 +25,25 @@ var azdoTestServiceEndpointProjectID = &azdoRandomServiceEndpointProjectID
 var azdoTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"AccessToken": "UNIT_TEST_ACCESS_TOKEN",
+			"apitoken": "UNIT_TEST_ACCESS_TOKEN",
 		},
 		Scheme: converter.String("Token"),
+	},
+	Data: &map[string]string{
+		"releaseUrl": "https://vsrm.dev.azure.com/example",
 	},
 	Id:          &azdoTestServiceEndpointID,
 	Name:        converter.String("UNIT_TEST_NAME"),
 	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	Owner:       converter.String("library"),
-	Type:        converter.String("Azure DevOps"),
-	Url:         converter.String("https://dev.azure.com/"),
+	Type:        converter.String("azdoapi"),
+	Url:         converter.String("https://dev.azure.com/example"),
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointAzureDevOps_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureDevOps().Schema, nil)
-	azdoConfigureAuthPersonal(resourceData)
+	azdoConfigureExtraFields(resourceData)
 	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAzureDevOps(resourceData)
@@ -57,7 +60,7 @@ func TestServiceEndpointAzureDevOps_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureDevOps()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	azdoConfigureAuthPersonal(resourceData)
+	azdoConfigureExtraFields(resourceData)
 	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -127,7 +130,7 @@ func TestServiceEndpointAzureDevOps_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureDevOps()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	azdoConfigureAuthPersonal(resourceData)
+	azdoConfigureExtraFields(resourceData)
 	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -149,7 +152,8 @@ func TestServiceEndpointAzureDevOps_Update_DoesNotSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
-func azdoConfigureAuthPersonal(d *schema.ResourceData) {
+func azdoConfigureExtraFields(d *schema.ResourceData) {
+	d.Set("organization", "example")
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
 			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
