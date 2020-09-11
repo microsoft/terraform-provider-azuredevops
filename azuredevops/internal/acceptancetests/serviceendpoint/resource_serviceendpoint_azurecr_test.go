@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_azurecr
 // +build !exclude_serviceendpoints
 
-package serviceendpoint
+package acceptancetests
 
 import (
 	"testing"

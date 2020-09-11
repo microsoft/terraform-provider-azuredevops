@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_aws
 // +build !exclude_serviceendpoints
 
-package serviceendpoint
+package acceptancetests
 
 import (
 	"fmt"

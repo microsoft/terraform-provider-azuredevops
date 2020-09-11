@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_azurerm
 // +build !exclude_serviceendpoints
 
-package serviceendpoint
+package acceptancetests
 
 import (
 	"testing"
