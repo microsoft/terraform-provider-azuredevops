@@ -21,7 +21,6 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	r.Schema["organization"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
-		Default:     "",
 		Description: "Azure DevOps organization name",
 	}
 	authPersonal := &schema.Resource{
