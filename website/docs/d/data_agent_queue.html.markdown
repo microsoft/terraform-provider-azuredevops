@@ -14,13 +14,12 @@ Use this data source to access information about an existing Agent Queue within 
 ```hcl
 # Azure DevOps project
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
-
 data "azuredevops_agent_queue" "queue" {
   project_id = azuredevops_project.project.id 
   name = "Sample Agent Queue"
@@ -31,7 +30,7 @@ output "name" {
 }
 
 output "pool_id" {
-  value = data.azuredevops_agent_queue.queue.pool_id
+  value = data.azuredevops_agent_queue.queue.agent_pool_id
 }
 ```
 
@@ -49,7 +48,7 @@ The following attributes are exported:
 - `id`  - The id of the agent queue.
 - `name` - The name of the agent queue.
 - `project_id` - Project identifier to which the agent queue belongs.
-- `pool_id` - Agent pool identifier to which the agent queue belongs.
+- `agent_pool_id` - Agent pool identifier to which the agent queue belongs.
 
 ## Relevant Links
 

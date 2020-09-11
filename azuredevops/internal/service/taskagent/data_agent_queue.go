@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
@@ -24,8 +23,9 @@ func DataAgentQueue() *schema.Resource {
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			agentPoolID: {
 				Type:     schema.TypeInt,
@@ -51,7 +51,7 @@ func dataSourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 
 func flattenAzureAgentQueue(d *schema.ResourceData, agentQueue *taskagent.TaskAgentQueue) {
 	d.SetId(strconv.Itoa(*agentQueue.Id))
-	d.Set("name", converter.ToString(agentQueue.Name, ""))
+	d.Set("name", *agentQueue.Name)
 	d.Set(agentPoolID, *agentQueue.Pool.Id)
 	d.Set("project_id", agentQueue.ProjectId.String())
 }
