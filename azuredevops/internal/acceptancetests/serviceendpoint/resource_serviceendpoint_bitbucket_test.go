@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_bitbucket
 // +build !exclude_serviceendpoints
 
-package acceptancetests
+package serviceendpoint
 
 import (
 	"fmt"
@@ -119,13 +119,14 @@ func TestAccServiceEndpointBitBucket_RequiresImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclSvcEndpointBitBucketResourceRequiresImport(projectName, serviceEndpointName),
-				ExpectError: requiresImportError(serviceEndpointName),
+				ExpectError: RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func requiresImportError(resourceName string) *regexp.Regexp {
+// RequiresImportError check for error in creating service endpoint
+func RequiresImportError(resourceName string) *regexp.Regexp {
 	message := "Error creating service endpoint in Azure DevOps: Service connection with name %[1]s already exists. Only a user having Administrator/User role permissions on service connection %[1]s can see it."
 	return regexp.MustCompile(fmt.Sprintf(message, resourceName))
 }

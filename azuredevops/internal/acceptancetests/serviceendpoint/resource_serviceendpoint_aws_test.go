@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_aws
 // +build !exclude_serviceendpoints
 
-package acceptancetests
+package serviceendpoint
 
 import (
 	"fmt"
@@ -129,7 +129,7 @@ func TestAccServiceEndpointAws_requiresImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclSvcEndpointAwsResourceRequiresImport(projectName, serviceEndpointName),
-				ExpectError: requiresImportError(serviceEndpointName),
+				ExpectError: RequiresImportError(serviceEndpointName),
 			},
 		},
 	})

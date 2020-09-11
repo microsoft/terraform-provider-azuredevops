@@ -1,7 +1,7 @@
 // +build all resource_serviceendpoint_dockerregistry
 // +build !exclude_serviceendpoints
 
-package acceptancetests
+package serviceendpoint
 
 import (
 	"testing"
