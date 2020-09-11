@@ -99,7 +99,7 @@ func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 
 // Convert AzDO data structure to internal Terraform data structure
 //
-// example for $serviceUrl/_apis/serviceendpoint/endpoints 
+// example for $serviceUrl/_apis/serviceendpoint/endpoints
 // {
 //   "administratorsGroup": null,
 //   "authorization": {
