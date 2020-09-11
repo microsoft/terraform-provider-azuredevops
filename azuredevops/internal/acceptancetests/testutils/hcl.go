@@ -445,14 +445,12 @@ data "azuredevops_agent_pools" "pools" {
 // HclAgentQueueDataSource HCL describing a data source for an AzDO Agent Queue
 func HclAgentQueueDataSource(projectName, queueName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
-	name = "%s"
-}
+%s
 
 data "azuredevops_agent_queue" "queue" {
 	project_id = azuredevops_project.project.id
 	name = "%s"
-}`, projectName, queueName)
+}`, HclProjectResource(projectName), queueName)
 }
 
 // HclAgentQueueResource HCL describing an AzDO Agent Pool and Agent Queue
