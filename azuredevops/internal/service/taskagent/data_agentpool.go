@@ -49,7 +49,7 @@ func getAgentPoolByName(clients *client.AggregatedClient, name *string) (*taskag
 	}
 
 	if len(*agentPools) > 1 {
-		return nil, fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %v", *name, agentPools)
+		return nil, fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %+v", *name, agentPools)
 	}
 
 	if len(*agentPools) == 0 {
