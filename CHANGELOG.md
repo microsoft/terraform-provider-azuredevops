@@ -29,7 +29,7 @@ IMPROVEMENTS:
 
 BUG FIX:
 * All service connection resources - Terraform crashes when the service connection description is set to an empty string [#60](https://github.com/microsoft/terraform-provider-azuredevops/pull/60)
-* Resource f - set the project ID to `project_id` [#172](https://github.com/microsoft/terraform-provider-azuredevops/pull/172)
+* Resource import - set the project ID to `project_id` [#172](https://github.com/microsoft/terraform-provider-azuredevops/pull/172)
 * `azuredevops_build_definition` - Build Definition creation failed when repository type is GitHub [#65](https://github.com/microsoft/terraform-provider-azuredevops/issues/65)
 * `azuredevops_serviceendpoint_github` - GitHub service connection API breaking change [#72](https://github.com/microsoft/terraform-provider-azuredevops/issues/72)
 
