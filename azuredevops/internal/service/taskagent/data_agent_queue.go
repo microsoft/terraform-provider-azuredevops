@@ -53,7 +53,7 @@ func flattenAzureAgentQueue(d *schema.ResourceData, agentQueue *taskagent.TaskAg
 	d.SetId(strconv.Itoa(*agentQueue.Id))
 	d.Set("name", converter.ToString(agentQueue.Name, ""))
 	d.Set(agentPoolID, *agentQueue.Pool.Id)
-	d.Set("project_id", *agentQueue.ProjectId)
+	d.Set("project_id", agentQueue.ProjectId.String())
 }
 
 func getAgentQueueByName(clients *client.AggregatedClient, name, projectID *string) (*taskagent.TaskAgentQueue, error) {
