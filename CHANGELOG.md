@@ -46,7 +46,7 @@ NOTES:
 FEATURES:
 * **New Resource** `azuredevops_build_definition`                               
 * **New Resource** `azuredevops_project`                                                 
-* **New Resource** `azuredevops_variable_group` [#21](https://github.com/microsoft/terraform-provider-azuredevops/issues/21)
+* **New Resource** `azuredevops_variable_group`
 * **New Resource** `azuredevops_serviceendpoint_github` [#3](https://github.com/microsoft/terraform-provider-azuredevops/issues/3)
 * **New Resource** `azuredevops_serviceendpoint_dockerregistry` [#297](https://github.com/microsoft/terraform-provider-azuredevops/issues/3)
 * **New Resource** `azuredevops_serviceendpoint_azurerm` [#3](https://github.com/microsoft/terraform-provider-azuredevops/issues/3)
