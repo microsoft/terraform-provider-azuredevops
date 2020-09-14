@@ -53,6 +53,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
 			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
+			"azuredevops_agent_queue":      taskagent.DataAgentQueue(),
 			"azuredevops_client_config":    service.DataClientConfig(),
 			"azuredevops_group":            graph.DataGroup(),
 			"azuredevops_project":          core.DataProject(),

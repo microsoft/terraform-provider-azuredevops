@@ -15,7 +15,7 @@ Use this data source to access information about an existing Area (Component) wi
 #---------------------------------------------------------------------------
 # Azure DevOps project
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"

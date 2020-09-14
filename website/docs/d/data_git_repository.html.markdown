@@ -15,7 +15,7 @@ To read information about **multiple** Git Repositories use the data source [`az
 ```hcl
 # Load all projects of an organization, that are accessible by the current user
 data "azuredevops_project" "project" {
-  project_name = "contoso-project"
+  name = "contoso-project"
 }
 
 # Load a specific Git repository by name

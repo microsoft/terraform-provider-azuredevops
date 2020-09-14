@@ -13,7 +13,7 @@ Manages a minimum reviewer branch policy within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "p" {
-  project_name = "Sample Project"
+  name = "Sample Project"
 }
 
 resource "azuredevops_git_repository" "r" {

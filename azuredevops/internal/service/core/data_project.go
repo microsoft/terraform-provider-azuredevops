@@ -19,7 +19,7 @@ func DataProject() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
-			"project_name": {
+			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

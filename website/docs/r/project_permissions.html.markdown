@@ -15,7 +15,7 @@ Manages permissions for a AzureDevOps project
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Test Project"
+  name       = "Test Project"
   description        = "Test Project Description"
   visibility         = "private"
   version_control    = "Git"

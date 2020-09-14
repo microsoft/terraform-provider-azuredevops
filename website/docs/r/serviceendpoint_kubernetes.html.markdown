@@ -13,7 +13,7 @@ Manages a Kubernetes service endpoint within Azure DevOps.
 
 ```hcl
 data "azuredevops_project" "p" {
-  project_name = "contoso"
+  name = "contoso"
 }
 
 resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
