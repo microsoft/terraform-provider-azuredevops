@@ -91,7 +91,7 @@ func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) 
 func azdoPersonTokenConfigUpdate(projectName string, serviceEndpointName string, updatedDescription string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
-	serviceEndpointResource := azdoServiceEndpointDevOpsResourceSetup(
+	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResource(
 		serviceEndpointName,
 		"test_token_update",
 		updatedDescription,
