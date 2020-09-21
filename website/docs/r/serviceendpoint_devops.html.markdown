@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_devops
 
-Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. This service connection allows to trigger other subsequent builds with yaml block `task: RunPipelines@1`
+Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. Allows triggering of delegate pipelines, monitoring execution and collecting and consolidating artifacts produced in the delegate pipelines (yaml block `task: RunPipelines@1`). More details on Marketplace page: [RunPipelines](https://marketplace.visualstudio.com/items?itemName=CSE-DevOps.RunPipelines)
 
 ## Example Usage
 
@@ -59,8 +59,8 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint can be imported using the serviceendpoint id (resourceId in your browser's url bar), e.g.
+Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id` , e.g.
 
 ```sh
- terraform import azuredevops_serviceendpoint_devops.serviceendpoint db0541e6-ae9f-474d-ab83-1f7913839080
+ terraform import azuredevops_serviceendpoint_devops.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
 ```
