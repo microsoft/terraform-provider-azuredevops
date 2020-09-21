@@ -38,11 +38,11 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(azdoPersonalAccessToken)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
-		Type:          schema.TypeSet,
-		Optional:      true,
-		MinItems:      1,
-		MaxItems:      1,
-		Elem:          authPersonal,
+		Type:     schema.TypeSet,
+		Optional: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem:     authPersonal,
 	}
 
 	return r
