@@ -11,6 +11,31 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
+func TestAccServiceEndpointAzureDevOps_Defaults(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_devops"
+	tfSvcEpNode := resourceType + ".serviceendpoint"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_PERSONAL_ACCESS_TOKEN"}) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: azdoResourceSetupSimple(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+				),
+			},
+		},
+	})
+}
+
+
 func TestAccServiceEndpointAzureDevOps_PersonalTokenBasic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
@@ -74,6 +99,12 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 			},
 		},
 	})
+}
+
+func azdoResourceSetupSimple(projectName string, serviceEndpointName string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResourceSimple(serviceEndpointName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
 func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) string {
