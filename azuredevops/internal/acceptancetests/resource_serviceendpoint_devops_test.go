@@ -36,6 +36,8 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenBasic(t *testing.T) {
 	})
 }
 
+// validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
+// underlying terraform state.
 func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
@@ -74,82 +76,26 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 	})
 }
 
-// validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
-// underlying terraform state.
-func TestAccServiceEndpointAzureDevOps_CreateAndUpdate(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	serviceEndpointNameFirst := testutils.GenerateResourceName()
-	serviceEndpointNameSecond := testutils.GenerateResourceName()
-	organization := "example"
-
-	resourceType := "azuredevops_serviceendpoint_devops"
-	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_PERSONAL_ACCESS_TOKEN"}) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
-		Steps: []resource.TestStep{
-			{
-				Config: testutils.HclServiceEndpointAzureDevOpsResource(projectName, serviceEndpointNameFirst),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
-				),
-			}, {
-				Config: testutils.HclServiceEndpointAzureDevOpsResource(projectName, serviceEndpointNameSecond),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
-				),
-			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
-				ResourceName:            tfSvcEpNode,
-				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{},
-			},
-		},
-	})
-}
-
 func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
-	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	organization_name      = "example"
-	service_endpoint_name  = "%[1]s"
-	auth_personal {
-		personal_access_token= "test_token_basic"
-	}
-}`, serviceEndpointName)
+	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResource(
+		serviceEndpointName,
+		"test_token_basic",
+		"Managed by Terraform",
+	)
 
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func azdoPersonTokenConfigUpdate(projectName string, serviceEndpointName string, description string) string {
+func azdoPersonTokenConfigUpdate(projectName string, serviceEndpointName string, updatedDescription string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
-	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	organization_name      = "example"
-	service_endpoint_name  = "%[1]s"
-	auth_personal {
-		personal_access_token= "test_token_update"
-	}
-	description = "%[2]s"
-}`, serviceEndpointName, description)
+	serviceEndpointResource := azdoServiceEndpointDevOpsResourceSetup(
+		serviceEndpointName,
+		"test_token_update",
+		updatedDescription,
+	)
 
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
