@@ -153,7 +153,7 @@ func TestServiceEndpointAzureDevOps_Update_DoesNotSwallowError(t *testing.T) {
 }
 
 func azdoConfigureExtraFields(d *schema.ResourceData) {
-	d.Set("organization", "example")
+	d.Set("organization_name", "example")
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
 			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",

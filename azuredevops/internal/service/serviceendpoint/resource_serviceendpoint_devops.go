@@ -18,7 +18,7 @@ const (
 // ResourceServiceEndpointAzureDevOps schema and implementation for Azure DevOps service endpoint resource
 func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps)
-	r.Schema["organization"] = &schema.Schema{
+	r.Schema["organization_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "Azure DevOps organization name",
@@ -43,23 +43,12 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 		MinItems:      1,
 		MaxItems:      1,
 		Elem:          authPersonal,
-		ConflictsWith: []string{},
 	}
 
 	return r
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-//
-// resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
-// 	project_id             = azuredevops_project.project.id
-// 	organization					 = "example"
-// 	service_endpoint_name  = "azure-devops-service-connection"
-// 	auth_personal {
-// 		personal_access_token= "test_token"
-// 	}
-// 	description = "Managed by Terraform"
-// }
 func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
@@ -78,7 +67,7 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 
 	serviceEndpoint.Type = converter.String("azdoapi")
 
-	org := d.Get("organization").(string)
+	org := d.Get("organization_name").(string)
 	serviceUrl := fmt.Sprint("https://dev.azure.com/", org)
 	serviceEndpoint.Url = &serviceUrl
 
@@ -97,40 +86,6 @@ func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-//
-// example for $serviceUrl/_apis/serviceendpoint/endpoints
-// {
-//   "administratorsGroup": null,
-//   "authorization": {
-//     "scheme": "Token",
-//     "parameters": {
-//       "apitoken": "PAT"
-//     }
-//   },
-//   "createdBy": null,
-//   "data": {
-//     "releaseUrl": "https://vsrm.dev.azure.com/example"
-//   },
-//   "description": "",
-//   "groupScopeId": null,
-//   "name": "test",
-//   "operationStatus": null,
-//   "readersGroup": null,
-//   "serviceEndpointProjectReferences": [
-//     {
-//       "description": "",
-//       "name": "test",
-//       "projectReference": {
-//         "id": "c60cfaaf-63ea-45ac-90e5-2d595275ea42",
-//         "name": "test-acc-9k3j7jasp7"
-//       }
-//     }
-//   ],
-//   "type": "AZDOAPI",
-//   "url": "https://dev.azure.com/example",
-//   "isShared": false,
-//   "owner": "library"
-// }
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {

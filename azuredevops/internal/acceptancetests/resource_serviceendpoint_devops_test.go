@@ -56,7 +56,7 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization", organization),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 				),
 			}, {
@@ -66,7 +66,7 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization", organization),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 				),
 			},
@@ -95,7 +95,7 @@ func TestAccServiceEndpointAzureDevOps_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization", organization),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 				),
@@ -105,7 +105,7 @@ func TestAccServiceEndpointAzureDevOps_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "organization", organization),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "organization_name", organization),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 				),
@@ -127,7 +127,7 @@ func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) 
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
-	organization					 = "example"
+	organization_name      = "example"
 	service_endpoint_name  = "%[1]s"
 	auth_personal {
 		personal_access_token= "test_token_basic"
@@ -143,7 +143,7 @@ func azdoPersonTokenConfigUpdate(projectName string, serviceEndpointName string,
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
-	organization					 = "example"
+	organization_name      = "example"
 	service_endpoint_name  = "%[1]s"
 	auth_personal {
 		personal_access_token= "test_token_update"
