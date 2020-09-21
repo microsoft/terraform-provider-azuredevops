@@ -35,7 +35,6 @@ func TestAccServiceEndpointAzureDevOps_Defaults(t *testing.T) {
 	})
 }
 
-
 func TestAccServiceEndpointAzureDevOps_PersonalTokenBasic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()

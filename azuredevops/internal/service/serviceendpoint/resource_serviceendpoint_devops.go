@@ -81,7 +81,6 @@ func azdoPersonalAccessTokenField() *schema.Resource {
 	return personalAccessToken
 }
 
-
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
