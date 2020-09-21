@@ -13,7 +13,7 @@ Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. 
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name               = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -22,7 +22,7 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "my-pipelines-service-connection"
-  organization          = "my-organization-name"
+  organization_name     = "my-organization-name"
   auth_personal {
     # Also can be set with AZDO_PERSONAL_ACCESS_TOKEN environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
-- `organization` - (Required) The organization name used for `Organization Url` and `Release API Url` fields.
+- `organization_name` - (Required) The organization name used for `Organization Url` and `Release API Url` fields.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 
