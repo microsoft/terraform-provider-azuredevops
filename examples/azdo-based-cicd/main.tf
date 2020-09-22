@@ -87,11 +87,11 @@ resource "azuredevops_serviceendpoint_azurerm" "endpoint1" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "TestServiceAzureRM"
   credentials {
-    serviceprincipalid  = "ee7f75a0-8553-4e6a-xxxx-xxxxxxxx"
-    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
+    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
-  azurerm_spn_tenantid      = "2e3a33f9-66b1-4xxx-xxxx-xxxxxxxxx"
-  azurerm_subscription_id   = "8a7aace5-xxxx-xxxx-xxxx-xxxxxxxxxx"
+  azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Microsoft Azure DEMO"
 }
 

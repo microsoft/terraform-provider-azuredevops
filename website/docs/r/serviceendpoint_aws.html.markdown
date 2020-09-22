@@ -58,5 +58,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint AWS can be imported using the **projectID/serviceEndpointID**, e.g.
 
 ```
- terraform import azuredevops_serviceendpoint_aws.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ terraform import azuredevops_serviceendpoint_aws.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

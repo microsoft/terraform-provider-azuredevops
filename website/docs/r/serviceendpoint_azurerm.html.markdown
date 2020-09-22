@@ -32,11 +32,11 @@ resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   service_endpoint_name = "TestServiceRM"
   description = "Managed by Terraform" 
   credentials {
-    serviceprincipalid  = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
+    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
-  azurerm_spn_tenantid      = "xxxxxxx-xxxx-xxx-xxxxx-xxxxxxxx"
-  azurerm_subscription_id   = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Sample Subscription"
 }
 ```
@@ -55,8 +55,8 @@ resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   project_id                = azuredevops_project.project.id
   service_endpoint_name     = "TestServiceRM"
   description = "Managed by Terraform" 
-  azurerm_spn_tenantid      = "xxxxxxx-xxxx-xxx-xxxxx-xxxxxxxx"
-  azurerm_subscription_id   = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Microsoft Azure DEMO"
 }
 ```

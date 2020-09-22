@@ -55,5 +55,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint Bitbucket can be imported using the **projectID/serviceEndpointID**, e.g.
 
 ```sh
- terraform import azuredevops_serviceendpoint_bitbucket.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ terraform import azuredevops_serviceendpoint_bitbucket.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

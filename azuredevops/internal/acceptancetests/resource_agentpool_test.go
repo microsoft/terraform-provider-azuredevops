@@ -91,7 +91,7 @@ func checkAgentPoolExists(expectedName string) resource.TestCheckFunc {
 }
 
 // verifies that agent pool referenced in the state is destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkAgentPoolDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 

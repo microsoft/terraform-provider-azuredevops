@@ -210,7 +210,7 @@ func checkBuildDefinitionExists(expectedName string) resource.TestCheckFunc {
 }
 
 // verifies that all build definitions referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkBuildDefinitionDestroyed(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_build_definition" {
