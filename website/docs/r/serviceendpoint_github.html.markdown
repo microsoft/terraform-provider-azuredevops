@@ -25,7 +25,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_1" {
 
   auth_personal {
     # Also can be set with AZDO_GITHUB_SERVICE_CONNECTION_PAT environment variable
-    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
 }
 ```
@@ -36,7 +36,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
   service_endpoint_name = "Sample GithHub Grant"
 
   auth_oauth {
-    oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
   }
 }
 ```

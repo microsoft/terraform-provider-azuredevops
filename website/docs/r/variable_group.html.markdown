@@ -75,7 +75,7 @@ terraform import azuredevops_variable_group.variablegroup "Test Project/10"
 or
 
 ```sh
-terraform import azuredevops_variable_group.variablegroup 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+terraform import azuredevops_variable_group.variablegroup 00000000-0000-0000-0000-000000000000/0
 ```
 
 _Note that for secret variables, the import command retrieve blank value in the tfstate._

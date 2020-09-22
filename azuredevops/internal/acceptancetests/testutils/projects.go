@@ -36,7 +36,7 @@ func CheckProjectExists(expectedName string) resource.TestCheckFunc {
 }
 
 // CheckProjectDestroyed verifies that all projects referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func CheckProjectDestroyed(s *terraform.State) error {
 	clients := GetProvider().Meta().(*client.AggregatedClient)
 

@@ -212,7 +212,7 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
 
-			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err != nil {
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
 				d.Set("project_id", projectNameOrID)
 				d.SetId(resourceID)
 				return []*schema.ResourceData{d}, nil

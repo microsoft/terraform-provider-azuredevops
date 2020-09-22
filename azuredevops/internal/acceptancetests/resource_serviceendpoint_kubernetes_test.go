@@ -121,7 +121,7 @@ func checkSvcEndpointKubernetesExists(expectedName string) resource.TestCheckFun
 }
 
 // verifies that all service endpoints referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkSvcEndpointKubernetesDestroyed(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_serviceendpoint_kubernetes" {

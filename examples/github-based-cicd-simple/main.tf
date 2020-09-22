@@ -18,7 +18,7 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "GitHub Service Connection"
   auth_oauth {
-    oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
   }
 }
 
