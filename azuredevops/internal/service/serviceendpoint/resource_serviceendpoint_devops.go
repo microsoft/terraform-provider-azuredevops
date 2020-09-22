@@ -56,8 +56,10 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 
 func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal have only one element inside
-	authPerson["apitoken"] = val["personal_access_token"].(string)
+	if len(d.List()) == 1 {
+		val := d.List()[0].(map[string]interface{}) //auth_personal block may have only one element inside
+		authPerson["apitoken"] = val["personal_access_token"].(string)
+	}
 	return authPerson
 }
 
