@@ -23,12 +23,12 @@ func TestAccProject_DataSource(t *testing.T) {
 	}{
 		{
 			Name:                "Get project with id",
-			Identifier:          "project_identifier",
+			Identifier:          "project_id",
 			IdentifierOnProject: "id",
 		},
 		{
 			Name:                "Get project with name",
-			Identifier:          "project_identifier",
+			Identifier:          "name",
 			IdentifierOnProject: "name",
 		},
 	}
@@ -75,7 +75,7 @@ func TestAccProject_DataSource_ErrorWhenBothNameAndIdSet(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      dataProject,
-				ExpectError: regexp.MustCompile(`config is invalid: Missing required argument: The argument "project_identifier" is required, but no definition was found.`),
+				ExpectError: regexp.MustCompile(`errors during refresh: Either project_id or project_name must be set`),
 			},
 		},
 	})
@@ -85,7 +85,7 @@ func TestAccProject_DataSource_ErrorWhenDescriptionSet(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	dataProject := fmt.Sprintf(`
 	data "azuredevops_project" "project" {
-		project_identifier = "%s"
+		name = "%s"
 		description = "A project description"
 	}`, projectName)
 

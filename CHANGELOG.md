@@ -19,6 +19,7 @@ FEATURES:
 IMPROVEMENTS:
 * All resources - remove from `.tfstate` if project has been deleted [#25](https://github.com/microsoft/terraform-provider-azuredevops/issues/25)
 * Data source `azuredevops_build_definition` - support export `origin` and `origin_id` [#177](https://github.com/microsoft/terraform-provider-azuredevops/issues/177)
+* Data source `azuredevops_project` - add `project_id` [#163](https://github.com/microsoft/terraform-provider-azuredevops/issues/163)
 * `azuredevops_branch_policy_build_validation`  - add `filename_patterns` support for repository build policy [#62](https://github.com/microsoft/terraform-provider-azuredevops/issues/62)
 * `azuredevops_git_repository`
     - Use `default_branch` as the name of an initialized branch [#89](https://github.com/microsoft/terraform-provider-azuredevops/issues/89)
@@ -34,7 +35,6 @@ BUG FIX:
 * `azuredevops_serviceendpoint_github` - GitHub service connection API breaking change [#72](https://github.com/microsoft/terraform-provider-azuredevops/issues/72)
 
 BREAKING CHANGES:
-* Data source: `azuredevops_project` - remove `project_name`, add `project_identifier` as the required configuration [#176](https://github.com/microsoft/terraform-provider-azuredevops/issues/176)
 * `azuredevops_git_repository` - `initialization` is a required configuration [#54](https://github.com/microsoft/terraform-provider-azuredevops/issues/54)
 * `azuredevops_project` - rename `project_name` to `name` [#179](https://github.com/microsoft/terraform-provider-azuredevops/issues/179)
 
