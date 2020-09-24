@@ -75,7 +75,7 @@ func TestAccProject_DataSource_ErrorWhenBothNameAndIdSet(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      dataProject,
-				ExpectError: regexp.MustCompile(`errors during refresh: Either project_id or project_name must be set`),
+				ExpectError: regexp.MustCompile(`errors during refresh: Either project_id or name must be set`),
 			},
 		},
 	})
