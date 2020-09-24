@@ -53,10 +53,3 @@ The following attributes are exported:
 ## Relevant Links
 * [aws-toolkit-azure-devops](https://github.com/aws/aws-toolkit-azure-devops)
 * [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
-
-## Import
-Azure DevOps Service Endpoint AWS can be imported using the **projectID/serviceEndpointID**, e.g.
-
-```
- terraform import azuredevops_serviceendpoint_aws.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
-```

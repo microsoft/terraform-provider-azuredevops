@@ -81,11 +81,3 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
-
-## Import
-
-Azure DevOps Service Endpoint GitHub can be imported using the serviceendpoint id, e.g.
-
-```sh
- terraform import azuredevops_serviceendpoint_github.serviceendpoint d81afa1d-9ad2-4c7d-b016-9ebb90f435f5
-```
