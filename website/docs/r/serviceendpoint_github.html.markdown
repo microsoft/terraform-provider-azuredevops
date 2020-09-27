@@ -45,7 +45,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_3" {
   project_id = azuredevops_project.project.id
   service_endpoint_name = "Sample GithHub Apps: Azure Pipelines"
-  # Note Github Apps do not support a description and will always be empty string. Must be explicty set to override the default value.
+  # Note Github Apps do not support a description and will always be empty string. Must be explicitly set to override the default value.
   description = ""
 }
 ```
@@ -84,8 +84,8 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint GitHub can be imported using the serviceendpoint id, e.g.
+Azure DevOps Service Endpoint GitHub can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_github.serviceendpoint d81afa1d-9ad2-4c7d-b016-9ebb90f435f5
+ terraform import azuredevops_serviceendpoint_github.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

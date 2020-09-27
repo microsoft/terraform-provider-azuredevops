@@ -43,6 +43,9 @@ func DiffFuncSuppressSecretChanged(k, old, new string, d *schema.ResourceData) b
 // HelpFlattenSecretNested is used to store a hashed secret value into `tfstate`
 func HelpFlattenSecretNested(d *schema.ResourceData, parentKey string, d2 map[string]interface{}, secretKey string) (string, string) {
 	hashKey := calcSecretHashKey(secretKey)
+	if len(d2) == 0 {
+		return hashKey, ""
+	}
 	oldHash := d2[hashKey].(string)
 	if !d.HasChange(parentKey) {
 		log.Printf("key %s didn't get updated.", parentKey)
