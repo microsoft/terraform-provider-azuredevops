@@ -362,14 +362,19 @@ func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildD
 	index := 0
 	for varName, varVal := range *buildDefinition.Variables {
 		var variable map[string]interface{}
-		if converter.ToBool(varVal.IsSecret, false) {
-			variable = tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName)
-		} else {
-			variable = map[string]interface{}{
-				bdVariableName:          varName,
-				bdVariableValue:         converter.ToString(varVal.Value, ""),
-				bdVariableIsSecret:      false,
-				bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
+
+		isSecret := converter.ToBool(varVal.IsSecret, false)
+		variable = map[string]interface{}{
+			bdVariableName:          varName,
+			bdVariableValue:         converter.ToString(varVal.Value, ""),
+			bdVariableIsSecret:      isSecret,
+			bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
+		}
+
+		//read secret variable from state if exist
+		if isSecret {
+			if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName); stateVal != nil {
+				variable = stateVal
 			}
 		}
 		variables[index] = variable

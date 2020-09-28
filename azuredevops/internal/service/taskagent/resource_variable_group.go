@@ -449,14 +449,21 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
 	}
 
-	if converter.ToBool(variable.IsSecret, false) {
-		return tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName), nil
-	}
-	return map[string]interface{}{
+	isSecret := converter.ToBool(variable.IsSecret, false)
+	var val = map[string]interface{}{
 		vgName:     varName,
 		vgValue:    converter.ToString(variable.Value, ""),
-		vgIsSecret: false,
-	}, nil
+		vgIsSecret: isSecret,
+	}
+
+	//read secret variables from state if exist
+	if isSecret {
+		stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName)
+		if stateVal != nil {
+			val = stateVal
+		}
+	}
+	return val, nil
 }
 
 func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
