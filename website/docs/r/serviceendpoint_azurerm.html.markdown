@@ -29,7 +29,7 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "TestServiceRM"
+  service_endpoint_name = "Sample AzureRM"
   description = "Managed by Terraform" 
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
@@ -53,7 +53,7 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
   project_id                = azuredevops_project.project.id
-  service_endpoint_name     = "TestServiceRM"
+  service_endpoint_name     = "Sample AzureRM"
   description = "Managed by Terraform" 
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
@@ -92,3 +92,11 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 5.1 - Service End points](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+
+## Import
+
+Azure DevOps Service Endpoint Azure Resource Manage can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+
+```sh
+ terraform import azuredevops_serviceendpoint_azurerm.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```
