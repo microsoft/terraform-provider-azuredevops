@@ -458,8 +458,7 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 
 	//read secret variables from state if exist
 	if isSecret {
-		stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName)
-		if stateVal != nil {
+		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName); stateVal != nil {
 			val = stateVal
 		}
 	}
