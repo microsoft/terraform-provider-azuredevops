@@ -19,15 +19,14 @@ func DataGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
-				ForceNew:     true,
 				Required:     true,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"project_id": {
 				Type:         schema.TypeString,
-				ForceNew:     true,
-				Required:     true,
-				ValidateFunc: validation.NoZeroValues,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"descriptor": {
 				Type:     schema.TypeString,
@@ -64,26 +63,34 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	projectGroups, err := getGroupsForDescriptor(clients, projectDescriptor)
 	if err != nil {
-		return fmt.Errorf("Error finding groups for project with ID %s. Error: %v", projectID, err)
+		errMsg := "Error finding groups"
+		if projectID != "" {
+			errMsg = fmt.Sprintf("%s for project with ID %s", errMsg, projectID)
+		}
+		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
 	targetGroup := selectGroup(projectGroups, groupName)
 	if targetGroup == nil {
-		return fmt.Errorf("Could not find group with name %s in project with ID %s", groupName, projectID)
+		errMsg := fmt.Sprintf("Could not find group with name %s", groupName)
+		if projectID != "" {
+			errMsg = fmt.Sprintf("%s in project with ID %s", errMsg, projectID)
+		}
+		return fmt.Errorf(errMsg)
 	}
 
 	d.SetId(*targetGroup.Descriptor)
-	d.Set("descriptor", *targetGroup.Descriptor)
-	if targetGroup.Origin != nil {
-		d.Set("origin", *targetGroup.Origin)
-	}
-	if targetGroup.OriginId != nil {
-		d.Set("origin_id", *targetGroup.OriginId)
-	}
+	d.Set("descriptor", targetGroup.Descriptor)
+	d.Set("origin", targetGroup.Origin)
+	d.Set("origin_id", targetGroup.OriginId)
 	return nil
 }
 
 func getProjectDescriptor(clients *client.AggregatedClient, projectID string) (string, error) {
+	if projectID == "" {
+		return "", nil
+	}
+
 	projectUUID, err := uuid.Parse(projectID)
 	if err != nil {
 		return "", err
@@ -107,8 +114,19 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 		if err != nil {
 			return nil, err
 		}
-
-		groups = append(groups, *newGroups...)
+		if newGroups != nil && len(*newGroups) > 0 {
+			if projectDescriptor == "" {
+				// filter on collection groups
+				filteredGroups := []graph.GraphGroup{}
+				for _, grp := range *newGroups {
+					if grp.Domain != nil && strings.HasPrefix(strings.ToLower(*grp.Domain), "vstfs:///framework/identitydomain") {
+						filteredGroups = append(filteredGroups, grp)
+					}
+				}
+				newGroups = &filteredGroups
+			}
+			groups = append(groups, *newGroups...)
+		}
 		hasMore = currentToken != ""
 	}
 
@@ -116,7 +134,10 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 }
 
 func getGroupsWithContinuationToken(clients *client.AggregatedClient, projectDescriptor string, continuationToken string) (*[]graph.GraphGroup, string, error) {
-	args := graph.ListGroupsArgs{ScopeDescriptor: &projectDescriptor}
+	args := graph.ListGroupsArgs{}
+	if projectDescriptor != "" {
+		args.ScopeDescriptor = &projectDescriptor
+	}
 	if continuationToken != "" {
 		args.ContinuationToken = &continuationToken
 	}
