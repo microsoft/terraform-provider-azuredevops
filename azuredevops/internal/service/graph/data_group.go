@@ -25,7 +25,6 @@ func DataGroup() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"descriptor": {

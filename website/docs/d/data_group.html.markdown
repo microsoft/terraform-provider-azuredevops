@@ -48,7 +48,7 @@ output "collection_group_descriptor" {
 The following arguments are supported:
 
 - `name` - (Required) The Group Name.
-- `project_id` - (Optional) The Project Id. If no project Id is specified the project collection groups will be searched.
+- `project_id` - (Optional) The Project ID. If no project Id is specified the project collection groups will be searched.
 
 ## Attributes Reference
 
