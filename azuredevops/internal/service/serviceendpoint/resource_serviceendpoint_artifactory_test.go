@@ -18,11 +18,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var artifactoryTestServiceEndpointID = uuid.New()
-var artifactoryRandomServiceEndpointProjectID = uuid.New().String()
-var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var artifactoryTestServiceEndpointIDpassword = uuid.New()
+var artifactoryRandomServiceEndpointProjectIDpassword = uuid.New().String()
+var artifactoryTestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
 
-var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"username": "AR_TEST_username",
@@ -30,14 +30,18 @@ var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:          &artifactoryTestServiceEndpointID,
+	Id:          &artifactoryTestServiceEndpointIDpassword,
 	Name:        converter.String("UNIT_TEST_CONN_NAME"),
 	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:        converter.String("artifactoryService"),
 	Url:         converter.String("https://www.artifactory.com"),
 }
-var artifactoryTestServiceEndpointToken = serviceendpoint.ServiceEndpoint{
+var artifactoryTestServiceEndpointID = uuid.New()
+var artifactoryRandomServiceEndpointProjectID = uuid.New().String()
+var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+
+var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"apitoken": "AR_TEST_token",
@@ -53,33 +57,40 @@ var artifactoryTestServiceEndpointToken = serviceendpoint.ServiceEndpoint{
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T) {
-	for _, ep := range []*serviceendpoint.ServiceEndpoint{&artifactoryTestServiceEndpointToken, &artifactoryTestServiceEndpoint} {
+func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, artifactoryTestServiceEndpointProjectID)
+		flattenServiceEndpointArtifactory(resourceData, ep, id)
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
-
-		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, artifactoryTestServiceEndpointProjectID, projectID)
 		require.Nil(t, err)
+		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
+		require.Equal(t, id, projectID)
+
 	}
+}
+func TestServiceEndpointArtifactory_ExpandFlatten_RoundtripPassword(t *testing.T) {
+	testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+}
+
+func TestServiceEndpointArtifactory_ExpandFlatten_RoundtripToken(t *testing.T) {
+	testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &artifactoryTestServiceEndpoint, Project: artifactoryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: ep, Project: id}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -89,20 +100,26 @@ func TestServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T) {
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: artifactoryTestServiceEndpoint.Id, Project: artifactoryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ep.Id, Project: id}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -112,20 +129,26 @@ func TestServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T) {
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: artifactoryTestServiceEndpoint.Id, Project: artifactoryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ep.Id, Project: id}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -135,23 +158,29 @@ func TestServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T) {
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &artifactoryTestServiceEndpoint,
-		EndpointId: artifactoryTestServiceEndpoint.Id,
-		Project:    artifactoryTestServiceEndpointProjectID,
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+		Project:    id,
 	}
 
 	buildClient.
@@ -162,4 +191,10 @@ func TestServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T) {
 
 	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }

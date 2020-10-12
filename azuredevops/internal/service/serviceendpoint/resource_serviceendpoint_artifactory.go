@@ -2,7 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -34,42 +33,60 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 		Description: "Url for the Artifactory Server",
 	}
 
-	r.Schema["token"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		Sensitive:        true,
-		ConflictsWith:    []string{"username", "password"},
-		ExactlyOneOf:     []string{"token", "password"},
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
-		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		Description:      "Authentication Token generated through Artifactory",
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("access_token")
+	at := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"access_token": {
+				Description:      "The Artifactory access token.",
+				Type:             schema.TypeString,
+				Required:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+			},
+			patHashKey: patHashSchema,
+		},
 	}
-	r.Schema["username"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		ConflictsWith:    []string{"token"},
-		RequiredWith:     []string{"password"},
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
-		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		Description:      "Artifactory Username",
+
+	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
+	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
+	aup := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"username": {
+				Description:      "The Artifactory user name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+			},
+			patHashKeyU: patHashSchemaU,
+			"password": {
+				Description:      "The Artifactory password.",
+				Type:             schema.TypeString,
+				Required:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+			},
+			patHashKeyP: patHashSchemaP,
+		},
 	}
-	r.Schema["password"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		Sensitive:        true,
-		ConflictsWith:    []string{"token"},
-		RequiredWith:     []string{"username"},
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
-		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		Description:      "Artifactory Password",
+
+	r.Schema["authentication_token"] = &schema.Schema{
+		Type:         schema.TypeList,
+		Optional:     true,
+		MinItems:     1,
+		MaxItems:     1,
+		Elem:         at,
+		ExactlyOneOf: []string{"authentication_password", "authentication_token"},
 	}
-	// Add spots in the schema to store the token/password hashes
-	for _, key := range []string{"token", "username", "password"} {
-		secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(key)
-		secretHashSchema.Optional = true
-		r.Schema[secretHashKey] = secretHashSchema
+
+	r.Schema["authentication_password"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem:     aup,
 	}
+
 	return r
 }
 
@@ -78,40 +95,79 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("artifactoryService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	if u, ok := d.GetOk("username"); ok {
-		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-			Scheme: converter.String("UsernamePassword"),
-			Parameters: &map[string]string{
-				"username": u.(string),
-				"password": d.Get("password").(string),
-			},
-		}
-	} else {
-		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-			Scheme: converter.String("Token"),
-			Parameters: &map[string]string{
-				"apitoken": d.Get("token").(string),
-			},
-		}
+	authScheme := "Token"
+
+	authParams := make(map[string]string)
+
+	if x, ok := d.GetOk("authentication_token"); ok {
+		authScheme = "Token"
+		msi := x.([]interface{})[0].(map[string]interface{})
+		authParams["apitoken"] = expandSecret(msi, "access_token")
+
+	} else if x, ok := d.GetOk("authentication_password"); ok {
+		authScheme = "UsernamePassword"
+		msi := x.([]interface{})[0].(map[string]interface{})
+		authParams["username"] = expandSecret(msi, "username")
+		authParams["password"] = expandSecret(msi, "password")
 	}
+	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+		Parameters: &authParams,
+		Scheme:     &authScheme,
+	}
+
 	return serviceEndpoint, projectID, nil
+}
+
+func expandSecret(credentials map[string]interface{}, key string) string {
+	// Note: if this is an update for a field other than `key`, the `key` will be
+	// set to `""`. Without catching this case and setting the value to `"null"`, the `key` will
+	// actually be set to `""` by the Azure DevOps service.
+	//
+	// This step is critical in order to ensure that the service connection can update without loosing its password!
+	//
+	// This behavior is unfortunately not documented in the API documentation.
+	val, ok := credentials[key]
+	if !ok || val.(string) == "" {
+		return "null"
+	}
+
+	return val.(string)
 }
 
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+		auth := make(map[string]interface{})
+		if x, ok := d.GetOk("authentication_token"); ok {
+			authList := x.([]interface{})[0].(map[string]interface{})
+			if len(authList) > 0 {
+				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "access_token")
+				auth[hashKey] = newHash
+			}
+		}
+		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+			auth["access_token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
+		}
+		d.Set("authentication_token", []interface{}{auth})
+	}
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+		auth := make(map[string]interface{})
+		if old, ok := d.GetOk("authentication_password"); ok {
+			oldAuthList := old.([]interface{})[0].(map[string]interface{})
+			if len(oldAuthList) > 0 {
+				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_password", oldAuthList, "password")
+				auth[hashKey] = newHash
+				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_password", oldAuthList, "username")
+				auth[hashKey] = newHash
+			}
+		}
+		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
+			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
+		}
+		d.Set("authentication_password", []interface{}{auth})
+	}
 
 	d.Set("url", *serviceEndpoint.Url)
-	if *serviceEndpoint.Authorization.Scheme == "UsernamePassword" {
-		tfhelper.HelpFlattenSecret(d, "password")
-		tfhelper.HelpFlattenSecret(d, "username")
-		d.Set("password", (*serviceEndpoint.Authorization.Parameters)["password"])
-		d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
-
-	} else if *serviceEndpoint.Authorization.Scheme == "Token" {
-		tfhelper.HelpFlattenSecret(d, "token")
-		d.Set("token", (*serviceEndpoint.Authorization.Parameters)["apitoken"])
-	} else {
-		log.Fatalf("Scheme %q unknown.", *serviceEndpoint.Authorization.Scheme)
-	}
 }

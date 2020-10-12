@@ -52,8 +52,7 @@ func TestAccServiceEndpointArtifactory_basic_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username_hash"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 				),
 			},
@@ -78,7 +77,7 @@ func TestAccServiceEndpointArtifactory_complete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "token_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_token.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -105,8 +104,7 @@ func TestAccServiceEndpointArtifactory_complete_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password_hash"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -142,7 +140,7 @@ func TestAccServiceEndpointArtifactory_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "token_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_token.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -178,8 +176,7 @@ func TestAccServiceEndpointArtifactory_update_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password_hash"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -249,7 +246,9 @@ func hclSvcEndpointArtifactoryResourceBasic(projectName string, serviceEndpointN
 resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	token			   	   = "redacted"
+	authentication_token {
+		access_token			   	   = "redacted"
+	}
 	url			   		   = "http://url.com/1"
 	description 		   = "%s"
 }`, serviceEndpointName, description)
@@ -263,8 +262,10 @@ func hclSvcEndpointArtifactoryResourceBasicUsernamePassword(projectName string, 
 resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	username			   = "u"
-	password			   = "redacted"
+	authentication_password {
+		username			   = "u"
+		password			   = "redacted"
+	}
 	url			   		   = "http://url.com/1"
 	description 		   = "%s"
 }`, serviceEndpointName, description)
@@ -279,8 +280,10 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	username			   = "u"
-	password			   = "redacted"
+	authentication_password {
+		username			   = "u"
+		password			   = "redacted"
+	}
 	url			   		   = "https://url.com/1"
 }`, serviceEndpointName, description)
 
@@ -294,8 +297,10 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	token			   	   = "redacted"
-	url			   		   = "https://url.com/1"
+	authentication_token {
+		access_token          = "redacted"
+	}
+	  url			   		   = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -308,8 +313,10 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	token			   	   = "redacted2"
-	url			   		   = "https://url.com/2"
+	authentication_token {
+		access_token          = "redacted2"
+	}
+	  url			   		   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -322,8 +329,10 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	username			   = "u2"
-	password			   = "redacted2"
+	authentication_password {
+		username			   = "u2"
+		password			   = "redacted2"
+	}
 	url			   		   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
@@ -340,7 +349,9 @@ resource "azuredevops_serviceendpoint_artifactory" "import" {
   service_endpoint_name = azuredevops_serviceendpoint_artifactory.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_artifactory.test.description
   url          = azuredevops_serviceendpoint_artifactory.test.url
-  token          = "redacted"
+  authentication_token {
+	  access_token          = "redacted"
+  }
 }
 `, template)
 }
@@ -353,8 +364,10 @@ resource "azuredevops_serviceendpoint_artifactory" "import" {
   service_endpoint_name = azuredevops_serviceendpoint_artifactory.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_artifactory.test.description
   url          	= azuredevops_serviceendpoint_artifactory.test.url
-  username 		= "u"
-  password      = "redacted"
+  authentication_password {
+	username			   = "u"
+	password			   = "redacted"
+  }
 }
 `, template)
 }
