@@ -19,6 +19,10 @@ type autoReviewerPolicySettings struct {
 }
 
 const (
+	schemaSubmitterCanVote = "submitter_can_vote"
+)
+
+const (
 	autoReviewerIds = "auto_reviewer_ids"
 	pathFilters     = "path_filters"
 	displayMessage  = "message"

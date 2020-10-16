@@ -44,12 +44,17 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, submitterCanVote bool) string {
+func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool) string {
 	settings := fmt.Sprintf(
 		`
 		reviewer_count     = %d
 		submitter_can_vote = %t
-		`, reviewers, submitterCanVote,
+		allow_completion_with_rejects_or_waits = %t
+		last_pusher_cannot_approve = %t
+		on_last_iteration_require_vote = %t
+		on_push_reset_all_votes = %t
+		on_push_reset_approved_votes = %t		
+		`, reviewers, flag, flag, flag, flag, flag, flag,
 	)
 
 	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings)

@@ -49,11 +49,15 @@ func PreCheck(t *testing.T, additionalEnvVars *[]string) {
 	if additionalEnvVars != nil {
 		requiredEnvVars = append(requiredEnvVars, *additionalEnvVars...)
 	}
-
+	missing := false
 	for _, variable := range requiredEnvVars {
 		if _, ok := os.LookupEnv(variable); !ok {
-			t.Fatalf("`%s` must be set for this acceptance test!", variable)
+			missing = true
+			t.Errorf("`%s` must be set for this acceptance test!", variable)
 		}
+	}
+	if missing {
+		t.Fatalf("Some environment variables missing.")
 	}
 }
 
