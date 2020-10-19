@@ -24,6 +24,7 @@ import (
 type groupMeta struct {
 	name       string
 	descriptor string
+	domain     string
 	origin     string
 	originId   string
 }
@@ -146,6 +147,60 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 	require.Equal(t, originID.String(), resourceData.Get("origin_id").(string))
 }
 
+func TestGroupDataSource_HandlesCollectionGroups_And_ReturnsErrorOnProjectGroup(t *testing.T) {
+	resourceData := createResourceData(t, "", "name1")
+
+	err := testGroupDataSource_HandlesCollectionGroups(t, resourceData)
+	require.NotNil(t, err)
+	require.Error(t, err, "Could not find group with name name1")
+}
+
+func TestGroupDataSource_HandlesCollectionGroups_And_ReturnsCorrectGroup(t *testing.T) {
+	resourceData := createResourceData(t, "", "name3")
+
+	err := testGroupDataSource_HandlesCollectionGroups(t, resourceData)
+	require.Nil(t, err)
+	require.Equal(t, "descriptor3", resourceData.Id())
+	require.Equal(t, "name3", resourceData.Get("name"))
+	require.Empty(t, resourceData.Get("project_id"))
+}
+
+func testGroupDataSource_HandlesCollectionGroups(t *testing.T, resourceData *schema.ResourceData) error {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	originID := uuid.New()
+
+	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
+	clients := &client.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
+
+	firstListGroupCallArgs := graph.ListGroupsArgs{}
+	continuationToken := "continuation-token"
+	firstListGroupCallResponse := createPaginatedResponse(continuationToken,
+		groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()},
+	)
+	firstCall := graphClient.
+		EXPECT().
+		ListGroups(clients.Ctx, firstListGroupCallArgs).
+		Return(firstListGroupCallResponse, nil)
+
+	secondListGroupCallArgs := graph.ListGroupsArgs{ContinuationToken: &continuationToken}
+	secondListGroupCallResponse := createPaginatedResponse("",
+		groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()},
+		groupMeta{name: "name5", descriptor: "descriptor5", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Classification/TeamProject/" + uuid.New().String()},
+		groupMeta{name: "name3", descriptor: "descriptor3", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Framework/IdentityDomain/" + uuid.New().String()},
+		groupMeta{name: "name4", descriptor: "descriptor4", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Classification/TeamProject/" + uuid.New().String()},
+	)
+	secondCall := graphClient.
+		EXPECT().
+		ListGroups(clients.Ctx, secondListGroupCallArgs).
+		Return(secondListGroupCallResponse, nil)
+
+	gomock.InOrder(firstCall, secondCall)
+
+	return dataSourceGroupRead(resourceData, clients)
+}
+
 func createPaginatedResponse(continuationToken string, groups ...groupMeta) *graph.PagedGraphGroups {
 	continuationTokenList := []string{continuationToken}
 	return &graph.PagedGraphGroups{
@@ -157,7 +212,13 @@ func createPaginatedResponse(continuationToken string, groups ...groupMeta) *gra
 func createGroupsWithDescriptors(groups ...groupMeta) *[]graph.GraphGroup {
 	var graphs []graph.GraphGroup
 	for _, group := range groups {
-		graphs = append(graphs, graph.GraphGroup{Descriptor: &group.descriptor, DisplayName: &group.name, Origin: &group.origin, OriginId: &group.originId})
+		graphs = append(graphs, graph.GraphGroup{
+			Descriptor:  converter.String(group.descriptor),
+			DisplayName: converter.String(group.name),
+			Domain:      converter.String(group.domain),
+			Origin:      converter.String(group.origin),
+			OriginId:    converter.String(group.originId),
+		})
 	}
 
 	return &graphs
@@ -165,7 +226,9 @@ func createGroupsWithDescriptors(groups ...groupMeta) *[]graph.GraphGroup {
 
 func createResourceData(t *testing.T, projectID string, groupName string) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, DataGroup().Schema, nil)
-	resourceData.Set("project_id", projectID)
 	resourceData.Set("name", groupName)
+	if projectID != "" {
+		resourceData.Set("project_id", projectID)
+	}
 	return resourceData
 }
