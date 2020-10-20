@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
+	//
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
@@ -26,6 +27,13 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "true"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_all_votes", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_approved_votes", "false"),
 				),
 			}, {
 				Config: getMinReviewersHcl(false, false, 2, true),
@@ -33,6 +41,13 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_all_votes", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_approved_votes", "true"),
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
