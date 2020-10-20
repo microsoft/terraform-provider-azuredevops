@@ -33,6 +33,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_aws":              serviceendpoint.ResourceServiceEndpointAws(),
 			"azuredevops_serviceendpoint_azurerm":          serviceendpoint.ResourceServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":        serviceendpoint.ResourceServiceEndpointBitBucket(),
+			"azuredevops_serviceendpoint_appcenter":        serviceendpoint.ResourceServiceEndpointAppcenter(),
 			"azuredevops_serviceendpoint_dockerregistry":   serviceendpoint.ResourceServiceEndpointDockerRegistry(),
 			"azuredevops_serviceendpoint_azurecr":          serviceendpoint.ResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_github":           serviceendpoint.ResourceServiceEndpointGitHub(),
