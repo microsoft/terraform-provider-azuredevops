@@ -8,10 +8,6 @@ SOURCE_DIR="${SCRIPTS_DIR}/../"
 NAME="azuredevops"
 BUILD_ARTIFACT="terraform-provider-${NAME}_${VERSION}"
 
-
-#set API_JSON=$(printf '{"tag_name": "v%s","target_commitish": "master","name": "v%s","body": "Release of version %s","draft": false,"prerelease": false}' $1 $1 $1)
-#curl --data "$API_JSON" https://api.github.com/repos/:owner/:repository/releases?access_token=:access_token
-
 OS_ARCH=("freebsd:amd64"
   "freebsd:386"
   "freebsd:arm"
