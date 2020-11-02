@@ -11,8 +11,8 @@ jobs:
     maxParallel: 1 # any more and we get throttled by AzDO!
 
     goVersions:
-    - value: '1.13.1'
-      ymlSafeName: '1_13_1'
+    - value: '1.14.10'
+      ymlSafeName: '1_14_10'
 
     vmImages:
     - value: 'macOS-10.14'
