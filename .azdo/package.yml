@@ -1,0 +1,46 @@
+# Go
+# Build your Go project.
+# Add steps that test, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+
+jobs:
+
+- job: Package
+  displayName: 'Package: '
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  variables:
+    goVersion: 1.14.7
+    GOBIN:  '$(GOPATH)/bin' # Go binaries path
+    GOROOT: '/usr/local/go' # Go installation path
+    GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+    modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+  steps:
+  - task: GoTool@0
+    displayName: 'Install correct version of Go'
+    inputs:
+      version: $(goVersion)
+      GOPATH: '$(Pipeline.Workspace)/gopath'
+      GOBIN:  '$(GOPATH)/bin'
+
+  - bash: |
+      #!/usr/bin/env bash
+      go version
+      echo "install path $(pwd)"
+    displayName: "GO Environment Check"
+
+  - bash: |
+      #!/usr/bin/env bash
+      ./scripts/buildPackage.sh
+    displayName: "Build Packages"
+    env:
+      VERSION: $(RELEASE_VERSION)
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(system.defaultWorkingDirectory)/dist/'
+      artifact: 'ADOPackages'
+      publishLocation: 'pipeline'
