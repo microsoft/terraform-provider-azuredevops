@@ -1,6 +1,6 @@
 module github.com/microsoft/terraform-provider-azuredevops
 
-go 1.13
+go 1.14
 
 require (
 	github.com/ahmetb/go-linq v3.0.0+incompatible

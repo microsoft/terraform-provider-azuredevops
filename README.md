@@ -53,7 +53,7 @@ resource "azuredevops_build_definition" "build_definition" {
 ## Developer Requirements
 
 * [Terraform](https://www.terraform.io/downloads.html) version 0.12.x +
-* [Go](https://golang.org/doc/install) version 1.13.x (to build the provider plugin)
+* [Go](https://golang.org/doc/install) version 1.14.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
 
@@ -71,7 +71,7 @@ As [described below](#build-using-powerShell-scripts) we provide some PowerShell
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.13+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 ### Using the GOPATH model
 
