@@ -28,9 +28,9 @@ resource "azuredevops_variable_group" "variablegroup" {
   }
 
   variable {
-    name      = "Account Password"
-    value     = "p@ssword123"
-    is_secret = true
+    name         = "Account Password"
+    secret_value = "p@ssword123"
+    is_secret    = true
   }
 }
 ```

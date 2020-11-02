@@ -35,3 +35,25 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 		},
 	})
 }
+
+func TestAccGroupDataSource_Read_ProjectCollectionAdministrators(t *testing.T) {
+	group := "Project Collection Administrators"
+	tfBuildDefNode := "data.azuredevops_group.group"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclGroupDataSource("", group),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
+				),
+			},
+		},
+	})
+}

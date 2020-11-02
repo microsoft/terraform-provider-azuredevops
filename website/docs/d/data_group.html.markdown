@@ -28,14 +28,27 @@ output "group_id" {
 output "group_descriptor" {
   value = data.azuredevops_group.test.descriptor
 }
+
+data "azuredevops_group" "test-collection-group" {
+  name       = "Project Collection Administrators"
+}
+
+output "collection_group_id" {
+  value = data.azuredevops_group.test-collection-group.id
+}
+
+output "collection_group_descriptor" {
+  value = data.azuredevops_group.test-collection-group.descriptor
+}
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project Id.
 - `name` - (Required) The Group Name.
+- `project_id` - (Optional) The Project ID. If no project ID is specified the project collection groups will be searched.
 
 ## Attributes Reference
 
