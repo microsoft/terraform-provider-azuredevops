@@ -20,11 +20,11 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_aws" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "aws_serviceendpoint"
+  service_endpoint_name = "Sample AWS"
   description           = "Managed by AzureDevOps"
 
-  access_key_id         = "xxxx"
-  secret_access_key     = "xxxx"
+  access_key_id         = "00000000-0000-0000-0000-000000000000"
+  secret_access_key     = "accesskey"
 }
 ```
 
@@ -55,8 +55,8 @@ The following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
 
 ## Import
-Azure DevOps Service Endpoint AWS can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps Service Endpoint AWS can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```
- terraform import azuredevops_serviceendpoint_aws.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ terraform import azuredevops_serviceendpoint_aws.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

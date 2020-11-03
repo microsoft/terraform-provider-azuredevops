@@ -21,10 +21,10 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_bitbucket" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
-  username              = "xxxx"
-  password              = "xxxx"
-  service_endpoint_name = "test-bitbucket"
-  description           = "test"
+  username              = "username"
+  password              = "password"
+  service_endpoint_name = "Sample Bitbucket"
+  description           = "Managed by Terraform"
 }
 ```
 
@@ -52,8 +52,8 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint Bitbucket can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps Service Endpoint Bitbucket can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_bitbucket.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ terraform import azuredevops_serviceendpoint_bitbucket.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

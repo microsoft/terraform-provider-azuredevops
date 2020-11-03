@@ -65,7 +65,7 @@ terraform import azuredevops_project.project "Test Project"
 or
 
 ```sh
-terraform import azuredevops_project.project 782a8123-1019-xxxx-xxxx-xxxxxxxx
+terraform import azuredevops_project.project 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

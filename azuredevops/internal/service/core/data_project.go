@@ -14,14 +14,18 @@ func DataProject() *schema.Resource {
 	return &schema.Resource{
 		Read: dataProjectRead,
 		Schema: map[string]*schema.Schema{
-			"project_identifier": {
+			"name": {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
-			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"project_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ConflictsWith: []string{
+					"name",
+				},
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -56,17 +60,24 @@ func DataProject() *schema.Resource {
 func dataProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	identifier := d.Get("project_identifier").(string)
+	name := d.Get("name").(string)
+	id := d.Get("project_id").(string)
 
-	project, err := projectRead(clients, identifier, identifier)
+	if name == "" && id == "" {
+		return fmt.Errorf("Either project_id or name must be set ")
+	}
+
+	project, err := projectRead(clients, id, name)
+
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Project with name or ID %s does not exist", identifier)
+			return fmt.Errorf("Project with name %s or ID %s does not exist ", name, id)
 		}
-		return fmt.Errorf("Error looking up project with Name or ID %s, %w", identifier, err)
+		return fmt.Errorf("Error looking up project with Name %s or ID %s, %+v ", name, id, err)
 	}
 
 	err = flattenProject(clients, d, project)
+	d.Set("project_id", project.Id.String())
 	if err != nil {
 		return fmt.Errorf("Error flattening project: %v", err)
 	}
