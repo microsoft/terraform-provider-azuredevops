@@ -33,7 +33,7 @@ func CheckServiceEndpointExistsWithName(tfNode string, expectedName string) reso
 }
 
 // CheckServiceEndpointDestroyed verifies that all service endpoints of the given type in the state are destroyed.
-// This will be invoked *after* terrafform destroys the resource but *before* the state is wiped clean.
+// This will be invoked *after* terraform destroys the resource but *before* the state is wiped clean.
 func CheckServiceEndpointDestroyed(resourceType string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, resource := range s.RootModule().Resources {

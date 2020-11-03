@@ -23,9 +23,9 @@ resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
   authorization_type    = "AzureSubscription"
 
   azure_subscription {
-    subscription_id   = "001ac454-bb17-475a-8648-82c4234545be" # fake value
+    subscription_id   = "00000000-0000-0000-0000-000000000000" # fake value
     subscription_name = "Microsoft Azure DEMO"
-    tenant_id         = "8c46c3eb-ca1f-4a0b-8dfa-7c3baaf69d45" # fake value
+    tenant_id         = "00000000-0000-0000-0000-000000000000" # fake value
     resourcegroup_id  = "sample-rg"
     namespace         = "default"
     cluster_name      = "sample-aks"
@@ -114,3 +114,11 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 5.1 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+
+## Import
+
+Azure DevOps Service Endpoint Kubernetes can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+
+```sh
+ terraform import azuredevops_serviceendpoint_kubernetes.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```

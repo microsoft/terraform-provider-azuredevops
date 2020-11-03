@@ -42,6 +42,12 @@ func HclForkedGitRepoResource(projectName string, gitRepoName string, gitForkedR
 
 // HclGroupDataSource HCL describing an AzDO Group Data Source
 func HclGroupDataSource(projectName string, groupName string) string {
+	if projectName == "" {
+		return fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	name       = "%s"
+}`, groupName)
+	}
 	dataSource := fmt.Sprintf(`
 data "azuredevops_group" "group" {
 	project_id = azuredevops_project.project.id
@@ -132,7 +138,7 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 func HclProjectGitRepository(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_identifier = "%s"
+	name = "%s"
 }
 
 data "azuredevops_git_repository" "repository" {
@@ -145,7 +151,7 @@ data "azuredevops_git_repository" "repository" {
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_identifier = azuredevops_project.project.name
+	name = azuredevops_project.project.name
 }
 
 data "azuredevops_git_repositories" "repositories" {
