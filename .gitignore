@@ -27,3 +27,5 @@ dist
 
 #GoLand Editor configuration
 .idea
+
+.DS_Store
