@@ -95,6 +95,7 @@ The following arguments are supported:
   - `tenant_id` - (Required) The id of the tenant used by the subscription.
   - `resourcegroup_id` - (Required) The resource group name, to which the Kubernetes cluster is deployed.
   - `namespace` - (Optional) The Kubernetes namespace. Default value is "default".
+  - `cluster_admin` - (Optional) Set this option to allow use cluster admin credentials.
 - `kubeconfig` - (Optional) The configuration for authorization_type="Kubeconfig".
   - `kube_config` - (Required) The content of the kubeconfig in yaml notation to be used to communicate with the API-Server of Kubernetes.
   - `accept_untrusted_certs` - (Optional) Set this option to allow clients to accept a self-signed certificate.
