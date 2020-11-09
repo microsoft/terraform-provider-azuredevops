@@ -262,6 +262,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
+		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["cluster_admin"])
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
 			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
@@ -270,7 +271,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			"cluster_name":      clusterIDSplit[clusterNameIndex],
 			"resourcegroup_id":  clusterIDSplit[resourceGroupIDIndex],
 			"namespace":         (*serviceEndpoint.Data)["namespace"],
-			"cluster_admin":     (*serviceEndpoint.Data)["cluster_admin"],
+			"cluster_admin":     clusterAdmin,
 		}
 		configItemList := make([]map[string]interface{}, 1)
 		configItemList[0] = configItems
