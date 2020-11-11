@@ -92,6 +92,7 @@ func TestGitRepositoriesDataSource_Read_TestHandleError(t *testing.T) {
 	}
 
 	expectedGetRepositoriesArgs := git.GetRepositoriesArgs{
+		Project:       converter.String(""),
 		IncludeHidden: converter.Bool(false),
 	}
 
@@ -160,6 +161,7 @@ func TestGitRepositoriesDataSource_Read_NoRepositories(t *testing.T) {
 	}
 
 	expectedGetRepositoriesArgs := git.GetRepositoriesArgs{
+		Project:       converter.String(""),
 		IncludeHidden: converter.Bool(false),
 	}
 
@@ -192,6 +194,7 @@ func TestGitRepositoriesDataSource_Read_AllRepositories(t *testing.T) {
 	}
 
 	expectedGetRepositoriesArgs := git.GetRepositoriesArgs{
+		Project:       converter.String(""),
 		IncludeHidden: converter.Bool(false),
 	}
 
