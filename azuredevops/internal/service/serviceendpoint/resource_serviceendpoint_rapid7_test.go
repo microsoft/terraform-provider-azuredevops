@@ -43,9 +43,9 @@ var rapid7TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointRapid7_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRapid7().Schema, nil)
-	flattenServiceEndpoinRapid7(resourceData, &rapid7TestServiceEndpoint, rapid7TestServiceEndpointProjectID)
+	flattenServiceEndpointRapid7(resourceData, &rapid7TestServiceEndpoint, rapid7TestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRapid7qube(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRapid7(resourceData)
 
 	require.Equal(t, rapid7TestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, rapid7TestServiceEndpointProjectID, projectID)
