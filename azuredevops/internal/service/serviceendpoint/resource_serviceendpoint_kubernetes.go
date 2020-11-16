@@ -265,7 +265,8 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		}
 		clusterAdmin, err := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
 		if err != nil {
-			fmt.Errorf("Error converting cluster_admin attribute string into a bool")
+			err = fmt.Errorf("error converting cluster_admin attribute string into a bool %w", err)
+			fmt.Println(err)
 		}
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
