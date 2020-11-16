@@ -73,6 +73,7 @@ func makeSchemaAzureSubscription(r *schema.Resource) {
 					Type:        schema.TypeBool,
 					Optional:    true,
 					Default:     false,
+					ForceNew:    true,
 					Description: "Enable Cluster Admin",
 				},
 			},
@@ -192,7 +193,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"azureSubscriptionName": configuration["subscription_name"].(string),
 			"clusterId":             clusterID,
 			"namespace":             configuration["namespace"].(string),
-			"clusterAdmin":          fmt.Sprintf("%v", configuration["cluster_admin"].(bool)),
+			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
 		configurationRaw := d.Get(resourceBlockKubeconfig).(*schema.Set).List()
@@ -262,7 +263,10 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
-		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["cluster_admin"])
+		clusterAdmin, err := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
+		if err != nil {
+			fmt.Errorf("Error converting cluster_admin attribute string into a bool")
+		}
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
 			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
