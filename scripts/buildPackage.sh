@@ -6,7 +6,8 @@ SCRIPTS_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPTS_DIR}/../dist/"
 SOURCE_DIR="${SCRIPTS_DIR}/../"
 NAME="azuredevops"
-BUILD_ARTIFACT="terraform-provider-${NAME}_${VERSION}"
+BUILD_ARTIFACT="terraform-provider-${NAME}_v${VERSION}"
+ARCHIVE_ARTIFACT="terraform-provider-${NAME}_${VERSION}"
 
 OS_ARCH=("freebsd:amd64"
   "freebsd:386"
@@ -41,15 +42,14 @@ function release() {
     info "GOOS: ${OS}, GOARCH: ${ARCH}"
     (
       env GOOS="${OS}" GOARCH="${ARCH}" go build -o "${BUILD_ARTIFACT}"
-      zip "${BUILD_ARTIFACT}_${OS}_${ARCH}.zip" "${BUILD_ARTIFACT}"
-#      tar -cf "${BUILD_ARTIFACT}_${OS}_${ARCH}.tar" "${BUILD_ARTIFACT}"
+      zip "${ARCHIVE_ARTIFACT}_${OS}_${ARCH}.zip" "${BUILD_ARTIFACT}"
       rm -rf ${BUILD_ARTIFACT}
     )
   done
   mv *.zip ${BUILD_DIR}
   cd ${BUILD_DIR}
-  shasum -a 256 *.zip > "${BUILD_ARTIFACT}_SHA256SUMS"
-  cat "${BUILD_ARTIFACT}_SHA256SUMS"
+  shasum -a 256 *.zip > "${ARCHIVE_ARTIFACT}_SHA256SUMS"
+  cat "${ARCHIVE_ARTIFACT}_SHA256SUMS"
   ls -al
 
 }
