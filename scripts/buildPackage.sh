@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+. $(dirname $0)/commons.sh
+
 SCRIPTS_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPTS_DIR}/../dist/"
 SOURCE_DIR="${SCRIPTS_DIR}/../"
@@ -49,24 +51,8 @@ function release() {
   mv *.zip ${BUILD_DIR}
   cd ${BUILD_DIR}
   shasum -a 256 *.zip > "${ARCHIVE_ARTIFACT}_SHA256SUMS"
+  cp "${ARCHIVE_ARTIFACT}_SHA256SUMS" "${ARCHIVE_ARTIFACT}_SHA256SUMS.sig"
   cat "${ARCHIVE_ARTIFACT}_SHA256SUMS"
-  ls -al
-
-}
-
-function log() {
-    LEVEL="$1"
-    shift
-    echo "[$LEVEL] $@"
-}
-
-function info() {
-    log "INFO" $@
-}
-
-function fatal() {
-    log "FATAL" $@
-    exit 1
 }
 
 release
