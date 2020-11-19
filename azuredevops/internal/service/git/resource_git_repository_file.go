@@ -13,8 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
-var defaultObjectID = "0000000000000000000000000000000000000000"
-
 func ResourceGitRepositoryFile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGitRepositoryFileCreate,
@@ -155,12 +153,12 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		RepositoryId: &repo,
 		Path:         &file,
 	})
-	if err != nil && utils.ResponseWasNotFound(err) == false {
+	if err != nil && !utils.ResponseWasNotFound(err) {
 		return err
 	}
 
 	if item != nil {
-		if overwriteOnCreate == false {
+		if !overwriteOnCreate {
 			return fmt.Errorf("Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
 		} else {
 			changeType = git.VersionControlChangeTypeValues.Edit
@@ -211,7 +209,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 	}
 
 	return resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		branch = strings.TrimLeft(branch, "refs/heads/")
+		branch = strings.TrimPrefix(branch, "refs/heads/")
 		item, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
 			RepositoryId:   &repo,
 			Path:           &file,
@@ -328,13 +326,13 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 
 // checkRepositoryBranchExists tests if a branch exists in a repository.
 func checkRepositoryBranchExists(c *client.AggregatedClient, repo, branch string) error {
+	branch = strings.TrimPrefix(branch, "refs/heads/")
 	ctx := context.Background()
-	c.GitReposClient.GetBranch(ctx, git.GetBranchArgs{
+	_, err := c.GitReposClient.GetBranch(ctx, git.GetBranchArgs{
 		RepositoryId: &repo,
 		Name:         &branch,
 	})
-
-	return nil
+	return err
 }
 
 // checkRepositoryFileExists tests if a file exists in a repository.
