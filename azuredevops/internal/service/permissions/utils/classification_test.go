@@ -35,7 +35,7 @@ func TestClassificationNode_CreateIterationToken_RootIteration(t *testing.T) {
 			EXPECT().
 			GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 				Project:        &iterationProjectID,
-				Path:           converter.String(""),
+				Path:           nil,
 				StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 				Depth:          converter.Int(1),
 			}).
@@ -66,7 +66,7 @@ func TestClassificationNode_CreateIterationToken_HandleError(t *testing.T) {
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -94,7 +94,7 @@ func TestClassificationNode_CreateIterationToken_HandleErrorInPath(t *testing.T)
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -134,7 +134,7 @@ func TestClassificationNode_CreateIterationToken_HandleNoChildren(t *testing.T) 
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -162,7 +162,7 @@ func TestClassificationNode_CreateIterationToken_ValidToken(t *testing.T) {
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).

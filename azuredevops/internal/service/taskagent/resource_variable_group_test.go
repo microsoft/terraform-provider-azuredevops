@@ -94,6 +94,7 @@ func TestVariableGroupKeyVault_ExpandFlatten_Roundtrip(t *testing.T) {
 		Variables: &map[string]interface{}{
 			"var1": map[string]interface{}{
 				"isSecret": converter.Bool(false),
+				"value":    "",
 			},
 		},
 		ProviderData: map[string]interface{}{
