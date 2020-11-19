@@ -45,11 +45,11 @@ function release() {
     (
       env GOOS="${OS}" GOARCH="${ARCH}" go build -o "${BUILD_ARTIFACT}"
       zip "${ARCHIVE_ARTIFACT}_${OS}_${ARCH}.zip" "${BUILD_ARTIFACT}"
-      rm -rf ${BUILD_ARTIFACT}
+      rm -rf "${BUILD_ARTIFACT}"
     )
   done
-  mv *.zip ${BUILD_DIR}
-  cd ${BUILD_DIR}
+  mv *.zip "${BUILD_DIR}"
+  cd "${BUILD_DIR}"
   shasum -a 256 *.zip > "${ARCHIVE_ARTIFACT}_SHA256SUMS"
   cp "${ARCHIVE_ARTIFACT}_SHA256SUMS" "${ARCHIVE_ARTIFACT}_SHA256SUMS.sig"
   cat "${ARCHIVE_ARTIFACT}_SHA256SUMS"
