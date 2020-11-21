@@ -3,8 +3,7 @@
 set -euo pipefail
 
 echo 'Dearmor GPG Signature'
-file $(System.DefaultWorkingDirectory)/bin/ADOPackages/*
-cd $(System.DefaultWorkingDirectory)/bin/ADOPackages/
+file ./*
 
 FILE_NAME=""
 files=$(ls)
