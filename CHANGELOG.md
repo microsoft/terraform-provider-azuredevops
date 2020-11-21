@@ -1,4 +1,6 @@
-## 0.0.2 (Unreleased)
+## 0.1.1 (Unreleased)
+
+## 0.1.0
 
 FEATURES:
 * **New Resource** `azuredevops_git_permissions` [#18](https://github.com/microsoft/terraform-provider-azuredevops/issues/18)
