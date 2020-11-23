@@ -183,7 +183,6 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 
 		_, err = clients.GitReposClient.CreatePush(ctx, *args)
 		if err != nil {
-			// Retry if commit has already occured
 			if utils.ResponseContainsStatusMessage(err, "has already been updated by another client") {
 				return resource.RetryableError(err)
 			} else {
