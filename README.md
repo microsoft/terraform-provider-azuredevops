@@ -19,8 +19,13 @@ The AzureRM Provider supports Terraform 0.12.x and later.
 # Make sure to set the following environment variables:
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {
@@ -52,7 +57,7 @@ resource "azuredevops_build_definition" "build_definition" {
 
 ## Developer Requirements
 
-* [Terraform](https://www.terraform.io/downloads.html) version 0.12.x +
+* [Terraform](https://www.terraform.io/downloads.html) version 0.13.x +
 * [Go](https://golang.org/doc/install) version 1.14.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
