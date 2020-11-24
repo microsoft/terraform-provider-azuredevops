@@ -12,8 +12,13 @@ Manages features for Azure DevOps projects
 ## Example Usage
 
 ```hcl
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 data "azuredevops_project" "tf-project-test-001" {
