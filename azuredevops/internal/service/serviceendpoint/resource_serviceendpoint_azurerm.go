@@ -24,6 +24,12 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Description:   "Scope Resource Group",
 		ConflictsWith: []string{"credentials"},
 	}
+	r.Schema["automatic_service_principal_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The application id of the automatically generated service principal.",
+	}
 
 	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("serviceprincipalkey")
 	r.Schema["credentials"] = &schema.Schema{
@@ -131,6 +137,8 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
 		credentials := flattenCredentials(serviceEndpoint, hashKey, newHash)
 		d.Set("credentials", credentials)
+	} else {
+		d.Set("automatic_service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 	}
 
 	s := strings.SplitN(scope, "/", -1)

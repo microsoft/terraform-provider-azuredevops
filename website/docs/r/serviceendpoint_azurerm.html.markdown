@@ -88,6 +88,7 @@ The following attributes are exported:
 - `id` - The ID of the service endpoint.
 - `project_id` - The project ID or project name.
 - `service_endpoint_name` - The Service Endpoint name.
+- `automatic_service_principal_id` - The application id of the automatically generated service principal.
 
 ## Relevant Links
 
