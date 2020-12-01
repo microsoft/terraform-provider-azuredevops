@@ -5,7 +5,7 @@ description: |-
   Manages permissions for Work Item Queries
 ---
 
-# azuredevops_git_permissions
+# azuredevops_workitemquery_permissions
 
 Manages permissions for Work Item Queries. 
 
