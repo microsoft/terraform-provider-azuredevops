@@ -96,9 +96,10 @@ func ResourceGitRepository() *schema.Resource {
 				Computed: true,
 			},
 			"initialization": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
+				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"init_type": {
@@ -178,7 +179,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 		if importErr != nil {
-			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
+			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
 		}
 	}
 
@@ -429,7 +430,7 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	}
 
 	var initialization *repoInitializationMeta = nil
-	initData := d.Get("initialization").(*schema.Set).List()
+	initData := d.Get("initialization").([]interface{})
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})

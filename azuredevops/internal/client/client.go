@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -178,8 +177,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 // setUserAgent set UserAgent for http headers
 func setUserAgent(connection *azuredevops.Connection, tfVersion string) {
-	tfUserAgent := httpclient.TerraformUserAgent(tfVersion)
-	providerUserAgent := fmt.Sprintf("%s terraform-provider-azuredevops/%s", tfUserAgent, version.ProviderVersion)
+	providerUserAgent := fmt.Sprintf("terraform-provider-azuredevops/%s", version.ProviderVersion)
 	connection.UserAgent = strings.TrimSpace(fmt.Sprintf("%s %s", connection.UserAgent, providerUserAgent))
 
 	// append the CloudShell version to the user agent if it exists
