@@ -192,10 +192,10 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// HclServiceEndpointAzureDevOpsResource HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureDevOpsResourceSimple(serviceEndpointName string) string {
+// HclServiceEndpointRunPipelineResource HCL describing an AzDO service endpoint
+func HclServiceEndpointRunPipelineResourceSimple(serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
   project_id             = azuredevops_project.project.id
   organization_name      = "example"
   service_endpoint_name  = "%[1]s"
@@ -206,9 +206,9 @@ resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
 	return serviceEndpointResource
 }
 
-func HclServiceEndpointAzureDevOpsResource(serviceEndpointName string, accessToken string, description string) string {
+func HclServiceEndpointRunPipelineResource(serviceEndpointName string, accessToken string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
   project_id             = azuredevops_project.project.id
   organization_name      = "example"
   service_endpoint_name  = "%[1]s"

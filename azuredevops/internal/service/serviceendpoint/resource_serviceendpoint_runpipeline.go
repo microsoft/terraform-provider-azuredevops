@@ -10,9 +10,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-// ResourceServiceEndpointAzureDevOps schema and implementation for Azure DevOps service endpoint resource
-func ResourceServiceEndpointAzureDevOps() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps)
+// ResourceServiceEndpointRunPipeline schema and implementation for Azure DevOps service endpoint resource
+func ResourceServiceEndpointRunPipeline() *schema.Resource {
+	r := genBaseServiceEndpointResource(flattenServiceEndpointRunPipeline, expandServiceEndpointRunPipeline)
 	r.Schema["organization_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
@@ -31,7 +31,7 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("azdoapi")
 
@@ -84,7 +84,7 @@ func azdoPersonalAccessTokenField() *schema.Resource {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 	authPersonal := azdoFlattenAuthPersonal(d, authPersonalSet)

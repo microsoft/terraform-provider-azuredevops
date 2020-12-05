@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_devops
+// +build all resource_serviceendpoint_runpipeline
 // +build !exclude_serviceendpoints
 
 package acceptancetests
@@ -11,11 +11,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointAzureDevOps_Defaults(t *testing.T) {
+func TestAccServiceEndpointRunPipeline_Defaults(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_devops"
+	resourceType := "azuredevops_serviceendpoint_runpipeline"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_PERSONAL_ACCESS_TOKEN"}) },
@@ -35,11 +35,11 @@ func TestAccServiceEndpointAzureDevOps_Defaults(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointAzureDevOps_PersonalTokenBasic(t *testing.T) {
+func TestAccServiceEndpointRunPipeline_PersonalTokenBasic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_devops"
+	resourceType := "azuredevops_serviceendpoint_runpipeline"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_PERSONAL_ACCESS_TOKEN"}) },
@@ -62,14 +62,14 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenBasic(t *testing.T) {
 
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
-func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
+func TestAccServiceEndpointRunPipeline_PersonalTokenUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	description := "Manage by Terraform Update"
 	organization := "example"
 
-	resourceType := "azuredevops_serviceendpoint_devops"
+	resourceType := "azuredevops_serviceendpoint_runpipeline"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_PERSONAL_ACCESS_TOKEN"}) },
@@ -102,14 +102,14 @@ func TestAccServiceEndpointAzureDevOps_PersonalTokenUpdate(t *testing.T) {
 
 func azdoResourceSetupSimple(projectName string, serviceEndpointName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
-	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResourceSimple(serviceEndpointName)
+	serviceEndpointResource := testutils.HclServiceEndpointRunPipelineResourceSimple(serviceEndpointName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
 func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
-	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResource(
+	serviceEndpointResource := testutils.HclServiceEndpointRunPipelineResource(
 		serviceEndpointName,
 		"test_token_basic",
 		"Managed by Terraform",
@@ -121,7 +121,7 @@ func azdoPersonTokenConfigBasic(projectName string, serviceEndpointName string) 
 func azdoPersonTokenConfigUpdate(projectName string, serviceEndpointName string, updatedDescription string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
-	serviceEndpointResource := testutils.HclServiceEndpointAzureDevOpsResource(
+	serviceEndpointResource := testutils.HclServiceEndpointRunPipelineResource(
 		serviceEndpointName,
 		"test_token_update",
 		updatedDescription,

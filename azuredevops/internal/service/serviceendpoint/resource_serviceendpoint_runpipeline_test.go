@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_devops
+// +build all resource_serviceendpoint_runpipeline
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -41,12 +41,12 @@ var azdoTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestServiceEndpointAzureDevOps_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureDevOps().Schema, nil)
+func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRunPipeline().Schema, nil)
 	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAzureDevOps(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
 
 	require.Nil(t, err)
 	require.Equal(t, azdoTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
@@ -54,14 +54,14 @@ func TestServiceEndpointAzureDevOps_ExpandFlatten_Roundtrip(t *testing.T) {
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestServiceEndpointAzureDevOps_Create_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointAzureDevOps()
+	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -78,13 +78,13 @@ func TestServiceEndpointAzureDevOps_Create_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestServiceEndpointAzureDevOps_Read_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointAzureDevOps()
+	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -101,13 +101,13 @@ func TestServiceEndpointAzureDevOps_Read_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestServiceEndpointAzureDevOps_Delete_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointAzureDevOps()
+	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -124,14 +124,14 @@ func TestServiceEndpointAzureDevOps_Delete_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestServiceEndpointAzureDevOps_Update_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointAzureDevOps()
+	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointAzureDevOps(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

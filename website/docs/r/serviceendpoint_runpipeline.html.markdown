@@ -1,13 +1,13 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_serviceendpoint_devops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_runpipeline"
 description: |-
-  Manages a Azure DevOps Service Connection service endpoint within Azure DevOps project.
+  Manages a Azure DevOps plugin RunPipeline.
 ---
 
-# azuredevops_serviceendpoint_devops
+# azuredevops_serviceendpoint_runpipeline
 
-Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. Allows triggering of delegate pipelines, monitoring execution and collecting and consolidating artifacts produced in the delegate pipelines (yaml block `task: RunPipelines@1`). More details on Marketplace page: [RunPipelines](https://marketplace.visualstudio.com/items?itemName=CSE-DevOps.RunPipelines)
+Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. Allows to run downstream pipelines, monitoring their execution, collecting and consolidating artefacts produced in the delegate pipelines (yaml block `task: RunPipelines@1`). More details on Marketplace page: [RunPipelines](https://marketplace.visualstudio.com/items?itemName=CSE-DevOps.RunPipelines)
 
 ## Example Usage
 
@@ -19,7 +19,7 @@ resource "azuredevops_project" "project" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint_devops" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "my-pipelines-service-connection"
   organization_name     = "my-organization-name"
@@ -62,5 +62,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id` , e.g.
 
 ```sh
- terraform import azuredevops_serviceendpoint_devops.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
+ terraform import azuredevops_serviceendpoint_runpipeline.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
 ```
