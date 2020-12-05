@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_runpipeline
+// +build all resource_serviceendpoint_rpipeline
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -17,12 +17,12 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
+// "rp" stands for RunPipeline
+var rpTestServiceEndpointID = uuid.New()
+var rpRandomServiceEndpointProjectID = uuid.New().String()
+var rpTestServiceEndpointProjectID = &rpRandomServiceEndpointProjectID
 
-var azdoTestServiceEndpointID = uuid.New()
-var azdoRandomServiceEndpointProjectID = uuid.New().String()
-var azdoTestServiceEndpointProjectID = &azdoRandomServiceEndpointProjectID
-
-var azdoTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"apitoken": "UNIT_TEST_ACCESS_TOKEN",
@@ -32,7 +32,7 @@ var azdoTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"releaseUrl": "https://vsrm.dev.azure.com/example",
 	},
-	Id:          &azdoTestServiceEndpointID,
+	Id:          &rpTestServiceEndpointID,
 	Name:        converter.String("UNIT_TEST_NAME"),
 	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	Owner:       converter.String("library"),
@@ -43,13 +43,13 @@ var azdoTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRunPipeline().Schema, nil)
-	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	rpConfigureExtraFields(resourceData)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointRunPipeline(resourceData)
 
-	require.Equal(t, azdoTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, azdoTestServiceEndpointProjectID, projectID)
+	require.Equal(t, rpTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, rpTestServiceEndpointProjectID, projectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -59,13 +59,13 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	rpConfigureExtraFields(resourceData)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azdoTestServiceEndpoint, Project: azdoTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &rpTestServiceEndpoint, Project: rpTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -83,12 +83,12 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: azdoTestServiceEndpoint.Id, Project: azdoTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -106,12 +106,12 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: azdoTestServiceEndpoint.Id, Project: azdoTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -129,16 +129,16 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	azdoConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
+	rpConfigureExtraFields(resourceData)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &azdoTestServiceEndpoint,
-		EndpointId: azdoTestServiceEndpoint.Id,
-		Project:    azdoTestServiceEndpointProjectID,
+		Endpoint:   &rpTestServiceEndpoint,
+		EndpointId: rpTestServiceEndpoint.Id,
+		Project:    rpTestServiceEndpointProjectID,
 	}
 
 	buildClient.
@@ -151,7 +151,7 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
-func azdoConfigureExtraFields(d *schema.ResourceData) {
+func rpConfigureExtraFields(d *schema.ResourceData) {
 	d.Set("organization_name", "example")
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{

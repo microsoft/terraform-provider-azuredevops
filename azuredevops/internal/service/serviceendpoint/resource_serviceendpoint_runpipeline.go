@@ -24,7 +24,7 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 		Required: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     azdoPersonalAccessTokenField(),
+		Elem:     rpPersonalAccessTokenField(),
 	}
 
 	return r
@@ -36,7 +36,7 @@ func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.
 	serviceEndpoint.Type = converter.String("azdoapi")
 
 	scheme := "Token"
-	parameters := azdoExpandAuthPersonalSet(d.Get("auth_personal").(*schema.Set))
+	parameters := rpExpandAuthPersonalSet(d.Get("auth_personal").(*schema.Set))
 
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &parameters,
@@ -54,7 +54,7 @@ func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.
 	return serviceEndpoint, projectID
 }
 
-func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
+func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	if len(d.List()) == 1 {
 		val := d.List()[0].(map[string]interface{}) //auth_personal block may have only one element inside
@@ -63,7 +63,7 @@ func azdoExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func azdoPersonalAccessTokenField() *schema.Resource {
+func rpPersonalAccessTokenField() *schema.Resource {
 	field_name := "personal_access_token"
 	personalAccessToken := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -87,13 +87,13 @@ func azdoPersonalAccessTokenField() *schema.Resource {
 func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-	authPersonal := azdoFlattenAuthPersonal(d, authPersonalSet)
+	authPersonal := rpFlattenAuthPersonal(d, authPersonalSet)
 	if authPersonal != nil {
 		d.Set("auth_personal", authPersonal)
 	}
 }
 
-func azdoFlattenAuthPersonal(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
+func rpFlattenAuthPersonal(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
 			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, "personal_access_token")
