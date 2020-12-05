@@ -46,9 +46,8 @@ func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	azdoConfigureExtraFields(resourceData)
 	flattenServiceEndpointRunPipeline(resourceData, &azdoTestServiceEndpoint, azdoTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
+	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointRunPipeline(resourceData)
 
-	require.Nil(t, err)
 	require.Equal(t, azdoTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, azdoTestServiceEndpointProjectID, projectID)
 }
