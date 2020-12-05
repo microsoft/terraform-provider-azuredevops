@@ -31,7 +31,7 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("azdoapi")
 
@@ -51,7 +51,7 @@ func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.
 	releaseUrl := fmt.Sprint("https://vsrm.dev.azure.com/", org)
 	data["releaseUrl"] = releaseUrl
 	serviceEndpoint.Data = &data
-	return serviceEndpoint, projectID
+	return serviceEndpoint, projectID, nil
 }
 
 func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {

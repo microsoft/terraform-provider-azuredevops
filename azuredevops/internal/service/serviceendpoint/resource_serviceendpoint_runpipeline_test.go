@@ -47,8 +47,9 @@ func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	rpConfigureExtraFields(resourceData)
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID := expandServiceEndpointRunPipeline(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
 
+	require.Nil(t, err)
 	require.Equal(t, rpTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, rpTestServiceEndpointProjectID, projectID)
 }
