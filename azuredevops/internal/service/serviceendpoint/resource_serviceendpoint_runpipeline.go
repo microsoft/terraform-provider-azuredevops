@@ -64,10 +64,10 @@ func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
 }
 
 func rpPersonalAccessTokenField() *schema.Resource {
-	field_name := "personal_access_token"
+	fieldName := "personal_access_token"
 	personalAccessToken := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			field_name: {
+			fieldName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
@@ -77,7 +77,7 @@ func rpPersonalAccessTokenField() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(field_name)
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(fieldName)
 	personalAccessToken.Schema[patHashKey] = patHashSchema
 
 	return personalAccessToken

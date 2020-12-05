@@ -17,6 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
+
 // "rp" stands for RunPipeline
 var rpTestServiceEndpointID = uuid.New()
 var rpRandomServiceEndpointProjectID = uuid.New().String()
