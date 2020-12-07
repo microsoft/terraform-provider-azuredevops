@@ -46,7 +46,7 @@ resource "azuredevops_branch_policy_min_reviewers" "p" {
     }
 
     scope {
-      repository_id  = null
+      repository_id  = null               # All repositories in the project
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }

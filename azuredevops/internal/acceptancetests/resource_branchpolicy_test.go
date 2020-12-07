@@ -13,8 +13,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
+// TestAccBranchPolicyMinReviewers_CreateAndUpdate - acceptance test for min reviewers branch policy attributes
 func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
-	//
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
 	resource.Test(t, resource.TestCase{
