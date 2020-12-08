@@ -91,7 +91,7 @@ func createServiceEndpointToken(d *schema.ResourceData, clients *client.Aggregat
 	// Token format for ALL service endpoints in a project: endpoints/ProjectID
 	// Token format for a specific endpoint endpoint in a project: endpoints/ProjectID/ServiceEndpointID
 	aclToken := "endpoints/" + projectID
-	serviceEndpointID, serviceEndpointOk := d.GetOkExists("serviceendpoint_id")
+	serviceEndpointID, serviceEndpointOk := d.GetOk("serviceendpoint_id")
 	if serviceEndpointOk {
 		aclToken += "/" + serviceEndpointID.(string)
 	}
