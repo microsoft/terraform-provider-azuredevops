@@ -19,7 +19,13 @@ func hclServiceEndpointPermissions(projectName string, serviceEndpointName strin
 	return fmt.Sprintf(`
 %s
 
-%s
+resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
+	docker_email           = "test@email.com"
+	docker_username        = "testuser"
+	docker_password        = "secret"
+	project_id             = azuredevops_project.project.id
+	service_endpoint_name  = "%s"
+}
 
 data "azuredevops_group" "tf-project-readers" {
 	project_id = azuredevops_project.project.id
@@ -45,7 +51,7 @@ resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions"
 
 `,
 		testutils.HclProjectResource(projectName),
-		testutils.HclServiceEndpointDockerRegistryResource(projectName, serviceEndpointName),
+		serviceEndpointName,
 		rootPermissions,
 		serviceEndpointPermissions)
 }
