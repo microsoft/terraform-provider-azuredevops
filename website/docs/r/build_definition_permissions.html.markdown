@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_build_definition"
+page_title: "AzureDevops: azuredevops_build_definition_permissions"
 description: |-
   Manages permissions for a AzureDevOps Build Definition
 ---
 
-# azuredevops_build_definition
+# azuredevops_build_definition_permissions
 
 Manages permissions for a Build Definition
 
