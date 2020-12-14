@@ -1,5 +1,5 @@
-// +build all permissions resource_area_permissions
-// +build !exclude_permissions !exclude_resource_area_permissions
+// +build all permissions resource_build_definition_permissions
+// +build !exclude_permissions !exclude_resource_build_definition_permissions
 
 package acceptancetests
 

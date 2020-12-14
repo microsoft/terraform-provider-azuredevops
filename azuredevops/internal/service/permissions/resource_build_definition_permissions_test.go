@@ -1,5 +1,5 @@
-// +build all permissions resource_project_permissions
-// +build !exclude_permissions !resource_project_permissions
+// +build all permissions resource_build_definition_permissions
+// +build !exclude_permissions !resource_build_definition_permissions
 
 package permissions
 
