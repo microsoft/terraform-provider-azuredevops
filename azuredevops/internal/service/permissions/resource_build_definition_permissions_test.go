@@ -111,7 +111,7 @@ func getBuildDefinitionPermissionsResource(t *testing.T, projectID string, build
 		d.Set("build_definition_id", buildDefinitionID)
 	}
 	if buildDefinitionPath != "" {
-		d.Set("path", buildDefinitionPath)
+		d.Set("build_definition_path", buildDefinitionPath)
 	}
 	return d
 }
