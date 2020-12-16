@@ -118,7 +118,6 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 		if tipe.Field(i).Type == reflect.TypeOf(0) {
 			policySettings[apiName] = settings[tfName].(int)
 		}
-
 	}
 
 	return policyConfig, projectID, nil
