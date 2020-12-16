@@ -103,7 +103,6 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"] = expandSecret(msi, "access_token")
-
 	} else if x, ok := d.GetOk("authentication_password"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
