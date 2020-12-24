@@ -38,7 +38,7 @@ The following arguments are supported:
 * `secret_access_key` - (Required) The AWS secret access key for signing programmatic requests.
 * `session_token` - (Optional) The AWS session token for signing programmatic requests.
 * `role_to_assume` - (Optional) The Amazon Resource Name (ARN) of the role to assume.
-* `role_session_names` - (Optional) Optional identifier for the assumed role session.
+* `role_session_name` - (Optional) Optional identifier for the assumed role session.
 * `external_id` - (Optional) A unique identifier that is used by third parties when assuming roles in their customers' accounts, aka cross-account role access.
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
