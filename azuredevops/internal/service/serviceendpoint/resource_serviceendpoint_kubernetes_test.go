@@ -52,6 +52,7 @@ func createkubernetesTestServiceEndpointForAzureSubscription() *serviceendpoint.
 		"azureSubscriptionName": "kubernetes_TEST_subscription_name",
 		"clusterId":             "/subscriptions/kubernetes_TEST_subscription_id/resourcegroups/kubernetes_TEST_resource_group_id/providers/Microsoft.ContainerService/managedClusters/kubernetes_TEST_cluster_name",
 		"namespace":             "default",
+		"clusterAdmin":          "false",
 	}
 
 	return &serviceEndpoint
