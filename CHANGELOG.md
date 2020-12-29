@@ -1,4 +1,6 @@
 ## 0.1.1 (Unreleased)
+IMPROVEMENTS:   
+`azuredevops_serviceendpoint_kubernetes` - Support `cluster_admin` in Kubernetes service connections [#218](https://github.com/microsoft/terraform-provider-azuredevops/issues/218)
 
 ## 0.1.0
 
