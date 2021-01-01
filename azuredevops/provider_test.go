@@ -14,11 +14,14 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_build_validation",
 		"azuredevops_branch_policy_min_reviewers",
 		"azuredevops_branch_policy_auto_reviewers",
+		"azuredevops_branch_policy_work_item_linking",
+		"azuredevops_branch_policy_comment_resolution",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_azurerm",
+		"azuredevops_serviceendpoint_azurecr",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
 		"azuredevops_serviceendpoint_aws",
@@ -32,6 +35,8 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_project_permissions",
 		"azuredevops_git_permissions",
 		"azuredevops_workitemquery_permissions",
+		"azuredevops_area_permissions",
+		"azuredevops_iteration_permissions",
 	}
 
 	resources := Provider().ResourcesMap
@@ -54,6 +59,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_users",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_pools",
+		"azuredevops_area",
+		"azuredevops_iteration",
 	}
 
 	dataSources := Provider().DataSourcesMap

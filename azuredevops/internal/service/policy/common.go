@@ -25,10 +25,11 @@ import (
 // Policy type IDs. These are global and can be listed using the following endpoint:
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
-	NoActiveComments = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
-	MinReviewerCount = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
-	BuildValidation  = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
-	AutoReviewers    = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
+	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
+	BuildValidation   = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
+	AutoReviewers     = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
+	WorkItemLinking   = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
+	CommentResolution = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
 )
 
 // Keys for schema elements

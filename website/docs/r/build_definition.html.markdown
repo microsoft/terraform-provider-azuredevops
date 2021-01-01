@@ -103,9 +103,9 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `name` - (Optional) The name of the build definition.
 - `path` - (Optional) The folder path of the build definition.
-- `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Hosted Ubuntu 1604`.
+- `agent_pool_name` - (Optional) The agent pool that should execute the build.
 - `repository` - (Required) A `repository` block as documented below.
-- `ci_trigger` - (Optional) Continuous Integration Integration trigger.
+- `ci_trigger` - (Optional) Continuous Integration trigger.
 - `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
@@ -126,6 +126,7 @@ The following arguments are supported:
 - `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
 - `yml_path` - (Required) The path of the Yaml file describing the build definition.
 - `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
+- `report_build_status` - (Optional) Report build status. Default is true.
 
 `ci_trigger` block supports the following:
 
@@ -146,7 +147,7 @@ The following arguments are supported:
 - `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
 - `initial_branch` - (Optional) When use_yaml is true set this to the name of the branch that the azure-pipelines.yml exists on. Defaults to `Managed by Terraform`.
 - `forks` - (Required) Set permissions for Forked repositories.
-- `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
+- `override` - (Optional) Override the azure-pipeline file and use this configuration for all builds.
 
 `forks` block supports the following:
 

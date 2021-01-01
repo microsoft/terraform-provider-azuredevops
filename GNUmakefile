@@ -38,7 +38,7 @@ fmtcheck:
 
 lint:
 	@echo "==> Checking source code against linters..."
-	$(GOPATH)/bin/golangci-lint run ./...
+	@if command -v golangci-lint; then (golangci-lint run ./...); else ($(GOPATH)/bin/golangci-lint run ./...); fi
 
 test: fmtcheck
 	go test -tags "all" -i $(UNITTEST) || exit 1

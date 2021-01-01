@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_github
+// +build all resource_serviceendpoint_azurecr
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -6,6 +6,7 @@ package serviceendpoint
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,52 +19,64 @@ import (
 	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-var ghTestServiceEndpointID = uuid.New()
-var ghRandomServiceEndpointProjectID = uuid.New().String()
-var ghTestServiceEndpointProjectID = &ghRandomServiceEndpointProjectID
+var azureCRTestServiceEndpointID = uuid.New()
+var azureCRRandomServiceEndpointProjectID = uuid.New().String()
+var azureCRTestServiceEndpointProjectID = &azureCRRandomServiceEndpointProjectID
+var subscription_id = "42125daf-72fd-417c-9ea7-080690625ad3"
+var scope = fmt.Sprintf(
+	"/subscriptions/%s/resourceGroups/testrg/providers/Microsoft.ContainerRegistry/registries/testacr",
+	subscription_id,
+)
 
-var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"AccessToken": "UNIT_TEST_ACCESS_TOKEN",
+			"authenticationType": "spnKey",
+			"tenantId":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			"loginServer":        "testacr.azurecr.io",
+			"scope":              scope,
 		},
-		Scheme: converter.String("Token"),
+		Scheme: converter.String("ServicePrincipal"),
 	},
-	Id:          &ghTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("github"),
-	Url:         converter.String("https://github.com"),
+	Data: &map[string]string{
+		"registryId":       scope,
+		"subscriptionId":   subscription_id,
+		"subscriptionName": "testS",
+		"registrytype":     "ACR",
+	},
+	Id:          &azureCRTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("dockerregistry"),
+	Url:         converter.String("https://testacr.azurecr.io"),
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHub().Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+func TestServiceEndpointAzureCR_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureCR().Schema, nil)
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHub(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAzureCR(resourceData)
 
+	require.Equal(t, azureCRTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, azureCRTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
-	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, ghTestServiceEndpointProjectID, projectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointAzureCR_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghTestServiceEndpoint, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azureCRTestServiceEndpoint, Project: azureCRTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -75,18 +88,18 @@ func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointAzureCR_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -98,18 +111,18 @@ func TestServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointAzureCR_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -121,22 +134,21 @@ func TestServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointAzureCR_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &ghTestServiceEndpoint,
-		EndpointId: ghTestServiceEndpoint.Id,
-		Project:    ghTestServiceEndpointProjectID,
+		Endpoint:   &azureCRTestServiceEndpoint,
+		EndpointId: azureCRTestServiceEndpoint.Id,
+		Project:    azureCRTestServiceEndpointProjectID,
 	}
 
 	buildClient.
@@ -147,12 +159,4 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 
 	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
-}
-
-func configureAuthPersonal(d *schema.ResourceData) {
-	d.Set("auth_personal", &[]map[string]interface{}{
-		{
-			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
-		},
-	})
 }

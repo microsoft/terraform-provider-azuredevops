@@ -138,7 +138,6 @@ func ResourceBuildDefinition() *schema.Resource {
 			"agent_pool_name": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Hosted Ubuntu 1604",
 			},
 			"repository": {
 				Type:     schema.TypeList,
@@ -179,6 +178,11 @@ func ResourceBuildDefinition() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
+						},
+						"report_build_status": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
 						},
 					},
 				},
@@ -321,7 +325,10 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.Set("name", *buildDefinition.Name)
 	d.Set("path", *buildDefinition.Path)
 	d.Set("repository", flattenRepository(buildDefinition))
-	d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
+
+	if buildDefinition.Queue != nil && buildDefinition.Queue.Pool != nil {
+		d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
+	}
 
 	d.Set("variable_groups", flattenVariableGroups(buildDefinition))
 	d.Set(bdVariable, flattenBuildVariables(d, buildDefinition))
@@ -481,11 +488,15 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
 		url, err := url.Parse(*buildDefinition.Repository.Url)
 		if err != nil {
-			return fmt.Errorf("Unable to parse repository URL")
+			return fmt.Errorf("Unable to parse repository URL: %+v ", err)
 		}
 		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
+	reportBuildStatus, err := strconv.ParseBool((*buildDefinition.Repository.Properties)["reportBuildStatus"])
+	if err != nil {
+		return fmt.Errorf("Unable to parse `reportBuildStatus` property: %+v ", err)
+	}
 	return []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
 		"repo_id":               *buildDefinition.Repository.Id,
@@ -493,6 +504,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
 		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
 		"github_enterprise_url": githubEnterpriseUrl,
+		"report_build_status":   reportBuildStatus,
 	}}
 }
 
@@ -876,7 +888,6 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		buildDefinitionReference = nil
 	}
 
-	agentPoolName := d.Get("agent_pool_name").(string)
 	variables, err := expandVariables(d)
 	if err != nil {
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
@@ -896,16 +907,11 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 			Properties: &map[string]string{
 				"connectedServiceId": repository["service_connection_id"].(string),
 				"apiUrl":             repoAPIURL,
+				"reportBuildStatus":  strconv.FormatBool(repository["report_build_status"].(bool)),
 			},
 		},
 		Process: &build.YamlProcess{
 			YamlFilename: converter.String(repository["yml_path"].(string)),
-		},
-		Queue: &build.AgentPoolQueue{
-			Name: &agentPoolName,
-			Pool: &build.TaskAgentPoolReference{
-				Name: &agentPoolName,
-			},
 		},
 		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
 		Type:           &build.DefinitionTypeValues.Build,
@@ -913,6 +919,15 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		VariableGroups: expandVariableGroups(d),
 		Variables:      variables,
 		Triggers:       &buildTriggers,
+	}
+
+	if agentPoolName, ok := d.GetOk("agent_pool_name"); ok {
+		buildDefinition.Queue = &build.AgentPoolQueue{
+			Name: converter.StringFromInterface(agentPoolName),
+			Pool: &build.TaskAgentPoolReference{
+				Name: converter.StringFromInterface(agentPoolName),
+			},
+		}
 	}
 
 	return &buildDefinition, projectID, nil
