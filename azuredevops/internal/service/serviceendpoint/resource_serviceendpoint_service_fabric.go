@@ -11,10 +11,8 @@ import (
 )
 
 const (
-	resourceBlockServiceFabricAzureActiveDirectory    = "azure_active_directory"
-	resourceBlockServiceFabricCertificate             = "certificate"
-	resourceAuthTypeServiceFabricCertificate          = "Certificate"
-	resourceAuthTypeServiceFabricAzureActiveDirectory = "AzureActiveDirectory"
+	resourceBlockServiceFabricAzureActiveDirectory = "azure_active_directory"
+	resourceBlockServiceFabricCertificate          = "certificate"
 )
 
 // ResourceServiceEndpointServiceFabric schema and implementation for ServiceFabric service endpoint resource
@@ -25,15 +23,6 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.",
-	}
-
-	r.Schema["authorization_type"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: validation.StringInSlice([]string{
-			resourceAuthTypeServiceFabricCertificate,
-			resourceAuthTypeServiceFabricAzureActiveDirectory,
-		}, false),
 	}
 
 	secretHashKeyClientCertificate, secretHashSchemaClientCertificate := tfhelper.GenerateSecreteMemoSchema("client_certificate")
@@ -131,81 +120,69 @@ func servicefabricServerCertificateCommonNameSchema(blockName string) *schema.Sc
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-
-	switch d.Get("authorization_type").(string) {
-	case resourceAuthTypeServiceFabricCertificate:
-		data, exists := d.GetOk(resourceBlockServiceFabricCertificate)
-		if !exists {
-			return nil, nil, fmt.Errorf("%s authorization type requires a %s block", resourceAuthTypeServiceFabricCertificate, resourceBlockServiceFabricCertificate)
-		}
-		configuration := data.([]interface{})[0].(map[string]interface{})
-		certLookup := configuration["server_certificate_lookup"].(string)
-		parameters := map[string]string{
-			"certLookup":          certLookup,
-			"certificate":         configuration["client_certificate"].(string),
-			"certificatepassword": configuration["client_certificate_password"].(string),
-		}
-		switch certLookup {
-		case "Thumbprint":
-			parameters["servercertthumbprint"] = configuration["server_certificate_thumbprint"].(string)
-		case "CommonName":
-			parameters["servercertcommonname"] = configuration["server_certificate_common_name"].(string)
-		}
+	serviceEndpoint.Type = converter.String("servicefabric")
+	serviceEndpoint.Url = converter.String(d.Get("cluster_endpoint").(string))
+	certificate, certificateOk := d.GetOk(resourceBlockServiceFabricCertificate)
+	if certificateOk {
+		configuration := certificate.([]interface{})[0].(map[string]interface{})
+		parameters := expandServiceEndpointServiceFabricServerCertificateLookup(configuration)
+		parameters["certificate"] = configuration["client_certificate"].(string)
+		parameters["certificatepassword"] = configuration["client_certificate_password"].(string)
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 			Parameters: &parameters,
 			Scheme:     converter.String("Certificate"),
 		}
-	case resourceAuthTypeServiceFabricAzureActiveDirectory:
-		data, exists := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory)
-		if !exists {
-			return nil, nil, fmt.Errorf("%s authorization type requires a %s block", resourceAuthTypeServiceFabricAzureActiveDirectory, resourceBlockServiceFabricAzureActiveDirectory)
-		}
-		configuration := data.([]interface{})[0].(map[string]interface{})
-		certLookup := configuration["server_certificate_lookup"].(string)
-		parameters := map[string]string{
-			"certLookup": certLookup,
-			"username":   configuration["username"].(string),
-			"password":   configuration["password"].(string),
-		}
-		switch certLookup {
-		case "Thumbprint":
-			parameters["servercertthumbprint"] = configuration["server_certificate_thumbprint"].(string)
-		case "CommonName":
-			parameters["servercertcommonname"] = configuration["server_certificate_common_name"].(string)
-		}
+		return serviceEndpoint, projectID, nil
+	}
+
+	azureActiveDirectory, azureActiveDirectoryExists := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory)
+	if azureActiveDirectoryExists {
+		configuration := azureActiveDirectory.([]interface{})[0].(map[string]interface{})
+		parameters := expandServiceEndpointServiceFabricServerCertificateLookup(configuration)
+		parameters["username"] = configuration["username"].(string)
+		parameters["password"] = configuration["password"].(string)
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 			Parameters: &parameters,
 			Scheme:     converter.String("UsernamePassword"),
 		}
+		return serviceEndpoint, projectID, nil
 	}
 
-	serviceEndpoint.Type = converter.String("servicefabric")
-	serviceEndpoint.Url = converter.String(d.Get("cluster_endpoint").(string))
-	return serviceEndpoint, projectID, nil
+	return nil, nil, fmt.Errorf("One of %s or %s blocks must be specified", resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricCertificate)
 }
 
-func flattenCertificate(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyClientCertificate string, hashValueClientCertificate string, hashKeyClientCertificatePassword string, hashValueClientCertificatePassword string) interface{} {
-	certLookup := (*serviceEndpoint.Authorization.Parameters)["certLookup"]
-	result := []map[string]interface{}{{
-		"server_certificate_lookup":      certLookup,
-		hashKeyClientCertificate:         hashValueClientCertificate,
-		hashKeyClientCertificatePassword: hashValueClientCertificatePassword,
-	}}
+func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map[string]interface{}) map[string]string {
+	certLookup := configuration["server_certificate_lookup"].(string)
+	parameters := map[string]string{
+		"certLookup": certLookup,
+	}
 	switch certLookup {
 	case "Thumbprint":
-		result[0]["server_certificate_thumbprint"] = (*serviceEndpoint.Authorization.Parameters)["servercertthumbprint"]
+		parameters["servercertthumbprint"] = configuration["server_certificate_thumbprint"].(string)
 	case "CommonName":
-		result[0]["server_certificate_common_name"] = (*serviceEndpoint.Authorization.Parameters)["servercertcommonname"]
+		parameters["servercertcommonname"] = configuration["server_certificate_common_name"].(string)
 	}
+	return parameters
+}
+
+func flattenServiceFabricCertificate(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyClientCertificate string, hashValueClientCertificate string, hashKeyClientCertificatePassword string, hashValueClientCertificatePassword string) interface{} {
+	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
+	result[0][hashKeyClientCertificate] = hashValueClientCertificate
+	result[0][hashKeyClientCertificatePassword] = hashValueClientCertificatePassword
 	return result
 }
 
-func flattenAzureActiveDirectory(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyPassword string, hashValuePassword string) interface{} {
+func flattenServiceFabricAzureActiveDirectory(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyPassword string, hashValuePassword string) interface{} {
+	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
+	result[0]["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
+	result[0][hashKeyPassword] = hashValuePassword
+	return result
+}
+
+func flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint *serviceendpoint.ServiceEndpoint) []map[string]interface{} {
 	certLookup := (*serviceEndpoint.Authorization.Parameters)["certLookup"]
 	result := []map[string]interface{}{{
 		"server_certificate_lookup": certLookup,
-		"username":                  (*serviceEndpoint.Authorization.Parameters)["username"],
-		hashKeyPassword:             hashValuePassword,
 	}}
 	switch certLookup {
 	case "Thumbprint":
@@ -224,14 +201,12 @@ func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint
 	case "Certificate":
 		newHashClientCertificate, hashKeyClientCertificate := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceFabricCertificate, d.Get("certificate.0").(map[string]interface{}), "client_certificate")
 		newHashClientCertificatePassword, hashKeyClientCertificatePassword := tfhelper.HelpFlattenSecretNested(d, "certificate", d.Get("certificate.0").(map[string]interface{}), "client_certificate_password")
-		certificate := flattenCertificate(serviceEndpoint, hashKeyClientCertificate, newHashClientCertificate, hashKeyClientCertificatePassword, newHashClientCertificatePassword)
+		certificate := flattenServiceFabricCertificate(serviceEndpoint, hashKeyClientCertificate, newHashClientCertificate, hashKeyClientCertificatePassword, newHashClientCertificatePassword)
 		d.Set(resourceBlockServiceFabricCertificate, certificate)
-		d.Set("authorization_type", resourceAuthTypeServiceFabricCertificate)
 	case "UsernamePassword":
 		newHashPassword, hashKeyPassword := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceFabricAzureActiveDirectory, d.Get("azure_active_directory.0").(map[string]interface{}), "password")
-		azureActiveDirectory := flattenAzureActiveDirectory(serviceEndpoint, hashKeyPassword, newHashPassword)
+		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(serviceEndpoint, hashKeyPassword, newHashPassword)
 		d.Set(resourceBlockServiceFabricAzureActiveDirectory, azureActiveDirectory)
-		d.Set("authorization_type", resourceAuthTypeServiceFabricAzureActiveDirectory)
 	}
 
 	d.Set("cluster_endpoint", (*serviceEndpoint.Url))
