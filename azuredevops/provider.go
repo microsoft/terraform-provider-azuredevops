@@ -33,6 +33,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_dockerregistry": serviceendpoint.ResourceServiceEndpointDockerRegistry(),
 			"azuredevops_serviceendpoint_github":         serviceendpoint.ResourceServiceEndpointGitHub(),
 			"azuredevops_serviceendpoint_kubernetes":     serviceendpoint.ResourceServiceEndpointKubernetes(),
+			"azuredevops_serviceendpoint_servicefabric":  serviceendpoint.ResourceServiceEndpointServiceFabric(),
 			"azuredevops_git_repository":                 git.ResourceGitRepository(),
 			"azuredevops_user_entitlement":               memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_group_membership":               graph.ResourceGroupMembership(),
