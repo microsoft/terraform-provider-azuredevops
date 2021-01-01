@@ -167,6 +167,8 @@ func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map
 
 func flattenServiceFabricCertificate(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyClientCertificate string, hashValueClientCertificate string, hashKeyClientCertificatePassword string, hashValueClientCertificatePassword string) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
+	result[0]["client_certificate"] = (*serviceEndpoint.Authorization.Parameters)["certificate"]
+	result[0]["client_certificate_password"] = (*serviceEndpoint.Authorization.Parameters)["certificatepassword"]
 	result[0][hashKeyClientCertificate] = hashValueClientCertificate
 	result[0][hashKeyClientCertificatePassword] = hashValueClientCertificatePassword
 	return result
@@ -175,6 +177,7 @@ func flattenServiceFabricCertificate(serviceEndpoint *serviceendpoint.ServiceEnd
 func flattenServiceFabricAzureActiveDirectory(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyPassword string, hashValuePassword string) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
 	result[0]["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
+	result[0]["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
 	result[0][hashKeyPassword] = hashValuePassword
 	return result
 }
