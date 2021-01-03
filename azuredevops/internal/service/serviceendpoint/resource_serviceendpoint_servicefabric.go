@@ -103,7 +103,7 @@ func servicefabricServerCertificateThumbprintSchema(blockName string) *schema.Sc
 	return &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
-		Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Seperate multiple thumbprints with a comma (',')",
+		Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')",
 		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_common_name", blockName)},
 	}
 }
@@ -112,7 +112,7 @@ func servicefabricServerCertificateCommonNameSchema(blockName string) *schema.Sc
 	return &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
-		Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Seperate multiple common names with a comma (',')",
+		Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')",
 		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_thumbprint", blockName)},
 	}
 }
