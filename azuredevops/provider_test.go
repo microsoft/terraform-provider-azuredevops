@@ -24,6 +24,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_azurecr",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
+		"azuredevops_serviceendpoint_servicefabric",
 		"azuredevops_serviceendpoint_aws",
 		"azuredevops_variable_group",
 		"azuredevops_git_repository",
