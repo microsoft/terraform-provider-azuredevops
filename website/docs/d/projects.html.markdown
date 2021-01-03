@@ -13,7 +13,7 @@ Use this data source to access information about existing Projects within Azure 
 
 ```hcl
 data "azuredevops_projects" "test" {
-  project_name = "contoso"
+  name = "contoso"
   state        = "wellFormed"
 }
 
@@ -21,7 +21,7 @@ output "project_id" {
   value = data.azuredevops_projects.test.projects.*.project_id
 }
 
-output "project_name" {
+output "name" {
   value = data.azuredevops_projects.test.projects.*.name
 }
 
@@ -38,7 +38,7 @@ output "state" {
 
 The following arguments are supported:
 
-- `project_name` - (Optional) Name of the Project, if not specified all projects will be returned.
+- `name` - (Optional) Name of the Project, if not specified all projects will be returned.
 
 - `state` - (Optional) State of the Project, if not specified all projects will be returned. Valid values are `all`, `deleting`, `new`, `wellFormed`, `createPending`, `unchanged`,`deleted`.
 

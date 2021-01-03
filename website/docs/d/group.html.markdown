@@ -13,7 +13,7 @@ Use this data source to access information about an existing Group within Azure 
 
 ```hcl
 data "azuredevops_project" "p" {
-  project_name = "contoso-project"
+  name = "contoso-project"
 }
 
 data "azuredevops_group" "test" {
@@ -28,14 +28,27 @@ output "group_id" {
 output "group_descriptor" {
   value = data.azuredevops_group.test.descriptor
 }
+
+data "azuredevops_group" "test-collection-group" {
+  name       = "Project Collection Administrators"
+}
+
+output "collection_group_id" {
+  value = data.azuredevops_group.test-collection-group.id
+}
+
+output "collection_group_descriptor" {
+  value = data.azuredevops_group.test-collection-group.descriptor
+}
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project Id.
 - `name` - (Required) The Group Name.
+- `project_id` - (Optional) The Project ID. If no project ID is specified the project collection groups will be searched.
 
 ## Attributes Reference
 
@@ -43,6 +56,8 @@ The following attributes are exported:
 
 - `id` - The ID for this resource is the group descriptor. See below.
 - `descriptor` - The Descriptor is the primary way to reference the graph subject. This field will uniquely identify the same graph subject across both Accounts and Organizations.
+- `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
+- `origin_id` - The unique identifier from the system of origin. Typically a sid, object id or Guid. Linking and unlinking operations can cause this value to change for a user because the user is not backed by a different provider and has a different unique id in the new provider.
 
 ## Relevant Links
 

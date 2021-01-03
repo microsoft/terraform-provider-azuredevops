@@ -14,7 +14,7 @@ Manages a Build Definition within Azure DevOps.
 ### Tfs
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -192,5 +192,5 @@ terraform import azuredevops_build_definition.build "Test Project"/10
 or
 
 ```sh
-terraform import azuredevops_build_definition.build 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+terraform import azuredevops_build_definition.build 00000000-0000-0000-0000-000000000000/0
 ```

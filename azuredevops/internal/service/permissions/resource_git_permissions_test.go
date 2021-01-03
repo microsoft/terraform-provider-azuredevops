@@ -14,10 +14,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 /**
@@ -35,24 +35,24 @@ var gitBranchNameInValid = "@@invalid@@"
 
 func TestGitPermissions_CreateGitToken(t *testing.T) {
 	var d *schema.ResourceData
-	var token *string
+	var token string
 	var err error
 
 	d = getGitPermissionsResource(t, gitProjectID, "", "")
-	token, err = createGitToken(nil, d)
-	assert.NotNil(t, token)
+	token, err = createGitToken(d, nil)
+	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, gitTokenProject, *token)
+	assert.Equal(t, gitTokenProject, token)
 
 	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, "")
-	token, err = createGitToken(nil, d)
-	assert.NotNil(t, token)
+	token, err = createGitToken(d, nil)
+	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, gitTokenRepository, *token)
+	assert.Equal(t, gitTokenRepository, token)
 
 	d = getGitPermissionsResource(t, "", gitRepositoryID, "")
-	token, err = createGitToken(nil, d)
-	assert.Nil(t, token)
+	token, err = createGitToken(d, nil)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 }
 
@@ -79,19 +79,19 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 		Times(1)
 
 	var d *schema.ResourceData
-	var token *string
+	var token string
 	var err error
 
 	d = getGitPermissionsResource(t, gitProjectID, "", gitBranchNameValid)
-	token, err = createGitToken(clients, d)
-	assert.Nil(t, token)
+	token, err = createGitToken(d, clients)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 
 	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, gitBranchNameValid)
-	token, err = createGitToken(clients, d)
-	assert.NotNil(t, token)
+	token, err = createGitToken(d, clients)
+	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, gitTokenBranch, *token)
+	assert.Equal(t, gitTokenBranch, token)
 }
 
 func TestGitPermissions_CreateGitTokenWithBranch_HandleError(t *testing.T) {
@@ -111,8 +111,8 @@ func TestGitPermissions_CreateGitTokenWithBranch_HandleError(t *testing.T) {
 		Times(1)
 
 	d := getGitPermissionsResource(t, gitProjectID, gitRepositoryID, gitBranchNameValid)
-	token, err := createGitToken(clients, d)
-	assert.Nil(t, token)
+	token, err := createGitToken(d, clients)
+	assert.Empty(t, token)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, errMsg)
 }

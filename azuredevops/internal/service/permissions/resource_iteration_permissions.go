@@ -1,15 +1,16 @@
 package permissions
 
 import (
-	"context"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 )
 
+// ResourceIterationPermissions schema and implementation for iteration permission resource
 func ResourceIterationPermissions() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceIterationPermissionsCreateOrUpdate,
@@ -37,12 +38,12 @@ func ResourceIterationPermissions() *schema.Resource {
 func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, nil, false); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, nil, false); err != nil {
 		return err
 	}
 
@@ -52,14 +53,19 @@ func resourceIterationPermissionsCreateOrUpdate(d *schema.ResourceData, m interf
 func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
 
-	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn, aclToken)
+	principalPermissions, err := securityhelper.GetPrincipalPermissions(d, sn)
 	if err != nil {
 		return err
+	}
+	if principalPermissions == nil {
+		d.SetId("")
+		log.Printf("[INFO] Permissions for ACL token %q not found. Removing from state", sn.GetToken())
+		return nil
 	}
 
 	d.Set("permissions", principalPermissions.Permissions)
@@ -69,12 +75,12 @@ func resourceIterationPermissionsRead(d *schema.ResourceData, m interface{}) err
 func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, aclToken, err := initializeIterationSecurityNamespaceAndToken(d, clients)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Iteration, createIterationToken)
 	if err != nil {
 		return err
 	}
 
-	if err := securityhelper.SetPrincipalPermissions(d, sn, aclToken, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
+	if err := securityhelper.SetPrincipalPermissions(d, sn, &securityhelper.PermissionTypeValues.NotSet, true); err != nil {
 		return err
 	}
 
@@ -82,29 +88,12 @@ func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func initializeIterationSecurityNamespaceAndToken(d *schema.ResourceData, clients *client.AggregatedClient) (*securityhelper.SecurityNamespace, *string, error) {
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Iteration,
-		clients.SecurityClient,
-		clients.IdentityClient)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	aclToken, err := createIterationToken(clients.Ctx, clients.WorkItemTrackingClient, d)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return sn, aclToken, nil
-}
-
-func createIterationToken(context context.Context, workitemtrackingClient workitemtracking.Client, d *schema.ResourceData) (*string, error) {
+func createIterationToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID := d.Get("project_id").(string)
 	path := d.Get("path").(string)
-	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(context, workitemtrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
+	aclToken, err := securityhelper.CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, projectID, path)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &aclToken, nil
+	return aclToken, nil
 }

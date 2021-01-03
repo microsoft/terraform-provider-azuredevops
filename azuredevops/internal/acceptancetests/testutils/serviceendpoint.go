@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // CheckServiceEndpointExistsWithName verifies that a service endpoint of a particular type exists in the state,
@@ -33,7 +33,7 @@ func CheckServiceEndpointExistsWithName(tfNode string, expectedName string) reso
 }
 
 // CheckServiceEndpointDestroyed verifies that all service endpoints of the given type in the state are destroyed.
-// This will be invoked *after* terrafform destroys the resource but *before* the state is wiped clean.
+// This will be invoked *after* terraform destroys the resource but *before* the state is wiped clean.
 func CheckServiceEndpointDestroyed(resourceType string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, resource := range s.RootModule().Resources {

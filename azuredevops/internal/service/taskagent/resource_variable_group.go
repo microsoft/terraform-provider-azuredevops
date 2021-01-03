@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 const (
@@ -449,14 +449,20 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
 	}
 
-	if converter.ToBool(variable.IsSecret, false) {
-		return tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName), nil
-	}
-	return map[string]interface{}{
+	isSecret := converter.ToBool(variable.IsSecret, false)
+	var val = map[string]interface{}{
 		vgName:     varName,
 		vgValue:    converter.ToString(variable.Value, ""),
-		vgIsSecret: false,
-	}, nil
+		vgIsSecret: isSecret,
+	}
+
+	//read secret variables from state if exist
+	if isSecret {
+		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, vgVariable, vgName, varName); stateVal != nil {
+			val = stateVal
+		}
+	}
+	return val, nil
 }
 
 func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
@@ -537,11 +543,14 @@ func deleteDefinitionResourceAuth(clients *client.AggregatedClient, variableGrou
 
 // Convert AzDO data structure allow_access to internal Terraform data structure
 func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.DefinitionResourceReference) {
-	var allowAccess bool
-	if len(*definitionResource) > 0 {
-		allowAccess = *(*definitionResource)[0].Authorized
-	} else {
-		allowAccess = false
+	variableGroupID := d.Id()
+	var allowAccess = false
+	if definitionResource != nil {
+		for _, authResource := range *definitionResource {
+			if variableGroupID == *authResource.Id {
+				allowAccess = *authResource.Authorized
+			}
+		}
 	}
 	d.Set(vgAllowAccess, allowAccess)
 }

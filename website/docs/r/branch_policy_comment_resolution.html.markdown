@@ -13,7 +13,7 @@ Configure a comment resolution policy for your branch within Azure DevOps projec
 
 ```hcl
 resource "azuredevops_project" "p" {
-  project_name = "Sample Project"
+  name = "Sample Project"
 }
 
 resource "azuredevops_git_repository" "r" {
@@ -81,5 +81,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_branch_policy_comment_resolution.p xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xx
+terraform import azuredevops_branch_policy_comment_resolution.p 00000000-0000-0000-0000-000000000000/0
 ```

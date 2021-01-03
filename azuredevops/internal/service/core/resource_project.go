@@ -15,10 +15,10 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // timeout used to wait for operations on projects to finish before executing an update or delete
@@ -41,7 +41,7 @@ func ResourceProject() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"project_name": {
+			"name": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
@@ -117,7 +117,7 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.Set("project_name", *project.Name)
+	d.Set("name", *project.Name)
 	return resourceProjectRead(d, m)
 }
 
@@ -191,7 +191,7 @@ func waitForAsyncOperationSuccess(clients *client.AggregatedClient, operationRef
 func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id := d.Id()
-	name := d.Get("project_name").(string)
+	name := d.Get("name").(string)
 
 	project, err := projectRead(clients, id, name)
 	if err != nil {
@@ -233,7 +233,7 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	requiresUpdate := false
-	if !d.HasChange("project_name") {
+	if !d.HasChange("name") {
 		project.Name = nil
 	} else {
 		requiresUpdate = true
@@ -377,7 +377,7 @@ func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, for
 
 	project := &core.TeamProject{
 		Id:           projectID,
-		Name:         converter.String(d.Get("project_name").(string)),
+		Name:         converter.String(d.Get("name").(string)),
 		Description:  converter.String(d.Get("description").(string)),
 		Visibility:   &visibility,
 		Capabilities: capabilities,
@@ -406,7 +406,7 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 	}
 
 	d.SetId(project.Id.String())
-	d.Set("project_name", project.Name)
+	d.Set("name", project.Name)
 	d.Set("visibility", project.Visibility)
 	d.Set("description", project.Description)
 	d.Set("version_control", (*project.Capabilities)["versioncontrol"]["sourceControlType"])

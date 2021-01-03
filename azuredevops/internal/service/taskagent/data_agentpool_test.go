@@ -12,9 +12,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/require"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
@@ -44,8 +44,8 @@ func TestDataSourceAgentPool_Read_TestAgentPoolNotFound(t *testing.T) {
 }
 
 func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {
-	agentPoolListEmpty := []taskagent.TaskAgentPool{{}, {}}
-	name := "nonexistentAgentPool"
+	agentPoolList := []taskagent.TaskAgentPool{{}, {}}
+	name := "multiplePools"
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -60,7 +60,7 @@ func TestDataSourceAgentPool_Read_TestMultipleAgentPoolsFound(t *testing.T) {
 		GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
 			PoolName: &name,
 		}).
-		Return(&agentPoolListEmpty, nil).
+		Return(&agentPoolList, nil).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataAgentPool().Schema, nil)

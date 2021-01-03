@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // DataAgentPool schema and implementation for agent pool data source
@@ -49,7 +49,7 @@ func getAgentPoolByName(clients *client.AggregatedClient, name *string) (*taskag
 	}
 
 	if len(*agentPools) > 1 {
-		return nil, fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %v", *name, agentPools)
+		return nil, fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %+v", *name, agentPools)
 	}
 
 	if len(*agentPools) == 0 {

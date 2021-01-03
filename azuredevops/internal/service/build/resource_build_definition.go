@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/model"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 const (
@@ -138,6 +138,7 @@ func ResourceBuildDefinition() *schema.Resource {
 			"agent_pool_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "Hosted Ubuntu 1604",
 			},
 			"repository": {
 				Type:     schema.TypeList,
@@ -361,14 +362,19 @@ func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildD
 	index := 0
 	for varName, varVal := range *buildDefinition.Variables {
 		var variable map[string]interface{}
-		if converter.ToBool(varVal.IsSecret, false) {
-			variable = tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName)
-		} else {
-			variable = map[string]interface{}{
-				bdVariableName:          varName,
-				bdVariableValue:         converter.ToString(varVal.Value, ""),
-				bdVariableIsSecret:      false,
-				bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
+
+		isSecret := converter.ToBool(varVal.IsSecret, false)
+		variable = map[string]interface{}{
+			bdVariableName:          varName,
+			bdVariableValue:         converter.ToString(varVal.Value, ""),
+			bdVariableIsSecret:      isSecret,
+			bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
+		}
+
+		//read secret variable from state if exist
+		if isSecret {
+			if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName); stateVal != nil {
+				variable = stateVal
 			}
 		}
 		variables[index] = variable

@@ -13,7 +13,7 @@ Manages variable groups within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name = "Test Project"
+  name = "Test Project"
 }
 
 resource "azuredevops_variable_group" "variablegroup" {
@@ -28,9 +28,9 @@ resource "azuredevops_variable_group" "variablegroup" {
   }
 
   variable {
-    name      = "Account Password"
-    value     = "p@ssword123"
-    is_secret = true
+    name         = "Account Password"
+    secret_value = "p@ssword123"
+    is_secret    = true
   }
 }
 ```
@@ -64,6 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 - [Azure DevOps Service REST API 5.1 - Authorized Resources](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/authorizedresources?view=azure-devops-rest-5.1)
 
 ## Import
+**Variable groups containing secret values cannot be imported.**
 
 Azure DevOps Variable groups can be imported using the project name/variable group ID or by the project Guid/variable group ID, e.g.
 
@@ -74,7 +75,7 @@ terraform import azuredevops_variable_group.variablegroup "Test Project/10"
 or
 
 ```sh
-terraform import azuredevops_variable_group.variablegroup 782a8123-1019-xxxx-xxxx-xxxxxxxx/10
+terraform import azuredevops_variable_group.variablegroup 00000000-0000-0000-0000-000000000000/0
 ```
 
 _Note that for secret variables, the import command retrieve blank value in the tfstate._

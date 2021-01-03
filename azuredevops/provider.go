@@ -2,18 +2,18 @@ package azuredevops
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/build"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/core"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/git"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/graph"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/policy"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -53,6 +53,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
 			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
+			"azuredevops_agent_queue":      taskagent.DataAgentQueue(),
 			"azuredevops_client_config":    service.DataClientConfig(),
 			"azuredevops_group":            graph.DataGroup(),
 			"azuredevops_project":          core.DataProject(),

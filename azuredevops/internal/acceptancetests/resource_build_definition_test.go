@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
@@ -210,7 +210,7 @@ func checkBuildDefinitionExists(expectedName string) resource.TestCheckFunc {
 }
 
 // verifies that all build definitions referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkBuildDefinitionDestroyed(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_build_definition" {

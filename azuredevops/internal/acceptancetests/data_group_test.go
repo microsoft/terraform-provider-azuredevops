@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
 // Validates that a configuration containing a project group lookup is able to read the resource correctly.
@@ -28,6 +28,30 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGroupDataSource_Read_ProjectCollectionAdministrators(t *testing.T) {
+	group := "Project Collection Administrators"
+	tfBuildDefNode := "data.azuredevops_group.group"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclGroupDataSource("", group),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
 				),
 			},
 		},

@@ -8,17 +8,18 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 const aclClassificationNodeTokenPrefix = "vstfs:///Classification/Node/"
 
-func CreateClassificationNodeSecurityToken(context context.Context, workitemtrackingClient workitemtracking.Client, structureGroup workitemtracking.TreeStructureGroup, projectID string, path string) (string, error) {
+// CreateClassificationNodeSecurityToken create security namespace token for iterations and areas
+func CreateClassificationNodeSecurityToken(context context.Context, workItemTrackingClient workitemtracking.Client, structureGroup workitemtracking.TreeStructureGroup, projectID string, path string) (string, error) {
 	var aclToken string
 
-	// you have to ommit the path property to get the
+	// you have to omit the path property to get the
 	// root ClassificationNode.
-	rootClassificationNode, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
+	rootClassificationNode, err := workItemTrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &structureGroup,
 		Depth:          converter.Int(1),
@@ -54,7 +55,7 @@ func CreateClassificationNodeSecurityToken(context context.Context, workitemtrac
 
 			for i := range pathElem {
 				pathItem := strings.Join(pathElem[:i+1], "/")
-				node, err := workitemtrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
+				node, err := workItemTrackingClient.GetClassificationNode(context, workitemtracking.GetClassificationNodeArgs{
 					Project:        &projectID,
 					Path:           &pathItem,
 					StructureGroup: &structureGroup,

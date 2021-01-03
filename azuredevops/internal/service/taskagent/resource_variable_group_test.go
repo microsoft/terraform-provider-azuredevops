@@ -14,14 +14,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func TestVariableGroupAllowAccess_ExpandFlatten_Roundtrip(t *testing.T) {
 	testVariableGroup := taskagent.VariableGroup{
-		Id:   converter.Int(100),
-		Name: converter.String("Name"),
+		Id:          converter.Int(100),
+		Name:        converter.String("Name"),
+		Description: converter.String("This is a test variable group."),
+		Variables: &map[string]interface{}{
+			"var1": map[string]interface{}{
+				"value":    converter.String("value1"),
+				"isSecret": converter.Bool(false),
+			},
+		},
 	}
 	resourceRefType := "variablegroup"
 	testDefinitionResource := build.DefinitionResourceReference{
@@ -31,13 +38,24 @@ func TestVariableGroupAllowAccess_ExpandFlatten_Roundtrip(t *testing.T) {
 		Id:         converter.String("100"),
 	}
 	resourceData := schema.TestResourceDataRaw(t, ResourceVariableGroup().Schema, nil)
+	testVarGroupProjectID := uuid.New().String()
+
+	err := flattenVariableGroup(resourceData, &testVariableGroup, &testVarGroupProjectID)
+	require.Equal(t, nil, err)
 
 	testArrayDefinitionResourceReference := []build.DefinitionResourceReference{testDefinitionResource}
 	flattenAllowAccess(resourceData, &testArrayDefinitionResourceReference)
 
 	definitionResourceReferenceArgs := expandAllowAccess(resourceData, &testVariableGroup)
-	require.Equal(t, testDefinitionResource.Authorized, definitionResourceReferenceArgs[0].Authorized)
-	require.Equal(t, testDefinitionResource.Id, definitionResourceReferenceArgs[0].Id)
+
+	var definitionRes build.DefinitionResourceReference
+	for _, authResource := range definitionResourceReferenceArgs {
+		if *testDefinitionResource.Id == *authResource.Id {
+			definitionRes = authResource
+		}
+	}
+	require.Equal(t, testDefinitionResource.Authorized, definitionRes.Authorized)
+	require.Equal(t, testDefinitionResource.Id, definitionRes.Id)
 }
 
 func TestVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
@@ -76,6 +94,7 @@ func TestVariableGroupKeyVault_ExpandFlatten_Roundtrip(t *testing.T) {
 		Variables: &map[string]interface{}{
 			"var1": map[string]interface{}{
 				"isSecret": converter.Bool(false),
+				"value":    "",
 			},
 		},
 		ProviderData: map[string]interface{}{

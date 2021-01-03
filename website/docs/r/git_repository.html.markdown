@@ -15,7 +15,7 @@ Manages a git repository within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -52,7 +52,7 @@ resource "azuredevops_git_repository" "repo" {
   initialization {
     init_type = "Import"
     source_type = "Git"
-    source_url = "https://github.com/terraform-providers/terraform-provider-azuredevops.git"
+    source_url = "https://github.com/microsoft/terraform-provider-azuredevops.git"
   }
 }
 ```
@@ -64,7 +64,7 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `name` - (Required) The name of the git repository.
 - `parent_repository_id` - (Optional) The ID of a Git project from which a fork is to be created.
-- `initialization` - (Optional) An `initialization` block as documented below.
+- `initialization` - (Required) An `initialization` block as documented below.
 
 `initialization` - (Required) block supports the following:
 
@@ -88,4 +88,4 @@ In addition to all arguments above, except `initialization`, the following attri
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 5.1 - Git Repositories](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-5.1)

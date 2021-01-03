@@ -13,7 +13,7 @@ Manages a Azure Container Registry service endpoint within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -24,10 +24,10 @@ resource "azuredevops_serviceendpoint_azurecr" "azurecr" {
   project_id             = azuredevops_project.project.id
   service_endpoint_name  = "Sample AzureCR"
   resource_group            = "sample-rg"
-  azurecr_spn_tenantid      = "72f987tg-95f1-87af-91bh-2d8jd091db47"
+  azurecr_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurecr_name              = "sampleAcr"
-  azurecr_subscription_id   = "f7ooi795-c577-6210-9886-a5e898uue3gc"
-  azurecr_subscription_name = "sample"
+  azurecr_subscription_id   = "00000000-0000-0000-0000-000000000000"
+  azurecr_subscription_name = "sampleSub"
 }
 ```
 
@@ -56,3 +56,11 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
 - [Azure Container Registry REST API](https://docs.microsoft.com/en-us/rest/api/containerregistry/)
+
+## Import
+
+Azure DevOps Service Endpoint Azure Container Registry can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+
+```sh
+ terraform import azuredevops_serviceendpoint_azurecr.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```

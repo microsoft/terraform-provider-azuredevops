@@ -1,7 +1,7 @@
 # Terraform Provider for Azure DevOps (Devops Resource Manager)
 
 [![Gitter](https://badges.gitter.im/terraform-provider-azuredevops/community.svg)](https://gitter.im/terraform-provider-azuredevops/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Go Report Card](https://goreportcard.com/badge/github.com/terraform-providers/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/terraform-providers/terraform-provider-azuredevops)
+[![Go Report Card](https://goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
 
 The AzureRM Provider supports Terraform 0.12.x and later.
 
@@ -19,12 +19,17 @@ The AzureRM Provider supports Terraform 0.12.x and later.
 # Make sure to set the following environment variables:
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {
-  project_name = "My Awesome Project"
+  name = "My Awesome Project"
   description  = "All of my awesomee things"
 }
 
@@ -52,8 +57,8 @@ resource "azuredevops_build_definition" "build_definition" {
 
 ## Developer Requirements
 
-* [Terraform](https://www.terraform.io/downloads.html) version 0.12.x +
-* [Go](https://golang.org/doc/install) version 1.13.x (to build the provider plugin)
+* [Terraform](https://www.terraform.io/downloads.html) version 0.13.x +
+* [Go](https://golang.org/doc/install) version 1.14.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
 
@@ -71,19 +76,19 @@ As [described below](#build-using-powerShell-scripts) we provide some PowerShell
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.13+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 ### Using the GOPATH model
 
-First clone the repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-azuredevops`
+First clone the repository to: `$GOPATH/src/github.com/microsoft/terraform-provider-azuredevops`
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers && cd "$_"
-$ git clone git@github.com:terraform-providers/terraform-provider-azuredevops.git
+$ git clone git@github.com:microsoft/terraform-provider-azuredevops.git
 $ cd terraform-provider-azuredevops
 ```
 
-Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/terraform-providers/terraform-provider-azuredevops/blob/master/docs/contributing.md#3-build--install-provider).
+Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/docs/contributing.md#3-build--install-provider).
 These commands will sideload the plugin for Terraform.
 
 ### Using a directory separate from GOPATH

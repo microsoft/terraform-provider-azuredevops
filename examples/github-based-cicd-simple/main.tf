@@ -3,12 +3,17 @@
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
 #   AZDO_GITHUB_SERVICE_CONNECTION_PAT
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -18,7 +23,7 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "GitHub Service Connection"
   auth_oauth {
-    oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
   }
 }
 

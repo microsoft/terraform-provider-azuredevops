@@ -41,6 +41,12 @@ func HclForkedGitRepoResource(projectName string, gitRepoName string, gitForkedR
 
 // HclGroupDataSource HCL describing an AzDO Group Data Source
 func HclGroupDataSource(projectName string, groupName string) string {
+	if projectName == "" {
+		return fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	name       = "%s"
+}`, groupName)
+	}
 	dataSource := fmt.Sprintf(`
 data "azuredevops_group" "group" {
 	project_id = azuredevops_project.project.id
@@ -58,23 +64,12 @@ func HclProjectResource(projectName string) string {
 	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name       = "%[1]s"
+	name       = "%[1]s"
 	description        = "%[1]s-description"
 	visibility         = "private"
 	version_control    = "Git"
 	work_item_template = "Agile"
 }`, projectName)
-}
-
-// HclProjectDataSource HCL describing a data source for an AzDO project
-func HclProjectDataSource(projectName string) string {
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_project" "project" {
-	project_name = azuredevops_project.project.project_name
-}`, projectResource)
 }
 
 // HclProjectResourceWithFeature HCL describing an AzDO project including internal feature setup
@@ -90,7 +85,7 @@ func HclProjectResourceWithFeature(projectName string, featureStateTestplans str
 	}
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	project_name       = "%s"
+	name       = "%s"
 	description        = "%s-description"
 	visibility         = "private"
 	version_control    = "Git"
@@ -125,7 +120,7 @@ func HclProjectsDataSource(projectName string) string {
 %s
 
 data "azuredevops_projects" "project-list" {
-	project_name = azuredevops_project.project.project_name
+	name = azuredevops_project.project.name
 }
 `, projectResource)
 }
@@ -133,7 +128,7 @@ data "azuredevops_projects" "project-list" {
 // HclProjectsDataSourceWithStateAndInvalidName creates HCL for a multi value data source for AzDo projects
 func HclProjectsDataSourceWithStateAndInvalidName() string {
 	return `data "azuredevops_projects" "project-list" {
-		project_name = "_invalid_project_name"
+		name = "invalid_name"
 		state = "wellFormed"
 	}`
 }
@@ -142,7 +137,7 @@ func HclProjectsDataSourceWithStateAndInvalidName() string {
 func HclProjectGitRepository(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = "%s"
+	name = "%s"
 }
 
 data "azuredevops_git_repository" "repository" {
@@ -151,11 +146,11 @@ data "azuredevops_git_repository" "repository" {
 }`, projectName, gitRepoName)
 }
 
-// HclProjectGitRepositories HCL describing a multivalue data source for AzDO git repositories
+// HclProjectGitRepositories HCL describing a multi value data source for AzDO git repositories
 func HclProjectGitRepositories(projectName string, gitRepoName string) string {
 	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
-	project_name = azuredevops_project.project.project_name
+	name = azuredevops_project.project.name
 }
 
 data "azuredevops_git_repositories" "repositories" {
@@ -164,6 +159,7 @@ data "azuredevops_git_repositories" "repositories" {
 }`, gitRepoName)
 }
 
+// HclProjectGitRepositoryImport HCL describing a AzDO git repositories
 func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
 	azureGitRepoResource := fmt.Sprintf(`
 	resource "azuredevops_git_repository" "repository" {
@@ -172,7 +168,7 @@ func HclProjectGitRepositoryImport(gitRepoName string, projectName string) strin
 		initialization {
 		   init_type = "Import"
 		   source_type = "Git"
-		   source_url = "https://github.com/terraform-providers/terraform-provider-azuredevops.git"
+		   source_url = "https://github.com/microsoft/terraform-provider-azuredevops.git"
 		 }
 	}`, gitRepoName)
 	projectResource := HclProjectResource(projectName)
@@ -361,6 +357,7 @@ resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclVariableGroupResource HCL describing an AzDO group
 func HclVariableGroupResource(variableGroupName string, allowAccess bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_variable_group" "vg" {
@@ -470,12 +467,23 @@ data "azuredevops_agent_pools" "pools" {
 }`
 }
 
+// HclAgentQueueDataSource HCL describing a data source for an AzDO Agent Queue
+func HclAgentQueueDataSource(projectName, queueName string) string {
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_agent_queue" "queue" {
+	project_id = azuredevops_project.project.id
+	name = "%s"
+}`, HclProjectResource(projectName), queueName)
+}
+
 // HclAgentQueueResource HCL describing an AzDO Agent Pool and Agent Queue
 func HclAgentQueueResource(projectName, poolName string) string {
 	poolHCL := HclAgentPoolResource(poolName)
 	queueHCL := fmt.Sprintf(`
 resource "azuredevops_project" "p" {
-	project_name = "%s"
+	name = "%s"
 }
 
 resource "azuredevops_agent_queue" "q" {
@@ -620,7 +628,7 @@ resource "azuredevops_group_membership" "membership" {
 func HclGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-  project_name = "%s"
+  name = "%s"
 }
 data "azuredevops_group" "group" {
   project_id = azuredevops_project.project.id

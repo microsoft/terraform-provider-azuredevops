@@ -15,9 +15,6 @@ import (
 
 // String Get a pointer to a string
 func String(value string) *string {
-	if strings.EqualFold(value, "") {
-		return nil
-	}
 	return &value
 }
 
@@ -50,7 +47,7 @@ func UInt64(value uint64) *uint64 {
 	return &value
 }
 
-// ToString Given a pointer return its value, or a default value of the poitner is nil
+// ToString Given a pointer return its value, or a default value of the pointer is nil
 func ToString(value *string, defaultValue string) string {
 	if value != nil {
 		return *value

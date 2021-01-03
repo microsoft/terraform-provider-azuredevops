@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -96,9 +96,10 @@ func ResourceGitRepository() *schema.Resource {
 				Computed: true,
 			},
 			"initialization": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
+				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"init_type": {
@@ -178,7 +179,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 		if importErr != nil {
-			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
+			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
 		}
 	}
 
@@ -230,11 +231,11 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 	return nil
 }
 
-func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryId string) (*git.GitImportRequest, error) {
+func createImportRequest(clients *client.AggregatedClient, gitImportRequest git.GitImportRequest, project string, repositoryID string) (*git.GitImportRequest, error) {
 	args := git.CreateImportRequestArgs{
 		ImportRequest: &gitImportRequest,
 		Project:       &project,
-		RepositoryId:  &repositoryId,
+		RepositoryId:  &repositoryID,
 	}
 
 	return clients.GitReposClient.CreateImportRequest(clients.Ctx, args)
@@ -429,7 +430,7 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	}
 
 	var initialization *repoInitializationMeta = nil
-	initData := d.Get("initialization").(*schema.Set).List()
+	initData := d.Get("initialization").([]interface{})
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
 // Verifies that the following sequence of events occurs without error:
@@ -32,7 +32,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 				Config: testutils.HclProjectResource(projectNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameFirst),
+					resource.TestCheckResourceAttr(tfNode, "name", projectNameFirst),
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
@@ -43,7 +43,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 				Config: testutils.HclProjectResource(projectNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-					resource.TestCheckResourceAttr(tfNode, "project_name", projectNameSecond),
+					resource.TestCheckResourceAttr(tfNode, "name", projectNameSecond),
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
@@ -73,7 +73,7 @@ func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
 				Config: testutils.HclProjectResourceWithFeature(projectName, "disabled", "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "name", projectName),
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),
@@ -86,7 +86,7 @@ func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
 				Config: testutils.HclProjectResourceWithFeature(projectName, "enabled", "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_template_id"),
-					resource.TestCheckResourceAttr(tfNode, "project_name", projectName),
+					resource.TestCheckResourceAttr(tfNode, "name", projectName),
 					resource.TestCheckResourceAttr(tfNode, "version_control", "Git"),
 					resource.TestCheckResourceAttr(tfNode, "visibility", "private"),
 					resource.TestCheckResourceAttr(tfNode, "work_item_template", "Agile"),

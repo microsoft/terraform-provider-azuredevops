@@ -12,7 +12,7 @@ Manages a AWS service endpoint within Azure DevOps. Using this service endpoint 
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -20,11 +20,11 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_aws" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "aws_serviceendpoint"
+  service_endpoint_name = "Sample AWS"
   description           = "Managed by AzureDevOps"
 
-  access_key_id         = "xxxx"
-  secret_access_key     = "xxxx"
+  access_key_id         = "00000000-0000-0000-0000-000000000000"
+  secret_access_key     = "accesskey"
 }
 ```
 
@@ -38,7 +38,7 @@ The following arguments are supported:
 * `secret_access_key` - (Required) The AWS secret access key for signing programmatic requests.
 * `session_token` - (Optional) The AWS session token for signing programmatic requests.
 * `role_to_assume` - (Optional) The Amazon Resource Name (ARN) of the role to assume.
-* `role_session_names` - (Optional) Optional identifier for the assumed role session.
+* `role_session_name` - (Optional) Optional identifier for the assumed role session.
 * `external_id` - (Optional) A unique identifier that is used by third parties when assuming roles in their customers' accounts, aka cross-account role access.
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
@@ -55,8 +55,8 @@ The following attributes are exported:
 * [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
 
 ## Import
-Azure DevOps Service Endpoint AWS can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps Service Endpoint AWS can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```
- terraform import azuredevops_serviceendpoint_aws.serviceendpoint xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ terraform import azuredevops_serviceendpoint_aws.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

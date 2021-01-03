@@ -10,10 +10,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 
 	"github.com/google/uuid"
 
@@ -52,6 +52,7 @@ func createkubernetesTestServiceEndpointForAzureSubscription() *serviceendpoint.
 		"azureSubscriptionName": "kubernetes_TEST_subscription_name",
 		"clusterId":             "/subscriptions/kubernetes_TEST_subscription_id/resourcegroups/kubernetes_TEST_resource_group_id/providers/Microsoft.ContainerService/managedClusters/kubernetes_TEST_cluster_name",
 		"namespace":             "default",
+		"clusterAdmin":          "false",
 	}
 
 	return &serviceEndpoint

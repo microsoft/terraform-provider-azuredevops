@@ -8,7 +8,10 @@ import (
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/secretmemo"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/secretmemo"
 )
 
 func calcSecretHashKey(secretKey string) string {
@@ -40,6 +43,9 @@ func DiffFuncSuppressSecretChanged(k, old, new string, d *schema.ResourceData) b
 // HelpFlattenSecretNested is used to store a hashed secret value into `tfstate`
 func HelpFlattenSecretNested(d *schema.ResourceData, parentKey string, d2 map[string]interface{}, secretKey string) (string, string) {
 	hashKey := calcSecretHashKey(secretKey)
+	if len(d2) == 0 {
+		return hashKey, ""
+	}
 	oldHash := d2[hashKey].(string)
 	if !d.HasChange(parentKey) {
 		log.Printf("key %s didn't get updated.", parentKey)
@@ -159,10 +165,13 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
 
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			}
+			return nil, err
 		},
 	}
 }
@@ -184,10 +193,12 @@ func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 				return nil, fmt.Errorf("resource ID was expected to be integer, but was not: %+v", err)
 			}
 
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
-
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			}
+			return nil, err
 		},
 	}
 }
@@ -204,11 +215,32 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
 
-			d.Set("project_id", projectNameOrID)
-			d.SetId(resourceID)
-			return []*schema.ResourceData{d}, nil
+			if projectNameOrID, err = GetRealProjectId(projectNameOrID, meta); err == nil {
+				d.Set("project_id", projectNameOrID)
+				d.SetId(resourceID)
+				return []*schema.ResourceData{d}, nil
+			}
+			return nil, err
 		},
 	}
+}
+
+//Get real project ID
+func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
+	//If request params is project name, try get the project ID
+	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {
+		clients := meta.(*client.AggregatedClient)
+		project, err := clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+			ProjectId:           &projectNameOrID,
+			IncludeCapabilities: converter.Bool(true),
+			IncludeHistory:      converter.Bool(false),
+		})
+		if err != nil {
+			return "", fmt.Errorf(" Failed to get the project with specified projectNameOrID: %s , %+v", projectNameOrID, err)
+		}
+		return (*project.Id).String(), nil
+	}
+	return projectNameOrID, nil
 }
 
 // FindMapInSetWithGivenKeyValue Pulls an element of `TypeSet` from the state. The values of this set are assumed to be

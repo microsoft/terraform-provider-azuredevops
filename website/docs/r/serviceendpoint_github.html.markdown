@@ -13,7 +13,7 @@ Manages a GitHub service endpoint within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  project_name       = "Sample Project"
+  name       = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -25,7 +25,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_1" {
 
   auth_personal {
     # Also can be set with AZDO_GITHUB_SERVICE_CONNECTION_PAT environment variable
-    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
 }
 ```
@@ -36,7 +36,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
   service_endpoint_name = "Sample GithHub Grant"
 
   auth_oauth {
-    oauth_configuration_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
   }
 }
 ```
@@ -45,7 +45,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_3" {
   project_id = azuredevops_project.project.id
   service_endpoint_name = "Sample GithHub Apps: Azure Pipelines"
-  # Note Github Apps do not support a description and will always be empty string. Must be explicty set to override the default value.
+  # Note Github Apps do not support a description and will always be empty string. Must be explicitly set to override the default value.
   description = ""
 }
 ```
@@ -80,12 +80,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
 
 ## Import
 
-Azure DevOps Service Endpoint GitHub can be imported using the serviceendpoint id, e.g.
+Azure DevOps Service Endpoint GitHub can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_github.serviceendpoint d81afa1d-9ad2-4c7d-b016-9ebb90f435f5
+ terraform import azuredevops_serviceendpoint_github.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

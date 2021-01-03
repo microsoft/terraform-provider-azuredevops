@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 const terraformServiceEndpointNode = "azuredevops_serviceendpoint_kubernetes.serviceendpoint"
@@ -121,7 +121,7 @@ func checkSvcEndpointKubernetesExists(expectedName string) resource.TestCheckFun
 }
 
 // verifies that all service endpoints referenced in the state are destroyed. This will be invoked
-// *after* terrafform destroys the resource but *before* the state is wiped clean.
+// *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkSvcEndpointKubernetesDestroyed(s *terraform.State) error {
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_serviceendpoint_kubernetes" {

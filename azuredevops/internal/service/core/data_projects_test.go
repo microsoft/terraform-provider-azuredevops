@@ -15,11 +15,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 var prjListStateWellFormed = []core.TeamProjectReference{
@@ -110,12 +110,12 @@ func TestDataSourceProjects_Read_TestFindProjectByName(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	resourceData.Set("project_name", "vsteam-0178")
+	resourceData.Set("name", "vsteam-0178")
 	resourceData.Set("state", "wellFormed")
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "wellFormed", resourceData.Get("state").(string))
-	require.Equal(t, "vsteam-0178", resourceData.Get("project_name").(string))
+	require.Equal(t, "vsteam-0178", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 1, projectSet.Len())
@@ -153,7 +153,7 @@ func TestDataSourceProjects_Read_TestEmptyProjectList(t *testing.T) {
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
-	require.Equal(t, "", resourceData.Get("project_name").(string))
+	require.Equal(t, "", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 0, projectSet.Len())
@@ -186,7 +186,7 @@ func TestDataSourceProjects_Read_TestFindAllProjects(t *testing.T) {
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
-	require.Equal(t, "", resourceData.Get("project_name").(string))
+	require.Equal(t, "", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 3, projectSet.Len())
@@ -219,7 +219,7 @@ func TestDataSourceProjects_Read_TestDuplicateProjectId(t *testing.T) {
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
-	require.Equal(t, "", resourceData.Get("project_name").(string))
+	require.Equal(t, "", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 2, projectSet.Len())
@@ -253,7 +253,7 @@ func TestDataSourceProjects_Read_TestFindProjectsWithState(t *testing.T) {
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "wellFormed", resourceData.Get("state").(string))
-	require.Equal(t, "", resourceData.Get("project_name").(string))
+	require.Equal(t, "", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 3, projectSet.Len())
@@ -325,7 +325,7 @@ func TestDataSourceProjects_Read_TestContinuationToken(t *testing.T) {
 	err := dataSourceProjectsRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
-	require.Equal(t, "", resourceData.Get("project_name").(string))
+	require.Equal(t, "", resourceData.Get("name").(string))
 	projectSet := resourceData.Get("projects").(*schema.Set)
 	require.NotNil(t, projectSet)
 	require.Equal(t, 6, projectSet.Len())

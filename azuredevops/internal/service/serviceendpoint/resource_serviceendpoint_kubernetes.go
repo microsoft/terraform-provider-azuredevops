@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -68,6 +68,13 @@ func makeSchemaAzureSubscription(r *schema.Resource) {
 					Optional:    true,
 					Default:     "default",
 					Description: "accessed namespace",
+				},
+				"cluster_admin": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					ForceNew:    true,
+					Default:     false,
+					Description: "Enable Cluster Admin",
 				},
 			},
 		},
@@ -186,6 +193,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"azureSubscriptionName": configuration["subscription_name"].(string),
 			"clusterId":             clusterID,
 			"namespace":             configuration["namespace"].(string),
+			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
 		configurationRaw := d.Get(resourceBlockKubeconfig).(*schema.Set).List()
@@ -255,6 +263,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
+		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
 			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
@@ -263,6 +272,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			"cluster_name":      clusterIDSplit[clusterNameIndex],
 			"resourcegroup_id":  clusterIDSplit[resourceGroupIDIndex],
 			"namespace":         (*serviceEndpoint.Data)["namespace"],
+			"cluster_admin":     clusterAdmin,
 		}
 		configItemList := make([]map[string]interface{}, 1)
 		configItemList[0] = configItems

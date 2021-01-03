@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -18,11 +17,12 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
-	"github.com/terraform-providers/terraform-provider-azuredevops/version"
+	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
 // AggregatedClient aggregates all of the underlying clients into a single data
@@ -40,6 +40,7 @@ type AggregatedClient struct {
 	GraphClient                   graph.Client
 	OperationsClient              operations.Client
 	PolicyClient                  policy.Client
+	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
@@ -128,6 +129,14 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	// client for these APIs (includes CRUD for AzDO release pipelines...):
+	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/release/?view=azure-devops-rest-5.1
+	releaseClient, err := release.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): release.NewClient failed.")
+		return nil, err
+	}
+
 	securityClient := security.NewClient(ctx, connection)
 	identityClient, err := identity.NewClient(ctx, connection)
 	if err != nil {
@@ -151,6 +160,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		GraphClient:                   graphClient,
 		OperationsClient:              operationsClient,
 		PolicyClient:                  policyClient,
+		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
@@ -167,8 +177,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 // setUserAgent set UserAgent for http headers
 func setUserAgent(connection *azuredevops.Connection, tfVersion string) {
-	tfUserAgent := httpclient.TerraformUserAgent(tfVersion)
-	providerUserAgent := fmt.Sprintf("%s terraform-provider-azuredevops/%s", tfUserAgent, version.ProviderVersion)
+	providerUserAgent := fmt.Sprintf("terraform-provider-azuredevops/%s", version.ProviderVersion)
 	connection.UserAgent = strings.TrimSpace(fmt.Sprintf("%s %s", connection.UserAgent, providerUserAgent))
 
 	// append the CloudShell version to the user agent if it exists

@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 // DataProjects schema and implementation for projects data source
@@ -22,7 +22,7 @@ func DataProjects() *schema.Resource {
 		Read: dataSourceProjectsRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_name": {
+			"name": {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
@@ -81,7 +81,7 @@ func getProjectHash(v interface{}) int {
 func dataSourceProjectsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	state := d.Get("state").(string)
-	name := d.Get("project_name").(string)
+	name := d.Get("name").(string)
 
 	projects, err := getProjectsForStateAndName(clients, state, name)
 	if err != nil {

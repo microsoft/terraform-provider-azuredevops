@@ -13,13 +13,14 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azdosdkmocks"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 type isReadIdentitiesArgs struct{ t identity.ReadIdentitiesArgs }
@@ -304,7 +305,9 @@ func TestSecurityNamespace_GetActionDefinitions_HandleError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -332,7 +335,9 @@ func TestSecurityNamespace_GetActionDefinitions_EnsureExistingValuesUnchanged(t 
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -369,7 +374,9 @@ func TestSecurityNamespace_GetActionDefinitions_EmptyResultError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -398,7 +405,9 @@ func TestSecurityNamespace_GetActionDefinitions_ValidMapping(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -433,7 +442,9 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -449,7 +460,7 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&projectAccessToken, &descriptorList)
+	acl, err := sn.getAccessControlList(&descriptorList)
 	assert.NotNil(t, err)
 	assert.Nil(t, acl)
 	assert.EqualError(t, err, errMsg)
@@ -466,7 +477,9 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return projectAccessToken, nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -488,8 +501,48 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Return(&projectAccessControlListEmpty, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&projectAccessToken, &descriptorList)
-	assert.NotNil(t, err)
+	acl, err := sn.getAccessControlList(&descriptorList)
+	assert.Nil(t, err)
+	assert.Nil(t, acl)
+}
+
+func TestSecurityNamespace_GetAccessControlList_NilResult(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	securityClient := azdosdkmocks.NewMockSecurityClient(ctrl)
+	clients := &client.AggregatedClient{
+		SecurityClient: securityClient,
+		IdentityClient: azdosdkmocks.NewMockIdentityClient(ctrl),
+		Ctx:            context.Background(),
+	}
+
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return projectAccessToken, nil
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, sn)
+
+	// QueryAccessControlLists
+	var descriptors string
+	var descriptorList []string
+	for _, identity := range projectIdentityList {
+		descriptorList = append(descriptorList, *identity.Descriptor)
+	}
+	descriptors = strings.Join(descriptorList, ",")
+	securityClient.
+		EXPECT().
+		QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
+			SecurityNamespaceId: &securityNamespaceDescriptionProjectId,
+			Token:               &projectAccessToken,
+			Descriptors:         &descriptors,
+			IncludeExtendedInfo: converter.Bool(true),
+		}).
+		Return(nil, nil).
+		Times(1)
+
+	acl, err := sn.getAccessControlList(&descriptorList)
+	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
 
@@ -504,7 +557,9 @@ func TestSecurityNamespace_GetAccessControlList_VerifyReturn(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return projectAccessToken, nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -526,7 +581,7 @@ func TestSecurityNamespace_GetAccessControlList_VerifyReturn(t *testing.T) {
 		Return(&projectAccessControlList, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&projectAccessToken, &descriptorList)
+	acl, err := sn.getAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.NotNil(t, acl)
 	assert.Equal(t, &projectAccessControlList[0], acl)
@@ -543,7 +598,9 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleError(t *testing.T)
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -559,7 +616,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleError(t *testing.T)
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.Nil(t, idList)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, errMsg)
@@ -576,7 +633,9 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleEmptyReturn(t *test
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -595,7 +654,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleEmptyReturn(t *test
 		Return(&projectIdentityListEmpty, nil).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.Nil(t, idList)
 	assert.NotNil(t, err)
 }
@@ -611,7 +670,9 @@ func TestSecurityNamespace_GetIndentitiesFromSubjects_VerifyReturn(t *testing.T)
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -630,7 +691,7 @@ func TestSecurityNamespace_GetIndentitiesFromSubjects_VerifyReturn(t *testing.T)
 		Return(&projectIdentityList, nil).
 		Times(1)
 
-	idList, err := sn.getIndentitiesFromSubjects(&subjectDescriptorList)
+	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
 	assert.NotNil(t, idList)
 	assert.Nil(t, err)
 	assert.Equal(t, projectIdentityList, *idList)
@@ -648,7 +709,9 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
-	sn, err := NewSecurityNamespace(clients.Ctx, SecurityNamespaceIDValues.Project, clients.SecurityClient, clients.IdentityClient)
+	sn, err := NewSecurityNamespace(nil, clients, SecurityNamespaceIDValues.Project, func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return "@@accTest@@", nil
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, sn)
 
@@ -659,7 +722,7 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Return(&securityNamespaceDescriptionProject, nil).
 		Times(1)
 
-	// getIndentitiesFromSubjects => ReadIdentities
+	// getIdentitiesFromSubjects => ReadIdentities
 	var subjectDescriptorList []string
 	subjectDescriptorMap := map[string]string{}
 	for _, identity := range projectIdentityList {
@@ -683,8 +746,7 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Return(&projectAccessControlList, nil).
 		Times(1)
 
-	token := "GO/UNITTEST/TOKEN"
-	perms, err := sn.GetPrincipalPermissions(&token, &subjectDescriptorList)
+	perms, err := sn.GetPrincipalPermissions(&subjectDescriptorList)
 	assert.NotNil(t, perms)
 	assert.Nil(t, err)
 	assert.Len(t, *perms, len(subjectDescriptorList))
