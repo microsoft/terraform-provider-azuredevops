@@ -1,4 +1,8 @@
 ## 0.1.1 (Unreleased)
+
+FEATURES:
+* **New Resource** `azuredevops_build_definition_permissions` [#254](https://github.com/microsoft/terraform-provider-azuredevops/issues/254)
+
 IMPROVEMENTS:   
 `azuredevops_serviceendpoint_kubernetes` - Support `cluster_admin` in Kubernetes service connections [#218](https://github.com/microsoft/terraform-provider-azuredevops/issues/218)
 
