@@ -69,7 +69,7 @@ The following arguments are supported:
 `initialization` - (Required) block supports the following:
 
 - `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`. Defaults to `Uninitialized`.
-- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`. Defaults to `Git`.
+- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
 
 ## Attributes Reference
