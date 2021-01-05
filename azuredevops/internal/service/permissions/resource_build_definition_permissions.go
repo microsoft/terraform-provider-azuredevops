@@ -33,11 +33,6 @@ func ResourceBuildDefinitionPermissions() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"build_definition_path": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 		}),
 	}
 }
@@ -120,15 +115,6 @@ func createBuildToken(d *schema.ResourceData, clients *client.AggregatedClient) 
 	// or Project_ID/Path/Build_Definition_ID
 
 	if *definition.Path != "\\" {
-		path, ok := d.GetOk("build_definition_path")
-		if !ok {
-			return "", fmt.Errorf("Set path to %s", *definition.Path)
-		}
-
-		if path.(string) != *definition.Path {
-			return "", fmt.Errorf("Update path to %s", *definition.Path)
-		}
-
 		transformedPath := transformPath(*definition.Path)
 
 		aclToken = fmt.Sprintf("%s/%s/%d", projectID.(string), transformedPath, buildDefinitionID)

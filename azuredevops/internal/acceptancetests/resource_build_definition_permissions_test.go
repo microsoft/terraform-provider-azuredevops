@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclBuildDefinitionPermissions(projectName string, permissions map[string]string) string {
+func hclBuildDefinitionPermissions(projectName string, path string, permissions map[string]string) string {
 	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
 	buildDefinitionNameFirst := testutils.GenerateResourceName()
 
@@ -29,21 +29,20 @@ resource "azuredevops_build_definition_permissions" "permissions" {
 	principal   = data.azuredevops_group.tf-project-readers.id
 
 	build_definition_id   = azuredevops_build_definition.build.id
-	build_definition_path = azuredevops_build_definition.build.path
 
 	permissions = {
 		%s
 	}
 }
 `,
-		testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, `\`),
+		testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, path),
 		rootPermissions,
 	)
 }
 
 func TestAccBuildDefinitionPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	config := hclBuildDefinitionPermissions(projectName, map[string]string{
+	config := hclBuildDefinitionPermissions(projectName, `\`, map[string]string{
 		"ViewBuilds":         "Allow",
 		"EditBuildQuality":   "NotSet",
 		"RetainIndefinitely": "Deny",
@@ -76,13 +75,13 @@ func TestAccBuildDefinitionPermissions_SetPermissions(t *testing.T) {
 
 func TestAccBuildDefinitionPermissions_UpdatePermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	config1 := hclBuildDefinitionPermissions(projectName, map[string]string{
+	config1 := hclBuildDefinitionPermissions(projectName, `\`, map[string]string{
 		"ViewBuilds":         "Deny",
 		"EditBuildQuality":   "NotSet",
 		"RetainIndefinitely": "Deny",
 		"DeleteBuilds":       "Deny",
 	})
-	config2 := hclBuildDefinitionPermissions(projectName, map[string]string{
+	config2 := hclBuildDefinitionPermissions(projectName, `\dir1\dir2`, map[string]string{
 		"ViewBuilds":         "Deny",
 		"EditBuildQuality":   "Allow",
 		"RetainIndefinitely": "Deny",

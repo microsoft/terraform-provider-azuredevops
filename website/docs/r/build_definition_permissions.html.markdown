@@ -56,8 +56,7 @@ resource "azuredevops_build_definition_permissions" "permissions" {
 	project_id  = azuredevops_project.project.id
 	principal   = data.azuredevops_group.project-readers.id
 
-	build_definition_id   = azuredevops_build_definition.build.id
-	build_definition_path = azuredevops_build_definition.build.path
+	build_definition_id = azuredevops_build_definition.build.id
 
 	permissions = {
 	  ViewBuilds       = "Allow"
@@ -75,7 +74,6 @@ The following arguments are supported:
 * `project_id` - (Required) The ID of the project to assign the permissions.
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `build_definition_id` - (Required) The id of the build definition to assign the permissions. 
-* `build_definition_path` - (Required) The path of the build definition to assign the permissions. 
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`.
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 
