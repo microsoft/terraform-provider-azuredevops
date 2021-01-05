@@ -21,8 +21,8 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "my-pipelines-service-connection"
-  organization_name     = "my-organization-name"
+  service_endpoint_name = "Sample Pipeline Runner"
+  organization_name     = "MyOrganization"
   auth_personal {
     # Also can be set with AZDO_PERSONAL_ACCESS_TOKEN environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -38,8 +38,8 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `organization_name` - (Required) The organization name used for `Organization Url` and `Release API Url` fields.
+- `auth_personal` - (Required) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-- `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 
 `auth_personal` block supports the following:
 
@@ -59,8 +59,8 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id` , e.g.
+Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id`, e.g.
 
 ```sh
- terraform import azuredevops_serviceendpoint_runpipeline.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
+$ terraform import azuredevops_serviceendpoint_runpipeline.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
 ```
