@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery_permissions":        permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_area_permissions":                 permissions.ResourceAreaPermissions(),
 			"azuredevops_iteration_permissions":            permissions.ResourceIterationPermissions(),
+			"azuredevops_build_definition_permissions":     permissions.ResourceBuildDefinitionPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
