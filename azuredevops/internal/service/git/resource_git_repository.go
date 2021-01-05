@@ -118,7 +118,6 @@ func ResourceGitRepository() *schema.Resource {
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
 							RequiredWith: []string{"initialization.0.source_url"},
-							//Default:      "Git",
 						},
 						"source_url": {
 							Type:         schema.TypeString,
