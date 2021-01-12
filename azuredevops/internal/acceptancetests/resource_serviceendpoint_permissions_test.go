@@ -101,7 +101,7 @@ func TestAccServiceEndpointPermissions_SetPermissions(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNodeServiceEndpoint, "serviceendpoint_id"),
 					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.%", "5"),
 					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.Use", "allow"),
-					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.Adinister", "deny"),
+					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.Administer", "deny"),
 					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.Create", "deny"),
 					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.ViewAuthorization", "allow"),
 					resource.TestCheckResourceAttr(tfNodeServiceEndpoint, "permissions.ViewEndpoint", "allow"),
