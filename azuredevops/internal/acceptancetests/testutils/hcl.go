@@ -39,6 +39,19 @@ func HclForkedGitRepoResource(projectName string, gitRepoName string, gitForkedR
 	return fmt.Sprintf("%s\n%s", gitRepoResource, azureGitRepoResource)
 }
 
+// HclGitRepoFileResource HCl describing a file in an AzDO GIT repository
+func HclGitRepoFileResource(projectName, gitRepoName, initType, branch, file, content string) string {
+	gitRepoFileResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository_file" "file" {
+		repository_id = azuredevops_git_repository.repository.id
+		file          = "%s"
+		content       = "%s"
+		branch        = "refs/heads/%s"
+	}`, file, content, branch)
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, initType)
+	return fmt.Sprintf("%s\n%s", gitRepoFileResource, gitRepoResource)
+}
+
 // HclGroupDataSource HCL describing an AzDO Group Data Source
 func HclGroupDataSource(projectName string, groupName string) string {
 	if projectName == "" {

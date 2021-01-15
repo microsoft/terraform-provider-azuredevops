@@ -197,7 +197,6 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", repo, file))
-
 	return resourceGitRepositoryFileRead(d, m)
 }
 
@@ -231,7 +230,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 		}
 
 		d.Set("content", item.Content)
-		d.Set("repository", repo)
+		d.Set("repository_id", repo)
 		d.Set("file", file)
 
 		commit, err := clients.GitReposClient.GetCommit(ctx, git.GetCommitArgs{
