@@ -21,7 +21,7 @@ func ResourceServiceEndpointSonarQube() *schema.Resource {
 
 	r.Schema["token"] = &schema.Schema{
 		Type:             schema.TypeString,
-		Optional:         true,
+		Required:         true,
 		Sensitive:        true,
 		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 		ValidateFunc:     validation.StringIsNotWhiteSpace,

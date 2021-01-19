@@ -21,10 +21,10 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_sonarqube" "serviceendpoint" {
 
   project_id        = azuredevops_project.project.id
-  service_endpoint_name = "sonarqube-mainframe"
-  description           = "My Service Connection"
+  service_endpoint_name = "Sample SonarQube"
   url                   = "https://sonarqube.my.com"
-  token                 = "REDACTEDREDACTED"
+  token                 = "0000000000000000000000000000000000000000"
+  description           = "Managed by Terraform"
 }
 ```
 
