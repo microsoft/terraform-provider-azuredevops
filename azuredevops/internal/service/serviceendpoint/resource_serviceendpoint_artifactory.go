@@ -33,10 +33,10 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 		Description: "Url for the Artifactory Server",
 	}
 
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("access_token")
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("token")
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"access_token": {
+			"token": {
 				Description:      "The Artifactory access token.",
 				Type:             schema.TypeString,
 				Required:         true,
@@ -102,7 +102,7 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 	if x, ok := d.GetOk("authentication_token"); ok {
 		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["apitoken"] = expandSecret(msi, "access_token")
+		authParams["apitoken"] = expandSecret(msi, "token")
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
@@ -141,16 +141,15 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 		if x, ok := d.GetOk("authentication_token"); ok {
 			authList := x.([]interface{})[0].(map[string]interface{})
 			if len(authList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "access_token")
+				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
 				auth[hashKey] = newHash
 			}
 		}
 		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["access_token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
+			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
 		}
 		d.Set("authentication_token", []interface{}{auth})
-	}
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
 		auth := make(map[string]interface{})
 		if old, ok := d.GetOk("authentication_basic"); ok {
 			oldAuthList := old.([]interface{})[0].(map[string]interface{})
@@ -166,6 +165,8 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
 		}
 		d.Set("authentication_basic", []interface{}{auth})
+	} else {
+		panic(fmt.Errorf("inconsistent authorization scheme %s", *serviceEndpoint.Authorization.Scheme))
 	}
 
 	d.Set("url", *serviceEndpoint.Url)

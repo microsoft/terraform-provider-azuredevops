@@ -21,26 +21,26 @@ resource "azuredevops_project" "project" {
 resource "azuredevops_serviceendpoint_artifactory" "serviceendpoint" {
 
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "artifactory-mainframe"
-  description           = "My Service Connection"
-  url                   = "https://artifactory.mainframe.com"
+  service_endpoint_name = "Sample Artifactory"
+  description           = "Managed by Terraform"
+  url                   = "https://artifactory.my.com"
   authentication_token {
-      access_token      = "REDACTEDREDACTED"
+      token      = "0000000000000000000000000000000000000000"
   }
 }
 ```
-Alternativley a username and password may be used.
+Alternatively a username and password may be used.
 
 ```hcl
 resource "azuredevops_serviceendpoint_artifactory" "serviceendpoint" {
 
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "artifactory-mainframe"
-  description           = "My Service Connection"
-  url                   = "https://artifactory.mainframe.com"
+  service_endpoint_name = "Sample Artifactory"
+  description           = "Managed by Terraform"
+  url                   = "https://artifactory.my.com"
   authentication_basic {
-      username              = "etaoinshrdlu"
-      password              = "REDACTEDREDACTED"
+      username              = "sampleuser"
+      password              = "0000000000000000000000000000000000000000"
   }
 }
 ```

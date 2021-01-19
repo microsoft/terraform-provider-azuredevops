@@ -60,7 +60,7 @@ func TestAccServiceEndpointArtifactory_basic_usernamepassword(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointArtifactory_complete(t *testing.T) {
+func TestAccServiceEndpointArtifactory_complete_token(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	description := t.Name()
@@ -247,7 +247,7 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	authentication_token {
-		access_token			   	   = "redacted"
+		token			   	   = "redacted"
 	}
 	url			   		   = "http://url.com/1"
 	description 		   = "%s"
@@ -298,7 +298,7 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	service_endpoint_name  = "%s"
 	description            = "%s"
 	authentication_token {
-		access_token          = "redacted"
+		token          = "redacted"
 	}
 	  url			   		   = "https://url.com/1"
 }`, serviceEndpointName, description)
@@ -314,7 +314,7 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	service_endpoint_name  = "%s"
 	description            = "%s"
 	authentication_token {
-		access_token          = "redacted2"
+		token          = "redacted2"
 	}
 	  url			   		   = "https://url.com/2"
 }`, serviceEndpointName, description)
@@ -350,7 +350,7 @@ resource "azuredevops_serviceendpoint_artifactory" "import" {
   description            = azuredevops_serviceendpoint_artifactory.test.description
   url          = azuredevops_serviceendpoint_artifactory.test.url
   authentication_token {
-	  access_token          = "redacted"
+	  token          = "redacted"
   }
 }
 `, template)
