@@ -38,7 +38,7 @@ resource "azuredevops_serviceendpoint_artifactory" "serviceendpoint" {
   service_endpoint_name = "artifactory-mainframe"
   description           = "My Service Connection"
   url                   = "https://artifactory.mainframe.com"
-  authentication_password {
+  authentication_basic {
       username              = "etaoinshrdlu"
       password              = "REDACTEDREDACTED"
   }
@@ -54,10 +54,10 @@ The following arguments are supported:
 * `url` - (Required) URL of the Artifactory server to connect with.
 
    _Note: URL should not end in a slash character._
-* either `authentication_token` or `authentication_password` (one is required)
+* either `authentication_token` or `authentication_basic` (one is required)
   * `authentication_token`
     * `token` - Authentication Token generated through Artifactory.
-  * `authentication_password`
+  * `authentication_basic`
       * `username` - Artifactory Username.
       * `password` - Artifactory Password.
 * `description` - (Optional) The Service Endpoint description.

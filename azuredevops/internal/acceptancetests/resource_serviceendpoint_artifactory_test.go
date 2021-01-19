@@ -52,7 +52,7 @@ func TestAccServiceEndpointArtifactory_basic_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 				),
 			},
@@ -104,7 +104,7 @@ func TestAccServiceEndpointArtifactory_complete_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -176,7 +176,7 @@ func TestAccServiceEndpointArtifactory_update_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_password.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -262,7 +262,7 @@ func hclSvcEndpointArtifactoryResourceBasicUsernamePassword(projectName string, 
 resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	authentication_password {
+	authentication_basic {
 		username			   = "u"
 		password			   = "redacted"
 	}
@@ -280,7 +280,7 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_password {
+	authentication_basic {
 		username			   = "u"
 		password			   = "redacted"
 	}
@@ -329,7 +329,7 @@ resource "azuredevops_serviceendpoint_artifactory" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_password {
+	authentication_basic {
 		username			   = "u2"
 		password			   = "redacted2"
 	}
@@ -364,7 +364,7 @@ resource "azuredevops_serviceendpoint_artifactory" "import" {
   service_endpoint_name = azuredevops_serviceendpoint_artifactory.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_artifactory.test.description
   url          	= azuredevops_serviceendpoint_artifactory.test.url
-  authentication_password {
+  authentication_basic {
 	username			   = "u"
 	password			   = "redacted"
   }

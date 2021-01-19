@@ -76,10 +76,10 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 		MinItems:     1,
 		MaxItems:     1,
 		Elem:         at,
-		ExactlyOneOf: []string{"authentication_password", "authentication_token"},
+		ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
 	}
 
-	r.Schema["authentication_password"] = &schema.Schema{
+	r.Schema["authentication_basic"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
 		MinItems: 1,
@@ -103,7 +103,7 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"] = expandSecret(msi, "access_token")
-	} else if x, ok := d.GetOk("authentication_password"); ok {
+	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["username"] = expandSecret(msi, "username")
@@ -152,12 +152,12 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 	}
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
 		auth := make(map[string]interface{})
-		if old, ok := d.GetOk("authentication_password"); ok {
+		if old, ok := d.GetOk("authentication_basic"); ok {
 			oldAuthList := old.([]interface{})[0].(map[string]interface{})
 			if len(oldAuthList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_password", oldAuthList, "password")
+				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "password")
 				auth[hashKey] = newHash
-				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_password", oldAuthList, "username")
+				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
 				auth[hashKey] = newHash
 			}
 		}
@@ -165,7 +165,7 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
 			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
 		}
-		d.Set("authentication_password", []interface{}{auth})
+		d.Set("authentication_basic", []interface{}{auth})
 	}
 
 	d.Set("url", *serviceEndpoint.Url)
