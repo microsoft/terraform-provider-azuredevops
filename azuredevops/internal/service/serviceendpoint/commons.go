@@ -18,6 +18,7 @@ import (
 )
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
+const errMsgServiceCreate = "Error looking up service endpoint given ID (%v) and project ID (%v): %v "
 
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
 type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
@@ -195,7 +196,7 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 			ContinuousTargetOccurence: 1,
 			Delay:                     10 * time.Second,
 			MinTimeout:                10 * time.Second,
-			Pending:                   []string{opState.Failed},
+			Pending:                   []string{opState.InProgress},
 			Target:                    []string{opState.Ready},
 			Refresh:                   getServiceEndpoint(clients, createdServiceEndpoint.Id, projectID),
 			Timeout:                   d.Timeout(schema.TimeoutCreate),
@@ -288,7 +289,7 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 		)
 
 		if err != nil {
-			return nil, opState.Failed, fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v ", serviceEndpointID, projectID, err)
+			return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, projectID, err)
 		}
 
 		if *serviceEndpoint.IsReady {
@@ -296,7 +297,7 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 		} else if serviceEndpoint.OperationStatus != nil {
 			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})
 			if opStatus["state"] == opState.Failed {
-				return nil, opState.Failed, fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v ", serviceEndpointID, projectID, serviceEndpoint.OperationStatus)
+				return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, projectID, serviceEndpoint.OperationStatus)
 			}
 		}
 		return nil, opState.Failed, nil
