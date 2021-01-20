@@ -35,8 +35,7 @@ resource "azuredevops_branch_policy_min_reviewers" "p" {
     submitter_can_vote = false
     last_pusher_cannot_approve = true
     allow_completion_with_rejects_or_waits = false
-    on_push_reset_approved_votes = true
-    on_push_reset_all_votes = false
+    on_push_reset_approved_votes = true # OR on_push_reset_all_votes = true
     on_last_iteration_require_vote = false
 
     scope {
@@ -72,6 +71,8 @@ A `settings` block supports the following:
 - `on_push_reset_approved_votes` (Optional) When new changes are pushed reset all approval votes (does not reset votes to reject or wait). Defaults to `false`.
 - `on_push_reset_all_votes` (Optional) When new changes are pushed reset all code reviewer votes. Defaults to `false`.
 - `on_last_iteration_require_vote` (Optional) On last iteration require vote. Defaults to `false`.
+
+Only one of `on_push_reset_all_votes` or `on_push_reset_approved_votes` may be specified. 
 
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 

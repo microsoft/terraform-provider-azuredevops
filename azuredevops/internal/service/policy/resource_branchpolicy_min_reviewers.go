@@ -16,9 +16,9 @@ type minReviewerPolicySettings struct {
 	ApprovalCount                     int  `json:"minimumApproverCount" tf:"reviewer_count"`
 	SubmitterCanVote                  bool `json:"creatorVoteCounts" tf:"submitter_can_vote"`
 	AllowCompletionWithRejectsOrWaits bool `json:"allowDownvotes" tf:"allow_completion_with_rejects_or_waits"`
-	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes"`
+	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes" ConflictsWith:"on_push_reset_all_votes"`
 	OnLastIterationRequireVote        bool `json:"requireVoteOnLastIteration" tf:"on_last_iteration_require_vote"`
-	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes"`
+	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes" ConflictsWith:"on_push_reset_approved_votes"`
 	LastPusherCannotVote              bool `json:"blockLastPusherVote" tf:"last_pusher_cannot_approve"`
 }
 
@@ -32,24 +32,32 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 
 	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
 
-	tipe := reflect.TypeOf(minReviewerPolicySettings{})
-	for i := 0; i < tipe.NumField(); i++ {
-		tfName := tipe.Field(i).Tag.Get("tf")
+	// Dynamically create the schema based on the minReviewerPolicySettings tags
+	metaField := reflect.TypeOf(minReviewerPolicySettings{})
+	// Loop through the fields, adding schema for each one.
+	for i := 0; i < metaField.NumField(); i++ {
+		tfName := metaField.Field(i).Tag.Get("tf")
 		if _, ok := settingsSchema[tfName]; ok {
 			continue // skip those which are already set
 		}
-		if tipe.Field(i).Type == reflect.TypeOf(true) {
+		if metaField.Field(i).Type == reflect.TypeOf(true) {
 			settingsSchema[tfName] = &schema.Schema{
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			}
 		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
+		if metaField.Field(i).Type == reflect.TypeOf(0) {
 			settingsSchema[tfName] = &schema.Schema{
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(1),
+			}
+		}
+		if conflicts, ok := metaField.Field(i).Tag.Lookup("ConflictsWith"); ok {
+			if _, ok := settingsSchema[conflicts]; ok {
+				settingsSchema[conflicts].ConflictsWith = []string{SchemaSettings + ".0." + tfName}
+				settingsSchema[tfName].ConflictsWith = []string{SchemaSettings + ".0." + conflicts}
 			}
 		}
 	}
