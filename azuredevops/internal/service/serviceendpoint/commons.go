@@ -2,9 +2,12 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
@@ -19,14 +22,32 @@ const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
 type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
 
+type operationState struct {
+	Ready      string
+	Failed     string
+	InProgress string
+}
+
+var opState = operationState{
+	Ready:      "Ready",
+	Failed:     "Failed",
+	InProgress: "InProgress",
+}
+
 // genBaseServiceEndpointResource creates a Resource with the common parts
 // that all Service Endpoints require.
 func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 	return &schema.Resource{
-		Create:   genServiceEndpointCreateFunc(f, e),
-		Read:     genServiceEndpointReadFunc(f),
-		Update:   genServiceEndpointUpdateFunc(f, e),
-		Delete:   genServiceEndpointDeleteFunc(e),
+		Create: genServiceEndpointCreateFunc(f, e),
+		Read:   genServiceEndpointReadFunc(f),
+		Update: genServiceEndpointUpdateFunc(f, e),
+		Delete: genServiceEndpointDeleteFunc(e),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
@@ -169,8 +190,23 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 			return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 		}
 
+		log.Printf("[DEBUG] Waiting service endpoint ready")
+		stateConf := &resource.StateChangeConf{
+			ContinuousTargetOccurence: 1,
+			Delay:                     10 * time.Second,
+			MinTimeout:                10 * time.Second,
+			Pending:                   []string{opState.Failed},
+			Target:                    []string{opState.Ready},
+			Refresh:                   getServiceEndpoint(clients, createdServiceEndpoint.Id, projectID),
+			Timeout:                   d.Timeout(schema.TimeoutCreate),
+		}
+
+		if _, err := stateConf.WaitForState(); err != nil {
+			return fmt.Errorf(" waiting for service endpoint ready. %v ", err)
+		}
+
 		flatFunc(d, createdServiceEndpoint, projectID)
-		return nil
+		return genServiceEndpointReadFunc(flatFunc)(d, m)
 	}
 }
 
@@ -225,7 +261,7 @@ func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) sche
 		}
 
 		flatFunc(d, updatedServiceEndpoint, projectID)
-		return nil
+		return genServiceEndpointReadFunc(flatFunc)(d, m)
 	}
 }
 
@@ -238,5 +274,31 @@ func genServiceEndpointDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
 		}
 
 		return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
+	}
+}
+
+func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		serviceEndpoint, err := client.ServiceEndpointClient.GetServiceEndpointDetails(
+			client.Ctx,
+			serviceendpoint.GetServiceEndpointDetailsArgs{
+				EndpointId: serviceEndpointID,
+				Project:    projectID,
+			},
+		)
+
+		if err != nil {
+			return nil, opState.Failed, fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v ", serviceEndpointID, projectID, err)
+		}
+
+		if *serviceEndpoint.IsReady {
+			return serviceEndpoint, opState.Ready, nil
+		} else if serviceEndpoint.OperationStatus != nil {
+			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})
+			if opStatus["state"] == opState.Failed {
+				return nil, opState.Failed, fmt.Errorf("Error looking up service endpoint given ID (%v) and project ID (%v): %v ", serviceEndpointID, projectID, serviceEndpoint.OperationStatus)
+			}
+		}
+		return nil, opState.Failed, nil
 	}
 }
