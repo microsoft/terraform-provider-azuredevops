@@ -11,6 +11,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_resource_authorization",
 		"azuredevops_build_definition",
+		"azuredevops_build_definition_permissions",
 		"azuredevops_branch_policy_build_validation",
 		"azuredevops_branch_policy_min_reviewers",
 		"azuredevops_branch_policy_auto_reviewers",
@@ -22,6 +23,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_azurecr",
+		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
 		"azuredevops_serviceendpoint_aws",

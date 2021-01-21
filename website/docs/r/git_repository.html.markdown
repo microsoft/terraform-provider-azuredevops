@@ -64,12 +64,12 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `name` - (Required) The name of the git repository.
 - `parent_repository_id` - (Optional) The ID of a Git project from which a fork is to be created.
-- `initialization` - (Optional) An `initialization` block as documented below.
+- `initialization` - (Required) An `initialization` block as documented below.
 
 `initialization` - (Required) block supports the following:
 
 - `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`. Defaults to `Uninitialized`.
-- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`. Defaults to `Git`.
+- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
 
 ## Attributes Reference

@@ -37,6 +37,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_azurecr":          serviceendpoint.ResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_github":           serviceendpoint.ResourceServiceEndpointGitHub(),
 			"azuredevops_serviceendpoint_kubernetes":       serviceendpoint.ResourceServiceEndpointKubernetes(),
+			"azuredevops_serviceendpoint_runpipeline":      serviceendpoint.ResourceServiceEndpointRunPipeline(),
 			"azuredevops_serviceendpoint_sonarqube":        serviceendpoint.ResourceServiceEndpointSonarQube(),
 			"azuredevops_git_repository":                   git.ResourceGitRepository(),
 			"azuredevops_user_entitlement":                 memberentitlementmanagement.ResourceUserEntitlement(),
@@ -49,6 +50,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery_permissions":        permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_area_permissions":                 permissions.ResourceAreaPermissions(),
 			"azuredevops_iteration_permissions":            permissions.ResourceIterationPermissions(),
+			"azuredevops_build_definition_permissions":     permissions.ResourceBuildDefinitionPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
