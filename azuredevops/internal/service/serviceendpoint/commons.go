@@ -2,7 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ import (
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 const errMsgServiceCreate = "Error looking up service endpoint given ID (%v) and project ID (%v): %v "
+const errMsgServiceDelete = "Delete service endpoint error. ServiceEndpointID: %s, projectID: %s. %v "
 
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
 type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
@@ -150,13 +150,12 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 			return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 		}
 
-		log.Printf("[DEBUG] Waiting service endpoint ready")
 		stateConf := &resource.StateChangeConf{
 			ContinuousTargetOccurence: 1,
 			Delay:                     10 * time.Second,
 			MinTimeout:                10 * time.Second,
 			Pending:                   []string{opState.InProgress},
-			Target:                    []string{opState.Ready},
+			Target:                    []string{opState.Ready, opState.Failed},
 			Refresh:                   getServiceEndpoint(clients, createdServiceEndpoint.Id, projectID),
 			Timeout:                   d.Timeout(schema.TimeoutCreate),
 		}
@@ -233,7 +232,29 @@ func genServiceEndpointDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
 			return fmt.Errorf(errMsgTfConfigRead, err)
 		}
 
-		return deleteServiceEndpoint(clients, projectID, serviceEndpoint.Id)
+		if err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+			clients.Ctx,
+			serviceendpoint.DeleteServiceEndpointArgs{
+				Project:    projectID,
+				EndpointId: serviceEndpoint.Id,
+			}); err != nil {
+			return fmt.Errorf(" Delete service endpoint error %v", err)
+		}
+
+		stateConf := &resource.StateChangeConf{
+			ContinuousTargetOccurence: 1,
+			Delay:                     10 * time.Second,
+			MinTimeout:                10 * time.Second,
+			Pending:                   []string{opState.InProgress},
+			Target:                    []string{opState.Ready, opState.Failed},
+			Refresh:                   checkServiceEndpointStatus(clients, projectID, serviceEndpoint.Id),
+			Timeout:                   d.Timeout(schema.TimeoutDelete),
+		}
+
+		if _, err := stateConf.WaitForState(); err != nil {
+			return fmt.Errorf(" Wait for service endpoint to be deleted error. %v ", err)
+		}
+		return nil
 	}
 }
 
@@ -252,15 +273,28 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return createdServiceEndpoint, err
 }
 
-func deleteServiceEndpoint(clients *client.AggregatedClient, project *string, endPointID *uuid.UUID) error {
-	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-		clients.Ctx,
-		serviceendpoint.DeleteServiceEndpointArgs{
-			Project:    project,
-			EndpointId: endPointID,
-		})
+//Service endpoint delete is an async operation, make sure service endpoint is deleted.
+func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *string, endPointID *uuid.UUID) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
+			clients.Ctx,
+			serviceendpoint.GetServiceEndpointDetailsArgs{
+				Project:    projectID,
+				EndpointId: endPointID,
+			})
 
-	return err
+		if err != nil {
+			return nil, opState.Failed, fmt.Errorf(errMsgServiceDelete, endPointID, *projectID, err)
+		}
+		if serviceEndpoint != nil && serviceEndpoint.OperationStatus != nil {
+			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})["state"]
+			if opStatus == opState.Failed {
+				return nil, opState.Failed, fmt.Errorf(errMsgServiceDelete, endPointID, *projectID, serviceEndpoint.OperationStatus)
+			}
+			return serviceendpoint.ServiceEndpoint{}, opStatus.(string), nil
+		}
+		return serviceendpoint.ServiceEndpoint{}, opState.Ready, nil
+	}
 }
 
 func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
@@ -295,11 +329,11 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 		if *serviceEndpoint.IsReady {
 			return serviceEndpoint, opState.Ready, nil
 		} else if serviceEndpoint.OperationStatus != nil {
-			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})
-			if opStatus["state"] == opState.Failed {
+			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})["state"]
+			if opStatus == opState.Failed {
 				return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, projectID, serviceEndpoint.OperationStatus)
 			}
-			return nil, opState.InProgress, nil
+			return nil, opStatus.(string), nil
 		}
 		return nil, opState.Failed, nil
 	}
