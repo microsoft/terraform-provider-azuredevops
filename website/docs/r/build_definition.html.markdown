@@ -122,7 +122,7 @@ The following arguments are supported:
 
 - `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
 - `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
-- `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise`. Defaults to `Github`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
+- `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise`. Defaults to `GitHub`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
 - `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
 - `yml_path` - (Required) The path of the Yaml file describing the build definition.
 - `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
@@ -186,11 +186,11 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Build Definitions can be imported using the project name/definitions Id or by the project Guid/definitions Id, e.g.
 
 ```sh
-terraform import azuredevops_build_definition.build "Test Project"/10
+$ terraform import azuredevops_build_definition.build "Test Project"/10
 ```
 
 or
 
 ```sh
-terraform import azuredevops_build_definition.build 00000000-0000-0000-0000-000000000000/0
+$ terraform import azuredevops_build_definition.build 00000000-0000-0000-0000-000000000000/0
 ```

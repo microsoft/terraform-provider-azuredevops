@@ -97,5 +97,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_branch_policy_min_reviewers.p aa4a9756-8a86-4588-86d7-b3ee2d88b033/60
+$ terraform import azuredevops_branch_policy_min_reviewers.p 00000000-0000-0000-0000-000000000000/0
 ```
