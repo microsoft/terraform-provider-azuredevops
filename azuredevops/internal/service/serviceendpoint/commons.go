@@ -137,47 +137,6 @@ func makeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description 
 	}
 }
 
-// Make the Azure DevOps API call to create the endpoint
-func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
-	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
-		return nil, fmt.Errorf("Github Apps must be created on Github and then can be imported")
-	}
-	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
-		clients.Ctx,
-		serviceendpoint.CreateServiceEndpointArgs{
-			Endpoint: endpoint,
-			Project:  project,
-		})
-
-	return createdServiceEndpoint, err
-}
-
-func deleteServiceEndpoint(clients *client.AggregatedClient, project *string, endPointID *uuid.UUID) error {
-	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-		clients.Ctx,
-		serviceendpoint.DeleteServiceEndpointArgs{
-			Project:    project,
-			EndpointId: endPointID,
-		})
-
-	return err
-}
-
-func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
-	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
-		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
-	}
-	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
-		clients.Ctx,
-		serviceendpoint.UpdateServiceEndpointArgs{
-			Endpoint:   endpoint,
-			Project:    project,
-			EndpointId: endpoint.Id,
-		})
-
-	return updatedServiceEndpoint, err
-}
-
 func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
@@ -278,6 +237,47 @@ func genServiceEndpointDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
 	}
 }
 
+// Make the Azure DevOps API call to create the endpoint
+func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
+		return nil, fmt.Errorf("Github Apps must be created on Github and then can be imported")
+	}
+	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.CreateServiceEndpointArgs{
+			Endpoint: endpoint,
+			Project:  project,
+		})
+
+	return createdServiceEndpoint, err
+}
+
+func deleteServiceEndpoint(clients *client.AggregatedClient, project *string, endPointID *uuid.UUID) error {
+	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.DeleteServiceEndpointArgs{
+			Project:    project,
+			EndpointId: endPointID,
+		})
+
+	return err
+}
+
+func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
+		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
+	}
+	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.UpdateServiceEndpointArgs{
+			Endpoint:   endpoint,
+			Project:    project,
+			EndpointId: endpoint.Id,
+		})
+
+	return updatedServiceEndpoint, err
+}
+
 func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := client.ServiceEndpointClient.GetServiceEndpointDetails(
@@ -299,6 +299,7 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 			if opStatus["state"] == opState.Failed {
 				return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, projectID, serviceEndpoint.OperationStatus)
 			}
+			return nil, opState.InProgress, nil
 		}
 		return nil, opState.Failed, nil
 	}
