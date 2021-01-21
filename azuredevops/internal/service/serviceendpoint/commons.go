@@ -18,7 +18,7 @@ import (
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 const errMsgServiceCreate = "Error looking up service endpoint given ID (%v) and project ID (%v): %v "
-const errMsgServiceDelete = "Delete service endpoint error. ServiceEndpointID: %s, projectID: %s. %v "
+const errMsgServiceDelete = "Error delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
 
 type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
 type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
