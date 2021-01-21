@@ -198,6 +198,35 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointRunPipelineResource HCL describing an AzDO service endpoint
+func HclServiceEndpointRunPipelineResourceSimple(serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
+  project_id             = azuredevops_project.project.id
+  organization_name      = "example"
+  service_endpoint_name  = "%[1]s"
+	auth_personal {
+	}
+}`, serviceEndpointName)
+
+	return serviceEndpointResource
+}
+
+func HclServiceEndpointRunPipelineResource(serviceEndpointName string, accessToken string, description string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
+  project_id             = azuredevops_project.project.id
+  organization_name      = "example"
+  service_endpoint_name  = "%[1]s"
+  auth_personal {
+    personal_access_token= "%[2]s"
+  }
+	description = "%[3]s"
+}`, serviceEndpointName, accessToken, description)
+
+	return serviceEndpointResource
+}
+
 // HclServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
 func HclServiceEndpointDockerRegistryResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`

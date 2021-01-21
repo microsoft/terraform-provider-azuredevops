@@ -43,7 +43,7 @@ function release() {
     ARCH=${os_arch#*:}
     info "GOOS: ${OS}, GOARCH: ${ARCH}"
     (
-      env GOOS="${OS}" GOARCH="${ARCH}" go build -ldflags="-X 'github.com/microsoft/terraform-provider-azuredevops/version.ProviderVersion=v${VERSION}'" -o "${BUILD_ARTIFACT}"
+      env GOOS="${OS}" GOARCH="${ARCH}" CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X 'github.com/microsoft/terraform-provider-azuredevops/version.ProviderVersion=v${VERSION}'" -o "${BUILD_ARTIFACT}"
       zip "${ARCHIVE_ARTIFACT}_${OS}_${ARCH}.zip" "${BUILD_ARTIFACT}"
       rm -rf "${BUILD_ARTIFACT}"
     )

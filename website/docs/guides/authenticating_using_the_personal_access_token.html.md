@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "Azure DevOps Provider: Authenticating with Personal Access Token"
+description: |-
+  This guide will cover how to use a Personal Access Token as authentication for the Azure Provider.
+---
+
 # Azure DevOps Provider: Authenticating using the Personal Access Token
 
 Azure DevOps provider support personal access token for authenticating to Azure DevOps.
