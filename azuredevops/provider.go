@@ -30,6 +30,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project":                          core.ResourceProject(),
 			"azuredevops_project_features":                 core.ResourceProjectFeatures(),
 			"azuredevops_variable_group":                   taskagent.ResourceVariableGroup(),
+			"azuredevops_serviceendpoint_artifactory":      serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_aws":              serviceendpoint.ResourceServiceEndpointAws(),
 			"azuredevops_serviceendpoint_azurerm":          serviceendpoint.ResourceServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":        serviceendpoint.ResourceServiceEndpointBitBucket(),
