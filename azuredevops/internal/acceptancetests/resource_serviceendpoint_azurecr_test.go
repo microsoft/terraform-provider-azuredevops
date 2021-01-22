@@ -13,6 +13,7 @@ import (
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointAzureCR_CreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccServiceEndpointAzureCR_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()

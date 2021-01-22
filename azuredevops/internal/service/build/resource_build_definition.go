@@ -459,7 +459,7 @@ func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
-	return nil
+	return resourceBuildDefinitionRead(d, m)
 }
 
 func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
