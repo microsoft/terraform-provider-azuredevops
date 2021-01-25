@@ -64,8 +64,8 @@ The following arguments are supported:
 
 A `settings` block supports the following:
 
-- `reviewer_count` - (Required) The number of reviewrs needed to approve.
-- `submitter_can_vote` - (Optional) Allow requestors to approve their own changes. Defaults to `false`.
+- `reviewer_count` - (Required) The number of reviewers needed to approve.
+- `submitter_can_vote` - (Optional) Allow requesters to approve their own changes. Defaults to `false`.
 - `last_pusher_cannot_approve`(Optional) Prohibit the most recent pusher from approving their own changes. Defaults to `false`.
 - `allow_completion_with_rejects_or_waits` (Optional) Allow completion even if some reviewers vote to wait or reject. Defaults to `false`.
 - `on_push_reset_approved_votes` (Optional) When new changes are pushed reset all approval votes (does not reset votes to reject or wait). Defaults to `false`.
