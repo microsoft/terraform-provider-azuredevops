@@ -4,8 +4,9 @@ FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_artifactory` [#256](https://github.com/microsoft/terraform-provider-azuredevops/issues/256)
 * **New Resource** `azuredevops_serviceendpoint_sonarqube` [#257](https://github.com/microsoft/terraform-provider-azuredevops/issues/257)
 
-IMPROVEMENTS:   
-`azuredevops_branch_policy_min_reviewers` - Support new configurations.  [#255](https://github.com/microsoft/terraform-provider-azuredevops/issues/255)
+IMPROVEMENTS:
+* All service endpoint resources - Add resource status check during creation and deletion, dummy values may not be able to create new resources.  [#273](https://github.com/microsoft/terraform-provider-azuredevops/issues/273)
+* `azuredevops_branch_policy_min_reviewers` - Support new configurations.  [#255](https://github.com/microsoft/terraform-provider-azuredevops/issues/255)
   - `last_pusher_cannot_approve` - Prohibit the most recent pusher from approving their own changes. Defaults to false.
   - `allow_completion_with_rejects_or_waits` - Allow completion even if some reviewers vote to wait or reject. Defaults to false.
   - `on_push_reset_approved_votes` - When new changes are pushed reset all approval votes (does not reset votes to reject or wait). Defaults to false.
