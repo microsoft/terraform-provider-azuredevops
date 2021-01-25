@@ -5,6 +5,7 @@ FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_sonarqube` [#257](https://github.com/microsoft/terraform-provider-azuredevops/issues/257)
 
 IMPROVEMENTS:
+* `azuredevops_serviceendpoint_github` - Enhance `auth_...` configuration block check. [#275](https://github.com/microsoft/terraform-provider-azuredevops/issues/275)
 * All service endpoint resources - Add resource status check during creation and deletion, dummy values may not be able to create new resources.  [#273](https://github.com/microsoft/terraform-provider-azuredevops/issues/273)
 * `azuredevops_branch_policy_min_reviewers` - Support new configurations.  [#255](https://github.com/microsoft/terraform-provider-azuredevops/issues/255)
   - `last_pusher_cannot_approve` - Prohibit the most recent pusher from approving their own changes. Defaults to false.
