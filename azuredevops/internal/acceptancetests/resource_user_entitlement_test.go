@@ -22,7 +22,7 @@ import (
 func TestAccUserEntitlement_Create(t *testing.T) {
 	tfNode := "azuredevops_user_entitlement.user"
 	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkUserEntitlementDestroyed,

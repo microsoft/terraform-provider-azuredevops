@@ -17,7 +17,7 @@ func TestAccAgentPool_DataSource(t *testing.T) {
 	createAndGetAgentPoolData := fmt.Sprintf("%s\n%s", createAgentPool, testutils.HclAgentPoolDataSource())
 
 	tfNode := "data.azuredevops_agent_pool.pool"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

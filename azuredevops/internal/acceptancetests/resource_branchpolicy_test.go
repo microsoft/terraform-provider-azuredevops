@@ -17,7 +17,7 @@ import (
 func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -78,7 +78,7 @@ func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool) s
 func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
 	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -127,7 +127,7 @@ func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, mes
 
 func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
 	buildValidationTfNode := "azuredevops_branch_policy_build_validation.p"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -174,7 +174,7 @@ func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
 	resourceName := "azuredevops_branch_policy_work_item_linking"
 	workItemLinkingTfNode := fmt.Sprintf("%s.p", resourceName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -202,7 +202,7 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 	resourceName := "azuredevops_branch_policy_comment_resolution"
 	workItemLinkingTfNode := fmt.Sprintf("%s.p", resourceName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

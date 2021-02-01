@@ -16,7 +16,7 @@ func TestAccAgentQueue_DataSource(t *testing.T) {
 	agentQueueData := testutils.HclAgentQueueDataSource(projectName, agentQueueName)
 
 	tfNode := "data.azuredevops_agent_queue.queue"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

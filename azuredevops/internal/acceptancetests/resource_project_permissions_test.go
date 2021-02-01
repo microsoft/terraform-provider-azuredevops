@@ -15,7 +15,7 @@ func TestAccProjectPermissions_SetPermissions(t *testing.T) {
 	config := testutils.HclProjectPermissions(projectName)
 
 	tfNode := "azuredevops_project_permissions.project-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

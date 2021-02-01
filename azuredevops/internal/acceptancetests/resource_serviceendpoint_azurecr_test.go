@@ -20,7 +20,7 @@ func TestAccServiceEndpointAzureCR_CreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_azurecr"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),

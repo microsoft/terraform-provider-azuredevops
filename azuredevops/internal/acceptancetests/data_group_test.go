@@ -17,7 +17,7 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 	group := "Build Administrators"
 	tfBuildDefNode := "data.azuredevops_group.group"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -40,7 +40,7 @@ func TestAccGroupDataSource_Read_ProjectCollectionAdministrators(t *testing.T) {
 	group := "Project Collection Administrators"
 	tfBuildDefNode := "data.azuredevops_group.group"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

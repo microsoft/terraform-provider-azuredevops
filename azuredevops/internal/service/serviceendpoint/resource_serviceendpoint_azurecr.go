@@ -40,6 +40,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerRegistry/registries/%s",
 		subscriptionID, d.Get("resource_group"), d.Get("azurecr_name"),
 	)
+	//strings.ToLower((d.Get("azurecr_name")).(string))
 	loginServer := fmt.Sprintf("%s.azurecr.io", d.Get("azurecr_name"))
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
