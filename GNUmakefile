@@ -48,7 +48,7 @@ test: fmtcheck
 testacc: fmtcheck
 	@echo "==> Sourcing .env file if avaliable"
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
-	TF_ACC=1 go test -count=1 -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
+	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
