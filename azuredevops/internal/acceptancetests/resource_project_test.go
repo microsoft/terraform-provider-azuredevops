@@ -23,7 +23,7 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 	projectNameSecond := testutils.GenerateResourceName()
 	tfNode := "azuredevops_project.project"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -64,7 +64,7 @@ func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_project.project"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

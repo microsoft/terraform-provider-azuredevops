@@ -23,7 +23,7 @@ data "azuredevops_iteration" "root-iteration" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_iteration.root-iteration"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -55,7 +55,7 @@ data "azuredevops_iteration" "root-iteration" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_iteration.root-iteration"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

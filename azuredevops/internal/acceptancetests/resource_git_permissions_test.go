@@ -15,7 +15,7 @@ func TestAccGitPermissions_SetPermissions(t *testing.T) {
 	config := testutils.HclGitPermissions(projectName)
 
 	tfNode := "azuredevops_git_permissions.git-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

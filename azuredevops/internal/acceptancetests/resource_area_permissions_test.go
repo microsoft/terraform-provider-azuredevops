@@ -46,7 +46,7 @@ func TestAccAreaPermissions_SetPermissions(t *testing.T) {
 	})
 	tfNodeRoot := "azuredevops_area_permissions.root-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -89,7 +89,7 @@ func TestAccAreaPermissions_UpdatePermissions(t *testing.T) {
 	})
 	tfNodeRoot := "azuredevops_area_permissions.root-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

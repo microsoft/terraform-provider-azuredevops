@@ -28,7 +28,7 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 	poolNameSecond := testutils.GenerateResourceName()
 	tfNode := "azuredevops_agent_pool.pool"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkAgentPoolDestroyed,
