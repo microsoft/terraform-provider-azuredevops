@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -36,8 +40,27 @@ const (
 	azureKeyVaultType                         = "AzureKeyVault"
 	invalidVariableGroupIDErrorMessageFormat  = "Error parsing the variable group ID from the Terraform resource data: %v"
 	flatteningVariableGroupErrorMessageFormat = "Error flattening variable group: %v"
-	expandingVariableGroupErrorMessageFormat  = "Error expanding variable group resource data: %+v"
+	expandingVariableGroupErrorMessageFormat  = "Expanding variable group resource data: %+v"
 )
+
+type KeyVaultSecretAttributes struct {
+	Enabled       *bool   `json:"enabled,omitempty"`
+	Created       *int64  `json:"created,omitempty"`
+	Updated       *int64  `json:"updated,omitempty"`
+	Expire        *int64  `json:"exp,omitempty"`
+	RecoveryLevel *string `json:"recoveryLevel,omitempty"`
+}
+
+type KeyVaultSecret struct {
+	ContentType              *string `json:"contentType,omitempty"`
+	ID                       *string `json:"id,omitempty"`
+	KeyVaultSecretAttributes `json:"attributes,omitempty"`
+}
+
+type KeyVaultSecretResult struct {
+	Value    *[]KeyVaultSecret `json:"value,omitempty"`
+	NextLink *string           `json:"nextLink,omitempty"`
+}
 
 // ResourceVariableGroup schema and implementation for variable group resource
 func ResourceVariableGroup() *schema.Resource {
@@ -138,7 +161,7 @@ func ResourceVariableGroup() *schema.Resource {
 
 func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	variableGroupParameters, projectID, err := expandVariableGroupParameters(d)
+	variableGroupParameters, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
 		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
 	}
@@ -219,7 +242,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	variableGroupParams, projectID, err := expandVariableGroupParameters(d)
+	variableGroupParams, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
 		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
 	}
@@ -305,7 +328,7 @@ func deleteVariableGroup(clients *client.AggregatedClient, project *string, vari
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableGroupParameters, *string, error) {
+func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.ResourceData) (*taskagent.VariableGroupParameters, *string, error) {
 	projectID := converter.String(d.Get(vgProjectID).(string))
 	variables := d.Get(vgVariable).(*schema.Set).List()
 
@@ -338,22 +361,93 @@ func expandVariableGroupParameters(d *schema.ResourceData) (*taskagent.VariableG
 
 	// Note: this will be of length 1 based on the schema definition above.
 	if len(keyVault) == 1 {
-		keyVaultValues := keyVault[0].(map[string]interface{})
+		kvConfigures := keyVault[0].(map[string]interface{})
+		kvName := kvConfigures[vgName].(string)
+		serviceEndpointID := kvConfigures[vgServiceEndpointID].(string)
 
-		serviceEndpointID, err := uuid.Parse(keyVaultValues[vgServiceEndpointID].(string))
+		serviceEndpointUUID, err := uuid.Parse(serviceEndpointID)
 		if err != nil {
 			return nil, nil, err
 		}
 
 		variableGroup.ProviderData = taskagent.AzureKeyVaultVariableGroupProviderData{
-			ServiceEndpointId: &serviceEndpointID,
-			Vault:             converter.String(keyVaultValues[vgName].(string)),
+			ServiceEndpointId: &serviceEndpointUUID,
+			Vault:             &kvName,
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-	}
+		if azureKVSecrets, err := azureKVSecrets(clients, *projectID, kvName, serviceEndpointID); err != nil {
+			return nil, nil, err
+		} else {
+			kvVariables := map[string]interface{}{}
+			var invalidVariables []string
 
+			for _, variable := range variables {
+				kvSecretName := variable.(map[string]interface{})[vgName].(string)
+				if kv, ok := azureKVSecrets[kvSecretName]; ok {
+					kvVariables[kvSecretName] = kv
+				} else {
+					invalidVariables = append(invalidVariables, kvSecretName)
+				}
+			}
+
+			if len(invalidVariables) > 0 {
+				return nil, nil, fmt.Errorf("Invaild  Key Vault variables : ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+					strings.Join(invalidVariables, ","),
+					kvName)
+			} else {
+				variableGroup.Variables = &kvVariables
+			}
+		}
+	}
 	return variableGroup, projectID, nil
+}
+
+func azureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
+	azKVSecrets, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx,
+		serviceendpoint.ExecuteServiceEndpointRequestArgs{
+			ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+				DataSourceDetails: &serviceendpoint.DataSourceDetails{
+					DataSourceName: converter.String("AzureKeyVaultSecrets"),
+					Parameters: &map[string]string{
+						"KeyVaultName": kvName,
+					},
+				},
+				ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+			},
+			Project:    &projectID,
+			EndpointId: &serviceEndpointID,
+		})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get the Azure Key valut secrets. %v ", err)
+	}
+	if azKVSecrets != nil && *azKVSecrets.StatusCode == "ok" {
+		var kvSecrets KeyVaultSecretResult
+		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
+		if err = json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
+			return nil, fmt.Errorf("Failed to parse the Azure Key valut secrets. Service response: %s . %v ", secretJson, err)
+		}
+
+		secretMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
+		for _, secret := range *kvSecrets.Value {
+			name := getSecretName(*secret.ID)
+			kvVariable := taskagent.AzureKeyVaultVariableValue{
+				Value:       nil,
+				ContentType: secret.ContentType,
+				IsSecret:    converter.Bool(true),
+				Enabled:     secret.Enabled,
+			}
+			if secret.Expire != nil {
+				kvVariable.Expires = &azuredevops.Time{
+					Time: time.Unix(*secret.Expire, 0),
+				}
+			}
+
+			secretMap[name] = kvVariable
+		}
+		return secretMap, nil
+	}
+	return nil, fmt.Errorf("Failed to get the Azure Key valut secrets.Code: %s, error messge: %s ", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
 }
 
 // Convert AzDO data structure to internal Terraform data structure
@@ -553,4 +647,12 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 		}
 	}
 	d.Set(vgAllowAccess, allowAccess)
+}
+
+func getSecretName(secretID string) (secret string) {
+	if len(secretID) == 0 {
+		return ""
+	}
+	secretURL := strings.Split(secretID, "/")
+	return secretURL[len(secretURL)-1]
 }

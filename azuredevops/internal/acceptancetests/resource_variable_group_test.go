@@ -67,6 +67,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccVariableGroupKeyVault_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 
 	vargroupKeyvault := testutils.GenerateResourceName()
