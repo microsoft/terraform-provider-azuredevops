@@ -376,34 +376,35 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-		if azureKVSecrets, err := azureKVSecrets(clients, *projectID, kvName, serviceEndpointID); err != nil {
+		azureKVSecrets, err := getAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID)
+		if err != nil {
 			return nil, nil, err
-		} else {
-			kvVariables := map[string]interface{}{}
-			var invalidVariables []string
+		}
 
-			for _, variable := range variables {
-				kvSecretName := variable.(map[string]interface{})[vgName].(string)
-				if kv, ok := azureKVSecrets[kvSecretName]; ok {
-					kvVariables[kvSecretName] = kv
-				} else {
-					invalidVariables = append(invalidVariables, kvSecretName)
-				}
-			}
+		kvVariables := map[string]interface{}{}
+		var invalidVariables []string
 
-			if len(invalidVariables) > 0 {
-				return nil, nil, fmt.Errorf("Invaild  Key Vault variables : ( %s ) , can not find in Azure Key Vault: ( %s ) ",
-					strings.Join(invalidVariables, ","),
-					kvName)
+		for _, variable := range variables {
+			kvSecretName := variable.(map[string]interface{})[vgName].(string)
+			if kv, ok := azureKVSecrets[kvSecretName]; ok {
+				kvVariables[kvSecretName] = kv
 			} else {
-				variableGroup.Variables = &kvVariables
+				invalidVariables = append(invalidVariables, kvSecretName)
 			}
+		}
+
+		if len(invalidVariables) > 0 {
+			return nil, nil, fmt.Errorf("Invalid Key Vault variables: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+				strings.Join(invalidVariables, ","),
+				kvName)
+		} else {
+			variableGroup.Variables = &kvVariables
 		}
 	}
 	return variableGroup, projectID, nil
 }
 
-func azureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
+func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
 	azKVSecrets, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx,
 		serviceendpoint.ExecuteServiceEndpointRequestArgs{
 			ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
@@ -419,7 +420,7 @@ func azureKVSecrets(clients *client.AggregatedClient, projectID string, kvName s
 			EndpointId: &serviceEndpointID,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get the Azure Key valut secrets. %v ", err)
+		return nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
 	}
 	if azKVSecrets != nil && *azKVSecrets.StatusCode == "ok" {
 		var kvSecrets KeyVaultSecretResult
