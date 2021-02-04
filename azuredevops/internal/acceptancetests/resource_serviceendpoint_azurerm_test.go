@@ -20,7 +20,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -64,7 +64,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),

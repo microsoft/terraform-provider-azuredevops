@@ -23,7 +23,7 @@ data "azuredevops_area" "root-area" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_area.root-area"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -55,7 +55,7 @@ data "azuredevops_area" "root-area" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_area.root-area"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

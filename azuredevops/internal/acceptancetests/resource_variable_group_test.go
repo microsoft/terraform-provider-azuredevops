@@ -29,7 +29,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,
@@ -74,7 +74,7 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 	allowAccessFalse := false
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,

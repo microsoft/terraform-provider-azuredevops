@@ -13,7 +13,7 @@ import (
 // Verifies that the client config data source loads the configured AzDO org
 func TestAccClientConfig_LoadsCorrectProperties(t *testing.T) {
 	tfNode := "data.azuredevops_client_config.c"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

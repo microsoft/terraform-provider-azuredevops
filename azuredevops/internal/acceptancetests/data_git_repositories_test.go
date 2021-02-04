@@ -21,7 +21,7 @@ func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
 	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testutils.HclProjectGitRepositories(projectName, gitRepoName))
 
 	tfNode := "data.azuredevops_git_repositories.repositories"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { testutils.PreCheck(t, nil) },
 		Providers:                 testutils.GetProviders(),
 		PreventPostDestroyRefresh: true,

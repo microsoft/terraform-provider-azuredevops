@@ -34,7 +34,7 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 	buildDefinitionPathFourth := `\` + buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
@@ -118,7 +118,7 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 // Verifies a build for Bitbucket can happen. Note: the update/import logic is tested in other tests
 func TestAccBuildDefinitionBitbucket_Create(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
@@ -139,7 +139,7 @@ func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	tfNode := "azuredevops_build_definition.build"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,

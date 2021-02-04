@@ -14,7 +14,7 @@ func TestAccProjectFeatures_EnableUpdateFeature(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_project_features.project-features"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

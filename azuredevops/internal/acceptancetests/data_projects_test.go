@@ -15,7 +15,7 @@ func TestAccAzureDevOpsProjects_DataSource_SingleProject(t *testing.T) {
 	projectData := testutils.HclProjectsDataSource(projectName)
 
 	tfNode := "data.azuredevops_projects.project-list"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -33,7 +33,7 @@ func TestAccAzureDevOpsProjects_DataSource_EmptyResult(t *testing.T) {
 	projectData := testutils.HclProjectsDataSourceWithStateAndInvalidName()
 
 	tfNode := "data.azuredevops_projects.project-list"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

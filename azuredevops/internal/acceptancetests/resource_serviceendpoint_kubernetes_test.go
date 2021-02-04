@@ -83,7 +83,7 @@ func runSvcEndpointAcceptanceTest(t *testing.T, attrTestCheckFuncList []resource
 		checkSvcEndpointKubernetesExists(serviceEndpointNameSecond),
 	)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkSvcEndpointKubernetesDestroyed,
