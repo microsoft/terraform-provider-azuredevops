@@ -7,16 +7,31 @@ package taskagent
 // the Azure DevOps client operations.
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"testing"
+	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
+
+var serviceEndpointResult = &serviceendpoint.ServiceEndpointRequestResult{
+	ErrorMessage: converter.String(""),
+	Result: []interface{}{
+		"{\"value\": [{\"contentType\": \"type\",\"id\": \"https://mock.vault.azure.net/secrets/var1\",\"attributes\": {\"enabled\": true,\"exp\": 1675424159,\"created\": 1611734011,\"updated\": 1612353657,\"recoveryLevel\": \"Recoverable+Purgeable\"},\"tags\": {}}],\"nextLink\": null}",
+	},
+	StatusCode: converter.String("ok"),
+}
 
 func TestVariableGroupAllowAccess_ExpandFlatten_Roundtrip(t *testing.T) {
 	testVariableGroup := taskagent.VariableGroup{
@@ -59,6 +74,15 @@ func TestVariableGroupAllowAccess_ExpandFlatten_Roundtrip(t *testing.T) {
 }
 
 func TestVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	serviceEndpointClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{
+		ServiceEndpointClient: serviceEndpointClient,
+		Ctx:                   context.Background(),
+	}
+
 	testVariableGroup := taskagent.VariableGroup{
 		Id:          converter.Int(100),
 		Name:        converter.String("Name"),
@@ -76,7 +100,7 @@ func TestVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
 	err := flattenVariableGroup(resourceData, &testVariableGroup, &testVarGroupProjectID)
 	require.Equal(t, nil, err)
 
-	variableGroupParams, projectID, _ := expandVariableGroupParameters(resourceData)
+	variableGroupParams, projectID, _ := expandVariableGroupParameters(clients, resourceData)
 	require.Equal(t, *testVariableGroup.Name, *variableGroupParams.Name)
 	require.Equal(t, *testVariableGroup.Description, *variableGroupParams.Description)
 	require.Equal(t, testVarGroupProjectID, *projectID)
@@ -87,14 +111,33 @@ func TestVariableGroup_ExpandFlatten_Roundtrip(t *testing.T) {
 }
 
 func TestVariableGroupKeyVault_ExpandFlatten_Roundtrip(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	serviceEndpointClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{
+		ServiceEndpointClient: serviceEndpointClient,
+		Ctx:                   context.Background(),
+	}
+
+	serviceEndpointClient.
+		EXPECT().
+		ExecuteServiceEndpointRequest(clients.Ctx, gomock.Any()).
+		Return(serviceEndpointResult, nil).Times(1)
+
 	testVariableGroupKeyvault := taskagent.VariableGroup{
 		Id:          converter.Int(100),
 		Name:        converter.String("Name"),
 		Description: converter.String("This is a test variable group."),
 		Variables: &map[string]interface{}{
-			"var1": map[string]interface{}{
-				"isSecret": converter.Bool(false),
-				"value":    "",
+			"var1": taskagent.AzureKeyVaultVariableValue{
+				IsSecret:    converter.Bool(true),
+				Value:       nil,
+				ContentType: converter.String("type"),
+				Enabled:     converter.Bool(true),
+				Expires: &azuredevops.Time{
+					Time: time.Unix(1675424159, 0),
+				},
 			},
 		},
 		ProviderData: map[string]interface{}{
@@ -109,7 +152,7 @@ func TestVariableGroupKeyVault_ExpandFlatten_Roundtrip(t *testing.T) {
 	err := flattenVariableGroup(resourceData, &testVariableGroupKeyvault, &testVarGroupProjectID)
 	require.Equal(t, nil, err)
 
-	variableGroupParams, projectID, _ := expandVariableGroupParameters(resourceData)
+	variableGroupParams, projectID, _ := expandVariableGroupParameters(clients, resourceData)
 	require.Equal(t, *testVariableGroupKeyvault.Name, *variableGroupParams.Name)
 	require.Equal(t, *testVariableGroupKeyvault.Description, *variableGroupParams.Description)
 	require.Equal(t, testVarGroupProjectID, *projectID)
