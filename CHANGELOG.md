@@ -1,4 +1,4 @@
-## 0.1.2 (Unreleased)
+## 0.1.2
 
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_artifactory` [#256](https://github.com/microsoft/terraform-provider-azuredevops/issues/256)
@@ -15,7 +15,7 @@ IMPROVEMENTS:
   - `on_last_iteration_require_vote` - On last iteration require vote. Defaults to false.
 
 BUG FIX:
-* All service endpoint resources - Add resource status check during creation and deletion, dummy values may not be able to create new resources [#261](https://github.com/microsoft/terraform-provider-azuredevops/issues/261)
+* All service endpoint resources - Add resource status check during creation and deletion [#261](https://github.com/microsoft/terraform-provider-azuredevops/issues/261)
 * `azuredevops_variable_group` - Key vault variables will be verified with Azure key vault secrets [#252](https://github.com/microsoft/terraform-provider-azuredevops/issues/252)
 
 ## 0.1.1 
