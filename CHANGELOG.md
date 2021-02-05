@@ -1,3 +1,23 @@
+## 0.1.2
+
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_artifactory` [#256](https://github.com/microsoft/terraform-provider-azuredevops/issues/256)
+* **New Resource** `azuredevops_serviceendpoint_sonarqube` [#257](https://github.com/microsoft/terraform-provider-azuredevops/issues/257)
+
+IMPROVEMENTS:
+* `azuredevops_serviceendpoint_azurecr` - Change docker registry login server to lowercase [#277](https://github.com/microsoft/terraform-provider-azuredevops/issues/277)
+* `azuredevops_serviceendpoint_github` - Enhance `auth_...` configuration block check [#275](https://github.com/microsoft/terraform-provider-azuredevops/issues/275)
+* `azuredevops_branch_policy_min_reviewers` - Support new configurations [#255](https://github.com/microsoft/terraform-provider-azuredevops/issues/255)
+  - `last_pusher_cannot_approve` - Prohibit the most recent pusher from approving their own changes. Defaults to false.
+  - `allow_completion_with_rejects_or_waits` - Allow completion even if some reviewers vote to wait or reject. Defaults to false.
+  - `on_push_reset_approved_votes` - When new changes are pushed reset all approval votes (does not reset votes to reject or wait). Defaults to false.
+  - `on_push_reset_all_votes` - When new changes are pushed reset all code reviewer votes. Defaults to false.
+  - `on_last_iteration_require_vote` - On last iteration require vote. Defaults to false.
+
+BUG FIX:
+* All service endpoint resources - Add resource status check during creation and deletion [#261](https://github.com/microsoft/terraform-provider-azuredevops/issues/261)
+* `azuredevops_variable_group` - Key vault variables will be verified with Azure key vault secrets [#252](https://github.com/microsoft/terraform-provider-azuredevops/issues/252)
+
 ## 0.1.1 
 
 FEATURES:
