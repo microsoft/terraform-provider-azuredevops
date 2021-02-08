@@ -3,6 +3,12 @@ package release
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
@@ -14,11 +20,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
-	"regexp"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
 )
 
 /*
@@ -732,8 +733,10 @@ func ResourceReleaseDefinition() *schema.Resource {
 														ValidateFunc: validation.StringInSlice([]string{
 															"macOS-10.13",
 															"macOS-10.14",
+															"macOS-10.15",
 															"ubuntu-16.04",
 															"ubuntu-18.04",
+															"ubuntu-20.04",
 															"vs2015-win2012r2",
 															"vs2017-win2016",
 															"win1803",
