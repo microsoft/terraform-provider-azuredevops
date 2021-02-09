@@ -226,6 +226,53 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 	})
 }
 
+func TestAccBranchPolicyMergeTypes_CreateAndUpdate(t *testing.T) {
+	buildValidationTfNode := "azuredevops_branch_policy_merge_types.p"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getMergeTypesHcl(true, true, true, true, true, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_and_fast_forward", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_basic_no_fast_forward", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_with_merge", "true"),
+				),
+			}, {
+				Config: getMergeTypesHcl(false, false, false, false, false, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_and_fast_forward", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_basic_no_fast_forward", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_with_merge", "false"),
+				),
+			}, {
+				ResourceName:      buildValidationTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(buildValidationTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func getMergeTypesHcl(enabled bool, blocking bool, allowSquash bool, allowRebase bool, allowNoFastForward bool, allowRebaseMerge bool) string {
+	settings := fmt.Sprintf(
+		`
+		allow_squash = %t
+		allow_rebase_and_fast_forward = %t
+		allow_basic_no_fast_forward = %t
+		allow_rebase_with_merge = %t
+		`, allowSquash, allowRebase, allowNoFastForward, allowRebaseMerge,
+	)
+
+	return getBranchPolicyHcl("azuredevops_branch_policy_merge_types", enabled, blocking, settings)
+}
+
 func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settings string) string {
 	branchPolicy := fmt.Sprintf(`
 	resource "%s" "p" {
