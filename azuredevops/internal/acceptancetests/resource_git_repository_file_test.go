@@ -26,7 +26,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 	gitRepoName := testutils.GenerateResourceName()
 	tfRepoFileNode := "azuredevops_git_repository_file.file"
 
-	branch := "master"
+	branch := "refs/heads/main"
 	file := "foo.txt"
 	contentFirst := "bar"
 	contentSecond := "baz"
@@ -40,7 +40,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfRepoFileNode, "file", file),
 					resource.TestCheckResourceAttr(tfRepoFileNode, "content", contentFirst),
-					resource.TestCheckResourceAttr(tfRepoFileNode, "branch", fmt.Sprintf("refs/heads/%s", branch)),
+					resource.TestCheckResourceAttr(tfRepoFileNode, "branch", branch),
 					resource.TestCheckResourceAttrSet(tfRepoFileNode, "commit_message"),
 					checkGitRepoFileContent(contentFirst),
 				),
@@ -50,7 +50,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfRepoFileNode, "file", file),
 					resource.TestCheckResourceAttr(tfRepoFileNode, "content", contentSecond),
-					resource.TestCheckResourceAttr(tfRepoFileNode, "branch", fmt.Sprintf("refs/heads/%s", branch)),
+					resource.TestCheckResourceAttr(tfRepoFileNode, "branch", branch),
 					resource.TestCheckResourceAttrSet(tfRepoFileNode, "commit_message"),
 					checkGitRepoFileContent(contentSecond),
 				),
@@ -67,7 +67,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 
 // TestAccGitRepo_Create_IncorrectBranch verifies a file
 // can't be added to a non existant branch
-func TestAccGitRepo_Create_IncorrectBranch(t *testing.T) {
+func TestAccGitRepoFile_Create_IncorrectBranch(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 
@@ -97,15 +97,11 @@ func checkGitRepoFileNotExists(fileName string) resource.TestCheckFunc {
 			RepositoryId: &repo.Primary.ID,
 			Path:         &fileName,
 		})
-		if err != nil {
-			if strings.Contains(err.Error(), "could not be found in the repository") {
-				return nil
-			}
-
+		if err != nil && strings.Contains(err.Error(), "could not be found in the repository") {
 			return err
 		}
 
-		return fmt.Errorf("file does exist: %v", fileName)
+		return nil
 	}
 }
 
@@ -133,8 +129,7 @@ func checkGitRepoFileContent(expectedContent string) resource.TestCheckFunc {
 		}
 
 		buf := new(bytes.Buffer)
-		_, err = buf.ReadFrom(r)
-		if err != nil {
+		if _, err = buf.ReadFrom(r); err != nil {
 			return err
 		}
 

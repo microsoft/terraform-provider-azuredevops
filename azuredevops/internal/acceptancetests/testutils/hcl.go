@@ -46,7 +46,7 @@ func HclGitRepoFileResource(projectName, gitRepoName, initType, branch, file, co
 		repository_id = azuredevops_git_repository.repository.id
 		file          = "%s"
 		content       = "%s"
-		branch        = "refs/heads/%s"
+		branch        = "%s"
 	}`, file, content, branch)
 	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, initType)
 	return fmt.Sprintf("%s\n%s", gitRepoFileResource, gitRepoResource)

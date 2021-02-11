@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func ResourceGitRepositoryFile() *schema.Resource {
@@ -22,10 +23,10 @@ func ResourceGitRepositoryFile() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), ":")
-				branch := "main"
+				branch := "refs/heads/main"
 
 				if len(parts) > 2 {
-					return nil, fmt.Errorf("Invalid ID specified. Supplied ID must be written as <repository>/<file path> (when branch is \"master\") or <repository>/<file path>:<branch>")
+					return nil, fmt.Errorf("Invalid ID specified. Supplied ID must be written as <repository>/<file path> (when branch is \"main\") or <repository>/<file path>:<branch>")
 				}
 
 				if len(parts) == 2 {
@@ -68,8 +69,8 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The branch name, defaults to \"master\"",
-				Default:     "refs/heads/master",
+				Description: "The branch name, defaults to \"refs/heads/main\"",
+				Default:     "refs/heads/main",
 			},
 			"commit_message": {
 				Type:        schema.TypeString,
@@ -160,9 +161,9 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	if item != nil {
 		if !overwriteOnCreate {
 			return fmt.Errorf("Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
-		} else {
-			changeType = git.VersionControlChangeTypeValues.Edit
 		}
+
+		changeType = git.VersionControlChangeTypeValues.Edit
 	}
 
 	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
@@ -216,7 +217,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 		item, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
 			RepositoryId:   &repo,
 			Path:           &file,
-			IncludeContent: boolPointer(true),
+			IncludeContent: converter.Bool(true),
 			VersionDescriptor: &git.GitVersionDescriptor{
 				Version:     &branch,
 				VersionType: &git.GitVersionTypeValues.Branch,
@@ -224,6 +225,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 		})
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
 				return resource.NonRetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -344,6 +346,9 @@ func checkRepositoryFileExists(c *client.AggregatedClient, repo, file, branch st
 	_, err := c.GitReposClient.GetItem(ctx, git.GetItemArgs{
 		RepositoryId: &repo,
 		Path:         &file,
+		VersionDescriptor: &git.GitVersionDescriptor{
+			Version: &branch,
+		},
 	})
 	if err != nil {
 		return nil
@@ -355,22 +360,18 @@ func checkRepositoryFileExists(c *client.AggregatedClient, repo, file, branch st
 func getLastCommitId(c *client.AggregatedClient, repo, branch string) (string, error) {
 	ctx := context.Background()
 	commits, err := c.GitReposClient.GetCommits(ctx, git.GetCommitsArgs{
-		RepositoryId:   &repo,
-		Top:            intPointer(1),
-		SearchCriteria: &git.GitQueryCommitsCriteria{},
+		RepositoryId: &repo,
+		Top:          converter.Int(1),
+		SearchCriteria: &git.GitQueryCommitsCriteria{
+			ItemVersion: &git.GitVersionDescriptor{
+				Version: &branch,
+			},
+		},
 	})
 	if err != nil {
 		return "", err
 	}
 	return *(*commits)[0].CommitId, nil
-}
-
-func boolPointer(val bool) *bool {
-	return &val
-}
-
-func intPointer(val int) *int {
-	return &val
 }
 
 func splitRepoFilePath(path string) (string, string) {
