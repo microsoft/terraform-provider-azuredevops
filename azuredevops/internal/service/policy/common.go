@@ -46,8 +46,9 @@ const (
 
 // The type of repository branch name matching strategy used by the policy
 const (
-	matchTypeExact  string = "Exact"
-	matchTypePrefix string = "Prefix"
+	matchTypeExact         string = "Exact"
+	matchTypePrefix        string = "Prefix"
+	matchTypeDefaultBranch string = "DefaultBranch"
 )
 
 // policyCrudArgs arguments for genBasePolicyResource
@@ -111,7 +112,7 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 										Default:          matchTypeExact,
 										DiffSuppressFunc: suppress.CaseDifference,
 										ValidateFunc: validation.StringInSlice([]string{
-											matchTypeExact, matchTypePrefix,
+											matchTypeExact, matchTypePrefix, matchTypeDefaultBranch,
 										}, true),
 									},
 								},

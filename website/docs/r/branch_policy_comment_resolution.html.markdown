@@ -34,7 +34,7 @@ resource "azuredevops_branch_policy_comment_resolution" "p" {
 
     scope {
       repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_ref = "refs/heads/main"
       match_type     = "Exact"
     }
 
@@ -42,6 +42,11 @@ resource "azuredevops_branch_policy_comment_resolution" "p" {
       repository_id  = azuredevops_git_repository.r.id
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
+    }
+
+    scope {
+      repository_id  = azuredevops_git_repository.r.id
+      match_type     = "DefaultBranch"
     }
   }
 }
@@ -62,9 +67,9 @@ A `settings` block supports the following:
 
 A `settings` `scope` block supports the following:
 
-- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository.
-- `repository_ref` - (Optional) The ref pattern to use for the match. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
-- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default) or `Prefix`.
+- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type` is `DefaultBranch`, this should not be defined.
+- `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
+- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
 
 ## Attributes Reference
 
