@@ -323,7 +323,7 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 		},
 	})
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
