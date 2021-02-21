@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -39,13 +40,11 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGitRepositoryCreate,
-		Read:   resourceGitRepositoryRead,
-		Update: resourceGitRepositoryUpdate,
-		Delete: resourceGitRepositoryDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
+		Create:   resourceGitRepositoryCreate,
+		Read:     resourceGitRepositoryRead,
+		Update:   resourceGitRepositoryUpdate,
+		Delete:   resourceGitRepositoryDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:             schema.TypeString,
