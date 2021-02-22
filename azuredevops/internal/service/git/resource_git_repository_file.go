@@ -23,10 +23,10 @@ func ResourceGitRepositoryFile() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), ":")
-				branch := "refs/heads/main"
+				branch := "refs/heads/master"
 
 				if len(parts) > 2 {
-					return nil, fmt.Errorf("Invalid ID specified. Supplied ID must be written as <repository>/<file path> (when branch is \"main\") or <repository>/<file path>:<branch>")
+					return nil, fmt.Errorf("Invalid ID specified. Supplied ID must be written as <repository>/<file path> (when branch is \"master\") or <repository>/<file path>:<branch>")
 				}
 
 				if len(parts) == 2 {
@@ -69,8 +69,8 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The branch name, defaults to \"refs/heads/main\"",
-				Default:     "refs/heads/main",
+				Description: "The branch name, defaults to \"refs/heads/master\"",
+				Default:     "refs/heads/master",
 			},
 			"commit_message": {
 				Type:        schema.TypeString,
@@ -342,6 +342,7 @@ func checkRepositoryBranchExists(c *client.AggregatedClient, repo, branch string
 
 // checkRepositoryFileExists tests if a file exists in a repository.
 func checkRepositoryFileExists(c *client.AggregatedClient, repo, file, branch string) error {
+	branch = strings.TrimPrefix(branch, "refs/heads/")
 	ctx := context.Background()
 	_, err := c.GitReposClient.GetItem(ctx, git.GetItemArgs{
 		RepositoryId: &repo,
@@ -351,13 +352,14 @@ func checkRepositoryFileExists(c *client.AggregatedClient, repo, file, branch st
 		},
 	})
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
 }
 
 func getLastCommitId(c *client.AggregatedClient, repo, branch string) (string, error) {
+	branch = strings.TrimPrefix(branch, "refs/heads/")
 	ctx := context.Background()
 	commits, err := c.GitReposClient.GetCommits(ctx, git.GetCommitsArgs{
 		RepositoryId: &repo,

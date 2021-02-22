@@ -26,7 +26,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 	gitRepoName := testutils.GenerateResourceName()
 	tfRepoFileNode := "azuredevops_git_repository_file.file"
 
-	branch := "refs/heads/main"
+	branch := "refs/heads/master"
 	file := "foo.txt"
 	contentFirst := "bar"
 	contentSecond := "baz"
@@ -97,7 +97,7 @@ func checkGitRepoFileNotExists(fileName string) resource.TestCheckFunc {
 			RepositoryId: &repo.Primary.ID,
 			Path:         &fileName,
 		})
-		if err != nil && strings.Contains(err.Error(), "could not be found in the repository") {
+		if err != nil && !strings.Contains(err.Error(), "could not be found in the repository") {
 			return err
 		}
 
