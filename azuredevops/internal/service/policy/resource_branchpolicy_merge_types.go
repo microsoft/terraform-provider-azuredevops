@@ -44,13 +44,6 @@ func ResourceBranchPolicyMergeTypes() *schema.Resource {
 				Optional: true,
 			}
 		}
-		if metaField.Field(i).Type == reflect.TypeOf(0) {
-			settingsSchema[tfName] = &schema.Schema{
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			}
-		}
 	}
 	return resource
 }
