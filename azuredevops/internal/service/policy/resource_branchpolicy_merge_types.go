@@ -51,12 +51,6 @@ func ResourceBranchPolicyMergeTypes() *schema.Resource {
 				ValidateFunc: validation.IntAtLeast(1),
 			}
 		}
-		if conflicts, ok := metaField.Field(i).Tag.Lookup("ConflictsWith"); ok {
-			if _, ok := settingsSchema[conflicts]; ok {
-				settingsSchema[conflicts].ConflictsWith = []string{SchemaSettings + ".0." + tfName}
-				settingsSchema[tfName].ConflictsWith = []string{SchemaSettings + ".0." + conflicts}
-			}
-		}
 	}
 	return resource
 }
@@ -88,9 +82,6 @@ func mergeTypesFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyCo
 		if tipe.Field(i).Type == reflect.TypeOf(true) {
 			settings[tfName] = ps.Field(i).Bool()
 		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			settings[tfName] = ps.Field(i).Int()
-		}
 	}
 
 	d.Set(SchemaSettings, settingsList)
@@ -119,9 +110,6 @@ func mergeTypesExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Pol
 		}
 		if tipe.Field(i).Type == reflect.TypeOf(true) {
 			policySettings[apiName] = settings[tfName].(bool)
-		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			policySettings[apiName] = settings[tfName].(int)
 		}
 	}
 
