@@ -68,7 +68,7 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Managed by Terraform",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.StringLenBetween(0, 1024),
 			},
 			"authorization": {
 				Type:         schema.TypeMap,
