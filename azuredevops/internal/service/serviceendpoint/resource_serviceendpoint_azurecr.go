@@ -29,6 +29,28 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		Description: "The AzureContainerRegistry registry which should be used.",
 	}
 
+	r.Schema["app_object_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+	r.Schema["spn_object_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+	r.Schema["az_spn_role_assignment_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+	r.Schema["az_spn_role_permissions"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	r.Schema["spn_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
 	return r
 }
 
@@ -47,14 +69,19 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			"tenantId":           d.Get("azurecr_spn_tenantid").(string),
 			"loginServer":        loginServer,
 			"scope":              scope,
+			"serviceprincipalid": d.Get("spn_id").(string),
 		},
 		Scheme: converter.String("ServicePrincipal"),
 	}
 	serviceEndpoint.Data = &map[string]string{
-		"registryId":       scope,
-		"subscriptionId":   subscriptionID.(string),
-		"subscriptionName": d.Get("azurecr_subscription_name").(string),
-		"registrytype":     "ACR",
+		"registryId":               scope,
+		"subscriptionId":           subscriptionID.(string),
+		"subscriptionName":         d.Get("azurecr_subscription_name").(string),
+		"registrytype":             "ACR",
+		"appObjectId":              d.Get("app_object_id").(string),
+		"spnObjectId":              d.Get("spn_object_id").(string),
+		"azureSpnPermissions":      d.Get("az_spn_role_permissions").(string),
+		"azureSpnRoleAssignmentId": d.Get("az_spn_role_assignment_id").(string),
 	}
 	serviceEndpoint.Type = converter.String("dockerregistry")
 	azureContainerRegistryURL := fmt.Sprintf("https://%s", loginServer)
@@ -69,6 +96,12 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
 	d.Set("azurecr_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
 	d.Set("azurecr_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+
+	d.Set("app_object_id", (*serviceEndpoint.Data)["appObjectId"])
+	d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
+	d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
+	d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
+	d.Set("spn_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 	s := strings.SplitN(scope, "/", -1)
