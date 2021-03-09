@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -617,6 +618,29 @@ func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) stri
 			is_secret = true
 		}
 	}`, name, varValue, secretVarValue)
+	repoAndProjectResource := HclGitRepoResource(name, name+"-repo", "Clean")
+
+	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
+}
+
+// HclBuildDefinitionWithTags A build definition with tags
+func HclBuildDefinitionWithTags(tags []string, name string) string {
+	jsonTags, _ := json.MarshalIndent(tags, "", "")
+	buildDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_build_definition" "build" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+
+	repository {
+		repo_type   = "TfsGit"
+		repo_id     = azuredevops_git_repository.repository.id
+		branch_name = azuredevops_git_repository.repository.default_branch
+		yml_path    = "azure-pipelines.yml"
+	}
+
+	tags 	   = %s
+}`,
+		name, jsonTags)
 	repoAndProjectResource := HclGitRepoResource(name, name+"-repo", "Clean")
 
 	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
