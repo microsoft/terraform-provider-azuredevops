@@ -26,6 +26,7 @@ func Provider() *schema.Provider {
 			"azuredevops_branch_policy_auto_reviewers":     policy.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_branch_policy_work_item_linking":  policy.ResourceBranchPolicyWorkItemLinking(),
 			"azuredevops_branch_policy_comment_resolution": policy.ResourceBranchPolicyCommentResolution(),
+			"azuredevops_branch_policy_merge_types":        policy.ResourceBranchPolicyMergeTypes(),
 			"azuredevops_build_definition":                 build.ResourceBuildDefinition(),
 			"azuredevops_project":                          core.ResourceProject(),
 			"azuredevops_project_features":                 core.ResourceProjectFeatures(),
