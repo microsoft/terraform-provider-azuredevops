@@ -51,6 +51,7 @@ The following attributes are exported:
 - `id` - The ID of the service endpoint.
 - `project_id` - The project ID or project name.
 - `service_endpoint_name` - The Service Endpoint name.
+- `spn_id` - The service principal ID.
 
 ## Relevant Links
 
