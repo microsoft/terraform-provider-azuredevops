@@ -5,6 +5,7 @@ FEATURES:
 IMPROVEMENTS:
 * All service endpoints - Description accept any string between 0~1024 in length [#295](https://github.com/microsoft/terraform-provider-azuredevops/issues/295)
 * `azuredevops_git_repository` - Support import Azure Git repository resource [#43](https://github.com/microsoft/terraform-provider-azuredevops/issues/43)
+* `azuredevops_serviceendpoint_azurecr` - Support expose service principal ID [#317](https://github.com/microsoft/terraform-provider-azuredevops/issues/317)
 
 BUG FIX:
 * `azuredevops_serviceendpoint_azurecr` - Fix unable to update the description  [#312](https://github.com/microsoft/terraform-provider-azuredevops/issues/312)
