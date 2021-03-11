@@ -46,7 +46,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		Computed: true,
 	}
 
-	r.Schema["spn_id"] = &schema.Schema{
+	r.Schema["service_principal_id"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	}
@@ -69,7 +69,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			"tenantId":           d.Get("azurecr_spn_tenantid").(string),
 			"loginServer":        loginServer,
 			"scope":              scope,
-			"serviceprincipalid": d.Get("spn_id").(string),
+			"serviceprincipalid": d.Get("service_principal_id").(string),
 		},
 		Scheme: converter.String("ServicePrincipal"),
 	}
@@ -101,7 +101,7 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
 	d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
 	d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
-	d.Set("spn_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
+	d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 	s := strings.SplitN(scope, "/", -1)
