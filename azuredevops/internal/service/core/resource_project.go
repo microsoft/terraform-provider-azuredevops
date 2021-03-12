@@ -3,8 +3,6 @@ package core
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -24,12 +22,6 @@ import (
 // timeout used to wait for operations on projects to finish before executing an update or delete
 var projectBusyTimeoutDuration time.Duration = 60 * 6
 
-// timeout used to wait for a project to finish creating
-var projectCreateTimeoutDuration time.Duration = 60 * 10
-
-// timeout used to wait for a project to finish deleting
-var projectDeleteTimeoutDuration time.Duration = 60 * 10
-
 // ResourceProject schema and implementation for project resource
 func ResourceProject() *schema.Resource {
 	return &schema.Resource{
@@ -39,6 +31,12 @@ func ResourceProject() *schema.Resource {
 		Delete: resourceProjectDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -104,14 +102,14 @@ func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error converting terraform data model to Azure DevOps project reference: %+v", err)
 	}
 
-	err = createProject(clients, project, projectCreateTimeoutDuration)
+	err = createProject(clients, project, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating project: %v", err)
 	}
 
 	featureStates, ok := d.GetOk("features")
 	if ok {
-		err = configureProjectFeatures(clients, "", *project.Name, &featureStates)
+		err = configureProjectFeatures(clients, "", *project.Name, &featureStates, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			return err
 		}
@@ -128,11 +126,31 @@ func createProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		return err
 	}
 
-	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending: []string{
+			string(operations.OperationStatusValues.InProgress),
+			string(operations.OperationStatusValues.Queued),
+			string(operations.OperationStatusValues.NotSet),
+		},
+		Target: []string{
+			string(operations.OperationStatusValues.Failed),
+			string(operations.OperationStatusValues.Succeeded),
+			string(operations.OperationStatusValues.Cancelled)},
+		Refresh: projectStatusRefreshFunc(clients, operationRef),
+		Timeout: timeoutSeconds,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for project ready. %v ", err)
+	}
+	return nil
 }
 
 // Configure projects features for a project. If projectID is "" then the projectName will be used to locate (read) the project
-func configureProjectFeatures(clients *client.AggregatedClient, projectID string, projectName string, featureStates *interface{}) error {
+func configureProjectFeatures(clients *client.AggregatedClient, projectID string, projectName string, featureStates *interface{}, timeout time.Duration) error {
 	if featureStates == nil {
 		return nil
 	}
@@ -144,7 +162,7 @@ func configureProjectFeatures(clients *client.AggregatedClient, projectID string
 	projectID = project.Id.String()
 	err = setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStateMap)
 	if err != nil {
-		ierr := deleteProject(clients, projectID, projectDeleteTimeoutDuration)
+		ierr := deleteProject(clients, projectID, timeout)
 		if ierr != nil {
 			err = fmt.Errorf("failed to delete new project %v after failed to apply feature settings; %w", ierr, err)
 		}
@@ -153,38 +171,21 @@ func configureProjectFeatures(clients *client.AggregatedClient, projectID string
 	return nil
 }
 
-func waitForAsyncOperationSuccess(clients *client.AggregatedClient, operationRef *operations.OperationReference, timeoutSeconds time.Duration) error {
-	timeout := time.After(timeoutSeconds * time.Second)
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			result, err := clients.OperationsClient.GetOperation(clients.Ctx, operations.GetOperationArgs{
-				OperationId: operationRef.Id,
-				PluginId:    operationRef.PluginId,
-			})
-
-			if err != nil {
-				return err
-			}
-
-			if *result.Status == operations.OperationStatusValues.Succeeded {
-				// Sometimes without the sleep, the subsequent operations won't find the project...
-				delay := os.Getenv("AZDO_PRJ_CREATE_DELAY")
-				settleDelay := time.Duration(0)
-				i, err := strconv.ParseInt(delay, 10, 64)
-				if err == nil {
-					settleDelay = time.Duration(i) * time.Second
-				}
-				log.Printf("Inserting artificial delay after project creation: %s\n", settleDelay.String())
-				time.Sleep(settleDelay)
-				return nil
-			}
-		case <-timeout:
-			return fmt.Errorf("Operation was not successful after %d seconds", timeoutSeconds)
+func projectStatusRefreshFunc(clients *client.AggregatedClient, operationRef *operations.OperationReference) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		ret, err := clients.OperationsClient.GetOperation(clients.Ctx, operations.GetOperationArgs{
+			OperationId: operationRef.Id,
+			PluginId:    operationRef.PluginId,
+		})
+		if err != nil {
+			return nil, string(operations.OperationStatusValues.Failed), err
 		}
+
+		if *ret.Status != operations.OperationStatusValues.Succeeded {
+			log.Printf("[DEBUG] Waiting for project operation success. Operation result %v", ret.DetailedMessage)
+		}
+
+		return ret, string(*ret.Status), nil
 	}
 }
 
@@ -251,7 +252,7 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if requiresUpdate {
 		log.Printf("[TRACE] resourceProjectUpdate: updating project")
-		err = updateProject(clients, project, projectCreateTimeoutDuration)
+		err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf("Error updating project: %v", err)
 		}
@@ -305,14 +306,34 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		return err
 	}
 
-	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending: []string{
+			string(operations.OperationStatusValues.InProgress),
+			string(operations.OperationStatusValues.Queued),
+			string(operations.OperationStatusValues.NotSet),
+		},
+		Target: []string{
+			string(operations.OperationStatusValues.Failed),
+			string(operations.OperationStatusValues.Succeeded),
+			string(operations.OperationStatusValues.Cancelled)},
+		Refresh: projectStatusRefreshFunc(clients, operationRef),
+		Timeout: timeoutSeconds,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for project ready. %v ", err)
+	}
+	return nil
 }
 
 func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id := d.Id()
 
-	err := deleteProject(clients, id, projectDeleteTimeoutDuration)
+	err := deleteProject(clients, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf("Error deleting project: %v", err)
 	}
@@ -343,7 +364,27 @@ func deleteProject(clients *client.AggregatedClient, id string, timeoutSeconds t
 		return err
 	}
 
-	return waitForAsyncOperationSuccess(clients, operationRef, timeoutSeconds)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending: []string{
+			string(operations.OperationStatusValues.InProgress),
+			string(operations.OperationStatusValues.Queued),
+			string(operations.OperationStatusValues.NotSet),
+		},
+		Target: []string{
+			string(operations.OperationStatusValues.Failed),
+			string(operations.OperationStatusValues.Succeeded),
+			string(operations.OperationStatusValues.Cancelled)},
+		Refresh: projectStatusRefreshFunc(clients, operationRef),
+		Timeout: timeoutSeconds,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for project ready. %v ", err)
+	}
+	return nil
 }
 
 // Convert internal Terraform data structure to an AzDO data structure

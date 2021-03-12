@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -90,8 +91,8 @@ func TestProject_CreateProject_DoesNotSwallowErrorFromFailedAsyncStatusCheckCall
 		Return(nil, errors.New("GetOperation() failed")).
 		Times(1)
 
-	err := createProject(clients, &testProject, 5)
-	require.Equal(t, "GetOperation() failed", err.Error())
+	err := createProject(clients, &testProject, 10*time.Minute)
+	require.Equal(t, " waiting for project ready. GetOperation() failed ", err.Error())
 }
 
 // verifies that polling is done to validate the status of the asynchronous
@@ -132,7 +133,7 @@ func TestProject_CreateProject_PollsUntilOperationIsSuccessful(t *testing.T) {
 
 	gomock.InOrder(firstPoll, secondPoll)
 
-	err := createProject(clients, &testProject, 5)
+	err := createProject(clients, &testProject, 10*time.Minute)
 	require.Equal(t, nil, err)
 }
 
@@ -167,7 +168,7 @@ func TestProject_CreateProject_ReportsErrorIfNoSuccessForLongTime(t *testing.T) 
 		Return(&status, nil).
 		MinTimes(1)
 
-	err := createProject(clients, &testProject, 5)
+	err := createProject(clients, &testProject, 20*time.Second)
 	require.NotNil(t, err, "Expected error indicating timeout")
 }
 
@@ -346,6 +347,6 @@ func TestAzureDevOpsProject_ConfigureProjectFeatures_HandleErrorCorrectly(t *tes
 	featureStatesMap[string(featureMap[featureIDs[idx]])] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
 	featureStates := interface{}(featureStatesMap)
 
-	err := configureProjectFeatures(clients, "", projectName, &featureStates)
+	err := configureProjectFeatures(clients, "", projectName, &featureStates, 10*time.Minute)
 	require.NotNil(t, err)
 }
