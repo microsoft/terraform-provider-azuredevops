@@ -32,12 +32,12 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessToken)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
-		Type:         schema.TypeSet,
-		Optional:     true,
-		MinItems:     1,
-		MaxItems:     1,
-		Elem:         authPersonal,
-		ExactlyOneOf: []string{"auth_personal", "auth_oauth"},
+		Type:          schema.TypeSet,
+		Optional:      true,
+		MinItems:      1,
+		MaxItems:      1,
+		Elem:          authPersonal,
+		ConflictsWith: []string{"auth_oauth"},
 	}
 
 	r.Schema["auth_oauth"] = &schema.Schema{
@@ -53,7 +53,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 				},
 			},
 		},
-		ExactlyOneOf: []string{"auth_personal", "auth_oauth"},
+		ConflictsWith: []string{"auth_personal"},
 	}
 
 	return r
