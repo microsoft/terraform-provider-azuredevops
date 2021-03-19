@@ -257,7 +257,7 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc {
 			ConfigurationId: &policyID,
 		})
 
-		if utils.ResponseWasNotFound(err) || *policyConfig.IsDeleted {
+		if utils.ResponseWasNotFound(err) || (policyConfig != nil && *policyConfig.IsDeleted) {
 			d.SetId("")
 			return nil
 		}
