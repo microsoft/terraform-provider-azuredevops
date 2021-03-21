@@ -132,10 +132,10 @@ func requiresImportErrorNpm(resourceName string) *regexp.Regexp {
 func hclSvcEndpointNpmResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_npm" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	access_token		   = "redacted"
-	url			   		   = "http://url.com/"
+	project_id            = azuredevops_project.project.id
+	service_endpoint_name = "%s"
+	access_token          = "redacted"
+	url                   = "http://url.com/"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -145,11 +145,11 @@ resource "azuredevops_serviceendpoint_npm" "test" {
 func hclSvcEndpointNpmResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_npm" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	access_token	       = "redacted"
-	url			   		   = "https://url.com/"
+	project_id            = azuredevops_project.project.id
+	service_endpoint_name = "%s"
+	description           = "%s"
+	access_token          = "redacted"
+	url                   = "https://url.com/"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -159,11 +159,11 @@ resource "azuredevops_serviceendpoint_npm" "test" {
 func hclSvcEndpointNpmResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_npm" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	access_token		   = "redacted2"
-	url			   		   = "https://url.com/2"
+	project_id            = azuredevops_project.project.id
+	service_endpoint_name = "%s"
+	description           = "%s"
+	access_token          = "redacted2"
+	url                   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
