@@ -134,7 +134,7 @@ func hclSvcEndpointNpmResourceBasic(projectName string, serviceEndpointName stri
 resource "azuredevops_serviceendpoint_npm" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	token			   	   = "redacted"
+	access_token		   = "redacted"
 	url			   		   = "http://url.com/"
 }`, serviceEndpointName)
 
@@ -148,7 +148,7 @@ resource "azuredevops_serviceendpoint_npm" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	token			   	   = "redacted"
+	access_token	       = "redacted"
 	url			   		   = "https://url.com/"
 }`, serviceEndpointName, description)
 
@@ -162,7 +162,7 @@ resource "azuredevops_serviceendpoint_npm" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	token			   	   = "redacted2"
+	access_token		   = "redacted2"
 	url			   		   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
@@ -175,11 +175,11 @@ func hclSvcEndpointNpmResourceRequiresImport(projectName string, serviceEndpoint
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_npm" "import" {
-  project_id                = azuredevops_serviceendpoint_npm.test.project_id
+  project_id            = azuredevops_serviceendpoint_npm.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_npm.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_npm.test.description
-  url          = azuredevops_serviceendpoint_npm.test.url
-  token          = "redacted"
+  description           = azuredevops_serviceendpoint_npm.test.description
+  url                   = azuredevops_serviceendpoint_npm.test.url
+  access_token          = "redacted"
 }
 `, template)
 }
