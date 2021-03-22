@@ -22,8 +22,8 @@ jobs:
 - template: ./ci.yml
   parameters:
     goVersions:
-    - value: '1.14.10'
-      ymlSafeName: '1_14_10'
+    - value: '1.16.2'
+      ymlSafeName: '1_16_2'
 
     vmImages:
     - value: 'ubuntu-16.04'
