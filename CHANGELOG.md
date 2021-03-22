@@ -3,6 +3,7 @@ FEATURES:
 * **New Resource** `azuredevops_branch_policy_merge_types` [#300](https://github.com/microsoft/terraform-provider-azuredevops/issues/300)
 
 IMPROVEMENTS:
+* Support darwin/arm64 (Apple Silicon) [#332](https://github.com/microsoft/terraform-provider-azuredevops/issues/332)
 * All service endpoints - Description accept any string between 0~1024 in length [#295](https://github.com/microsoft/terraform-provider-azuredevops/issues/295)
 * `azuredevops_git_repository` - Support import Azure Git repository resource [#43](https://github.com/microsoft/terraform-provider-azuredevops/issues/43)
 * `azuredevops_serviceendpoint_azurecr` - Support expose service principal ID [#317](https://github.com/microsoft/terraform-provider-azuredevops/issues/317)
