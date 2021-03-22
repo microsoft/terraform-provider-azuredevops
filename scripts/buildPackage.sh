@@ -21,7 +21,8 @@ OS_ARCH=("freebsd:amd64"
   "linux:386"
   "linux:arm"
   "linux:arm64"
-  "darwin:amd64")
+  "darwin:amd64"
+  "darwin:arm64")
 
 
 function clean() {
