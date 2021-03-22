@@ -1,4 +1,4 @@
-## 0.1.3 (Unreleased)
+## 0.1.3
 FEATURES:
 * **New Resource** `azuredevops_branch_policy_merge_types` [#300](https://github.com/microsoft/terraform-provider-azuredevops/issues/300)
 
