@@ -21,8 +21,11 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_1" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample GithHub Personal Access Token"
+  service_endpoint_name = "Sample GithHub Enterprise Server Personal Access Token"
 
+  type = "githubenterprise"
+  url  = "https://github.contoso.com"
+  
   auth_personal {
     # Also can be set with AZDO_GITHUB_SERVICE_CONNECTION_PAT environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -33,7 +36,7 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_1" {
 ```hcl
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_2" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample GithHub Grant"
+  service_endpoint_name = "Sample GithHub Cloud Grant"
 
   auth_oauth {
     oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
@@ -59,6 +62,8 @@ The following arguments are supported:
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 - `auth_oauth` - (Optional) An `auth_oauth` block as documented below. Allows connecting using an Oauth token.
+- `type` - (Optional) Github server type. Allows `github` or `githubenterprise`. Defaults to `github`
+- `url` - (Optional) Github Server Url. Defaults `https://github.com`
 
 **NOTE: Github Apps can not be created or updated via terraform. You must install and configure the app on Github and then import it. You must also set the `description` to "" explicitly."**
 
