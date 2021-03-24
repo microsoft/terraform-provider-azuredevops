@@ -24,7 +24,7 @@ resource "azuredevops_serviceendpoint_npm" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "Sample npm"
   url                   = "https://registry.npmjs.org"
-  access_token          = "0000000000000000000000000000000000000000"
+  access_token          = "00000000-0000-0000-0000-000000000000"
   description           = "Managed by Terraform"
 }
 ```
