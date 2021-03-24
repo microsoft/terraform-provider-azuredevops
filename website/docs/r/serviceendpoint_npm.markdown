@@ -36,7 +36,7 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `url` - (Required) URL of the npm registry to connect with.
-- `access_token` - (Required) Authentication Token generated through npm (go to My Account > Security > Generate Tokens).
+- `access_token` - (Required) The access token for npm registry.
 - `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference

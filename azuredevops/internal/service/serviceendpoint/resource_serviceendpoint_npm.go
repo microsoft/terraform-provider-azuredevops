@@ -25,7 +25,7 @@ func ResourceServiceEndpointNpm() *schema.Resource {
 		Sensitive:        true,
 		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 		ValidateFunc:     validation.StringIsNotWhiteSpace,
-		Description:      "Authentication token generated through npm (go to Npm > Account > Access Tokens -> Generate New Token)",
+		Description:      "The access token for npm registry",
 	}
 	// Add a spot in the schema to store the token secretly
 	stSecretHashKey, stSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("access_token")
