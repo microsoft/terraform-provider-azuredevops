@@ -18,8 +18,8 @@ jobs:
         - value: 'ubuntu-20.04'
           ymlSafeName: ubuntu_20_04
 
-  - job: "Integration test"
-    displayname: "Integration test"
+  - job: "AccTest"
+    displayname: "AccTest"
     steps:
       - bash: |
           #!/usr/bin/env bash
