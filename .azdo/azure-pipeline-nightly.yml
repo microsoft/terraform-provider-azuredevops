@@ -20,6 +20,7 @@ jobs:
 
   - job: "AccTest"
     displayname: "AccTest"
+    timeoutInMinutes: 120
     steps:
       - bash: |
           #!/usr/bin/env bash
