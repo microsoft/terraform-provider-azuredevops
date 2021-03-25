@@ -50,7 +50,7 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-- [npm User Token](https://docs.npmjs.com/integrations/integrating-npm-with-external-services)
+- [npm User Token](https://docs.npmjs.com/about-access-tokens)
 
 ## Import
 
