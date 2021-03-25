@@ -19,7 +19,7 @@ jobs:
           ymlSafeName: ubuntu_20_04
 
   - job: "AccTest"
-    displayname: "AccTest"
+    displayName: "AccTest"
     timeoutInMinutes: 120
     steps:
       - bash: |
