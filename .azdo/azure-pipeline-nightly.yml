@@ -15,11 +15,8 @@ jobs:
           ymlSafeName: '1_16_2'
 
       vmImages:
-        - value: 'macOS-10.14'
-          ymlSafeName: 'macos_10_14'
-
-        - value: 'ubuntu-16.04'
-          ymlSafeName: ubuntu_16_04
+        - value: 'ubuntu-20.04'
+          ymlSafeName: ubuntu_20_04
 
   - job: "Integration test"
     displayname: "Integration test"
