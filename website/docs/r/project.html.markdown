@@ -41,7 +41,7 @@ The following arguments are supported:
 > **NOTE:**  
 > It's possible to define project features both within the [`azuredevops_project_features` resource](project_features.html) and
 > via the `features` block by using the [`azuredevops_project` resource](project.html).
-> However it's not possible to use both methods to manage group members, since there'll be conflicts.
+> However it's not possible to use both methods to manage features, since there'll be conflicts.
 
 ## Attributes Reference
 
