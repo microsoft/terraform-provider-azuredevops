@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - 'master'
+      - 'master'
 
   paths:
     exclude:
@@ -12,19 +12,19 @@ trigger:
 pr:
   branches:
     include:
-    - '*'
+      - '*'
 
   paths:
     exclude:
       - '/**/*.md'
 
 jobs:
-- template: ./ci.yml
-  parameters:
-    goVersions:
-    - value: '1.16.2'
-      ymlSafeName: '1_16_2'
+  - template: ./ci.yml
+    parameters:
+      goVersions:
+        - value: '1.16.2'
+          ymlSafeName: '1_16_2'
 
-    vmImages:
-    - value: 'ubuntu-16.04'
-      ymlSafeName: ubuntu_16_04
+      vmImages:
+        - value: 'ubuntu-20.04'
+          ymlSafeName: ubuntu_20_04
