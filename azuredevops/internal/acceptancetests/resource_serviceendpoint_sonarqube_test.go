@@ -5,7 +5,6 @@ package acceptancetests
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -117,15 +116,10 @@ func TestAccServiceEndpointSonarQube_RequiresImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclSvcEndpointSonarQubeResourceRequiresImport(projectName, serviceEndpointName),
-				ExpectError: requiresImportErrorSQ(serviceEndpointName),
+				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
-}
-
-func requiresImportErrorSQ(resourceName string) *regexp.Regexp {
-	message := "Error creating service endpoint in Azure DevOps: Service connection with name %[1]s already exists. Only a user having Administrator/User role permissions on service connection %[1]s can see it."
-	return regexp.MustCompile(fmt.Sprintf(message, resourceName))
 }
 
 func hclSvcEndpointSonarQubeResourceBasic(projectName string, serviceEndpointName string) string {
