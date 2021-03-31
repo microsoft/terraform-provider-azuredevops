@@ -6,7 +6,7 @@ description: |- Manages a Azure DevOps service endpoint within Azure DevOps orga
 
 # azuredevops_serviceendpoint_azuredevops
 
-Manages a Azure DevOps service endpoint within Azure DevOps.
+Manages an Azure DevOps service endpoint within Azure DevOps.
 
 ## Example Usage
 
@@ -53,8 +53,7 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint Azure DevOps can be imported using **projectID/serviceEndpointID** or **
-projectName/serviceEndpointID**
+Azure DevOps Service Endpoint Azure DevOps can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 $ terraform import azuredevops_serviceendpoint_azuredevops.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
