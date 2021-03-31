@@ -8,8 +8,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-func ResourceServiceEndpointDevOps() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointDevOps, expandServiceEndpointDevOps)
+func ResourceServiceEndpointAzureDevOps() *schema.Resource {
+	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps)
 	r.Schema["org_url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
@@ -28,7 +28,7 @@ func ResourceServiceEndpointDevOps() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -44,7 +44,7 @@ func expandServiceEndpointDevOps(d *schema.ResourceData) (*serviceendpoint.Servi
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("org_url", serviceEndpoint.Url)
 	tfhelper.HelpFlattenSecret(d, "password")
