@@ -193,13 +193,15 @@ resource "azuredevops_serviceendpoint_ssh" "test" {
 
 func hclSvcEndpointSSHResourceRequiresImport(projectName string, serviceEndpointName string, host string, username string) string {
 	template := hclSvcEndpointSSHResourceBasic(projectName, serviceEndpointName, host, username)
-	return fmt.Sprintf(`%s
+	return fmt.Sprintf(`
+%s
+
 resource "azuredevops_serviceendpoint_ssh" "import" {
-	project_id             = azuredevops_serviceendpoint_ssh.test.project_id
-	service_endpoint_name  = azuredevops_serviceendpoint_ssh.test.service_endpoint_name
-	description            = azuredevops_serviceendpoint_ssh.test.description
-	host			   	   = azuredevops_serviceendpoint_ssh.test.host
-	username		   = azuredevops_serviceendpoint_ssh.test.username
+  project_id            = azuredevops_serviceendpoint_ssh.test.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_ssh.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_ssh.test.description
+  host                  = azuredevops_serviceendpoint_ssh.test.host
+  username              = azuredevops_serviceendpoint_ssh.test.username
 }
 `, template)
 }
