@@ -126,72 +126,74 @@ func TestAccServiceEndpointSSH_RequiresImportErrorStep(t *testing.T) {
 func hclSvcEndpointSSHResourceBasic(projectName string, serviceEndpointName string, host string, username string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_ssh" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%[2]s"
-	host = "%[3]s"
-	username= "%[4]s"	
-}`, projectName, serviceEndpointName, host, username)
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[2]s"
+  host                  = "%[3]s"
+  username              = "%[4]s"
+}
+`, projectName, serviceEndpointName, host, username)
 
 }
 
 func hclSvcEndpointSSHResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_ssh" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%[2]s"
-	host = "1.2.3.4"
-	port= 22
-	private_key= "privateKey"
-	username= "username"
-	password= "password"
-	description="%[3]s"
-}`, projectName, serviceEndpointName, description)
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[2]s"
+  host                  = "1.2.3.4"
+  port                  = 22
+  private_key           = "privateKey"
+  username              = "username"
+  password              = "password"
+  description           = "%[3]s"
+}
+`, projectName, serviceEndpointName, description)
 
 }
 
 func hclSvcEndpointSSHResourceUpdate(projectName string, serviceEndpointName string, host string, port int, username string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_ssh" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%[2]s"
-	host = "%[3]s"
-	port= "%[4]d"
-	private_key= "privateKey"
-	username= "%[5]s"
-	password= "password"
-	description="%[6]s"
-}`, projectName, serviceEndpointName, host, port, username, description)
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[2]s"
+  host                  = "%[3]s"
+  port                  = "%[4]d"
+  private_key           = "privateKey"
+  username              = "%[5]s"
+  password              = "password"
+  description           = "%[6]s"
+}
+`, projectName, serviceEndpointName, host, port, username, description)
 
 }
 
 func hclSvcEndpointSSHResourceRequiresImport(projectName string, serviceEndpointName string, host string, username string) string {
 	template := hclSvcEndpointSSHResourceBasic(projectName, serviceEndpointName, host, username)
-	return fmt.Sprintf(`
-%s
+	return fmt.Sprintf(`%s
 resource "azuredevops_serviceendpoint_ssh" "import" {
 	project_id             = azuredevops_serviceendpoint_ssh.test.project_id
 	service_endpoint_name  = azuredevops_serviceendpoint_ssh.test.service_endpoint_name
