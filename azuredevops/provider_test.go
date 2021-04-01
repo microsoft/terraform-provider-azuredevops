@@ -31,6 +31,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_aws",
 		"azuredevops_serviceendpoint_artifactory",
 		"azuredevops_serviceendpoint_sonarqube",
+		"azuredevops_serviceendpoint_ssh",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_variable_group",
 		"azuredevops_git_repository",
