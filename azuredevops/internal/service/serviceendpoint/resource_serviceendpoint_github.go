@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	personalAccessToken                 = "personal_access_token"
-	serviceEndpointTypeGithub           = "github"
-	serviceEndpointTypeGithubEnterprise = "githubenterprise"
+	personalAccessTokenGithub = "personal_access_token"
 )
 
 // ResourceServiceEndpointGitHub schema and implementation for github service endpoint resource
@@ -21,7 +19,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHub, expandServiceEndpointGitHub)
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			personalAccessToken: {
+			personalAccessTokenGithub: {
 				Type:         schema.TypeString,
 				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
@@ -31,7 +29,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessToken)
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithub)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:          schema.TypeSet,
@@ -58,22 +56,6 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 		ConflictsWith: []string{"auth_personal"},
 	}
 
-	r.Schema["type"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Computed:     false,
-		Default:      "github",
-		ValidateFunc: validation.StringInSlice([]string{serviceEndpointTypeGithub, serviceEndpointTypeGithubEnterprise}, false),
-	}
-
-	r.Schema["url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Computed:     false,
-		Default:      "https://github.com",
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-	}
-
 	return r
 }
 
@@ -81,17 +63,15 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
-	seType := d.Get("type").(string)
-	seUrl := d.Get("url").(string)
-	serviceEndpoint.Type = converter.String(seType)
-	serviceEndpoint.Url = converter.String(seUrl)
+	serviceEndpoint.Type = converter.String("github")
+	serviceEndpoint.Url = converter.String("https://github.com")
 
 	scheme := "InstallationToken"
 	parameters := map[string]string{}
 
 	if config, ok := d.GetOk("auth_personal"); ok {
 		scheme = "Token"
-		parameters = expandAuthPersonalSet(config.(*schema.Set), seType)
+		parameters = expandAuthPersonalSetGithub(config.(*schema.Set))
 	}
 
 	if config, ok := d.GetOk("auth_oauth"); ok {
@@ -107,15 +87,10 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	return serviceEndpoint, projectID, nil
 }
 
-func expandAuthPersonalSet(d *schema.Set, seType string) map[string]string {
+func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-
-	if seType == serviceEndpointTypeGithub {
-		authPerson["AccessToken"] = val[personalAccessToken].(string)
-	} else if seType == serviceEndpointTypeGithubEnterprise {
-		authPerson["apitoken"] = val[personalAccessToken].(string)
-	}
+	authPerson["AccessToken"] = val[personalAccessTokenGithub].(string)
 	return authPerson
 }
 
@@ -152,7 +127,7 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessToken)
+			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
 			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}
