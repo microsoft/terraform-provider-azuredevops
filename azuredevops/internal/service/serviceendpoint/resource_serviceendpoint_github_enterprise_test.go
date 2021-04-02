@@ -1,0 +1,158 @@
+// +build all resource_serviceendpoint_github_enterprise
+// +build !exclude_serviceendpoints
+
+package serviceendpoint
+
+import (
+	"context"
+	"errors"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/stretchr/testify/require"
+)
+
+var ghesTestServiceEndpointID = uuid.New()
+var ghesRandomServiceEndpointProjectID = uuid.New().String()
+var ghesTestServiceEndpointProjectID = &ghesRandomServiceEndpointProjectID
+
+var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+	Authorization: &serviceendpoint.EndpointAuthorization{
+		Parameters: &map[string]string{
+			"apitoken": "UNIT_TEST_ACCESS_TOKEN",
+		},
+		Scheme: converter.String("Token"),
+	},
+	Id:          &ghesTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_NAME"),
+	Description: converter.String("UNIT_TEST_DESCRIPTION"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("githubenterprise"),
+	Url:         converter.String("https://github.contoso.com"),
+}
+
+// verifies that the flatten/expand round trip yields the same service endpoint
+func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHubEnterprise().Schema, nil)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
+
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHubEnterprise(resourceData)
+
+	require.Nil(t, err)
+	require.Equal(t, ghesTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, ghesTestServiceEndpointProjectID, projectID)
+}
+
+// verifies that if an error is produced on create, the error is not swallowed
+func TestServiceEndpointGitHubEnterprise_Create_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointGitHubEnterprise()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghesTestServiceEndpoint, Project: ghesTestServiceEndpointProjectID}
+	buildClient.
+		EXPECT().
+		CreateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("CreateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Create(resourceData, clients)
+	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
+}
+
+// verifies that if an error is produced on a read, it is not swallowed
+func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointGitHubEnterprise()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghesTestServiceEndpoint.Id, Project: ghesTestServiceEndpointProjectID}
+	buildClient.
+		EXPECT().
+		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("GetServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Read(resourceData, clients)
+	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
+}
+
+// verifies that if an error is produced on a delete, it is not swallowed
+func TestServiceEndpointGitHubEnterprise_Delete_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointGitHubEnterprise()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghesTestServiceEndpoint.Id, Project: ghesTestServiceEndpointProjectID}
+	buildClient.
+		EXPECT().
+		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(errors.New("DeleteServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Delete(resourceData, clients)
+	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
+}
+
+// verifies that if an error is produced on an update, it is not swallowed
+func TestServiceEndpointGitHubEnterprise_Update_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointGitHubEnterprise()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   &ghesTestServiceEndpoint,
+		EndpointId: ghesTestServiceEndpoint.Id,
+		Project:    ghesTestServiceEndpointProjectID,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
+func configureGhesAuthPersonal(d *schema.ResourceData) {
+	d.Set("auth_personal", &[]map[string]interface{}{
+		{
+			personalAccessTokenGithubEnterprise: "UNIT_TEST_ACCESS_TOKEN",
+		},
+	})
+}
