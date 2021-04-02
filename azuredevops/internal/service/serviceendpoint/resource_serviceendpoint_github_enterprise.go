@@ -31,11 +31,11 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithubEnterprise)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
-		Type:          schema.TypeSet,
-		Optional:      true,
-		MinItems:      1,
-		MaxItems:      1,
-		Elem:          authPersonal,
+		Type:     schema.TypeSet,
+		Optional: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem:     authPersonal,
 	}
 
 	r.Schema["url"] = &schema.Schema{
@@ -74,7 +74,6 @@ func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet [
 	}
 	return nil
 }
-
 
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
