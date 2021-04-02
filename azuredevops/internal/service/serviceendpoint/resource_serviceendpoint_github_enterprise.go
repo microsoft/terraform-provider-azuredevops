@@ -1,12 +1,13 @@
 package serviceendpoint
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"strings"
 )
 
 const (
@@ -42,8 +43,8 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Computed:     false,
-		Default:      "https://github.contoso.com",
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+		Required:     true,
 	}
 
 	return r
