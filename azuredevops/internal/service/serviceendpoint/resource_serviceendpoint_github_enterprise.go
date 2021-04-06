@@ -41,7 +41,6 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 
 	r.Schema["url"] = &schema.Schema{
 		Type:         schema.TypeString,
-		Optional:     true,
 		Computed:     false,
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		Required:     true,
