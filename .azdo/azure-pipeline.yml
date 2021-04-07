@@ -22,7 +22,11 @@ jobs:
   - template: ./ci.yml
     parameters:
       unittest:
-        - value: true
+        displayName: Run Unit Tests
+        type: boolean
+        values:
+          true
+
       goVersions:
         - value: '1.16.2'
           ymlSafeName: '1_16_2'
