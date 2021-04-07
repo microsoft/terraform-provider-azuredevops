@@ -64,3 +64,11 @@ jobs:
         env:
           GO_VERSION: $(goVersion)
         displayName: 'Run Devcontainer Build'
+
+      - ${{ if eq(parameters.unittest, true) }}:
+        - bash: |
+            #!/usr/bin/env bash
+            go version
+            cd "$BUILD_SOURCESDIRECTORY"
+            make test
+          displayName: 'Run Unit Tests'

@@ -21,6 +21,8 @@ pr:
 jobs:
   - template: ./ci.yml
     parameters:
+      unittest:
+        - value: true
       goVersions:
         - value: '1.16.2'
           ymlSafeName: '1_16_2'
@@ -28,14 +30,3 @@ jobs:
       vmImages:
         - value: 'ubuntu-20.04'
           ymlSafeName: ubuntu_20_04
-
-  - job: "Tests"
-    displayName: "Unit Test"
-    timeoutInMinutes: 15
-    steps:
-      - bash: |
-          #!/usr/bin/env bash
-          go version
-          cd "$BUILD_SOURCESDIRECTORY"
-          make test
-        displayName: 'Run Unit Tests'
