@@ -60,7 +60,7 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 		}
 	}
 
-	d.Set("type", *serviceEndpoint.Type)
+	d.Set("type", "githubenterprise")
 	d.Set("url", *serviceEndpoint.Url)
 }
 
