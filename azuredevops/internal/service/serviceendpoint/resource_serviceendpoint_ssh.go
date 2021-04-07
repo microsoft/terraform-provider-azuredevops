@@ -1,14 +1,13 @@
 package serviceendpoint
 
 import (
-	"encoding/json"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"log"
-	"strconv"
 )
 
 func ResourceServiceEndpointSSH() *schema.Resource {
@@ -66,7 +65,6 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	parameters["username"] = d.Get("username").(string)
 	if pwd, ok := d.GetOk("password"); ok {
 		parameters["password"] = pwd.(string)
-
 	}
 	serviceEndpoint.Authorization.Parameters = &parameters
 
@@ -86,8 +84,6 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
-	js, _ := json.Marshal(serviceEndpoint)
-	log.Printf("DDDD %s", js)
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
 		port, _ := strconv.ParseInt(portStr, 10, 64)
 		d.Set("port", port)

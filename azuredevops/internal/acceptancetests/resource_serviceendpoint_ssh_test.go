@@ -140,7 +140,6 @@ resource "azuredevops_serviceendpoint_ssh" "test" {
   username              = "%[4]s"
 }
 `, projectName, serviceEndpointName, host, username)
-
 }
 
 func hclSvcEndpointSSHResourceComplete(projectName string, serviceEndpointName string, description string) string {
@@ -164,7 +163,6 @@ resource "azuredevops_serviceendpoint_ssh" "test" {
   description           = "%[3]s"
 }
 `, projectName, serviceEndpointName, description)
-
 }
 
 func hclSvcEndpointSSHResourceUpdate(projectName string, serviceEndpointName string, host string, port int, username string, description string) string {
@@ -188,7 +186,6 @@ resource "azuredevops_serviceendpoint_ssh" "test" {
   description           = "%[6]s"
 }
 `, projectName, serviceEndpointName, host, port, username, description)
-
 }
 
 func hclSvcEndpointSSHResourceRequiresImport(projectName string, serviceEndpointName string, host string, username string) string {
