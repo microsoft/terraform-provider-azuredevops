@@ -21,7 +21,7 @@ pr:
 jobs:
   - template: ./ci.yml
     parameters:
-    - name: unittest
+    - name: unitTest
       type: boolean
       displayName: Run Unit Tests
       default: true
