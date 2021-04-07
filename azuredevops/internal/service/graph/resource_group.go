@@ -277,10 +277,10 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	// d.Get("descriptor").(string) => {groupDescriptor}
 
 	var operations []webapi.JsonPatchOperation
-	
+
 	if d.HasChange("display_name") {
 		displayName := d.Get("display_name")
-		patchDisplayNameOperation := webapi.JsonPatchOperation {
+		patchDisplayNameOperation := webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Replace,
 			From:  nil,
 			Path:  converter.String("/displayName"),
@@ -288,10 +288,10 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		operations = append(operations, patchDisplayNameOperation)
 	}
-	
+
 	if d.HasChange("description") {
 		description := d.Get("description")
-		patchDescriptionOperation := webapi.JsonPatchOperation {
+		patchDescriptionOperation := webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Replace,
 			From:  nil,
 			Path:  converter.String("/description"),
@@ -299,11 +299,11 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		operations = append(operations, patchDescriptionOperation)
 	}
-	
-	if (len(operations) > 0) {
+
+	if len(operations) > 0 {
 		uptGroupArgs := graph.UpdateGroupArgs{
 			GroupDescriptor: converter.String(d.Id()),
-			PatchDocument: &operations,
+			PatchDocument:   &operations,
 		}
 
 		_, err := clients.GraphClient.UpdateGroup(clients.Ctx, uptGroupArgs)
