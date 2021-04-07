@@ -1,11 +1,11 @@
 ## 0.1.4 (Unreleased)
 FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)
 * **New Resource** `azuredevops_serviceendpoint_npm` [#334](https://github.com/microsoft/terraform-provider-azuredevops/issues/334)
 * **New Resource** `azuredevops_serviceendpoint_azuredevops` [#339](https://github.com/microsoft/terraform-provider-azuredevops/issues/339)
-* **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)
   
 BUG FIX:
-  `azuredevops_group`  - `scope` will be suppressed during `plan` and `apply`  [#345](https://github.com/microsoft/terraform-provider-azuredevops/issues/345)
+  `azuredevops_group` - `scope` will be suppressed during `plan` and `apply`  [#345](https://github.com/microsoft/terraform-provider-azuredevops/issues/345)
 
 ## 0.1.3
 FEATURES:
