@@ -57,7 +57,7 @@ jobs:
           make lint
         displayName: 'Run Lint Check'
 
-      - ${{ if eq(parameters.unittest, true) }}:
+      - ${{ if eq(parameters.unitTest, true) }}:
           - bash: |
               #!/usr/bin/env bash
               go version
