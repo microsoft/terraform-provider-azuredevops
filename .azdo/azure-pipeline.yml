@@ -35,6 +35,7 @@ jobs:
     steps:
       - bash: |
           #!/usr/bin/env bash
+          go version
           cd "$BUILD_SOURCESDIRECTORY"
           make test
         displayName: 'Run Unit Tests'
