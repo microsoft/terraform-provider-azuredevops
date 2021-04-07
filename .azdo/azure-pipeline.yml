@@ -30,11 +30,11 @@ jobs:
           ymlSafeName: ubuntu_20_04
 
   - job: "Tests"
-      displayName: "Unit Test"
-      timeoutInMinutes: 120
-      steps:
+    displayName: "Unit Test"
+    timeoutInMinutes: 15
+    steps:
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           make test
-    displayName: 'Run Unit Tests'
+      displayName: 'Run Unit Tests'
