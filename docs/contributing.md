@@ -468,7 +468,7 @@ After the feature or bug is completed, you'll want to post a PR to get it review
 
 ### Tips for PR authors
 
-- The steps run by the CI are located [here](./../.azdo/ci.yml). You should manually execute these commands to make sure that they pass before you post your PR.
+- The steps run by the CI are located [here](../.azdo/ci.yaml). You should manually execute these commands to make sure that they pass before you post your PR.
   - The below command runs everything, but the acceptance tests:
 
     ```bash
