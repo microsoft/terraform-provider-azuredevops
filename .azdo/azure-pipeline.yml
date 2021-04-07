@@ -28,3 +28,9 @@ jobs:
       vmImages:
         - value: 'ubuntu-20.04'
           ymlSafeName: ubuntu_20_04
+
+    - bash: |
+       #!/usr/bin/env bash
+       cd "$BUILD_SOURCESDIRECTORY"
+       make test
+    displayName: 'Run Unit Tests'
