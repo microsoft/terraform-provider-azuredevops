@@ -22,10 +22,8 @@ jobs:
   - template: ./ci.yml
     parameters:
       unittest:
-        displayName: Run Unit Tests
-        type: boolean
-        values:
-          true
+        - type: boolean
+        - value: true
 
       goVersions:
         - value: '1.16.2'
