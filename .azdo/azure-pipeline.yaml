@@ -21,20 +21,12 @@ pr:
 jobs:
   - template: ./ci.yaml
     parameters:
-      - name: unitTest
-        type: boolean
-        displayName: Run Unit Tests
-        default: true
+      unitTest: true
+      
+      goVersions:
+        - value: '1.16.2'
+          ymlSafeName: '1_16_2'
 
-      - name: goVersions
-        displayName: '1_16_2'
-        type: string
-        values:
-          '1.16.2'
-
-
-      - name: vmImages
-        displayName: ubuntu_20_04
-        type: string
-        values:
-          'ubuntu-20.04'
+      vmImages:
+        - value: 'ubuntu-20.04'
+          ymlSafeName: ubuntu_20_04
