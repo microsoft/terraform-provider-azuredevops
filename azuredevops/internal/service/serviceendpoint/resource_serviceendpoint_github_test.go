@@ -40,7 +40,7 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHub().Schema, nil)
-	configureGhAuthPersonal(resourceData)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHub(resourceData)
@@ -57,7 +57,7 @@ func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGitHub()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureGhAuthPersonal(resourceData)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -127,7 +127,7 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGitHub()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureGhAuthPersonal(resourceData)
+	configureAuthPersonal(resourceData)
 	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -149,7 +149,7 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
-func configureGhAuthPersonal(d *schema.ResourceData) {
+func configureAuthPersonal(d *schema.ResourceData) {
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
 			personalAccessTokenGithub: "UNIT_TEST_ACCESS_TOKEN",

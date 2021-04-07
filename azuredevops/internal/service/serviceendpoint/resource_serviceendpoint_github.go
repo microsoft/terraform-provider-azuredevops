@@ -62,11 +62,8 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-
-	serviceEndpoint.Type = converter.String("github")
-	serviceEndpoint.Url = converter.String("https://github.com")
-
 	scheme := "InstallationToken"
+
 	parameters := map[string]string{}
 
 	if config, ok := d.GetOk("auth_personal"); ok {
@@ -83,6 +80,8 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
+	serviceEndpoint.Type = converter.String("github")
+	serviceEndpoint.Url = converter.String("https://github.com")
 
 	return serviceEndpoint, projectID, nil
 }
@@ -119,9 +118,6 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 			d.Set("auth_personal", authPersonal)
 		}
 	}
-
-	d.Set("type", *serviceEndpoint.Type)
-	d.Set("url", *serviceEndpoint.Url)
 }
 
 func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {

@@ -33,10 +33,10 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:     schema.TypeSet,
-		Optional: true,
 		MinItems: 1,
 		MaxItems: 1,
 		Elem:     authPersonal,
+		Required: true,
 	}
 
 	r.Schema["url"] = &schema.Schema{
@@ -90,11 +90,6 @@ func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendp
 	if config, ok := d.GetOk("auth_personal"); ok {
 		scheme = "Token"
 		parameters = expandAuthPersonalSetGithubEnterprise(config.(*schema.Set))
-	}
-
-	if config, ok := d.GetOk("auth_oauth"); ok {
-		scheme = "OAuth"
-		parameters = expandAuthOauthSet(config.(*schema.Set))
 	}
 
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{

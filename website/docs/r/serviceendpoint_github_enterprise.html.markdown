@@ -21,9 +21,9 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint_ghes_1" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "GHES"
+  service_endpoint_name = "Sample GithHub Enterprise"
   url                   = "https://github.contoso.com"
-  description           = "Sample GithHub Enterprise Personal Access Token"
+  description           = "Managed by Terraform"
   
   auth_personal {
     # Also can be set with AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT environment variable
