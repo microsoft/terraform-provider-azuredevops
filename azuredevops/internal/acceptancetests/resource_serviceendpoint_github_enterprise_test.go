@@ -152,4 +152,3 @@ resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
 
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
-
