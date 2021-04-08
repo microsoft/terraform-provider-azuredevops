@@ -41,11 +41,9 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 
 	r.Schema["url"] = &schema.Schema{
 		Type:         schema.TypeString,
-		Computed:     false,
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		Required:     true,
 	}
-
 	return r
 }
 
@@ -59,8 +57,6 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 			d.Set("auth_personal", authPersonal)
 		}
 	}
-
-	d.Set("type", "githubenterprise")
 	d.Set("url", *serviceEndpoint.Url)
 }
 
