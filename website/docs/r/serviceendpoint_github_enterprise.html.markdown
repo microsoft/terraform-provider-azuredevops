@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_github_enterprise
 
-Manages a GitHub-Enterprise-Server service endpoint within Azure DevOps.
+Manages a GitHub Enterprise Server service endpoint within Azure DevOps.
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ resource "azuredevops_project" "project" {
 
 resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint_ghes_1" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample GithHub Enterprise"
+  service_endpoint_name = "Sample GitHub Enterprise"
   url                   = "https://github.contoso.com"
   description           = "Managed by Terraform"
   
@@ -62,7 +62,7 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint GitHub can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps Service Endpoint GitHub Enterprise Server can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 $ terraform import azuredevops_serviceendpoint_github_enterprise.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
