@@ -18,7 +18,6 @@ func TestAccServiceEndpointGitHubEnterprise_PersonalTokenBasic(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_github_enterprise"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -46,7 +45,6 @@ func TestAccServiceEndpointGitHubEnterprise_PersonalTokenUpdate(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_github_enterprise"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -84,7 +82,6 @@ func TestAccServiceEndpointGitHubEnterprise_CreateAndUpdate(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_github_enterprise"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{

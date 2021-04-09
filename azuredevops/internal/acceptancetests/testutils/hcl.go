@@ -205,6 +205,7 @@ resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
 	service_endpoint_name  = "%s"
 	url                    = "https://github.contoso.com"
 	auth_personal {
+		personal_access_token = "hcl_test_token_basic"
 	}
 }`, serviceEndpointName)
 
