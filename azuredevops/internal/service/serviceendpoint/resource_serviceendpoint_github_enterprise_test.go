@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_github
+// +build all resource_serviceendpoint_github_enterprise
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -18,52 +18,52 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var ghTestServiceEndpointID = uuid.New()
-var ghRandomServiceEndpointProjectID = uuid.New().String()
-var ghTestServiceEndpointProjectID = &ghRandomServiceEndpointProjectID
+var ghesTestServiceEndpointID = uuid.New()
+var ghesRandomServiceEndpointProjectID = uuid.New().String()
+var ghesTestServiceEndpointProjectID = &ghesRandomServiceEndpointProjectID
 
-var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"AccessToken": "UNIT_TEST_ACCESS_TOKEN",
+			"apitoken": "UNIT_TEST_ACCESS_TOKEN",
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:          &ghTestServiceEndpointID,
+	Id:          &ghesTestServiceEndpointID,
 	Name:        converter.String("UNIT_TEST_NAME"),
 	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	Owner:       converter.String("library"),
-	Type:        converter.String("github"),
-	Url:         converter.String("https://github.com"),
+	Type:        converter.String("githubenterprise"),
+	Url:         converter.String("https://github.contoso.com"),
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestServiceEndpointGitHub_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHub().Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHubEnterprise().Schema, nil)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHub(resourceData)
+	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHubEnterprise(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, ghTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, ghTestServiceEndpointProjectID, projectID)
+	require.Equal(t, ghesTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, ghesTestServiceEndpointProjectID, projectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointGitHubEnterprise_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghTestServiceEndpoint, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghesTestServiceEndpoint, Project: ghesTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -75,18 +75,18 @@ func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghesTestServiceEndpoint.Id, Project: ghesTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -98,18 +98,18 @@ func TestServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointGitHubEnterprise_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghesTestServiceEndpoint.Id, Project: ghesTestServiceEndpointProjectID}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -121,22 +121,22 @@ func TestServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
+func TestServiceEndpointGitHubEnterprise_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointGitHub()
+	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	configureAuthPersonal(resourceData)
-	flattenServiceEndpointGitHub(resourceData, &ghTestServiceEndpoint, ghTestServiceEndpointProjectID)
+	configureGhesAuthPersonal(resourceData)
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &ghTestServiceEndpoint,
-		EndpointId: ghTestServiceEndpoint.Id,
-		Project:    ghTestServiceEndpointProjectID,
+		Endpoint:   &ghesTestServiceEndpoint,
+		EndpointId: ghesTestServiceEndpoint.Id,
+		Project:    ghesTestServiceEndpointProjectID,
 	}
 
 	buildClient.
@@ -149,10 +149,10 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 
-func configureAuthPersonal(d *schema.ResourceData) {
+func configureGhesAuthPersonal(d *schema.ResourceData) {
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
-			personalAccessTokenGithub: "UNIT_TEST_ACCESS_TOKEN",
+			personalAccessTokenGithubEnterprise: "UNIT_TEST_ACCESS_TOKEN",
 		},
 	})
 }

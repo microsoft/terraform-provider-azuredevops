@@ -21,7 +21,7 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
   service_endpoint_name = "GitHub Service Connection"
 
   auth_personal {
-    # personalAccessToken = "..." Or set with `AZDO_GITHUB_SERVICE_CONNECTION_PAT` env var
+    # personal_access_token = "..." Or set with `AZDO_GITHUB_SERVICE_CONNECTION_PAT` env var
   }
 }
 
