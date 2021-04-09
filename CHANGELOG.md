@@ -3,6 +3,7 @@ FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)
 * **New Resource** `azuredevops_serviceendpoint_npm` [#334](https://github.com/microsoft/terraform-provider-azuredevops/issues/334)
 * **New Resource** `azuredevops_serviceendpoint_azuredevops` [#339](https://github.com/microsoft/terraform-provider-azuredevops/issues/339)
+* **New Resource** `azuredevops_serviceendpoint_github_enterprise` [#210](https://github.com/microsoft/terraform-provider-azuredevops/issues/210)
 
 IMPROVEMENTS:
 * `azuredevops_group` - Support for changing group display names [#356](https://github.com/microsoft/terraform-provider-azuredevops/issues/356)
