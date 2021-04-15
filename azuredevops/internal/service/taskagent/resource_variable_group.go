@@ -211,6 +211,10 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 		}
 		return fmt.Errorf("Error looking up variable group given ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
 	}
+	if variableGroup.Id == nil {
+		d.SetId("")
+		return nil
+	}
 
 	err = flattenVariableGroup(d, variableGroup, &projectID)
 
