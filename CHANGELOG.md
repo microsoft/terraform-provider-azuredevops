@@ -10,6 +10,7 @@ IMPROVEMENTS:
   
 BUG FIX:
   `azuredevops_group` - `scope` will be suppressed during `plan` and `apply`  [#345](https://github.com/microsoft/terraform-provider-azuredevops/issues/345)
+  `azuredevops_variable_group` - handle non-existent variable groupss [#359](https://github.com/microsoft/terraform-provider-azuredevops/issues/359)
 
 ## 0.1.3
 FEATURES:
