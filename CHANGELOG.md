@@ -1,4 +1,4 @@
-## 0.1.4 (Unreleased)
+## 0.1.4
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)
 * **New Resource** `azuredevops_serviceendpoint_npm` [#334](https://github.com/microsoft/terraform-provider-azuredevops/issues/334)
