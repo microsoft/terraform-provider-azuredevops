@@ -186,7 +186,7 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 
 	flattenAllowAccess(d, definitionResourceReference)
 
-	return nil
+	return resourceVariableGroupRead(d, m)
 }
 
 func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
@@ -276,7 +276,7 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 
 	flattenAllowAccess(d, definitionResourceReference)
 
-	return nil
+	return resourceVariableGroupRead(d, m)
 }
 
 func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
