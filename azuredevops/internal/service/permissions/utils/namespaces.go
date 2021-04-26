@@ -301,7 +301,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 // SetPrincipalPermissions sets ACLs for specifc token inside a security namespace
 func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission) error {
 	if nil == permissionList || len(*permissionList) <= 0 {
-		return fmt.Errorf("permissionMap is nil or empty")
+		return nil
 	}
 
 	permissionMap := map[string]SetPrincipalPermission{}
@@ -356,18 +356,18 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 			return fmt.Errorf("Unable to resolve id descriptor for principal [%s]", subjectDescriptor)
 		}
 
-		log.Printf("[TRACE]Checking ACE list for descriptor [%s]", subjectDescriptor)
+		log.Printf("[TRACE] Checking ACE list for descriptor [%s]", subjectDescriptor)
 		var aceItem *security.AccessControlEntry
 		ace, update := aceMap[*desc.Descriptor]
 		if !update {
-			log.Printf("[TRACE]Creating new ACE for subject [%s]", subjectDescriptor)
+			log.Printf("[TRACE] Creating new ACE for subject [%s]", subjectDescriptor)
 			aceItem = new(security.AccessControlEntry)
 			aceItem.Allow = new(int)
 			aceItem.Deny = new(int)
 			aceItem.Descriptor = desc.Descriptor
 		} else {
 			// update existing ACE for principal
-			log.Printf("[TRACE]Updating ACE for descriptor [%s]", *desc.Descriptor)
+			log.Printf("[TRACE] Updating ACE for descriptor [%s]", *desc.Descriptor)
 			aceItem = &ace
 		}
 
