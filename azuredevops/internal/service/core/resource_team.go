@@ -10,10 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/client"
-	securityhelper "github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/terraform-providers/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceTeam() *schema.Resource {
@@ -26,6 +27,7 @@ func ResourceTeam() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
@@ -54,7 +56,6 @@ func ResourceTeam() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
-				Computed:   true,
 				Optional:   true,
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Set:        schema.HashString,
@@ -68,12 +69,18 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 
 	projectID := d.Get("project_id").(string)
 	teamName := d.Get("name").(string)
+	description, ok := d.GetOk("description")
+
+	teamData := core.WebApiTeam{
+		Name: &teamName,
+	}
+	if ok {
+		teamData.Description = converter.String(description.(string))
+	}
 
 	team, err := clients.CoreClient.CreateTeam(clients.Ctx, core.CreateTeamArgs{
 		ProjectId: &projectID,
-		Team: &core.WebApiTeam{
-			Name: &teamName,
-		},
+		Team:      &teamData,
 	})
 
 	if err != nil {
@@ -82,7 +89,7 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 
 	if v, ok := d.GetOk("administrators"); ok {
 		administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
-		err := updateTeamAdministrators(clients, team, &administrators)
+		err := updateTeamAdministrators(d, clients, team, &administrators)
 		if err != nil {
 			ierr := clients.CoreClient.DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
 				ProjectId: converter.String(team.ProjectId.String()),
@@ -118,9 +125,27 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
-	teamName := d.Get("name").(string)
+	teamID := d.Id()
 
-	team, members, administrators, err := readTeam(clients, projectID, teamName)
+	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
+		ProjectId:      converter.String(projectID),
+		TeamId:         converter.String(teamID),
+		ExpandIdentity: converter.Bool(true), // required for readTeamMembers
+	})
+
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	members, err := readTeamMembers(clients, team)
+	if err != nil {
+		return err
+	}
+	administrators, err := readTeamAdministrators(d, clients, team)
 	if err != nil {
 		return err
 	}
@@ -130,7 +155,68 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Not implemented")
+	clients := m.(*client.AggregatedClient)
+
+	var team *core.WebApiTeam
+	var err error
+
+	projectID := d.Get("project_id").(string)
+	teamID := d.Id()
+	if d.HasChange("name") || d.HasChange("description") {
+		teamName := d.Get("name").(string)
+		description, ok := d.GetOk("description")
+
+		teamData := core.WebApiTeam{
+			Name: &teamName,
+		}
+		if ok {
+			teamData.Description = converter.String(description.(string))
+		}
+
+		team, err = clients.CoreClient.UpdateTeam(clients.Ctx, core.UpdateTeamArgs{
+			ProjectId: &projectID,
+			TeamId:    &teamID,
+			TeamData:  &teamData,
+		})
+
+		if err != nil {
+			return err
+		}
+	} else {
+		team, err = clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
+			ProjectId:      converter.String(projectID),
+			TeamId:         converter.String(teamID),
+			ExpandIdentity: converter.Bool(false),
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// if d.HasChange("administrators") {
+	// 	log.Printf("Updating list of administrators for team %s", *team.Name)
+
+	v := d.Get("administrators")
+	administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
+	err = updateTeamAdministrators(d, clients, team, &administrators)
+	if err != nil {
+		return err
+	}
+	// }
+
+	if d.HasChange("members") {
+		log.Printf("Updating list of members for team %s", *team.Name)
+
+		v := d.Get("members")
+		members := tfhelper.ExpandStringSet(v.(*schema.Set))
+		err = updateTeamMembers(clients, team, &members)
+		if err != nil {
+			return err
+		}
+	}
+
+	return resourceTeamRead(d, m)
 }
 
 func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
@@ -152,7 +238,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func readTeam(clients *client.AggregatedClient, projectID string, teamName string) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
+func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
 	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 		ProjectId:      converter.String(projectID),
 		Mine:           converter.Bool(false),
@@ -181,7 +267,7 @@ func readTeam(clients *client.AggregatedClient, projectID string, teamName strin
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	administrators, err := readTeamAdministrators(clients, &team)
+	administrators, err := readTeamAdministrators(d, clients, &team)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -209,43 +295,208 @@ func readTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam) (*
 		return nil, err
 	}
 
-	return readIdentities(clients, members)
+	return readSubjectDescriptors(clients, members)
 }
 
 func updateTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors *[]string) error {
-	return fmt.Errorf("Not implemented")
+	var err error
+
+	currentMemberSet, err := readTeamMembers(clients, team)
+	if err != nil {
+		return err
+	}
+	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentMemberSet.Len() <= 0 {
+		return nil
+	}
+
+	currentMembers := currentMemberSet.List()
+
+	// determine the list of all removed members
+	err = removeTeamMembers(clients, team, linq.From(currentMembers).Except(linq.From(*subjectDescriptors)))
+	if err != nil {
+		return err
+	}
+
+	// determine the list of all added members
+	err = addTeamMembers(clients, team, linq.From(*subjectDescriptors).Except(linq.From(currentMembers)))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func readTeamAdministrators(clients *client.AggregatedClient, team *core.WebApiTeam) (*schema.Set, error) {
-	sn, err := securityhelper.NewSecurityNamespace(clients.Ctx,
-		securityhelper.SecurityNamespaceIDValues.Identity,
-		clients.SecurityClient,
-		clients.IdentityClient)
+func getIdentitiesFromSubjects(clients *client.AggregatedClient, query linq.Query) (*[]identity.Identity, error) {
+	if !query.Any() {
+		return &[]identity.Identity{}, nil
+	}
+
+	discriptors := query.
+		Aggregate(func(r interface{}, i interface{}) interface{} {
+			if r.(string) == "" {
+				return i
+			}
+			return r.(string) + "," + i.(string)
+		}).(string)
+
+	idlist, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+		SubjectDescriptors: converter.String(discriptors),
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	token := fmt.Sprintf("%s\\%s", team.ProjectId.String(), team.Id.String())
-	acl, err := sn.GetAccessControlList(&token, nil)
+	return idlist, err
+}
+
+func removeTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, query linq.Query) error {
+	idList, err := getIdentitiesFromSubjects(clients, query)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range *idList {
+		log.Printf("[TRACE] Removing member %s from team %s", id.Id.String(), *team.Name)
+
+		_, err := clients.IdentityClient.RemoveMember(clients.Ctx, identity.RemoveMemberArgs{
+			ContainerId: converter.String(team.Id.String()),
+			MemberId:    converter.String(id.Id.String()),
+		})
+		if err != nil {
+			return fmt.Errorf("Error removing member %s from team %s: %+v", id.Id.String(), *team.Name, err)
+		}
+	}
+	return nil
+}
+
+func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, query linq.Query) error {
+	idList, err := getIdentitiesFromSubjects(clients, query)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range *idList {
+		log.Printf("[TRACE] Adding member %s to team %s", id.Id.String(), *team.Name)
+
+		_, err := clients.IdentityClient.AddMember(clients.Ctx, identity.AddMemberArgs{
+			ContainerId: converter.String(team.Id.String()),
+			MemberId:    converter.String(id.Id.String()),
+		})
+		if err != nil {
+			return fmt.Errorf("Error adding member to team: %+v", err)
+		}
+	}
+
+	return nil
+}
+
+func createTeamsTokenFunction(team *core.WebApiTeam) func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+	return func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+		return team.ProjectId.String() + "\\" + team.Id.String(), nil
+	}
+}
+
+// readTeamAdministrators returns the current list of team administrators as a set of SubjectDescriptors
+func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam) (*schema.Set, error) {
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
+	if err != nil {
+		return nil, err
+	}
+
+	acl, err := sn.GetAccessControlList(nil)
 	if err != nil {
 		return nil, err
 	}
 
 	adminDescriptorList := []string{}
 	for _, ace := range *acl.AcesDictionary {
-		if *ace.Allow&15 > 0 {
+		if *ace.Allow&8 > 0 {
 			adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
 		}
 	}
 
-	return readIdentities(clients, &adminDescriptorList)
+	return readSubjectDescriptors(clients, &adminDescriptorList)
 }
 
-func updateTeamAdministrators(clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors *[]string) error {
-	return fmt.Errorf("Not implemented")
+func updateTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors *[]string) error {
+	currentAdministratorSet, err := readTeamAdministrators(d, clients, team)
+	if err != nil {
+		return err
+	}
+	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentAdministratorSet.Len() <= 0 {
+		return nil
+	}
+
+	currentAdministrators := currentAdministratorSet.List()
+
+	log.Print("[DEBUG] updateTeamAdministrators::removing deleted administrators from team")
+	err = setTeamAdministratorsPermissions(d,
+		clients,
+		team,
+		// determine the list of all removed administrators
+		linq.From(currentAdministrators).Except(linq.From(*subjectDescriptors)),
+		securityhelper.PermissionTypeValues.NotSet)
+
+	if err != nil {
+		return err
+	}
+
+	log.Print("[DEBUG] updateTeamAdministrators::adding missing administrators to team")
+	err = setTeamAdministratorsPermissions(d,
+		clients,
+		team,
+		// determine the list of all added administrators
+		linq.From(*subjectDescriptors).Except(linq.From(currentAdministrators)),
+		securityhelper.PermissionTypeValues.Allow)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func readIdentities(clients *client.AggregatedClient, members *[]string) (*schema.Set, error) {
+func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors linq.Query, permission securityhelper.PermissionType) error {
+	if !subjectDescriptors.Any() {
+		log.Print("[DEBUG] setTeamAdministratorsPermissions::list of subject descriptors is empty")
+		return nil
+	}
+
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
+	if err != nil {
+		return nil
+	}
+
+	principalPermissionCreator := func(query linq.Query, permission securityhelper.PermissionType) *[]securityhelper.SetPrincipalPermission {
+		var subjectList []securityhelper.SetPrincipalPermission
+
+		query.Select(func(item interface{}) interface{} {
+			// item: SubjectDescriptor (string)
+			return securityhelper.SetPrincipalPermission{
+				Replace: true,
+				PrincipalPermission: securityhelper.PrincipalPermission{
+					SubjectDescriptor: item.(string),
+					Permissions: map[securityhelper.ActionName]securityhelper.PermissionType{
+						"ManageMembership": permission,
+					},
+				},
+			}
+		}).ToSlice(&subjectList)
+		return &subjectList
+	}
+
+	principalPermissions := principalPermissionCreator(subjectDescriptors, permission)
+	err = sn.SetPrincipalPermissions(principalPermissions)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// readIdentities returns the SubjectDescriptor for every identity passed
+func readSubjectDescriptors(clients *client.AggregatedClient, members *[]string) (*schema.Set, error) {
 	set := schema.NewSet(schema.HashString, nil)
 
 	if members == nil || len(*members) <= 0 {
