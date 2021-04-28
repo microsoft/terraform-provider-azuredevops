@@ -47,6 +47,7 @@ func ResourceTeam() *schema.Resource {
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
 				Optional:   true,
+				Computed:   true,
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Set:        schema.HashString,
 			},
@@ -57,6 +58,7 @@ func ResourceTeam() *schema.Resource {
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
 				Optional:   true,
+				Computed:   true,
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Set:        schema.HashString,
 			},
@@ -65,6 +67,8 @@ func ResourceTeam() *schema.Resource {
 }
 
 func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
+	log.Print("[DEBUG] resourceTeamCreate: START")
+
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -88,6 +92,8 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if v, ok := d.GetOk("administrators"); ok {
+		log.Print("[DEBUG] resourceTeamCreate: setting administrators")
+
 		administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
 		err := updateTeamAdministrators(d, clients, team, &administrators)
 		if err != nil {
@@ -103,6 +109,8 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if v, ok := d.GetOk("members"); ok {
+		log.Print("[DEBUG] resourceTeamCreate: setting members")
+
 		members := tfhelper.ExpandStringSet(v.(*schema.Set))
 		err := updateTeamMembers(clients, team, &members)
 		if err != nil {
@@ -122,6 +130,8 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
+	log.Print("[DEBUG] resourceTeamRead: START")
+
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -130,7 +140,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
 		ProjectId:      converter.String(projectID),
 		TeamId:         converter.String(teamID),
-		ExpandIdentity: converter.Bool(true), // required for readTeamMembers
+		ExpandIdentity: converter.Bool(false),
 	})
 
 	if err != nil {
@@ -145,6 +155,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	administrators, err := readTeamAdministrators(d, clients, team)
 	if err != nil {
 		return err
@@ -194,16 +205,16 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	// if d.HasChange("administrators") {
-	// 	log.Printf("Updating list of administrators for team %s", *team.Name)
+	if d.HasChange("administrators") {
+		log.Printf("Updating list of administrators for team %s", *team.Name)
 
-	v := d.Get("administrators")
-	administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
-	err = updateTeamAdministrators(d, clients, team, &administrators)
-	if err != nil {
-		return err
+		v := d.Get("administrators")
+		administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
+		err = updateTeamAdministrators(d, clients, team, &administrators)
+		if err != nil {
+			return err
+		}
 	}
-	// }
 
 	if d.HasChange("members") {
 		log.Printf("Updating list of members for team %s", *team.Name)
@@ -242,7 +253,7 @@ func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, pr
 	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 		ProjectId:      converter.String(projectID),
 		Mine:           converter.Bool(false),
-		ExpandIdentity: converter.Bool(true), // required for readTeamMembers
+		ExpandIdentity: converter.Bool(false),
 	})
 
 	if err != nil {
@@ -280,6 +291,7 @@ func flattenTeam(d *schema.ResourceData, team *core.WebApiTeam, members *schema.
 		d.SetId("")
 		return
 	}
+
 	d.SetId(team.Id.String())
 	d.Set("name", team.Name)
 	d.Set("description", team.Description)
@@ -404,14 +416,20 @@ func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedCl
 		return nil, err
 	}
 
+	actionDefinitions, err := sn.GetActionDefinitions()
+	if err != nil {
+		return nil, err
+	}
+
 	acl, err := sn.GetAccessControlList(nil)
 	if err != nil {
 		return nil, err
 	}
 
+	bit := *(*actionDefinitions)["ManageMembership"].Bit
 	adminDescriptorList := []string{}
 	for _, ace := range *acl.AcesDictionary {
-		if *ace.Allow&8 > 0 {
+		if *ace.Allow&bit > 0 {
 			adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
 		}
 	}
