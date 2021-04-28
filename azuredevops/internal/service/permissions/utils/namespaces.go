@@ -218,7 +218,7 @@ func (sn *SecurityNamespace) GetToken() string {
 	return sn.token
 }
 
-func (sn *SecurityNamespace) getActionDefinitions() (*map[string]security.ActionDefinition, error) {
+func (sn *SecurityNamespace) GetActionDefinitions() (*map[string]security.ActionDefinition, error) {
 	if sn.actions == nil {
 		secns, err := sn.securityClient.QuerySecurityNamespaces(sn.context, security.QuerySecurityNamespacesArgs{
 			SecurityNamespaceId: &sn.namespaceID,
@@ -345,7 +345,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 	}
 	aceMap := *acl.AcesDictionary
 
-	actionMap, err := sn.getActionDefinitions()
+	actionMap, err := sn.GetActionDefinitions()
 	if err != nil {
 		return err
 	}
@@ -422,7 +422,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 
 // GetPrincipalPermissions returns an array of PrincipalPermission for a Security Namespace token an a list of principals
 func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]PrincipalPermission, error) {
-	actions, err := sn.getActionDefinitions()
+	actions, err := sn.GetActionDefinitions()
 	if err != nil {
 		return nil, err
 	}
