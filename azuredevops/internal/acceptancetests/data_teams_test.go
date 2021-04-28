@@ -1,5 +1,5 @@
-// +build all core data_sources data_team
-// +build !exclude_data_sources !exclude_data_team
+// +build all core data_sources data_teams
+// +build !exclude_data_sources !exclude_data_teams
 
 package acceptancetests
 
@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccTeam_DataSource(t *testing.T) {
+func TestAccTeams_DataSource(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	projectResource := testutils.HclProjectResource(projectName)
 
@@ -19,14 +19,13 @@ func TestAccTeam_DataSource(t *testing.T) {
 
 %s
 
-data "azuredevops_team" "team" {
+data "azuredevops_teams" "all_teams" {
 	project_id = azuredevops_project.project.id
-	name = "${azuredevops_project.project.project_name} Team"
 }
 
 	`, projectResource)
 
-	tfNode := "data.azuredevops_team.team"
+	tfNode := "data.azuredevops_teams.all_teams"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                  func() { testutils.PreCheck(t, nil) },
 		Providers:                 testutils.GetProviders(),
@@ -35,10 +34,12 @@ data "azuredevops_team" "team" {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "name"),
-					resource.TestCheckResourceAttrSet(tfNode, "description"),
-					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
-					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttr(tfNode, "teams.#", "1"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.name"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.description"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.administrators.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.members.#"),
 				),
 			},
 		},
