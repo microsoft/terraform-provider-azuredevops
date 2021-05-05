@@ -409,23 +409,13 @@ func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, que
 	return nil
 }
 
-func createTeamsTokenFunction(team *core.WebApiTeam) func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
-	return func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
-		return team.ProjectId.String() + "\\" + team.Id.String(), nil
-	}
-}
-
-var _teamSecurityNamespace *securityhelper.SecurityNamespace = nil
-
 func getIdentitySecurityNamespace(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam) (*securityhelper.SecurityNamespace, error) {
-	if _teamSecurityNamespace == nil {
-		var err error
-		_teamSecurityNamespace, err = securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
-		if err != nil {
-			return nil, err
-		}
-	}
-	return _teamSecurityNamespace, nil
+	return securityhelper.NewSecurityNamespace(d,
+		clients,
+		securityhelper.SecurityNamespaceIDValues.Identity,
+		func(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+			return team.ProjectId.String() + "\\" + team.Id.String(), nil
+		})
 }
 
 // readTeamAdministrators returns the current list of team administrators as a set of SubjectDescriptors
