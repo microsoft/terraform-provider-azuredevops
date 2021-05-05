@@ -36,6 +36,8 @@ data "azuredevops_teams" "all_teams" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttr(tfNode, "teams.#", "1"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "teams.0.id"),
 					resource.TestCheckResourceAttrSet(tfNode, "teams.0.name"),
 					resource.TestCheckResourceAttrSet(tfNode, "teams.0.description"),
 					resource.TestCheckResourceAttrSet(tfNode, "teams.0.administrators.#"),

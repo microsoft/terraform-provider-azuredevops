@@ -35,6 +35,8 @@ data "azuredevops_team" "team" {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttrSet(tfNode, "description"),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
