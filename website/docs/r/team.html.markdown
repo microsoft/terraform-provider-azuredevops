@@ -11,11 +11,63 @@ Manages a team within a project in a Azure DevOps organization.
 
 ## Example Usage
 
+```hcl
+resource "azuredevops_project" "project" {
+  name               = "Test Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "My first project"
+}
+
+data "azuredevops_group" "builtin_project_contributors" {
+  project_id = azuredevops_project.project.id
+  name       = "Contributors"
+}
+
+data "azuredevops_group" "builtin_project_readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_team" "team" {
+  project_id = azuredevops_project.project.id
+  name = "${azuredevops_project.project.name} Team 2"
+  administrators = [
+    data.azuredevops_group.builtin_project_contributors.descriptor
+  ]
+  members = [
+     data.azuredevops_group.builtin_project_readers.descriptor
+  ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
+- `project_id` - (Required) The Project ID.
+- `name` - (Required) The name of the Team.
+- `description`- (Optional) The description of the Team.
+- `administrators` - (Optional) List of subject descriptors to define administrators of the team.
+
+  > NOTE: It's possible to define team administrators both within the
+  > `azuredevops_team` resource via the `administrators` block and by using the
+  > `azuredevops_team_administrators` resource. However it's not possible to use
+  > both methods to manage team administrators, since there'll be conflicts.
+
+- `members` - (Optional) List of subject descriptors to define members of the team.
+
+  > NOTE: It's possible to define team members both within the
+  > `azuredevops_team` resource via the `members` block and by using the
+  > `azuredevops_team_members` resource. However it's not possible to use
+  > both methods to manage team members, since there'll be conflicts.
+
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the Team.
 
 ## Relevant Links
 
@@ -23,7 +75,11 @@ The following arguments are supported:
 
 ## Import
 
-The resource does not support import.
+Azure DevOps teams can be imported using the the complete resource id `<project_id>/<team_id>` e.g.
+
+```sh
+$ terraform import azuredevops_team.id aed075ec-e178-47b6-96c2-314850128307/cd4be753-fda8-4107-94c9-59d9b808d35e
+```
 
 ## PAT Permissions Required
 
