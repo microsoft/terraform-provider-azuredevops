@@ -33,23 +33,29 @@ func TestDataTeam_Read_DoesNotSwallowError(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
+	testProjectID := uuid.New()
 	testTeamName := "@@TEST TEAM@@"
 
 	coreClient.
 		EXPECT().
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
-			ProjectId:      converter.String(testProject.Id.String()),
+			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
 		}).
-		Return(&[]core.WebApiTeam{}, errors.New("@@GetTeams:Failed@@")).
+		Return(&[]core.WebApiTeam{}, errors.New("@@GetTeams@@failed@@")).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataTeam().Schema, nil)
-	resourceData.Set("project_id", testProject.Id.String())
+	resourceData.Set("project_id", testProjectID.String())
 	resourceData.Set("name", testTeamName)
 	err := dataTeamRead(resourceData, clients)
-	require.Contains(t, err.Error(), "@@GetTeams:Failed@@")
+
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "@@GetTeams@@failed@@")
+
+	require.Equal(t, testProjectID.String(), resourceData.Get("project_id"))
+	require.Equal(t, testTeamName, resourceData.Get("name"))
 }
 
 func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
@@ -67,6 +73,7 @@ func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
 		Ctx:            context.Background(),
 	}
 
+	testProjectID := uuid.New()
 	testTeamName := "@@TEST TEAM@@"
 	testTeamID := uuid.New()
 	testTeamDecription := "@@TEST TEAM@@DESCRIPTION@@"
@@ -74,7 +81,7 @@ func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
-			ProjectId:      converter.String(testProject.Id.String()),
+			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
 		}).
@@ -83,14 +90,19 @@ func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
 				Id:          &testTeamID,
 				Name:        converter.String("@@TEST TEAM INVALID@@"),
 				Description: &testTeamDecription,
-				ProjectId:   testProject.Id,
+				ProjectId:   &testProjectID,
 			},
 		}, nil).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataTeam().Schema, nil)
-	resourceData.Set("project_id", testProject.Id.String())
+	resourceData.Set("project_id", testProjectID.String())
 	resourceData.Set("name", testTeamName)
 	err := dataTeamRead(resourceData, clients)
+
+	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "Unable to find Team with name")
+	require.Equal(t, testProjectID.String(), resourceData.Get("project_id"))
+	require.Equal(t, testTeamName, resourceData.Get("name"))
+	require.Zero(t, resourceData.Get("description"))
 }
