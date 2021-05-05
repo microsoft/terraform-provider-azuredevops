@@ -79,10 +79,13 @@ func resourceTeamAdministratorsCreate(d *schema.ResourceData, m interface{}) err
 
 	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
 		administrators := tfhelper.ExpandStringSet(d.Get("administrators").(*schema.Set))
-		updateTeamAdministrators(d, clients, team, &administrators)
+		err := updateTeamAdministrators(d, clients, team, &administrators)
+		if err != nil {
+			return err
+		}
 	} else {
 		administratorsToAdd := d.Get("administrators").(*schema.Set)
-		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), securityhelper.PermissionTypeValues.Allow)
+		err := setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), securityhelper.PermissionTypeValues.Allow)
 		if err != nil {
 			return err
 		}
