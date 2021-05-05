@@ -340,10 +340,14 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 	if err != nil {
 		return err
 	}
-	if acl == nil {
-		return fmt.Errorf("Failed to load ACL for token %q", sn.token)
+
+	var aceMap map[string]security.AccessControlEntry
+	if acl == nil || acl.AcesDictionary == nil {
+		// create a dummy ACE map, so that we always create new ACE entries below
+		aceMap = map[string]security.AccessControlEntry{}
+	} else {
+		aceMap = *acl.AcesDictionary
 	}
-	aceMap := *acl.AcesDictionary
 
 	actionMap, err := sn.GetActionDefinitions()
 	if err != nil {
