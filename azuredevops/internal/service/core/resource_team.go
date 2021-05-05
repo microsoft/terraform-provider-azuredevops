@@ -387,16 +387,22 @@ func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, que
 	if err != nil {
 		return err
 	}
+	if idList == nil || len(*idList) != query.Count() {
+		return fmt.Errorf("Failed to load identity data for subjects")
+	}
 
 	for _, id := range *idList {
 		log.Printf("[TRACE] Adding member %s to team %s", id.Id.String(), *team.Name)
 
-		_, err := clients.IdentityClient.AddMember(clients.Ctx, identity.AddMemberArgs{
+		ok, err := clients.IdentityClient.AddMember(clients.Ctx, identity.AddMemberArgs{
 			ContainerId: converter.String(team.Id.String()),
 			MemberId:    converter.String(id.Id.String()),
 		})
 		if err != nil {
-			return fmt.Errorf("Error adding member to team: %+v", err)
+			return fmt.Errorf("Error adding member %s to team %s: %+v", *id.SubjectDescriptor, *team.Name, err)
+		}
+		if ok != nil && !*ok {
+			return fmt.Errorf("Failed adding member %s to team %s", *id.SubjectDescriptor, *team.Name)
 		}
 	}
 
@@ -409,9 +415,22 @@ func createTeamsTokenFunction(team *core.WebApiTeam) func(d *schema.ResourceData
 	}
 }
 
+var _teamSecurityNamespace *securityhelper.SecurityNamespace = nil
+
+func getIdentitySecurityNamespace(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam) (*securityhelper.SecurityNamespace, error) {
+	if _teamSecurityNamespace == nil {
+		var err error
+		_teamSecurityNamespace, err = securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return _teamSecurityNamespace, nil
+}
+
 // readTeamAdministrators returns the current list of team administrators as a set of SubjectDescriptors
 func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedClient, team *core.WebApiTeam) (*schema.Set, error) {
-	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
+	sn, err := getIdentitySecurityNamespace(d, clients, team)
 	if err != nil {
 		return nil, err
 	}
@@ -426,14 +445,15 @@ func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedCl
 		return nil, err
 	}
 
-	bit := *(*actionDefinitions)["ManageMembership"].Bit
 	adminDescriptorList := []string{}
-	for _, ace := range *acl.AcesDictionary {
-		if *ace.Allow&bit > 0 {
-			adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
+	if acl != nil && acl.AcesDictionary != nil {
+		bit := *(*actionDefinitions)["ManageMembership"].Bit
+		for _, ace := range *acl.AcesDictionary {
+			if *ace.Allow&bit > 0 {
+				adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
+			}
 		}
 	}
-
 	return readSubjectDescriptors(clients, &adminDescriptorList)
 }
 
@@ -481,9 +501,9 @@ func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.Ag
 		return nil
 	}
 
-	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.Identity, createTeamsTokenFunction(team))
+	sn, err := getIdentitySecurityNamespace(d, clients, team)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	principalPermissionCreator := func(query linq.Query, permission securityhelper.PermissionType) *[]securityhelper.SetPrincipalPermission {
