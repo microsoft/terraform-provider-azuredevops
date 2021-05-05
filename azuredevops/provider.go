@@ -57,6 +57,7 @@ func Provider() *schema.Provider {
 			"azuredevops_area_permissions":                  permissions.ResourceAreaPermissions(),
 			"azuredevops_iteration_permissions":             permissions.ResourceIterationPermissions(),
 			"azuredevops_build_definition_permissions":      permissions.ResourceBuildDefinitionPermissions(),
+			"azuredevops_project_releases_permissions": 	 permissions.ResourceReleasePermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
