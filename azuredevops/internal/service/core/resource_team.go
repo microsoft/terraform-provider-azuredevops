@@ -19,10 +19,11 @@ import (
 
 func ResourceTeam() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTeamCreate,
-		Read:   resourceTeamRead,
-		Update: resourceTeamUpdate,
-		Delete: resourceTeamDelete,
+		Create:   resourceTeamCreate,
+		Read:     resourceTeamRead,
+		Update:   resourceTeamUpdate,
+		Delete:   resourceTeamDelete,
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
