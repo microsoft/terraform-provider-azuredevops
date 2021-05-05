@@ -160,7 +160,10 @@ func resourceTeamAdministratorsUpdate(d *schema.ResourceData, m interface{}) err
 
 	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
 		administrators := tfhelper.ExpandStringSet(d.Get("administrators").(*schema.Set))
-		updateTeamAdministrators(d, clients, team, &administrators)
+		err = updateTeamAdministrators(d, clients, team, &administrators)
+		if err != nil {
+			return err
+		}
 	} else {
 		oldData, newData := d.GetChange("administrators")
 
@@ -206,7 +209,6 @@ func resourceTeamAdministratorsDelete(d *schema.ResourceData, m interface{}) err
 		if err != nil {
 			return err
 		}
-
 	} else {
 		administratorList = d.Get("administrators").(*schema.Set)
 	}

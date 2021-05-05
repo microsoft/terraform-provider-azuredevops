@@ -160,7 +160,10 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
 		members := tfhelper.ExpandStringSet(d.Get("members").(*schema.Set))
-		updateTeamMembers(clients, team, &members)
+		err = updateTeamMembers(clients, team, &members)
+		if err != nil {
+			return err
+		}
 	} else {
 		oldData, newData := d.GetChange("members")
 
