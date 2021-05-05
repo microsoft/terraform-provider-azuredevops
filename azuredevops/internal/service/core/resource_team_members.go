@@ -79,10 +79,13 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 
 	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
 		members := tfhelper.ExpandStringSet(d.Get("members").(*schema.Set))
-		updateTeamMembers(clients, team, &members)
+		err := updateTeamMembers(clients, team, &members)
+		if err != nil {
+			return err
+		}
 	} else {
 		membersToAdd := d.Get("members").(*schema.Set)
-		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()))
+		err := addTeamMembers(clients, team, linq.From(membersToAdd.List()))
 		if err != nil {
 			return err
 		}
