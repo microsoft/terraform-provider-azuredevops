@@ -111,7 +111,7 @@ func TestTeam_Create_EnsureTeamDeletedOnAddAdministratorsError(t *testing.T) {
 				},
 			},
 		}, nil).
-		Times(1)
+		Times(2)
 
 	adminSubjectDescriptor := "aad.ZmY0YWYyMjEtMWFhMi03YWNiLTllNGUtMGIwNzZiYTQ2Y2Yz"
 	adminID := uuid.New()
