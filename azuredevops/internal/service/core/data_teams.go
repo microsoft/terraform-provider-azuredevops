@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform/helper/hashcode"
@@ -18,7 +19,7 @@ func DataTeams() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"teams": {
@@ -73,61 +74,81 @@ func hashTeam(v interface{}) int {
 func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-
-	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
-		ProjectId:      converter.String(projectID),
-		Mine:           converter.Bool(false),
-		ExpandIdentity: converter.Bool(false),
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if teamList == nil || len(*teamList) <= 0 {
-		return nil
-	}
-
-	teams := make([]interface{}, len(*teamList))
-	for i, team := range *teamList {
-		members, err := readTeamMembers(clients, &team)
+	var projectIDList []string
+	data, ok := d.GetOk("project_id")
+	if ok {
+		projectIDList = []string{
+			data.(string),
+		}
+	} else {
+		projectList, err := getProjectsForStateAndName(clients, string(core.ProjectStateValues.All), "")
 		if err != nil {
 			return err
 		}
-		administrators, err := readTeamAdministrators(d, clients, &team)
+		linq.From(projectList).
+			Select(func(e interface{}) interface{} {
+				return e.(core.TeamProjectReference).Id.String()
+			}).
+			ToSlice(&projectIDList)
+	}
+
+	result := make([]interface{}, 0)
+	for _, projectID := range projectIDList {
+		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
+			ProjectId:      converter.String(projectID),
+			Mine:           converter.Bool(false),
+			ExpandIdentity: converter.Bool(false),
+		})
+
 		if err != nil {
 			return err
 		}
 
-		s := make(map[string]interface{})
-
-		if v := team.ProjectId; v != nil {
-			s["project_id"] = v.String()
-		}
-		if v := team.Id; v != nil {
-			s["id"] = v.String()
-		}
-		if v := team.Name; v != nil {
-			s["name"] = *v
-		}
-		if v := team.Description; v != nil {
-			s["description"] = *v
-		}
-		if administrators != nil {
-			s["administrators"] = administrators
-		}
-		if members != nil {
-			s["members"] = members
+		if teamList == nil || len(*teamList) <= 0 {
+			continue
 		}
 
-		teams[i] = s
+		teams := make([]interface{}, len(*teamList))
+		for i, team := range *teamList {
+			members, err := readTeamMembers(clients, &team)
+			if err != nil {
+				return err
+			}
+			administrators, err := readTeamAdministrators(d, clients, &team)
+			if err != nil {
+				return err
+			}
+
+			s := make(map[string]interface{})
+
+			if v := team.ProjectId; v != nil {
+				s["project_id"] = v.String()
+			}
+			if v := team.Id; v != nil {
+				s["id"] = v.String()
+			}
+			if v := team.Name; v != nil {
+				s["name"] = *v
+			}
+			if v := team.Description; v != nil {
+				s["description"] = *v
+			}
+			if administrators != nil {
+				s["administrators"] = administrators
+			}
+			if members != nil {
+				s["members"] = members
+			}
+
+			teams[i] = s
+		}
+
+		result = append(result, teams...)
 	}
-
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
 
-	if err := d.Set("teams", teams); err != nil {
+	if err := d.Set("teams", result); err != nil {
 		return fmt.Errorf("Error setting `teams`: %+v", err)
 	}
 
