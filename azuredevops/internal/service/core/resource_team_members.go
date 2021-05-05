@@ -12,6 +12,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -106,6 +107,10 @@ func resourceTeamMembersRead(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -131,7 +136,7 @@ func resourceTeamMembersRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
-	if !d.HasChange("members") {
+	if !d.HasChange("members") && !d.HasChange("mode") {
 		return nil
 	}
 

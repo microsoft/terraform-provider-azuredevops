@@ -11,7 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -81,7 +82,7 @@ func resourceTeamAdministratorsCreate(d *schema.ResourceData, m interface{}) err
 		updateTeamAdministrators(d, clients, team, &administrators)
 	} else {
 		administratorsToAdd := d.Get("administrators").(*schema.Set)
-		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), utils.PermissionTypeValues.Allow)
+		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), securityhelper.PermissionTypeValues.Allow)
 		if err != nil {
 			return err
 		}
@@ -106,6 +107,10 @@ func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error
 	})
 
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -131,7 +136,7 @@ func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceTeamAdministratorsUpdate(d *schema.ResourceData, m interface{}) error {
-	if !d.HasChange("administrators") {
+	if !d.HasChange("administrators") && !d.HasChange("mode") {
 		return nil
 	}
 
@@ -158,14 +163,14 @@ func resourceTeamAdministratorsUpdate(d *schema.ResourceData, m interface{}) err
 
 		// administrators that need to be added will be missing from the old data, but present in the new data
 		administratorsToAdd := newData.(*schema.Set).Difference(oldData.(*schema.Set))
-		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), utils.PermissionTypeValues.Allow)
+		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToAdd.List()), securityhelper.PermissionTypeValues.Allow)
 		if err != nil {
 			return err
 		}
 
 		// administrators that need to be removed will be missing from the new data, but present in the old data
 		administratorsToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
-		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToRemove.List()), utils.PermissionTypeValues.NotSet)
+		err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorsToRemove.List()), securityhelper.PermissionTypeValues.NotSet)
 		if err != nil {
 			return err
 		}
@@ -203,7 +208,7 @@ func resourceTeamAdministratorsDelete(d *schema.ResourceData, m interface{}) err
 		administratorList = d.Get("administrators").(*schema.Set)
 	}
 
-	err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorList.List()), utils.PermissionTypeValues.NotSet)
+	err = setTeamAdministratorsPermissions(d, clients, team, linq.From(administratorList.List()), securityhelper.PermissionTypeValues.NotSet)
 	if err != nil {
 		return err
 	}
