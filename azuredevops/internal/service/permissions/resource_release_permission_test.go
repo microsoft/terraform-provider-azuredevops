@@ -28,7 +28,7 @@ func TestReleasePermissions_createReleaseToken(t *testing.T) {
 	token, err = createReleaseToken(d, nil)
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, token)
+	assert.Equal(t, projectToken, token)
 
 	d = getReleasePermissionsResource(t, "")
 	token, err = createReleaseToken(d, nil)
