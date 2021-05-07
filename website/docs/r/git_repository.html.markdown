@@ -92,7 +92,12 @@ In addition to all arguments above, except `initialization`, the following attri
 
 ## Import
 
-Azure DevOps Repositories can be imported using the repo Guid e.g.
+Azure DevOps Repositories can be imported using the repo name or by the repo Guid e.g.
+
+```sh
+$ terraform import azuredevops_git_repository.repository projectName/repoName
+```
+or
 
 ```sh
 $ terraform import azuredevops_git_repository.repository projectName/00000000-0000-0000-0000-000000000000

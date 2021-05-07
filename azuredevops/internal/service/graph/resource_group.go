@@ -36,9 +36,6 @@ func ResourceGroup() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 				Optional:     true,
 				ForceNew:     true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return true
-				},
 			},
 
 			// ***
@@ -71,7 +68,6 @@ func ResourceGroup() *schema.Resource {
 				Type:          schema.TypeString,
 				ValidateFunc:  validation.NoZeroValues,
 				Optional:      true,
-				ForceNew:      true,
 				Computed:      true,
 				ConflictsWith: []string{"origin_id", "mail"},
 			},
@@ -277,18 +273,34 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	// using: PATCH https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
 	// d.Get("descriptor").(string) => {groupDescriptor}
 
+	var operations []webapi.JsonPatchOperation
+
+	if d.HasChange("display_name") {
+		displayName := d.Get("display_name")
+		patchDisplayNameOperation := webapi.JsonPatchOperation{
+			Op:    &webapi.OperationValues.Replace,
+			From:  nil,
+			Path:  converter.String("/displayName"),
+			Value: displayName.(string),
+		}
+		operations = append(operations, patchDisplayNameOperation)
+	}
+
 	if d.HasChange("description") {
 		description := d.Get("description")
+		patchDescriptionOperation := webapi.JsonPatchOperation{
+			Op:    &webapi.OperationValues.Replace,
+			From:  nil,
+			Path:  converter.String("/description"),
+			Value: description.(string),
+		}
+		operations = append(operations, patchDescriptionOperation)
+	}
+
+	if len(operations) > 0 {
 		uptGroupArgs := graph.UpdateGroupArgs{
 			GroupDescriptor: converter.String(d.Id()),
-			PatchDocument: &[]webapi.JsonPatchOperation{
-				{
-					Op:    &webapi.OperationValues.Replace,
-					From:  nil,
-					Path:  converter.String("/description"),
-					Value: description.(string),
-				},
-			},
+			PatchDocument:   &operations,
 		}
 
 		_, err := clients.GraphClient.UpdateGroup(clients.Ctx, uptGroupArgs)

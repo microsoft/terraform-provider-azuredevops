@@ -198,6 +198,21 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+func HclServiceEndpointGitHubEnterpriseResource(projectName string, serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
+	project_id             = azuredevops_project.project.id
+	service_endpoint_name  = "%s"
+	url                    = "https://github.contoso.com"
+	auth_personal {
+		personal_access_token = "hcl_test_token_basic"
+	}
+}`, serviceEndpointName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
 // HclServiceEndpointRunPipelineResource HCL describing an AzDO service endpoint
 func HclServiceEndpointRunPipelineResourceSimple(serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
