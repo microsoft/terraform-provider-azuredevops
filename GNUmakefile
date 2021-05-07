@@ -11,8 +11,6 @@ endif
 
 .EXPORT_ALL_VARIABLES:
   TF_SCHEMA_PANIC_ON_ERROR=1
-  GO111MODULE=on
-  GOFLAGS=-mod=vendor
 
 default: build
 
@@ -20,9 +18,9 @@ tools:
 	@echo "==> installing required tooling..."
 	@sh "$(CURDIR)/scripts/gogetcookie.sh"
 	@echo "GOPATH: $(GOPATH)"
-	go get -u github.com/client9/misspell/cmd/misspell@latest
-	go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
-	go get -u github.com/bflad/tfproviderdocs@latest
+	go install github.com/client9/misspell/cmd/misspell@latest
+	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
+	go install github.com/bflad/tfproviderdocs@latest
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.27.0
 
 build: fmtcheck check-vendor-vs-mod
