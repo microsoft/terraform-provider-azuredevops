@@ -20,9 +20,9 @@ tools:
 	@echo "==> installing required tooling..."
 	@sh "$(CURDIR)/scripts/gogetcookie.sh"
 	@echo "GOPATH: $(GOPATH)"
-	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
-	GO111MODULE=off go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint
-	GO111MODULE=off go get -u github.com/bflad/tfproviderdocs
+	go get -u github.com/client9/misspell/cmd/misspell
+	go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint
+	go get -u github.com/bflad/tfproviderdocs
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.27.0
 
 build: fmtcheck check-vendor-vs-mod
