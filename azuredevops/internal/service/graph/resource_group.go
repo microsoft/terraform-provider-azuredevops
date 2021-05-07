@@ -36,9 +36,6 @@ func ResourceGroup() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 				Optional:     true,
 				ForceNew:     true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return true
-				},
 			},
 
 			// ***
