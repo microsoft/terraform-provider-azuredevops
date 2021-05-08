@@ -19,7 +19,7 @@ pr:
       - '/**/*.md'
 
 jobs:
-  - template: ./ci.yaml
+  - template: ./ci.yml
     parameters:
       unitTest: true
       

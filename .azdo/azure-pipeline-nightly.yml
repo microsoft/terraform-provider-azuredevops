@@ -6,7 +6,7 @@ schedules:
         - 'master'
 
 jobs:
-  - template: ./ci.yaml
+  - template: ./ci.yml
     parameters:
       maxParallel: 1 # any more and we get throttled by AzDO!
 
