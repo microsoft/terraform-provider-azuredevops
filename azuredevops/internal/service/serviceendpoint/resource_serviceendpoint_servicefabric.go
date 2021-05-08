@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -13,6 +14,7 @@ import (
 const (
 	resourceBlockServiceFabricAzureActiveDirectory = "azure_active_directory"
 	resourceBlockServiceFabricCertificate          = "certificate"
+	resourceBlockServiceFabricNone                 = "none"
 )
 
 // ResourceServiceEndpointServiceFabric schema and implementation for ServiceFabric service endpoint resource
@@ -54,7 +56,7 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 				secretHashKeyClientCertificatePassword: secretHashSchemaClientCertificatePassword,
 			},
 		},
-		ConflictsWith: []string{resourceBlockServiceFabricAzureActiveDirectory},
+		ConflictsWith: []string{resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricNone},
 	}
 
 	secretHashKeyPassword, secretHashSchemaPassword := tfhelper.GenerateSecreteMemoSchema("password")
@@ -82,7 +84,29 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 				secretHashKeyPassword: secretHashSchemaPassword,
 			},
 		},
-		ConflictsWith: []string{resourceBlockServiceFabricCertificate},
+		ConflictsWith: []string{resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone},
+	}
+
+	r.Schema[resourceBlockServiceFabricNone] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"unsecured": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Skip using windows security for authentication.",
+				},
+				"cluster_spn": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
+				},
+			},
+		},
+		ConflictsWith: []string{resourceBlockServiceFabricCertificate, resourceBlockServiceFabricAzureActiveDirectory},
 	}
 
 	return r
@@ -148,7 +172,21 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 		return serviceEndpoint, projectID, nil
 	}
 
-	return nil, nil, fmt.Errorf("One of %s or %s blocks must be specified", resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricCertificate)
+	none, noneExists := d.GetOk(resourceBlockServiceFabricNone)
+	if noneExists {
+		configuration := none.([]interface{})[0].(map[string]interface{})
+		parameters := map[string]string{
+			"Unsecured":  strconv.FormatBool(configuration["unsecured"].(bool)),
+			"ClusterSpn": configuration["cluster_spn"].(string),
+		}
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &parameters,
+			Scheme:     converter.String("None"),
+		}
+		return serviceEndpoint, projectID, nil
+	}
+
+	return nil, nil, fmt.Errorf("One of %s or %s or %s blocks must be specified", resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone)
 }
 
 func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map[string]interface{}) map[string]string {
@@ -182,6 +220,18 @@ func flattenServiceFabricAzureActiveDirectory(serviceEndpoint *serviceendpoint.S
 	return result
 }
 
+func flattenServiceFabricNone(serviceEndpoint *serviceendpoint.ServiceEndpoint) interface{} {
+	unsecured, err := strconv.ParseBool((*serviceEndpoint.Authorization.Parameters)["Unsecured"])
+	if err != nil {
+		return err
+	}
+	result := []map[string]interface{}{{
+		"unsecured":   unsecured,
+		"cluster_spn": (*serviceEndpoint.Authorization.Parameters)["ClusterSpn"],
+	}}
+	return result
+}
+
 func flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint *serviceendpoint.ServiceEndpoint) []map[string]interface{} {
 	certLookup := (*serviceEndpoint.Authorization.Parameters)["certLookup"]
 	result := []map[string]interface{}{{
@@ -210,6 +260,9 @@ func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint
 		newHashPassword, hashKeyPassword := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceFabricAzureActiveDirectory, d.Get("azure_active_directory.0").(map[string]interface{}), "password")
 		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(serviceEndpoint, hashKeyPassword, newHashPassword)
 		d.Set(resourceBlockServiceFabricAzureActiveDirectory, azureActiveDirectory)
+	case "None":
+		none := flattenServiceFabricNone(serviceEndpoint)
+		d.Set(resourceBlockServiceFabricNone, none)
 	}
 
 	d.Set("cluster_endpoint", (*serviceEndpoint.Url))

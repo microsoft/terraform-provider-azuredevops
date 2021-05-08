@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_github
+// +build all resource_serviceendpoint_service_faric
 // +build !exclude_serviceendpoints
 
 package serviceendpoint

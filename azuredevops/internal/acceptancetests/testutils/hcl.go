@@ -383,8 +383,11 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 }
 
 // HclServiceEndpointServiceFabricResource HCL describing an AzDO service endpoint
-func HclServiceEndpointServiceFabricResource(projectName string, serviceEndpointName string) string {
-	serviceEndpointResource := fmt.Sprintf(`
+func HclServiceEndpointServiceFabricResource(projectName string, serviceEndpointName string, authorizationType string) string {
+	var serviceEndpointResource string
+	switch authorizationType {
+	case "Certificate":
+		serviceEndpointResource = fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
@@ -396,7 +399,31 @@ resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
     client_certificate_password   = "test"
   }
 }`, serviceEndpointName)
-
+	case "UsernamePassword":
+		serviceEndpointResource = fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  cluster_endpoint      = "tcp://test"
+  azure_active_directory {
+    server_certificate_lookup     = "Thumbprint"
+    server_certificate_thumbprint = "test"
+    username                      = "test"
+    password                      = "test"
+  }
+}`, serviceEndpointName)
+	case "None":
+		serviceEndpointResource = fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  cluster_endpoint      = "tcp://test"
+  none {
+    unsecured   = false
+    cluster_spn = "test"
+  }
+}`, serviceEndpointName)
+	}
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }

@@ -42,6 +42,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_github_enterprise": serviceendpoint.ResourceServiceEndpointGitHubEnterprise(),
 			"azuredevops_serviceendpoint_kubernetes":        serviceendpoint.ResourceServiceEndpointKubernetes(),
 			"azuredevops_serviceendpoint_runpipeline":       serviceendpoint.ResourceServiceEndpointRunPipeline(),
+			"azuredevops_serviceendpoint_servicefabric":     serviceendpoint.ResourceServiceEndpointServiceFabric(),
 			"azuredevops_serviceendpoint_sonarqube":         serviceendpoint.ResourceServiceEndpointSonarQube(),
 			"azuredevops_serviceendpoint_ssh":               serviceendpoint.ResourceServiceEndpointSSH(),
 			"azuredevops_serviceendpoint_npm":               serviceendpoint.ResourceServiceEndpointNpm(),
@@ -57,7 +58,6 @@ func Provider() *schema.Provider {
 			"azuredevops_area_permissions":                  permissions.ResourceAreaPermissions(),
 			"azuredevops_iteration_permissions":             permissions.ResourceIterationPermissions(),
 			"azuredevops_build_definition_permissions":      permissions.ResourceBuildDefinitionPermissions(),
-			"azuredevops_serviceendpoint_servicefabric":    serviceendpoint.ResourceServiceEndpointServiceFabric(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
