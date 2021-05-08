@@ -9,7 +9,7 @@ jobs:
   - template: ./ci.yml
     parameters:
       maxParallel: 1 # any more and we get throttled by AzDO!
-
+      accTest: true
       goVersions:
         - value: '1.16.2'
           ymlSafeName: '1_16_2'
@@ -17,22 +17,3 @@ jobs:
       vmImages:
         - value: 'ubuntu-20.04'
           ymlSafeName: ubuntu_20_04
-
-  - job: "AccTest"
-    displayName: "AccTest"
-    timeoutInMinutes: 120
-    steps:
-      - bash: |
-          #!/usr/bin/env bash
-          cd "$BUILD_SOURCESDIRECTORY"
-          make testacc
-        displayName: 'Run All Tests'
-        env:
-          AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
-          AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
-          AZDO_GITHUB_SERVICE_CONNECTION_PAT: $(ACC_TEST_GH_PAT)
-          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME)
-          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL)
-          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD)
-          AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME: $(AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME)
-          AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD: $(AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD)
