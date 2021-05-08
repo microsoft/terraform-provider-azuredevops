@@ -1,22 +1,38 @@
 schedules:
-- cron: "0 0 * * *"
-  displayName: "Nightly Build"
-  branches:
-    include:
-    - 'master'
+  - cron: "0 0 * * *"
+    displayName: "Nightly Build"
+    branches:
+      include:
+        - 'master'
 
 jobs:
-- template: ./ci.yml
-  parameters:
-    maxParallel: 1 # any more and we get throttled by AzDO!
+  - template: ./ci.yml
+    parameters:
+      maxParallel: 1 # any more and we get throttled by AzDO!
 
-    goVersions:
-    - value: '1.14.10'
-      ymlSafeName: '1_14_10'
+      goVersions:
+        - value: '1.16.2'
+          ymlSafeName: '1_16_2'
 
-    vmImages:
-    - value: 'macOS-10.14'
-      ymlSafeName: 'macos_10_14'
-  
-    - value: 'ubuntu-16.04'
-      ymlSafeName: ubuntu_16_04
+      vmImages:
+        - value: 'ubuntu-20.04'
+          ymlSafeName: ubuntu_20_04
+
+  - job: "AccTest"
+    displayName: "AccTest"
+    timeoutInMinutes: 120
+    steps:
+      - bash: |
+          #!/usr/bin/env bash
+          cd "$BUILD_SOURCESDIRECTORY"
+          make testacc
+        displayName: 'Run All Tests'
+        env:
+          AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
+          AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
+          AZDO_GITHUB_SERVICE_CONNECTION_PAT: $(ACC_TEST_GH_PAT)
+          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME)
+          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL)
+          AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD)
+          AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME: $(AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME)
+          AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD: $(AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD)

@@ -459,7 +459,7 @@ func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
-	return nil
+	return resourceBuildDefinitionRead(d, m)
 }
 
 func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
@@ -499,19 +499,25 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
 	}
 
-	reportBuildStatus, err := strconv.ParseBool((*buildDefinition.Repository.Properties)["reportBuildStatus"])
-	if err != nil {
-		return fmt.Errorf("Unable to parse `reportBuildStatus` property: %+v ", err)
-	}
-	return []map[string]interface{}{{
+	repo := []map[string]interface{}{{
 		"yml_path":              yamlFilePath,
 		"repo_id":               *buildDefinition.Repository.Id,
 		"repo_type":             *buildDefinition.Repository.Type,
 		"branch_name":           *buildDefinition.Repository.DefaultBranch,
-		"service_connection_id": (*buildDefinition.Repository.Properties)["connectedServiceId"],
 		"github_enterprise_url": githubEnterpriseUrl,
-		"report_build_status":   reportBuildStatus,
 	}}
+
+	if *buildDefinition.Repository.Properties != nil {
+		if connectionID, ok := (*buildDefinition.Repository.Properties)["connectedServiceId"]; ok {
+			repo[0]["service_connection_id"] = connectionID
+		}
+
+		if buildStatus, ok := (*buildDefinition.Repository.Properties)["reportBuildStatus"]; ok {
+			reportBuildStatus, _ := strconv.ParseBool(buildStatus)
+			repo[0]["report_build_status"] = reportBuildStatus
+		}
+	}
+	return repo
 }
 
 func flattenBuildDefinitionBranchOrPathFilter(m []interface{}) []interface{} {

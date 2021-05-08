@@ -15,7 +15,7 @@ func TestAccResourceAgentQueue_CreateAndUpdate(t *testing.T) {
 	poolName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_agent_queue.q"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

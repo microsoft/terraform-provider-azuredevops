@@ -19,7 +19,7 @@ func TestAccServiceEndpointDockerRegistry_CreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_dockerregistry"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testutils.PreCheck(t, nil)
 		},

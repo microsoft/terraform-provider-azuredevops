@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -39,11 +40,11 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGitRepositoryCreate,
-		Read:   resourceGitRepositoryRead,
-		Update: resourceGitRepositoryUpdate,
-		Delete: resourceGitRepositoryDelete,
-
+		Create:   resourceGitRepositoryCreate,
+		Read:     resourceGitRepositoryRead,
+		Update:   resourceGitRepositoryUpdate,
+		Delete:   resourceGitRepositoryDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:             schema.TypeString,
@@ -118,7 +119,6 @@ func ResourceGitRepository() *schema.Resource {
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
 							RequiredWith: []string{"initialization.0.source_url"},
-							Default:      "Git",
 						},
 						"source_url": {
 							Type:         schema.TypeString,
@@ -357,6 +357,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	d.SetId("")
 	return nil
 }
@@ -366,7 +367,6 @@ func deleteGitRepository(clients *client.AggregatedClient, repoID string) error 
 	if err != nil {
 		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
 	}
-
 	return clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &uuid,
 	})

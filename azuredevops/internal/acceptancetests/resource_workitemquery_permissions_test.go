@@ -50,7 +50,7 @@ func TestAccWorkItemQueryPermissions_SetProjectPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -85,7 +85,7 @@ func TestAccWorkItemQueryPermissions_UpdateProjectPermissions(t *testing.T) {
 	})
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -128,7 +128,7 @@ func TestAccWorkItemQueryPermissions_SetSharedQueriesPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "/", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -159,7 +159,7 @@ func TestAccWorkItemQueryPermissions_SetInvalidFolderPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "/invalid", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

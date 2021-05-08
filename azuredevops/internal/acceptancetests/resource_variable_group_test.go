@@ -29,7 +29,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,
@@ -67,6 +67,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccVariableGroupKeyVault_CreateAndUpdate: azure key vault not provisioned on test infrastructure")
 	projectName := testutils.GenerateResourceName()
 
 	vargroupKeyvault := testutils.GenerateResourceName()
@@ -74,7 +75,7 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 	allowAccessFalse := false
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,

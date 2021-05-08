@@ -19,9 +19,10 @@ type autoReviewerPolicySettings struct {
 }
 
 const (
-	autoReviewerIds = "auto_reviewer_ids"
-	pathFilters     = "path_filters"
-	displayMessage  = "message"
+	autoReviewerIds        = "auto_reviewer_ids"
+	pathFilters            = "path_filters"
+	displayMessage         = "message"
+	schemaSubmitterCanVote = "submitter_can_vote"
 )
 
 // ResourceBranchPolicyAutoReviewers schema and implementation for automatic code reviewer policy resource
@@ -71,13 +72,13 @@ func autoReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Polic
 	}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 	if err != nil {
-		return fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
+		return fmt.Errorf("unable to marshal policy settings into JSON: %+v", err)
 	}
 
 	policySettings := autoReviewerPolicySettings{}
 	err = json.Unmarshal(policyAsJSON, &policySettings)
 	if err != nil {
-		return fmt.Errorf("Unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
+		return fmt.Errorf("unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
 	}
 
 	settingsList := d.Get(SchemaSettings).([]interface{})
@@ -87,7 +88,7 @@ func autoReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Polic
 	settings[autoReviewerIds] = policySettings.AutoReviewerIds
 	settings[pathFilters] = policySettings.PathFilters
 	settings[displayMessage] = policySettings.DisplayMessage
-	d.Set(SchemaSettings, settingsList)
+	_ = d.Set(SchemaSettings, settingsList)
 	return nil
 }
 

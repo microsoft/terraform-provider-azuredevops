@@ -28,7 +28,7 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	gitRepoNameSecond := testutils.GenerateResourceName()
 	tfRepoNode := "azuredevops_git_repository.repository"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGitRepoDestroyed,
@@ -78,7 +78,7 @@ func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
 	projectResource := testutils.HclProjectResource(projectName)
 	gitRepoResource := fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -96,7 +96,7 @@ func TestAccGitRepo_Create_Import(t *testing.T) {
 	gitRepoName := testutils.GenerateResourceName()
 	repoImportConfig := testutils.HclProjectGitRepositoryImport(gitRepoName, projectName)
 	tfRepoNode := "azuredevops_git_repository.repository"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -124,7 +124,7 @@ func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 	gitRepoName := testutils.GenerateResourceName()
 	tfRepoNode := "azuredevops_git_repository.repository"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGitRepoDestroyed,
@@ -149,7 +149,7 @@ func TestAccGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	gitRepoName := testutils.GenerateResourceName()
 	tfRepoNode := "azuredevops_git_repository.repository"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGitRepoDestroyed,
@@ -175,7 +175,7 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 	tfRepoNode := "azuredevops_git_repository.repository"
 	tfForkedRepoNode := "azuredevops_git_repository.gitforkedrepo"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGitRepoDestroyed,

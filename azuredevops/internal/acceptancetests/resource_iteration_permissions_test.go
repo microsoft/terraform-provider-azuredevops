@@ -61,7 +61,7 @@ func TestAccIterationPermissions_SetPermissions(t *testing.T) {
 	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
 	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -119,7 +119,7 @@ func TestAccIterationPermissions_UpdatePermissions(t *testing.T) {
 	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
 	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

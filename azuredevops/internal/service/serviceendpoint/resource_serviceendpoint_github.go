@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	personalAccessToken = "personal_access_token"
+	personalAccessTokenGithub = "personal_access_token"
 )
 
 // ResourceServiceEndpointGitHub schema and implementation for github service endpoint resource
@@ -19,7 +19,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHub, expandServiceEndpointGitHub)
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			personalAccessToken: {
+			personalAccessTokenGithub: {
 				Type:         schema.TypeString,
 				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
@@ -29,7 +29,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessToken)
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithub)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:          schema.TypeSet,
@@ -68,7 +68,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 
 	if config, ok := d.GetOk("auth_personal"); ok {
 		scheme = "Token"
-		parameters = expandAuthPersonalSet(config.(*schema.Set))
+		parameters = expandAuthPersonalSetGithub(config.(*schema.Set))
 	}
 
 	if config, ok := d.GetOk("auth_oauth"); ok {
@@ -86,10 +86,10 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	return serviceEndpoint, projectID, nil
 }
 
-func expandAuthPersonalSet(d *schema.Set) map[string]string {
+func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	authPerson["AccessToken"] = val[personalAccessToken].(string)
+	authPerson["AccessToken"] = val[personalAccessTokenGithub].(string)
 	return authPerson
 }
 
@@ -123,7 +123,7 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessToken)
+			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
 			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}

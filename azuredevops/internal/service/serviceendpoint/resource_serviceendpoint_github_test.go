@@ -152,7 +152,7 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 func configureAuthPersonal(d *schema.ResourceData) {
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
-			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
+			personalAccessTokenGithub: "UNIT_TEST_ACCESS_TOKEN",
 		},
 	})
 }

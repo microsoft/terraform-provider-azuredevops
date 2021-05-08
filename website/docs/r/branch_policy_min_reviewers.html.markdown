@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_branch_policy_min_reviewers
 
-Manages a minimum reviewer branch policy within Azure DevOps.
+Branch policy for reviewers on pull requests. Includes the minimum number of reviewers and other conditions.
 
 ## Example Usage
 
@@ -31,8 +31,12 @@ resource "azuredevops_branch_policy_min_reviewers" "p" {
   blocking = true
 
   settings {
-    reviewer_count     = 2
+    reviewer_count     = 7
     submitter_can_vote = false
+    last_pusher_cannot_approve = true
+    allow_completion_with_rejects_or_waits = false
+    on_push_reset_approved_votes = true # OR on_push_reset_all_votes = true
+    on_last_iteration_require_vote = false
 
     scope {
       repository_id  = azuredevops_git_repository.r.id
@@ -41,7 +45,7 @@ resource "azuredevops_branch_policy_min_reviewers" "p" {
     }
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
+      repository_id  = null               # All repositories in the project
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
@@ -60,8 +64,16 @@ The following arguments are supported:
 
 A `settings` block supports the following:
 
-- `reviewer_count` - (Required) The number of reviewrs needed to approve.
-- `submitter_can_vote` - (Optional) Controls whether or not the submitter's vote counts. Defaults to `false`.
+- `reviewer_count` - (Required) The number of reviewers needed to approve.
+- `submitter_can_vote` - (Optional) Allow requesters to approve their own changes. Defaults to `false`.
+- `last_pusher_cannot_approve`(Optional) Prohibit the most recent pusher from approving their own changes. Defaults to `false`.
+- `allow_completion_with_rejects_or_waits` (Optional) Allow completion even if some reviewers vote to wait or reject. Defaults to `false`.
+- `on_push_reset_approved_votes` (Optional) When new changes are pushed reset all approval votes (does not reset votes to reject or wait). Defaults to `false`.
+- `on_push_reset_all_votes` (Optional) When new changes are pushed reset all code reviewer votes. Defaults to `false`.
+- `on_last_iteration_require_vote` (Optional) On last iteration require vote. Defaults to `false`.
+
+Only one of `on_push_reset_all_votes` or `on_push_reset_approved_votes` may be specified. 
+
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 
 A `settings` `scope` block supports the following:
@@ -85,5 +97,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_branch_policy_min_reviewers.p aa4a9756-8a86-4588-86d7-b3ee2d88b033/60
+$ terraform import azuredevops_branch_policy_min_reviewers.p 00000000-0000-0000-0000-000000000000/0
 ```

@@ -13,10 +13,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
+// TestAccBranchPolicyMinReviewers_CreateAndUpdate - acceptance test for min reviewers branch policy attributes
 func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -26,6 +27,12 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "true"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_approved_votes", "true"),
 				),
 			}, {
 				Config: getMinReviewersHcl(false, false, 2, true),
@@ -33,6 +40,12 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
+					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_all_votes", "true"),
 				),
 			}, {
 				ResourceName:      minReviewerTfNode,
@@ -44,13 +57,20 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, submitterCanVote bool) string {
+func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool) string {
+	votes := "all"
+	if !flag {
+		votes = "approved"
+	}
 	settings := fmt.Sprintf(
 		`
-		reviewer_count     = %d
-		submitter_can_vote = %t
-		`, reviewers, submitterCanVote,
-	)
+		reviewer_count     = %[1]d
+		submitter_can_vote = %[2]t
+		allow_completion_with_rejects_or_waits =%[2]t
+		last_pusher_cannot_approve = %[2]t
+		on_last_iteration_require_vote = %[2]t
+		on_push_reset_%[3]s_votes = true
+		`, reviewers, flag, votes)
 
 	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings)
 }
@@ -58,7 +78,7 @@ func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, submitterCan
 func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
 	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -107,7 +127,7 @@ func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, mes
 
 func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
 	buildValidationTfNode := "azuredevops_branch_policy_build_validation.p"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -154,7 +174,7 @@ func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
 	resourceName := "azuredevops_branch_policy_work_item_linking"
 	workItemLinkingTfNode := fmt.Sprintf("%s.p", resourceName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -182,7 +202,7 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 	resourceName := "azuredevops_branch_policy_comment_resolution"
 	workItemLinkingTfNode := fmt.Sprintf("%s.p", resourceName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -204,6 +224,53 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccBranchPolicyMergeTypes_CreateAndUpdate(t *testing.T) {
+	buildValidationTfNode := "azuredevops_branch_policy_merge_types.p"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getMergeTypesHcl(true, true, true, true, true, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_and_fast_forward", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_basic_no_fast_forward", "true"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_with_merge", "true"),
+				),
+			}, {
+				Config: getMergeTypesHcl(false, false, false, false, false, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_and_fast_forward", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_basic_no_fast_forward", "false"),
+					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_with_merge", "false"),
+				),
+			}, {
+				ResourceName:      buildValidationTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(buildValidationTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func getMergeTypesHcl(enabled bool, blocking bool, allowSquash bool, allowRebase bool, allowNoFastForward bool, allowRebaseMerge bool) string {
+	settings := fmt.Sprintf(
+		`
+		allow_squash = %t
+		allow_rebase_and_fast_forward = %t
+		allow_basic_no_fast_forward = %t
+		allow_rebase_with_merge = %t
+		`, allowSquash, allowRebase, allowNoFastForward, allowRebaseMerge,
+	)
+
+	return getBranchPolicyHcl("azuredevops_branch_policy_merge_types", enabled, blocking, settings)
 }
 
 func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settings string) string {

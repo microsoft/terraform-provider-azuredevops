@@ -129,7 +129,7 @@ func TestAccServiceEndpointAws_requiresImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclSvcEndpointAwsResourceRequiresImport(projectName, serviceEndpointName),
-				ExpectError: requiresImportError(serviceEndpointName),
+				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})

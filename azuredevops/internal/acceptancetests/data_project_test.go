@@ -44,7 +44,7 @@ func TestAccProject_DataSource(t *testing.T) {
 			}`, testutils.HclProjectResource(projectName), tc.Identifier, tc.IdentifierOnProject)
 
 			tfNode := "data.azuredevops_project.project"
-			resource.Test(t, resource.TestCase{
+			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                  func() { testutils.PreCheck(t, nil) },
 				Providers:                 testutils.GetProviders(),
 				PreventPostDestroyRefresh: true,
@@ -69,7 +69,7 @@ func TestAccProject_DataSource(t *testing.T) {
 func TestAccProject_DataSource_ErrorWhenBothNameAndIdSet(t *testing.T) {
 	dataProject := `data "azuredevops_project" "project" {}`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -89,7 +89,7 @@ func TestAccProject_DataSource_ErrorWhenDescriptionSet(t *testing.T) {
 		description = "A project description"
 	}`, projectName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

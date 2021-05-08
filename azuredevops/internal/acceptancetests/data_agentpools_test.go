@@ -27,7 +27,7 @@ func TestAccAgentPools_DataSource(t *testing.T) {
 
 	tfNode := "data.azuredevops_agent_pools.pools"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

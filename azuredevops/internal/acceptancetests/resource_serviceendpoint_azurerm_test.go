@@ -13,13 +13,14 @@ import (
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -51,27 +52,44 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", ""),
 				),
 			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate: test resource limit")
+
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	tfSvcEpNode := resourceType + ".serviceendpointrm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
 				),
 			},
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
 				),
 			},

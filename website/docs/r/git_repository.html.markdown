@@ -69,7 +69,7 @@ The following arguments are supported:
 `initialization` - (Required) block supports the following:
 
 - `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`. Defaults to `Uninitialized`.
-- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`. Defaults to `Git`.
+- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
 
 ## Attributes Reference
@@ -89,3 +89,16 @@ In addition to all arguments above, except `initialization`, the following attri
 ## Relevant Links
 
 - [Azure DevOps Service REST API 5.1 - Git Repositories](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-5.1)
+
+## Import
+
+Azure DevOps Repositories can be imported using the repo name or by the repo Guid e.g.
+
+```sh
+$ terraform import azuredevops_git_repository.repository projectName/repoName
+```
+or
+
+```sh
+$ terraform import azuredevops_git_repository.repository projectName/00000000-0000-0000-0000-000000000000
+```

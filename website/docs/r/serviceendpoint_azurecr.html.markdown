@@ -51,6 +51,7 @@ The following attributes are exported:
 - `id` - The ID of the service endpoint.
 - `project_id` - The project ID or project name.
 - `service_endpoint_name` - The Service Endpoint name.
+- `service_principal_id` - The service principal ID.
 
 ## Relevant Links
 
@@ -62,5 +63,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint Azure Container Registry can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_azurecr.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+$ terraform import azuredevops_serviceendpoint_azurecr.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
