@@ -1,3 +1,4 @@
+SHELL:=/bin/bash
 TEST?=$$(go list ./azuredevops/internal/acceptancetests |grep -v 'vendor')
 UNITTEST?=$$(go list ./... |grep -v 'vendor')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
@@ -75,7 +76,6 @@ vet:
 		echo "and fix them if necessary before submitting the code for review."; \
 		exit 1; \
 	fi
-
 
 ci: check-vendor-vs-mod lint test
 
