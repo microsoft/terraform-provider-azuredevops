@@ -1,4 +1,3 @@
-SHELL=/bin/bash
 TEST?=$$(go list ./azuredevops/internal/acceptancetests |grep -v 'vendor')
 UNITTEST?=$$(go list ./... |grep -v 'vendor')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
