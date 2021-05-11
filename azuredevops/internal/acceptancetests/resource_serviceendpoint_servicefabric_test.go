@@ -19,7 +19,7 @@ func TestAccServiceEndpointServiceFabric_CertificateCreateAndUpdate(t *testing.T
 
 	resourceType := "azuredevops_serviceendpoint_servicefabric"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -65,7 +65,7 @@ func TestAccServiceEndpointServiceFabric_UsernamePasswordCreateAndUpdate(t *test
 
 	resourceType := "azuredevops_serviceendpoint_servicefabric"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -109,7 +109,7 @@ func TestAccServiceEndpointServiceFabric_NoneCreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_servicefabric"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),

@@ -43,13 +43,15 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 					Required:         true,
 					Description:      "Base64 encoding of the cluster's client certificate file.",
 					Sensitive:        true,
+					ValidateFunc:     validation.StringIsNotEmpty,
 					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 				},
 				"client_certificate_password": {
 					Type:             schema.TypeString,
-					Required:         true,
+					Optional:         true,
 					Description:      "Password for the certificate.",
 					Sensitive:        true,
+					ValidateFunc:     validation.StringIsNotEmpty,
 					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 				},
 				secretHashKeyClientCertificate:         secretHashSchemaClientCertificate,
@@ -70,15 +72,17 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 				"server_certificate_thumbprint":  servicefabricServerCertificateThumbprintSchema(resourceBlockServiceFabricAzureActiveDirectory),
 				"server_certificate_common_name": servicefabricServerCertificateCommonNameSchema(resourceBlockServiceFabricAzureActiveDirectory),
 				"username": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Specify an Azure Active Directory account.",
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+					Description:  "Specify an Azure Active Directory account.",
 				},
 				"password": {
 					Type:             schema.TypeString,
 					Required:         true,
 					Description:      "Password for the Azure Active Directory account.",
 					Sensitive:        true,
+					ValidateFunc:     validation.StringIsNotEmpty,
 					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 				},
 				secretHashKeyPassword: secretHashSchemaPassword,
@@ -100,9 +104,10 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 					Description: "Skip using windows security for authentication.",
 				},
 				"cluster_spn": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
+					Type:         schema.TypeString,
+					Optional:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+					Description:  "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
 				},
 			},
 		},
@@ -128,6 +133,7 @@ func servicefabricServerCertificateThumbprintSchema(blockName string) *schema.Sc
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')",
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_common_name", blockName)},
 	}
 }
@@ -137,6 +143,7 @@ func servicefabricServerCertificateCommonNameSchema(blockName string) *schema.Sc
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')",
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_thumbprint", blockName)},
 	}
 }

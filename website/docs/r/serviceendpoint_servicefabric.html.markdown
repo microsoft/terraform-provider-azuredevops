@@ -89,9 +89,9 @@ resource "azuredevops_serviceendpoint_servicefabric" "test" {
 The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
-- `  service_endpoint_name = "Sample Service Fabric"
-  description           = "Managed by Terraform"faults to `Managed by Terraform`.
+- `service_endpoint_name` - (Required) The Service Endpoint name.
 - `cluster_endpoint` - (Required) Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.
+- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 - One of either `certificate` or `azure_active_directory` or `none` blocks
 
@@ -100,7 +100,7 @@ The following arguments are supported:
   - `server_certificate_thumbprint` - (Optional) The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')
   - `server_certificate_common_name` - (Optional) The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')
   - `client_certificate` - (Required) Base64 encoding of the cluster's client certificate file.
-  - `client_certificate_password` - (Required) Password for the certificate.
+  - `client_certificate_password` - (Optional) Password for the certificate.
 
 - `azure_active_directory`
   - `server_certificate_lookup` - (Required) Verification mode for the cluster. Possible values include `Thumbprint` or `CommonName`.
@@ -130,5 +130,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint Service Fabric can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_servicefabric.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+$ terraform import azuredevops_serviceendpoint_servicefabric.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
