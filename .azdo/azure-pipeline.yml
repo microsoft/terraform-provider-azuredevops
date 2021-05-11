@@ -21,6 +21,7 @@ pr:
 jobs:
   - template: ./ci.yml
     parameters:
+      unitTest: true
       goVersions:
         - value: '1.16.2'
           ymlSafeName: '1_16_2'
