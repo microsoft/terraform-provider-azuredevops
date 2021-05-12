@@ -106,7 +106,7 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 				"cluster_spn": {
 					Type:         schema.TypeString,
 					Optional:     true,
-					ValidateFunc: validation.StringIsNotEmpty,
+					ValidateFunc: validation.StringLenBetween(0, 1024),
 					Description:  "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
 				},
 			},
