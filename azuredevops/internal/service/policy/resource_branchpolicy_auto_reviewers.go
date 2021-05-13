@@ -52,9 +52,8 @@ func ResourceBranchPolicyAutoReviewers() *schema.Resource {
 	}
 	settingsSchema[displayMessage] = &schema.Schema{
 		Type:     schema.TypeString,
-		Required: false,
-		Default:  "",
 		Optional: true,
+		Default:  "",
 	}
 	settingsSchema[schemaSubmitterCanVote] = &schema.Schema{
 		Type:     schema.TypeBool,

@@ -18,6 +18,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_work_item_linking",
 		"azuredevops_branch_policy_comment_resolution",
 		"azuredevops_branch_policy_merge_types",
+		"azuredevops_branch_policy_status_check",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_serviceendpoint_github",
