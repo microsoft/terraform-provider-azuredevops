@@ -1,3 +1,10 @@
+## 0.1.5 (Unreleased)
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_servicefabric` [#38](https://github.com/microsoft/terraform-provider-azuredevops/issues/38)
+
+BUG FIX:
+* `azuredevops_group` - Fix group scope not set  [#366](https://github.com/microsoft/terraform-provider-azuredevops/issues/366)
+
 ## 0.1.4
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)
