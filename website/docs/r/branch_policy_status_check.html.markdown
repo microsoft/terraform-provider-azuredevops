@@ -76,7 +76,7 @@ The following arguments are supported:
   status is posted to the pull request. If policy `applicability` is `conditional`, policy is applied only after a status 
   is posted to the pull request.
 - `filename_patterns` - (Optional) If a path filter is set, the policy will only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
-- `display_name` - (Optional) Default display name.
+- `display_name` - (Optional) The display name.
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
   at least once.
 
