@@ -37,6 +37,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_ssh",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_variable_group",
+		"azuredevops_repo_policy_author_email_pattern",
 		"azuredevops_git_repository",
 		"azuredevops_user_entitlement",
 		"azuredevops_group_membership",
