@@ -17,10 +17,6 @@ resource "azuredevops_project" "p" {
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-  features = {
-    "testplans" = "disabled"
-    "artifacts" = "disabled"
-  }
 }
 
 resource "azuredevops_git_repository" "r" {
@@ -41,7 +37,6 @@ resource "azuredevops_repo_policy_author_email_pattern" "p" {
     author_email_patterns = ["user1@test.com", "user2@test.com", ]
     scope {
       repository_id = azuredevops_git_repository.r.id
-
     }
   }
 }
