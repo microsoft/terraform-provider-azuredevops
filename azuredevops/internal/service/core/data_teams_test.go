@@ -171,12 +171,12 @@ func TestDataTeams_Read_EnsureAllByProject(t *testing.T) {
 
 	data, ok := resourceData.GetOk("teams")
 	require.True(t, ok)
-	teamSet := data.(*schema.Set)
+	teamSet := data.([]interface{})
 	require.NotNil(t, teamSet)
-	require.Equal(t, len(teamList), teamSet.Len())
+	require.Equal(t, len(teamList), len(teamSet))
 
-	teamMap := make(map[string]map[string]interface{}, teamSet.Len())
-	for _, e := range teamSet.List() {
+	teamMap := make(map[string]map[string]interface{}, len(teamSet))
+	for _, e := range teamSet {
 		team := e.(map[string]interface{})
 		teamMap[team["id"].(string)] = team
 	}
@@ -298,12 +298,12 @@ func TestDataTeams_Read_EnsureAll(t *testing.T) {
 
 	data, ok := resourceData.GetOk("teams")
 	require.True(t, ok)
-	teamSet := data.(*schema.Set)
+	teamSet := data.([]interface{})
 	require.NotNil(t, teamSet)
-	require.Equal(t, len(teamList), teamSet.Len())
+	require.Equal(t, len(teamList), len(teamSet))
 
-	teamMap := make(map[string]map[string]interface{}, teamSet.Len())
-	for _, e := range teamSet.List() {
+	teamMap := make(map[string]map[string]interface{}, len(teamSet))
+	for _, e := range teamSet {
 		team := e.(map[string]interface{})
 		teamMap[team["id"].(string)] = team
 	}
