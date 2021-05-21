@@ -5,8 +5,10 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -77,8 +79,11 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
-		members := tfhelper.ExpandStringSet(d.Get("members").(*schema.Set))
+	var membersToAdd *schema.Set = nil
+	mode := d.Get("mode").(string)
+	if strings.EqualFold(mode, "overwrite") {
+		membersToAdd := d.Get("members").(*schema.Set)
+		members := tfhelper.ExpandStringSet(membersToAdd)
 		err := updateTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
@@ -89,6 +94,34 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			clients := m.(*client.AggregatedClient)
+			state := "Waiting"
+			actualMemberships, err := readTeamMembers(clients, team)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+			}
+			if membersToAdd == nil || actualMemberships.Intersection(membersToAdd).Len() == membersToAdd.Len() {
+				state = "Synched"
+			}
+			if strings.EqualFold(mode, "overwrite") && membersToAdd != nil && actualMemberships.Len() != membersToAdd.Len() {
+				state = "Waiting"
+			}
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for distribution of adding members. %v ", err)
 	}
 
 	// The ID for this resource is meaningless so we can just assign a random ID
@@ -158,8 +191,13 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if strings.EqualFold(d.Get("mode").(string), "overwrite") {
-		members := tfhelper.ExpandStringSet(d.Get("members").(*schema.Set))
+	var membersToAdd *schema.Set = nil
+	var membersToRemove *schema.Set = nil
+
+	mode := d.Get("mode").(string)
+	if strings.EqualFold(mode, "overwrite") {
+		membersToAdd := d.Get("members").(*schema.Set)
+		members := tfhelper.ExpandStringSet(membersToAdd)
 		err = updateTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
@@ -168,19 +206,50 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 		oldData, newData := d.GetChange("members")
 
 		// members that need to be added will be missing from the old data, but present in the new data
-		membersToAdd := newData.(*schema.Set).Difference(oldData.(*schema.Set))
+		membersToAdd = newData.(*schema.Set).Difference(oldData.(*schema.Set))
 		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()))
 		if err != nil {
 			return err
 		}
 
 		// members that need to be removed will be missing from the new data, but present in the old data
-		membersToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
+		membersToRemove = oldData.(*schema.Set).Difference(newData.(*schema.Set))
 		err = removeTeamMembers(clients, team, linq.From(membersToRemove.List()))
 		if err != nil {
 			return err
 		}
 	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			clients := m.(*client.AggregatedClient)
+			state := "Waiting"
+			actualMemberships, err := readTeamMembers(clients, team)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+			}
+			if (membersToAdd == nil || actualMemberships.Intersection(membersToAdd).Len() == membersToAdd.Len()) &&
+				(membersToRemove == nil || actualMemberships.Intersection(membersToRemove).Len() <= 0) {
+				state = "Synched"
+			}
+			if strings.EqualFold(mode, "overwrite") && membersToAdd != nil && actualMemberships.Len() != membersToAdd.Len() {
+				state = "Waiting"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
+	}
+
 	return resourceTeamMembersRead(d, m)
 }
 
