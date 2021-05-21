@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -24,8 +23,7 @@ func DataTeams() *schema.Resource {
 			},
 			"teams": {
 				Computed: true,
-				Set:      hashTeam,
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project_id": {
@@ -65,10 +63,6 @@ func DataTeams() *schema.Resource {
 			},
 		},
 	}
-}
-
-func hashTeam(v interface{}) int {
-	return hashcode.String(v.(map[string]interface{})["id"].(string))
 }
 
 func dataTeamsRead(d *schema.ResourceData, m interface{}) error {

@@ -34,7 +34,7 @@ resource "azuredevops_team_administrators" "team_administrators" {
 	project_id = azuredevops_team.team.project_id
 	team_id = azuredevops_team.team.id
 	administrators = [
-	  azuredevops_group.builtin_project_contributors.descriptor
+	  data.azuredevops_group.builtin_project_contributors.descriptor
 	]
 }
 
@@ -64,8 +64,8 @@ resource "azuredevops_team_administrators" "team_administrators" {
 	project_id = azuredevops_team.team.project_id
 	team_id = azuredevops_team.team.id
 	administrators = [
-	  azuredevops_group.builtin_project_contributors.descriptor,
-	  azuredevops_group.builtin_project_readers.descriptor
+	  data.azuredevops_group.builtin_project_contributors.descriptor,
+	  data.azuredevops_group.builtin_project_readers.descriptor
 	]
 }
 

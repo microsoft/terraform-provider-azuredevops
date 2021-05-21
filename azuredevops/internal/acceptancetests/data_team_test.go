@@ -21,7 +21,7 @@ func TestAccTeam_DataSource(t *testing.T) {
 
 data "azuredevops_team" "team" {
 	project_id = azuredevops_project.project.id
-	name = "${azuredevops_project.project.project_name} Team"
+	name = "${azuredevops_project.project.name} Team"
 }
 
 	`, projectResource)
