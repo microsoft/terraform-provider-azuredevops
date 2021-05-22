@@ -30,7 +30,6 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Type:          schema.TypeList,
 		Optional:      true,
 		MaxItems:      1,
-		ForceNew:      true,
 		ConflictsWith: []string{"resource_group"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
