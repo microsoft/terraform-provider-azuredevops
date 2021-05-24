@@ -84,7 +84,7 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	authorEmail := fmt.Sprintf(`
+	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repo_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
 
@@ -98,12 +98,11 @@ resource "azuredevops_repo_policy_author_email_pattern" "p" {
   }
 }
 `)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, authorEmail)
 }
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceComplete(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	statusCheck := fmt.Sprintf(`
+	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repo_policy_author_email_pattern" "p" {
  project_id = azuredevops_project.p.id
 
@@ -111,13 +110,11 @@ resource "azuredevops_repo_policy_author_email_pattern" "p" {
  blocking = true
 
  settings {
-   author_email_patterns = ["**.go", "**.ts"]
+   author_email_patterns = ["test1@test.com", "test2@test.com"]
    scope {
      repository_id  = azuredevops_git_repository.r.id
    }
  }
 }
-`,
-	)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, statusCheck)
+`)
 }
