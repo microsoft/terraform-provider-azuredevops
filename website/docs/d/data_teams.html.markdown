@@ -36,7 +36,7 @@ output "administrators" {
 
 The following arguments are supported:
 
-- `project_id` - (Optional) The Project ID. If no project ID all teams of all projects will ber returned.
+- `project_id` - (Optional) The Project ID. If no project ID all teams of the organization will be returned.
 
 ## Attributes Reference
 
