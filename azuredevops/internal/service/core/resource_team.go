@@ -243,7 +243,6 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet); err != nil {

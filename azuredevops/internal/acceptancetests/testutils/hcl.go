@@ -871,7 +871,6 @@ resource "azuredevops_team" "team" {
 		%s
 	]
 `, teamResource, strings.Join(*teamMembers, ","))
-
 	}
 
 	return fmt.Sprintf(`
