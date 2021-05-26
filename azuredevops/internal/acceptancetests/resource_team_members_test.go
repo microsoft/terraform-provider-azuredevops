@@ -14,7 +14,6 @@ import (
 func TestAccTeamMembers_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	teamName := testutils.GenerateResourceName()
-	projectResource := testutils.HclProjectResource(projectName)
 
 	config1 := fmt.Sprintf(`
 
@@ -23,11 +22,6 @@ func TestAccTeamMembers_CreateAndUpdate(t *testing.T) {
 data "azuredevops_group" "builtin_project_contributors" {
 	project_id = azuredevops_project.project.id
 	name       = "Contributors"
-}
-
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
 }
 
 resource "azuredevops_team_members" "team_members" {
@@ -39,7 +33,7 @@ resource "azuredevops_team_members" "team_members" {
 }
 
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config2 := fmt.Sprintf(`
 
@@ -55,11 +49,6 @@ data "azuredevops_group" "builtin_project_readers" {
 	name       = "Readers"
 }
 
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
-}
-
 resource "azuredevops_team_members" "team_members" {
 	project_id = azuredevops_team.team.project_id
 	team_id = azuredevops_team.team.id
@@ -69,7 +58,7 @@ resource "azuredevops_team_members" "team_members" {
 	]
 }
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config3 := fmt.Sprintf(`
 
@@ -80,11 +69,6 @@ data "azuredevops_group" "builtin_project_readers" {
 	name       = "Readers"
 }
 
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
-}
-
 resource "azuredevops_team_members" "team_members" {
 	project_id = azuredevops_team.team.project_id
 	team_id = azuredevops_team.team.id
@@ -93,7 +77,7 @@ resource "azuredevops_team_members" "team_members" {
 	]
 }
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	tfNode := "azuredevops_team_members.team_members"
 	resource.Test(t, resource.TestCase{
@@ -132,7 +116,6 @@ resource "azuredevops_team_members" "team_members" {
 func TestAccTeamMembers_CreateAndUpdate_Overwrite(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	teamName := testutils.GenerateResourceName()
-	projectResource := testutils.HclProjectResource(projectName)
 
 	config1 := fmt.Sprintf(`
 
@@ -141,11 +124,6 @@ func TestAccTeamMembers_CreateAndUpdate_Overwrite(t *testing.T) {
 data "azuredevops_group" "builtin_project_contributors" {
 	project_id = azuredevops_project.project.id
 	name       = "Contributors"
-}
-
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
 }
 
 resource "azuredevops_team_members" "team_members" {
@@ -158,7 +136,7 @@ resource "azuredevops_team_members" "team_members" {
 }
 
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config2 := fmt.Sprintf(`
 
@@ -174,11 +152,6 @@ data "azuredevops_group" "builtin_project_readers" {
 	name       = "Readers"
 }
 
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
-}
-
 resource "azuredevops_team_members" "team_members" {
 	project_id = azuredevops_team.team.project_id
 	team_id = azuredevops_team.team.id
@@ -189,7 +162,7 @@ resource "azuredevops_team_members" "team_members" {
 	]
 }
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config3 := fmt.Sprintf(`
 
@@ -198,11 +171,6 @@ resource "azuredevops_team_members" "team_members" {
 data "azuredevops_group" "builtin_project_readers" {
 	project_id = azuredevops_project.project.id
 	name       = "Readers"
-}
-
-resource "azuredevops_team" "team" {
-	project_id = azuredevops_project.project.id
-	name = "%s"
 }
 
 resource "azuredevops_team_members" "team_members" {
@@ -214,7 +182,7 @@ resource "azuredevops_team_members" "team_members" {
 	]
 }
 
-	`, projectResource, teamName)
+	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	tfNode := "azuredevops_team_members.team_members"
 	resource.Test(t, resource.TestCase{
