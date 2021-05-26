@@ -35,7 +35,7 @@ resource "azuredevops_team_administrators" "team_administrators" {
   team_id        = azuredevops_team.team.id
   mode           = "overwrite"
   administrators = [
-    azuredevops_group.builtin_project_contributors.descriptor
+data.azuredevops_group.builtin_project_contributors.descriptor
   ]
 }
 ```
