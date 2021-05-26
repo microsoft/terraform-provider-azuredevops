@@ -78,7 +78,7 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps teams can be imported using the the complete resource id `<project_id>/<team_id>` e.g.
 
 ```sh
-$ terraform import azuredevops_team.id aed075ec-e178-47b6-96c2-314850128307/cd4be753-fda8-4107-94c9-59d9b808d35e
+$ terraform import azuredevops_team.team 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required
