@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -84,7 +83,7 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 	if strings.EqualFold(mode, "overwrite") {
 		membersToAdd := d.Get("members").(*schema.Set)
 		members := tfhelper.ExpandStringSet(membersToAdd)
-		err := updateTeamMembers(clients, team, &members)
+		err := setTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
 		}
@@ -198,7 +197,7 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 	if strings.EqualFold(mode, "overwrite") {
 		membersToAdd := d.Get("members").(*schema.Set)
 		members := tfhelper.ExpandStringSet(membersToAdd)
-		err = updateTeamMembers(clients, team, &members)
+		err = setTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
 		}
@@ -269,30 +268,49 @@ func resourceTeamMembersDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	var membersToRemove *schema.Set = nil
+
 	if strings.EqualFold("overwrite", d.Get("mode").(string)) {
 		log.Printf("[TRACE] Removing all members from team %s", *team.Name)
 
-		members, err := clients.IdentityClient.ReadMembers(clients.Ctx, identity.ReadMembersArgs{
-			ContainerId: converter.String(team.Id.String()),
-		})
+		err := setTeamMembers(clients, team, nil)
 		if err != nil {
 			return err
 		}
-		for _, id := range *members {
-			_, err := clients.IdentityClient.RemoveMember(clients.Ctx, identity.RemoveMemberArgs{
-				ContainerId: converter.String(team.Id.String()),
-				MemberId:    converter.String(id),
-			})
-			if err != nil {
-				return fmt.Errorf("Error removing member %s from team %s: %+v", id, *team.Name, err)
-			}
-		}
 	} else {
-		members := tfhelper.ExpandStringSet(d.Get("members").(*schema.Set))
+		membersToRemove = d.Get("members").(*schema.Set)
+		members := tfhelper.ExpandStringSet(membersToRemove)
 		err := removeTeamMembers(clients, team, linq.From(members))
 		if err != nil {
 			return err
 		}
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			clients := m.(*client.AggregatedClient)
+			state := "Waiting"
+			actualMemberships, err := readTeamMembers(clients, team)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+			}
+			if (membersToRemove == nil && actualMemberships.Len() <= 0) ||
+				(membersToRemove != nil && actualMemberships.Intersection(membersToRemove).Len() <= 0) {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
 	}
 
 	d.SetId("")
