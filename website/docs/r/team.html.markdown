@@ -32,7 +32,7 @@ data "azuredevops_group" "builtin_project_readers" {
 
 resource "azuredevops_team" "team" {
   project_id = azuredevops_project.project.id
-  name = "${azuredevops_project.project.name} Team 2"
+  name = "My Test Team"
   administrators = [
     data.azuredevops_group.builtin_project_contributors.descriptor
   ]

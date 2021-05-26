@@ -22,7 +22,7 @@ resource "azuredevops_project" "project" {
 
 data "azuredevops_team" "team" {
 	project_id = azuredevops_project.project.id
-	name = "${azuredevops_project.project.name} Team"
+	name = "Team Project Team"
 }
 ```
 
