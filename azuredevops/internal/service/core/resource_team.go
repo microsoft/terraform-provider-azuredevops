@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
@@ -39,7 +41,7 @@ func ResourceTeam() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
+				Default:  "",
 			},
 			"administrators": {
 				Type: schema.TypeSet,
@@ -68,8 +70,6 @@ func ResourceTeam() *schema.Resource {
 }
 
 func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
-	log.Print("[DEBUG] resourceTeamCreate: START")
-
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -92,10 +92,13 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	teamID := team.Id.String()
+	var administratorSet *schema.Set
 	if v, ok := d.GetOk("administrators"); ok {
 		log.Print("[DEBUG] resourceTeamCreate: setting administrators")
 
-		administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
+		administratorSet = v.(*schema.Set)
+		administrators := tfhelper.ExpandStringSet(administratorSet)
 		err := updateTeamAdministrators(d, clients, team, &administrators)
 		if err != nil {
 			ierr := clients.CoreClient.DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
@@ -103,27 +106,33 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 				TeamId:    converter.String(team.Id.String()),
 			})
 			if ierr != nil {
-				log.Printf("[ERROR] Failed to delete project after update of administrators failed %+v", ierr)
+				log.Printf("[ERROR] Failed to delete project after update of administrators %+v", ierr)
 			}
 			return err
 		}
 	}
 
+	var memberSet *schema.Set
 	if v, ok := d.GetOk("members"); ok {
 		log.Print("[DEBUG] resourceTeamCreate: setting members")
 
-		members := tfhelper.ExpandStringSet(v.(*schema.Set))
-		err := updateTeamMembers(clients, team, &members)
+		memberSet = v.(*schema.Set)
+		members := tfhelper.ExpandStringSet(memberSet)
+		err := setTeamMembers(clients, team, &members)
 		if err != nil {
 			ierr := clients.CoreClient.DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
 				ProjectId: converter.String(team.ProjectId.String()),
 				TeamId:    converter.String(team.Id.String()),
 			})
 			if ierr != nil {
-				log.Printf("[ERROR] Failed to delete project after update of members failed %+v", ierr)
+				log.Printf("[ERROR] Failed to delete project after update of members %+v", ierr)
 			}
 			return err
 		}
+	}
+
+	if err := waitForTeamStateChange(d, clients, projectID, teamID, teamData.Name, teamData.Description, memberSet, administratorSet); err != nil {
+		return err
 	}
 
 	d.SetId(team.Id.String())
@@ -131,8 +140,6 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
-	log.Print("[DEBUG] resourceTeamRead: START")
-
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -174,15 +181,23 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 
 	projectID := d.Get("project_id").(string)
 	teamID := d.Id()
-	if d.HasChange("name") || d.HasChange("description") {
-		teamName := d.Get("name").(string)
-		description, ok := d.GetOk("description")
 
-		teamData := core.WebApiTeam{
-			Name: &teamName,
+	var newTeamName *string
+	var newDescription *string
+
+	if d.HasChange("name") || d.HasChange("description") {
+		teamData := core.WebApiTeam{}
+
+		if d.HasChange("name") {
+			teamName := d.Get("name").(string)
+			newTeamName = &teamName
+			teamData.Name = &teamName
 		}
-		if ok {
-			teamData.Description = converter.String(description.(string))
+
+		if d.HasChange("description") {
+			description := d.Get("description").(string)
+			newDescription = &description
+			teamData.Description = &description
 		}
 
 		team, err = clients.CoreClient.UpdateTeam(clients.Ctx, core.UpdateTeamArgs{
@@ -206,26 +221,33 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	var administratorSet *schema.Set
 	if d.HasChange("administrators") {
 		log.Printf("Updating list of administrators for team %s", *team.Name)
 
-		v := d.Get("administrators")
-		administrators := tfhelper.ExpandStringSet(v.(*schema.Set))
+		administratorSet = d.Get("administrators").(*schema.Set)
+		administrators := tfhelper.ExpandStringSet(administratorSet)
 		err = updateTeamAdministrators(d, clients, team, &administrators)
 		if err != nil {
 			return err
 		}
 	}
 
+	var memberSet *schema.Set
 	if d.HasChange("members") {
 		log.Printf("Updating list of members for team %s", *team.Name)
 
-		v := d.Get("members")
-		members := tfhelper.ExpandStringSet(v.(*schema.Set))
-		err = updateTeamMembers(clients, team, &members)
+		memberSet = d.Get("members").(*schema.Set)
+		members := tfhelper.ExpandStringSet(memberSet)
+		err = setTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
 		}
+
+	}
+
+	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet); err != nil {
+		return err
 	}
 
 	return resourceTeamRead(d, m)
@@ -247,6 +269,61 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId("")
+	return nil
+}
+
+func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set) error {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+
+			team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
+				ProjectId:      converter.String(projectID),
+				TeamId:         converter.String(teamID),
+				ExpandIdentity: converter.Bool(false),
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading team data: %+v", err)
+			}
+
+			bDescriptionUpdated := nil == description || *team.Description == *description
+			bNameUpdated := nil == name || *team.Name == *name
+
+			bAdministratorsUpdated := true
+			if administratorSet != nil {
+				actualAdministrators, err := readTeamAdministrators(d, clients, team)
+				if err != nil {
+					return nil, "", fmt.Errorf("Error reading team administrators: %+v", err)
+				}
+				bAdministratorsUpdated = actualAdministrators.Len() == administratorSet.Len()
+			}
+
+			bMembersUpdated := true
+			if memberSet != nil {
+				actualMemberships, err := readTeamMembers(clients, team)
+				if err != nil {
+					return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+				}
+				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
+			}
+
+			if bNameUpdated && bDescriptionUpdated && bAdministratorsUpdated && bMembersUpdated {
+				state = "Synched"
+			}
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
+	}
+
 	return nil
 }
 
@@ -311,7 +388,7 @@ func readTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam) (*
 	return readSubjectDescriptors(clients, members)
 }
 
-func updateTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors *[]string) error {
+func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, subjectDescriptors *[]string) error {
 	var err error
 
 	currentMemberSet, err := readTeamMembers(clients, team)
@@ -320,6 +397,9 @@ func updateTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, 
 	}
 	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentMemberSet.Len() <= 0 {
 		return nil
+	}
+	if subjectDescriptors == nil {
+		subjectDescriptors = &[]string{}
 	}
 
 	currentMembers := currentMemberSet.List()
