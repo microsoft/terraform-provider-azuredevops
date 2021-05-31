@@ -31,11 +31,11 @@ resource "azuredevops_team" "team" {
 }
 
 resource "azuredevops_team_administrators" "team_administrators" {
-  project_id     = azuredevops_team.team.project_id
-  team_id        = azuredevops_team.team.id
-  mode           = "overwrite"
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  mode       = "overwrite"
   administrators = [
-data.azuredevops_group.builtin_project_contributors.descriptor
+    data.azuredevops_group.builtin_project_contributors.descriptor
   ]
 }
 ```

@@ -32,12 +32,12 @@ data "azuredevops_group" "builtin_project_readers" {
 
 resource "azuredevops_team" "team" {
   project_id = azuredevops_project.project.id
-  name = "My Test Team"
+  name       = "My Test Team"
   administrators = [
     data.azuredevops_group.builtin_project_contributors.descriptor
   ]
   members = [
-     data.azuredevops_group.builtin_project_readers.descriptor
+    data.azuredevops_group.builtin_project_readers.descriptor
   ]
 }
 ```
@@ -75,7 +75,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Azure DevOps teams can be imported using the the complete resource id `<project_id>/<team_id>` e.g.
+Azure DevOps teams can be imported using the complete resource id `<project_id>/<team_id>` e.g.
 
 ```sh
 $ terraform import azuredevops_team.team 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
