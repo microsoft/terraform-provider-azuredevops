@@ -39,9 +39,10 @@ func ResourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "",
+				ValidateFunc: validation.StringLenBetween(0, 256),
 			},
 			"administrators": {
 				Type: schema.TypeSet,
