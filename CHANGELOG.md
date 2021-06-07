@@ -4,10 +4,12 @@ FEATURES:
 * **New Resource** `azuredevops_repo_policy_author_email_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
 * **New Resource** `azuredevops_branch_policy_status_check` [#352](https://github.com/microsoft/terraform-provider-azuredevops/issues/352)
 
+IMPROVEMENTS:
+* `azuredevops_serviceendpoint_azurerm` - Credentials can be updated without recreate.  [#387](https://github.com/microsoft/terraform-provider-azuredevops/issues/387)
+
 BUG FIX:
 * `azuredevops_group` - Fix group scope not set  [#366](https://github.com/microsoft/terraform-provider-azuredevops/issues/366)
 * `azuredevops_serviceendpoint_azurecr` - Fix container registry name cannot be updated.  [#391](https://github.com/microsoft/terraform-provider-azuredevops/issues/391)
-* `azuredevops_serviceendpoint_azurerm` - Credentials can be updated without recreate.  [#387](https://github.com/microsoft/terraform-provider-azuredevops/issues/387)
 
 ## 0.1.4
 FEATURES:
