@@ -1,7 +1,8 @@
 ## 0.1.5 (Unreleased)
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_servicefabric` [#38](https://github.com/microsoft/terraform-provider-azuredevops/issues/38)
-* **New Resource** `azuredevops_repo_policy_author_email_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_author_email_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_file_path_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
 * **New Resource** `azuredevops_branch_policy_status_check` [#352](https://github.com/microsoft/terraform-provider-azuredevops/issues/352)
 
 IMPROVEMENTS:
