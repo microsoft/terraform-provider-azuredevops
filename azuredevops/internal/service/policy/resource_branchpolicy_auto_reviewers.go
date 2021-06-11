@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 )
 
@@ -52,9 +51,8 @@ func ResourceBranchPolicyAutoReviewers() *schema.Resource {
 	}
 	settingsSchema[displayMessage] = &schema.Schema{
 		Type:     schema.TypeString,
-		Required: false,
-		Default:  "",
 		Optional: true,
+		Default:  "",
 	}
 	settingsSchema[schemaSubmitterCanVote] = &schema.Schema{
 		Type:     schema.TypeBool,

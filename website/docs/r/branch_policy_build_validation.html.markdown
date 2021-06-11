@@ -82,7 +82,7 @@ A `settings` block supports the following:
 - `manual_queue_only` - (Optional) If set to true, the build will need to be manually queued. Defaults to `false`
 - `queue_on_source_update_only` - (Optional) True if the build should queue on source updates only. Defaults to `true`.
 - `valid_duration` - (Optional) The number of minutes for which the build is valid. If `0`, the build will not expire. Defaults to `720` (12 hours).
-- `filename_patterns` - (Optional) If a path filter is set, the policy wil only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
+- `filename_patterns` - (Optional) If a path filter is set, the policy will only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 
 A `settings` `scope` block supports the following:

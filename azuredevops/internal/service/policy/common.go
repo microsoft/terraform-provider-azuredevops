@@ -25,12 +25,19 @@ import (
 // Policy type IDs. These are global and can be listed using the following endpoint:
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
-	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
-	BuildValidation   = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
-	AutoReviewers     = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
-	WorkItemLinking   = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
-	CommentResolution = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
-	MergeTypes        = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4916e5d171ab")
+	MinReviewerCount   = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
+	BuildValidation    = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
+	AutoReviewers      = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
+	WorkItemLinking    = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
+	CommentResolution  = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
+	MergeTypes         = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4916e5d171ab")
+	StatusCheck        = uuid.MustParse("cbdc66da-9728-4af8-aada-9a5a32e4a226")
+	AuthorEmailPattern = uuid.MustParse("77ed4bd3-b063-4689-934a-175e4d0a78d7")
+	FilePathPattern    = uuid.MustParse("51c78909-e838-41a2-9496-c647091e3c61")
+	CaseEnforcement    = uuid.MustParse("7ed39669-655c-494e-b4a0-a08b4da0fcce") //git repo settings
+	ReservedNames      = uuid.MustParse("db2b9b4c-180d-4529-9701-01541d19f36b")
+	PathLength         = uuid.MustParse("001a79cf-fda1-4c4e-9e7c-bac40ee5ead8")
+	FileSize           = uuid.MustParse("2e26e725-8201-4edd-8bf5-978563c34a80")
 )
 
 // Keys for schema elements
@@ -127,9 +134,9 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 
 type commonPolicySettings struct {
 	Scopes []struct {
-		RepositoryID      string `json:"repositoryId"`
-		RepositoryRefName string `json:"refName"`
-		MatchType         string `json:"matchKind"`
+		RepositoryID      string `json:"repositoryId,omitempty"`
+		RepositoryRefName string `json:"refName,omitempty"`
+		MatchType         string `json:"matchKind,omitempty"`
 	} `json:"scope"`
 }
 
@@ -164,11 +171,17 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	_ = json.Unmarshal(policyAsJSON, &policySettings)
 	scopes := make([]interface{}, len(policySettings.Scopes))
 	for index, scope := range policySettings.Scopes {
-		scopes[index] = map[string]interface{}{
-			SchemaRepositoryID:  scope.RepositoryID,
-			SchemaRepositoryRef: scope.RepositoryRefName,
-			SchemaMatchType:     scope.MatchType,
+		scopeSetting := map[string]interface{}{}
+		if scope.RepositoryID != "" {
+			scopeSetting[SchemaRepositoryID] = scope.RepositoryID
 		}
+		if scope.RepositoryRefName != "" {
+			scopeSetting[SchemaRepositoryRef] = scope.RepositoryRefName
+		}
+		if scope.MatchType != "" {
+			scopeSetting[SchemaMatchType] = scope.MatchType
+		}
+		scopes[index] = scopeSetting
 	}
 	settings := []interface{}{
 		map[string]interface{}{
@@ -210,11 +223,18 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	scopes := make([]map[string]interface{}, len(settingsScopes))
 	for index, scope := range settingsScopes {
 		scopeMap := scope.(map[string]interface{})
-		scopes[index] = map[string]interface{}{
-			"repositoryId": scopeMap[SchemaRepositoryID],
-			"refName":      scopeMap[SchemaRepositoryRef],
-			"matchKind":    scopeMap[SchemaMatchType],
+
+		scopeSetting := map[string]interface{}{}
+		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
+			scopeSetting["repositoryId"] = repoID
 		}
+		if repoRef, ok := scopeMap[SchemaRepositoryRef]; ok {
+			scopeSetting["refName"] = repoRef
+		}
+		if matchType, ok := scopeMap[SchemaMatchType]; ok {
+			scopeSetting["matchKind"] = matchType
+		}
+		scopes[index] = scopeSetting
 	}
 	return map[string]interface{}{
 		SchemaScope: scopes,
@@ -311,4 +331,15 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc {
 
 		return nil
 	}
+}
+
+func expandPatterns(patterns *schema.Set) *[]string {
+	patternsList := patterns.List()
+	patternsArray := make([]string, len(patternsList))
+
+	for i, variableGroup := range patternsList {
+		patternsArray[i] = variableGroup.(string)
+	}
+
+	return &patternsArray
 }
