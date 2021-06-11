@@ -175,6 +175,29 @@ func HclProjectGitRepositoryImport(gitRepoName string, projectName string) strin
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
+func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName string) string {
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, "Clean")
+	serviceEndpointResource := fmt.Sprintf(`
+	resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
+		project_id            = azuredevops_project.project.id
+		service_endpoint_name = "%s"
+		repository_url        = azuredevops_git_repository.repository.remote_url
+	}
+	`, serviceEndpointName)
+	importGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "import" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		initialization {
+		   init_type             = "Import"
+		   source_type           = "Git"
+		   source_url            = azuredevops_git_repository.repository.remote_url
+		   service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
+		 }
+	}`, gitImportRepoName)
+	return fmt.Sprintf("%s\n%s\n%s", gitRepoResource, serviceEndpointResource, importGitRepoResource)
+}
+
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
 func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
