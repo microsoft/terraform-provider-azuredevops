@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccRepositoryPolicyAuthorEmailPatternsBasic(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repo_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -34,7 +34,7 @@ func TestAccRepositoryPolicyAuthorEmailPatternsBasic(t *testing.T) {
 }
 
 func TestAccRepositoryPolicyAuthorEmailPatternsComplete(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repo_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -85,7 +85,7 @@ resource "azuredevops_git_repository" "r" {
 func hclRepositoryPolicyAuthorEmailPatternsResourceBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repo_policy_author_email_pattern" "p" {
+resource "azuredevops_repository_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
 
   enabled  = true
@@ -103,7 +103,7 @@ resource "azuredevops_repo_policy_author_email_pattern" "p" {
 func hclRepositoryPolicyAuthorEmailPatternsResourceComplete(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repo_policy_author_email_pattern" "p" {
+resource "azuredevops_repository_policy_author_email_pattern" "p" {
  project_id = azuredevops_project.p.id
 
  enabled  = true

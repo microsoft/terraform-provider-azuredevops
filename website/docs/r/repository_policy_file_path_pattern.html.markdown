@@ -1,12 +1,12 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_repository_policy_author_email_pattern"
-description: |- Manages author email pattern repository policy within Azure DevOps project.
+page_title: "AzureDevops: azuredevops_repository_policy_file_path_pattern"
+description: |- Manages a file path pattern repository policy within Azure DevOps project.
 ---
 
-# azuredevops_repository_policy_author_email_pattern
+# azuredevops_repository_policy_file_path_pattern
 
-Manage author email pattern repository policy within Azure DevOps project.
+Manage a file path pattern repository policy within Azure DevOps project.
 
 ## Example Usage
 
@@ -27,14 +27,14 @@ resource "azuredevops_git_repository" "r" {
   }
 }
 
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
+resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
 
   enabled  = true
   blocking = true
 
   settings {
-    author_email_patterns = ["user1@test.com", "user2@test.com"]
+    filepath_patterns = ["*.go", "/home/test/*.ts"]
     scope {
       repository_id = azuredevops_git_repository.r.id
     }
@@ -53,8 +53,7 @@ The following arguments are supported:
 
 `settings` block supports the following:
 
-- `author_email_patterns` - (Optional) Block pushes with a commit author email that does not match the patterns. You can specify exact emails or use wildcards. 
-  Email patterns prefixed with "!" are excluded. Order is important.
+- `filepath_patterns` - (Optional) Block pushes from introducing file paths that match the following patterns. Exact paths begin with "/". You can specify exact paths and wildcards. You can also specify multiple paths using ";" as a separator. Paths prefixed with "!" are excluded. Order is important.
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
   at least once.   
   
@@ -65,7 +64,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of repository policy configuration.
+- `id` - The ID of the repository policy.
 
 ## Relevant Links
 
@@ -73,8 +72,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
+Azure DevOps repository policies can be imported using the projectID/policyID or projectName/policyID:
 
 ```sh
-$ terraform import azuredevops_repository_policy_author_email_pattern.p 00000000-0000-0000-0000-000000000000/0
+$ terraform import azuredevops_repository_policy_file_path_pattern.p 00000000-0000-0000-0000-000000000000/0
 ```

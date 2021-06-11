@@ -7,11 +7,11 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 )
 
-func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
+func ResourceRepositoryFilePathPatterns() *schema.Resource {
 	resource := genBasePolicyResource(&policyCrudArgs{
-		FlattenFunc: authorEmailPatternFlattenFunc,
-		ExpandFunc:  authorEmailPatternExpandFunc,
-		PolicyType:  AuthorEmailPattern,
+		FlattenFunc: filePathPatternFlattenFunc,
+		ExpandFunc:  filePathPatternExpandFunc,
+		PolicyType:  FilePathPattern,
 	})
 
 	resource.Schema[SchemaSettings] = &schema.Schema{
@@ -21,7 +21,7 @@ func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"author_email_patterns": {
+				"filepath_patterns": {
 					Type:     schema.TypeList,
 					Optional: true,
 					Elem: &schema.Schema{
@@ -49,7 +49,7 @@ func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
 	return resource
 }
 
-func authorEmailPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
+func filePathPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
 	err := baseFlattenFunc(d, policyConfig, projectID)
 	if err != nil {
 		return err
@@ -59,14 +59,12 @@ func authorEmailPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.
 
 	settingsList := d.Get(SchemaSettings).([]interface{})
 	settings := settingsList[0].(map[string]interface{})
-	if policySettings["authorEmailPatterns"] != nil {
-		settings["author_email_patterns"] = policySettings["authorEmailPatterns"].([]interface{})
-	}
+	settings["filepath_patterns"] = policySettings["filenamePatterns"].([]interface{})
 	_ = d.Set(SchemaSettings, settingsList)
 	return nil
 }
 
-func authorEmailPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
+func filePathPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	policyConfig, projectID, err := baseExpandFunc(d, typeID)
 	if err != nil {
 		return nil, nil, err
@@ -76,6 +74,6 @@ func authorEmailPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*po
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
-	policySettings["authorEmailPatterns"] = settings["author_email_patterns"]
+	policySettings["filenamePatterns"] = settings["filepath_patterns"]
 	return policyConfig, projectID, nil
 }
