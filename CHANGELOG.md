@@ -1,4 +1,4 @@
-## 0.1.5 (Unreleased)
+## 0.1.5
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_servicefabric` [#38](https://github.com/microsoft/terraform-provider-azuredevops/issues/38)
 * **New Resource** `azuredevops_repository_policy_author_email_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
