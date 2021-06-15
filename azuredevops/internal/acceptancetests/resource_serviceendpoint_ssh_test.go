@@ -1,3 +1,6 @@
+// +build all resource_serviceendpoint_ssh
+// +build !exclude_serviceendpoints
+
 package acceptancetests
 
 import (

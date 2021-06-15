@@ -1,3 +1,6 @@
+// +build all resource_repositorypolicy_author_email_patterns
+// +build !exclude_serviceendpoints
+
 package acceptancetests
 
 import (

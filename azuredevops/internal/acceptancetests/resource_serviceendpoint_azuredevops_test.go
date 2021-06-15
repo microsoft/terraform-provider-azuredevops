@@ -1,3 +1,6 @@
+// +build all resource_serviceendpoint_azuredevops
+// +build !exclude_serviceendpoints
+
 package acceptancetests
 
 import (
