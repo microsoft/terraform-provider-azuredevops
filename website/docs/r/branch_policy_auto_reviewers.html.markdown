@@ -56,7 +56,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The ID of the project in which the policy will be created.
 - `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
-- `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
+- `blocking` - (Optional) A flag indicating if the policy should be blocking. This relates to the Azure DevOps terms "optional" and "required" reviewers. Defaults to `true`.
 - `settings` - (Required) Configuration for the policy. This block must be defined exactly once.
 
 `settings` block supports the following:
