@@ -106,6 +106,7 @@ func ResourceGitRepository() *schema.Resource {
 						"init_type": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 							ValidateFunc: validation.StringInSlice([]string{
 								string(RepoInitTypeValues.Clean),
 								string(RepoInitTypeValues.Fork),
