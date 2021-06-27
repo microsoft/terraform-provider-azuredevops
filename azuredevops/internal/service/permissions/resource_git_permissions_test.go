@@ -13,8 +13,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/assert"
@@ -60,23 +58,9 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	gitClient := azdosdkmocks.NewMockGitClient(ctrl)
 	clients := &client.AggregatedClient{
-		GitReposClient: gitClient,
 		Ctx:            context.Background(),
 	}
-
-	gitClient.EXPECT().
-		GetRefs(clients.Ctx, gomock.Any()).
-		Return(&git.GetRefsResponseValue{
-			Value: []git.GitRef{
-				{
-					Name: &gitBranchNameValid,
-				},
-			},
-			ContinuationToken: "",
-		}, nil).
-		Times(1)
 
 	var d *schema.ResourceData
 	var token string
@@ -92,29 +76,6 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
 	assert.Equal(t, gitTokenBranch, token)
-}
-
-func TestGitPermissions_CreateGitTokenWithBranch_HandleError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	gitClient := azdosdkmocks.NewMockGitClient(ctrl)
-	clients := &client.AggregatedClient{
-		GitReposClient: gitClient,
-		Ctx:            context.Background(),
-	}
-
-	errMsg := "@@GetRefs@@failed"
-	gitClient.EXPECT().
-		GetRefs(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
-		Times(1)
-
-	d := getGitPermissionsResource(t, gitProjectID, gitRepositoryID, gitBranchNameValid)
-	token, err := createGitToken(d, clients)
-	assert.Empty(t, token)
-	assert.NotNil(t, err)
-	assert.EqualError(t, err, errMsg)
 }
 
 func encodeBranchName(branchName string) string {
