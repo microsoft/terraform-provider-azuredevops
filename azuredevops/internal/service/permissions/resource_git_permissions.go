@@ -122,11 +122,11 @@ func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (s
 			return "", fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
 		}
 		branchPath := strings.Split(branchName.(string), "/")
-		branchName, err = converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
+		branchName, err := converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
 		if err != nil {
 			return "", err
 		}
-		aclToken += "/refs/heads/" + branchName.(string)
+		aclToken += "/refs/heads/" + branchName
 	}
 	return aclToken, nil
 }
