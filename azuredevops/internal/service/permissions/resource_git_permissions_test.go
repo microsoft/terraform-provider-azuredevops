@@ -59,7 +59,7 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 	defer ctrl.Finish()
 
 	clients := &client.AggregatedClient{
-		Ctx:            context.Background(),
+		Ctx: context.Background(),
 	}
 
 	var d *schema.ResourceData
