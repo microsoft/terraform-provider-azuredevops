@@ -129,6 +129,15 @@ func ResourceGitRepository() *schema.Resource {
 							RequiredWith: []string{"initialization.0.source_type"},
 							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 						},
+						"service_connection_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							RequiredWith: []string{
+								"initialization.0.source_url",
+								"initialization.0.source_type",
+							},
+							Default: "",
+						},
 					},
 				},
 			},
@@ -138,9 +147,10 @@ func ResourceGitRepository() *schema.Resource {
 
 // A helper type that is used for transient info only used during repo creation
 type repoInitializationMeta struct {
-	initType   string
-	sourceType string
-	sourceURL  string
+	initType            string
+	sourceType          string
+	sourceURL           string
+	serviceConnectionID string
 }
 
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
@@ -168,6 +178,10 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
 	}
 
+	// set the id immediately after successfully creating the repository, which will allow terraform to track the
+	// repository in state and will taint the resource if further errors are encountered during initialization
+	d.SetId(createdRepo.Id.String())
+
 	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
 		strings.EqualFold(initialization.sourceType, "Git") {
 		importRequest := git.GitImportRequest{
@@ -178,6 +192,12 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			},
 			Repository: createdRepo,
 		}
+
+		if initialization.serviceConnectionID != "" {
+			importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
+			importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
+		}
+
 		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 		if importErr != nil {
 			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
@@ -187,12 +207,10 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
 		err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
 		if err != nil {
-			if err := deleteGitRepository(clients, createdRepo.Id.String()); err != nil {
-				log.Printf("[WARN] Unable to delete new Git Repository after initialization failed: %+v", err)
-			}
 			return fmt.Errorf("Error initializing repository in Azure DevOps: %+v", err)
 		}
 	}
+
 	if initialization != nil && !(strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) && parentRepoRef == nil) {
 		err := waitForBranch(clients, repo.Name, projectID)
 		if err != nil {
@@ -200,7 +218,6 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.SetId(createdRepo.Id.String())
 	return resourceGitRepositoryRead(d, m)
 }
 
@@ -437,18 +454,19 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 		initValues := initData[0].(map[string]interface{})
 
 		initialization = &repoInitializationMeta{
-			initType:   initValues["init_type"].(string),
-			sourceType: initValues["source_type"].(string),
-			sourceURL:  initValues["source_url"].(string),
+			initType:            initValues["init_type"].(string),
+			sourceType:          initValues["source_type"].(string),
+			sourceURL:           initValues["source_url"].(string),
+			serviceConnectionID: initValues["service_connection_id"].(string),
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
+			initialization.serviceConnectionID = ""
 		}
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
 	}
-
 	return repo, initialization, &projectID, nil
 }
