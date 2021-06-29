@@ -85,7 +85,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
-- `apiserver_url` - (Required) The Service Endpoint description.
+- `apiserver_url` - (Required) The hostname (in form of URI) of the Kubernetes API.
 - `authorization_type` - (Required) The authentication method used to authenticate on the Kubernetes cluster. The value should be one of AzureSubscription, Kubeconfig, ServiceAccount.
 - `azure_subscription` - (Optional) The configuration for authorization_type="AzureSubscription".
   - `azure_environment` - (Optional) Azure environment refers to whether the public cloud offering or domestic (government) clouds are being used. Currently, only the public cloud is supported. The value must be AzureCloud. This is also the default-value.
