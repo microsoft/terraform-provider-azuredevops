@@ -53,8 +53,8 @@ The following arguments are supported:
 
 `settings` block supports the following:
 
-- `filepath_patterns` - (Optional) Block pushes from introducing file paths that match the following patterns. Exact paths begin with "/". You can specify exact paths and wildcards. You can also specify multiple paths using ";" as a separator. Paths prefixed with "!" are excluded. Order is important.
-- `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
+- `filepath_patterns` - (Required) Block pushes from introducing file paths that match the following patterns. Exact paths begin with "/". You can specify exact paths and wildcards. You can also specify multiple paths using ";" as a separator. Paths prefixed with "!" are excluded. Order is important.
+- `scope` (Optional) Controls which repositories and branches the policy will be enabled for. This block must be defined
   at least once.   
   
   `scope` block supports the following:

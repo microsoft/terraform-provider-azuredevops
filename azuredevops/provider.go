@@ -10,7 +10,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
+	policy2 "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
@@ -21,19 +22,19 @@ func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_resource_authorization":                 build.ResourceResourceAuthorization(),
-			"azuredevops_branch_policy_build_validation":         policy.ResourceBranchPolicyBuildValidation(),
-			"azuredevops_branch_policy_min_reviewers":            policy.ResourceBranchPolicyMinReviewers(),
-			"azuredevops_branch_policy_auto_reviewers":           policy.ResourceBranchPolicyAutoReviewers(),
-			"azuredevops_branch_policy_work_item_linking":        policy.ResourceBranchPolicyWorkItemLinking(),
-			"azuredevops_branch_policy_comment_resolution":       policy.ResourceBranchPolicyCommentResolution(),
-			"azuredevops_branch_policy_merge_types":              policy.ResourceBranchPolicyMergeTypes(),
-			"azuredevops_branch_policy_status_check":             policy.ResourceBranchPolicyStatusCheck(),
+			"azuredevops_branch_policy_build_validation":         branch.ResourceBranchPolicyBuildValidation(),
+			"azuredevops_branch_policy_min_reviewers":            branch.ResourceBranchPolicyMinReviewers(),
+			"azuredevops_branch_policy_auto_reviewers":           branch.ResourceBranchPolicyAutoReviewers(),
+			"azuredevops_branch_policy_work_item_linking":        branch.ResourceBranchPolicyWorkItemLinking(),
+			"azuredevops_branch_policy_comment_resolution":       branch.ResourceBranchPolicyCommentResolution(),
+			"azuredevops_branch_policy_merge_types":              branch.ResourceBranchPolicyMergeTypes(),
+			"azuredevops_branch_policy_status_check":             branch.ResourceBranchPolicyStatusCheck(),
 			"azuredevops_build_definition":                       build.ResourceBuildDefinition(),
 			"azuredevops_project":                                core.ResourceProject(),
 			"azuredevops_project_features":                       core.ResourceProjectFeatures(),
 			"azuredevops_variable_group":                         taskagent.ResourceVariableGroup(),
-			"azuredevops_repository_policy_author_email_pattern": policy.ResourceRepositoryPolicyAuthorEmailPatterns(),
-			"azuredevops_repository_policy_file_path_pattern":    policy.ResourceRepositoryFilePathPatterns(),
+			"azuredevops_repository_policy_author_email_pattern": policy2.ResourceRepositoryPolicyAuthorEmailPatterns(),
+			"azuredevops_repository_policy_file_path_pattern":    policy2.ResourceRepositoryFilePathPatterns(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_aws":                    serviceendpoint.ResourceServiceEndpointAws(),
 			"azuredevops_serviceendpoint_azurerm":                serviceendpoint.ResourceServiceEndpointAzureRM(),

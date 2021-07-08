@@ -1,7 +1,7 @@
-// +build all resource_branchpolicy_build_validation
-// +build !exclude_resource_branchpolicy_build_validation
+// +build all resource_branchpolicy_min_reviewers
+// +build !exclude_resource_branchpolicy_min_reviewers
 
-package policy
+package branch
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ import (
 )
 
 // verifies that the flatten/expand round trip path produces repeatable results
-func TestBranchPolicyBuildValidation_ExpandFlatten_Roundtrip(t *testing.T) {
+func TestBranchPolicyMinReviewers_ExpandFlatten_Roundtrip(t *testing.T) {
 	var projectID = uuid.New().String()
 	var randomUUID = uuid.New()
 	var testPolicy = &policy.PolicyConfiguration{
@@ -33,19 +33,20 @@ func TestBranchPolicyBuildValidation_ExpandFlatten_Roundtrip(t *testing.T) {
 					"matchKind":    "test-match-kind",
 				},
 			},
-			"buildDefinitionId":       77,
-			"displayName":             "test policy",
-			"manualQueueOnly":         true,
-			"queueOnSourceUpdateOnly": true,
-			"validDuration":           700,
-			"filenamePatterns":        &([]string{"*md"}),
+			"minimumApproverCount":        2,
+			"creatorVoteCounts":           true,
+			"allowDownvotes":              true,
+			"resetOnSourcePush":           true,
+			"requireVoteOnLastIteration":  true,
+			"resetRejectionsOnSourcePush": true,
+			"blockLastPusherVote":         true,
 		},
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyBuildValidation().Schema, nil)
-	err := buildValidationFlattenFunc(resourceData, testPolicy, &projectID)
+	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyMinReviewers().Schema, nil)
+	err := minReviewersFlattenFunc(resourceData, testPolicy, &projectID)
 	require.Nil(t, err)
-	expandedPolicy, expandedProjectID, err := buildValidationExpandFunc(resourceData, randomUUID)
+	expandedPolicy, expandedProjectID, err := minReviewersExpandFunc(resourceData, randomUUID)
 	require.Nil(t, err)
 
 	require.Equal(t, testPolicy, expandedPolicy)

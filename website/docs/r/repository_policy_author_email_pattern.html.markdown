@@ -53,9 +53,9 @@ The following arguments are supported:
 
 `settings` block supports the following:
 
-- `author_email_patterns` - (Optional) Block pushes with a commit author email that does not match the patterns. You can specify exact emails or use wildcards. 
+- `author_email_patterns` - (Required) Block pushes with a commit author email that does not match the patterns. You can specify exact emails or use wildcards. 
   Email patterns prefixed with "!" are excluded. Order is important.
-- `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
+- `scope` (Optional) Controls which repositories and branches the policy will be enabled for. This block must be defined
   at least once.   
   
   `scope` block supports the following:

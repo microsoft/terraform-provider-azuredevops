@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 )
 
 func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
@@ -14,36 +15,14 @@ func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
 		PolicyType:  AuthorEmailPattern,
 	})
 
-	resource.Schema[SchemaSettings] = &schema.Schema{
+	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
+	settingsSchema["author_email_patterns"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Required: true,
 		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"author_email_patterns": {
-					Type:     schema.TypeList,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type:         schema.TypeString,
-						ValidateFunc: validation.StringIsNotEmpty,
-					},
-				},
-				SchemaScope: {
-					Type:     schema.TypeList,
-					Required: true,
-					MinItems: 1,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							SchemaRepositoryID: {
-								Type:         schema.TypeString,
-								Required:     true,
-								ValidateFunc: validation.StringIsNotEmpty,
-							},
-						},
-					},
-				},
-			},
+		Elem: &schema.Schema{
+			Type:         schema.TypeString,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 	return resource
@@ -62,7 +41,7 @@ func authorEmailPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.
 	if policySettings["authorEmailPatterns"] != nil {
 		settings["author_email_patterns"] = policySettings["authorEmailPatterns"].([]interface{})
 	}
-	_ = d.Set(SchemaSettings, settingsList)
+	_ = d.Set(branch.SchemaSettings, settingsList)
 	return nil
 }
 

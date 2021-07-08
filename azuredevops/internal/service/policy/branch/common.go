@@ -1,4 +1,4 @@
-package policy
+package branch
 
 import (
 	"encoding/json"
@@ -25,19 +25,13 @@ import (
 // Policy type IDs. These are global and can be listed using the following endpoint:
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
-	MinReviewerCount   = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
-	BuildValidation    = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
-	AutoReviewers      = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
-	WorkItemLinking    = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
-	CommentResolution  = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
-	MergeTypes         = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4916e5d171ab")
-	StatusCheck        = uuid.MustParse("cbdc66da-9728-4af8-aada-9a5a32e4a226")
-	AuthorEmailPattern = uuid.MustParse("77ed4bd3-b063-4689-934a-175e4d0a78d7")
-	FilePathPattern    = uuid.MustParse("51c78909-e838-41a2-9496-c647091e3c61")
-	CaseEnforcement    = uuid.MustParse("7ed39669-655c-494e-b4a0-a08b4da0fcce") //git repo settings
-	ReservedNames      = uuid.MustParse("db2b9b4c-180d-4529-9701-01541d19f36b")
-	PathLength         = uuid.MustParse("001a79cf-fda1-4c4e-9e7c-bac40ee5ead8")
-	FileSize           = uuid.MustParse("2e26e725-8201-4edd-8bf5-978563c34a80")
+	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
+	BuildValidation   = uuid.MustParse("0609b952-1397-4640-95ec-e00a01b2c241")
+	AutoReviewers     = uuid.MustParse("fd2167ab-b0be-447a-8ec8-39368250530e")
+	WorkItemLinking   = uuid.MustParse("40e92b44-2fe1-4dd6-b3d8-74a9c21d0c6e")
+	CommentResolution = uuid.MustParse("c6a1889d-b943-4856-b76f-9e46bb6b0df2")
+	MergeTypes        = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4916e5d171ab")
+	StatusCheck       = uuid.MustParse("cbdc66da-9728-4af8-aada-9a5a32e4a226")
 )
 
 // Keys for schema elements
