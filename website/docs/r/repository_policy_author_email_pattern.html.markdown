@@ -42,6 +42,20 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
 }
 ```
 
+## Set project level repository policy
+```hcl
+resource "azuredevops_repository_policy_author_email_pattern" "p" {
+  project_id = azuredevops_project.p.id
+
+  enabled  = true
+  blocking = true
+
+  settings {
+    author_email_patterns = ["user1@test.com", "user2@test.com"]
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -55,8 +69,7 @@ The following arguments are supported:
 
 - `author_email_patterns` - (Required) Block pushes with a commit author email that does not match the patterns. You can specify exact emails or use wildcards. 
   Email patterns prefixed with "!" are excluded. Order is important.
-- `scope` (Optional) Controls which repositories and branches the policy will be enabled for. This block must be defined
-  at least once.   
+- `scope` (Optional) Control whether the policy is enabled for the repository or the project. If `scope` not configured, the policy will be set to the project.
   
   `scope` block supports the following:
     - `repository_id` - (Required) The repository ID.

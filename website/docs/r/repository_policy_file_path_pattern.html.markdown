@@ -42,6 +42,20 @@ resource "azuredevops_repository_policy_file_path_pattern" "p" {
 }
 ```
 
+# Set project level repository policy
+```hcl
+resource "azuredevops_repository_policy_file_path_pattern" "p" {
+  project_id = azuredevops_project.p.id
+
+  enabled  = true
+  blocking = true
+
+  settings {
+    filepath_patterns = ["*.go", "/home/test/*.ts"]
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -54,8 +68,7 @@ The following arguments are supported:
 `settings` block supports the following:
 
 - `filepath_patterns` - (Required) Block pushes from introducing file paths that match the following patterns. Exact paths begin with "/". You can specify exact paths and wildcards. You can also specify multiple paths using ";" as a separator. Paths prefixed with "!" are excluded. Order is important.
-- `scope` (Optional) Controls which repositories and branches the policy will be enabled for. This block must be defined
-  at least once.   
+- `scope` (Optional) Control whether the policy is enabled for the repository or the project. If `scope` not configured, the policy will be set to the project.
   
   `scope` block supports the following:
     - `repository_id` - (Required) The repository ID.
