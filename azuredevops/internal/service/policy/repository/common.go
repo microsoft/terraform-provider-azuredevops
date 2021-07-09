@@ -201,7 +201,6 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 			SchemaScope: scopes,
 		}
 	}
-
 }
 
 func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc {
