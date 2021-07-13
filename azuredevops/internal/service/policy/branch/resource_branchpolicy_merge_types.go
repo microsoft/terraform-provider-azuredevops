@@ -1,4 +1,4 @@
-package policy
+package branch
 
 import (
 	"encoding/json"
@@ -7,33 +7,29 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 )
 
-type minReviewerPolicySettings struct {
-	ApprovalCount                     int  `json:"minimumApproverCount" tf:"reviewer_count"`
-	SubmitterCanVote                  bool `json:"creatorVoteCounts" tf:"submitter_can_vote"`
-	AllowCompletionWithRejectsOrWaits bool `json:"allowDownvotes" tf:"allow_completion_with_rejects_or_waits"`
-	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes" ConflictsWith:"on_push_reset_all_votes"`
-	OnLastIterationRequireVote        bool `json:"requireVoteOnLastIteration" tf:"on_last_iteration_require_vote"`
-	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes" ConflictsWith:"on_push_reset_approved_votes"`
-	LastPusherCannotVote              bool `json:"blockLastPusherVote" tf:"last_pusher_cannot_approve"`
+type mergeTypePolicySettings struct {
+	AllowSquash        bool `json:"allowSquash" tf:"allow_squash"`
+	AllowRebase        bool `json:"allowRebase" tf:"allow_rebase_and_fast_forward"`
+	AllowNoFastForward bool `json:"allowNoFastForward" tf:"allow_basic_no_fast_forward"`
+	AllowRebaseMerge   bool `json:"allowRebaseMerge" tf:"allow_rebase_with_merge"`
 }
 
 // ResourceBranchPolicyMinReviewers schema and implementation for min reviewer policy resource
-func ResourceBranchPolicyMinReviewers() *schema.Resource {
+func ResourceBranchPolicyMergeTypes() *schema.Resource {
 	resource := genBasePolicyResource(&policyCrudArgs{
-		FlattenFunc: minReviewersFlattenFunc,
-		ExpandFunc:  minReviewersExpandFunc,
-		PolicyType:  MinReviewerCount,
+		FlattenFunc: mergeTypesFlattenFunc,
+		ExpandFunc:  mergeTypesExpandFunc,
+		PolicyType:  MergeTypes,
 	})
 
 	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
 
-	// Dynamically create the schema based on the minReviewerPolicySettings tags
-	metaField := reflect.TypeOf(minReviewerPolicySettings{})
+	// Dynamically create the schema based on the mergeTypePolicySettings tags
+	metaField := reflect.TypeOf(mergeTypePolicySettings{})
 	// Loop through the fields, adding schema for each one.
 	for i := 0; i < metaField.NumField(); i++ {
 		tfName := metaField.Field(i).Tag.Get("tf")
@@ -47,25 +43,12 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 				Optional: true,
 			}
 		}
-		if metaField.Field(i).Type == reflect.TypeOf(0) {
-			settingsSchema[tfName] = &schema.Schema{
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			}
-		}
-		if conflicts, ok := metaField.Field(i).Tag.Lookup("ConflictsWith"); ok {
-			if _, ok := settingsSchema[conflicts]; ok {
-				settingsSchema[conflicts].ConflictsWith = []string{SchemaSettings + ".0." + tfName}
-				settingsSchema[tfName].ConflictsWith = []string{SchemaSettings + ".0." + conflicts}
-			}
-		}
 	}
 	return resource
 }
 
 // API to TF
-func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
+func mergeTypesFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
 	err := baseFlattenFunc(d, policyConfig, projectID)
 	if err != nil {
 		return err
@@ -75,7 +58,7 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 		return fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
 	}
 
-	policySettings := minReviewerPolicySettings{}
+	policySettings := mergeTypePolicySettings{}
 	err = json.Unmarshal(policyAsJSON, &policySettings)
 	if err != nil {
 		return fmt.Errorf("Unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
@@ -91,9 +74,6 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 		if tipe.Field(i).Type == reflect.TypeOf(true) {
 			settings[tfName] = ps.Field(i).Bool()
 		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			settings[tfName] = ps.Field(i).Int()
-		}
 	}
 
 	d.Set(SchemaSettings, settingsList)
@@ -101,7 +81,7 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 }
 
 // From TF to API
-func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
+func mergeTypesExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	policyConfig, projectID, err := baseExpandFunc(d, typeID)
 	if err != nil {
 		return nil, nil, err
@@ -112,7 +92,7 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 
-	tipe := reflect.TypeOf(minReviewerPolicySettings{})
+	tipe := reflect.TypeOf(mergeTypePolicySettings{})
 	for i := 0; i < tipe.NumField(); i++ {
 		tags := tipe.Field(i).Tag
 		apiName := tags.Get("json")
@@ -122,9 +102,6 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 		}
 		if tipe.Field(i).Type == reflect.TypeOf(true) {
 			policySettings[apiName] = settings[tfName].(bool)
-		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			policySettings[apiName] = settings[tfName].(int)
 		}
 	}
 

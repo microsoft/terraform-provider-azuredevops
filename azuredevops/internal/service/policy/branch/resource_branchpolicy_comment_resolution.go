@@ -1,4 +1,4 @@
-package policy
+package branch
 
 import (
 	"github.com/google/uuid"
@@ -7,17 +7,17 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 )
 
-// ResourceBranchPolicyWorkItemLinking schema and implementation for min reviewer policy resource
-func ResourceBranchPolicyWorkItemLinking() *schema.Resource {
+// ResourceBranchPolicyCommentResolution schema and implementation for min reviewer policy resource
+func ResourceBranchPolicyCommentResolution() *schema.Resource {
 	resource := genBasePolicyResource(&policyCrudArgs{
-		FlattenFunc: workItemLinkingFlattenFunc,
-		ExpandFunc:  workItemLinkingExpandFunc,
-		PolicyType:  WorkItemLinking,
+		FlattenFunc: commentResolutionFlattenFunc,
+		ExpandFunc:  commentResolutionExpandFunc,
+		PolicyType:  CommentResolution,
 	})
 	return resource
 }
 
-func workItemLinkingFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
+func commentResolutionFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
 	err := baseFlattenFunc(d, policyConfig, projectID)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func workItemLinkingFlattenFunc(d *schema.ResourceData, policyConfig *policy.Pol
 	return nil
 }
 
-func workItemLinkingExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
+func commentResolutionExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	policyConfig, projectID, err := baseExpandFunc(d, typeID)
 	if err != nil {
 		return nil, nil, err

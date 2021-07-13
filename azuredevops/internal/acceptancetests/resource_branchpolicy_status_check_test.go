@@ -103,10 +103,6 @@ resource "azuredevops_project" "p" {
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-  features = {
-    "testplans" = "disabled"
-    "artifacts" = "disabled"
-  }
 }
 
 resource "azuredevops_git_repository" "r" {
