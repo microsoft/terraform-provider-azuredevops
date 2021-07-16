@@ -1,7 +1,7 @@
 // +build all resource_branchpolicy_work_item_linking
 // +build !exclude_resource_branchpolicy_work_item_linking
 
-package policy
+package branch
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ import (
 )
 
 // verifies that the flatten/expand round trip path produces repeatable results
-func TestBranchPolicyWorkItemLinking_ExpandFlatten_Roundtrip(t *testing.T) {
+func TestBranchPolicyCommentResolution_ExpandFlatten_Roundtrip(t *testing.T) {
 	var projectID = uuid.New().String()
 	var randomUUID = uuid.New()
 	var testPolicy = &policy.PolicyConfiguration{
@@ -36,7 +36,7 @@ func TestBranchPolicyWorkItemLinking_ExpandFlatten_Roundtrip(t *testing.T) {
 		},
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyWorkItemLinking().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyCommentResolution().Schema, nil)
 	err := workItemLinkingFlattenFunc(resourceData, testPolicy, &projectID)
 	require.Nil(t, err)
 	expandedPolicy, expandedProjectID, err := workItemLinkingExpandFunc(resourceData, randomUUID)

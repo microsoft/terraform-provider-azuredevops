@@ -47,7 +47,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
 - `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
-- `description` - (Optional) The name you will use to refer to this service connection in task inputs.
+- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `docker_registry` - (Optional) The URL of the Docker registry. (Default: "https://index.docker.io/v1/")
 - `docker_username` - (Optional) The identifier of the Docker account user.
 - `docker_email` - (Optional) The email for Docker account user.

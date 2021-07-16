@@ -184,6 +184,7 @@ func setProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 		if !ok {
 			return fmt.Errorf("unknown feature: %s", k)
 		}
+		//TODO handle response state
 		_, err := fc.SetFeatureStateForScope(ctx, featuremanagement.SetFeatureStateForScopeArgs{
 			Feature: &featuremanagement.ContributedFeatureState{
 				FeatureId: converter.String(f),
