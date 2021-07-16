@@ -12,6 +12,10 @@ IMPROVEMENTS:
 * `azuredevops_repository_policy_file_path_pattern` - Support project level repository policy setting  [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
 * `azuredevops_git_permissions` - Will not check branch existence [#411](https://github.com/microsoft/terraform-provider-azuredevops/issues/411)
 
+BREAKING CHANGES:
+* `azuredevops_repository_policy_author_email_pattern` - `scope` is an optional configuration. If `scope` not configured, the policy will be set to the project. [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* `azuredevops_repository_policy_file_path_pattern` - `scope` is an optional configuration. If `scope` not configured, the policy will be set to the project. [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+
 BUG FIX:
 * `azuredevops_git_repository` - Changing the `init_type` will recreate the repository. [#406](https://github.com/microsoft/terraform-provider-azuredevops/issues/406)
 * `azuredevops_serviceendpoint_kubernetes` - Import crash.  [#414](https://github.com/microsoft/terraform-provider-azuredevops/issues/414)
