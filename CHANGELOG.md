@@ -1,14 +1,20 @@
 ## 0.1.6 (Unreleased)
 FEATURES:
+
 * **New Resource** `serviceendpoint_generic` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
 * **New Resource** `serviceendpoint_generic_git` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
 
 IMPROVEMENTS:
 * `resource_git_repository` - Support import private repository. [#236](https://github.com/microsoft/terraform-provider-azuredevops/issues/236)
+* `resource_git_repository` - Support import private repository. [#236](https://github.com/microsoft/terraform-provider-azuredevops/issues/236)
 * `azuredevops_git_permissions` - Can create permissions on non-existent branches. [#411](https://github.com/microsoft/terraform-provider-azuredevops/issues/411)
+* `azuredevops_repository_policy_author_email_pattern` - Support project level repository policy setting [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* `azuredevops_repository_policy_file_path_pattern` - Support project level repository policy setting  [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* `azuredevops_git_permissions` - Will not check branch existence [#411](https://github.com/microsoft/terraform-provider-azuredevops/issues/411)
 
 BUG FIX:
 * `azuredevops_git_repository` - Changing the `init_type` will recreate the repository. [#406](https://github.com/microsoft/terraform-provider-azuredevops/issues/406)
+* `azuredevops_serviceendpoint_kubernetes` - Import crash.  [#414](https://github.com/microsoft/terraform-provider-azuredevops/issues/414)
 
 ## 0.1.5
 FEATURES:
