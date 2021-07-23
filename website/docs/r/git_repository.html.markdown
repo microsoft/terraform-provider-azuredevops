@@ -47,8 +47,8 @@ resource "azuredevops_git_repository" "repo" {
 
 ```hcl
 resource "azuredevops_git_repository" "repo" {
-  project_id           = azuredevops_project.project.id
-  name                 = "Sample Import an Existing Repository"
+  project_id = azuredevops_project.project.id
+  name       = "Sample Import an Existing Repository"
   initialization {
     init_type   = "Import"
     source_type = "Git"
@@ -60,15 +60,23 @@ resource "azuredevops_git_repository" "repo" {
 ### Import from a Private Repository
 
 ```hcl
+resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  repository_url        = "https://dev.azure.com/org/project/_git/repository"
+  username              = "username"
+  password              = "<password>/<PAT>"
+  service_endpoint_name = "Sample Generic Git"
+  description           = "Managed by Terraform"
+}
+
 resource "azuredevops_git_repository" "repo" {
-  project_id           = azuredevops_project.project.id
-  name                 = "Sample Import an Existing Repository"
+  project_id = azuredevops_project.project.id
+  name       = "Sample Import an Existing Repository"
   initialization {
-    init_type   = "Import"
-    source_type = "Git"
-    source_url  = "https://dev.azure.com/example-org/private-repository.git"
-    username    = "example-org"
-    password    = "<PAT>"
+    init_type             = "Import"
+    source_type           = "Git"
+    source_url            = "https://dev.azure.com/example-org/private-repository.git"
+    service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
   }
 }
 ```
