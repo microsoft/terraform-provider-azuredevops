@@ -1,4 +1,4 @@
-## 0.1.6 (Unreleased)
+## 0.1.6
 FEATURES:
 * **New Resource** `serviceendpoint_generic` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
 * **New Resource** `serviceendpoint_generic_git` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
