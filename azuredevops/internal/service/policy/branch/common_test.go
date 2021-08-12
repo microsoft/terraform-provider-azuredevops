@@ -1,7 +1,7 @@
 // +build all policy
 // +build !exclude_policy
 
-package policy
+package branch
 
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
@@ -11,16 +11,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/stretchr/testify/require"
-
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/stretchr/testify/require"
 )
 
 var projectID = uuid.New().String()

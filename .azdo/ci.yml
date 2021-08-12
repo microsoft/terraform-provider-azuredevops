@@ -3,14 +3,14 @@
 # vmImages and goVersions specified by the parameters.
 
 parameters:
-  goVersions: [ ]
-  vmImages: [ ]
+  goVersions: []
+  vmImages: []
   maxParallel: 1
 
 jobs:
-
   - job: build
-    displayName: 'Build: '
+    timeoutInMinutes: 120
+    displayName: "Build: "
 
     # Build on each combination of supported OS and Go version
     strategy:
@@ -27,35 +27,35 @@ jobs:
 
     steps:
       - task: GoTool@0
-        displayName: 'Install correct version of Go'
+        displayName: "Install correct version of Go"
         inputs:
           version: $(goVersion)
-          GOPATH: '$(Pipeline.Workspace)/gopath'
-          GOBIN: '$(GOPATH)/bin'
+          GOPATH: "$(Pipeline.Workspace)/gopath"
+          GOBIN: "$(GOPATH)/bin"
 
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           make tools
-        displayName: 'Install Dependencies'
+        displayName: "Install Dependencies"
 
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           make check-vendor-vs-mod
-        displayName: 'Verify Vendored Dependencies'
+        displayName: "Verify Vendored Dependencies"
 
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           make fmtcheck
-        displayName: 'Run Format Check'
+        displayName: "Run Format Check"
 
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           make lint
-        displayName: 'Run Lint Check'
+        displayName: "Run Lint Check"
 
       - ${{ if eq(parameters.unitTest, true) }}:
           - bash: |
@@ -63,7 +63,7 @@ jobs:
               go version
               cd "$BUILD_SOURCESDIRECTORY"
               make test
-            displayName: 'Run Unit Tests'
+            displayName: "Run Unit Tests"
 
       - bash: |
           if [ -x "$(command -v docker)" ]; then
@@ -71,14 +71,14 @@ jobs:
           fi
         env:
           GO_VERSION: $(goVersion)
-        displayName: 'Run Devcontainer Build'
+        displayName: "Run Devcontainer Build"
 
       - ${{ if eq(parameters.accTest, true) }}:
           - bash: |
               #!/usr/bin/env bash
               cd "$BUILD_SOURCESDIRECTORY"
               make testacc
-            displayName: 'Run All Tests'
+            displayName: "Run All Tests"
             env:
               AZDO_ORG_SERVICE_URL: $(ACC_TEST_AZDO_ORG_URL)
               AZDO_PERSONAL_ACCESS_TOKEN: $(ACC_TEST_AZDO_PAT)
@@ -88,3 +88,5 @@ jobs:
               AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD: $(AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD)
               AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME: $(AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME)
               AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD: $(AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD)
+              AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME: username
+              AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD: $(ACC_TEST_AZDO_PAT)

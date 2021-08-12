@@ -1,4 +1,4 @@
-package policy
+package branch
 
 import (
 	"github.com/google/uuid"
@@ -111,7 +111,7 @@ func statusCheckExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Po
 	policySettings["authorId"] = settings["author_id"].(string)
 	policySettings["invalidateOnSourceUpdate"] = settings["invalidate_on_update"].(bool)
 	policySettings["defaultDisplayName"] = settings["display_name"].(string)
-	policySettings["filenamePatterns"] = expandFilenamePatterns(settings[filenamePatterns].(*schema.Set))
+	policySettings["filenamePatterns"] = expandPatterns(settings[filenamePatterns].(*schema.Set))
 
 	if v, ok := settings["applicability"].(string); ok {
 		if v == applicability.Conditional {

@@ -195,6 +195,41 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 	})
 }
 
+func TestAccGitRepo_PrivateImport_BranchNotEmpty(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	gitImportRepoName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	tfRepoNode := "azuredevops_git_repository.repository"
+	tfImportRepoNode := "azuredevops_git_repository.import"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{
+				"AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME",
+				"AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD",
+			})
+		},
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttrSet(tfImportRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfImportRepoNode, "name", gitImportRepoName),
+					resource.TestCheckResourceAttr(tfImportRepoNode, "default_branch", "refs/heads/master"),
+				),
+			},
+		},
+	})
+}
+
 // or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

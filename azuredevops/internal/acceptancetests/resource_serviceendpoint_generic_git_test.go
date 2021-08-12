@@ -1,4 +1,4 @@
-// +build all resource_serviceendpoint_azuredevops
+// +build all resource_serviceendpoint_generic_git
 // +build !exclude_serviceendpoints
 
 package acceptancetests
@@ -11,11 +11,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointAzureDevOps_basic(t *testing.T) {
+func TestAccServiceEndpointGenericGit_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_azuredevops"
+	resourceType := "azuredevops_serviceendpoint_generic_git"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -23,23 +23,25 @@ func TestAccServiceEndpointAzureDevOps_basic(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointAzureDevOpsResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGenericGitResourceBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "repository_url", "https://dev.azure.com/org/project/_git/repository"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "enable_pipelines_access", "true"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointAzureDevOps_complete(t *testing.T) {
+func TestAccServiceEndpointGenericGit_complete(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	description := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_azuredevops"
+	resourceType := "azuredevops_serviceendpoint_generic_git"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -47,30 +49,30 @@ func TestAccServiceEndpointAzureDevOps_complete(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointAzureDevOpsResourceComplete(projectName, serviceEndpointName, description),
+				Config: hclSvcEndpointGenericGitResourceComplete(projectName, serviceEndpointName, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "org_url", "https://dev.azure.com/myorganization"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "release_api_url", "https://vsrm.dev.azure.com/myorganization"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "repository_url", "https://dev.azure.com/org/project/_git/repository"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "enable_pipelines_access", "true"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointAzureDevOps_update(t *testing.T) {
+func TestAccServiceEndpointGenericGit_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
 	description := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
-	orgUrl := "https://dev.azure.com/testorganization"
-	releaseApiUrl := "https://vsrm.dev.azure.com/testorganization"
 
-	resourceType := "azuredevops_serviceendpoint_azuredevops"
+	resourceType := "azuredevops_serviceendpoint_generic_git"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -78,31 +80,35 @@ func TestAccServiceEndpointAzureDevOps_update(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointAzureDevOpsResourceBasic(projectName, serviceEndpointNameFirst),
+				Config: hclSvcEndpointGenericGitResourceBasic(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "repository_url", "https://dev.azure.com/org/project/_git/repository"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "enable_pipelines_access", "true"),
 				),
 			},
 			{
-				Config: hclSvcEndpointAzureDevOpsResourceUpdate(projectName, serviceEndpointNameSecond, orgUrl, releaseApiUrl, description),
+				Config: hclSvcEndpointGenericGitResourceUpdate(projectName, serviceEndpointNameSecond, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "org_url", orgUrl),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "release_api_url", releaseApiUrl),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "repository_url", "https://dev.azure.com/org/project/_git/repository"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "enable_pipelines_access", "false"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointAzureDevOps_RequiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointGenericGit_RequiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-	resourceType := "azuredevops_serviceendpoint_azuredevops"
+	resourceType := "azuredevops_serviceendpoint_generic_git"
 	tfSvcEpNode := resourceType + ".test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -111,72 +117,74 @@ func TestAccServiceEndpointAzureDevOps_RequiresImportErrorStep(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointAzureDevOpsResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGenericGitResourceBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 				),
 			},
 			{
-				Config:      hclSvcEndpointAzureDevOpsResourceRequiresImport(projectName, serviceEndpointName),
+				Config:      hclSvcEndpointGenericGitResourceRequiresImport(projectName, serviceEndpointName),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func hclSvcEndpointAzureDevOpsResourceBasic(projectName string, serviceEndpointName string) string {
+func hclSvcEndpointGenericGitResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_azuredevops" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	personal_access_token  = "0000000000000000000000000000000000000000000000000000"
+resource "azuredevops_serviceendpoint_generic_git" "test" {
+	project_id            = azuredevops_project.project.id
+	service_endpoint_name = "%s"
+	repository_url        = "https://dev.azure.com/org/project/_git/repository"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointAzureDevOpsResourceComplete(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointGenericGitResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_azuredevops" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	org_url			   	   = "https://dev.azure.com/myorganization"
-	release_api_url		   = "https://vsrm.dev.azure.com/myorganization"
-	personal_access_token  = "0000000000000000000000000000000000000000000000000000"
+resource "azuredevops_serviceendpoint_generic_git" "test" {
+	project_id              = azuredevops_project.project.id
+	service_endpoint_name   = "%s"
+	description             = "%s"
+	repository_url          = "https://dev.azure.com/org/project/_git/repository"
+	username                = "username"
+	password                = "password"
+	enable_pipelines_access = true
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointAzureDevOpsResourceUpdate(projectName string, serviceEndpointName string, orgUrl string, releaseApiUrl string, description string) string {
+func hclSvcEndpointGenericGitResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_azuredevops" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	org_url			   	   = "%s"
-	release_api_url		   = "%s"
-	personal_access_token  = "0000000000000000000000000000000000000000000000000000"
-}`, serviceEndpointName, description, orgUrl, releaseApiUrl)
+resource "azuredevops_serviceendpoint_generic_git" "test" {
+	project_id              = azuredevops_project.project.id
+	service_endpoint_name   = "%s"
+	description             = "%s"
+	repository_url          = "https://dev.azure.com/org/project/_git/repository"
+	username                = "username"
+	password                = "password"
+	enable_pipelines_access = false
+}`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointAzureDevOpsResourceRequiresImport(projectName string, serviceEndpointName string) string {
-	template := hclSvcEndpointAzureDevOpsResourceBasic(projectName, serviceEndpointName)
+func hclSvcEndpointGenericGitResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointGenericGitResourceBasic(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 %s
-resource "azuredevops_serviceendpoint_azuredevops" "import" {
-	project_id             = azuredevops_serviceendpoint_azuredevops.test.project_id
-	service_endpoint_name  = azuredevops_serviceendpoint_azuredevops.test.service_endpoint_name
-	description            = azuredevops_serviceendpoint_azuredevops.test.description
-	org_url			   	   = azuredevops_serviceendpoint_azuredevops.test.org_url
-	release_api_url		   = azuredevops_serviceendpoint_azuredevops.test.release_api_url
-	personal_access_token  = azuredevops_serviceendpoint_azuredevops.test.personal_access_token
+resource "azuredevops_serviceendpoint_generic_git" "import" {
+  project_id            = azuredevops_serviceendpoint_generic_git.test.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_generic_git.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_generic_git.test.description
+  repository_url        = azuredevops_serviceendpoint_generic_git.test.repository_url
+  username              = azuredevops_serviceendpoint_generic_git.test.username
+  password              = "password"
 }
 `, template)
 }

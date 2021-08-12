@@ -1,3 +1,32 @@
+## 0.1.6
+FEATURES:
+* **New Resource** `serviceendpoint_generic` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
+* **New Resource** `serviceendpoint_generic_git` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
+
+IMPROVEMENTS:
+* `resource_git_repository` - Support import private repository. [#236](https://github.com/microsoft/terraform-provider-azuredevops/issues/236)
+* `azuredevops_git_permissions` - Can create permissions on non-existent branches. [#411](https://github.com/microsoft/terraform-provider-azuredevops/issues/411)
+* `azuredevops_repository_policy_author_email_pattern` - Support project level repository policy setting [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* `azuredevops_repository_policy_file_path_pattern` - Support project level repository policy setting  [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+
+BUG FIX:
+* `azuredevops_git_repository` - Changing the `init_type` will recreate the repository. [#406](https://github.com/microsoft/terraform-provider-azuredevops/issues/406)
+* `azuredevops_serviceendpoint_kubernetes` - Import crash.  [#414](https://github.com/microsoft/terraform-provider-azuredevops/issues/414)
+
+## 0.1.5
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_servicefabric` [#38](https://github.com/microsoft/terraform-provider-azuredevops/issues/38)
+* **New Resource** `azuredevops_repository_policy_author_email_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_file_path_pattern` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_branch_policy_status_check` [#352](https://github.com/microsoft/terraform-provider-azuredevops/issues/352)
+
+IMPROVEMENTS:
+* `azuredevops_serviceendpoint_azurerm` - Credentials can be updated without recreate.  [#387](https://github.com/microsoft/terraform-provider-azuredevops/issues/387)
+
+BUG FIX:
+* `azuredevops_group` - Fix group scope not set  [#366](https://github.com/microsoft/terraform-provider-azuredevops/issues/366)
+* `azuredevops_serviceendpoint_azurecr` - Fix container registry name cannot be updated.  [#391](https://github.com/microsoft/terraform-provider-azuredevops/issues/391)
+
 ## 0.1.4
 FEATURES:
 * **New Resource** `azuredevops_serviceendpoint_ssh` [#270](https://github.com/microsoft/terraform-provider-azuredevops/issues/270)

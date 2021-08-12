@@ -19,12 +19,14 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 	r.Schema["resource_group"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
+		ForceNew:    true,
 		Description: "Scope Resource Group",
 	}
 
 	r.Schema["azurecr_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
+		ForceNew:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_AZURECR_SERVICE_CONNECTION_REGISTRY", nil),
 		Description: "The AzureContainerRegistry registry which should be used.",
 	}

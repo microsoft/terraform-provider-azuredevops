@@ -42,7 +42,7 @@ The following arguments are supported:
 - `azurecr_name` - (Required) The Azure container registry name.
 - `azurecr_subscription_id` - (Required) The subscription id of the Azure targets.
 - `azurecr_subscription_name` - (Required) The subscription name of the Azure targets.
-- `description` - (Optional) The name you will use to refer to this service connection in task inputs.
+- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 

@@ -1,4 +1,4 @@
-package policy
+package branch
 
 import (
 	"encoding/json"
@@ -128,9 +128,9 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 
 type commonPolicySettings struct {
 	Scopes []struct {
-		RepositoryID      string `json:"repositoryId"`
-		RepositoryRefName string `json:"refName"`
-		MatchType         string `json:"matchKind"`
+		RepositoryID      string `json:"repositoryId,omitempty"`
+		RepositoryRefName string `json:"refName,omitempty"`
+		MatchType         string `json:"matchKind,omitempty"`
 	} `json:"scope"`
 }
 
@@ -165,11 +165,17 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	_ = json.Unmarshal(policyAsJSON, &policySettings)
 	scopes := make([]interface{}, len(policySettings.Scopes))
 	for index, scope := range policySettings.Scopes {
-		scopes[index] = map[string]interface{}{
-			SchemaRepositoryID:  scope.RepositoryID,
-			SchemaRepositoryRef: scope.RepositoryRefName,
-			SchemaMatchType:     scope.MatchType,
+		scopeSetting := map[string]interface{}{}
+		if scope.RepositoryID != "" {
+			scopeSetting[SchemaRepositoryID] = scope.RepositoryID
 		}
+		if scope.RepositoryRefName != "" {
+			scopeSetting[SchemaRepositoryRef] = scope.RepositoryRefName
+		}
+		if scope.MatchType != "" {
+			scopeSetting[SchemaMatchType] = scope.MatchType
+		}
+		scopes[index] = scopeSetting
 	}
 	settings := []interface{}{
 		map[string]interface{}{
@@ -211,11 +217,18 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	scopes := make([]map[string]interface{}, len(settingsScopes))
 	for index, scope := range settingsScopes {
 		scopeMap := scope.(map[string]interface{})
-		scopes[index] = map[string]interface{}{
-			"repositoryId": scopeMap[SchemaRepositoryID],
-			"refName":      scopeMap[SchemaRepositoryRef],
-			"matchKind":    scopeMap[SchemaMatchType],
+
+		scopeSetting := map[string]interface{}{}
+		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
+			scopeSetting["repositoryId"] = repoID
 		}
+		if repoRef, ok := scopeMap[SchemaRepositoryRef]; ok {
+			scopeSetting["refName"] = repoRef
+		}
+		if matchType, ok := scopeMap[SchemaMatchType]; ok {
+			scopeSetting["matchKind"] = matchType
+		}
+		scopes[index] = scopeSetting
 	}
 	return map[string]interface{}{
 		SchemaScope: scopes,
@@ -312,4 +325,15 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc {
 
 		return nil
 	}
+}
+
+func expandPatterns(patterns *schema.Set) *[]string {
+	patternsList := patterns.List()
+	patternsArray := make([]string, len(patternsList))
+
+	for i, variableGroup := range patternsList {
+		patternsArray[i] = variableGroup.(string)
+	}
+
+	return &patternsArray
 }

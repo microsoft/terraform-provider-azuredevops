@@ -15,7 +15,7 @@ Manages a git repository within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+  name               = "Sample Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -47,12 +47,36 @@ resource "azuredevops_git_repository" "repo" {
 
 ```hcl
 resource "azuredevops_git_repository" "repo" {
-  project_id           = azuredevops_project.project.id
-  name                 = "Sample Import an Existing Repository"
+  project_id = azuredevops_project.project.id
+  name       = "Sample Import an Existing Repository"
   initialization {
-    init_type = "Import"
+    init_type   = "Import"
     source_type = "Git"
-    source_url = "https://github.com/microsoft/terraform-provider-azuredevops.git"
+    source_url  = "https://github.com/microsoft/terraform-provider-azuredevops.git"
+  }
+}
+```
+
+### Import from a Private Repository
+
+```hcl
+resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  repository_url        = "https://dev.azure.com/org/project/_git/repository"
+  username              = "username"
+  password              = "<password>/<PAT>"
+  service_endpoint_name = "Sample Generic Git"
+  description           = "Managed by Terraform"
+}
+
+resource "azuredevops_git_repository" "repo" {
+  project_id = azuredevops_project.project.id
+  name       = "Sample Import an Existing Repository"
+  initialization {
+    init_type             = "Import"
+    source_type           = "Git"
+    source_url            = "https://dev.azure.com/example-org/private-repository.git"
+    service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
   }
 }
 ```
@@ -68,9 +92,10 @@ The following arguments are supported:
 
 `initialization` - (Required) block supports the following:
 
-- `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`. Defaults to `Uninitialized`.
+- `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`.
 - `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
+- `service_connection_id` (Optional) The id of service connection used to authenticate to a private repository for import initialization.
 
 ## Attributes Reference
 
@@ -97,6 +122,7 @@ Azure DevOps Repositories can be imported using the repo name or by the repo Gui
 ```sh
 $ terraform import azuredevops_git_repository.repository projectName/repoName
 ```
+
 or
 
 ```sh

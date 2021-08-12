@@ -175,6 +175,29 @@ func HclProjectGitRepositoryImport(gitRepoName string, projectName string) strin
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
+func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName string) string {
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, "Clean")
+	serviceEndpointResource := fmt.Sprintf(`
+	resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
+		project_id            = azuredevops_project.project.id
+		service_endpoint_name = "%s"
+		repository_url        = azuredevops_git_repository.repository.remote_url
+	}
+	`, serviceEndpointName)
+	importGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "import" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		initialization {
+		   init_type             = "Import"
+		   source_type           = "Git"
+		   source_url            = azuredevops_git_repository.repository.remote_url
+		   service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
+		 }
+	}`, gitImportRepoName)
+	return fmt.Sprintf("%s\n%s\n%s", gitRepoResource, serviceEndpointResource, importGitRepoResource)
+}
+
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
 func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
@@ -347,20 +370,19 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string) string {
+func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	credentials {
-		serviceprincipalid 	="e318e66b-ec4b-4dff-9124-41129b9d7150"
-		serviceprincipalkey ="d9d210dd-f9f0-4176-afb8-a4df60e1ae72"
-	}
-	azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-    azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-    azurerm_subscription_name = "Microsoft Azure DEMO"
-
-}`, serviceEndpointName)
+  project_id             = azuredevops_project.project.id
+  service_endpoint_name  = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+    serviceprincipalkey = "%s"
+  }
+  azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name = "Microsoft Azure DEMO"
+}`, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -480,7 +502,7 @@ resource "azuredevops_variable_group" "vg" {
 
 // HclVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
 func HclVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
-	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection")
+	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection", "e318e66b-ec4b-4dff-9124-41129b9d7150", "d9d210dd-f9f0-4176-afb8-a4df60e1ae72")
 
 	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, HclVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
 }

@@ -1,7 +1,7 @@
-// +build all resource_branchpolicy_merge_types
-// +build !exclude_resource_branchpolicy_merge_types
+// +build all resource_branchpolicy_build_validation
+// +build !exclude_resource_branchpolicy_build_validation
 
-package policy
+package branch
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ import (
 )
 
 // verifies that the flatten/expand round trip path produces repeatable results
-func TestBranchPolicyMergeTypes_ExpandFlatten_Roundtrip(t *testing.T) {
+func TestBranchPolicyBuildValidation_ExpandFlatten_Roundtrip(t *testing.T) {
 	var projectID = uuid.New().String()
 	var randomUUID = uuid.New()
 	var testPolicy = &policy.PolicyConfiguration{
@@ -33,17 +33,19 @@ func TestBranchPolicyMergeTypes_ExpandFlatten_Roundtrip(t *testing.T) {
 					"matchKind":    "test-match-kind",
 				},
 			},
-			"allowSquash":        true,
-			"allowRebase":        true,
-			"allowNoFastForward": true,
-			"allowRebaseMerge":   true,
+			"buildDefinitionId":       77,
+			"displayName":             "test policy",
+			"manualQueueOnly":         true,
+			"queueOnSourceUpdateOnly": true,
+			"validDuration":           700,
+			"filenamePatterns":        &([]string{"*md"}),
 		},
 	}
 
-	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyMergeTypes().Schema, nil)
-	err := mergeTypesFlattenFunc(resourceData, testPolicy, &projectID)
+	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyBuildValidation().Schema, nil)
+	err := buildValidationFlattenFunc(resourceData, testPolicy, &projectID)
 	require.Nil(t, err)
-	expandedPolicy, expandedProjectID, err := mergeTypesExpandFunc(resourceData, randomUUID)
+	expandedPolicy, expandedProjectID, err := buildValidationExpandFunc(resourceData, randomUUID)
 	require.Nil(t, err)
 
 	require.Equal(t, testPolicy, expandedPolicy)
