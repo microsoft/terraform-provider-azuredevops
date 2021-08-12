@@ -35,7 +35,7 @@ resource "azuredevops_team_members" "team_members" {
   team_id    = azuredevops_team.team.id
   mode       = "overwrite"
   members = [
-    azuredevops_group.builtin_project_readers.descriptor
+    data.azuredevops_group.builtin_project_readers.descriptor
   ]
 }
 ```
