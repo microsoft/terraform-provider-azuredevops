@@ -218,7 +218,7 @@ func (sn *SecurityNamespace) GetToken() string {
 	return sn.token
 }
 
-func (sn *SecurityNamespace) getActionDefinitions() (*map[string]security.ActionDefinition, error) {
+func (sn *SecurityNamespace) GetActionDefinitions() (*map[string]security.ActionDefinition, error) {
 	if sn.actions == nil {
 		secns, err := sn.securityClient.QuerySecurityNamespaces(sn.context, security.QuerySecurityNamespacesArgs{
 			SecurityNamespaceId: &sn.namespaceID,
@@ -239,7 +239,7 @@ func (sn *SecurityNamespace) getActionDefinitions() (*map[string]security.Action
 	return sn.actions, nil
 }
 
-func (sn *SecurityNamespace) getAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
+func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
 	var descriptors *string = nil
 	if descriptorList != nil && len(*descriptorList) > 0 {
 		val := linq.From(*descriptorList).
@@ -301,7 +301,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 // SetPrincipalPermissions sets ACLs for specifc token inside a security namespace
 func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission) error {
 	if nil == permissionList || len(*permissionList) <= 0 {
-		return fmt.Errorf("permissionMap is nil or empty")
+		return nil
 	}
 
 	permissionMap := map[string]SetPrincipalPermission{}
@@ -336,16 +336,20 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		}).
 		ToSlice(&descriptorList)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	if err != nil {
 		return err
 	}
-	if acl == nil {
-		return fmt.Errorf("Failed to load ACL for token %q", sn.token)
-	}
-	aceMap := *acl.AcesDictionary
 
-	actionMap, err := sn.getActionDefinitions()
+	var aceMap map[string]security.AccessControlEntry
+	if acl == nil || acl.AcesDictionary == nil {
+		// create a dummy ACE map, so that we always create new ACE entries below
+		aceMap = map[string]security.AccessControlEntry{}
+	} else {
+		aceMap = *acl.AcesDictionary
+	}
+
+	actionMap, err := sn.GetActionDefinitions()
 	if err != nil {
 		return err
 	}
@@ -356,18 +360,18 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 			return fmt.Errorf("Unable to resolve id descriptor for principal [%s]", subjectDescriptor)
 		}
 
-		log.Printf("[TRACE]Checking ACE list for descriptor [%s]", subjectDescriptor)
+		log.Printf("[TRACE] Checking ACE list for descriptor [%s]", subjectDescriptor)
 		var aceItem *security.AccessControlEntry
 		ace, update := aceMap[*desc.Descriptor]
 		if !update {
-			log.Printf("[TRACE]Creating new ACE for subject [%s]", subjectDescriptor)
+			log.Printf("[TRACE] Creating new ACE for subject [%s]", subjectDescriptor)
 			aceItem = new(security.AccessControlEntry)
 			aceItem.Allow = new(int)
 			aceItem.Deny = new(int)
 			aceItem.Descriptor = desc.Descriptor
 		} else {
 			// update existing ACE for principal
-			log.Printf("[TRACE]Updating ACE for descriptor [%s]", *desc.Descriptor)
+			log.Printf("[TRACE] Updating ACE for descriptor [%s]", *desc.Descriptor)
 			aceItem = &ace
 		}
 
@@ -422,7 +426,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 
 // GetPrincipalPermissions returns an array of PrincipalPermission for a Security Namespace token an a list of principals
 func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]PrincipalPermission, error) {
-	actions, err := sn.getActionDefinitions()
+	actions, err := sn.GetActionDefinitions()
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +442,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 			return *elem.(identity.Identity).Descriptor
 		}).
 		ToSlice(&descriptorList)
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	if err != nil {
 		return nil, err
 	}
@@ -485,7 +489,7 @@ func (sn *SecurityNamespace) RemovePrincipalPermissions(principal *[]string) err
 	if err != nil {
 		return err
 	}
-	acl, err := sn.getAccessControlList(nil)
+	acl, err := sn.GetAccessControlList(nil)
 	if err != nil {
 		return err
 	}

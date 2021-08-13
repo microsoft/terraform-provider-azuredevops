@@ -854,3 +854,49 @@ resource "azuredevops_git_permissions" "git-permissions" {
 }
 `, projectResource, gitRepository)
 }
+
+func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {
+	var teamResource string
+	projectResource := HclProjectResource(projectName)
+	if teamDescription != "" {
+		teamResource = fmt.Sprintf(`
+%s
+
+resource "azuredevops_team" "team" {
+	project_id = azuredevops_project.project.id
+	name = "%s"
+	description = "%s"
+`, projectResource, teamName, teamDescription)
+	} else {
+		teamResource = fmt.Sprintf(`
+%s
+
+resource "azuredevops_team" "team" {
+	project_id = azuredevops_project.project.id
+	name = "%s"
+`, projectResource, teamName)
+	}
+
+	if teamAdministrators != nil {
+		teamResource = fmt.Sprintf(`
+%s
+	administrators = [
+		%s
+	]
+`, teamResource, strings.Join(*teamAdministrators, ","))
+	}
+
+	if teamMembers != nil {
+		teamResource = fmt.Sprintf(`
+%s
+	members = [
+		%s
+	]
+`, teamResource, strings.Join(*teamMembers, ","))
+	}
+
+	return fmt.Sprintf(`
+%s
+}
+`, teamResource)
+}

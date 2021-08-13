@@ -77,7 +77,7 @@ vet:
 		exit 1; \
 	fi
 
-ci: check-vendor-vs-mod lint test
+ci: check-vendor-vs-mod lint test website-lint
 
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
@@ -89,6 +89,8 @@ endif
 website-lint:
 	@echo "==> Checking website against linters..."
 	@misspell -error -source=text website/
+	@echo "==> Checking documentation for errors..."
+	@tfproviderdocs check -provider-name=azuredevops
 
 website-test:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))

@@ -1,7 +1,8 @@
 ---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_serviceendpoint_ssh"
-description: |- Manages a SSH service endpoint within Azure DevOps organization.
+description: |- 
+  Manages a SSH service endpoint within Azure DevOps organization.
 ---
 
 # azuredevops_serviceendpoint_ssh
