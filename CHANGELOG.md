@@ -1,3 +1,11 @@
+## 0.1.7(Unreleased)
+FEATURES:
+* **New Resource** `azuredevops_team ` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+* **New Resource** `azuredevops_team_members` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+* **New Resource** `azuredevops_team_administrators` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+* **New Data Resource** `azuredevops_team` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+* **New Data Resource** `azuredevops_teams` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+
 ## 0.1.6
 FEATURES:
 * **New Resource** `serviceendpoint_generic` [#402](https://github.com/microsoft/terraform-provider-azuredevops/issues/402)
