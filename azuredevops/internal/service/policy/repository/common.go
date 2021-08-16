@@ -1,4 +1,4 @@
-package policy
+package repository
 
 import (
 	"encoding/json"
