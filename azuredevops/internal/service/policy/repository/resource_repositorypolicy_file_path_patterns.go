@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 )
 
 func ResourceRepositoryFilePathPatterns() *schema.Resource {
@@ -15,7 +14,7 @@ func ResourceRepositoryFilePathPatterns() *schema.Resource {
 		PolicyType:  FilePathPattern,
 	})
 
-	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
+	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
 	settingsSchema["filepath_patterns"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Required: true,
@@ -36,10 +35,10 @@ func filePathPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.Pol
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 
-	settingsList := d.Get(branch.SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 	settings["filepath_patterns"] = policySettings["filenamePatterns"].([]interface{})
-	_ = d.Set(branch.SchemaSettings, settingsList)
+	_ = d.Set("settings", settingsList)
 	return nil
 }
 
@@ -49,7 +48,7 @@ func filePathPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*polic
 		return nil, nil, err
 	}
 
-	settingsList := d.Get(branch.SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -83,7 +82,7 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									branch.SchemaRepositoryID: {
+									SchemaRepositoryID: {
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validation.StringIsNotEmpty,

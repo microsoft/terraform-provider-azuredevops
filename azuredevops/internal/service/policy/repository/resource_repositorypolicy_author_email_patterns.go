@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 )
 
 func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
@@ -15,7 +14,7 @@ func ResourceRepositoryPolicyAuthorEmailPatterns() *schema.Resource {
 		PolicyType:  AuthorEmailPattern,
 	})
 
-	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
+	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
 	settingsSchema["author_email_patterns"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Required: true,
@@ -36,12 +35,12 @@ func authorEmailPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 	if policySettings["authorEmailPatterns"] != nil {
 		settings["author_email_patterns"] = policySettings["authorEmailPatterns"].([]interface{})
 	}
-	_ = d.Set(branch.SchemaSettings, settingsList)
+	_ = d.Set("settings", settingsList)
 	return nil
 }
 
@@ -51,7 +50,7 @@ func authorEmailPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*po
 		return nil, nil, err
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
