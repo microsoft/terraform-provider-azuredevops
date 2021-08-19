@@ -20,7 +20,6 @@ func ResourceRepositoryMaxPathLength() *schema.Resource {
 		ValidateFunc: validation.IntBetween(1, 10000),
 	}
 	return resource
-
 }
 
 func pathLengthFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {

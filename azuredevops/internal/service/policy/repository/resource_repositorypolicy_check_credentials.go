@@ -13,7 +13,6 @@ func ResourceRepositoryPolicyCheckCredentials() *schema.Resource {
 		PolicyType:  CheckCredentials,
 	})
 	return resource
-
 }
 
 func checkCredentialsFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {

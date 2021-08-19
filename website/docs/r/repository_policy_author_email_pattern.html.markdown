@@ -30,10 +30,10 @@ resource "azuredevops_git_repository" "r" {
 resource "azuredevops_repository_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
 
-  enabled  = true
-  blocking = true
+  enabled               = true
+  blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]
-  repository_ids = [azuredevops_git_repository.r.id]
+  repository_ids        = [azuredevops_git_repository.r.id]
 }
 ```
 
@@ -42,8 +42,8 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
 resource "azuredevops_repository_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
 
-  enabled  = true
-  blocking = true
+  enabled               = true
+  blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]
 }
 ```

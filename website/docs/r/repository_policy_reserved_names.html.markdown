@@ -30,9 +30,9 @@ resource "azuredevops_git_repository" "r" {
 }
 
 resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+  project_id     = azuredevops_project.p.id
+  enabled        = true
+  blocking       = true
   repository_ids = [azuredevops_git_repository.r.id]
 }
 ```
@@ -41,8 +41,8 @@ resource "azuredevops_repository_policy_reserved_names" "p" {
 ```hcl
 resource "azuredevops_repository_policy_reserved_names" "p" {
   project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+  enabled    = true
+  blocking   = true
 }
 ```
 

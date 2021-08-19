@@ -30,10 +30,10 @@ resource "azuredevops_git_repository" "r" {
 }
 
 resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  max_file_size = 1
+  project_id     = azuredevops_project.p.id
+  enabled        = true
+  blocking       = true
+  max_file_size  = 1
   repository_ids = [azuredevops_git_repository.r.id]
 }
 ```
@@ -41,9 +41,9 @@ resource "azuredevops_repository_policy_max_file_size" "p" {
 # Set project level repository policy
 ```hcl
 resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+  project_id    = azuredevops_project.p.id
+  enabled       = true
+  blocking      = true
   max_file_size = 1
 }
 ```

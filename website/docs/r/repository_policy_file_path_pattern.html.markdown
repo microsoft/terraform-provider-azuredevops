@@ -30,10 +30,10 @@ resource "azuredevops_git_repository" "r" {
 resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
 
-  enabled  = true
-  blocking = true
+  enabled           = true
+  blocking          = true
   filepath_patterns = ["*.go", "/home/test/*.ts"]
-  repository_ids = [azuredevops_git_repository.r.id]
+  repository_ids    = [azuredevops_git_repository.r.id]
 }
 ```
 

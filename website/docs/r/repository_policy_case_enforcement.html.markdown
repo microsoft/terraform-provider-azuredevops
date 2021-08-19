@@ -30,20 +30,20 @@ resource "azuredevops_git_repository" "r" {
 }
 
 resource "azuredevops_repository_policy_case_enforcement" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+  project_id              = azuredevops_project.p.id
+  enabled                 = true
+  blocking                = true
   enforce_consistent_case = true
-  repository_ids = [azuredevops_git_repository.r.id]
+  repository_ids          = [azuredevops_git_repository.r.id]
 }
 ```
 
 # Set project level repository policy
 ```hcl
 resource "azuredevops_repository_policy_case_enforcement" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+  project_id              = azuredevops_project.p.id
+  enabled                 = true
+  blocking                = true
   enforce_consistent_case = true
 }
 ```

@@ -22,7 +22,6 @@ func ResourceRepositoryMaxFileSize() *schema.Resource {
 		ValidateFunc: validation.IntInSlice([]int{1, 2, 5, 10, 100, 200}),
 	}
 	return resource
-
 }
 
 func fileSizeFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {

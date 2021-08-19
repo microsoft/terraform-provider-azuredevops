@@ -13,7 +13,6 @@ func ResourceRepositoryReservedNames() *schema.Resource {
 		PolicyType:  ReservedNames,
 	})
 	return resource
-
 }
 
 func reservedNamesFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
@@ -29,6 +28,5 @@ func reservedNamesExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return policyConfig, projectID, nil
 }
