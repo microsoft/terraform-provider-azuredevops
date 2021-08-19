@@ -1,5 +1,5 @@
 // +build all resource_repositorypolicy_author_email_patterns
-// +build !exclude_serviceendpoints
+// +build !resource_repositorypolicy_author_email_patterns
 
 package acceptancetests
 
@@ -37,7 +37,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyBasic(t *testing.T) {
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceRepoPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "author_email_patterns.0", "test1@test.com"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -62,14 +62,12 @@ func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyUpdate(t *testing.T) {
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceRepoPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
 				),
 			}, {
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceRepoPolicyUpdate(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.0.author_email_patterns.#", "2"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "author_email_patterns.0", "test2@test.com"),
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -94,7 +92,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyBasic(t *testing.T) 
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceProjectPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "author_email_patterns.#", "1"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -119,14 +117,12 @@ func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyUpdate(t *testing.T)
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceProjectPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
 				),
 			}, {
 				Config: hclRepositoryPolicyAuthorEmailPatternsResourceProjectPolicyUpdate(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.0.author_email_patterns.#", "2"),
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "author_email_patterns.#", "2"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -167,12 +163,8 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
   enabled  = true
   blocking = true
 
-  settings {
-	author_email_patterns = ["test1@test.com"]
-    scope {
-      repository_id  = azuredevops_git_repository.r.id
-    }
-  }
+  author_email_patterns = ["test1@test.com"]
+  repository_ids  = [azuredevops_git_repository.r.id]
 }
 `)
 }
@@ -186,12 +178,8 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
  enabled  = true
  blocking = true
 
- settings {
-   author_email_patterns = ["test1@test.com", "test2@test.com"]
-   scope {
-     repository_id  = azuredevops_git_repository.r.id
-   }
- }
+ author_email_patterns = ["test2@test.com"]
+ repository_ids  = [azuredevops_git_repository.r.id]
 }
 `)
 }
@@ -204,11 +192,8 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
 
   enabled  = true
   blocking = true
-
-  settings {
-	author_email_patterns = ["test1@test.com"]
-  }
- depends_on = [azuredevops_git_repository.r]
+  author_email_patterns = ["test1@test.com"]
+  depends_on = [azuredevops_git_repository.r]
 }
 `)
 }
@@ -222,9 +207,7 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
  enabled  = true
  blocking = true
 
- settings {
-   author_email_patterns = ["test1@test.com", "test2@test.com"]
- }
+ author_email_patterns = ["test1@test.com", "test2@test.com"]
  depends_on = [azuredevops_git_repository.r]
 }
 `)

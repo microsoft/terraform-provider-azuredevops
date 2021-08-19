@@ -14,8 +14,7 @@ func ResourceRepositoryFilePathPatterns() *schema.Resource {
 		PolicyType:  FilePathPattern,
 	})
 
-	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
-	settingsSchema["filepath_patterns"] = &schema.Schema{
+	resource.Schema["filepath_patterns"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Required: true,
 		MinItems: 1,
@@ -34,11 +33,7 @@ func filePathPatternFlattenFunc(d *schema.ResourceData, policyConfig *policy.Pol
 	}
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
-
-	settingsList := d.Get("settings").([]interface{})
-	settings := settingsList[0].(map[string]interface{})
-	settings["filepath_patterns"] = policySettings["filenamePatterns"].([]interface{})
-	_ = d.Set("settings", settingsList)
+	_ = d.Set("filepath_patterns", policySettings["filenamePatterns"].([]interface{}))
 	return nil
 }
 
@@ -48,10 +43,7 @@ func filePathPatternExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*polic
 		return nil, nil, err
 	}
 
-	settingsList := d.Get("settings").([]interface{})
-	settings := settingsList[0].(map[string]interface{})
-
 	policySettings := policyConfig.Settings.(map[string]interface{})
-	policySettings["filenamePatterns"] = settings["filepath_patterns"]
+	policySettings["filenamePatterns"] = d.Get("filepath_patterns")
 	return policyConfig, projectID, nil
 }

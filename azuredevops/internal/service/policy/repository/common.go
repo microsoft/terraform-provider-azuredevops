@@ -24,16 +24,7 @@ var (
 	ReservedNames      = uuid.MustParse("db2b9b4c-180d-4529-9701-01541d19f36b")
 	PathLength         = uuid.MustParse("001a79cf-fda1-4c4e-9e7c-bac40ee5ead8")
 	FileSize           = uuid.MustParse("2e26e725-8201-4edd-8bf5-978563c34a80")
-)
-
-// Keys for schema elements
-const (
-	SchemaProjectID    = "project_id"
-	SchemaEnabled      = "enabled"
-	SchemaBlocking     = "blocking"
-	SchemaSettings     = "settings"
-	SchemaScope        = "scope"
-	SchemaRepositoryID = "repository_id"
+	CheckCredentials   = uuid.MustParse("e67ae10f-cf9a-40bc-8e66-6b3a8216956e")
 )
 
 // policyCrudArgs arguments for genBasePolicyResource
@@ -52,45 +43,28 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 		Delete:   genPolicyDeleteFunc(crudArgs),
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
-			SchemaProjectID: {
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			SchemaEnabled: {
+			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			SchemaBlocking: {
+			"blocking": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			SchemaSettings: {
+			"repository_ids": {
 				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						SchemaScope: {
-							Type:     schema.TypeList,
-							Optional: true,
-							MinItems: 1,
-							MaxItems: 1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									SchemaRepositoryID: {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotEmpty,
-									},
-								},
-							},
-						},
-					},
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.IsUUID,
 				},
 			},
 		},
@@ -110,14 +84,14 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 		return nil
 	}
 	d.SetId(strconv.Itoa(*policyConfig.Id))
-	d.Set(SchemaProjectID, converter.ToString(projectID, ""))
-	d.Set(SchemaEnabled, converter.ToBool(policyConfig.IsEnabled, true))
-	d.Set(SchemaBlocking, converter.ToBool(policyConfig.IsBlocking, true))
-	settings, err := flattenSettings(policyConfig)
+	d.Set("project_id", converter.ToString(projectID, ""))
+	d.Set("enabled", converter.ToBool(policyConfig.IsEnabled, true))
+	d.Set("blocking", converter.ToBool(policyConfig.IsBlocking, true))
+	repoIds, err := flattenSettings(policyConfig)
 	if err != nil {
 		return err
 	}
-	err = d.Set(SchemaSettings, settings)
+	err = d.Set("repository_ids", repoIds)
 	if err != nil {
 		return fmt.Errorf("Unable to persist policy settings configuration: %+v", err)
 	}
@@ -133,29 +107,22 @@ func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, e
 	}
 
 	_ = json.Unmarshal(policyAsJSON, &policySettings)
-	var scopes []interface{}
+	var repoIds []interface{}
 	for _, scope := range policySettings.Scopes {
-		scopeSetting := map[string]interface{}{}
 		if scope.RepositoryID != "" {
-			scopeSetting[SchemaRepositoryID] = scope.RepositoryID
-			scopes = append(scopes, scopeSetting)
+			repoIds = append(repoIds, scope.RepositoryID)
 		}
 	}
-
-	return []interface{}{
-		map[string]interface{}{
-			SchemaScope: scopes,
-		},
-	}, nil
+	return repoIds, nil
 }
 
 // baseExpandFunc expands each of the base elements of the schema
 func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
-	projectID := d.Get(SchemaProjectID).(string)
+	projectID := d.Get("project_id").(string)
 
 	policyConfig := policy.PolicyConfiguration{
-		IsEnabled:  converter.Bool(d.Get(SchemaEnabled).(bool)),
-		IsBlocking: converter.Bool(d.Get(SchemaBlocking).(bool)),
+		IsEnabled:  converter.Bool(d.Get("enabled").(bool)),
+		IsBlocking: converter.Bool(d.Get("blocking").(bool)),
 		Type: &policy.PolicyTypeRef{
 			Id: &typeID,
 		},
@@ -174,31 +141,25 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 }
 
 func expandSettings(d *schema.ResourceData) map[string]interface{} {
-	settingsList := d.Get(SchemaSettings).([]interface{})
-	settings := settingsList[0].(map[string]interface{})
-	settingsScopes := settings[SchemaScope].([]interface{})
-
-	if len(settingsScopes) == 0 {
+	repoIds := d.Get("repository_ids").([]interface{})
+	if len(repoIds) == 0 {
 		return map[string]interface{}{
-			SchemaScope: []map[string]interface{}{
+			"scope": []map[string]interface{}{
 				{
 					"repositoryId": "",
 				},
 			},
 		}
-	} else {
-		scopes := make([]map[string]interface{}, len(settingsScopes))
-		for index, scope := range settingsScopes {
-			scopeMap := scope.(map[string]interface{})
-			scopeSetting := map[string]interface{}{}
-			if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
-				scopeSetting["repositoryId"] = repoID
-			}
-			scopes[index] = scopeSetting
+	}
+
+	scopes := make([]map[string]interface{}, len(repoIds))
+	for idx, repoID := range repoIds {
+		scopes[idx] = map[string]interface{}{
+			"repositoryId": repoID,
 		}
-		return map[string]interface{}{
-			SchemaScope: scopes,
-		}
+	}
+	return map[string]interface{}{
+		"scope": scopes,
 	}
 }
 
@@ -226,7 +187,7 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc {
 func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
-		projectID := d.Get(SchemaProjectID).(string)
+		projectID := d.Get("project_id").(string)
 		policyID, err := strconv.Atoi(d.Id())
 
 		if err != nil {

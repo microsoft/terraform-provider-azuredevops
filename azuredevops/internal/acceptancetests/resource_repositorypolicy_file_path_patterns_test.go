@@ -34,8 +34,7 @@ func testAccRepositoryPolicyFilePathPatternsRepoPolicyBasic(t *testing.T) {
 				Config: hclRepoPolicyFilePathPatternsResourceRepoPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.0.filepath_patterns.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "1"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -60,14 +59,13 @@ func testAccRepositoryPolicyFilePathPatternsRepoPolicyUpdate(t *testing.T) {
 				Config: hclRepoPolicyFilePathPatternsResourceRepoPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "1"),
 				),
 			}, {
 				Config: hclRepoPolicyFilePathPatternsResourceRepoPolicyUpdate(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.0.filepath_patterns.#", "2"),
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "2"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -92,7 +90,7 @@ func TestAccRepositoryPolicyFilePathPatternsProjectPolicyBasic(t *testing.T) {
 				Config: hclRepoPolicyFilePathPatternsResourceProjectPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "1"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -117,14 +115,13 @@ func testAccRepositoryPolicyFilePathPatternsProjectPolicyUpdate(t *testing.T) {
 				Config: hclRepoPolicyFilePathPatternsResourceProjectPolicyBasic(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "1"),
 				),
 			}, {
 				Config: hclRepoPolicyFilePathPatternsResourceProjectPolicyUpdate(projectName, repoName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.0.filepath_patterns.#", "2"),
+					resource.TestCheckResourceAttr(authorEmailTfNode, "filepath_patterns.#", "2"),
 					resource.TestCheckResourceAttr(authorEmailTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(authorEmailTfNode, "settings.#", "1"),
 				),
 			}, {
 				ResourceName:      authorEmailTfNode,
@@ -161,16 +158,10 @@ func hclRepoPolicyFilePathPatternsResourceRepoPolicyBasic(projectName string, re
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled  = true
   blocking = true
-
-  settings {
-	filepath_patterns = ["*.go"]
-    scope {
-      repository_id  = azuredevops_git_repository.r.id
-    }
-  }
+  filepath_patterns = ["*.go"]
+  repository_ids  = [azuredevops_git_repository.r.id]
 }
 `)
 }
@@ -180,16 +171,10 @@ func hclRepoPolicyFilePathPatternsResourceRepoPolicyUpdate(projectName string, r
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled  = true
   blocking = true
-
-  settings {
-	filepath_patterns = ["*.go", "/home/test/*.ts"]
-    scope {
-      repository_id  = azuredevops_git_repository.r.id
-    }
-  }
+  filepath_patterns = ["*.go", "/home/test/*.ts"]
+  repository_ids  = [azuredevops_git_repository.r.id]
 }
 `)
 }
@@ -199,13 +184,9 @@ func hclRepoPolicyFilePathPatternsResourceProjectPolicyBasic(projectName string,
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled  = true
   blocking = true
-
-  settings {
-	filepath_patterns = ["*.go"]
-  }
+  filepath_patterns = ["*.go"]
   depends_on = [azuredevops_git_repository.r]
 }
 `)
@@ -216,13 +197,9 @@ func hclRepoPolicyFilePathPatternsResourceProjectPolicyUpdate(projectName string
 	return fmt.Sprintf(`%s %s`, projectAndRepo, `
 resource "azuredevops_repository_policy_file_path_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled  = true
   blocking = true
-
-  settings {
-	filepath_patterns = ["*.go", "/home/test/*.ts"]
-  }
+  filepath_patterns = ["*.go", "/home/test/*.ts"]
   depends_on = [azuredevops_git_repository.r]
 }
 `)
