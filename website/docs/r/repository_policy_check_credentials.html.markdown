@@ -1,12 +1,14 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_repository_policy_file_path_pattern"
-description: |- Manages a file path pattern repository policy within Azure DevOps project.
+page_title: "AzureDevops: azuredevops_repository_policy_check_credentials"
+description: |- Manage a credentials check repository policy within Azure DevOps project.
 ---
 
-# azuredevops_repository_policy_file_path_pattern
+# azuredevops_repository_policy_check_credentials
 
-Manage a file path pattern repository policy within Azure DevOps project.
+Manage a credentials check repository policy within Azure DevOps project. Block pushes that introduce files, folders, or branch names that include platform reserved names or incompatible characters.
+
+~> If both project and project policy are enabled, the project policy has high priority.
 
 ## Example Usage
 
@@ -27,27 +29,20 @@ resource "azuredevops_git_repository" "r" {
   }
 }
 
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
-  project_id = azuredevops_project.p.id
-
-  enabled           = true
-  blocking          = true
-  filepath_patterns = ["*.go", "/home/test/*.ts"]
-  repository_ids    = [azuredevops_git_repository.r.id]
+resource "azuredevops_repository_policy_check_credentials" "p" {
+  project_id     = azuredevops_project.p.id
+  enabled        = true
+  blocking       = true
+  repository_ids = [azuredevops_git_repository.r.id]
 }
 ```
 
 # Set project level repository policy
 ```hcl
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
+resource "azuredevops_repository_policy_check_credentials" "p" {
   project_id = azuredevops_project.p.id
-
-  enabled  = true
-  blocking = true
-
-  settings {
-    filepath_patterns = ["*.go", "/home/test/*.ts"]
-  }
+  enabled    = true
+  blocking   = true
 }
 ```
 
@@ -56,13 +51,8 @@ resource "azuredevops_repository_policy_file_path_pattern" "p" {
 The following arguments are supported:
 
 - `project_id` - (Required) The ID of the project in which the policy will be created.
-- `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
+- `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`. 
 - `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
-- `settings` - (Required) Configuration for the policy. This block must be defined exactly once.
-
-`settings` block supports the following:
-
-- `filepath_patterns` - (Required) Block pushes from introducing file paths that match the following patterns. Exact paths begin with "/". You can specify exact paths and wildcards. You can also specify multiple paths using ";" as a separator. Paths prefixed with "!" are excluded. Order is important.
 - `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.
 
 ## Attributes Reference
@@ -80,5 +70,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps repository policies can be imported using the projectID/policyID or projectName/policyID:
 
 ```sh
-$ terraform import azuredevops_repository_policy_file_path_pattern.p 00000000-0000-0000-0000-000000000000/0
+$ terraform import azuredevops_repository_policy_check_credentials.p 00000000-0000-0000-0000-000000000000/0
 ```
