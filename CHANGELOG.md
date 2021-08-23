@@ -3,8 +3,17 @@ FEATURES:
 * **New Resource** `azuredevops_team ` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
 * **New Resource** `azuredevops_team_members` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
 * **New Resource** `azuredevops_team_administrators` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+* **New Resource** `azuredevops_repository_policy_case_enforcement` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_reserved_names` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_max_path_length` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_max_file_size` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
+* **New Resource** `azuredevops_repository_policy_check_credentials` [#113](https://github.com/microsoft/terraform-provider-azuredevops/issues/113)
 * **New Data Resource** `azuredevops_team` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
 * **New Data Resource** `azuredevops_teams` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
+
+BREAKING CHANGES:
+* **Resource** `azuredevops_repository_policy_author_email_pattern` - Remove `settings` and `scope`, policy `scope` can be set by  [repository ID](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/website/docs/r/repository_policy_author_email_pattern.html.markdown) [#436](https://github.com/microsoft/terraform-provider-azuredevops/issues/436)
+* **Resource** `azuredevops_repository_policy_file_path_pattern` - Remove `settings` and `scope`, policy `scope` can be set by  [repository ID](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/website/docs/r/repository_policy_file_path_pattern.html.markdown) [#436](https://github.com/microsoft/terraform-provider-azuredevops/issues/436)
 
 ## 0.1.6
 FEATURES:
