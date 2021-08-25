@@ -1,4 +1,4 @@
-## 0.1.7(Unreleased)
+## 0.1.7
 FEATURES:
 * **New Resource** `azuredevops_team ` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
 * **New Resource** `azuredevops_team_members` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
