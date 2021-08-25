@@ -29,7 +29,6 @@ resource "azuredevops_git_repository" "r" {
 
 resource "azuredevops_repository_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled               = true
   blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]
@@ -41,7 +40,6 @@ resource "azuredevops_repository_policy_author_email_pattern" "p" {
 ```hcl
 resource "azuredevops_repository_policy_author_email_pattern" "p" {
   project_id = azuredevops_project.p.id
-
   enabled               = true
   blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]
@@ -55,10 +53,6 @@ The following arguments are supported:
 - `project_id` - (Required) The ID of the project in which the policy will be created.
 - `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
 - `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
-- `settings` - (Required) Configuration for the policy. This block must be defined exactly once.
-
-`settings` block supports the following:
-
 - `author_email_patterns` - (Required) Block pushes with a commit author email that does not match the patterns. You can specify exact emails or use wildcards. 
   Email patterns prefixed with "!" are excluded. Order is important.
 - `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.   
