@@ -251,39 +251,46 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	message := fmt.Sprintf("Delete %s", file)
 
-	objectID, err := getLastCommitId(clients, repoId, branch)
-	if err != nil {
-		return err
-	}
+	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		objectID, err := getLastCommitId(clients, repoId, branch)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
 
-	change := &git.GitChange{
-		ChangeType: &git.VersionControlChangeTypeValues.Delete,
-		Item: git.GitItem{
-			Path: &file,
-		},
-	}
-
-	_, err = clients.GitReposClient.CreatePush(ctx, git.CreatePushArgs{
-		RepositoryId: &repoId,
-		Push: &git.GitPush{
-			RefUpdates: &[]git.GitRefUpdate{
-				{
-					Name:        &branch,
-					OldObjectId: &objectID,
+		change := &git.GitChange{
+			ChangeType: &git.VersionControlChangeTypeValues.Delete,
+			Item: git.GitItem{
+				Path: &file,
+			},
+		}
+		_, err = clients.GitReposClient.CreatePush(ctx, git.CreatePushArgs{
+			RepositoryId: &repoId,
+			Push: &git.GitPush{
+				RefUpdates: &[]git.GitRefUpdate{
+					{
+						Name:        &branch,
+						OldObjectId: &objectID,
+					},
+				},
+				Commits: &[]git.GitCommitRef{
+					{
+						Comment: &message,
+						Changes: &[]interface{}{change},
+					},
 				},
 			},
-			Commits: &[]git.GitCommitRef{
-				{
-					Comment: &message,
-					Changes: &[]interface{}{change},
-				},
-			},
-		},
+		})
+		if err != nil {
+			if utils.ResponseContainsStatusMessage(err, "has already been updated by another client") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
