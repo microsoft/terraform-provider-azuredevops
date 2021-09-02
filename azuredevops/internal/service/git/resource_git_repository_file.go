@@ -236,7 +236,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return resourceGitRepositoryFileRead(d, m)
