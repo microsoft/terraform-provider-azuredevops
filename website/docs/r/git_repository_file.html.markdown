@@ -30,7 +30,7 @@ resource "azuredevops_git_repository_file" "repo_file" {
   repository_id       = azuredevops_git_repository.repo.id
   file                = ".gitignore"
   content             = "**/*.tfstate"
-  branch              = "master"
+  branch              = "refs/heads/master"
   commit_message      = "First commit"
   overwrite_on_create = false
 }
@@ -50,16 +50,16 @@ The following arguments are supported:
 
 ## Import
 
-Repository files can be imported using a combination of the `repo` and `file`, e.g.
+Repository files can be imported using a combination of the `repositroy ID` and `file`, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file example/.gitignore
+terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore
 ```
 
 To import a file from a branch other than `master`, append `:` and the branch name, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file example/.gitignore:dev
+terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/dev
 ```
 
 ## Relevant Links

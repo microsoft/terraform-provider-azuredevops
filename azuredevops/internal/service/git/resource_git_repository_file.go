@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -34,12 +35,12 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				}
 
 				clients := m.(*client.AggregatedClient)
-				repo, file := splitRepoFilePath(parts[0])
-				if err := checkRepositoryFileExists(clients, repo, file, branch); err != nil {
-					return nil, err
+				repoID, file := splitRepoFilePath(parts[0])
+				if err := checkRepositoryFileExists(clients, repoID, file, branch); err != nil {
+					return nil, fmt.Errorf("Repository not found, repository ID: %s, branch: %s, file: %s. Error:  %+v", repoID, branch, file, err)
 				}
 
-				d.SetId(fmt.Sprintf("%s/%s", repo, file))
+				d.SetId(fmt.Sprintf("%s/%s", repoID, file))
 				d.Set("branch", branch)
 				d.Set("overwrite_on_create", false)
 
@@ -49,10 +50,11 @@ func ResourceGitRepositoryFile() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"repository_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The repository name",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The repository ID",
+				ValidateFunc: validation.IsUUID,
 			},
 			"file": {
 				Type:        schema.TypeString,
@@ -109,7 +111,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		Path:         &file,
 	})
 	if err != nil && !utils.ResponseWasNotFound(err) {
-		return err
+		return fmt.Errorf("Repository branch not found, repositoryID: %s, branch: %s. Error:  %+v", repoId, branch, err)
 	}
 
 	// Change type should be edit if overwrite is enabled when file exists
@@ -146,7 +148,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Create repositroy file failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", repoId, file))
@@ -179,11 +181,11 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 			d.SetId("")
 			return err
 		}
-		return err
+		return fmt.Errorf("Query repository item failed, repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}
 
 	d.Set("content", repoItem.Content)
-	d.Set("repository_id", repoItem)
+	d.Set("repository_id", repoId)
 	d.Set("file", file)
 
 	commit, err := clients.GitReposClient.GetCommit(ctx, git.GetCommitArgs{
@@ -191,7 +193,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 		CommitId:     repoItem.CommitId,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Get repository file commit failed , repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}
 
 	d.Set("commit_message", commit.Comment)
@@ -236,7 +238,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Update repository file failed, repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}
 
 	return resourceGitRepositoryFileRead(d, m)
@@ -289,7 +291,7 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to destroy the repository file, repository ID: %s, branch: %s. file %s. Error %+v ", repoId, branch, file, err)
 	}
 	return nil
 }
