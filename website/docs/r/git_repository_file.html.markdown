@@ -43,7 +43,7 @@ The following arguments are supported:
 - `repository_id` - (Required) The ID of the Git repository.
 - `file` - (Required) The path of the file to manage.
 - `content` - (Required) The file content.
-- `branch` - (Optional) Git branch (defaults to `master`). The branch must already exist, it will not be created if it
+- `branch` - (Optional) Git branch (defaults to `refs/heads/master`). The branch must already exist, it will not be created if it
   does not already exist.
 - `commit_message` - (Optional) Commit message when adding or updating the managed file.
 - `overwrite_on_create` - (Optional) Enable overwriting existing files (defaults to `false`).
@@ -59,7 +59,7 @@ terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-00
 To import a file from a branch other than `master`, append `:` and the branch name, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/dev
+terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/master
 ```
 
 ## Relevant Links
