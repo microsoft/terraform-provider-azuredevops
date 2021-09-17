@@ -17,7 +17,7 @@ data "azuredevops_project" "p" {
 }
 
 resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
-  project_id            = data.azuredevops_project.p
+  project_id            = data.azuredevops_project.p.id
   service_endpoint_name = "Sample Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "AzureSubscription"
