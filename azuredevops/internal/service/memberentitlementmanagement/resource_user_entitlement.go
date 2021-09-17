@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/accounts"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
@@ -146,7 +147,7 @@ func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	userEntitlement, err := readUserEntitlement(clients, &id)
 
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
+		if utils.ResponseWasNotFound(err) || isUserDeleted(userEntitlement) {
 			d.SetId("")
 			return nil
 		}
@@ -386,4 +387,12 @@ func getAPIErrorMessage(operationResults *[]memberentitlementmanagement.UserEnti
 			}).(string)
 	}
 	return errMsg
+}
+
+func isUserDeleted(userEntitlement *memberentitlementmanagement.UserEntitlement) bool {
+	if userEntitlement == nil {
+		return true
+	}
+
+	return *userEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.Deleted
 }
