@@ -394,5 +394,6 @@ func isUserDeleted(userEntitlement *memberentitlementmanagement.UserEntitlement)
 		return true
 	}
 
-	return *userEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.Deleted
+	return *userEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.Deleted ||
+		*userEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.None
 }
