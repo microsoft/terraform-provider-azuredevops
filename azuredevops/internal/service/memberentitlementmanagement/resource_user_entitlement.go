@@ -41,13 +41,14 @@ func ResourceUserEntitlement() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
-				Type:          schema.TypeString,
-				Computed:      true,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"origin_id", "origin"},
-				AtLeastOneOf:  configurationKeys,
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				ConflictsWith:    []string{"origin_id", "origin"},
+				AtLeastOneOf:     configurationKeys,
+				DiffSuppressFunc: suppress.CaseDifference,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 			},
 			"origin_id": {
 				Type:          schema.TypeString,
