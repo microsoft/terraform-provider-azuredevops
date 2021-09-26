@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -295,6 +296,51 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"schedules": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"branch_filter": branchFilter,
+						"days_to_build": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.StringInSlice([]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}, false),
+							},
+						},
+						"schedule_only_with_changes": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"start_hours": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      0,
+							ValidateFunc: validation.IntBetween(0, 23),
+						},
+						"start_minutes": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      0,
+							ValidateFunc: validation.IntBetween(0, 59),
+						},
+						"time_zone": {
+							Optional:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice(TimeZones, false),
+							Default:      "(UTC) Coordinated Universal Time",
+						},
+						"schedule_job_id": {
+							Computed: true,
+							Type:     schema.TypeString,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -340,6 +386,11 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 
 		yamlPrTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.PullRequest, 2)
 		d.Set("pull_request_trigger", flattenBuildDefinitionTriggers(buildDefinition.Triggers, yamlPrTrigger, build.DefinitionTriggerTypeValues.PullRequest))
+
+		err := d.Set("schedules", flattenBuildDefinitionTriggers(buildDefinition.Triggers, false, build.DefinitionTriggerTypeValues.Schedule))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	revision := 0
@@ -603,6 +654,32 @@ func flattenBuildDefinitionPullRequestTrigger(m interface{}, isYaml bool) interf
 	return nil
 }
 
+func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) interface{} {
+	schedulesResp := ms["schedules"].([]interface{})
+	schedules := make([]map[string]interface{}, 0)
+	for _, schedule := range schedulesResp {
+		schedule := schedule.(map[string]interface{})
+		branchFilter := flattenBuildDefinitionBranchOrPathFilter(schedule["branchFilters"].([]interface{}))
+		scheduleConfig := map[string]interface{}{
+			"branch_filter":              branchFilter,
+			"schedule_only_with_changes": schedule["scheduleOnlyWithChanges"],
+			"start_hours":                schedule["startHours"],
+			"start_minutes":              schedule["startMinutes"],
+			"time_zone":                  IDToTimeZones[schedule["timeZoneId"].(string)],
+		}
+
+		days := schedule["daysToBuild"]
+		switch days.(type) {
+		case float64:
+			scheduleConfig["days_to_build"] = DaysToDate(int(days.(float64)))
+		case string:
+			scheduleConfig["days_to_build"] = DaysToDate(DaysToBuild[days.(string)]) // all == 127 TODO
+		}
+		schedules = append(schedules, scheduleConfig)
+	}
+	return schedules
+}
+
 func flattenBuildDefinitionTrigger(m interface{}, isYaml bool, t build.DefinitionTriggerType) interface{} {
 	if ms, ok := m.(map[string]interface{}); ok {
 		if ms["triggerType"].(string) != string(t) {
@@ -613,6 +690,8 @@ func flattenBuildDefinitionTrigger(m interface{}, isYaml bool, t build.Definitio
 			return flattenBuildDefinitionContinuousIntegrationTrigger(ms, isYaml)
 		case build.DefinitionTriggerTypeValues.PullRequest:
 			return flattenBuildDefinitionPullRequestTrigger(ms, isYaml)
+		case build.DefinitionTriggerTypeValues.Schedule:
+			return flattenBuildDefinitionScheduleTrigger(ms)
 		}
 	}
 	return nil
@@ -632,12 +711,20 @@ func hasSettingsSourceType(m *[]interface{}, t build.DefinitionTriggerType, sst 
 	return hasSetting
 }
 
+//TODO needs to be decoupled
 func flattenBuildDefinitionTriggers(m *[]interface{}, isYaml bool, t build.DefinitionTriggerType) []interface{} {
 	ds := make([]interface{}, 0, len(*m))
 	for _, d := range *m {
 		f := flattenBuildDefinitionTrigger(d, isYaml, t)
 		if f != nil {
-			ds = append(ds, f)
+			if reflect.TypeOf(f).Kind() == reflect.Slice {
+				for _, sor := range f.([]map[string]interface{}) {
+					ds = append(ds, sor)
+				}
+			} else {
+				ds = append(ds, f)
+			}
+
 		}
 	}
 	return ds
@@ -786,6 +873,17 @@ func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTr
 			vs["autoCancel"] = override["autoCancel"]
 		}
 		return vs
+	case build.DefinitionTriggerTypeValues.Schedule:
+		scheduleConfig := map[string]interface{}{
+			"branchFilters":           expandBuildDefinitionBranchOrPathFilterSet(d["branch_filter"].(*schema.Set)),
+			"scheduleOnlyWithChanges": d["schedule_only_with_changes"],
+			"startHours":              d["start_hours"],
+			"startMinutes":            d["start_minutes"],
+			"timeZoneId":              TimeZoneToID[d["time_zone"].(string)],
+			"scheduleJobId":           nil,
+		}
+		scheduleConfig["daysToBuild"] = DateToDays(d["days_to_build"].([]interface{}))
+		return scheduleConfig
 	}
 	return nil
 }
@@ -889,6 +987,18 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 	)
 
 	buildTriggers := append(ciTriggers, pullRequestTriggers...)
+
+	schedules := expandBuildDefinitionTriggerList(
+		d.Get("schedules").([]interface{}),
+		build.DefinitionTriggerTypeValues.Schedule,
+	)
+	if len(schedules) > 0 {
+		scheduleTriggers := map[string]interface{}{
+			"schedules":   schedules,
+			"triggerType": string(build.DefinitionTriggerTypeValues.Schedule),
+		}
+		buildTriggers = append(buildTriggers, scheduleTriggers)
+	}
 
 	// Look for the ID. This may not exist if we are within the context of a "create" operation,
 	// so it is OK if it is missing.
