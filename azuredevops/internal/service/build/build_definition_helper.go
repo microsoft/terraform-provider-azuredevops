@@ -1,7 +1,6 @@
 package build
 
 var Date = []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
-var DateFull = []string{"monday", "tuesday", "wednesday", "thursday", "Friday", "saturday", "sunday", "all"}
 
 var DaysToBuild = map[string]int{
 	"Mon":       1,
@@ -22,6 +21,8 @@ var DaysToBuild = map[string]int{
 }
 
 //DaysToDate day to date
+//1 -> [Mon]
+//31 -> [Mon, Tue, Wed, Thu, Fri]
 func DaysToDate(dayToBuild int) []string {
 	var days []string
 	for _, day := range Date {
@@ -33,6 +34,10 @@ func DaysToDate(dayToBuild int) []string {
 }
 
 // DateToDays date to days
+// [Mon] -> 1
+// [Tue] -> 2
+// [Mon, Tue] -> 3
+// [Mon, Tue, Wed, Thu, Fri] -> 31
 func DateToDays(date []interface{}) int {
 	daysToBuild := 0
 	for _, day := range date {

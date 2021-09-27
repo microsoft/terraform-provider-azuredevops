@@ -673,7 +673,7 @@ func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) interface{
 		case float64:
 			scheduleConfig["days_to_build"] = DaysToDate(int(days.(float64)))
 		case string:
-			scheduleConfig["days_to_build"] = DaysToDate(DaysToBuild[days.(string)]) // all == 127 TODO
+			scheduleConfig["days_to_build"] = DaysToDate(DaysToBuild[days.(string)])
 		}
 		schedules = append(schedules, scheduleConfig)
 	}
@@ -718,8 +718,8 @@ func flattenBuildDefinitionTriggers(m *[]interface{}, isYaml bool, t build.Defin
 		f := flattenBuildDefinitionTrigger(d, isYaml, t)
 		if f != nil {
 			if reflect.TypeOf(f).Kind() == reflect.Slice {
-				for _, sor := range f.([]map[string]interface{}) {
-					ds = append(ds, sor)
+				for _, trigger := range f.([]map[string]interface{}) {
+					ds = append(ds, trigger)
 				}
 			} else {
 				ds = append(ds, f)
