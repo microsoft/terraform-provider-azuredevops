@@ -290,7 +290,18 @@ resource "azuredevops_build_definition" "build" {
   path       = "\\ExampleFolder"
 
   ci_trigger {
-  	use_yaml = true
+#    use_yaml = true
+    override {
+      batch = true
+      branch_filter {
+        include = ["master"]
+      }
+      path_filter {
+        include = ["*/**.ts"]
+      }
+      max_concurrent_builds_per_branch = 2
+      polling_interval = 0
+    }
   }
 
   schedules {

@@ -381,15 +381,28 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.Set(bdVariable, flattenBuildVariables(d, buildDefinition))
 
 	if buildDefinition.Triggers != nil {
-		yamlCiTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.ContinuousIntegration, 2)
-		d.Set("ci_trigger", flattenBuildDefinitionTriggers(buildDefinition.Triggers, yamlCiTrigger, build.DefinitionTriggerTypeValues.ContinuousIntegration))
+		triggers := flattenTriggers(buildDefinition.Triggers)
 
-		yamlPrTrigger := hasSettingsSourceType(buildDefinition.Triggers, build.DefinitionTriggerTypeValues.PullRequest, 2)
-		d.Set("pull_request_trigger", flattenBuildDefinitionTriggers(buildDefinition.Triggers, yamlPrTrigger, build.DefinitionTriggerTypeValues.PullRequest))
+		var err error
+		if triggers[build.DefinitionTriggerTypeValues.ContinuousIntegration] != nil {
+			err = d.Set("ci_trigger", triggers[build.DefinitionTriggerTypeValues.ContinuousIntegration])
+			if err != nil {
+				panic(err) //TODO
+			}
+		}
 
-		err := d.Set("schedules", flattenBuildDefinitionTriggers(buildDefinition.Triggers, false, build.DefinitionTriggerTypeValues.Schedule))
-		if err != nil {
-			panic(err)
+		if triggers[build.DefinitionTriggerTypeValues.PullRequest] != nil {
+			err = d.Set("pull_request_trigger", triggers[build.DefinitionTriggerTypeValues.PullRequest])
+			if err != nil {
+				panic(err) //TODO
+			}
+		}
+
+		if triggers[build.DefinitionTriggerTypeValues.Schedule] != nil {
+			err = d.Set("schedules", triggers[build.DefinitionTriggerTypeValues.Schedule])
+			if err != nil {
+				panic(err) //TODO
+			}
 		}
 	}
 
@@ -654,9 +667,9 @@ func flattenBuildDefinitionPullRequestTrigger(m interface{}, isYaml bool) interf
 	return nil
 }
 
-func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) interface{} {
+func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) []interface{} {
 	schedulesResp := ms["schedules"].([]interface{})
-	schedules := make([]map[string]interface{}, 0)
+	schedules := make([]interface{}, 0)
 	for _, schedule := range schedulesResp {
 		schedule := schedule.(map[string]interface{})
 		branchFilter := flattenBuildDefinitionBranchOrPathFilter(schedule["branchFilters"].([]interface{}))
@@ -690,8 +703,8 @@ func flattenBuildDefinitionTrigger(m interface{}, isYaml bool, t build.Definitio
 			return flattenBuildDefinitionContinuousIntegrationTrigger(ms, isYaml)
 		case build.DefinitionTriggerTypeValues.PullRequest:
 			return flattenBuildDefinitionPullRequestTrigger(ms, isYaml)
-		case build.DefinitionTriggerTypeValues.Schedule:
-			return flattenBuildDefinitionScheduleTrigger(ms)
+			//case build.DefinitionTriggerTypeValues.Schedule:
+			//	return flattenBuildDefinitionScheduleTrigger(ms)
 		}
 	}
 	return nil
@@ -711,7 +724,34 @@ func hasSettingsSourceType(m *[]interface{}, t build.DefinitionTriggerType, sst 
 	return hasSetting
 }
 
-//TODO needs to be decoupled
+func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interface{} {
+	buildTriggers := map[build.DefinitionTriggerType][]interface{}{}
+	for _, ds := range *m {
+		trigger := ds.(map[string]interface{})
+		triggerType := trigger["triggerType"].(string)
+		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.ContinuousIntegration)) {
+			isYaml := false
+			if val, ok := trigger["settingsSourceType"]; ok {
+				isYaml = int(val.(float64)) == 2
+			}
+			buildTriggers[build.DefinitionTriggerTypeValues.ContinuousIntegration] =
+				[]interface{}{flattenBuildDefinitionContinuousIntegrationTrigger(trigger, isYaml)}
+		}
+		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.PullRequest)) {
+			isYaml := false
+			if val, ok := trigger["settingsSourceType"]; ok {
+				isYaml = int(val.(float64)) == 2
+			}
+			buildTriggers[build.DefinitionTriggerTypeValues.PullRequest] =
+				[]interface{}{flattenBuildDefinitionPullRequestTrigger(trigger, isYaml)}
+		}
+		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.Schedule)) {
+			buildTriggers[build.DefinitionTriggerTypeValues.Schedule] = flattenBuildDefinitionScheduleTrigger(trigger)
+		}
+	}
+	return buildTriggers
+}
+
 func flattenBuildDefinitionTriggers(m *[]interface{}, isYaml bool, t build.DefinitionTriggerType) []interface{} {
 	ds := make([]interface{}, 0, len(*m))
 	for _, d := range *m {
