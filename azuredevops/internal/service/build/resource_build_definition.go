@@ -304,7 +304,8 @@ func ResourceBuildDefinition() *schema.Resource {
 						"branch_filter": branchFilter,
 						"days_to_build": {
 							Type:     schema.TypeList,
-							Optional: true,
+							Required: true,
+							MinItems: 1,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
 								ValidateFunc: validation.StringInSlice([]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}, false),
