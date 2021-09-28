@@ -20,7 +20,7 @@ var DaysToBuild = map[string]int{
 	"all":       127,
 }
 
-//DaysToDate day to date
+//DaysToDate days to date
 //1 -> [Mon]
 //31 -> [Mon, Tue, Wed, Thu, Fri]
 func DaysToDate(dayToBuild int) []string {

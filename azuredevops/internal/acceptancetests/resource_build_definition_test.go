@@ -290,7 +290,6 @@ resource "azuredevops_build_definition" "build" {
   path       = "\\ExampleFolder"
 
   ci_trigger {
-#    use_yaml = true
     override {
       batch = true
       branch_filter {

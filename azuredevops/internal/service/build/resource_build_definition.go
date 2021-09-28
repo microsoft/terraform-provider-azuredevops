@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -365,6 +364,75 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 	return resourceBuildDefinitionRead(d, m)
 }
 
+func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
+
+	if err != nil {
+		return err
+	}
+
+	buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
+		Project:      &projectID,
+		DefinitionId: &buildDefinitionID,
+	})
+
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	flattenBuildDefinition(d, buildDefinition, projectID)
+	return nil
+}
+
+func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	err := validateServiceConnectionIDExistsIfNeeded(d)
+	if err != nil {
+		return err
+	}
+	buildDefinition, projectID, err := expandBuildDefinition(d)
+	if err != nil {
+		return err
+	}
+
+	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
+		Definition:   buildDefinition,
+		Project:      &projectID,
+		DefinitionId: buildDefinition.Id,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
+	return resourceBuildDefinitionRead(d, m)
+}
+
+func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
+	if strings.EqualFold(d.Id(), "") {
+		return nil
+	}
+
+	clients := m.(*client.AggregatedClient)
+	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
+	if err != nil {
+		return err
+	}
+
+	err = clients.BuildClient.DeleteDefinition(m.(*client.AggregatedClient).Ctx, build.DeleteDefinitionArgs{
+		Project:      &projectID,
+		DefinitionId: &buildDefinitionID,
+	})
+
+	return err
+}
+
 func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
 	d.SetId(strconv.Itoa(*buildDefinition.Id))
 
@@ -383,26 +451,16 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	if buildDefinition.Triggers != nil {
 		triggers := flattenTriggers(buildDefinition.Triggers)
 
-		var err error
 		if triggers[build.DefinitionTriggerTypeValues.ContinuousIntegration] != nil {
-			err = d.Set("ci_trigger", triggers[build.DefinitionTriggerTypeValues.ContinuousIntegration])
-			if err != nil {
-				panic(err) //TODO
-			}
+			d.Set("ci_trigger", triggers[build.DefinitionTriggerTypeValues.ContinuousIntegration])
 		}
 
 		if triggers[build.DefinitionTriggerTypeValues.PullRequest] != nil {
-			err = d.Set("pull_request_trigger", triggers[build.DefinitionTriggerTypeValues.PullRequest])
-			if err != nil {
-				panic(err) //TODO
-			}
+			d.Set("pull_request_trigger", triggers[build.DefinitionTriggerTypeValues.PullRequest])
 		}
 
 		if triggers[build.DefinitionTriggerTypeValues.Schedule] != nil {
-			err = d.Set("schedules", triggers[build.DefinitionTriggerTypeValues.Schedule])
-			if err != nil {
-				panic(err) //TODO
-			}
+			d.Set("schedules", triggers[build.DefinitionTriggerTypeValues.Schedule])
 		}
 	}
 
@@ -412,6 +470,15 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	}
 
 	d.Set("revision", revision)
+}
+
+func createBuildDefinition(clients *client.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
+	createdBuild, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
+		Definition: buildDefinition,
+		Project:    &project,
+	})
+
+	return createdBuild, err
 }
 
 // Return an interface suitable for serialization into the resource state. This function ensures that
@@ -446,84 +513,6 @@ func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildD
 	}
 
 	return variables
-}
-
-func createBuildDefinition(clients *client.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
-	createdBuild, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
-		Definition: buildDefinition,
-		Project:    &project,
-	})
-
-	return createdBuild, err
-}
-
-func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
-
-	if err != nil {
-		return err
-	}
-
-	buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
-		Project:      &projectID,
-		DefinitionId: &buildDefinitionID,
-	})
-
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	flattenBuildDefinition(d, buildDefinition, projectID)
-	return nil
-}
-
-func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
-	if strings.EqualFold(d.Id(), "") {
-		return nil
-	}
-
-	clients := m.(*client.AggregatedClient)
-	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
-	if err != nil {
-		return err
-	}
-
-	err = clients.BuildClient.DeleteDefinition(m.(*client.AggregatedClient).Ctx, build.DeleteDefinitionArgs{
-		Project:      &projectID,
-		DefinitionId: &buildDefinitionID,
-	})
-
-	return err
-}
-
-func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	err := validateServiceConnectionIDExistsIfNeeded(d)
-	if err != nil {
-		return err
-	}
-	buildDefinition, projectID, err := expandBuildDefinition(d)
-	if err != nil {
-		return err
-	}
-
-	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
-		Definition:   buildDefinition,
-		Project:      &projectID,
-		DefinitionId: buildDefinition.Id,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
-	return resourceBuildDefinitionRead(d, m)
 }
 
 func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
@@ -682,46 +671,15 @@ func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) []interfac
 		}
 
 		days := schedule["daysToBuild"]
-		switch days.(type) {
+		switch day := days.(type) {
 		case float64:
-			scheduleConfig["days_to_build"] = DaysToDate(int(days.(float64)))
+			scheduleConfig["days_to_build"] = DaysToDate(int(day))
 		case string:
-			scheduleConfig["days_to_build"] = DaysToDate(DaysToBuild[days.(string)])
+			scheduleConfig["days_to_build"] = DaysToDate(DaysToBuild[day])
 		}
 		schedules = append(schedules, scheduleConfig)
 	}
 	return schedules
-}
-
-func flattenBuildDefinitionTrigger(m interface{}, isYaml bool, t build.DefinitionTriggerType) interface{} {
-	if ms, ok := m.(map[string]interface{}); ok {
-		if ms["triggerType"].(string) != string(t) {
-			return nil
-		}
-		switch t {
-		case build.DefinitionTriggerTypeValues.ContinuousIntegration:
-			return flattenBuildDefinitionContinuousIntegrationTrigger(ms, isYaml)
-		case build.DefinitionTriggerTypeValues.PullRequest:
-			return flattenBuildDefinitionPullRequestTrigger(ms, isYaml)
-			//case build.DefinitionTriggerTypeValues.Schedule:
-			//	return flattenBuildDefinitionScheduleTrigger(ms)
-		}
-	}
-	return nil
-}
-
-func hasSettingsSourceType(m *[]interface{}, t build.DefinitionTriggerType, sst int) bool {
-	hasSetting := false
-	for _, d := range *m {
-		if ms, ok := d.(map[string]interface{}); ok {
-			if strings.EqualFold(ms["triggerType"].(string), string(t)) {
-				if val, ok := ms["settingsSourceType"]; ok {
-					hasSetting = int(val.(float64)) == sst
-				}
-			}
-		}
-	}
-	return hasSetting
 }
 
 func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interface{} {
@@ -752,24 +710,6 @@ func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interfa
 	return buildTriggers
 }
 
-func flattenBuildDefinitionTriggers(m *[]interface{}, isYaml bool, t build.DefinitionTriggerType) []interface{} {
-	ds := make([]interface{}, 0, len(*m))
-	for _, d := range *m {
-		f := flattenBuildDefinitionTrigger(d, isYaml, t)
-		if f != nil {
-			if reflect.TypeOf(f).Kind() == reflect.Slice {
-				for _, trigger := range f.([]map[string]interface{}) {
-					ds = append(ds, trigger)
-				}
-			} else {
-				ds = append(ds, f)
-			}
-
-		}
-	}
-	return ds
-}
-
 func expandBuildDefinitionBranchOrPathFilter(d map[string]interface{}) []interface{} {
 	include := tfhelper.ExpandStringSet(d["include"].(*schema.Set))
 	exclude := tfhelper.ExpandStringSet(d["exclude"].(*schema.Set))
@@ -785,6 +725,7 @@ func expandBuildDefinitionBranchOrPathFilter(d map[string]interface{}) []interfa
 	}
 	return m
 }
+
 func expandBuildDefinitionBranchOrPathFilterList(d []interface{}) [][]interface{} {
 	vs := make([][]interface{}, 0, len(d))
 	for _, v := range d {
@@ -794,6 +735,7 @@ func expandBuildDefinitionBranchOrPathFilterList(d []interface{}) [][]interface{
 	}
 	return vs
 }
+
 func expandBuildDefinitionBranchOrPathFilterSet(configured *schema.Set) []interface{} {
 	d2 := expandBuildDefinitionBranchOrPathFilterList(configured.List())
 	if len(d2) != 1 {
