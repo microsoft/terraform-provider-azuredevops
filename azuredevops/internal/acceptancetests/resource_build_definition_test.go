@@ -269,7 +269,7 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 func hclBuildDefinitionSchedules(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-  name       = "%[1]s"
+  name               = "%[1]s"
   description        = "%[1]s-description"
   visibility         = "private"
   version_control    = "Git"
@@ -277,10 +277,10 @@ resource "azuredevops_project" "test" {
 }
 
 resource "azuredevops_git_repository" "test" {
-  project_id      = azuredevops_project.test.id
-  name            = "acc-%[1]s"
+  project_id = azuredevops_project.test.id
+  name       = "acc-%[1]s"
   initialization {
-  	init_type = "Clean"
+    init_type = "Clean"
   }
 }
 
@@ -299,27 +299,27 @@ resource "azuredevops_build_definition" "build" {
         include = ["*/**.ts"]
       }
       max_concurrent_builds_per_branch = 2
-      polling_interval = 0
+      polling_interval                 = 0
     }
   }
 
   schedules {
-  	branch_filter {
-  		include = ["master"]
-  	}
+    branch_filter {
+      include = ["master"]
+    }
 
-  	days_to_build              = ["Mon"]
-  	schedule_only_with_changes = true
-  	start_hours                = 0
-  	start_minutes              = 0
-  	time_zone                  = "(UTC) Coordinated Universal Time"
+    days_to_build              = ["Mon"]
+    schedule_only_with_changes = true
+    start_hours                = 0
+    start_minutes              = 0
+    time_zone                  = "(UTC) Coordinated Universal Time"
   }
 
   repository {
-  	repo_type   = "TfsGit"
-  	repo_id     = azuredevops_git_repository.test.id
-  	branch_name = azuredevops_git_repository.test.default_branch
-  	yml_path    = "azure-pipelines.yml"
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
   }
 }
 `, name)
