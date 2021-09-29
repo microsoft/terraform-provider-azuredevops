@@ -669,6 +669,7 @@ func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) []interfac
 			"start_hours":                schedule["startHours"],
 			"start_minutes":              schedule["startMinutes"],
 			"time_zone":                  IDToTimeZones[schedule["timeZoneId"].(string)],
+			"schedule_job_id":            schedule["scheduleJobId"],
 		}
 
 		days := schedule["daysToBuild"]
