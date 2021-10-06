@@ -1715,7 +1715,7 @@ func (client *ClientImpl) GetReportingLinksByLinkType(ctx context.Context, args 
 		queryParams.Add("continuationToken", *args.ContinuationToken)
 	}
 	if args.StartDateTime != nil {
-		queryParams.Add("startDateTime", (*args.StartDateTime).String())
+		queryParams.Add("startDateTime", (*args.StartDateTime).AsQueryParameter())
 	}
 	locationId, _ := uuid.Parse("b5b5b6d0-0308-40a1-b3f4-b9bb3c66878f")
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1", routeValues, queryParams, nil, "", "application/json", nil)
@@ -2046,7 +2046,7 @@ func (client *ClientImpl) GetWorkItem(ctx context.Context, args GetWorkItemArgs)
 		queryParams.Add("fields", listAsString)
 	}
 	if args.AsOf != nil {
-		queryParams.Add("asOf", (*args.AsOf).String())
+		queryParams.Add("asOf", (*args.AsOf).AsQueryParameter())
 	}
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
@@ -2253,7 +2253,7 @@ func (client *ClientImpl) GetWorkItems(ctx context.Context, args GetWorkItemsArg
 		queryParams.Add("fields", listAsString)
 	}
 	if args.AsOf != nil {
-		queryParams.Add("asOf", (*args.AsOf).String())
+		queryParams.Add("asOf", (*args.AsOf).AsQueryParameter())
 	}
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
@@ -2338,7 +2338,7 @@ func (client *ClientImpl) GetWorkItemTemplate(ctx context.Context, args GetWorkI
 		queryParams.Add("fields", *args.Fields)
 	}
 	if args.AsOf != nil {
-		queryParams.Add("asOf", (*args.AsOf).String())
+		queryParams.Add("asOf", (*args.AsOf).AsQueryParameter())
 	}
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
@@ -2774,7 +2774,7 @@ func (client *ClientImpl) ReadReportingRevisionsGet(ctx context.Context, args Re
 		queryParams.Add("continuationToken", *args.ContinuationToken)
 	}
 	if args.StartDateTime != nil {
-		queryParams.Add("startDateTime", (*args.StartDateTime).String())
+		queryParams.Add("startDateTime", (*args.StartDateTime).AsQueryParameter())
 	}
 	if args.IncludeIdentityRef != nil {
 		queryParams.Add("includeIdentityRef", strconv.FormatBool(*args.IncludeIdentityRef))
@@ -2851,7 +2851,7 @@ func (client *ClientImpl) ReadReportingRevisionsPost(ctx context.Context, args R
 		queryParams.Add("continuationToken", *args.ContinuationToken)
 	}
 	if args.StartDateTime != nil {
-		queryParams.Add("startDateTime", (*args.StartDateTime).String())
+		queryParams.Add("startDateTime", (*args.StartDateTime).AsQueryParameter())
 	}
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))

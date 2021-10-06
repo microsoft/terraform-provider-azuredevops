@@ -244,7 +244,7 @@ github.com/klauspost/compress/zstd/internal/xxhash
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.10
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b3
+# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5
 ## explicit
 github.com/microsoft/azure-devops-go-api/azuredevops
 github.com/microsoft/azure-devops-go-api/azuredevops/accounts
@@ -261,12 +261,14 @@ github.com/microsoft/azure-devops-go-api/azuredevops/identity
 github.com/microsoft/azure-devops-go-api/azuredevops/licensing
 github.com/microsoft/azure-devops-go-api/azuredevops/licensingrule
 github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/notification
 github.com/microsoft/azure-devops-go-api/azuredevops/operations
 github.com/microsoft/azure-devops-go-api/azuredevops/policy
 github.com/microsoft/azure-devops-go-api/azuredevops/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/release
 github.com/microsoft/azure-devops-go-api/azuredevops/security
 github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/servicehooks
 github.com/microsoft/azure-devops-go-api/azuredevops/system
 github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/test

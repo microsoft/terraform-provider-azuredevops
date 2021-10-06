@@ -4435,10 +4435,10 @@ func (client *ClientImpl) GetPushes(ctx context.Context, args GetPushesArgs) (*[
 	}
 	if args.SearchCriteria != nil {
 		if args.SearchCriteria.FromDate != nil {
-			queryParams.Add("searchCriteria.fromDate", (*args.SearchCriteria.FromDate).String())
+			queryParams.Add("searchCriteria.fromDate", (*args.SearchCriteria.FromDate).AsQueryParameter())
 		}
 		if args.SearchCriteria.ToDate != nil {
-			queryParams.Add("searchCriteria.toDate", (*args.SearchCriteria.ToDate).String())
+			queryParams.Add("searchCriteria.toDate", (*args.SearchCriteria.ToDate).AsQueryParameter())
 		}
 		if args.SearchCriteria.PusherId != nil {
 			queryParams.Add("searchCriteria.pusherId", (*args.SearchCriteria.PusherId).String())

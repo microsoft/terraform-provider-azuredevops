@@ -1524,10 +1524,10 @@ func (client *ClientImpl) GetBuilds(ctx context.Context, args GetBuildsArgs) (*G
 		queryParams.Add("buildNumber", *args.BuildNumber)
 	}
 	if args.MinTime != nil {
-		queryParams.Add("minTime", (*args.MinTime).String())
+		queryParams.Add("minTime", (*args.MinTime).AsQueryParameter())
 	}
 	if args.MaxTime != nil {
-		queryParams.Add("maxTime", (*args.MaxTime).String())
+		queryParams.Add("maxTime", (*args.MaxTime).AsQueryParameter())
 	}
 	if args.RequestedFor != nil {
 		queryParams.Add("requestedFor", *args.RequestedFor)
@@ -1889,7 +1889,7 @@ func (client *ClientImpl) GetDefinition(ctx context.Context, args GetDefinitionA
 		queryParams.Add("revision", strconv.Itoa(*args.Revision))
 	}
 	if args.MinMetricsTime != nil {
-		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).String())
+		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).AsQueryParameter())
 	}
 	if args.PropertyFilters != nil {
 		listAsString := strings.Join((*args.PropertyFilters)[:], ",")
@@ -1939,7 +1939,7 @@ func (client *ClientImpl) GetDefinitionMetrics(ctx context.Context, args GetDefi
 
 	queryParams := url.Values{}
 	if args.MinMetricsTime != nil {
-		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).String())
+		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).AsQueryParameter())
 	}
 	locationId, _ := uuid.Parse("d973b939-0ce0-4fec-91d8-da3940fa1827")
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
@@ -2090,7 +2090,7 @@ func (client *ClientImpl) GetDefinitions(ctx context.Context, args GetDefinition
 		queryParams.Add("continuationToken", *args.ContinuationToken)
 	}
 	if args.MinMetricsTime != nil {
-		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).String())
+		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).AsQueryParameter())
 	}
 	if args.DefinitionIds != nil {
 		var stringList []string
@@ -2104,10 +2104,10 @@ func (client *ClientImpl) GetDefinitions(ctx context.Context, args GetDefinition
 		queryParams.Add("path", *args.Path)
 	}
 	if args.BuiltAfter != nil {
-		queryParams.Add("builtAfter", (*args.BuiltAfter).String())
+		queryParams.Add("builtAfter", (*args.BuiltAfter).AsQueryParameter())
 	}
 	if args.NotBuiltAfter != nil {
-		queryParams.Add("notBuiltAfter", (*args.NotBuiltAfter).String())
+		queryParams.Add("notBuiltAfter", (*args.NotBuiltAfter).AsQueryParameter())
 	}
 	if args.IncludeAllProperties != nil {
 		queryParams.Add("includeAllProperties", strconv.FormatBool(*args.IncludeAllProperties))
@@ -2454,7 +2454,7 @@ func (client *ClientImpl) GetProjectMetrics(ctx context.Context, args GetProject
 
 	queryParams := url.Values{}
 	if args.MinMetricsTime != nil {
-		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).String())
+		queryParams.Add("minMetricsTime", (*args.MinMetricsTime).AsQueryParameter())
 	}
 	locationId, _ := uuid.Parse("7433fae7-a6bc-41dc-a6e2-eef9005ce41a")
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
