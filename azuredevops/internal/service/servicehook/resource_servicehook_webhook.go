@@ -1,4 +1,4 @@
-package servicehooks
+package servicehook
 
 import (
 	"bufio"
@@ -31,7 +31,7 @@ func ResourceServiceHookWebhook() *schema.Resource {
 			},
 			"url": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.IsURLWithHTTPS,
 			},
 			"event_type": {
@@ -165,7 +165,9 @@ func createResourceWebhookRead(afterCreateOrUpdate bool) func(d *schema.Resource
 			}
 			filters[key] = value
 		}
-		d.Set("filters", filters)
+		if len(filters) != 0 {
+			d.Set("filters", filters)
+		}
 
 		return nil
 	}
