@@ -29,7 +29,7 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
 
 resource "azuredevops_build_definition" "nightly_build" {
   project_id      = azuredevops_project.project.id
-  agent_pool_name = "Hosted Ubuntu 1604"
+  agent_pool_name = "Azure Pipelines"
   name            = "Nightly Build"
   path            = "\\"
 
