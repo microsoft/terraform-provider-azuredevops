@@ -657,7 +657,7 @@ func HclBuildDefinitionResource(
 	resource "azuredevops_build_definition" "build" {
 		project_id      = azuredevops_project.project.id
 		name            = "%s"
-		agent_pool_name = "Hosted Ubuntu 1604"
+		agent_pool_name = "Azure Pipelines"
 		path			= "%s"
 
 		repository {

@@ -138,7 +138,7 @@ func ResourceBuildDefinition() *schema.Resource {
 			"agent_pool_name": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Hosted Ubuntu 1604",
+				Default:  "Azure Pipelines",
 			},
 			"repository": {
 				Type:     schema.TypeList,
