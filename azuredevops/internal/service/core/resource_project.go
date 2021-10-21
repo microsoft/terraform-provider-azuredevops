@@ -20,7 +20,8 @@ import (
 )
 
 // timeout used to wait for operations on projects to finish before executing an update or delete
-var projectBusyTimeoutDuration time.Duration = 60 * 6
+var projectBusyTimeoutDuration time.Duration = 6
+var projectRetryTimeoutDuration time.Duration = 3
 
 // ResourceProject schema and implementation for project resource
 func ResourceProject() *schema.Resource {
@@ -219,11 +220,26 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 		identifier = projectName
 	}
 
-	return clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
-		ProjectId:           &identifier,
-		IncludeCapabilities: converter.Bool(true),
-		IncludeHistory:      converter.Bool(false),
+	var project *core.TeamProject
+	var err error
+
+	//keep retrying until timeout to handle service inconsistent response
+	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError {
+		project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+			ProjectId:           &identifier,
+			IncludeCapabilities: converter.Bool(true),
+			IncludeHistory:      converter.Bool(false),
+		})
+		if err != nil {
+			return resource.RetryableError(err)
+		}
+		return nil
 	})
+
+	if err != nil {
+		return nil, fmt.Errorf(" Project not found. ID:%s, name: %s , %+v", projectID, projectName, err)
+	}
+	return project, nil
 }
 
 func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
