@@ -108,9 +108,12 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
 	d.Set("project_id", projectID)
 	d.Set("description", serviceEndpoint.Description)
-	d.Set("authorization", &map[string]interface{}{
-		"scheme": *serviceEndpoint.Authorization.Scheme,
-	})
+
+	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
+		d.Set("authorization", &map[string]interface{}{
+			"scheme": *serviceEndpoint.Authorization.Scheme,
+		})
+	}
 }
 
 // makeProtectedSchema create protected schema
