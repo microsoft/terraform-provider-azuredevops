@@ -38,8 +38,11 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name to associate with the service endpoint.
 - `service_endpoint_name` - (Required) The name of the service endpoint.
 - `repository_url` - (Required) The URL of the repository associated with the service endpoint.
-- `username` - (Optional) The username used to authenticate to the git repository using basic authentication.
-- `password` - (Optional) The password or token key used to authenticate to the git repository using basic authentication.
+- `username` - (Optional) The username used to authenticate to the git repository.
+- `password` - (Optional) The PAT or password used to authenticate to the git repository.
+
+~> **Note** For AzureDevOps Git, PAT should be used as the password.
+
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `enable_pipelines_access` - (Optional) A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
 
