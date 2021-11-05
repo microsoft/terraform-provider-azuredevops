@@ -69,7 +69,8 @@ The following arguments are supported:
 
 `settings` block supports the following:
 
-- `status_name` - (Required) The status name to check.
+- `name` - (Required) The status name to check.
+- `genre` - (Optional) The genre of the status to check (see [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/devops/repos/git/pull-request-status?view=azure-devops#status-policy))
 - `author_id` - (Optional) The authorized user can post the status.
 - `invalidate_on_update` - (Optional) Reset status whenever there are new changes.
 - `applicability` - (Optional) Policy applicability. If policy `applicability` is `default`, apply unless "Not Applicable" 

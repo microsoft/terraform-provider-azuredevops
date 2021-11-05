@@ -30,6 +30,10 @@ func ResourceBranchPolicyStatusCheck() *schema.Resource {
 		Type:     schema.TypeString,
 		Required: true,
 	}
+	settingsSchema["genre"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Optional: true,
+	}
 	settingsSchema["author_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
@@ -77,6 +81,7 @@ func statusCheckFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyC
 	settings := settingsList[0].(map[string]interface{})
 
 	settings["name"] = policySettings["statusName"]
+	settings["genre"] = policySettings["statusGenre"]
 	settings["author_id"] = policySettings["authorId"]
 	settings["invalidate_on_update"] = policySettings["invalidateOnSourceUpdate"]
 	settings["display_name"] = policySettings["defaultDisplayName"]
@@ -108,6 +113,7 @@ func statusCheckExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Po
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 	policySettings["statusName"] = settings["name"].(string)
+	policySettings["statusGenre"] = settings["genre"].(string)
 	policySettings["authorId"] = settings["author_id"].(string)
 	policySettings["invalidateOnSourceUpdate"] = settings["invalidate_on_update"].(bool)
 	policySettings["defaultDisplayName"] = settings["display_name"].(string)
