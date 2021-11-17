@@ -90,6 +90,7 @@ The following attributes are exported:
 
 - `users` - A set of existing users in your Azure DevOps Organization with details about every single user which includes:
 
+  - `id` - The user ID.
   - `descriptor` - The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
   - `principal_name` - This is the PrincipalName of this graph member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the graph member by VSTS.
   - `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
