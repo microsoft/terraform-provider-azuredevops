@@ -29,7 +29,6 @@ func TestAccUsers_DataSource(t *testing.T) {
 }
 
 func dataUser_basic(uname string) string {
-
 	return fmt.Sprintf(
 		`
 resource "azuredevops_user_entitlement" "test" {
