@@ -22,7 +22,7 @@ func TestAccUsers_DataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "users.#", "1"),
 					resource.TestCheckResourceAttr(tfNode, "principal_name", "foo@email.com"),
 				),
-				ExpectNonEmptyPlan : true,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
