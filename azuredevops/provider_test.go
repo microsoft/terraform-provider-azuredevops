@@ -88,6 +88,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_iteration",
 		"azuredevops_team",
 		"azuredevops_teams",
+		"azuredevops_groups",
 	}
 
 	dataSources := Provider().DataSourcesMap
