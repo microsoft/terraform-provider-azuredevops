@@ -41,7 +41,7 @@ func TestAccGroupsDataSource_Read_Project(t *testing.T) {
 				Config: HclGroupsDataSource(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "groups"),
+					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 				),
 			},
 		},
@@ -49,7 +49,7 @@ func TestAccGroupsDataSource_Read_Project(t *testing.T) {
 }
 
 func TestAccGroupsDataSource_Read_NoProject(t *testing.T) {
-	tfNode := "data.azuredevops_group.group"
+	tfNode := "data.azuredevops_groups.groups"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
@@ -58,7 +58,7 @@ func TestAccGroupsDataSource_Read_NoProject(t *testing.T) {
 			{
 				Config: HclGroupsDataSource(""),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "groups"),
+					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 				),
 			},
 		},
