@@ -113,18 +113,26 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 		if err != nil {
 			return nil, err
 		}
+
 		if newGroups != nil && len(*newGroups) > 0 {
 			if projectDescriptor == "" {
 				// filter on collection groups
 				filteredGroups := []graph.GraphGroup{}
 				for _, grp := range *newGroups {
-					if grp.Domain != nil && strings.HasPrefix(strings.ToLower(*grp.Domain), "vstfs:///framework/identitydomain") {
+					if grp.Domain == nil {
+						continue
+					}
+
+					domain := strings.ToLower(*grp.Domain)
+					if strings.HasPrefix(domain, "vstfs:///framework/identitydomain") ||
+						(strings.HasPrefix(domain, "vstfs:///framework/generic")) {
 						filteredGroups = append(filteredGroups, grp)
 					}
 				}
-				newGroups = &filteredGroups
+				groups = append(groups, filteredGroups...)
+			} else {
+				groups = append(groups, *newGroups...)
 			}
-			groups = append(groups, *newGroups...)
 		}
 		hasMore = currentToken != ""
 	}
