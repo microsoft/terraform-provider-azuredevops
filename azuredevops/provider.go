@@ -89,6 +89,7 @@ func Provider() *schema.Provider {
 			"azuredevops_iteration":        workitemtracking.DataIteration(),
 			"azuredevops_team":             core.DataTeam(),
 			"azuredevops_teams":            core.DataTeams(),
+			"azuredevops_groups":           graph.DataGroups(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
