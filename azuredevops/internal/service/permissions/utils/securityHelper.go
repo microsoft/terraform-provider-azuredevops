@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
@@ -43,6 +45,39 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 	if err := sn.SetPrincipalPermissions(&setPermissions); err != nil {
 		return err
 	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+			currentPermissions, err := sn.GetPrincipalPermissions(&[]string{
+				principal.(string),
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf("Error reading principal permissions: %+v", err)
+			}
+
+			bInsnyc := false
+			for key := range ((*currentPermissions)[0]).Permissions {
+				bInsnyc = permissionMap[key] == ((*currentPermissions)[0]).Permissions[key]
+			}
+			if bInsnyc {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 1,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(" waiting for permission update. %v ", err)
+	}
+
 	d.SetId(fmt.Sprintf("%s/%s", sn.token, principal.(string)))
 	return nil
 }
