@@ -61,6 +61,9 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 			bInsnyc := false
 			for key := range ((*currentPermissions)[0]).Permissions {
 				bInsnyc = permissionMap[key] == ((*currentPermissions)[0]).Permissions[key]
+				if !bInsnyc {
+					break
+				}
 			}
 			if bInsnyc {
 				state = "Synched"
