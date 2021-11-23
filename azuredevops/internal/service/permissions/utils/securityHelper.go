@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -55,12 +56,16 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 				principal.(string),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf("Error reading principal permissions: %+v", err)
+				return nil, "", fmt.Errorf("Error reading permissions for principal %s: %+v", err, principal.(string))
+			}
+			if len(*currentPermissions) != 1 {
+				return nil, "", fmt.Errorf("Received multiple permission sets for principal [%s] from backend. Expected single value.", principal.(string))
 			}
 
 			bInsnyc := false
-			for key := range ((*currentPermissions)[0]).Permissions {
-				bInsnyc = permissionMap[key] == ((*currentPermissions)[0]).Permissions[key]
+			for key := range permissionMap {
+				value, ok := ((*currentPermissions)[0]).Permissions[key]
+				bInsnyc = ok && strings.EqualFold(string(permissionMap[key]), string(value))
 				if !bInsnyc {
 					break
 				}
