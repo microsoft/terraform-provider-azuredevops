@@ -3,7 +3,7 @@ schedules:
     displayName: "Nightly Build"
     branches:
       include:
-        - 'master'
+        - 'main'
 
 jobs:
   - template: ./ci.yml
