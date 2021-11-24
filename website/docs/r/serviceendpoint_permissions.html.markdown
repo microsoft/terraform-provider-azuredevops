@@ -57,7 +57,7 @@ resource "azuredevops_serviceendpoint_dockerregistry" "dockerhubregistry" {
 
 resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions" {
   project_id         = azuredevops_project.project.id
-  principal          = azuredevops_group.project-readers.id
+  principal          = data.azuredevops_group.project-readers.id
   serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.dockerhubregistry.id
   permissions = {
     USE               = "allow"
