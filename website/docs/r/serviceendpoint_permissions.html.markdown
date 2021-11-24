@@ -35,7 +35,7 @@ data "azuredevops_group" "project-readers" {
 
 resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
   project_id  = azuredevops_project.project.id
-  principal   = azuredevops_group.project-readers.id
+  principal   = data.azuredevops_group.project-readers.id
   permissions = {
     USE               = "allow"
     ADMINISTER        = "allow"
