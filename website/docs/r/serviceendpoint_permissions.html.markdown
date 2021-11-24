@@ -37,11 +37,11 @@ resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
   project_id  = azuredevops_project.project.id
   principal   = data.azuredevops_group.project-readers.id
   permissions = {
-    USE               = "allow"
-    ADMINISTER        = "allow"
-    CREATE            = "allow"
-    VIEWAUTHORIZATION = "allow"
-    VIEWENDPOINT      = "allow"
+    Use               = "allow"
+    Administer        = "allow"
+    Create            = "allow"
+    ViewAuthorization = "allow"
+    ViewEndpoint      = "allow"
   }
 }
 
@@ -60,11 +60,11 @@ resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions"
   principal          = data.azuredevops_group.project-readers.id
   serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.dockerhubregistry.id
   permissions = {
-    USE               = "allow"
-    ADMINISTER        = "deny"
-    CREATE            = "deny"
-    VIEWAUTHORIZATION = "allow"
-    VIEWENDPOINT      = "allow"
+    Use               = "allow"
+    Administer        = "deny"
+    Create            = "deny"
+    ViewAuthorization = "allow"
+    ViewEndpoint      = "allow"
   }
 }
 ```
@@ -81,11 +81,11 @@ The following arguments are supported:
 
 | Permission        | Description                         |
 | ----------------- | ----------------------------------- |
-| USE               | Use service endpoint                |
-| ADMINISTER        | Full control over service endpoints |
-| CREATE            | Create service endpoints            |
-| VIEWAUTHORIZATION | View authorizations                 |
-| VIEWENDPOINT      | View service endpoint properties    |
+| Use               | Use service endpoint                |
+| Administer        | Full control over service endpoints |
+| Create            | Create service endpoints            |
+| ViewAuthorization | View authorizations                 |
+| ViewEndpoint      | View service endpoint properties    |
 
 ## Relevant Links
 
