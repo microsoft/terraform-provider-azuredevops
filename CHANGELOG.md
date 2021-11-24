@@ -1,5 +1,6 @@
 ## 0.1.8 
 FEATURES:
+* **New Data Resource** `azuredevops_git_repository_file ` [#225](https://github.com/microsoft/terraform-provider-azuredevops/issues/225)
 * **New Data Resource** `azuredevops_groups ` [#483](https://github.com/microsoft/terraform-provider-azuredevops/issues/483)
 
 IMPROVEMENTS:
