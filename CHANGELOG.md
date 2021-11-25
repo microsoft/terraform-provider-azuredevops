@@ -1,3 +1,27 @@
+## 0.1.8 
+FEATURES:
+* **New Resource** `azuredevops_git_repository_file ` [#225](https://github.com/microsoft/terraform-provider-azuredevops/issues/225)
+* **New Resource** `azuredevops_serviceendpoint_permissions ` [#249](https://github.com/microsoft/terraform-provider-azuredevops/issues/249)
+* **New Data Resource** `azuredevops_groups ` [#483](https://github.com/microsoft/terraform-provider-azuredevops/issues/483)
+
+IMPROVEMENTS:
+* `azuredevops_build_definition`
+  - Support scheduled triggers. [#445](https://github.com/microsoft/terraform-provider-azuredevops/issues/445)
+  - Default agent pool has been updated from `Hosted Ubuntu 1604` to `Azure Pipelines`. [#466](https://github.com/microsoft/terraform-provider-azuredevops/issues/466)
+* `azuredevops_serviceendpoint_azuredevops` - Extension [Configurable Pipeline Runner](https://marketplace.visualstudio.com/items?itemName=CSE-DevOps.RunPipelines) should be installed as documented. [#454](https://github.com/microsoft/terraform-provider-azuredevops/issues/454)
+* `azuredevops_git_repository` - `initialization` should be ignored when importing as documented. [#467](https://github.com/microsoft/terraform-provider-azuredevops/issues/467)
+* `azuredevops_branch_policy_status_check` - Support new property `genre`. [#472](https://github.com/microsoft/terraform-provider-azuredevops/issues/472)
+* **Data Resource** `azuredevops_users` - Support export user IDs. [#400](https://github.com/microsoft/terraform-provider-azuredevops/issues/400)
+* **Data Resource** `azuredevops_group` - Allow generic groups to be returned when searching the organization. [#485](https://github.com/microsoft/terraform-provider-azuredevops/issues/485)
+
+BUG FIX:
+* `azuredevops_user_entitlement` -
+  - `principal_name` Suppress case sensitive. [#446](https://github.com/microsoft/terraform-provider-azuredevops/issues/446)
+  - If user status is `Delete` or `None`, this resource will be removed from `.tfstate`. [#447](https://github.com/microsoft/terraform-provider-azuredevops/issues/447)
+* All service endpoints:
+  - Enhance service endpoint status handler. [#474](https://github.com/microsoft/terraform-provider-azuredevops/issues/474)
+  - Compatible with when `Authorizaiton` is not returned by service. [#460](https://github.com/microsoft/terraform-provider-azuredevops/issues/460)
+
 ## 0.1.7
 FEATURES:
 * **New Resource** `azuredevops_team ` [#121](https://github.com/microsoft/terraform-provider-azuredevops/issues/121)
@@ -93,7 +117,7 @@ BUG FIX:
 * All service endpoint resources - Add resource status check during creation and deletion [#261](https://github.com/microsoft/terraform-provider-azuredevops/issues/261)
 * `azuredevops_variable_group` - Key vault variables will be verified with Azure key vault secrets [#252](https://github.com/microsoft/terraform-provider-azuredevops/issues/252)
 
-## 0.1.1 
+## 0.1.1
 
 FEATURES:
 * **New Resource** `azuredevops_build_definition_permissions` [#254](https://github.com/microsoft/terraform-provider-azuredevops/issues/254)
@@ -128,11 +152,11 @@ IMPROVEMENTS:
 * Data source `azuredevops_project` - add `project_id` for data source configuration [#163](https://github.com/microsoft/terraform-provider-azuredevops/issues/163)
 * `azuredevops_branch_policy_build_validation`  - add `filename_patterns` support for repository build policy [#62](https://github.com/microsoft/terraform-provider-azuredevops/issues/62)
 * `azuredevops_git_repository`
-    - Use `default_branch` as the name of an initialized branch [#89](https://github.com/microsoft/terraform-provider-azuredevops/issues/89)
-    - Add support for import Git repository [#45](https://github.com/microsoft/terraform-provider-azuredevops/issues/45)
+  - Use `default_branch` as the name of an initialized branch [#89](https://github.com/microsoft/terraform-provider-azuredevops/issues/89)
+  - Add support for import Git repository [#45](https://github.com/microsoft/terraform-provider-azuredevops/issues/45)
 * `azuredevops_build_definition`
-    - Add Support for GitHub enterprise as a build definition repository type [#97](https://github.com/microsoft/terraform-provider-azuredevops/issues/97)
-    - Add Support for report build status configuration [#63](https://github.com/microsoft/terraform-provider-azuredevops/issues/63)
+  - Add Support for GitHub enterprise as a build definition repository type [#97](https://github.com/microsoft/terraform-provider-azuredevops/issues/97)
+  - Add Support for report build status configuration [#63](https://github.com/microsoft/terraform-provider-azuredevops/issues/63)
 * Data Resource `azuredevops_group` support search for project collection groups [#200](https://github.com/microsoft/terraform-provider-azuredevops/issues/200)
 
 BUG FIX:
@@ -151,8 +175,8 @@ NOTES:
 * The Azure DevOps provider can be used to configure Azure DevOps project in [Microsoft Azure](https://azure.microsoft.com/en-us/) using [Azure DevOps Service REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1)
 
 FEATURES:
-* **New Resource** `azuredevops_build_definition`                               
-* **New Resource** `azuredevops_project`                                                 
+* **New Resource** `azuredevops_build_definition`
+* **New Resource** `azuredevops_project`
 * **New Resource** `azuredevops_variable_group`
 * **New Resource** `azuredevops_serviceendpoint_github`
 * **New Resource** `azuredevops_serviceendpoint_dockerregistry`
