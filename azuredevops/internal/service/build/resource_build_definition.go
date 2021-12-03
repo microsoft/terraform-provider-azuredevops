@@ -561,7 +561,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"github_enterprise_url": githubEnterpriseUrl,
 	}}
 
-	if *buildDefinition.Repository.Properties != nil {
+	if buildDefinition.Repository != nil && buildDefinition.Repository.Properties != nil {
 		if connectionID, ok := (*buildDefinition.Repository.Properties)["connectedServiceId"]; ok {
 			repo[0]["service_connection_id"] = connectionID
 		}
