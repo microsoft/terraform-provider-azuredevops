@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_ssh) && !resource_serviceendpoint_ssh
 // +build all resource_serviceendpoint_ssh
 // +build !resource_serviceendpoint_ssh
 

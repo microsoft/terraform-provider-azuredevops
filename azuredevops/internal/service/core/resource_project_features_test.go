@@ -1,3 +1,4 @@
+//go:build (all || core || resource_project || resource_project_features) && !exclude_resource_project_features
 // +build all core resource_project resource_project_features
 // +build !exclude_resource_project_features
 
@@ -12,7 +13,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"

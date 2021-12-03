@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_workitemquery_permissions) && (!exclude_permissions || !resource_workitemquery_permissions)
 // +build all permissions resource_workitemquery_permissions
 // +build !exclude_permissions !resource_workitemquery_permissions
 

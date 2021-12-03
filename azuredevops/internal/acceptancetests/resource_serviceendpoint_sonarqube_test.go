@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_sonarqube) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_sonarqube
 // +build !exclude_serviceendpoints
 

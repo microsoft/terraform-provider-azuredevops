@@ -87,7 +87,7 @@ github.com/davecgh/go-spew/spew
 github.com/fatih/color
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
-# github.com/golang/mock v1.4.4
+# github.com/golang/mock v1.6.0
 ## explicit
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.4.2
@@ -244,34 +244,34 @@ github.com/klauspost/compress/zstd/internal/xxhash
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.10
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b3
+# github.com/microsoft/azure-devops-go-api/azuredevops/v6 v6.0.0-20211202191553-0974d0145be8
 ## explicit
-github.com/microsoft/azure-devops-go-api/azuredevops
-github.com/microsoft/azure-devops-go-api/azuredevops/accounts
-github.com/microsoft/azure-devops-go-api/azuredevops/build
-github.com/microsoft/azure-devops-go-api/azuredevops/commerce
-github.com/microsoft/azure-devops-go-api/azuredevops/core
-github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/git
-github.com/microsoft/azure-devops-go-api/azuredevops/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/licensing
-github.com/microsoft/azure-devops-go-api/azuredevops/licensingrule
-github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/operations
-github.com/microsoft/azure-devops-go-api/azuredevops/policy
-github.com/microsoft/azure-devops-go-api/azuredevops/profile
-github.com/microsoft/azure-devops-go-api/azuredevops/release
-github.com/microsoft/azure-devops-go-api/azuredevops/security
-github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint
-github.com/microsoft/azure-devops-go-api/azuredevops/system
-github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
-github.com/microsoft/azure-devops-go-api/azuredevops/test
-github.com/microsoft/azure-devops-go-api/azuredevops/webapi
-github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking
+github.com/microsoft/azure-devops-go-api/azuredevops/v6
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/accounts
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/build
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/commerce
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/core
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/delegatedauthorization
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/distributedtaskcommon
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/forminput
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/git
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensingrule
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/profile
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/release
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/security
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/system
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/test
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking
 # github.com/mitchellh/cli v1.1.2
 github.com/mitchellh/cli
 # github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
@@ -368,10 +368,10 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
 golang.org/x/lint/golint
-# golang.org/x/mod v0.3.0
+# golang.org/x/mod v0.4.2
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210326060303-6b1517762897
+# golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -386,8 +386,9 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79
+# golang.org/x/sys v0.0.0-20210510120138-977fb7262007
 golang.org/x/sys/cpu
+golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.5
@@ -395,7 +396,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20201028111035-eafbe7b904eb
+# golang.org/x/tools v0.1.1
 golang.org/x/tools/cmd/goimports
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata

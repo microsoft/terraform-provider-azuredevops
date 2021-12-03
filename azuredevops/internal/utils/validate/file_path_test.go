@@ -1,3 +1,4 @@
+//go:build all || utils || path
 // +build all utils path
 
 package validate
