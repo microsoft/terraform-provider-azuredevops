@@ -88,29 +88,13 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	if _, ok := d.GetOk("credentials"); ok {
 		credentials := d.Get("credentials").([]interface{})[0].(map[string]interface{})
 		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"] = credentials["serviceprincipalid"].(string)
-		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = expandSpnKey(credentials)
+		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = credentials["serviceprincipalkey"].(string)
 		(*serviceEndpoint.Data)["creationMode"] = "Manual"
 	}
 
 	serviceEndpoint.Type = converter.String("azurerm")
 	serviceEndpoint.Url = converter.String("https://management.azure.com/")
 	return serviceEndpoint, projectID, nil
-}
-
-func expandSpnKey(credentials map[string]interface{}) string {
-	// Note: if this is an update for a field other than `serviceprincipalkey`, the `serviceprincipalkey` will be
-	// set to `""`. Without catching this case and setting the value to `"null"`, the `serviceprincipalkey` will
-	// actually be set to `""` by the Azure DevOps service.
-	//
-	// This step is critical in order to ensure that the service connection can update without loosing its password!
-	//
-	// This behavior is unfortunately not documented in the API documentation.
-	spnKey, ok := credentials["serviceprincipalkey"]
-	if !ok || spnKey.(string) == "" {
-		return "null"
-	}
-
-	return spnKey.(string)
 }
 
 func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
