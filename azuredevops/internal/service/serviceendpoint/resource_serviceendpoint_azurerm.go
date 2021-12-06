@@ -113,10 +113,11 @@ func expandSpnKey(credentials map[string]interface{}) string {
 	return spnKey.(string)
 }
 
-func flattenCredentials(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+	// secret value won't return by service and should not be overwritten
 	return []map[string]interface{}{{
 		"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-		"serviceprincipalkey": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"],
+		"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
 		hashKey:               hashValue,
 	}}
 }
@@ -128,7 +129,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(serviceEndpoint, hashKey, newHash)
+		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
 		d.Set("credentials", credentials)
 	}
 
