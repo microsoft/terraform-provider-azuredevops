@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
@@ -31,7 +32,7 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("azdoapi")
 
@@ -84,7 +85,7 @@ func rpPersonalAccessTokenField() *schema.Resource {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 	authPersonal := rpFlattenAuthPersonal(d, authPersonalSet)

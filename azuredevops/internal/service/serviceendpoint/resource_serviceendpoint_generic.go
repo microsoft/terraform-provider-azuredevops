@@ -1,6 +1,7 @@
 package serviceendpoint
 
 import (
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
@@ -36,7 +37,7 @@ func ResourceServiceEndpointGeneric() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("generic")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
@@ -50,7 +51,7 @@ func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("server_url", *serviceEndpoint.Url)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])

@@ -21,8 +21,8 @@ const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 const errMsgServiceCreate = "Error looking up service endpoint given ID (%s) and project ID (%s): %v "
 const errMsgServiceDelete = "Error delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
 
-type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string)
-type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error)
+type flatFunc func(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID)
+type expandFunc func(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error)
 
 type operationState struct {
 	Ready      string
@@ -56,7 +56,7 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
 			},
 			"service_endpoint_name": {
 				Type:         schema.TypeString,
@@ -84,14 +84,14 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 }
 
 // doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
-func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string) {
+func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID) {
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
 	var serviceEndpointID *uuid.UUID
 	parsedID, err := uuid.Parse(d.Id())
 	if err == nil {
 		serviceEndpointID = &parsedID
 	}
-	projectID := converter.String(d.Get("project_id").(string))
+	projectID := uuid.MustParse(d.Get("project_id").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
 		Id:          serviceEndpointID,
 		Name:        converter.String(d.Get("service_endpoint_name").(string)),
@@ -99,14 +99,14 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 		Description: converter.String(d.Get("description").(string)),
 	}
 
-	return serviceEndpoint, projectID
+	return serviceEndpoint, &projectID
 }
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	d.SetId(serviceEndpoint.Id.String())
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
-	d.Set("project_id", projectID)
+	d.Set("project_id", projectID.String())
 	d.Set("description", serviceEndpoint.Description)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
@@ -186,13 +186,16 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 			return fmt.Errorf("Error parsing the service endpoint ID from the Terraform resource data: %v", err)
 		}
 		serviceEndpointID = &parsedServiceEndpointID
-		projectID := converter.String(d.Get("project_id").(string))
+		projectID, err := uuid.Parse(d.Get("project_id").(string))
+		if err != nil {
+			return err
+		}
 
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 			clients.Ctx,
 			serviceendpoint.GetServiceEndpointDetailsArgs{
 				EndpointId: serviceEndpointID,
-				Project:    projectID,
+				Project:    converter.String(projectID.String()),
 			},
 		)
 		if err != nil {
@@ -207,7 +210,7 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 			// e.g. service endpoint has been deleted separately without TF
 			d.SetId("")
 		} else {
-			flatFunc(d, serviceEndpoint, projectID)
+			flatFunc(d, serviceEndpoint, &projectID)
 		}
 		return nil
 	}
@@ -244,27 +247,34 @@ func genServiceEndpointDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
 }
 
 // Make the Azure DevOps API call to create the endpoint
-func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) (*serviceendpoint.ServiceEndpoint, error) {
 	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps must be created on Github and then can be imported")
+	}
+
+	endpoint.ServiceEndpointProjectReferences = &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: projectID,
+			},
+		},
 	}
 	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.CreateServiceEndpointArgs{
 			Endpoint: endpoint,
-			Project:  project,
 		})
 
 	return createdServiceEndpoint, err
 }
 
 //Service endpoint delete is an async operation, make sure service endpoint is deleted.
-func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *string, endPointID *uuid.UUID) resource.StateRefreshFunc {
+func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 			clients.Ctx,
 			serviceendpoint.GetServiceEndpointDetailsArgs{
-				Project:    projectID,
+				Project:    converter.String(projectID.String()),
 				EndpointId: endPointID,
 			})
 
@@ -282,26 +292,34 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *str
 	}
 }
 
-func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, project *string) (*serviceendpoint.ServiceEndpoint, error) {
+func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) (*serviceendpoint.ServiceEndpoint, error) {
 	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
+	}
+	endpoint.ServiceEndpointProjectReferences = &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: projectID,
+			},
+		},
 	}
 	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   endpoint,
-			Project:    project,
 			EndpointId: endpoint.Id,
 		})
 
 	return updatedServiceEndpoint, err
 }
 
-func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *string, serviceEndpointID *uuid.UUID, timeout time.Duration) error {
+func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *uuid.UUID, serviceEndpointID *uuid.UUID, timeout time.Duration) error {
 	if err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.DeleteServiceEndpointArgs{
-			Project:    projectID,
+			ProjectIds: &[]string{
+				projectID.String(),
+			},
 			EndpointId: serviceEndpointID,
 		}); err != nil {
 		return fmt.Errorf(" Delete service endpoint error %v", err)
@@ -323,13 +341,13 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *string, 
 	return nil
 }
 
-func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *string) resource.StateRefreshFunc {
+func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := client.ServiceEndpointClient.GetServiceEndpointDetails(
 			client.Ctx,
 			serviceendpoint.GetServiceEndpointDetailsArgs{
 				EndpointId: serviceEndpointID,
-				Project:    projectID,
+				Project:    converter.String(projectID.String()),
 			},
 		)
 

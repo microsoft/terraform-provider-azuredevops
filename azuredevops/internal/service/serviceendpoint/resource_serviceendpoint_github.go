@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
@@ -60,7 +61,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
@@ -102,7 +103,7 @@ func expandAuthOauthSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
 		d.Set("auth_oauth", &[]map[string]interface{}{
