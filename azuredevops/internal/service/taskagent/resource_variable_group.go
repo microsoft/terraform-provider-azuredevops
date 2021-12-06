@@ -300,8 +300,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	createdVariableGroup, err := clients.TaskAgentClient.AddVariableGroup(
 		clients.Ctx,
 		taskagent.AddVariableGroupArgs{
-			Group:   variableGroupParams,
-			Project: project,
+			VariableGroupParameters: variableGroupParams,
 		})
 	return createdVariableGroup, err
 }
@@ -311,9 +310,8 @@ func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent
 	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
 		taskagent.UpdateVariableGroupArgs{
-			Project: project,
-			GroupId: variableGroupID,
-			Group:   parameters,
+			GroupId:                 variableGroupID,
+			VariableGroupParameters: parameters,
 		})
 
 	return updatedVariableGroup, err
@@ -324,7 +322,9 @@ func deleteVariableGroup(clients *client.AggregatedClient, project *string, vari
 	err := clients.TaskAgentClient.DeleteVariableGroup(
 		clients.Ctx,
 		taskagent.DeleteVariableGroupArgs{
-			Project: project,
+			ProjectIds: &[]string{
+				*project,
+			},
 			GroupId: variableGroupID,
 		})
 
