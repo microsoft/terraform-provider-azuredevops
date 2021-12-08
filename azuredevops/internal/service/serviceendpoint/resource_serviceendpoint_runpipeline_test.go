@@ -45,6 +45,7 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: rpTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_NAME"),
 		},
 	},
 }

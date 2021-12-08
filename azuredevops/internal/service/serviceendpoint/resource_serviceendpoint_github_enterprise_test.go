@@ -41,6 +41,7 @@ var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: ghesTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_NAME"),
 		},
 	},
 }

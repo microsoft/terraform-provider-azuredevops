@@ -41,6 +41,7 @@ var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: npmTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }

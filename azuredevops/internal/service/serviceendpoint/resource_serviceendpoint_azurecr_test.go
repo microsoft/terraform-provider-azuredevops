@@ -61,6 +61,7 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: azureCRTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }

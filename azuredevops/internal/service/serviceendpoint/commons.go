@@ -203,9 +203,8 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 			clients.Ctx,
 			serviceendpoint.GetServiceEndpointDetailsArgs{
-				EndpointId:   serviceEndpointID,
-				Project:      converter.String(projectID.String()),
-				ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.Manage,
+				EndpointId: serviceEndpointID,
+				Project:    converter.String(projectID.String()),
 			},
 		)
 		if err != nil {
@@ -312,6 +311,7 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: projectID,
 			},
+			Name: endpoint.Name,
 		},
 	}
 	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(

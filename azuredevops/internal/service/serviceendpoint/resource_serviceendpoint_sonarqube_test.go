@@ -41,6 +41,7 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: sonarQubeTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }

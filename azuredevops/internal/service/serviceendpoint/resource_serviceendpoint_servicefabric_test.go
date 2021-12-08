@@ -44,6 +44,7 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: serviceFabricTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_NAME"),
 		},
 	},
 }

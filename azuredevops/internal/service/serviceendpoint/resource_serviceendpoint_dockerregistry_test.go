@@ -47,6 +47,7 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: dockerRegistryTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }
