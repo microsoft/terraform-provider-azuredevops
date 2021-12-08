@@ -97,6 +97,13 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 		Name:        converter.String(d.Get("service_endpoint_name").(string)),
 		Owner:       converter.String("library"),
 		Description: converter.String(d.Get("description").(string)),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: &projectID,
+				},
+			},
+		},
 	}
 
 	return serviceEndpoint, &projectID

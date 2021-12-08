@@ -20,7 +20,7 @@ import (
 )
 
 var dockerRegistryTestServiceEndpointID = uuid.New()
-var dockerRegistryRandomServiceEndpointProjectID = uuid.New().String()
+var dockerRegistryRandomServiceEndpointProjectID = uuid.New()
 var dockerRegistryTestServiceEndpointProjectID = &dockerRegistryRandomServiceEndpointProjectID
 
 var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo change
@@ -42,6 +42,13 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:        converter.String("dockerregistry"),
 	Url:         converter.String("https://hub.docker.com/"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: dockerRegistryTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -68,7 +75,7 @@ func TestServiceEndpointDockerRegistry_Create_DoesNotSwallowError(t *testing.T) 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &dockerRegistryTestServiceEndpoint, Project: dockerRegistryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &dockerRegistryTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -91,7 +98,11 @@ func TestServiceEndpointDockerRegistry_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: dockerRegistryTestServiceEndpoint.Id, Project: dockerRegistryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: dockerRegistryTestServiceEndpoint.Id,
+		Project:    converter.String(dockerRegistryTestServiceEndpointProjectID.String()),
+	}
+
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -114,7 +125,13 @@ func TestServiceEndpointDockerRegistry_Delete_DoesNotSwallowError(t *testing.T) 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: dockerRegistryTestServiceEndpoint.Id, Project: dockerRegistryTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: dockerRegistryTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			dockerRegistryTestServiceEndpointProjectID.String(),
+		},
+	}
+
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -140,7 +157,6 @@ func TestServiceEndpointDockerRegistry_Update_DoesNotSwallowError(t *testing.T) 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &dockerRegistryTestServiceEndpoint,
 		EndpointId: dockerRegistryTestServiceEndpoint.Id,
-		Project:    dockerRegistryTestServiceEndpointProjectID,
 	}
 
 	buildClient.

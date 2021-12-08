@@ -21,7 +21,7 @@ import (
 )
 
 var azureCRTestServiceEndpointID = uuid.New()
-var azureCRRandomServiceEndpointProjectID = uuid.New().String()
+var azureCRRandomServiceEndpointProjectID = uuid.New()
 var azureCRTestServiceEndpointProjectID = &azureCRRandomServiceEndpointProjectID
 var subscription_id = "42125daf-72fd-417c-9ea7-080690625ad3"
 var scope = fmt.Sprintf(
@@ -56,6 +56,13 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:        converter.String("dockerregistry"),
 	Url:         converter.String("https://testacr.azurecr.io"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: azureCRTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -82,7 +89,7 @@ func TestServiceEndpointAzureCR_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azureCRTestServiceEndpoint, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azureCRTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -105,7 +112,10 @@ func TestServiceEndpointAzureCR_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: azureCRTestServiceEndpoint.Id,
+		Project:    converter.String(azureCRTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -128,7 +138,12 @@ func TestServiceEndpointAzureCR_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: azureCRTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			azureCRTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -154,7 +169,6 @@ func TestServiceEndpointAzureCR_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &azureCRTestServiceEndpoint,
 		EndpointId: azureCRTestServiceEndpoint.Id,
-		Project:    azureCRTestServiceEndpointProjectID,
 	}
 
 	buildClient.

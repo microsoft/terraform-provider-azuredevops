@@ -20,7 +20,7 @@ import (
 )
 
 var ghTestServiceEndpointID = uuid.New()
-var ghRandomServiceEndpointProjectID = uuid.New().String()
+var ghRandomServiceEndpointProjectID = uuid.New()
 var ghTestServiceEndpointProjectID = &ghRandomServiceEndpointProjectID
 
 var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -36,6 +36,13 @@ var ghTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"),
 	Type:        converter.String("github"),
 	Url:         converter.String("https://github.com"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: ghTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -64,7 +71,7 @@ func TestServiceEndpointGitHub_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghTestServiceEndpoint, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &ghTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -87,7 +94,10 @@ func TestServiceEndpointGitHub_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: ghTestServiceEndpoint.Id,
+		Project:    converter.String(ghTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -110,7 +120,12 @@ func TestServiceEndpointGitHub_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ghTestServiceEndpoint.Id, Project: ghTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: ghTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			ghTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -137,7 +152,6 @@ func TestServiceEndpointGitHub_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &ghTestServiceEndpoint,
 		EndpointId: ghTestServiceEndpoint.Id,
-		Project:    ghTestServiceEndpointProjectID,
 	}
 
 	buildClient.

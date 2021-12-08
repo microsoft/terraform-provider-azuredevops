@@ -20,7 +20,7 @@ import (
 )
 
 var sonarQubeTestServiceEndpointID = uuid.New()
-var sonarQubeRandomServiceEndpointProjectID = uuid.New().String()
+var sonarQubeRandomServiceEndpointProjectID = uuid.New()
 var sonarQubeTestServiceEndpointProjectID = &sonarQubeRandomServiceEndpointProjectID
 
 var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -36,6 +36,13 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:        converter.String("sonarqube"),
 	Url:         converter.String("https://www.sonarqube.com/"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: sonarQubeTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -62,7 +69,7 @@ func TestServiceEndpointSonarQube_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &sonarQubeTestServiceEndpoint, Project: sonarQubeTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &sonarQubeTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -85,7 +92,10 @@ func TestServiceEndpointSonarQube_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: sonarQubeTestServiceEndpoint.Id, Project: sonarQubeTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: sonarQubeTestServiceEndpoint.Id,
+		Project:    converter.String(sonarQubeTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -108,7 +118,12 @@ func TestServiceEndpointSonarQube_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: sonarQubeTestServiceEndpoint.Id, Project: sonarQubeTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: sonarQubeTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			sonarQubeTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -134,7 +149,6 @@ func TestServiceEndpointSonarQube_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &sonarQubeTestServiceEndpoint,
 		EndpointId: sonarQubeTestServiceEndpoint.Id,
-		Project:    sonarQubeTestServiceEndpointProjectID,
 	}
 
 	buildClient.

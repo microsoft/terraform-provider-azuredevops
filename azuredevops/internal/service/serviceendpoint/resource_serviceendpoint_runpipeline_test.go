@@ -21,7 +21,7 @@ import (
 
 // "rp" stands for RunPipeline
 var rpTestServiceEndpointID = uuid.New()
-var rpRandomServiceEndpointProjectID = uuid.New().String()
+var rpRandomServiceEndpointProjectID = uuid.New()
 var rpTestServiceEndpointProjectID = &rpRandomServiceEndpointProjectID
 
 var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -40,6 +40,13 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"),
 	Type:        converter.String("azdoapi"),
 	Url:         converter.String("https://dev.azure.com/example"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: rpTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -68,7 +75,7 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &rpTestServiceEndpoint, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &rpTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -91,7 +98,10 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: rpTestServiceEndpoint.Id,
+		Project:    converter.String(rpTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -114,7 +124,12 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: rpTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			rpTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -141,7 +156,6 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &rpTestServiceEndpoint,
 		EndpointId: rpTestServiceEndpoint.Id,
-		Project:    rpTestServiceEndpointProjectID,
 	}
 
 	buildClient.

@@ -20,7 +20,7 @@ import (
 )
 
 var azurermTestServiceEndpointAzureRMID = uuid.New()
-var azurermRandomServiceEndpointAzureRMProjectID = uuid.New().String()
+var azurermRandomServiceEndpointAzureRMProjectID = uuid.New()
 var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
 
 func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
@@ -47,6 +47,13 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:        converter.String("azurerm"),
 		Url:         converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+			},
+		},
 	}
 }
 
@@ -75,6 +82,13 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:        converter.String("azurerm"),
 		Url:         converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+			},
+		},
 	},
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
@@ -100,6 +114,13 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:        converter.String("azurerm"),
 		Url:         converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+			},
+		},
 	},
 }
 
@@ -128,7 +149,8 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource}
+
 		buildClient.
 			EXPECT().
 			CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -154,7 +176,11 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+			EndpointId: resource.Id,
+			Project:    converter.String(azurermTestServiceEndpointAzureRMProjectID.String()),
+		}
+
 		buildClient.
 			EXPECT().
 			GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -179,7 +205,13 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+			EndpointId: resource.Id,
+			ProjectIds: &[]string{
+				azurermTestServiceEndpointAzureRMProjectID.String(),
+			},
+		}
+
 		buildClient.
 			EXPECT().
 			DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -207,7 +239,6 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 		expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   &resource,
 			EndpointId: resource.Id,
-			Project:    azurermTestServiceEndpointAzureRMProjectID,
 		}
 
 		buildClient.

@@ -20,7 +20,7 @@ import (
 )
 
 var npmTestServiceEndpointID = uuid.New()
-var npmRandomServiceEndpointProjectID = uuid.New().String()
+var npmRandomServiceEndpointProjectID = uuid.New()
 var npmTestServiceEndpointProjectID = &npmRandomServiceEndpointProjectID
 
 var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -36,6 +36,13 @@ var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"),
 	Type:        converter.String("externalnpmregistry"),
 	Url:         converter.String("https://registry.npmjs.org"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: npmTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -62,7 +69,7 @@ func TestServiceEndpointNpm_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &npmTestServiceEndpoint, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &npmTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -85,7 +92,10 @@ func TestServiceEndpointNpm_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: npmTestServiceEndpoint.Id, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: npmTestServiceEndpoint.Id,
+		Project:    converter.String(npmTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -108,7 +118,12 @@ func TestServiceEndpointNpm_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: npmTestServiceEndpoint.Id, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: npmTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			npmTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -134,7 +149,6 @@ func TestServiceEndpointNpm_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &npmTestServiceEndpoint,
 		EndpointId: npmTestServiceEndpoint.Id,
-		Project:    npmTestServiceEndpointProjectID,
 	}
 
 	buildClient.

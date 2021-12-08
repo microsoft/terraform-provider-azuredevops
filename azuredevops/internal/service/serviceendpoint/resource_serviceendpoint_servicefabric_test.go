@@ -20,7 +20,7 @@ import (
 )
 
 var serviceFabricTestServiceEndpointID = uuid.New()
-var serviceFabricRandomServiceEndpointProjectID = uuid.New().String()
+var serviceFabricRandomServiceEndpointProjectID = uuid.New()
 var serviceFabricTestServiceEndpointProjectID = &serviceFabricRandomServiceEndpointProjectID
 
 var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -39,6 +39,13 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:       converter.String("library"),
 	Type:        converter.String("servicefabric"),
 	Url:         converter.String("tcp://servicefabric.com"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: serviceFabricTestServiceEndpointProjectID,
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -67,7 +74,7 @@ func TestServiceEndpointServiceFabric_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &serviceFabricTestServiceEndpoint, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &serviceFabricTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -91,7 +98,10 @@ func TestServiceEndpointServiceFabric_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: serviceFabricTestServiceEndpoint.Id, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: serviceFabricTestServiceEndpoint.Id,
+		Project:    converter.String(serviceFabricTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -115,7 +125,12 @@ func TestServiceEndpointServiceFabric_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: serviceFabricTestServiceEndpoint.Id, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: serviceFabricTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			serviceFabricTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -142,7 +157,6 @@ func TestServiceEndpointServiceFabric_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &serviceFabricTestServiceEndpoint,
 		EndpointId: serviceFabricTestServiceEndpoint.Id,
-		Project:    serviceFabricTestServiceEndpointProjectID,
 	}
 
 	buildClient.
