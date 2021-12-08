@@ -42,6 +42,7 @@ var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: artifactoryTestServiceEndpointProjectIDpassword,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }
@@ -68,6 +69,7 @@ var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: artifactoryTestServiceEndpointProjectID,
 			},
+			Name: converter.String("UNIT_TEST_CONN_NAME"),
 		},
 	},
 }

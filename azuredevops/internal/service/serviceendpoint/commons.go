@@ -92,9 +92,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 		serviceEndpointID = &parsedID
 	}
 	projectID := uuid.MustParse(d.Get("project_id").(string))
+	name := converter.String(d.Get("service_endpoint_name").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
 		Id:          serviceEndpointID,
-		Name:        converter.String(d.Get("service_endpoint_name").(string)),
+		Name:        name,
 		Owner:       converter.String("library"),
 		Description: converter.String(d.Get("description").(string)),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
@@ -102,6 +103,7 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 				ProjectReference: &serviceendpoint.ProjectReference{
 					Id: &projectID,
 				},
+				Name: name,
 			},
 		},
 	}
@@ -178,7 +180,7 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 			return fmt.Errorf(" waiting for service endpoint ready. %v ", err)
 		}
 
-		flatFunc(d, createdServiceEndpoint, projectID)
+		d.SetId(createdServiceEndpoint.Id.String())
 		return genServiceEndpointReadFunc(flatFunc)(d, m)
 	}
 }
@@ -201,8 +203,9 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 			clients.Ctx,
 			serviceendpoint.GetServiceEndpointDetailsArgs{
-				EndpointId: serviceEndpointID,
-				Project:    converter.String(projectID.String()),
+				EndpointId:   serviceEndpointID,
+				Project:      converter.String(projectID.String()),
+				ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.Manage,
 			},
 		)
 		if err != nil {
@@ -264,6 +267,7 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: projectID,
 			},
+			Name: endpoint.Name,
 		},
 	}
 	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
