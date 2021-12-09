@@ -34,18 +34,18 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"releaseUrl": "https://vsrm.dev.azure.com/example",
 	},
-	Id:          &rpTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("azdoapi"),
-	Url:         converter.String("https://dev.azure.com/example"),
+	Id:    &rpTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("azdoapi"),
+	Url:   converter.String("https://dev.azure.com/example"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: rpTestServiceEndpointProjectID,
 			},
-			Name: converter.String("UNIT_TEST_NAME"),
+			Name:        converter.String("UNIT_TEST_NAME"),
+			Description: converter.String("UNIT_TEST_DESCRIPTION"),
 		},
 	},
 }

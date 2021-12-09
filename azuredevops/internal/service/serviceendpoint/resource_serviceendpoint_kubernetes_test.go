@@ -37,13 +37,13 @@ var kubernetesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:         converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:          converter.String("kubernetes"),
 	Url:           converter.String("https://kubernetes.apiserver.com/"),
-	Description:   converter.String("description"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: kubernetesTestServiceEndpointProjectID,
 			},
-			Name: converter.String("UNIT_TEST_CONN_NAME"),
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("description"),
 		},
 	},
 }

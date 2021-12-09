@@ -33,18 +33,18 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Certificate"),
 	},
-	Id:          &serviceFabricTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("servicefabric"),
-	Url:         converter.String("tcp://servicefabric.com"),
+	Id:    &serviceFabricTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("servicefabric"),
+	Url:   converter.String("tcp://servicefabric.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: serviceFabricTestServiceEndpointProjectID,
 			},
-			Name: converter.String("UNIT_TEST_NAME"),
+			Name:        converter.String("UNIT_TEST_NAME"),
+			Description: converter.String("UNIT_TEST_DESCRIPTION"),
 		},
 	},
 }

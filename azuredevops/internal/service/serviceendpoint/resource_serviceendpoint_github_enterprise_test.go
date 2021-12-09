@@ -30,18 +30,18 @@ var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:          &ghesTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("githubenterprise"),
-	Url:         converter.String("https://github.contoso.com"),
+	Id:    &ghesTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("githubenterprise"),
+	Url:   converter.String("https://github.contoso.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: ghesTestServiceEndpointProjectID,
 			},
-			Name: converter.String("UNIT_TEST_NAME"),
+			Name:        converter.String("UNIT_TEST_NAME"),
+			Description: converter.String("UNIT_TEST_DESCRIPTION"),
 		},
 	},
 }

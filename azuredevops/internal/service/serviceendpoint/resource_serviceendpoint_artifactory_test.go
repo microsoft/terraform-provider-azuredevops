@@ -31,18 +31,18 @@ var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:          &artifactoryTestServiceEndpointIDpassword,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("artifactoryService"),
-	Url:         converter.String("https://www.artifactory.com"),
+	Id:    &artifactoryTestServiceEndpointIDpassword,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("artifactoryService"),
+	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: artifactoryTestServiceEndpointProjectIDpassword,
 			},
-			Name: converter.String("UNIT_TEST_CONN_NAME"),
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 		},
 	},
 }
@@ -58,18 +58,18 @@ var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:          &artifactoryTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("artifactoryService"),
-	Url:         converter.String("https://www.artifactory.com"),
+	Id:    &artifactoryTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("artifactoryService"),
+	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
 				Id: artifactoryTestServiceEndpointProjectID,
 			},
-			Name: converter.String("UNIT_TEST_CONN_NAME"),
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 		},
 	},
 }
