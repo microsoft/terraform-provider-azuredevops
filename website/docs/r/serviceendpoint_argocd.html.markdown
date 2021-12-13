@@ -5,7 +5,7 @@ description: |-
   Manages a ArgoCD server endpoint within Azure DevOps organization.
 ---
 
-# azuredevops_serviceendpoint_sonarqube
+# azuredevops_serviceendpoint_argocd
 Manages a ArgoCD service endpoint within Azure DevOps. 
 
 ## Example Usage
