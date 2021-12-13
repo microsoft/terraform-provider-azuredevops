@@ -35,7 +35,7 @@ The following arguments are supported:
 * `project_id` - (Required) The project ID or project name.
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 * `url` - (Required) URL of the ArgoCD server to connect with.
-* `token` - (Required) Authentication Token generated through ArgoCD (go to Settings > Projects > Project XYZ > Roles > Generate Token).
+* `token` - (Required) Authentication Token generated through ArgoCD (go to Settings > Projects > Project XYZ > Roles > Generate Token ).
 * `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference
