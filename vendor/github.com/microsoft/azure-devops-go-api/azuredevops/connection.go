@@ -5,11 +5,13 @@ package azuredevops
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
-	"github.com/google/uuid"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Creates a new Azure DevOps connection instance using a personal access token.
@@ -38,6 +40,7 @@ type Connection struct {
 	SuppressFedAuthRedirect bool
 	ForceMsaPassThrough     bool
 	Timeout                 *time.Duration
+	TlsConfig               *tls.Config
 	clientCache             map[string]Client
 	clientCacheLock         sync.RWMutex
 	resourceAreaCache       map[uuid.UUID]ResourceAreaInfo

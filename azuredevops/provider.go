@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 )
@@ -57,6 +58,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_npm":                    serviceendpoint.ResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_generic":                serviceendpoint.ResourceServiceEndpointGeneric(),
 			"azuredevops_serviceendpoint_generic_git":            serviceendpoint.ResourceServiceEndpointGenericGit(),
+			"azuredevops_servicehook_webhook":                    servicehook.ResourceServiceHookWebhook(),
 			"azuredevops_git_repository":                         git.ResourceGitRepository(),
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),

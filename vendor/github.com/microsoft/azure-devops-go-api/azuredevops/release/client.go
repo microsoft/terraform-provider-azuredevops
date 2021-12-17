@@ -402,10 +402,10 @@ func (client *ClientImpl) GetDeployments(ctx context.Context, args GetDeployment
 		queryParams.Add("createdBy", *args.CreatedBy)
 	}
 	if args.MinModifiedTime != nil {
-		queryParams.Add("minModifiedTime", (*args.MinModifiedTime).String())
+		queryParams.Add("minModifiedTime", (*args.MinModifiedTime).AsQueryParameter())
 	}
 	if args.MaxModifiedTime != nil {
-		queryParams.Add("maxModifiedTime", (*args.MaxModifiedTime).String())
+		queryParams.Add("maxModifiedTime", (*args.MaxModifiedTime).AsQueryParameter())
 	}
 	if args.DeploymentStatus != nil {
 		queryParams.Add("deploymentStatus", string(*args.DeploymentStatus))
@@ -429,10 +429,10 @@ func (client *ClientImpl) GetDeployments(ctx context.Context, args GetDeployment
 		queryParams.Add("createdFor", *args.CreatedFor)
 	}
 	if args.MinStartedTime != nil {
-		queryParams.Add("minStartedTime", (*args.MinStartedTime).String())
+		queryParams.Add("minStartedTime", (*args.MinStartedTime).AsQueryParameter())
 	}
 	if args.MaxStartedTime != nil {
-		queryParams.Add("maxStartedTime", (*args.MaxStartedTime).String())
+		queryParams.Add("maxStartedTime", (*args.MaxStartedTime).AsQueryParameter())
 	}
 	if args.SourceBranch != nil {
 		queryParams.Add("sourceBranch", *args.SourceBranch)
@@ -954,10 +954,10 @@ func (client *ClientImpl) GetReleases(ctx context.Context, args GetReleasesArgs)
 		queryParams.Add("environmentStatusFilter", strconv.Itoa(*args.EnvironmentStatusFilter))
 	}
 	if args.MinCreatedTime != nil {
-		queryParams.Add("minCreatedTime", (*args.MinCreatedTime).String())
+		queryParams.Add("minCreatedTime", (*args.MinCreatedTime).AsQueryParameter())
 	}
 	if args.MaxCreatedTime != nil {
-		queryParams.Add("maxCreatedTime", (*args.MaxCreatedTime).String())
+		queryParams.Add("maxCreatedTime", (*args.MaxCreatedTime).AsQueryParameter())
 	}
 	if args.QueryOrder != nil {
 		queryParams.Add("queryOrder", string(*args.QueryOrder))

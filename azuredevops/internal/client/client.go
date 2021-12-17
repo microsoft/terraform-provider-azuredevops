@@ -20,6 +20,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
@@ -38,6 +39,7 @@ type AggregatedClient struct {
 	BuildClient                   build.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
+	ServiceHooksClient            servicehooks.Client
 	OperationsClient              operations.Client
 	PolicyClient                  policy.Client
 	ReleaseClient                 release.Client
@@ -93,6 +95,10 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		log.Printf("getAzdoClient(): serviceendpoint.NewClient failed.")
 		return nil, err
 	}
+
+	// client for these APIs (includes CRUD for AzDO service hooks a.k.a.):
+	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/hooks/?view=azure-devops-rest-5.1
+	serviceHooksClient := servicehooks.NewClient(ctx, connection)
 
 	// client for these APIs (includes CRUD for AzDO variable groups):
 	taskagentClient, err := taskagent.NewClient(ctx, connection)
@@ -162,6 +168,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		PolicyClient:                  policyClient,
 		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
+		ServiceHooksClient:            serviceHooksClient,
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
