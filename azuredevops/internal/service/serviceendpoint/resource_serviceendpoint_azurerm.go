@@ -88,7 +88,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	if _, ok := d.GetOk("credentials"); ok {
 		credentials := d.Get("credentials").([]interface{})[0].(map[string]interface{})
 		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"] = credentials["serviceprincipalid"].(string)
-		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = expandSpnKey(credentials)
+		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = credentials["serviceprincipalkey"].(string)
 		(*serviceEndpoint.Data)["creationMode"] = "Manual"
 	}
 
@@ -97,26 +97,11 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func expandSpnKey(credentials map[string]interface{}) string {
-	// Note: if this is an update for a field other than `serviceprincipalkey`, the `serviceprincipalkey` will be
-	// set to `""`. Without catching this case and setting the value to `"null"`, the `serviceprincipalkey` will
-	// actually be set to `""` by the Azure DevOps service.
-	//
-	// This step is critical in order to ensure that the service connection can update without loosing its password!
-	//
-	// This behavior is unfortunately not documented in the API documentation.
-	spnKey, ok := credentials["serviceprincipalkey"]
-	if !ok || spnKey.(string) == "" {
-		return "null"
-	}
-
-	return spnKey.(string)
-}
-
-func flattenCredentials(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+	// secret value won't return by service and should not be overwritten
 	return []map[string]interface{}{{
 		"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-		"serviceprincipalkey": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"],
+		"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
 		hashKey:               hashValue,
 	}}
 }
@@ -128,7 +113,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(serviceEndpoint, hashKey, newHash)
+		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
 		d.Set("credentials", credentials)
 	}
 
