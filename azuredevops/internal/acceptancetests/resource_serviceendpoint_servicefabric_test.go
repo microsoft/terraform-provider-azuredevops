@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_service_fabric) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_service_fabric
 // +build !exclude_serviceendpoints
 

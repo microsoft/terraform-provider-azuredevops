@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
 )
 
 const UNIT = 1024 * 1024

@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_git_permissions) && (!exclude_permissions || !exclude_resource_git_permissions)
 // +build all permissions resource_git_permissions
 // +build !exclude_permissions !exclude_resource_git_permissions
 

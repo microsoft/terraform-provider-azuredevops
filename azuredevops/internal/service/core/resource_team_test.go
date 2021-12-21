@@ -1,3 +1,4 @@
+//go:build (all || core || resource_team) && !exclude_resource_team
 // +build all core resource_team
 // +build !exclude_resource_team
 
@@ -12,10 +13,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"

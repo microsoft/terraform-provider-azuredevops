@@ -3,9 +3,10 @@ package serviceendpoint
 import (
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -55,7 +56,7 @@ func ResourceServiceEndpointSSH() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("UsernamePassword"),
@@ -81,7 +82,7 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {

@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_project_permissions) && (!exclude_permissions || !resource_project_permissions)
 // +build all permissions resource_project_permissions
 // +build !exclude_permissions !resource_project_permissions
 

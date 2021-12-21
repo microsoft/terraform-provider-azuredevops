@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_service_faric) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_service_faric
 // +build !exclude_serviceendpoints
 
@@ -11,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -19,7 +20,7 @@ import (
 )
 
 var serviceFabricTestServiceEndpointID = uuid.New()
-var serviceFabricRandomServiceEndpointProjectID = uuid.New().String()
+var serviceFabricRandomServiceEndpointProjectID = uuid.New()
 var serviceFabricTestServiceEndpointProjectID = &serviceFabricRandomServiceEndpointProjectID
 
 var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -32,12 +33,20 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Certificate"),
 	},
-	Id:          &serviceFabricTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("servicefabric"),
-	Url:         converter.String("tcp://servicefabric.com"),
+	Id:    &serviceFabricTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("servicefabric"),
+	Url:   converter.String("tcp://servicefabric.com"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: serviceFabricTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_NAME"),
+			Description: converter.String("UNIT_TEST_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -66,7 +75,7 @@ func TestServiceEndpointServiceFabric_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &serviceFabricTestServiceEndpoint, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &serviceFabricTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -90,7 +99,10 @@ func TestServiceEndpointServiceFabric_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: serviceFabricTestServiceEndpoint.Id, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: serviceFabricTestServiceEndpoint.Id,
+		Project:    converter.String(serviceFabricTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -114,7 +126,12 @@ func TestServiceEndpointServiceFabric_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: serviceFabricTestServiceEndpoint.Id, Project: serviceFabricTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: serviceFabricTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			serviceFabricTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -141,7 +158,6 @@ func TestServiceEndpointServiceFabric_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &serviceFabricTestServiceEndpoint,
 		EndpointId: serviceFabricTestServiceEndpoint.Id,
-		Project:    serviceFabricTestServiceEndpointProjectID,
 	}
 
 	buildClient.

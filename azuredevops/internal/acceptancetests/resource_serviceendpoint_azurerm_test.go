@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_azurerm) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_azurerm
 // +build !exclude_serviceendpoints
 

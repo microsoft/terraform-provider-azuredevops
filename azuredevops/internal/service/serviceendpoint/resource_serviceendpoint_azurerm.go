@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -54,7 +55,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	scope := fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
@@ -107,7 +108,7 @@ func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 

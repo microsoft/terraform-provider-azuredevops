@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_azurecr) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_azurecr
 // +build !exclude_serviceendpoints
 
@@ -12,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -20,7 +21,7 @@ import (
 )
 
 var azureCRTestServiceEndpointID = uuid.New()
-var azureCRRandomServiceEndpointProjectID = uuid.New().String()
+var azureCRRandomServiceEndpointProjectID = uuid.New()
 var azureCRTestServiceEndpointProjectID = &azureCRRandomServiceEndpointProjectID
 var subscription_id = "42125daf-72fd-417c-9ea7-080690625ad3"
 var scope = fmt.Sprintf(
@@ -49,12 +50,20 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		"azureSpnPermissions":      "[{\\\"roleAssignmentId\\\":\\\"00000000 - 0000-0000-0000-000000000000\\\",\\\"resourceProvider\\\":\\\"Microsoft.RoleAssignment\\\",\\\"provisioned\\\":true}]",
 		"azureSpnRoleAssignmentId": "00000000-0000-0000-0000-000000000000",
 	},
-	Id:          &azureCRTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("dockerregistry"),
-	Url:         converter.String("https://testacr.azurecr.io"),
+	Id:    &azureCRTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("dockerregistry"),
+	Url:   converter.String("https://testacr.azurecr.io"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: azureCRTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -81,7 +90,7 @@ func TestServiceEndpointAzureCR_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azureCRTestServiceEndpoint, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &azureCRTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -104,7 +113,10 @@ func TestServiceEndpointAzureCR_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: azureCRTestServiceEndpoint.Id,
+		Project:    converter.String(azureCRTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -127,7 +139,12 @@ func TestServiceEndpointAzureCR_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: azureCRTestServiceEndpoint.Id, Project: azureCRTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: azureCRTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			azureCRTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -153,7 +170,6 @@ func TestServiceEndpointAzureCR_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &azureCRTestServiceEndpoint,
 		EndpointId: azureCRTestServiceEndpoint.Id,
-		Project:    azureCRTestServiceEndpointProjectID,
 	}
 
 	buildClient.

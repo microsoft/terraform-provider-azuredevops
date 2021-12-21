@@ -1,3 +1,4 @@
+//go:build (all || core || data_sources || data_team) && (!exclude_data_sources || !exclude_data_team)
 // +build all core data_sources data_team
 // +build !exclude_data_sources !exclude_data_team
 
@@ -11,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"

@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_artifactory) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_artifactory
 // +build !exclude_serviceendpoints
 

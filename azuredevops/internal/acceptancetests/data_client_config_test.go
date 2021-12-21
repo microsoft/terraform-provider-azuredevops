@@ -1,3 +1,4 @@
+//go:build all || core
 // +build all core
 
 package acceptancetests

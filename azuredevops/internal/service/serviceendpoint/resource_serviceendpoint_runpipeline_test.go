@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_rpipeline) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_rpipeline
 // +build !exclude_serviceendpoints
 
@@ -11,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -20,7 +21,7 @@ import (
 
 // "rp" stands for RunPipeline
 var rpTestServiceEndpointID = uuid.New()
-var rpRandomServiceEndpointProjectID = uuid.New().String()
+var rpRandomServiceEndpointProjectID = uuid.New()
 var rpTestServiceEndpointProjectID = &rpRandomServiceEndpointProjectID
 
 var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -33,12 +34,20 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"releaseUrl": "https://vsrm.dev.azure.com/example",
 	},
-	Id:          &rpTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_NAME"),
-	Description: converter.String("UNIT_TEST_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("azdoapi"),
-	Url:         converter.String("https://dev.azure.com/example"),
+	Id:    &rpTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("azdoapi"),
+	Url:   converter.String("https://dev.azure.com/example"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: rpTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_NAME"),
+			Description: converter.String("UNIT_TEST_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -67,7 +76,7 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &rpTestServiceEndpoint, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &rpTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -90,7 +99,10 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: rpTestServiceEndpoint.Id,
+		Project:    converter.String(rpTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -113,7 +125,12 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: rpTestServiceEndpoint.Id, Project: rpTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: rpTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			rpTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -140,7 +157,6 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &rpTestServiceEndpoint,
 		EndpointId: rpTestServiceEndpoint.Id,
-		Project:    rpTestServiceEndpointProjectID,
 	}
 
 	buildClient.

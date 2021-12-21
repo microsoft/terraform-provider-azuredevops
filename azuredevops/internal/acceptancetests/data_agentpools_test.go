@@ -1,3 +1,4 @@
+//go:build (all || data_sources || data_agent_pools) && (!exclude_data_sources || !exclude_data_agent_pools)
 // +build all data_sources data_agent_pools
 // +build !exclude_data_sources !exclude_data_agent_pools
 
