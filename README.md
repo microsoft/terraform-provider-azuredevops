@@ -145,6 +145,25 @@ The several options to run the tests are:
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
 
+### Scaffolding the Website Documentation
+
+You can scaffold the documentation for a Data Source by running:
+
+```sh
+$ make scaffold-website BRAND_NAME="Agent Pool" RESOURCE_NAME="azuredevops_agent_pool" RESOURCE_TYPE="data"
+```
+
+You can scaffold the documentation for a Resource by running:
+
+```sh
+$ make scaffold-website BRAND_NAME="Agent Pool" RESOURCE_NAME="azuredevops_agent_pool" RESOURCE_TYPE="resource" RESOURCE_ID="00000000-0000-0000-0000-000000000000"
+```
+
+>
+> `BRAND_NAME` is the human readable name of the object that is handled by a
+> Terraform resource or datasource, like `Agent Pool`, `User Entitlement` or `Kubernetes Service Endpoint`
+>
+
 ### Build using PowerShell scripts
 
 If you like to develop on Windows, we provide a set of PowerShell scripts to build and test the provider.
