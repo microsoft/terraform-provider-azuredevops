@@ -113,10 +113,6 @@ func getContent(resourceName, brandName string, resourceId *string, isResource b
 	return &docs, nil
 }
 
-func Provider() {
-	panic("unimplemented")
-}
-
 func saveContent(resourceName string, websitePath string, content string, isResource bool) error {
 	resourceKind := "r"
 	if !isResource {
@@ -162,9 +158,6 @@ type documentationGenerator struct {
 
 	// resourceId is an example of the ID used by this Resource
 	resourceId *string
-
-	// websiteCategories is the list of categories available by this service definition
-	websiteCategories []string
 }
 
 func (gen documentationGenerator) generate() string {
