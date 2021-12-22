@@ -1,6 +1,6 @@
-//go:build (all || permissions || resource_servicehook_permissions) && (!exclude_permissions || !exclude_resource_servicehook_permissions)
-// +build all permissions resource_servicehook_permissions
-// +build !exclude_permissions !exclude_resource_servicehook_permissions
+//go:build (all || permissions || resource_servicehooks_permissions) && (!exclude_permissions || !exclude_resource_servicehooks_permissions)
+// +build all permissions resource_servicehooks_permissions
+// +build !exclude_permissions !exclude_resource_servicehooks_permissions
 
 package acceptancetests
 
@@ -13,7 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclServiceHookPermissions(projectName string, permissions map[string]map[string]string) string {
+func hclServiceHooksPermissions(projectName string, permissions map[string]map[string]string) string {
 	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
 
 	return fmt.Sprintf(`
@@ -22,7 +22,7 @@ data "azuredevops_group" "tf-project-readers" {
 	project_id = azuredevops_project.project.id
 	name       = "Readers"
 }
-resource "azuredevops_servicehook_permissions" "acctest" {
+resource "azuredevops_servicehooks_permissions" "acctest" {
 	project_id  = azuredevops_project.project.id
 	principal   = data.azuredevops_group.tf-project-readers.id
 	permissions = {
@@ -32,9 +32,9 @@ resource "azuredevops_servicehook_permissions" "acctest" {
 `, testutils.HclProjectResource(projectName), rootPermissions)
 }
 
-func TestAccServiceHookPermissions_SetPermissions(t *testing.T) {
+func TestAccServiceHooksPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	config := hclServiceHookPermissions(projectName, map[string]map[string]string{
+	config := hclServiceHooksPermissions(projectName, map[string]map[string]string{
 		"root": {
 			"ViewSubscriptions":   "Deny",
 			"EditSubscriptions":   "NotSet",
@@ -42,7 +42,7 @@ func TestAccServiceHookPermissions_SetPermissions(t *testing.T) {
 			"PublishEvents":       "Deny",
 		},
 	})
-	tfNodeRoot := "azuredevops_servicehook_permissions.acctest"
+	tfNodeRoot := "azuredevops_servicehooks_permissions.acctest"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -67,9 +67,9 @@ func TestAccServiceHookPermissions_SetPermissions(t *testing.T) {
 	})
 }
 
-func TestAccServiceHookPermissions_UpdatePermissions(t *testing.T) {
+func TestAccServiceHooksPermissions_UpdatePermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	config1 := hclServiceHookPermissions(projectName, map[string]map[string]string{
+	config1 := hclServiceHooksPermissions(projectName, map[string]map[string]string{
 		"root": {
 			"ViewSubscriptions":   "Allow",
 			"EditSubscriptions":   "NotSet",
@@ -77,7 +77,7 @@ func TestAccServiceHookPermissions_UpdatePermissions(t *testing.T) {
 			"PublishEvents":       "Deny",
 		},
 	})
-	config2 := hclServiceHookPermissions(projectName, map[string]map[string]string{
+	config2 := hclServiceHooksPermissions(projectName, map[string]map[string]string{
 		"root": {
 			"ViewSubscriptions":   "Deny",
 			"EditSubscriptions":   "Deny",
@@ -85,7 +85,7 @@ func TestAccServiceHookPermissions_UpdatePermissions(t *testing.T) {
 			"PublishEvents":       "Allow",
 		},
 	})
-	tfNodeRoot := "azuredevops_servicehook_permissions.acctest"
+	tfNodeRoot := "azuredevops_servicehooks_permissions.acctest"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },

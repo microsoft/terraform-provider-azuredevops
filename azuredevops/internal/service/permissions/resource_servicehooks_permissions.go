@@ -10,13 +10,13 @@ import (
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 )
 
-// ResourceServiceHookPermissions schema and implementation for servicehooks permission resource
-func ResourceServiceHookPermissions() *schema.Resource {
+// ResourceServiceHooksPermissions schema and implementation for servicehooks permission resource
+func ResourceServiceHooksPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceServiceHookPermissionsCreateOrUpdate,
-		Read:   resourceServiceHookPermissionsRead,
-		Update: resourceServiceHookPermissionsCreateOrUpdate,
-		Delete: resourceServiceHookPermissionsDelete,
+		Create: resourceServiceHooksPermissionsCreateOrUpdate,
+		Read:   resourceServiceHooksPermissionsRead,
+		Update: resourceServiceHooksPermissionsCreateOrUpdate,
+		Delete: resourceServiceHooksPermissionsDelete,
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -29,10 +29,10 @@ func ResourceServiceHookPermissions() *schema.Resource {
 	}
 }
 
-func resourceServiceHookPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServiceHooksPermissionsCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHookToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHooksToken)
 	if err != nil {
 		return err
 	}
@@ -41,13 +41,13 @@ func resourceServiceHookPermissionsCreateOrUpdate(d *schema.ResourceData, m inte
 		return err
 	}
 
-	return resourceServiceHookPermissionsRead(d, m)
+	return resourceServiceHooksPermissionsRead(d, m)
 }
 
-func resourceServiceHookPermissionsRead(d *schema.ResourceData, m interface{}) error {
+func resourceServiceHooksPermissionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHookToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHooksToken)
 	if err != nil {
 		return err
 	}
@@ -66,10 +66,10 @@ func resourceServiceHookPermissionsRead(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func resourceServiceHookPermissionsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceServiceHooksPermissionsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHookToken)
+	sn, err := securityhelper.NewSecurityNamespace(d, clients, securityhelper.SecurityNamespaceIDValues.ServiceHooks, createServiceHooksToken)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func resourceServiceHookPermissionsDelete(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func createServiceHookToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
+func createServiceHooksToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
 		return "PublisherSecurity", nil
