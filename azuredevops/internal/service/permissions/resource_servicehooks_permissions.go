@@ -1,6 +1,7 @@
 package permissions
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -20,7 +21,8 @@ func ResourceServiceHookPermissions() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
-				Required:     true,
+				Optional:     true,
+				Required:     false,
 				ForceNew:     true,
 			},
 		}),
@@ -80,7 +82,9 @@ func resourceServiceHookPermissionsDelete(d *schema.ResourceData, m interface{})
 }
 
 func createServiceHookToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
-	projectID := d.Get("project_id").(string)
-	aclToken := "PublisherSecurity/" + projectID
-	return aclToken, nil
+	projectID, ok := d.GetOk("project_id")
+	if !ok {
+		return "PublisherSecurity", nil
+	}
+	return fmt.Sprintf("PublisherSecurity/%s", projectID.(string)), nil
 }
