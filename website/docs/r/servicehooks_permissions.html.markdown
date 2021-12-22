@@ -47,7 +47,7 @@ resource "azuredevops_servicehooks_permissions" "root-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The ID of the project to assign the permissions.
+* `project_id` - (optional) The ID of the project to assign the permissions.
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
