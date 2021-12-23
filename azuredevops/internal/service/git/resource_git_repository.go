@@ -157,7 +157,8 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding repository resource data: %+v", err)
+		return fmt.Errorf(" failed expanding repository resource data (ProjectID:  %s, Repository: %s) Error: %+v",
+			d.Get("project_id").(string), d.Get("name").(string), err)
 	}
 
 	var parentRepoRef *git.GitRepositoryRef = nil
@@ -465,6 +466,13 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			initialization.sourceURL = ""
 			initialization.serviceConnectionID = ""
 		}
+
+		if _, ok := d.GetOk("default_branch"); ok {
+			if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
+				return nil, nil, nil, fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
+			}
+		}
+
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
 	}
