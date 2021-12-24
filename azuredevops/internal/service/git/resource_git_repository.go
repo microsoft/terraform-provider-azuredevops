@@ -472,7 +472,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 				return nil, nil, nil, fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
 			}
 		}
-
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
 	}
