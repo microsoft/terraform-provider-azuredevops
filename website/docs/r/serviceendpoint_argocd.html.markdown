@@ -6,7 +6,7 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_argocd
-Manages a ArgoCD service endpoint within Azure DevOps. 
+Manages a ArgoCD service endpoint within Azure DevOps. Using this service endpoint requires you to first install [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd).
 
 ## Example Usage
 
@@ -47,6 +47,7 @@ The following attributes are exported:
 * `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
+* [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
 * [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
 * [ArgoCD Project Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
 
@@ -56,4 +57,3 @@ Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/servi
 ```shell
 $ terraform import azuredevops_serviceendpoint_argocd.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
-
