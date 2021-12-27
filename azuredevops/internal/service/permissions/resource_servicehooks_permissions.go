@@ -22,7 +22,6 @@ func ResourceServiceHooksPermissions() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
 				Optional:     true,
-				Required:     false,
 				ForceNew:     true,
 			},
 		}),
