@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_servicehooks_permissions"
+page_title: "AzureDevops: azuredevops_servicehook_permissions"
 description: |-
   Manages permissions for AzureDevOps service hooks
 ---
 
-# azuredevops_servicehooks_permissions
+# azuredevops_servicehook_permissions
 
 Manages permissions for service hooks
 
@@ -31,7 +31,7 @@ data "azuredevops_group" "project-readers" {
   name       = "Readers"
 }
 
-resource "azuredevops_servicehooks_permissions" "root-permissions" {
+resource "azuredevops_servicehook_permissions" "root-permissions" {
   project_id  = azuredevops_project.project.id
   principal   = data.azuredevops_group.project-readers.id
   permissions = {
