@@ -18,18 +18,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var argoCDTestServiceEndpointID = uuid.New()
-var argoCDRandomServiceEndpointProjectID = uuid.New().String()
-var argoCDTestServiceEndpointProjectID = &argoCDRandomServiceEndpointProjectID
+var argocdTestServiceEndpointIDpassword = uuid.New()
+var argocdRandomServiceEndpointProjectIDpassword = uuid.New().String()
+var argocdTestServiceEndpointProjectIDpassword = &argocdRandomServiceEndpointProjectIDpassword
 
-var argoCDTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var argocdTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "SQ_TEST_token",
+			"username": "ARCD_TEST_username",
+			"password": "ARCD_TEST_password",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:          &argoCDTestServiceEndpointID,
+	Id:          &argocdTestServiceEndpointIDpassword,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("argocd"),
+	Url:         converter.String("https://github.com/argoproj/argo-cd"),
+}
+var argocdTestServiceEndpointID = uuid.New()
+var argocdRandomServiceEndpointProjectID = uuid.New().String()
+var argocdTestServiceEndpointProjectID = &argocdRandomServiceEndpointProjectID
+
+var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+	Authorization: &serviceendpoint.EndpointAuthorization{
+		Parameters: &map[string]string{
+			"apitoken": "ARCD_TEST_token",
+		},
+		Scheme: converter.String("Token"),
+	},
+	Id:          &argocdTestServiceEndpointID,
 	Name:        converter.String("UNIT_TEST_CONN_NAME"),
 	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
@@ -38,30 +57,40 @@ var argoCDTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func TestServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, &argoCDTestServiceEndpoint, argoCDTestServiceEndpointProjectID)
+func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArgoCD(resourceData)
+		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
+		flattenServiceEndpointArgoCD(resourceData, ep, id)
 
-	require.Equal(t, argoCDTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, argoCDTestServiceEndpointProjectID, projectID)
-	require.Nil(t, err)
+		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArgoCD(resourceData)
+		require.Nil(t, err)
+		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
+		require.Equal(t, id, projectID)
+
+	}
+}
+func TestServiceEndpointArgoCD_ExpandFlatten_RoundtripPassword(t *testing.T) {
+	testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
+}
+
+func TestServiceEndpointArgoCD_ExpandFlatten_RoundtripToken(t *testing.T) {
+	testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, &argoCDTestServiceEndpoint, argoCDTestServiceEndpointProjectID)
+	flattenServiceEndpointArgoCD(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &argoCDTestServiceEndpoint, Project: argoCDTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: ep, Project: id}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -71,20 +100,26 @@ func TestServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T) {
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+func TestServiceEndpointArgoCD_Create_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArgoCD_Create_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArgoCD_Create_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArgoCD_Create_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, &argoCDTestServiceEndpoint, argoCDTestServiceEndpointProjectID)
+	flattenServiceEndpointArgoCD(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: argoCDTestServiceEndpoint.Id, Project: argoCDTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ep.Id, Project: id}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -94,20 +129,26 @@ func TestServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T) {
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+func TestServiceEndpointArgoCD_Read_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArgoCD_Read_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArgoCD_Read_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArgoCD_Read_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, &argoCDTestServiceEndpoint, argoCDTestServiceEndpointProjectID)
+	flattenServiceEndpointArgoCD(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: argoCDTestServiceEndpoint.Id, Project: argoCDTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ep.Id, Project: id}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -117,23 +158,29 @@ func TestServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T) {
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+func TestServiceEndpointArgoCD_Delete_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArgoCD_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
+}
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T) {
+func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, &argoCDTestServiceEndpoint, argoCDTestServiceEndpointProjectID)
+	flattenServiceEndpointArgoCD(resourceData, ep, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &argoCDTestServiceEndpoint,
-		EndpointId: argoCDTestServiceEndpoint.Id,
-		Project:    argoCDTestServiceEndpointProjectID,
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+		Project:    id,
 	}
 
 	buildClient.
@@ -144,4 +191,10 @@ func TestServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T) {
 
 	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+func TestServiceEndpointArgoCD_Update_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+}
+func TestServiceEndpointArgoCD_Update_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
 }

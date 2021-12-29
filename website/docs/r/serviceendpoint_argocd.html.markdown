@@ -22,12 +22,29 @@ resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
 
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "Sample ArgoCD"
+  description           = "Managed by Terraform"
   url                   = "https://argocd.my.com"
-  token                 = "0000000000000000000000000000000000000000"
+  authentication_token {
+      token      = "0000000000000000000000000000000000000000"
+  }
   description           = "Managed by Terraform"
 }
 ```
+Alternatively a username and password may be used.
 
+```hcl
+resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
+
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "Sample ArgoCD"
+  description           = "Managed by Terraform"
+  url                   = "https://argocd.my.com"
+  authentication_basic {
+      username              = "sampleuser"
+      password              = "0000000000000000000000000000000000000000"
+  }
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
@@ -35,7 +52,12 @@ The following arguments are supported:
 * `project_id` - (Required) The project ID or project name.
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 * `url` - (Required) URL of the ArgoCD server to connect with.
-* `token` - (Required) Authentication Token generated through ArgoCD (go to Settings > Projects > Project XYZ > Roles > Generate Token ).
+* either `authentication_token` or `authentication_basic` (one is required)
+  * `authentication_token`
+    * `token` - Authentication Token generated through ArgoCD.
+  * `authentication_basic`
+      * `username` - ArgoCD Username.
+      * `password` - ArgoCD Password.
 * `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference
@@ -47,9 +69,9 @@ The following attributes are exported:
 * `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
-* [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
 * [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-* [ArgoCD Project Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
+* [ArgoCD Project/User Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
+* [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
 
 ## Import
 Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/serviceEndpointID**, e.g.
