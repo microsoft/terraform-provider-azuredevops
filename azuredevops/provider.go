@@ -74,6 +74,7 @@ func Provider() *schema.Provider {
 			"azuredevops_team_members":                           core.ResourceTeamMembers(),
 			"azuredevops_team_administrators":                    core.ResourceTeamAdministrators(),
 			"azuredevops_serviceendpoint_permissions":            permissions.ResourceServiceEndpointPermissions(),
+			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
