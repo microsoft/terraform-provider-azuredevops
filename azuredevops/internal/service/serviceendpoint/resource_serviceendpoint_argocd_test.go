@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_argocd) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_argocd
 // +build !exclude_serviceendpoints
 
@@ -11,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -19,45 +20,62 @@ import (
 )
 
 var argocdTestServiceEndpointIDpassword = uuid.New()
-var argocdRandomServiceEndpointProjectIDpassword = uuid.New().String()
+var argocdRandomServiceEndpointProjectIDpassword = uuid.New()
 var argocdTestServiceEndpointProjectIDpassword = &argocdRandomServiceEndpointProjectIDpassword
 
 var argocdTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "ARCD_TEST_username",
-			"password": "ARCD_TEST_password",
+			"username": "AR_TEST_username",
+			"password": "AR_TEST_password",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:          &argocdTestServiceEndpointIDpassword,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("argocd"),
-	Url:         converter.String("https://github.com/argoproj/argo-cd"),
+	Id:    &argocdTestServiceEndpointIDpassword,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("argocd"),
+	Url:   converter.String("https://www.argocd.com"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: argocdTestServiceEndpointProjectIDpassword,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+		},
+	},
 }
+
 var argocdTestServiceEndpointID = uuid.New()
-var argocdRandomServiceEndpointProjectID = uuid.New().String()
+var argocdRandomServiceEndpointProjectID = uuid.New()
 var argocdTestServiceEndpointProjectID = &argocdRandomServiceEndpointProjectID
 
 var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "ARCD_TEST_token",
+			"apitoken": "AR_TEST_token",
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:          &argocdTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("argocd"),
-	Url:         converter.String("https://github.com/argoproj/argo-cd"),
+	Id:    &argocdTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("argocd"),
+	Url:   converter.String("https://www.argocd.com"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: argocdTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
@@ -79,7 +97,7 @@ func TestServiceEndpointArgoCD_ExpandFlatten_RoundtripToken(t *testing.T) {
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -90,7 +108,7 @@ func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serv
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: ep, Project: id}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: ep}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -108,7 +126,7 @@ func TestServiceEndpointArgoCD_Create_DoesNotSwallowErrorPassword(t *testing.T) 
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -119,7 +137,10 @@ func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *servic
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: ep.Id, Project: id}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: ep.Id,
+		Project:    converter.String(id.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -137,7 +158,7 @@ func TestServiceEndpointArgoCD_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -148,7 +169,12 @@ func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: ep.Id, Project: id}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: ep.Id,
+		ProjectIds: &[]string{
+			id.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -166,7 +192,7 @@ func TestServiceEndpointArgoCD_Delete_DoesNotSwallowErrorPassword(t *testing.T) 
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *string) {
+func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -180,7 +206,6 @@ func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serv
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   ep,
 		EndpointId: ep.Id,
-		Project:    id,
 	}
 
 	buildClient.
