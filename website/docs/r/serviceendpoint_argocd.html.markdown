@@ -76,6 +76,7 @@ The following attributes are exported:
 ## Import
 Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/serviceEndpointID**, e.g.
 
+
 ```shell
 $ terraform import azuredevops_serviceendpoint_argocd.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
