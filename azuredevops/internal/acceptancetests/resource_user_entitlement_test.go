@@ -1,3 +1,4 @@
+//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
 // +build all resource_user_entitlement
 // +build !exclude_resource_user_entitlement
 
@@ -13,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"

@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_npm) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_npm
 // +build !exclude_serviceendpoints
 
@@ -11,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -19,7 +20,7 @@ import (
 )
 
 var npmTestServiceEndpointID = uuid.New()
-var npmRandomServiceEndpointProjectID = uuid.New().String()
+var npmRandomServiceEndpointProjectID = uuid.New()
 var npmTestServiceEndpointProjectID = &npmRandomServiceEndpointProjectID
 
 var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -29,12 +30,20 @@ var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:          &npmTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"),
-	Type:        converter.String("externalnpmregistry"),
-	Url:         converter.String("https://registry.npmjs.org"),
+	Id:    &npmTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"),
+	Type:  converter.String("externalnpmregistry"),
+	Url:   converter.String("https://registry.npmjs.org"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: npmTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -61,7 +70,7 @@ func TestServiceEndpointNpm_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &npmTestServiceEndpoint, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &npmTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -84,7 +93,10 @@ func TestServiceEndpointNpm_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: npmTestServiceEndpoint.Id, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: npmTestServiceEndpoint.Id,
+		Project:    converter.String(npmTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -107,7 +119,12 @@ func TestServiceEndpointNpm_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: npmTestServiceEndpoint.Id, Project: npmTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: npmTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			npmTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -133,7 +150,6 @@ func TestServiceEndpointNpm_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &npmTestServiceEndpoint,
 		EndpointId: npmTestServiceEndpoint.Id,
-		Project:    npmTestServiceEndpointProjectID,
 	}
 
 	buildClient.

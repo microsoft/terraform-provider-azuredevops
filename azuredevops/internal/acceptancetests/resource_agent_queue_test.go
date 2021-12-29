@@ -1,3 +1,4 @@
+//go:build (all || resource_agent_queue) && !exclude_resource_agent_queue
 // +build all resource_agent_queue
 // +build !exclude_resource_agent_queue
 

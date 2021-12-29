@@ -1,3 +1,4 @@
+//go:build (all || core || resource_team_administrators) && !exclude_resource_team_administrators
 // +build all core resource_team_administrators
 // +build !exclude_resource_team_administrators
 

@@ -1,3 +1,4 @@
+//go:build (all || core || resource_project) && !exclude_resource_project
 // +build all core resource_project
 // +build !exclude_resource_project
 

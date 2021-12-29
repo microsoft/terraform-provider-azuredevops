@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -54,7 +55,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	scope := fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
@@ -88,7 +89,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	if _, ok := d.GetOk("credentials"); ok {
 		credentials := d.Get("credentials").([]interface{})[0].(map[string]interface{})
 		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"] = credentials["serviceprincipalid"].(string)
-		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = expandSpnKey(credentials)
+		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = credentials["serviceprincipalkey"].(string)
 		(*serviceEndpoint.Data)["creationMode"] = "Manual"
 	}
 
@@ -97,38 +98,23 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func expandSpnKey(credentials map[string]interface{}) string {
-	// Note: if this is an update for a field other than `serviceprincipalkey`, the `serviceprincipalkey` will be
-	// set to `""`. Without catching this case and setting the value to `"null"`, the `serviceprincipalkey` will
-	// actually be set to `""` by the Azure DevOps service.
-	//
-	// This step is critical in order to ensure that the service connection can update without loosing its password!
-	//
-	// This behavior is unfortunately not documented in the API documentation.
-	spnKey, ok := credentials["serviceprincipalkey"]
-	if !ok || spnKey.(string) == "" {
-		return "null"
-	}
-
-	return spnKey.(string)
-}
-
-func flattenCredentials(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+	// secret value won't return by service and should not be overwritten
 	return []map[string]interface{}{{
 		"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-		"serviceprincipalkey": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"],
+		"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
 		hashKey:               hashValue,
 	}}
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(serviceEndpoint, hashKey, newHash)
+		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
 		d.Set("credentials", credentials)
 	}
 

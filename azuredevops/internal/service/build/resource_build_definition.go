@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -561,7 +561,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		"github_enterprise_url": githubEnterpriseUrl,
 	}}
 
-	if *buildDefinition.Repository.Properties != nil {
+	if buildDefinition.Repository != nil && buildDefinition.Repository.Properties != nil {
 		if connectionID, ok := (*buildDefinition.Repository.Properties)["connectedServiceId"]; ok {
 			repo[0]["service_connection_id"] = connectionID
 		}

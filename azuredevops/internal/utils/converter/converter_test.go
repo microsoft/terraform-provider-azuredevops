@@ -1,3 +1,4 @@
+//go:build all || helper || converter
 // +build all helper converter
 
 package converter

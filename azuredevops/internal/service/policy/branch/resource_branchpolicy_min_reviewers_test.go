@@ -1,3 +1,4 @@
+//go:build (all || resource_branchpolicy_min_reviewers) && !exclude_resource_branchpolicy_min_reviewers
 // +build all resource_branchpolicy_min_reviewers
 // +build !exclude_resource_branchpolicy_min_reviewers
 
@@ -10,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 

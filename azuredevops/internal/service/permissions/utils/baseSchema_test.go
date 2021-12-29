@@ -1,3 +1,4 @@
+//go:build all || utils || securitynamespaces
 // +build all utils securitynamespaces
 
 package utils

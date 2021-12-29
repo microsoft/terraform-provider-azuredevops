@@ -99,4 +99,7 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
+scaffold-website:
+	./scripts/scaffold-website.sh
+
 .PHONY: build test testacc vet fmt fmtcheck lint tools test-compile website website-lint website-test

@@ -9,12 +9,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/accounts"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/accounts"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -321,39 +322,23 @@ func importUserEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Res
 			return nil, fmt.Errorf("Only UUID and UPN values can used for import [%s]", upn)
 		}
 
-		id := ""
 		clients := m.(*client.AggregatedClient)
-		skip := 0
-		page := 100
-
-		for {
-			memberList, err := clients.MemberEntitleManagementClient.GetUserEntitlements(clients.Ctx, memberentitlementmanagement.GetUserEntitlementsArgs{
-				Top:  &page,
-				Skip: &skip,
-				// Using sort, so that we can predictably skip over items that we have read already
-				// FIXME: should be sorted by dateCreated because LastAccessDate is not stable,
-				// but currently the API fails with an error ("Value cannot be null.\r\nParameter name: keySelector")
-				SortOption: converter.String("LastAccessDate Desc"),
-			})
-			if err != nil {
-				return nil, err
-			}
-			for _, item := range *(*memberList).Members {
-				if strings.EqualFold(*item.User.PrincipalName, upn) {
-					id = item.Id.String()
-					goto Found
-				}
-			}
-			if len(*(*memberList).Members) < page {
-				break
-			}
-			skip += page
+		result, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+			SearchFilter: converter.String("General"),
+			FilterValue:  &upn,
+		})
+		if err != nil {
+			return nil, err
 		}
 
-		return nil, fmt.Errorf("No entitlement found for [%s]", upn)
+		if result == nil || len(*result) <= 0 {
+			return nil, fmt.Errorf("No entitlement found for [%s]", upn)
+		}
+		if len(*result) > 1 {
+			return nil, fmt.Errorf("More than one entitle found for [%s]", upn)
+		}
 
-	Found:
-		d.SetId(id)
+		d.SetId((*result)[0].Id.String())
 	}
 	return []*schema.ResourceData{d}, nil
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -300,8 +300,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	createdVariableGroup, err := clients.TaskAgentClient.AddVariableGroup(
 		clients.Ctx,
 		taskagent.AddVariableGroupArgs{
-			Group:   variableGroupParams,
-			Project: project,
+			VariableGroupParameters: variableGroupParams,
 		})
 	return createdVariableGroup, err
 }
@@ -311,9 +310,8 @@ func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent
 	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
 		taskagent.UpdateVariableGroupArgs{
-			Project: project,
-			GroupId: variableGroupID,
-			Group:   parameters,
+			GroupId:                 variableGroupID,
+			VariableGroupParameters: parameters,
 		})
 
 	return updatedVariableGroup, err
@@ -324,7 +322,9 @@ func deleteVariableGroup(clients *client.AggregatedClient, project *string, vari
 	err := clients.TaskAgentClient.DeleteVariableGroup(
 		clients.Ctx,
 		taskagent.DeleteVariableGroupArgs{
-			Project: project,
+			ProjectIds: &[]string{
+				*project,
+			},
 			GroupId: variableGroupID,
 		})
 
