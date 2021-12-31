@@ -167,7 +167,7 @@ func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *servi
 		}
 		d.Set("authentication_basic", []interface{}{auth})
 	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme %s", *serviceEndpoint.Authorization.Scheme))
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
 	}
 
 	d.Set("url", *serviceEndpoint.Url)

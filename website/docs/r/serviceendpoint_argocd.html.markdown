@@ -49,16 +49,24 @@ resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The project ID or project name.
-* `service_endpoint_name` - (Required) The Service Endpoint name.
-* `url` - (Required) URL of the ArgoCD server to connect with.
-* either `authentication_token` or `authentication_basic` (one is required)
-  * `authentication_token`
-    * `token` - Authentication Token generated through ArgoCD.
-  * `authentication_basic`
-      * `username` - ArgoCD Username.
-      * `password` - ArgoCD Password.
-* `description` - (Optional) The Service Endpoint description.
+- `project_id` - (Required) The project ID or project name.
+- `service_endpoint_name` - (Required) The Service Endpoint name.
+- `url` - (Required) URL of the ArgoCD server to connect with.
+- `description` - (Optional) The Service Endpoint description.
+- `authentication_token` - An `authentication_token` block for the ArgoCD as documented below.
+- `authentication_basic` - An `authentication_token` block for the ArgoCD as documented below.
+
+~> **NOTE:** `authentication_basic` and `authentication_token` conflict with each other, only one is required.
+
+---
+
+A `authentication_token` block supports the following:
+
+  - `token` - Authentication Token generated through ArgoCD.
+
+A `authentication_basic` block supports the following:
+  - `username` - ArgoCD Username. 
+  - `password` - ArgoCD Password.
 
 ## Attributes Reference
 
