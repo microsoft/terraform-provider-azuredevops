@@ -51,6 +51,7 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
 	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
+		// Normally we don’t mark username as sensitive data, but author of the ArgoCD extension have declared this property as sensitive
 		Schema: map[string]*schema.Schema{
 			"username": {
 				Description:      "The ArgoCD user name.",
@@ -101,7 +102,6 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 	authParams := make(map[string]string)
 
 	if x, ok := d.GetOk("authentication_token"); ok {
-		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"] = expandSecret(msi, "token")
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
@@ -117,22 +117,6 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 
 	return serviceEndpoint, projectID, nil
 }
-
-// func expandSecret(credentials map[string]interface{}, key string) string {
-// 	// Note: if this is an update for a field other than `key`, the `key` will be
-// 	// set to `""`. Without catching this case and setting the value to `"null"`, the `key` will
-// 	// actually be set to `""` by the Azure DevOps service.
-// 	//
-// 	// This step is critical in order to ensure that the service connection can update without loosing its password!
-// 	//
-// 	// This behavior is unfortunately not documented in the API documentation.
-// 	val, ok := credentials[key]
-// 	if !ok || val.(string) == "" {
-// 		return "null"
-// 	}
-
-// 	return val.(string)
-// }
 
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {

@@ -27,7 +27,6 @@ resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
   authentication_token {
       token      = "0000000000000000000000000000000000000000"
   }
-  description           = "Managed by Terraform"
 }
 ```
 Alternatively a username and password may be used.
@@ -72,14 +71,14 @@ A `authentication_basic` block supports the following:
 
 The following attributes are exported:
 
-* `id` - The ID of the service endpoint.
-* `project_id` - The project ID or project name.
-* `service_endpoint_name` - The Service Endpoint name.
+- `id` - The ID of the service endpoint.
+- `project_id` - The project ID or project name.
+- `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
-* [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-* [ArgoCD Project/User Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
-* [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
+- [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
+- [ArgoCD Project/User Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
+- [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
 
 ## Import
 Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/serviceEndpointID**, e.g.
