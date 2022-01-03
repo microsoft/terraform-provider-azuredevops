@@ -21,7 +21,7 @@ func ResourceTaggingPermissions() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
-				Optional:     true,
+				Required:     true,
 				ForceNew:     true,
 			},
 		}),

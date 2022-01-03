@@ -63,6 +63,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_team_administrators",
 		"azuredevops_serviceendpoint_permissions",
 		"azuredevops_servicehook_permissions",
+		"azuredevops_tagging_permissions",
 	}
 
 	resources := Provider().ResourcesMap
