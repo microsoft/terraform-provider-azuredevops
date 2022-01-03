@@ -21,7 +21,7 @@ func ResourceTaggingPermissions() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
-				Required:     true,
+				Optional:     true,
 				ForceNew:     true,
 			},
 		}),
@@ -83,7 +83,7 @@ func resourceTaggingPermissionsDelete(d *schema.ResourceData, m interface{}) err
 func createTaggingToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID, ok := d.GetOk("project_id")
 	if !ok {
-		return "ProjectID", nil
+		return "", nil
 	}
 	return fmt.Sprintf("/%s", projectID.(string)), nil
 }

@@ -11,8 +11,8 @@ Manages permissions for tagging
 
 ## Permission levels
 
-Permissions for tagging within Azure DevOps can be applied only on Project level.
-The project level is reflected by specifying the argument `project_id`.
+Permissions for tagging within Azure DevOps can be applied only on Organizational and Project level.
+The project level is reflected by specifying the argument `project_id`, otherwise the permissions are set on the organizational level.
 
 ## Example Usage
 
@@ -47,7 +47,7 @@ resource "azuredevops_tagging_permissions" "root-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The ID of the project to assign the permissions.
+* `project_id` - (Optional) The ID of the project to assign the permissions. If omitted, organization wide permissions for tagging are managed.
 * `principal` - (Required) The **group or user** principal to assign the permissions.
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
