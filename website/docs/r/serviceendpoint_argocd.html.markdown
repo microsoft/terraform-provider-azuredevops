@@ -53,7 +53,7 @@ The following arguments are supported:
 - `url` - (Required) URL of the ArgoCD server to connect with.
 - `description` - (Optional) The Service Endpoint description.
 - `authentication_token` - An `authentication_token` block for the ArgoCD as documented below.
-- `authentication_basic` - An `authentication_token` block for the ArgoCD as documented below.
+- `authentication_basic` - An `authentication_basic` block for the ArgoCD as documented below.
 
 ~> **NOTE:** `authentication_basic` and `authentication_token` conflict with each other, only one is required.
 
