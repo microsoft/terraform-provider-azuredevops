@@ -7,7 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
+<<<<<<< HEAD
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
+=======
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit"
+>>>>>>> feat: add ado org audit streams
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
@@ -97,6 +101,9 @@ func Provider() *schema.Provider {
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
+			"azuredevops_auditstream_azureeventgrid":             audit.ResourceAuditStreamAzureEventGridTopic(),
+			"azuredevops_auditstream_azuremonitorlogs":           audit.ResourceAuditStreamAzureMonitorLogs(),
+			"azuredevops_auditstream_splunk":                     audit.ResourceAuditStreamSplunk(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":        build.DataBuildDefinition(),
