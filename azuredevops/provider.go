@@ -7,11 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
-<<<<<<< HEAD
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
-=======
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit"
->>>>>>> feat: add ado org audit streams
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
