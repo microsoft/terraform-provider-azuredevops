@@ -22,7 +22,7 @@ var splunkDaysToBackfill = 0
 var splunkTestAuditStream = audit.AuditStream{
 	ConsumerInputs: &map[string]string{
 		"SplunkUrl":                 "SPLUNK_TEST_url",
-		"SplunkEventCollectorToken": "SPLUNK_TEST_collector_token",
+		"SplunkEventCollectorToken": "SPLUNK_TEST_token",
 	},
 	ConsumerType: converter.String("Splunk"),
 	Id:           converter.Int(1),

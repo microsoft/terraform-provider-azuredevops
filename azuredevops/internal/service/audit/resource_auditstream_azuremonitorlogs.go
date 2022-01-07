@@ -16,7 +16,7 @@ func ResourceAuditStreamAzureMonitorLogs() *schema.Resource {
 		Type:         schema.TypeString,
 		Required:     true,
 		DefaultFunc:  schema.EnvDefaultFunc("AZDO_AUDIT_AZURE_MONITORLOGS_WORKSPACE_ID", nil),
-		ValidateFunc: validation.StringIsNotWhiteSpace,
+		ValidateFunc: validation.IsUUID,
 		Description:  "Workspace Id for the Azure Monitor Logs instance that will send events to",
 	}
 

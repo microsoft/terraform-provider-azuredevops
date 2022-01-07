@@ -1085,6 +1085,6 @@ func HclAuditStreamAzureMonitorLogs() string {
 func HclAuditStreamSplunk() string {
 	return `resource "azuredevops_auditstream_splunk" "test" {
 		url 				= "https://splunk.contoso.com:8088"
-		collector_token		= "secret"
+		token			    = "secret"
 	}`
 }

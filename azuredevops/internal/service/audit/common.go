@@ -24,7 +24,7 @@ func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 		Create: genAuditStreamCreateFunc(f, e),
 		Read:   genAuditStreamReadFunc(f),
 		Update: genAuditStreamUpdateFunc(f, e),
-		Delete: genAuditStreamDeleteFunc(e),
+		Delete: genAuditStreamDeleteFunc(),
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -129,7 +129,7 @@ func genAuditStreamUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.U
 	}
 }
 
-func genAuditStreamDeleteFunc(expandFunc expandFunc) schema.DeleteFunc {
+func genAuditStreamDeleteFunc() schema.DeleteFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		streamId, err := strconv.Atoi(d.Id())
