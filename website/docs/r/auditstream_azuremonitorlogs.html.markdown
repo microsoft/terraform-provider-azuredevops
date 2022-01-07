@@ -41,5 +41,5 @@ In addition to the Arguments listed above - the following Attributes are exporte
 Azure DevOps Audit Streams can be imported using the audit stream ID , e.g.
 
 ```shell
-terraform import azuredevops_auditstream_azuremonitorlogs.example 10
+$ terraform import azuredevops_auditstream_azuremonitorlogs.example 10
 ```
