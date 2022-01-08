@@ -19,6 +19,7 @@ import (
 )
 
 var splunkDaysToBackfill = 0
+var splunkTestStreamEnabled = true
 var splunkTestAuditStream = audit.AuditStream{
 	ConsumerInputs: &map[string]string{
 		"SplunkUrl":                 "SPLUNK_TEST_url",
@@ -31,13 +32,13 @@ var splunkTestAuditStream = audit.AuditStream{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestAuditStreamSplunk_ExpandFlattenRoundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceAuditStreamSplunk().Schema, nil)
-	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill)
+	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill, &splunkTestStreamEnabled)
 
-	auditStreamAfterRoundTrip, splunkDaysToBackfillAfterRoundTrip, err := expandAuditStreamSplunk(resourceData)
+	auditStreamAfterRoundTrip, splunkDaysToBackfillAfterRoundTrip, enabled := expandAuditStreamSplunk(resourceData)
 
 	require.Equal(t, splunkTestAuditStream, *auditStreamAfterRoundTrip)
 	require.Equal(t, splunkDaysToBackfill, *splunkDaysToBackfillAfterRoundTrip)
-	require.Nil(t, err)
+	require.Equal(t, splunkTestStreamEnabled, *enabled)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -47,7 +48,7 @@ func TestAuditStreamSplunk_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamSplunk()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill)
+	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill, &splunkTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -70,7 +71,7 @@ func TestAuditStreamSplunk_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamSplunk()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill)
+	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill, &splunkTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -93,7 +94,7 @@ func TestAuditStreamSplunk_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamSplunk()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill)
+	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill, &splunkTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -116,7 +117,7 @@ func TestAuditStreamSplunk_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamSplunk()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill)
+	flattenAuditStreamSplunk(resourceData, &splunkTestAuditStream, &splunkDaysToBackfill, &splunkTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}

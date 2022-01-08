@@ -37,20 +37,20 @@ func ResourceAuditStreamAzureEventGridTopic() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandAuditStreamAzureEventGridTopic(d *schema.ResourceData) (*audit.AuditStream, *int, error) {
-	auditStream, daysToBackfill := doBaseExpansion(d)
+func expandAuditStreamAzureEventGridTopic(d *schema.ResourceData) (*audit.AuditStream, *int, *bool) {
+	auditStream, daysToBackfill, enabled := doBaseExpansion(d)
 	auditStream.ConsumerType = converter.String("AzureEventGrid")
 	auditStream.ConsumerInputs = &map[string]string{
 		"EventGridTopicHostname":  d.Get("topic_url").(string),
 		"EventGridTopicAccessKey": d.Get("access_key").(string),
 	}
 
-	return auditStream, daysToBackfill, nil
+	return auditStream, daysToBackfill, enabled
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenAuditStreamAzureEventGridTopic(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int) {
-	doBaseFlattening(d, auditStream, daysToBackfill)
+func flattenAuditStreamAzureEventGridTopic(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool) {
+	doBaseFlattening(d, auditStream, daysToBackfill, enabled)
 
 	tfhelper.HelpFlattenSecret(d, "access_key")
 

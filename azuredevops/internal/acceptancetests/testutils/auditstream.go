@@ -38,8 +38,8 @@ func CheckAuditStreamDestroyed(resourceType string) resource.TestCheckFunc {
 			}
 
 			// indicates the resource exists - this should fail the test
-			if _, err := getSvcEndpointFromState(resource); err == nil {
-				return fmt.Errorf("Unexpectedly found a service endpoint that should have been deleted")
+			if _, err := getAuditStreamFromState(resource); err == nil {
+				return fmt.Errorf("Unexpectedly found an audit stream that should have been deleted")
 			}
 		}
 
@@ -47,7 +47,7 @@ func CheckAuditStreamDestroyed(resourceType string) resource.TestCheckFunc {
 	}
 }
 
-// given a resource from the state, return a service endpoint (and error)
+// given a resource from the state, return an audit stream (and error)
 func getAuditStreamFromState(resource *terraform.ResourceState) (*audit.AuditStream, error) {
 	auditStreamDefId, err := strconv.Atoi(resource.Primary.ID)
 	if err != nil {

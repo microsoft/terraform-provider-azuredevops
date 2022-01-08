@@ -19,6 +19,7 @@ import (
 )
 
 var azureMonitorDaysToBackfill = 0
+var azureMonitorLogsTestStreamEnabled = true
 var azureMonitorLogsTestAuditStream = audit.AuditStream{
 	ConsumerInputs: &map[string]string{
 		"WorkspaceId": "AZURE_MONITOR_LOGS_TEST_workspace_id",
@@ -31,13 +32,13 @@ var azureMonitorLogsTestAuditStream = audit.AuditStream{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestAuditStreamAzureMonitorLogs_ExpandFlattenRoundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceAuditStreamAzureMonitorLogs().Schema, nil)
-	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill)
+	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill, &azureMonitorLogsTestStreamEnabled)
 
-	auditStreamAfterRoundTrip, azureMonitorDaysToBackfillAfterRoundTrip, err := expandAuditStreamAzureMonitorLogs(resourceData)
+	auditStreamAfterRoundTrip, azureMonitorDaysToBackfillAfterRoundTrip, enabled := expandAuditStreamAzureMonitorLogs(resourceData)
 
 	require.Equal(t, azureMonitorLogsTestAuditStream, *auditStreamAfterRoundTrip)
 	require.Equal(t, azureMonitorDaysToBackfill, *azureMonitorDaysToBackfillAfterRoundTrip)
-	require.Nil(t, err)
+	require.Equal(t, azureMonitorLogsTestStreamEnabled, *enabled)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -47,7 +48,7 @@ func TestAuditStreamAzureMonitorLogs_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureMonitorLogs()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill)
+	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill, &azureMonitorLogsTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -70,7 +71,7 @@ func TestAuditStreamAzureMonitorLogs_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureMonitorLogs()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill)
+	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill, &azureMonitorLogsTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -93,7 +94,7 @@ func TestAuditStreamAzureMonitorLogs_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureMonitorLogs()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill)
+	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill, &azureMonitorLogsTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -116,7 +117,7 @@ func TestAuditStreamAzureMonitorLogs_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureMonitorLogs()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill)
+	flattenAuditStreamAzureMonitorLogs(resourceData, &azureMonitorLogsTestAuditStream, &azureMonitorDaysToBackfill, &azureMonitorLogsTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}

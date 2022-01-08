@@ -37,20 +37,20 @@ func ResourceAuditStreamSplunk() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandAuditStreamSplunk(d *schema.ResourceData) (*audit.AuditStream, *int, error) {
-	auditStream, daysToBackfill := doBaseExpansion(d)
+func expandAuditStreamSplunk(d *schema.ResourceData) (*audit.AuditStream, *int, *bool) {
+	auditStream, daysToBackfill, enabled := doBaseExpansion(d)
 	auditStream.ConsumerType = converter.String("Splunk")
 	auditStream.ConsumerInputs = &map[string]string{
 		"SplunkUrl":                 d.Get("url").(string),
 		"SplunkEventCollectorToken": d.Get("token").(string),
 	}
 
-	return auditStream, daysToBackfill, nil
+	return auditStream, daysToBackfill, enabled
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenAuditStreamSplunk(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int) {
-	doBaseFlattening(d, auditStream, daysToBackfill)
+func flattenAuditStreamSplunk(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool) {
+	doBaseFlattening(d, auditStream, daysToBackfill, enabled)
 
 	tfhelper.HelpFlattenSecret(d, "token")
 

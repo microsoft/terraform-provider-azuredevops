@@ -37,20 +37,20 @@ func ResourceAuditStreamAzureMonitorLogs() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandAuditStreamAzureMonitorLogs(d *schema.ResourceData) (*audit.AuditStream, *int, error) {
-	auditStream, daysToBackfill := doBaseExpansion(d)
+func expandAuditStreamAzureMonitorLogs(d *schema.ResourceData) (*audit.AuditStream, *int, *bool) {
+	auditStream, daysToBackfill, enabled := doBaseExpansion(d)
 	auditStream.ConsumerType = converter.String("AzureMonitorLogs")
 	auditStream.ConsumerInputs = &map[string]string{
 		"WorkspaceId": d.Get("workspace_id").(string),
 		"SharedKey":   d.Get("shared_key").(string),
 	}
 
-	return auditStream, daysToBackfill, nil
+	return auditStream, daysToBackfill, enabled
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenAuditStreamAzureMonitorLogs(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int) {
-	doBaseFlattening(d, auditStream, daysToBackfill)
+func flattenAuditStreamAzureMonitorLogs(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool) {
+	doBaseFlattening(d, auditStream, daysToBackfill, enabled)
 
 	tfhelper.HelpFlattenSecret(d, "shared_key")
 

@@ -19,6 +19,7 @@ import (
 )
 
 var eventgridDaysToBackfill = 0
+var azureEventGridTestStreamEnabled = true
 var azureEventGridTestAuditStream = audit.AuditStream{
 	ConsumerInputs: &map[string]string{
 		"EventGridTopicHostname":  "AZURE_EVENTGRID_TOPIC_TEST_url",
@@ -31,13 +32,13 @@ var azureEventGridTestAuditStream = audit.AuditStream{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestAuditStreamAzureEventGrid_ExpandFlattenRoundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceAuditStreamAzureEventGridTopic().Schema, nil)
-	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill)
+	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill, &azureEventGridTestStreamEnabled)
 
-	auditStreamAfterRoundTrip, eventgridDaysToBackfillAfterRoundTrip, err := expandAuditStreamAzureEventGridTopic(resourceData)
+	auditStreamAfterRoundTrip, eventgridDaysToBackfillAfterRoundTrip, enabled := expandAuditStreamAzureEventGridTopic(resourceData)
 
 	require.Equal(t, azureEventGridTestAuditStream, *auditStreamAfterRoundTrip)
 	require.Equal(t, eventgridDaysToBackfill, *eventgridDaysToBackfillAfterRoundTrip)
-	require.Nil(t, err)
+	require.Equal(t, azureEventGridTestStreamEnabled, *enabled)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -47,7 +48,7 @@ func TestAuditStreamAzureEventGrid_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureEventGridTopic()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill)
+	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill, &azureEventGridTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -70,7 +71,7 @@ func TestAuditStreamAzureEventGrid_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureEventGridTopic()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill)
+	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill, &azureEventGridTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -93,7 +94,7 @@ func TestAuditStreamAzureEventGrid_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureEventGridTopic()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill)
+	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill, &azureEventGridTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}
@@ -116,7 +117,7 @@ func TestAuditStreamAzureEventGrid_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceAuditStreamAzureEventGridTopic()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill)
+	flattenAuditStreamAzureEventGridTopic(resourceData, &azureEventGridTestAuditStream, &eventgridDaysToBackfill, &azureEventGridTestStreamEnabled)
 
 	buildClient := azdosdkmocks.NewMockAuditClient(ctrl)
 	clients := &client.AggregatedClient{AuditClient: buildClient, Ctx: context.Background()}

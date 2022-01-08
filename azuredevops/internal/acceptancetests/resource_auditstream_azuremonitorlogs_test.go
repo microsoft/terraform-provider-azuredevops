@@ -23,9 +23,33 @@ func TestAccAuditStreamAzureMonitorLogs_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: testutils.CheckAuditStreamDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclAuditStreamAzureMonitorLogs(),
+				Config: testutils.HclAuditStreamAzureMonitorLogs(true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "workspace_id"),
+					testutils.CheckAuditStreamExists(tfNode, streamType),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAuditStreamAzureMonitorLogs_CreateDisabled(t *testing.T) {
+	t.Skip("Skipping test TestAccAuditStreamAzureMonitorLogs_CreateDisabled: Azure Monitor not provisioned on test infrastructure")
+	streamType := "AzureMonitorLogs"
+
+	resourceType := "azuredevops_auditstream_azuremonitorlogs"
+	tfNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckAuditStreamDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclAuditStreamAzureEventGrid(false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "workspace_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
 				),
 			},

@@ -14,8 +14,8 @@ import (
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 
-type flatFunc func(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int)
-type expandFunc func(d *schema.ResourceData) (*audit.AuditStream, *int, error)
+type flatFunc func(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool)
+type expandFunc func(d *schema.ResourceData) (*audit.AuditStream, *int, *bool)
 
 // genBaseAuditStreamResource creates a Resource with the common parts
 // that all Audit Streams require.
@@ -37,12 +37,18 @@ func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 				ValidateFunc: validation.IntAtLeast(0),
 				Description:  "The number of days of previously recorded audit data that will be replayed into the stream",
 			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: false,
+				Default:  true,
+			},
 		},
 	}
 }
 
 // doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
-func doBaseExpansion(d *schema.ResourceData) (*audit.AuditStream, *int) {
+func doBaseExpansion(d *schema.ResourceData) (*audit.AuditStream, *int, *bool) {
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
 	var auditStreamId *int
 	parsedId, err := strconv.Atoi(d.Id())
@@ -51,33 +57,34 @@ func doBaseExpansion(d *schema.ResourceData) (*audit.AuditStream, *int) {
 	}
 
 	daysToBackfill := converter.Int(d.Get("days_to_backfill").(int))
+	enabled := converter.Bool(d.Get("enabled").(bool))
 	auditStream := &audit.AuditStream{
 		Id: auditStreamId,
 	}
 
-	return auditStream, daysToBackfill
+	return auditStream, daysToBackfill, enabled
 }
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int) {
+func doBaseFlattening(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool) {
 	d.SetId(strconv.Itoa(*auditStream.Id))
 	d.Set("days_to_backfill", daysToBackfill)
+	d.Set("enabled", enabled)
 }
 
 func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
-		auditStream, daysToBackfill, err := expandFunc(d)
-		if err != nil {
-			return fmt.Errorf(errMsgTfConfigRead, err)
-		}
+		auditStream, daysToBackfill, enabled := expandFunc(d)
 
 		createdAuditStream, err := createAuditStream(clients, auditStream, daysToBackfill)
 		if err != nil {
 			return fmt.Errorf("Error creating audit stream in Azure DevOps: %+v", err)
 		}
 
-		d.SetId(strconv.Itoa(*createdAuditStream.Id))
+		statefulStream, err := setStreamStatusState(clients, createdAuditStream, *enabled)
+
+		d.SetId(strconv.Itoa(*statefulStream.Id))
 		return genAuditStreamReadFunc(flatFunc)(d, m)
 	}
 }
@@ -91,6 +98,7 @@ func genAuditStreamReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m in
 		}
 
 		daysToBackfill := d.Get("days_to_backfill").(int)
+		enabled := converter.Bool(d.Get("enabled").(bool))
 
 		auditStream, err := readAuditStream(clients, streamId)
 		if err != nil {
@@ -105,7 +113,7 @@ func genAuditStreamReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m in
 			// e.g. audit stream has been deleted separately without TF
 			d.SetId("")
 		} else {
-			flatFunc(d, auditStream, &daysToBackfill)
+			flatFunc(d, auditStream, &daysToBackfill, enabled)
 		}
 		return nil
 	}
@@ -114,17 +122,16 @@ func genAuditStreamReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m in
 func genAuditStreamUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
-		auditStream, daysToBackfill, err := expandFunc(d)
-		if err != nil {
-			return fmt.Errorf(errMsgTfConfigRead, err)
-		}
+		auditStream, daysToBackfill, enabled := expandFunc(d)
 
 		updatedAuditStream, err := updateAuditStream(clients, auditStream)
 		if err != nil {
 			return fmt.Errorf("Error updating audit stream in Azure DevOps: %+v", err)
 		}
 
-		flatFunc(d, updatedAuditStream, daysToBackfill)
+		statefulStream, err := setStreamStatusState(clients, updatedAuditStream, *enabled)
+
+		flatFunc(d, statefulStream, daysToBackfill, enabled)
 		return genAuditStreamReadFunc(flatFunc)(d, m)
 	}
 }
@@ -183,4 +190,25 @@ func deleteAuditStream(clients *client.AggregatedClient, streamId int) error {
 		audit.DeleteStreamArgs{
 			StreamId: &streamId,
 		})
+}
+
+func setStreamStatusState(clients *client.AggregatedClient, stream *audit.AuditStream, enabled bool) (*audit.AuditStream, error) {
+	var streamStatus *audit.AuditStreamStatus
+	streamStatus = &audit.AuditStreamStatusValues.Enabled
+	if !enabled {
+		streamStatus = &audit.AuditStreamStatusValues.DisabledByUser
+	}
+
+	if stream.Status != streamStatus {
+		updatedAuditStream, err := clients.AuditClient.UpdateStatus(
+			clients.Ctx,
+			audit.UpdateStatusArgs{
+				StreamId: stream.Id,
+				Status:   streamStatus,
+			})
+
+		return updatedAuditStream, err
+	} else {
+		return stream, nil
+	}
 }
