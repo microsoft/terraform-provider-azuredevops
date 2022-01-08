@@ -84,3 +84,27 @@ func TestAccAuditStreamSplunk_CreateDisabled(t *testing.T) {
 		},
 	})
 }
+
+func TestAccAuditStreamSplunk_CreateDisabled(t *testing.T) {
+	t.Skip("Skipping test TestAccAuditStreamSplunk_CreateDisabled: Splunk not provisioned on test infrastructure")
+	streamType := "Splunk"
+
+	resourceType := "azuredevops_auditstream_splunk"
+	tfNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckAuditStreamDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclAuditStreamAzureEventGrid(false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
+					testutils.CheckAuditStreamExists(tfNode, streamType),
+				),
+			},
+		},
+	})
+}
