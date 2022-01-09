@@ -27,6 +27,7 @@ func TestAccAuditStreamAzureEventGrid_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "topic_url"),
 					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttr(tfNode, "enabled", "true"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
 				),
@@ -51,6 +52,7 @@ func TestAccAuditStreamAzureEventGrid_CreateDisabled(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "topic_url"),
 					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
 				),

@@ -32,7 +32,7 @@ func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 			"days_to_backfill": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ForceNew:     false,
+				ForceNew:     true,
 				Default:      0,
 				ValidateFunc: validation.IntAtLeast(0),
 				Description:  "The number of days of previously recorded audit data that will be replayed into the stream",
@@ -42,6 +42,10 @@ func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 				Optional: true,
 				ForceNew: false,
 				Default:  true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -70,6 +74,7 @@ func doBaseFlattening(d *schema.ResourceData, auditStream *audit.AuditStream, da
 	d.SetId(strconv.Itoa(*auditStream.Id))
 	d.Set("days_to_backfill", daysToBackfill)
 	d.Set("enabled", enabled)
+	d.Set("name", auditStream.DisplayName)
 }
 
 func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {

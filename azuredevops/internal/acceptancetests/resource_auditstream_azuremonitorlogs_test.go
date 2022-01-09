@@ -26,6 +26,9 @@ func TestAccAuditStreamAzureMonitorLogs_CreateAndUpdate(t *testing.T) {
 				Config: testutils.HclAuditStreamAzureMonitorLogs(true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "workspace_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckResourceAttr(tfNode, "enabled", "true"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
 				),
 			},
@@ -49,6 +52,7 @@ func TestAccAuditStreamAzureMonitorLogs_CreateDisabled(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "workspace_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
 				),
