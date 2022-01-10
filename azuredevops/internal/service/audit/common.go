@@ -13,6 +13,7 @@ import (
 )
 
 const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
+const errMsgUpdateAuditStream = "Error updating audit stream in Azure DevOps: %+v"
 
 type flatFunc func(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool)
 type expandFunc func(d *schema.ResourceData) (*audit.AuditStream, *int, *bool)
@@ -88,6 +89,9 @@ func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *
 		}
 
 		statefulStream, err := setStreamStatusState(clients, createdAuditStream, *enabled)
+		if err != nil {
+			return fmt.Errorf(errMsgUpdateAuditStream, err)
+		}
 
 		d.SetId(strconv.Itoa(*statefulStream.Id))
 		return genAuditStreamReadFunc(flatFunc)(d, m)
@@ -131,10 +135,13 @@ func genAuditStreamUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.U
 
 		updatedAuditStream, err := updateAuditStream(clients, auditStream)
 		if err != nil {
-			return fmt.Errorf("Error updating audit stream in Azure DevOps: %+v", err)
+			return fmt.Errorf(errMsgUpdateAuditStream, err)
 		}
 
 		statefulStream, err := setStreamStatusState(clients, updatedAuditStream, *enabled)
+		if err != nil {
+			return fmt.Errorf(errMsgUpdateAuditStream, err)
+		}
 
 		flatFunc(d, statefulStream, daysToBackfill, enabled)
 		return genAuditStreamReadFunc(flatFunc)(d, m)
