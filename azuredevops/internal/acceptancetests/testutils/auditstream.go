@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -41,6 +42,30 @@ func CheckAuditStreamDestroyed(resourceType string) resource.TestCheckFunc {
 			if _, err := getAuditStreamFromState(resource); err == nil {
 				return fmt.Errorf("Unexpectedly found an audit stream that should have been deleted")
 			}
+		}
+
+		return nil
+	}
+}
+
+func CheckAuditStreamStatus(tfNode string, streamEnabled bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		resourceState, ok := s.RootModule().Resources[tfNode]
+		if !ok {
+			return fmt.Errorf("Did not find an audit stream in the state")
+		}
+
+		auditStream, err := getAuditStreamFromState(resourceState)
+		if err != nil {
+			return err
+		}
+
+		// only throw an error if stream is disabled and status isn't equal
+		// if stream is enabled async process to backfill may occur, not an error
+		if !streamEnabled && !reflect.DeepEqual(auditStream.Status, &audit.AuditStreamStatusValues.DisabledByUser) {
+			return fmt.Errorf("Audit Stream has status %s, expected %s",
+				*auditStream.Status,
+				audit.AuditStreamStatusValues.DisabledByUser)
 		}
 
 		return nil
