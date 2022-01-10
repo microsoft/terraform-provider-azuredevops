@@ -25,12 +25,14 @@ The following arguments are supported:
 - `workspace_id` - (Required) Workspace Id of the Azure Monitor Logs instance. It should look like `00000000-0000-0000-0000-000000000000`.
 - `shared_key` - (Required) Shared Key to authenticate to the Azure Monitor Logs instance.
 - `days_to_backfill` - (Optional) The number of days of previously recorded audit data that will be replayed into the stream. A value of zero will result in only new events being streamed. Defaults to `0`.
+- `enabled` - (Optional) Declaration if the audit stream will be left enabled or disabled following provisioning.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
 - `id` - The ID of the audit stream.
+- `name` - The generated DisplayName of the audit stream.
 
 ## Relevant Links
 
