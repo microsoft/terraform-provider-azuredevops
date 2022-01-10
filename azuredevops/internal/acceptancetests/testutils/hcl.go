@@ -1088,7 +1088,7 @@ func HclAuditStreamSplunk(streamEnabled bool) string {
 	return fmt.Sprintf(`resource "azuredevops_auditstream_splunk" "test" {
 		url 				= "https://splunk.contoso.com:8088"
 		token			    = "secret"
-		enabled			= %s
+		enabled				= %s
 	}`, strconv.FormatBool(streamEnabled))
 }
 

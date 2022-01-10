@@ -33,6 +33,17 @@ func TestAccAuditStreamSplunk_CreateAndUpdate(t *testing.T) {
 					testutils.CheckAuditStreamStatus(tfNode, true),
 				),
 			},
+			{
+				Config: testutils.HclAuditStreamSplunk(false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
+					testutils.CheckAuditStreamExists(tfNode, streamType),
+					testutils.CheckAuditStreamStatus(tfNode, false),
+				),
+			},
 		},
 	})
 }
@@ -49,13 +60,25 @@ func TestAccAuditStreamSplunk_CreateDisabled(t *testing.T) {
 		CheckDestroy: testutils.CheckAuditStreamDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclAuditStreamAzureEventGrid(false),
+				Config: testutils.HclAuditStreamSplunk(false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttr(tfNode, "enabled", "false"),
 					testutils.CheckAuditStreamExists(tfNode, streamType),
+					testutils.CheckAuditStreamStatus(tfNode, false),
+				),
+			},
+			{
+				Config: testutils.HclAuditStreamSplunk(true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "enabled"),
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckResourceAttr(tfNode, "enabled", "true"),
+					testutils.CheckAuditStreamExists(tfNode, streamType),
+					testutils.CheckAuditStreamStatus(tfNode, true),
 				),
 			},
 		},
