@@ -24,6 +24,10 @@ func Path(i interface{}, k string) (warnings []string, errors []error) {
 		errors = append(errors, fmt.Errorf("path must start with backslash"))
 	}
 
+	if len(v) >= 2 && v[len(v)-1:] == `\` {
+		errors = append(errors, fmt.Errorf("path must not end with backslash when not the root path"))
+	}
+
 	p := InvalidWindowsPathRegExp.MatchString(v)
 	if p {
 		errors = append(errors, fmt.Errorf("<>|:$@\"/%%+*? are not allowed in path"))
