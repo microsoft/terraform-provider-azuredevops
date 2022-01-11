@@ -134,7 +134,7 @@ func transformPath(path string) string {
 	transformedPath = strings.TrimPrefix(transformedPath, "/")
 
 	// remove slash at end of string
-	transformedPath = strings.TrimPrefix(transformedPath, "")
+	transformedPath = strings.TrimSuffix(transformedPath, "/")
 
 	return transformedPath
 }
