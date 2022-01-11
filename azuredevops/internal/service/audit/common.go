@@ -12,7 +12,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
 const errMsgUpdateAuditStream = "Error updating audit stream in Azure DevOps: %+v"
 
 type flatFunc func(d *schema.ResourceData, auditStream *audit.AuditStream, daysToBackfill *int, enabled *bool)
