@@ -7,13 +7,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // DataProjects schema and implementation for projects data source
@@ -75,7 +75,7 @@ func DataProjects() *schema.Resource {
 }
 
 func getProjectHash(v interface{}) int {
-	return hashcode.String(v.(map[string]interface{})["project_id"].(string))
+	return tfhelper.HashString(v.(map[string]interface{})["project_id"].(string))
 }
 
 func dataSourceProjectsRead(d *schema.ResourceData, m interface{}) error {
