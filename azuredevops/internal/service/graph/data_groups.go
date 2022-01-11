@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // DataGroups schema and implementation for group data source
@@ -116,7 +116,7 @@ func dataSourceGroupsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func getGroupHash(v interface{}) int {
-	return hashcode.String(v.(map[string]interface{})["descriptor"].(string))
+	return tfhelper.HashString(v.(map[string]interface{})["descriptor"].(string))
 }
 
 func flattenGroups(groups *[]graph.GraphGroup) ([]interface{}, error) {

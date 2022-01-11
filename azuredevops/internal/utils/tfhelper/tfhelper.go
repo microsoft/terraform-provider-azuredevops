@@ -2,6 +2,7 @@ package tfhelper
 
 import (
 	"fmt"
+	"hash/crc32"
 	"log"
 	"strconv"
 	"strings"
@@ -13,6 +14,18 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/secretmemo"
 )
+
+func HashString(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
 
 func calcSecretHashKey(secretKey string) string {
 	return secretKey + "_hash"
