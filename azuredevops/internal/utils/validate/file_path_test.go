@@ -20,6 +20,21 @@ func TestPathValidation(t *testing.T) {
 			ErrCount: 0,
 		},
 		{
+			Value:    `\SomePath`,
+			TestName: "Custom Path",
+			ErrCount: 0,
+		},
+		{
+			Value:    `\Some Path`,
+			TestName: "Custom Path With Whitespace",
+			ErrCount: 0,
+		},
+		{
+			Value:    `\Some Path\With Nested\Folders`,
+			TestName: "Custom Nested Path",
+			ErrCount: 0,
+		},
+		{
 			Value:    "",
 			TestName: "Empty Path",
 			ErrCount: 1,
@@ -27,6 +42,11 @@ func TestPathValidation(t *testing.T) {
 		{
 			Value:    "A",
 			TestName: "Wrong Starting Character",
+			ErrCount: 1,
+		},
+		{
+			Value:    "\Some Path\",
+			TestName: "Wrong Ending Character",
 			ErrCount: 1,
 		},
 	}
