@@ -1,3 +1,4 @@
+//go:build all || utils || path
 // +build all utils path
 
 package validate
@@ -35,17 +36,17 @@ func TestPathValidation(t *testing.T) {
 			ErrCount: 0,
 		},
 		{
-			Value:    "",
+			Value:    ``,
 			TestName: "Empty Path",
 			ErrCount: 1,
 		},
 		{
-			Value:    "A",
+			Value:    `A`,
 			TestName: "Wrong Starting Character",
 			ErrCount: 1,
 		},
 		{
-			Value:    "\Some Path\",
+			Value:    `\Some Path\`,
 			TestName: "Wrong Ending Character",
 			ErrCount: 1,
 		},
