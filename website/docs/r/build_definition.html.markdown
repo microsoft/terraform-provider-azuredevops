@@ -361,6 +361,17 @@ The `schedules` block exports the following:
 
 - `schedule_job_id` - The ID of the schedule job 
 
+## Remarks
+
+The path attribute can not end in `\` unless the path is the root value of `\`. 
+
+Valid path values (yaml encoded) include:
+- `\\`
+- `\\ExampleFolder`
+- `\\Nested\\Example Folder`
+
+The value of `\\ExampleFolder\\` would be invalid.
+
 ## Relevant Links
 
 - [Azure DevOps Service REST API 5.1 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-5.1)
