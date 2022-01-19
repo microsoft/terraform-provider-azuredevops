@@ -9,7 +9,7 @@ parameters:
 
 jobs:
   - job: build
-    timeoutInMinutes: 120
+    timeoutInMinutes: 600
     displayName: "Build: "
 
     # Build on each combination of supported OS and Go version
