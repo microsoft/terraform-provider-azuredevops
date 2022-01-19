@@ -1,3 +1,23 @@
+## 0.1.9 Unreleased
+
+FEATURES:
+* **New Resource** `azuredevops_servicehook_permissions ` [#505](https://github.com/microsoft/terraform-provider-azuredevops/issues/505)
+* **New Resource** `azuredevops_tagging_permissions ` [#510](https://github.com/microsoft/terraform-provider-azuredevops/issues/510)
+* **New Resource** `azuredevops_serviceendpoint_argocd ` [#501](https://github.com/microsoft/terraform-provider-azuredevops/issues/501)
+
+BUG FIX:
+* `azuredevops_serviceconnection_azurerm` - SPN update will not be updated when update other settings. [#495](https://github.com/microsoft/terraform-provider-azuredevops/issues/495)
+* `azuredevops_build_definition`
+  - Enhance NULL check. [#493](https://github.com/microsoft/terraform-provider-azuredevops/issues/493)
+  - `path` cannot end with backslash. [#514](https://github.com/microsoft/terraform-provider-azuredevops/issues/514)
+* `azuredevops_git_repository` - `default_branch` cannot set with initialize type `Uninitialized`. [#507](https://github.com/microsoft/terraform-provider-azuredevops/issues/507)
+
+IMPROVEMENTS:
+* Document scaffold - Generate document from source code [#503](https://github.com/microsoft/terraform-provider-azuredevops/issues/503)
+* **All permission resources**
+  - Refactored the implementation of `SecurityNamespace` and the according helper functions. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
+  - All permission resources will now clear the `Id` on a `Read` operation. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
+  
 ## 0.1.8 
 FEATURES:
 * **New Resource** `azuredevops_git_repository_file ` [#225](https://github.com/microsoft/terraform-provider-azuredevops/issues/225)
