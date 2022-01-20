@@ -3,6 +3,11 @@ package taskagent
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -14,10 +19,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
@@ -621,8 +622,8 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 }
 
 func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
-	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration only for 100 times, secrets more
-	// than this will not be fetched. 100 times can cover most usage scenario
+	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 100 times, secrets more
+	// than this will not be fetched
 	// TODO custom ENV configuration for iteration times
 
 	var token, loop, kvSecrets = "", 0, &KeyVaultSecretResult{}
