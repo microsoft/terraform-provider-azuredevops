@@ -622,7 +622,7 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 }
 
 func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
-	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 100 times, secrets more
+	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 20 times, secrets more
 	// than this will not be fetched
 	// TODO custom ENV configuration for iteration times
 
@@ -650,8 +650,8 @@ func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvNam
 				secretMap[name] = kvVariable
 			}
 
-			// break the query operation
-			if token == "" || loop == 100 {
+			// break the iteration
+			if token == "" || loop == 20 {
 				return secretMap, nil
 			}
 			loop++
