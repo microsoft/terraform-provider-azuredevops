@@ -5,8 +5,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // DataProject schema and implementation for project data source
@@ -67,7 +69,16 @@ func dataProjectRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Either project_id or name must be set ")
 	}
 
-	project, err := projectRead(clients, id, name)
+	identifier := id
+	if identifier == "" {
+		identifier = name
+	}
+
+	project, err := clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+		ProjectId:           &identifier,
+		IncludeCapabilities: converter.Bool(true),
+		IncludeHistory:      converter.Bool(false),
+	})
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
