@@ -17,8 +17,8 @@ func TestAccAzureDevOpsProjects_DataSource_SingleProject(t *testing.T) {
 
 	tfNode := "data.azuredevops_projects.project-list"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: projectData,
