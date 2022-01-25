@@ -119,7 +119,7 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for distribution of adding members. %v ", err)
 	}
 
@@ -245,7 +245,7 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
 	}
 
@@ -309,7 +309,7 @@ func resourceTeamMembersDelete(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
 	}
 

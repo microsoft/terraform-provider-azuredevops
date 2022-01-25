@@ -82,7 +82,7 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 		ContinuousTargetOccurence: 1,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for permission update. %v ", err)
 	}
 

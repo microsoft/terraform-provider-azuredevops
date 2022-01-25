@@ -106,7 +106,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 3,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
 	}
 
@@ -161,7 +161,7 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 3,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
 	}
 

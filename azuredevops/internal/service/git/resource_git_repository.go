@@ -244,7 +244,7 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 		Delay:                     1 * time.Second,
 		ContinuousTargetOccurence: 1,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf("Error retrieving expected branch for repository [%s]: %+v", *repoName, err)
 	}
 	return nil

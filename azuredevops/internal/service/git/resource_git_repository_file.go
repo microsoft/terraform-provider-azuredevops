@@ -124,7 +124,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
-	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
@@ -214,7 +214,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
-	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
@@ -253,7 +253,7 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	message := fmt.Sprintf("Delete %s", file)
 
-	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)

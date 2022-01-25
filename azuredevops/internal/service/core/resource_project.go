@@ -226,7 +226,8 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	var err error
 
 	//keep retrying until timeout to handle service inconsistent response
-	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError {
+	//lint:ignore SA1019
+	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError { //nolint:staticcheck
 		project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
 			ProjectId:           &identifier,
 			IncludeCapabilities: converter.Bool(true),

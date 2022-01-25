@@ -320,7 +320,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
 	}
 
