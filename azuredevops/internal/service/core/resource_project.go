@@ -1,12 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -26,12 +28,12 @@ var projectRetryTimeoutDuration time.Duration = 3
 // ResourceProject schema and implementation for project resource
 func ResourceProject() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceProjectCreate,
-		Read:   resourceProjectRead,
-		Update: resourceProjectUpdate,
-		Delete: resourceProjectDelete,
+		CreateContext: resourceProjectCreate,
+		ReadContext:   resourceProjectRead,
+		UpdateContext: resourceProjectUpdate,
+		DeleteContext: resourceProjectDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -96,28 +98,28 @@ func ResourceProject() *schema.Resource {
 	}
 }
 
-func resourceProjectCreate(d *schema.ResourceData, m interface{}) error {
+func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	project, err := expandProject(clients, d, true)
 	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to Azure DevOps project reference: %+v", err)
+		return diag.FromErr(fmt.Errorf("Error converting terraform data model to Azure DevOps project reference: %+v", err))
 	}
 
 	err = createProject(clients, project, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("Error creating project: %v", err)
+		return diag.FromErr(fmt.Errorf("Error creating project: %v", err))
 	}
 
 	featureStates, ok := d.GetOk("features")
 	if ok {
 		err = configureProjectFeatures(clients, "", *project.Name, &featureStates, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	d.Set("name", *project.Name)
-	return resourceProjectRead(d, m)
+	return resourceProjectRead(ctx, d, m)
 }
 
 // Make API call to create the project and wait for an async success/fail response from the service
@@ -144,7 +146,7 @@ func createProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		Timeout: timeoutSeconds,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf(" waiting for project ready. %v ", err)
 	}
 	return nil
@@ -190,7 +192,7 @@ func projectStatusRefreshFunc(clients *client.AggregatedClient, operationRef *op
 	}
 }
 
-func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
+func resourceProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	id := d.Id()
 	name := d.Get("name").(string)
@@ -201,12 +203,12 @@ func resourceProjectRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error looking up project with ID %s and Name %s", id, name)
+		return diag.FromErr(fmt.Errorf("Error looking up project with ID %s and Name %s", id, name))
 	}
 
 	err = flattenProject(clients, d, project)
 	if err != nil {
-		return fmt.Errorf("Error flattening project: %v", err)
+		return diag.FromErr(fmt.Errorf("Error flattening project: %v", err))
 	}
 	return nil
 }
@@ -242,11 +244,11 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	return project, nil
 }
 
-func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	project, err := expandProject(clients, d, false)
 	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
+		return diag.FromErr(fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err))
 	}
 
 	requiresUpdate := false
@@ -270,7 +272,7 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[TRACE] resourceProjectUpdate: updating project")
 		err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf("Error updating project: %v", err)
+			return diag.FromErr(fmt.Errorf("Error updating project: %v", err))
 		}
 	}
 
@@ -294,11 +296,11 @@ func resourceProjectUpdate(d *schema.ResourceData, m interface{}) error {
 
 		err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, project.Id.String(), &featureStates)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceProjectRead(d, m)
+	return resourceProjectRead(ctx, d, m)
 }
 
 func updateProject(clients *client.AggregatedClient, project *core.TeamProject, timeoutSeconds time.Duration) error {
@@ -306,7 +308,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 
 	// project updates may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for updates, up until a timeout is reached
-	err := resource.Retry(projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+	err := resource.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
 		var updateErr error
 		operationRef, updateErr = clients.CoreClient.UpdateProject(
 			clients.Ctx,
@@ -314,8 +316,10 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 				ProjectUpdate: project,
 				ProjectId:     project.Id,
 			})
-
-		return resource.RetryableError(updateErr)
+		if updateErr != nil {
+			return resource.RetryableError(updateErr)
+		}
+		return nil
 	})
 
 	if err != nil {
@@ -339,19 +343,19 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		Timeout: timeoutSeconds,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf(" waiting for project ready. %v ", err)
 	}
 	return nil
 }
 
-func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
+func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	id := d.Id()
 
 	err := deleteProject(clients, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("Error deleting project: %v", err)
+		return diag.FromErr(fmt.Errorf(" deleting project: %v", err))
 	}
 
 	return nil
@@ -360,20 +364,23 @@ func resourceProjectDelete(d *schema.ResourceData, m interface{}) error {
 func deleteProject(clients *client.AggregatedClient, id string, timeoutSeconds time.Duration) error {
 	uuid, err := uuid.Parse(id)
 	if err != nil {
-		return fmt.Errorf("Invalid project UUID: %s", id)
+		return fmt.Errorf(" Invalid project UUID: %s", id)
 	}
 
 	var operationRef *operations.OperationReference
 
 	// project deletes may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for deletes, up until a timeout is reached
-	err = resource.Retry(projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+	err = resource.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
 		var deleteErr error
 		operationRef, deleteErr = clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
 			ProjectId: &uuid,
 		})
 
-		return resource.RetryableError(deleteErr)
+		if deleteErr != nil {
+			return resource.RetryableError(deleteErr)
+		}
+		return nil
 	})
 
 	if err != nil {
@@ -397,7 +404,7 @@ func deleteProject(clients *client.AggregatedClient, id string, timeoutSeconds t
 		Timeout: timeoutSeconds,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf(" waiting for project ready. %v ", err)
 	}
 	return nil

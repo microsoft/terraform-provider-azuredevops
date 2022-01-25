@@ -21,9 +21,17 @@ func GetProvider() *schema.Provider {
 	return provider
 }
 
+func GetProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"azuredevops": func() (*schema.Provider, error) {
+			return GetProvider(), nil
+		},
+	}
+}
+
 // GetProviders returns a map of all providers needed for the project
-func GetProviders() map[string]terraform.ResourceProvider {
-	return map[string]terraform.ResourceProvider{
+func GetProviders() map[string]*schema.Provider {
+	return map[string]*schema.Provider{
 		"azuredevops": GetProvider(),
 	}
 }

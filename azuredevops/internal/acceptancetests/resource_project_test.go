@@ -25,9 +25,9 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 	tfNode := "azuredevops_project.project"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclProjectResource(projectNameFirst),
@@ -66,9 +66,9 @@ func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
 	tfNode := "azuredevops_project.project"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclProjectResourceWithFeature(projectName, "disabled", "disabled"),

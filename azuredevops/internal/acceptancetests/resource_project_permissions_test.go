@@ -17,9 +17,9 @@ func TestAccProjectPermissions_SetPermissions(t *testing.T) {
 
 	tfNode := "azuredevops_project_permissions.project-permissions"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: config,
