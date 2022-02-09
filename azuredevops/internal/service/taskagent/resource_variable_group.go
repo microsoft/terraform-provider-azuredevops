@@ -394,25 +394,13 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-		azureKVSecrets, err := getAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID)
+		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variables)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		kvVariables := map[string]interface{}{}
-		var invalidVariables []string
-
-		for _, variable := range variables {
-			kvSecretName := variable.(map[string]interface{})[vgName].(string)
-			if kv, ok := azureKVSecrets[kvSecretName]; ok {
-				kvVariables[kvSecretName] = kv
-			} else {
-				invalidVariables = append(invalidVariables, kvSecretName)
-			}
-		}
-
 		if len(invalidVariables) > 0 {
-			return nil, nil, fmt.Errorf("Invalid Key Vault variables: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
 				strings.Join(invalidVariables, ","),
 				kvName)
 		} else {
@@ -621,20 +609,28 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set(vgAllowAccess, allowAccess)
 }
 
-func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
 	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 20 times, secrets more
 	// than this will not be fetched
 	// TODO custom ENV configuration for iteration times
 
-	var token, loop, kvSecrets = "", 0, &KeyVaultSecretResult{}
-	secretMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
+	var token, loop, azkvSecretsRaw = "", 0, &KeyVaultSecretResult{}
+	kvSecrets = make(map[string]interface{})
+	invalidSecrets = make([]string, 0)
+
+	secretNames := make(map[string]string)
+	for _, val := range variables {
+		name := val.(map[string]interface{})["name"].(string)
+		secretNames[name] = name
+	}
 	for {
+		kvSecretsMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
 		if azKVSecrets, err := getKVSecretServiceEndpointProxy(clients, kvName, projectID, serviceEndpointID, token); err == nil {
-			kvSecrets, token, err = parseKVSecretResp(azKVSecrets)
+			azkvSecretsRaw, token, err = parseKVSecretResp(azKVSecrets)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-			for _, secret := range *kvSecrets.Value {
+			for _, secret := range *azkvSecretsRaw.Value {
 				name := getSecretName(*secret.ID)
 				kvVariable := taskagent.AzureKeyVaultVariableValue{
 					Value:       nil,
@@ -647,16 +643,27 @@ func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvNam
 						Time: time.Unix(*secret.Expire, 0),
 					}
 				}
-				secretMap[name] = kvVariable
+				kvSecretsMap[name] = kvVariable
 			}
 
-			// break the iteration
-			if token == "" || loop == 20 {
-				return secretMap, nil
+			// search secret
+			for name, secret := range kvSecretsMap {
+				if _, ok := secretNames[name]; ok {
+					kvSecrets[name] = secret
+					delete(secretNames, name)
+				}
+			}
+
+			// stop search
+			if token == "" || loop == 20 || len(secretNames) == 0 {
+				for k := range secretNames {
+					invalidSecrets = append(invalidSecrets, k)
+				}
+				return kvSecrets, invalidSecrets, err
 			}
 			loop++
 		} else {
-			return nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
+			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
 		}
 	}
 }
