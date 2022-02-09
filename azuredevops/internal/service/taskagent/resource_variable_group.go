@@ -648,6 +648,9 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 
 			// search secret
 			for name, secret := range kvSecretsMap {
+				if len(secretNames) == 0 {
+					break
+				}
 				if _, ok := secretNames[name]; ok {
 					kvSecrets[name] = secret
 					delete(secretNames, name)
