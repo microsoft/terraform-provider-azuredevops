@@ -11,8 +11,11 @@ BUG FIX:
   - Enhance NULL check. [#493](https://github.com/microsoft/terraform-provider-azuredevops/issues/493)
   - `path` cannot end with backslash. [#514](https://github.com/microsoft/terraform-provider-azuredevops/issues/514)
 * `azuredevops_git_repository` - `default_branch` cannot set with initialize type `Uninitialized`. [#507](https://github.com/microsoft/terraform-provider-azuredevops/issues/507)
+* `azuredevops_variable_group` - Support search top 500 KV secrets. [#388](https://github.com/microsoft/terraform-provider-azuredevops/issues/388)
+* `azuredevops_group` - Import group not set scope. [#345](https://github.com/microsoft/terraform-provider-azuredevops/issues/345)
 
 IMPROVEMENTS:
+* `data_project` - Optimize read operation [#524](https://github.com/microsoft/terraform-provider-azuredevops/issues/524)
 * Document scaffold - Generate document from source code [#503](https://github.com/microsoft/terraform-provider-azuredevops/issues/503)
 * **All permission resources**
   - Refactored the implementation of `SecurityNamespace` and the according helper functions. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
