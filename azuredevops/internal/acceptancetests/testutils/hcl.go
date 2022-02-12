@@ -913,3 +913,19 @@ resource "azuredevops_team" "team" {
 }
 `, teamResource)
 }
+
+func getEnvironmentResource(environmentName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_environment" "environment" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+}`, environmentName)
+}
+
+// HclEnvironmentResource HCL describing an AzDO environment resource
+func HclEnvironmentResource(projectName string, environmentName string) string {
+	azureEnvironmentResource := getEnvironmentResource(environmentName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
+}
