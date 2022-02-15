@@ -16,9 +16,9 @@ type minReviewerPolicySettings struct {
 	ApprovalCount                     int  `json:"minimumApproverCount" tf:"reviewer_count"`
 	SubmitterCanVote                  bool `json:"creatorVoteCounts" tf:"submitter_can_vote"`
 	AllowCompletionWithRejectsOrWaits bool `json:"allowDownvotes" tf:"allow_completion_with_rejects_or_waits"`
-	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes" ConflictsWith:"on_push_reset_all_votes"`
+	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes"`
 	OnLastIterationRequireVote        bool `json:"requireVoteOnLastIteration" tf:"on_last_iteration_require_vote"`
-	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes" ConflictsWith:"on_push_reset_approved_votes"`
+	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes"`
 	LastPusherCannotVote              bool `json:"blockLastPusherVote" tf:"last_pusher_cannot_approve"`
 }
 
