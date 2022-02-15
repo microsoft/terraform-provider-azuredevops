@@ -12,17 +12,17 @@ Use this data source to access information about existing Variable Groups within
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "project" {
+data "azuredevops_project" "test" {
   name = "Test Project"
 }
 
-data "azuredevops_variable_group" "vg" {
-  project_id = data.azuredevops_project.project.id
+data "azuredevops_variable_group" "test" {
+  project_id = data.azuredevops_project.test.id
   name       = "Sample Variable Group"
 }
 
 output "id" {
-  value = data.azuredevops_variable_group.vg.id
+  value = data.azuredevops_variable_group.test.id
 }
 ```
 
