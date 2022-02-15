@@ -39,7 +39,7 @@ func TestAccVariableGroup_DataSource(t *testing.T) {
 }
 
 func TestAccVariableGroup_DataSourceKeyVault(t *testing.T) {
-	//t.Skip("Skipping test TestAccVariableGroup_DataSourceKeyVault: azure key vault not provisioned on test infrastructure")
+	t.Skip("Skipping test TestAccVariableGroup_DataSourceKeyVault: azure key vault not provisioned on test infrastructure")
 	projectName := testutils.GenerateResourceName()
 	variableGroupName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_variable_group.test"
