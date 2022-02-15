@@ -43,20 +43,17 @@ func DataVariableGroup() *schema.Resource {
 							Computed: true,
 						},
 						vgValue: {
-							Type:          schema.TypeString,
-							Computed:      true,
-							ConflictsWith: []string{vgKeyVault},
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						secretVgValue: {
-							Type:          schema.TypeString,
-							Computed:      true,
-							Sensitive:     true,
-							ConflictsWith: []string{vgKeyVault},
+							Type:      schema.TypeString,
+							Computed:  true,
+							Sensitive: true,
 						},
 						vgIsSecret: {
-							Type:          schema.TypeBool,
-							Computed:      true,
-							ConflictsWith: []string{vgKeyVault},
+							Type:     schema.TypeBool,
+							Computed: true,
 						},
 						vgContentType: {
 							Type:     schema.TypeString,
