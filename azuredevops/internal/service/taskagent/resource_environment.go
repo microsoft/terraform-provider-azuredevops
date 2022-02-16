@@ -113,12 +113,11 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 		Project:       converter.String(d.Get(projectID).(string)),
 	})
 
-	if utils.ResponseWasNotFound(err) {
-		d.SetId("")
-		return nil
-	}
-
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error reading the environment resource: %+v", err)
 	}
 
