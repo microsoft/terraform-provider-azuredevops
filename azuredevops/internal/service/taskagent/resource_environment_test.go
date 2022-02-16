@@ -36,7 +36,7 @@ var testEnvironment = taskagent.EnvironmentInstance{
 func TestEnvironment_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironment().Schema, nil)
 	flattenEnvironment(resourceData, &testEnvironment)
-	environmentAfterRoundTrip, err := expandEnvironment(resourceData, true)
+	environmentAfterRoundTrip, err := expandEnvironment(resourceData)
 	require.Nil(t, err)
 	require.Equal(t, testEnvironment, *environmentAfterRoundTrip)
 }
@@ -88,10 +88,10 @@ func TestEnvironment_UpdateEnvironment_ReturnsErrorIfIdReadFails(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironment().Schema, nil)
 	flattenEnvironment(resourceData, &testEnvironment)
-	resourceData.SetId("")
+	resourceData.SetId("some-other-id")
 
 	err := resourceEnvironmentUpdate(resourceData, client)
-	require.Equal(t, "Error converting terraform data model to AzDO environment reference: Error getting environment id: strconv.Atoi: parsing \"\": invalid syntax", err.Error())
+	require.Equal(t, "Error converting terraform data model to AzDO environment reference: Error getting environment id: strconv.Atoi: parsing \"some-other-id\": invalid syntax", err.Error())
 }
 
 func TestEnvironment_UpdateEnvironment_UpdateAndRead(t *testing.T) {
@@ -142,7 +142,7 @@ func TestEnvironment_UpdateEnvironment_UpdateAndRead(t *testing.T) {
 	err := resourceEnvironmentUpdate(resourceData, clients)
 	require.Nil(t, err)
 
-	updatedEnvironment, _ := expandEnvironment(resourceData, false)
+	updatedEnvironment, _ := expandEnvironment(resourceData)
 	require.Equal(t, environmentToUpdate.Id, updatedEnvironment.Id)
 	require.Equal(t, environmentToUpdate.Name, updatedEnvironment.Name)
 	require.Equal(t, environmentToUpdate.Description, updatedEnvironment.Description)

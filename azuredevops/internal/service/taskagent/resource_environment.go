@@ -50,7 +50,7 @@ func ResourceEnvironment() *schema.Resource {
 
 func resourceEnvironmentCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	environment, err := expandEnvironment(d, true)
+	environment, err := expandEnvironment(d)
 	if err != nil {
 		return fmt.Errorf("Error expanding the environment resource from state: %+v", err)
 	}
@@ -60,45 +60,40 @@ func resourceEnvironmentCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating environment in Azure DevOps: %+v", err)
 	}
 
-	err = flattenEnvironment(d, createdEnvironment)
-
-	if err != nil {
-		return fmt.Errorf("Error flattening environment: %+v", err)
-	}
+	flattenEnvironment(d, createdEnvironment)
 
 	return resourceEnvironmentRead(d, m)
 }
 
-func expandEnvironment(d *schema.ResourceData, forCreate bool) (*taskagent.EnvironmentInstance, error) {
-	// Look for the ID. This may not exist if we are within the context of a "create" operation,
-	// so it is OK if it is missing.
-	environmentId, err := strconv.Atoi(d.Id())
-	if !forCreate && err != nil {
-		return nil, fmt.Errorf("Error getting environment id: %+v", err)
-	}
-
+func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
 	projectId, err := uuid.Parse(d.Get(envProjectId).(string))
 	if err != nil {
 		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", projectID, err)
 	}
 	environment := &taskagent.EnvironmentInstance{
-		Id:          &environmentId,
 		Name:        converter.String(d.Get(envName).(string)),
 		Description: converter.String(d.Get(envDescription).(string)),
 		Project: &taskagent.ProjectReference{
 			Id: &projectId,
 		},
 	}
-
+	// Look for the ID. This may not exist if we are within the context of a "create" operation,
+	// so it is OK if it is missing.
+	if d.Id() != "" {
+		environmentId, err := strconv.Atoi(d.Id())
+		if err != nil {
+			return nil, fmt.Errorf("Error getting environment id: %+v", err)
+		}
+		environment.Id = &environmentId
+	}
 	return environment, nil
 }
 
-func flattenEnvironment(d *schema.ResourceData, environment *taskagent.EnvironmentInstance) error {
+func flattenEnvironment(d *schema.ResourceData, environment *taskagent.EnvironmentInstance) {
 	d.SetId(strconv.Itoa(*environment.Id))
 	d.Set(envProjectId, environment.Project.Id.String())
 	d.Set(envName, *environment.Name)
 	d.Set(envDescription, converter.ToString(environment.Description, ""))
-	return nil
 }
 
 func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
@@ -121,18 +116,14 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error reading the environment resource: %+v", err)
 	}
 
-	err = flattenEnvironment(d, environment)
-
-	if err != nil {
-		return fmt.Errorf("Error flattening environment: %+v", err)
-	}
+	flattenEnvironment(d, environment)
 
 	return nil
 }
 
 func resourceEnvironmentUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	environment, err := expandEnvironment(d, false)
+	environment, err := expandEnvironment(d)
 	if err != nil {
 		return fmt.Errorf("Error converting terraform data model to AzDO environment reference: %+v", err)
 	}
@@ -166,29 +157,22 @@ func resourceEnvironmentDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func createEnvironment(clients *client.AggregatedClient, environment *taskagent.EnvironmentInstance) (*taskagent.EnvironmentInstance, error) {
-	projectID := environment.Project.Id.String()
-
-	createParams := taskagent.EnvironmentCreateParameter{
-		Name:        environment.Name,
-		Description: environment.Description,
-	}
-
-	args := taskagent.AddEnvironmentArgs{
-		Project:                    &projectID,
-		EnvironmentCreateParameter: &createParams,
-	}
-
-	newEnvironment, err := clients.TaskAgentClient.AddEnvironment(clients.Ctx, args)
-
-	return newEnvironment, err
+	return clients.TaskAgentClient.AddEnvironment(
+		clients.Ctx,
+		taskagent.AddEnvironmentArgs{
+			Project: converter.String(environment.Project.Id.String()),
+			EnvironmentCreateParameter: &taskagent.EnvironmentCreateParameter{
+				Name:        environment.Name,
+				Description: environment.Description,
+			},
+		})
 }
 
 func updateEnvironment(clients *client.AggregatedClient, environment *taskagent.EnvironmentInstance) (*taskagent.EnvironmentInstance, error) {
-	projectID := environment.Project.Id.String()
 	return clients.TaskAgentClient.UpdateEnvironment(
 		clients.Ctx,
 		taskagent.UpdateEnvironmentArgs{
-			Project:       &projectID,
+			Project:       converter.String(environment.Project.Id.String()),
 			EnvironmentId: environment.Id,
 			EnvironmentUpdateParameter: &taskagent.EnvironmentUpdateParameter{
 				Name:        environment.Name,
