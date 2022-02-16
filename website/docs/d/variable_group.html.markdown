@@ -30,7 +30,7 @@ output "id" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The project ID.
 - `name` - (Required) The name of the Variable Group to retrieve.
 
 ## Attributes Reference
