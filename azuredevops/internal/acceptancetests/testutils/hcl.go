@@ -538,6 +538,15 @@ resource "azuredevops_variable_group" "vg" {
 }`, variableGroupName, allowAccess, keyVaultName)
 }
 
+// HclVariableGroupDataSource HCL describing a data source for an AzDO Variable Group
+func HclVariableGroupDataSource() string {
+	return `
+data "azuredevops_variable_group" "vg" {
+	project_id  = azuredevops_project.project.id
+	name        = azuredevops_variable_group.vg.name
+}`
+}
+
 // HclAgentPoolResource HCL describing an AzDO Agent Pool
 func HclAgentPoolResource(poolName string) string {
 	return fmt.Sprintf(`

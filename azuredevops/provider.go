@@ -94,6 +94,7 @@ func Provider() *schema.Provider {
 			"azuredevops_team":             core.DataTeam(),
 			"azuredevops_teams":            core.DataTeams(),
 			"azuredevops_groups":           graph.DataGroups(),
+			"azuredevops_variable_group":   taskagent.DataVariableGroup(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
