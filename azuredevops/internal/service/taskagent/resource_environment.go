@@ -61,39 +61,7 @@ func resourceEnvironmentCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	flattenEnvironment(d, createdEnvironment)
-
 	return resourceEnvironmentRead(d, m)
-}
-
-func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
-	projectId, err := uuid.Parse(d.Get(envProjectId).(string))
-	if err != nil {
-		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", projectID, err)
-	}
-	environment := &taskagent.EnvironmentInstance{
-		Name:        converter.String(d.Get(envName).(string)),
-		Description: converter.String(d.Get(envDescription).(string)),
-		Project: &taskagent.ProjectReference{
-			Id: &projectId,
-		},
-	}
-	// Look for the ID. This may not exist if we are within the context of a "create" operation,
-	// so it is OK if it is missing.
-	if d.Id() != "" {
-		environmentId, err := strconv.Atoi(d.Id())
-		if err != nil {
-			return nil, fmt.Errorf("Error getting environment id: %+v", err)
-		}
-		environment.Id = &environmentId
-	}
-	return environment, nil
-}
-
-func flattenEnvironment(d *schema.ResourceData, environment *taskagent.EnvironmentInstance) {
-	d.SetId(strconv.Itoa(*environment.Id))
-	d.Set(envProjectId, environment.Project.Id.String())
-	d.Set(envName, *environment.Name)
-	d.Set(envDescription, converter.ToString(environment.Description, ""))
 }
 
 func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
@@ -117,7 +85,6 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	flattenEnvironment(d, environment)
-
 	return nil
 }
 
@@ -179,4 +146,35 @@ func updateEnvironment(clients *client.AggregatedClient, environment *taskagent.
 				Description: environment.Description,
 			},
 		})
+}
+
+func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
+	projectId, err := uuid.Parse(d.Get(envProjectId).(string))
+	if err != nil {
+		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", projectID, err)
+	}
+	environment := &taskagent.EnvironmentInstance{
+		Name:        converter.String(d.Get(envName).(string)),
+		Description: converter.String(d.Get(envDescription).(string)),
+		Project: &taskagent.ProjectReference{
+			Id: &projectId,
+		},
+	}
+	// Look for the ID. This may not exist if we are within the context of a "create" operation,
+	// so it is OK if it is missing.
+	if d.Id() != "" {
+		environmentId, err := strconv.Atoi(d.Id())
+		if err != nil {
+			return nil, fmt.Errorf("Error getting environment id: %+v", err)
+		}
+		environment.Id = &environmentId
+	}
+	return environment, nil
+}
+
+func flattenEnvironment(d *schema.ResourceData, environment *taskagent.EnvironmentInstance) {
+	d.SetId(strconv.Itoa(*environment.Id))
+	d.Set(envProjectId, environment.Project.Id.String())
+	d.Set(envName, *environment.Name)
+	d.Set(envDescription, converter.ToString(environment.Description, ""))
 }
