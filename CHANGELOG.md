@@ -4,6 +4,8 @@ FEATURES:
 * **New Resource** `azuredevops_servicehook_permissions ` [#505](https://github.com/microsoft/terraform-provider-azuredevops/issues/505)
 * **New Resource** `azuredevops_tagging_permissions ` [#510](https://github.com/microsoft/terraform-provider-azuredevops/issues/510)
 * **New Resource** `azuredevops_serviceendpoint_argocd ` [#501](https://github.com/microsoft/terraform-provider-azuredevops/issues/501)
+* **New Resource** `azuredevops_environment` [#143](https://github.com/microsoft/terraform-provider-azuredevops/issues/143)
+* **New Data Resource** `azuredevops_variable_group` [#311](https://github.com/microsoft/terraform-provider-azuredevops/issues/311)
 
 BUG FIX:
 * `azuredevops_serviceconnection_azurerm` - SPN update will not be updated when update other settings. [#495](https://github.com/microsoft/terraform-provider-azuredevops/issues/495)
