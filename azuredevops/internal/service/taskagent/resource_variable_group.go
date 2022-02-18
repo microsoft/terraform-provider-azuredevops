@@ -3,6 +3,7 @@ package taskagent
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -166,9 +167,9 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
 	}
 
-	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID)
+	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters)
 	if err != nil {
-		return fmt.Errorf("Error creating variable group in Azure DevOps: %+v", err)
+		return fmt.Errorf(" creating variable group in Azure DevOps: %+v", err)
 	}
 
 	err = flattenVariableGroup(d, addedVariableGroup, projectID)
@@ -256,7 +257,7 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
 	}
 
-	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
+	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID)
 	if err != nil {
 		return fmt.Errorf("Error updating variable group in Azure DevOps: %+v", err)
 	}
@@ -296,7 +297,7 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 // Make the Azure DevOps API call to create the variable group
-func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *taskagent.VariableGroupParameters, project *string) (*taskagent.VariableGroup, error) {
+func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *taskagent.VariableGroupParameters) (*taskagent.VariableGroup, error) {
 	createdVariableGroup, err := clients.TaskAgentClient.AddVariableGroup(
 		clients.Ctx,
 		taskagent.AddVariableGroupArgs{
@@ -306,7 +307,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 }
 
 // Make the Azure DevOps API call to update the variable group
-func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int, project *string) (*taskagent.VariableGroup, error) {
+func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int) (*taskagent.VariableGroup, error) {
 	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
 		taskagent.UpdateVariableGroupArgs{
@@ -318,12 +319,12 @@ func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent
 }
 
 // Make the Azure DevOps API call to delete the variable group
-func deleteVariableGroup(clients *client.AggregatedClient, project *string, variableGroupID *int) error {
+func deleteVariableGroup(clients *client.AggregatedClient, projectId *string, variableGroupID *int) error {
 	err := clients.TaskAgentClient.DeleteVariableGroup(
 		clients.Ctx,
 		taskagent.DeleteVariableGroupArgs{
 			ProjectIds: &[]string{
-				*project,
+				*projectId,
 			},
 			GroupId: variableGroupID,
 		})
@@ -355,10 +356,23 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 	}
 
+	projId, err := uuid.Parse(*projectID)
+	if err != nil {
+		return nil, nil, fmt.Errorf(" faild parse project ID to UUID: %s", *projectID)
+	}
 	variableGroup := &taskagent.VariableGroupParameters{
 		Name:        converter.String(d.Get(vgName).(string)),
 		Description: converter.String(d.Get(vgDescription).(string)),
 		Variables:   &variableMap,
+		VariableGroupProjectReferences: &[]taskagent.VariableGroupProjectReference{
+			{
+				Name:        converter.String(d.Get(vgName).(string)),
+				Description: converter.String(d.Get(vgDescription).(string)),
+				ProjectReference: &taskagent.ProjectReference{
+					Id: &projId,
+				},
+			},
+		},
 	}
 
 	keyVault := d.Get(vgKeyVault).([]interface{})
@@ -380,25 +394,13 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-		azureKVSecrets, err := getAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID)
+		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variables)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		kvVariables := map[string]interface{}{}
-		var invalidVariables []string
-
-		for _, variable := range variables {
-			kvSecretName := variable.(map[string]interface{})[vgName].(string)
-			if kv, ok := azureKVSecrets[kvSecretName]; ok {
-				kvVariables[kvSecretName] = kv
-			} else {
-				invalidVariables = append(invalidVariables, kvSecretName)
-			}
-		}
-
 		if len(invalidVariables) > 0 {
-			return nil, nil, fmt.Errorf("Invalid Key Vault variables: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
 				strings.Join(invalidVariables, ","),
 				kvName)
 		} else {
@@ -406,53 +408,6 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 	}
 	return variableGroup, projectID, nil
-}
-
-func getAzureKVSecrets(clients *client.AggregatedClient, projectID string, kvName string, serviceEndpointID string) (azureKVSecrets map[string]taskagent.AzureKeyVaultVariableValue, error error) {
-	azKVSecrets, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx,
-		serviceendpoint.ExecuteServiceEndpointRequestArgs{
-			ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
-				DataSourceDetails: &serviceendpoint.DataSourceDetails{
-					DataSourceName: converter.String("AzureKeyVaultSecrets"),
-					Parameters: &map[string]string{
-						"KeyVaultName": kvName,
-					},
-				},
-				ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
-			},
-			Project:    &projectID,
-			EndpointId: &serviceEndpointID,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
-	}
-	if azKVSecrets != nil && *azKVSecrets.StatusCode == "ok" {
-		var kvSecrets KeyVaultSecretResult
-		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
-		if err = json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
-			return nil, fmt.Errorf("Failed to parse the Azure Key valut secrets. Service response: %s . %v ", secretJson, err)
-		}
-
-		secretMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
-		for _, secret := range *kvSecrets.Value {
-			name := getSecretName(*secret.ID)
-			kvVariable := taskagent.AzureKeyVaultVariableValue{
-				Value:       nil,
-				ContentType: secret.ContentType,
-				IsSecret:    converter.Bool(true),
-				Enabled:     secret.Enabled,
-			}
-			if secret.Expire != nil {
-				kvVariable.Expires = &azuredevops.Time{
-					Time: time.Unix(*secret.Expire, 0),
-				}
-			}
-
-			secretMap[name] = kvVariable
-		}
-		return secretMap, nil
-	}
-	return nil, fmt.Errorf("Failed to get the Azure Key valut secrets.Code: %s, error messge: %s ", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
 }
 
 // Convert AzDO data structure to internal Terraform data structure
@@ -654,10 +609,132 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set(vgAllowAccess, allowAccess)
 }
 
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
+	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 20 times, secrets more
+	// than this will not be fetched
+	// TODO custom ENV configuration for iteration times
+
+	var token, loop, azkvSecretsRaw = "", 0, &KeyVaultSecretResult{}
+	kvSecrets = make(map[string]interface{})
+	invalidSecrets = make([]string, 0)
+
+	secretNames := make(map[string]string)
+	for _, val := range variables {
+		name := val.(map[string]interface{})["name"].(string)
+		secretNames[name] = name
+	}
+	for {
+		kvSecretsMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
+		if azKVSecrets, err := getKVSecretServiceEndpointProxy(clients, kvName, projectID, serviceEndpointID, token); err == nil {
+			azkvSecretsRaw, token, err = parseKVSecretResp(azKVSecrets)
+			if err != nil {
+				return nil, nil, err
+			}
+			for _, secret := range *azkvSecretsRaw.Value {
+				name := getSecretName(*secret.ID)
+				kvVariable := taskagent.AzureKeyVaultVariableValue{
+					Value:       nil,
+					ContentType: secret.ContentType,
+					IsSecret:    converter.Bool(true),
+					Enabled:     secret.Enabled,
+				}
+				if secret.Expire != nil {
+					kvVariable.Expires = &azuredevops.Time{
+						Time: time.Unix(*secret.Expire, 0),
+					}
+				}
+				kvSecretsMap[name] = kvVariable
+			}
+
+			// search secret
+			for name, secret := range kvSecretsMap {
+				if len(secretNames) == 0 {
+					break
+				}
+				if _, ok := secretNames[name]; ok {
+					kvSecrets[name] = secret
+					delete(secretNames, name)
+				}
+			}
+
+			// stop search
+			if token == "" || loop == 20 || len(secretNames) == 0 {
+				for k := range secretNames {
+					invalidSecrets = append(invalidSecrets, k)
+				}
+				return kvSecrets, invalidSecrets, err
+			}
+			loop++
+		} else {
+			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
+		}
+	}
+}
+
+func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult) (*KeyVaultSecretResult, string, error) {
+	if azKVSecrets != nil && *azKVSecrets.StatusCode == "ok" {
+		var kvSecrets KeyVaultSecretResult
+		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
+		if err := json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
+			return nil, "", fmt.Errorf("Failed to parse the Azure Key valut secrets. Service response: %s . %v ", secretJson, err)
+		}
+
+		token, err := getSkipToken(kvSecrets.NextLink)
+		if err != nil {
+			return nil, "", fmt.Errorf(" falied to get skip token, error: %+v", err)
+		}
+		return &kvSecrets, token, nil
+	}
+	return nil, "", fmt.Errorf("Failed to get the Azure Key valut.  Erroe: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
+}
+
+func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName string, projectID string, serviceEndpointID string, token string) (*serviceendpoint.ServiceEndpointRequestResult, error) {
+	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
+		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+			DataSourceDetails: &serviceendpoint.DataSourceDetails{
+				DataSourceName: converter.String("AzureKeyVaultSecrets"),
+				Parameters: &map[string]string{
+					"KeyVaultName": kvName,
+				},
+			},
+			ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+		},
+		Project:    &projectID,
+		EndpointId: &serviceEndpointID,
+	}
+	if token != "" {
+		(*reqArgs.ServiceEndpointRequest.DataSourceDetails.Parameters)["SkipToken"] = token
+		reqArgs.ServiceEndpointRequest.DataSourceDetails.DataSourceName = converter.String("AzureKeyVaultSecretsWithSkipToken")
+	}
+	return clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs)
+}
+
 func getSecretName(secretID string) (secret string) {
 	if len(secretID) == 0 {
 		return ""
 	}
 	secretURL := strings.Split(secretID, "/")
 	return secretURL[len(secretURL)-1]
+}
+
+func getSkipToken(link *string) (string, error) {
+	if link == nil || len(*link) == 0 {
+		return "", nil
+	}
+	linkUrl, err := url.Parse(*link)
+	if err != nil {
+		return "", err
+	}
+
+	params, err := url.ParseQuery(linkUrl.RawQuery)
+	if err != nil {
+		return "", err
+	}
+
+	token := params["$skiptoken"]
+	if len(token) > 0 {
+		return token[0], nil
+	}
+	//if skip token not found, just return "" as the skip token
+	return "", nil
 }

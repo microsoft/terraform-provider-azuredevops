@@ -80,6 +80,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_permissions":            permissions.ResourceServiceEndpointPermissions(),
 			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
+			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
@@ -97,6 +98,7 @@ func Provider() *schema.Provider {
 			"azuredevops_team":             core.DataTeam(),
 			"azuredevops_teams":            core.DataTeams(),
 			"azuredevops_groups":           graph.DataGroups(),
+			"azuredevops_variable_group":   taskagent.DataVariableGroup(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
