@@ -6,7 +6,6 @@ require (
 	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.1.2
-	github.com/hashicorp/go-plugin v1.4.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/microsoft/azure-devops-go-api/azuredevops/v6 v6.0.0-20211202191553-0974d0145be8

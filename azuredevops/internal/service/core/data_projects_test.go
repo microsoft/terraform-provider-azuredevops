@@ -113,7 +113,7 @@ func TestDataSourceProjects_Read_TestFindProjectByName(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
 	resourceData.Set("name", "vsteam-0178")
 	resourceData.Set("state", "wellFormed")
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "wellFormed", resourceData.Get("state").(string))
 	require.Equal(t, "vsteam-0178", resourceData.Get("name").(string))
@@ -151,7 +151,7 @@ func TestDataSourceProjects_Read_TestEmptyProjectList(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
 	require.Equal(t, "", resourceData.Get("name").(string))
@@ -184,7 +184,7 @@ func TestDataSourceProjects_Read_TestFindAllProjects(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
 	require.Equal(t, "", resourceData.Get("name").(string))
@@ -217,7 +217,7 @@ func TestDataSourceProjects_Read_TestDuplicateProjectId(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
 	require.Equal(t, "", resourceData.Get("name").(string))
@@ -251,7 +251,7 @@ func TestDataSourceProjects_Read_TestFindProjectsWithState(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
 	resourceData.Set("state", "wellFormed")
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "wellFormed", resourceData.Get("state").(string))
 	require.Equal(t, "", resourceData.Get("name").(string))
@@ -281,9 +281,9 @@ func TestDataSourceProjects_Read_TestHandleError(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	err := dataSourceProjectsRead(resourceData, clients)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "GetProjects() Failed")
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
+	require.Equal(t, err.HasError(), true)
+	require.Contains(t, err[0].Summary, "GetProjects() Failed")
 }
 
 func TestDataSourceProjects_Read_TestContinuationToken(t *testing.T) {
@@ -323,7 +323,7 @@ func TestDataSourceProjects_Read_TestContinuationToken(t *testing.T) {
 	gomock.InOrder(calls...)
 
 	resourceData := schema.TestResourceDataRaw(t, DataProjects().Schema, nil)
-	err := dataSourceProjectsRead(resourceData, clients)
+	err := dataSourceProjectsRead(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, "all", resourceData.Get("state").(string))
 	require.Equal(t, "", resourceData.Get("name").(string))
