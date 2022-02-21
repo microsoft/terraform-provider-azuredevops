@@ -1,3 +1,29 @@
+## 0.2.0 
+
+FEATURES:
+* **New Resource** `azuredevops_servicehook_permissions` [#504](https://github.com/microsoft/terraform-provider-azuredevops/issues/504)
+* **New Resource** `azuredevops_tagging_permissions ` [#510](https://github.com/microsoft/terraform-provider-azuredevops/issues/510)
+* **New Resource** `azuredevops_serviceendpoint_argocd ` [#501](https://github.com/microsoft/terraform-provider-azuredevops/issues/501)
+* **New Resource** `azuredevops_environment` [#143](https://github.com/microsoft/terraform-provider-azuredevops/issues/143)
+* **New Data Resource** `azuredevops_variable_group` [#311](https://github.com/microsoft/terraform-provider-azuredevops/issues/311)
+
+BUG FIX:
+* `azuredevops_serviceconnection_azurerm` - Service principal secret will not be updated when update other settings. [#495](https://github.com/microsoft/terraform-provider-azuredevops/issues/495)
+* `azuredevops_build_definition`
+  - Enhance repository check. [#493](https://github.com/microsoft/terraform-provider-azuredevops/issues/493)
+  - `path` cannot end with backslash. [#513](https://github.com/microsoft/terraform-provider-azuredevops/issues/513)
+* `azuredevops_git_repository` - `default_branch` cannot set with initialize type `Uninitialized`. [#498](https://github.com/microsoft/terraform-provider-azuredevops/issues/498)
+* `azuredevops_variable_group` - Support search top 500 Key Vault secrets. [#388](https://github.com/microsoft/terraform-provider-azuredevops/issues/388)
+* `azuredevops_group` - Import group not set scope. [#345](https://github.com/microsoft/terraform-provider-azuredevops/issues/345)
+
+IMPROVEMENTS:
+* `data_project` - Optimize read operation [#524](https://github.com/microsoft/terraform-provider-azuredevops/issues/524)
+* Document scaffold - Generate document from source code [#503](https://github.com/microsoft/terraform-provider-azuredevops/issues/503)
+* Upgrade Azure DevOps API to V6  [#494](https://github.com/microsoft/terraform-provider-azuredevops/issues/494)
+* **All permission resources**
+  - Refactor the implementation of `SecurityNamespace` and the according helper functions. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
+  - All permission resources will now clear the `Id` on a `Read` operation when the connected ACLs not found. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
+  
 ## 0.1.8 
 FEATURES:
 * **New Resource** `azuredevops_git_repository_file ` [#225](https://github.com/microsoft/terraform-provider-azuredevops/issues/225)
