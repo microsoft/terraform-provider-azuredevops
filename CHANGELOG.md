@@ -1,4 +1,4 @@
-## 0.1.9 
+## 0.2.0 
 
 FEATURES:
 * **New Resource** `azuredevops_servicehook_permissions` [#504](https://github.com/microsoft/terraform-provider-azuredevops/issues/504)
