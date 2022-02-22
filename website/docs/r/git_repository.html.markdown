@@ -141,7 +141,7 @@ In addition to all arguments above, except `initialization`, the following attri
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Git Repositories](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Git Repositories](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-6.0)
 
 ## Import
 

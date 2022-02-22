@@ -374,7 +374,7 @@ The value of `\\ExampleFolder\\` would be invalid.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-6.0)
 
 ## Import
 
