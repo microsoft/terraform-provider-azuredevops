@@ -73,5 +73,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps repository policies can be imported using the projectID/policyID or projectName/policyID:
 
 ```sh
-$ terraform import azuredevops_repository_policy_case_enforcement.p 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_repository_policy_case_enforcement.p 00000000-0000-0000-0000-000000000000/0
 ```

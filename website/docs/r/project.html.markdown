@@ -59,13 +59,13 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Projects can be imported using the project name or by the project Guid, e.g.
 
 ```sh
-$ terraform import azuredevops_project.project "Test Project"
+terraform import azuredevops_project.project "Test Project"
 ```
 
 or
 
 ```sh
-$ terraform import azuredevops_project.project 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_project.project 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

@@ -60,5 +60,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Agent Pools can be imported using the project ID and agent queue ID, e.g.
 
 ```sh
-$ terraform import azuredevops_agent_queue.q 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_agent_queue.q 00000000-0000-0000-0000-000000000000/0
 ```
