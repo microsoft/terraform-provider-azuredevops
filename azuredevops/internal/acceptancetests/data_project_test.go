@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -47,7 +47,7 @@ func TestAccProject_DataSource(t *testing.T) {
 			tfNode := "data.azuredevops_project.project"
 			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                  func() { testutils.PreCheck(t, nil) },
-				Providers:                 testutils.GetProviders(),
+				ProviderFactories:         testutils.GetProviderFactories(),
 				PreventPostDestroyRefresh: true,
 				Steps: []resource.TestStep{
 					{
@@ -68,36 +68,39 @@ func TestAccProject_DataSource(t *testing.T) {
 }
 
 func TestAccProject_DataSource_ErrorWhenBothNameAndIdSet(t *testing.T) {
-	dataProject := `data "azuredevops_project" "project" {}`
-
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      dataProject,
-				ExpectError: regexp.MustCompile(`errors during refresh: Either project_id or name must be set`),
+				Config:      errorWithNameAndIdSet(),
+				ExpectError: regexp.MustCompile(`Either project_id or name must be set`),
 			},
 		},
 	})
 }
 
 func TestAccProject_DataSource_ErrorWhenDescriptionSet(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	dataProject := fmt.Sprintf(`
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      errorWhenDescriptionSet(testutils.GenerateResourceName()),
+				ExpectError: regexp.MustCompile(`Value for unconfigurable attribute`),
+			},
+		},
+	})
+}
+
+func errorWithNameAndIdSet() string {
+	return `data "azuredevops_project" "project" {}`
+}
+
+func errorWhenDescriptionSet(projectName string) string {
+	return fmt.Sprintf(`
 	data "azuredevops_project" "project" {
 		name = "%s"
 		description = "A project description"
 	}`, projectName)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
-		Steps: []resource.TestStep{
-			{
-				Config:      dataProject,
-				ExpectError: regexp.MustCompile(`config is invalid: "description": this field cannot be set`),
-			},
-		},
-	})
 }

@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -163,7 +163,8 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	}
 }
 
-func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc {
+//lint:ignore SA1019 schema.CreateFunc is deprecated: Please use the context aware equivalents instead
+func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
@@ -184,7 +185,8 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc {
 	}
 }
 
-func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc {
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		projectID := d.Get("project_id").(string)
@@ -212,7 +214,8 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc {
 	}
 }
 
-func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc {
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
@@ -234,7 +237,8 @@ func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc {
 	}
 }
 
-func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc {
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -320,7 +320,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
 	}
 

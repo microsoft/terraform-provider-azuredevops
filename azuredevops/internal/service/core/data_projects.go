@@ -1,14 +1,16 @@
 package core
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
@@ -19,7 +21,7 @@ import (
 // DataProjects schema and implementation for projects data source
 func DataProjects() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceProjectsRead,
+		ReadContext: dataSourceProjectsRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -78,14 +80,14 @@ func getProjectHash(v interface{}) int {
 	return tfhelper.HashString(v.(map[string]interface{})["project_id"].(string))
 }
 
-func dataSourceProjectsRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceProjectsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	state := d.Get("state").(string)
 	name := d.Get("name").(string)
 
 	projects, err := getProjectsForStateAndName(clients, state, name)
 	if err != nil {
-		return fmt.Errorf("Error finding projects with state %s. Error: %v", state, err)
+		return diag.FromErr(fmt.Errorf("Error finding projects with state %s. Error: %v", state, err))
 	}
 	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] projects from current organization", len(projects))
 
@@ -93,19 +95,19 @@ func dataSourceProjectsRead(d *schema.ResourceData, m interface{}) error {
 
 	projectNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
-		return fmt.Errorf("Failed to get list of project names: %v", err)
+		return diag.FromErr(fmt.Errorf("Failed to get list of project names: %v", err))
 	}
 	if len(projectNames) <= 0 && name != "" {
 		projectNames = append(projectNames, name)
 	}
 	h := sha1.New()
 	if _, err := h.Write([]byte(state + strings.Join(projectNames, "-"))); err != nil {
-		return fmt.Errorf("Unable to compute hash for project names: %v", err)
+		return diag.FromErr(fmt.Errorf("Unable to compute hash for project names: %v", err))
 	}
 	d.SetId("projects#" + base64.URLEncoding.EncodeToString(h.Sum(nil)))
 	err = d.Set("projects", results)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }

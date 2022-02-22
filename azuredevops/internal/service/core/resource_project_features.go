@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -46,12 +46,12 @@ var projectFeatureNameMapReverse = map[ProjectFeatureType]string{}
 // ResourceProjectFeatures schema and implementation for project features
 func ResourceProjectFeatures() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceProjectFeaturesCreate,
-		Read:   resourceProjectFeaturesRead,
-		Update: resourceProjectFeaturesUpdate,
-		Delete: resourceProjectFeaturesDelete,
+		CreateContext: resourceProjectFeaturesCreate,
+		ReadContext:   resourceProjectFeaturesRead,
+		UpdateContext: resourceProjectFeaturesUpdate,
+		DeleteContext: resourceProjectFeaturesDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -125,32 +125,32 @@ func getProjectFeatureID(fname ProjectFeatureType) (string, bool) {
 	return f, ok
 }
 
-func resourceProjectFeaturesCreate(d *schema.ResourceData, m interface{}) error {
+func resourceProjectFeaturesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
 	featureStates := d.Get("features").(map[string]interface{})
 
-	err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStates)
+	err := setProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(projectID)
-	return resourceProjectFeaturesRead(d, m)
+	return resourceProjectFeaturesRead(ctx, d, m)
 }
 
-func resourceProjectFeaturesRead(d *schema.ResourceData, m interface{}) error {
+func resourceProjectFeaturesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
 	featureStates := d.Get("features").(map[string]interface{})
-	currentFeatureStates, err := getConfiguredProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, &featureStates, projectID)
+	currentFeatureStates, err := getConfiguredProjectFeatureStates(ctx, clients.FeatureManagementClient, &featureStates, projectID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if currentFeatureStates == nil {
-		return fmt.Errorf("Failed to retrieve current feature states for project %s", projectID)
+		return diag.FromErr(fmt.Errorf("Failed to retrieve current feature states for project %s", projectID))
 	}
 	d.Set("features", currentFeatureStates)
 	return nil
@@ -231,11 +231,11 @@ func readProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, 
 	return &featureStates, nil
 }
 
-func resourceProjectFeaturesUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceProjectFeaturesCreate(d, m)
+func resourceProjectFeaturesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return resourceProjectFeaturesCreate(ctx, d, m)
 }
 
-func resourceProjectFeaturesDelete(d *schema.ResourceData, m interface{}) error {
+func resourceProjectFeaturesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -243,9 +243,9 @@ func resourceProjectFeaturesDelete(d *schema.ResourceData, m interface{}) error 
 	for k := range featureStates {
 		featureStates[k] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
 	}
-	err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStates)
+	err := setProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")
