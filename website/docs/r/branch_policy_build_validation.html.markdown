@@ -12,53 +12,53 @@ Manages a build validation branch policy within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_build_definition" "b" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Build Definition"
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
 
   repository {
     repo_type = "TfsGit"
-    repo_id   = azuredevops_git_repository.r.id
+    repo_id   = azuredevops_git_repository.example.id
     yml_path  = "azure-pipelines.yml"
   }
 }
 
-resource "azuredevops_branch_policy_build_validation" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_build_validation" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
 
   settings {
-    display_name        = "Don't break the build!"
-    build_definition_id = azuredevops_build_definition.b.id
+    display_name        = "Example build validation policy"
+    build_definition_id = azuredevops_build_definition.example.id
     valid_duration      = 720
-    filename_patterns =  [
+    filename_patterns = [
       "/WebApp/*",
       "!/WebApp/Tests/*",
       "*.cs"
     ]
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
+      repository_id  = azuredevops_git_repository.example.id
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }

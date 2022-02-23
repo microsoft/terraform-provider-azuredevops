@@ -12,8 +12,8 @@ Manages an agent pool within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_agent_pool" "pool" {
-  name           = "sample-pool"
+resource "azuredevops_agent_pool" "example" {
+  name           = "Example-pool"
   auto_provision = false
 }
 ```
@@ -23,7 +23,7 @@ resource "azuredevops_agent_pool" "pool" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the agent pool.
-- `auto_provision` - (Optional) Specifies whether or not a queue should be automatically provisioned for each project collection. Defaults to `false`.
+- `auto_provision` - (Optional) Specifies whether a queue should be automatically provisioned for each project collection. Defaults to `false`.
 - `pool_type` - (Optional) Specifies whether the agent pool type is Automation or Deployment. Defaults to `automation`.
 
 ## Attributes Reference

@@ -13,24 +13,24 @@ Manages a Build Definition within Azure DevOps.
 
 ### Tfs
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "repository" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_variable_group" "vars" {
-  project_id   = azuredevops_project.project.id
-  name         = "Infrastructure Pipeline Variables"
+resource "azuredevops_variable_group" "example" {
+  project_id   = azuredevops_project.example.id
+  name         = "Example Pipeline Variables"
   description  = "Managed by Terraform"
   allow_access = true
 
@@ -40,9 +40,9 @@ resource "azuredevops_variable_group" "vars" {
   }
 }
 
-resource "azuredevops_build_definition" "build" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Build Definition"
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
   path       = "\\ExampleFolder"
 
   ci_trigger {
@@ -63,13 +63,13 @@ resource "azuredevops_build_definition" "build" {
 
   repository {
     repo_type   = "TfsGit"
-    repo_id     = azuredevops_git_repository.repository.id
-    branch_name = azuredevops_git_repository.repository.default_branch
+    repo_id     = azuredevops_git_repository.example.id
+    branch_name = azuredevops_git_repository.example.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 
   variable_groups = [
-    azuredevops_variable_group.vars.id
+    azuredevops_variable_group.example.id
   ]
 
   variable {
@@ -87,9 +87,27 @@ resource "azuredevops_build_definition" "build" {
 
 ### GitHub Enterprise
 ```hcl
-resource "azuredevops_build_definition" "sample_dotnetcore_app_release" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Build Definition"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_serviceendpoint_github_enterprise" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example GitHub Enterprise"
+  url                   = "https://github.contoso.com"
+  description           = "Managed by Terraform"
+
+  auth_personal {
+    personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+}
+
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
   path       = "\\ExampleFolder"
 
   ci_trigger {
@@ -102,7 +120,7 @@ resource "azuredevops_build_definition" "sample_dotnetcore_app_release" {
     github_enterprise_url = "https://github.company.com"
     branch_name           = "master"
     yml_path              = "azure-pipelines.yml"
-    service_connection_id = "..."
+    service_connection_id = azuredevops_serviceendpoint_github_enterprise.example.id
   }
 
   schedules {

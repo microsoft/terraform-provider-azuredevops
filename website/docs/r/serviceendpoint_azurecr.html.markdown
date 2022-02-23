@@ -12,22 +12,23 @@ Manages a Azure Container Registry service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
 # azure container registry service connection
-resource "azuredevops_serviceendpoint_azurecr" "azurecr" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "Sample AzureCR"
-  resource_group            = "sample-rg"
+resource "azuredevops_serviceendpoint_azurecr" "example" {
+  project_id                = azuredevops_project.example.id
+  service_endpoint_name     = "Example AzureCR"
+  resource_group            = "example-rg"
   azurecr_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
-  azurecr_name              = "sampleAcr"
+  azurecr_name              = "ExampleAcr"
   azurecr_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurecr_subscription_name = "sampleSub"
+  azurecr_subscription_name = "subscription name"
 }
 ```
 

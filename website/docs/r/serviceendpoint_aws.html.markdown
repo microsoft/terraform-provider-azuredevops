@@ -11,20 +11,20 @@ Manages a AWS service endpoint within Azure DevOps. Using this service endpoint 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_aws" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample AWS"
-  description           = "Managed by AzureDevOps"
-
+resource "azuredevops_serviceendpoint_aws" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example AWS"
   access_key_id         = "00000000-0000-0000-0000-000000000000"
   secret_access_key     = "accesskey"
+  description           = "Managed by AzureDevOps"
 }
 ```
 

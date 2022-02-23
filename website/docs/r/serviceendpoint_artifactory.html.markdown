@@ -11,36 +11,43 @@ Manages an Artifactory server endpoint within an Azure DevOps organization.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_artifactory" "serviceendpoint" {
-
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample Artifactory"
+resource "azuredevops_serviceendpoint_artifactory" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Artifactory"
   description           = "Managed by Terraform"
   url                   = "https://artifactory.my.com"
   authentication_token {
-      token      = "0000000000000000000000000000000000000000"
+    token = "0000000000000000000000000000000000000000"
   }
 }
 ```
 Alternatively a username and password may be used.
 
 ```hcl
-resource "azuredevops_serviceendpoint_artifactory" "serviceendpoint" {
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
 
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample Artifactory"
+resource "azuredevops_serviceendpoint_artifactory" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Artifactory"
   description           = "Managed by Terraform"
   url                   = "https://artifactory.my.com"
   authentication_basic {
-      username              = "sampleuser"
-      password              = "0000000000000000000000000000000000000000"
+    username = "username"
+    password = "password"
   }
 }
 ```

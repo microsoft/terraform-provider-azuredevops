@@ -12,16 +12,15 @@ Manages a project within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-
+  description        = "Managed by Terraform"
   features = {
-      "testplans" = "disabled"
-      "artifacts" = "disabled"
+    "testplans" = "disabled"
+    "artifacts" = "disabled"
   }
 }
 ```

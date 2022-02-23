@@ -12,18 +12,19 @@ Manages a Bitbucket service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_bitbucket" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_serviceendpoint_bitbucket" "example" {
+  project_id            = azuredevops_project.example.id
   username              = "username"
   password              = "password"
-  service_endpoint_name = "Sample Bitbucket"
+  service_endpoint_name = "Example Bitbucket"
   description           = "Managed by Terraform"
 }
 ```

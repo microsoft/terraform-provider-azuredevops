@@ -16,23 +16,23 @@ the `azuredevops_resource_authorization` resource can be used to grant authoriza
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-data "azuredevops_agent_pool" "pool" {
-  name = "contoso-pool"
+data "azuredevops_agent_pool" "example" {
+  name = "example-pool"
 }
 
-resource "azuredevops_agent_queue" "queue" {
-  project_id    = azuredevops_project.project.id
-  agent_pool_id = data.azuredevops_agent_pool.pool.id
+resource "azuredevops_agent_queue" "example" {
+  project_id    = azuredevops_project.example.id
+  agent_pool_id = data.azuredevops_agent_pool.example.id
 }
 
-# Grant acccess to queue to all pipelines in the project
-resource "azuredevops_resource_authorization" "auth" {
-  project_id  = azuredevops_project.project.id
-  resource_id = azuredevops_agent_queue.queue.id
+# Grant access to queue to all pipelines in the project
+resource "azuredevops_resource_authorization" "example" {
+  project_id  = azuredevops_project.example.id
+  resource_id = azuredevops_agent_queue.example.id
   type        = "queue"
   authorized  = true
 }

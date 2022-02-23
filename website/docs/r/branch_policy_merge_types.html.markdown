@@ -12,20 +12,20 @@ Branch policy for merge types allowed on a specified branch.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_branch_policy_merge_types" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_merge_types" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
@@ -35,16 +35,15 @@ resource "azuredevops_branch_policy_merge_types" "p" {
     allow_rebase_and_fast_forward = true
     allow_basic_no_fast_forward   = true
     allow_rebase_with_merge       = true
-    
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
 
     scope {
-      repository_id  = null               # All repositories in the project
+      repository_id  = null # All repositories in the project
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }

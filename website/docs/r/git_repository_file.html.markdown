@@ -11,23 +11,23 @@ Manage files within an Azure DevOps Git repository.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Git Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Git Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_git_repository_file" "repo_file" {
-  repository_id       = azuredevops_git_repository.repo.id
+resource "azuredevops_git_repository_file" "example" {
+  repository_id       = azuredevops_git_repository.example.id
   file                = ".gitignore"
   content             = "**/*.tfstate"
   branch              = "refs/heads/master"

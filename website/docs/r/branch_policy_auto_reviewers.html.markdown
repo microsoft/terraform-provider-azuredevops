@@ -12,38 +12,38 @@ Manages required reviewer policy branch policy within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_user_entitlement" "user" {
+resource "azuredevops_user_entitlement" "example" {
   principal_name       = "mail@email.com"
   account_license_type = "basic"
 }
 
-resource "azuredevops_branch_policy_auto_reviewers" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_auto_reviewers" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
 
   settings {
-    auto_reviewer_ids  = [azuredevops_user_entitlement.user.id]
+    auto_reviewer_ids  = [azuredevops_user_entitlement.example.id]
     submitter_can_vote = false
     message            = "Auto reviewer"
     path_filters       = ["*/src/*.ts"]
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
   }

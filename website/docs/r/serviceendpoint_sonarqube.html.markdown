@@ -11,17 +11,17 @@ Manages a SonarQube service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_sonarqube" "serviceendpoint" {
-
-  project_id        = azuredevops_project.project.id
-  service_endpoint_name = "Sample SonarQube"
+resource "azuredevops_serviceendpoint_sonarqube" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example SonarQube"
   url                   = "https://sonarqube.my.com"
   token                 = "0000000000000000000000000000000000000000"
   description           = "Managed by Terraform"

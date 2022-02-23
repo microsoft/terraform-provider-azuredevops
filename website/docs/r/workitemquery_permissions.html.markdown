@@ -23,9 +23,22 @@ Permissions for all Work Item Queries inside a project (existing or newly create
 #### Example usage
 
 ```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
+}
+
 resource "azuredevops_workitemquery_permissions" "project-wiq-root-permissions" {
-  project_id  = azuredevops_project.project.id  
-  principal   = data.azuredevops_group.project-readers.id
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     CreateRepository = "Deny"
     DeleteRepository = "Deny"
@@ -43,14 +56,27 @@ Permissions for a specific folder inside Shared Queries are specified if the arg
 #### Example usage
 
 ```hcl
-resource "azuredevops_workitemquery_permissions" "wiq-folder-permissions" {
-  project_id = azuredevops_project.project.id
-  path = "/Team"
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
+}
+
+resource "azuredevops_workitemquery_permissions" "example-permissions" {
+  project_id = azuredevops_project.example.id
+  path       = "/Team"
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     Contribute = "Allow"
-    Delete = "Deny"
-    Read = "NotSet"
+    Delete     = "Deny"
+    Read       = "NotSet"
   }
 }
 ```
@@ -58,27 +84,27 @@ resource "azuredevops_workitemquery_permissions" "wiq-folder-permissions" {
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
-  visibility         = "private"
-  version_control    = "Git"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-data "azuredevops_group" "project-contributors" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-contributors" {
+  project_id = azuredevops_project.example.id
   name       = "Contributors"
 }
 
-resource "azuredevops_workitemquery_permissions" "wiq-project-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_workitemquery_permissions" "example-project-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     Read              = "Allow"
     Delete            = "Deny"
@@ -87,16 +113,15 @@ resource "azuredevops_workitemquery_permissions" "wiq-project-permissions" {
   }
 }
 
-resource "azuredevops_workitemquery_permissions" "wiq-sharedqueries-permissions" {
-  project_id = azuredevops_project.project.id
-  path = "/"
-  principal   = data.azuredevops_group.project-contributors.id
+resource "azuredevops_workitemquery_permissions" "example-sharedqueries-permissions" {
+  project_id = azuredevops_project.example.id
+  path       = "/"
+  principal  = data.azuredevops_group.example-contributors.id
   permissions = {
-    Read              = "Allow"
-    Delete            = "Deny"
+    Read   = "Allow"
+    Delete = "Deny"
   }
 }
-
 ```
 
 ## Argument Reference

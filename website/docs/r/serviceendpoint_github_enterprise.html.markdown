@@ -12,19 +12,20 @@ Manages a GitHub Enterprise Server service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint_ghes_1" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample GitHub Enterprise"
+resource "azuredevops_serviceendpoint_github_enterprise" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example GitHub Enterprise"
   url                   = "https://github.contoso.com"
   description           = "Managed by Terraform"
-  
+
   auth_personal {
     # Also can be set with AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

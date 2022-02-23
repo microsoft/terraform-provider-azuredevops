@@ -16,24 +16,28 @@ we can only read the secrets and do filter in Terraform.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "test" {
-  name = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_variable_group" "test" {
-  project_id   = azuredevops_project.test.id
-  name         = "Test Variable Group"
-  description  = "Test Variable Group Description"
+resource "azuredevops_variable_group" "example" {
+  project_id   = azuredevops_project.example.id
+  name         = "example Variable Group"
+  description  = "Example Variable Group Description"
   allow_access = true
 
   variable {
-    name  = "key"
-    value = "value"
+    name  = "key1"
+    value = "val1"
   }
 
   variable {
-    name         = "Account Password"
-    secret_value = "p@ssword123"
+    name         = "key2"
+    secret_value = "val2"
     is_secret    = true
   }
 }
@@ -42,32 +46,36 @@ resource "azuredevops_variable_group" "test" {
 ## Example Usage With AzureRM Key Vault
 
 ```hcl
-resource "azuredevops_project" "test" {
-  name = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_azurerm" "test" {
-  project_id                = azuredevops_project.test.id
-  service_endpoint_name     = "Sample AzureRM"
-  description               = "Managed by Terraform"
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example AzureRM"
+  description           = "Managed by Terraform"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name = "Sample Subscription"
+  azurerm_subscription_name = "Example Subscription Name"
 }
 
-resource "azuredevops_variable_group" "variablegroup" {
-  project_id   = azuredevops_project.test.id
-  name         = "Test Variable Group"
-  description  = "Test Variable Group Description"
+resource "azuredevops_variable_group" "example" {
+  project_id   = azuredevops_project.example.id
+  name         = "Example Variable Group"
+  description  = "Example Variable Group Description"
   allow_access = true
 
   key_vault {
-    name                = "test-kv"
-    service_endpoint_id = azuredevops_serviceendpoint_azurerm.test.id
+    name                = "example-kv"
+    service_endpoint_id = azuredevops_serviceendpoint_azurerm.example.id
   }
 
   variable {

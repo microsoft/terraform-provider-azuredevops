@@ -13,12 +13,16 @@ Manages an Environment.
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name = "Sample Project"
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
 resource "azuredevops_environment" "example" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Environment"
+  project_id = azuredevops_project.example.id
+  name       = "Example Environment"
 }
 ```
 

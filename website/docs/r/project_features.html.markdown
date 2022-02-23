@@ -12,24 +12,19 @@ Manages features for Azure DevOps projects
 ## Example Usage
 
 ```hcl
-terraform {
-  required_providers {
-    azuredevops = {
-      source = "microsoft/azuredevops"
-      version = ">=0.1.0"
-    }
-  }
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_project" "tf-project-test-001" {
-  name = "Test Project"
-}
-
-resource "azuredevops_project_features" "my-project-features" {
-  project_id = data.azuredevops_project.tf-project-test-001.id
+resource "azuredevops_project_features" "example-features" {
+  project_id = azuredevops_project.example.id
   features = {
-      "testplans" = "disabled"
-      "artifacts" = "enabled"
+    "testplans" = "disabled"
+    "artifacts" = "enabled"
   }
 }
 ```

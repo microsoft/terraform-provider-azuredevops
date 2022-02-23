@@ -12,20 +12,20 @@ Configure a comment resolution policy for your branch within Azure DevOps projec
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_branch_policy_comment_resolution" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_comment_resolution" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
@@ -33,13 +33,13 @@ resource "azuredevops_branch_policy_comment_resolution" "p" {
   settings {
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
+      repository_id  = azuredevops_git_repository.example.id
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }

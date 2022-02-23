@@ -12,16 +12,17 @@ Manages a SSH service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_ssh" "test" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample SSH"
+resource "azuredevops_serviceendpoint_ssh" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example SSH"
   host                  = "1.2.3.4"
   username              = "username"
   description           = "Managed by Terraform"

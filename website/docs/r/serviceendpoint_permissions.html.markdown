@@ -19,23 +19,22 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_serviceendpoint_permissions" "example-root-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     Use               = "allow"
     Administer        = "allow"
@@ -45,20 +44,19 @@ resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
   }
 }
 
-resource "azuredevops_serviceendpoint_dockerregistry" "dockerhubregistry" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "Sample Docker Hub"
-
-  docker_username        = "sample"
-  docker_email           = "email@example.com"
-  docker_password        = "12345"
-  registry_type          = "DockerHub"
+resource "azuredevops_serviceendpoint_dockerregistry" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Docker Hub"
+  docker_username       = "username"
+  docker_email          = "email@example.com"
+  docker_password       = "password"
+  registry_type         = "DockerHub"
 }
 
-resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions" {
-  project_id         = azuredevops_project.project.id
-  principal          = data.azuredevops_group.project-readers.id
-  serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.dockerhubregistry.id
+resource "azuredevops_serviceendpoint_permissions" "example-permissions" {
+  project_id         = azuredevops_project.example.id
+  principal          = data.azuredevops_group.example-readers.id
+  serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.example.id
   permissions = {
     Use               = "allow"
     Administer        = "deny"

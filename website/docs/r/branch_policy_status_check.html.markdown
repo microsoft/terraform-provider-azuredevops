@@ -11,9 +11,8 @@ Manages a status check branch policy within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name               = "Sample Project"
-  description        = "Managed by Terraform"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
@@ -21,37 +20,38 @@ resource "azuredevops_project" "p" {
     "testplans" = "disabled"
     "artifacts" = "disabled"
   }
+  description = "Managed by Terraform"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_user_entitlement" "user" {
+resource "azuredevops_user_entitlement" "example" {
   principal_name       = "mail@email.com"
   account_license_type = "basic"
 }
 
-resource "azuredevops_branch_policy_status_check" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_status_check" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
 
   settings {
     name                 = "Release"
-    author_id            = azuredevops_user_entitlement.user.id
+    author_id            = azuredevops_user_entitlement.example.id
     invalidate_on_update = true
     applicability        = "conditional"
     display_name         = "PreCheck"
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
   }

@@ -19,39 +19,38 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
 }
 
-resource "azuredevops_iteration_permissions" "root-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = azuredevops_group.project-readers.id
-	permissions = {
-	  CREATE_CHILDREN = "Deny"
-	  GENERIC_READ    = "NotSet"
-	  DELETE          = "Deny"
-	}
+resource "azuredevops_iteration_permissions" "example-root-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
+  permissions = {
+    CREATE_CHILDREN = "Deny"
+    GENERIC_READ    = "NotSet"
+    DELETE          = "Deny"
+  }
 }
 
-resource "azuredevops_iteration_permissions" "iteration-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = azuredevops_group.project-readers.id
-	path        = "Iteration 1"
-	permissions = {
-	  CREATE_CHILDREN = "Allow"
-	  GENERIC_READ    = "NotSet"
-	  DELETE          = "Allow"
-	}
+resource "azuredevops_iteration_permissions" "example-iteration-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
+  path       = "Iteration 1"
+  permissions = {
+    CREATE_CHILDREN = "Allow"
+    GENERIC_READ    = "NotSet"
+    DELETE          = "Allow"
+  }
 }
 ```
 

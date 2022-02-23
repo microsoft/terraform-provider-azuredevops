@@ -11,35 +11,43 @@ Manage author email pattern repository policy within Azure DevOps project.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name               = "Sample Project"
-  description        = "Managed by Terraform"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_repository_policy_author_email_pattern" "example" {
+  project_id            = azuredevops_project.example.id
   enabled               = true
   blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]
-  repository_ids        = [azuredevops_git_repository.r.id]
+  repository_ids        = [azuredevops_git_repository.example.id]
 }
 ```
 
 ## Set project level repository policy
 ```hcl
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_repository_policy_author_email_pattern" "example" {
+  project_id            = azuredevops_project.example.id
   enabled               = true
   blocking              = true
   author_email_patterns = ["user1@test.com", "user2@test.com"]

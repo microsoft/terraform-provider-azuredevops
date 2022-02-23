@@ -20,44 +20,44 @@ For detailed steps to create a service principal with Azure cli see the [documen
 ### Manual AzureRM Service Endpoint
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample AzureRM"
-  description = "Managed by Terraform" 
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example AzureRM"
+  description           = "Managed by Terraform"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name = "Sample Subscription"
+  azurerm_subscription_name = "Example Subscription Name"
 }
 ```
 
 ### Automatic AzureRM Service Endpoint
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
-  project_id                = azuredevops_project.project.id
-  service_endpoint_name     = "Sample AzureRM"
-  description = "Managed by Terraform" 
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                = azuredevops_project.example.id
+  service_endpoint_name     = "Example AzureRM"
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name = "Microsoft Azure DEMO"
+  azurerm_subscription_name = "Example Subscription Name"
 }
 ```
 

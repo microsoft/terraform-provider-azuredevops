@@ -14,19 +14,20 @@ basic authentication via a username and password.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_generic" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_serviceendpoint_generic" "example" {
+  project_id            = azuredevops_project.example.id
   server_url            = "https://some-server.example.com"
   username              = "username"
   password              = "password"
-  service_endpoint_name = "Sample Generic"
+  service_endpoint_name = "Example Generic"
   description           = "Managed by Terraform"
 }
 ```

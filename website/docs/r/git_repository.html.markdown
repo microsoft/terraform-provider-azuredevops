@@ -14,16 +14,16 @@ Manages a git repository within Azure DevOps.
 ### Create Git repository
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Empty Git Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Empty Git Repository"
   initialization {
     init_type = "Clean"
   }
@@ -33,16 +33,16 @@ resource "azuredevops_git_repository" "repo" {
 ### Configure existing Git repository imported into Terraform state
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Existing Git Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
   default_branch = "refs/heads/main"
   initialization {
     init_type = "Clean"
@@ -61,10 +61,26 @@ resource "azuredevops_git_repository" "repo" {
 ### Create Fork of another Azure DevOps Git repository
 
 ```hcl
-resource "azuredevops_git_repository" "repo" {
-  project_id           = azuredevops_project.project.id
-  name                 = "Sample Fork an Existing Repository"
-  parent_repository_id = azuredevops_git_repository.parent.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
+  default_branch = "refs/heads/main"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_git_repository" "example-fork" {
+  project_id           = azuredevops_project.example.id
+  name                 = "Example Fork Repository"
+  parent_repository_id = azuredevops_git_repository.example.id
   initialization {
     init_type = "Clean"
   }
@@ -74,9 +90,25 @@ resource "azuredevops_git_repository" "repo" {
 ### Create Import from another Git repository
 
 ```hcl
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Import an Existing Repository"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
+  default_branch = "refs/heads/main"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_git_repository" "example-import" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Import Repository"
   initialization {
     init_type   = "Import"
     source_type = "Git"
@@ -88,23 +120,39 @@ resource "azuredevops_git_repository" "repo" {
 ### Import from a Private Repository
 
 ```hcl
-resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
+  default_branch = "refs/heads/main"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_serviceendpoint_generic_git" "example-serviceendpoint" {
+  project_id            = azuredevops_project.example.id
   repository_url        = "https://dev.azure.com/org/project/_git/repository"
   username              = "username"
   password              = "<password>/<PAT>"
-  service_endpoint_name = "Sample Generic Git"
+  service_endpoint_name = "Example Generic Git"
   description           = "Managed by Terraform"
 }
 
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Import an Existing Repository"
+resource "azuredevops_git_repository" "example-import" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Import Existing Repository"
   initialization {
     init_type             = "Import"
     source_type           = "Git"
     source_url            = "https://dev.azure.com/example-org/private-repository.git"
-    service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
+    service_connection_id = azuredevops_serviceendpoint_generic_git.example-serviceendpoint.id
   }
 }
 ```
@@ -159,9 +207,16 @@ terraform import azuredevops_git_repository.repository projectName/00000000-0000
 **NOTE:** Importing an existing repository and running `terraform plan` will detect a difference on the initialization block. The plan and apply will then attempt to delete the repository and recreate it so that the configuration matches. The initialization block must be ignored from the plan in order to support configuring existing repositories imported into Terraform state.
 
 ```hcl
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Existing Git Repository"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
   default_branch = "refs/heads/main"
   initialization {
     init_type = "Clean"

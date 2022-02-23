@@ -14,21 +14,25 @@ Currently supported resources: service endpoint (aka service connection, endpoin
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_bitbucket" "bitbucket_account" {
-  project_id            = azuredevops_project.project.id
-  username              = "xxxx"
-  password              = "xxxx"
-  service_endpoint_name = "test-bitbucket"
-  description           = "test"
+resource "azuredevops_serviceendpoint_bitbucket" "example" {
+  project_id            = azuredevops_project.example.id
+  username              = "username"
+  password              = "password"
+  service_endpoint_name = "example-bitbucket"
+  description           = "Managed by Terraform"
 }
 
-resource "azuredevops_resource_authorization" "auth" {
-  project_id  = azuredevops_project.project.id
-  resource_id = azuredevops_serviceendpoint_bitbucket.bitbucket_account.id
+resource "azuredevops_resource_authorization" "example" {
+  project_id  = azuredevops_project.example.id
+  resource_id = azuredevops_serviceendpoint_bitbucket.example.id
   authorized  = true
 }
 ```

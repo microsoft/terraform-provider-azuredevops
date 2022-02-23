@@ -14,22 +14,22 @@ Manages permissions for a AzureDevOps project
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_project_permissions" "project-perm" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_project_permissions" "example-permission" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     DELETE              = "Deny"
     EDIT_BUILD_STATUS   = "NotSet"
