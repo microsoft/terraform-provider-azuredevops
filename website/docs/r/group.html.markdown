@@ -71,7 +71,7 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps groups can be imported using the group identity descriptor, e.g.
 
 ```sh
-terraform import azuredevops_group.id aadgp.Uy0xLTktMTU1MTM3NDI0NS0xMjA0NDAwOTY5LTI0MDI5ODY0MTMtMjE3OTQwODYxNi0zLTIxNjc2NjQyNTMtMzI1Nzg0NDI4OS0yMjU4MjcwOTc0LTI2MDYxODY2NDU
+terraform import azuredevops_group.example aadgp.Uy0xLTktMTU1MTM3NDI0NS0xMjA0NDAwOTY5LTI0MDI5ODY0MTMtMjE3OTQwODYxNi0zLTIxNjc2NjQyNTMtMzI1Nzg0NDI4OS0yMjU4MjcwOTc0LTI2MDYxODY2NDU
 ```
 
 ## PAT Permissions Required

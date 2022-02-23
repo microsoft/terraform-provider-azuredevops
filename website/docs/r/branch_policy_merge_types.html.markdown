@@ -90,5 +90,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_branch_policy_merge_types.p 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_branch_policy_merge_types.example 00000000-0000-0000-0000-000000000000/0
 ```

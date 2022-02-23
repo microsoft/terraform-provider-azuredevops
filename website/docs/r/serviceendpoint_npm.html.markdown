@@ -57,6 +57,6 @@ The following attributes are exported:
 
 Azure DevOps Service Endpoint npm can be imported using the **projectID/serviceEndpointID**, e.g.
 
-```shell
-terraform import azuredevops_serviceendpoint_npm.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```sh
+terraform import azuredevops_serviceendpoint_npm.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

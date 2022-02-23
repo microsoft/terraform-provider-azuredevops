@@ -66,5 +66,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint GitHub Enterprise Server can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-terraform import azuredevops_serviceendpoint_github_enterprise.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_github_enterprise.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

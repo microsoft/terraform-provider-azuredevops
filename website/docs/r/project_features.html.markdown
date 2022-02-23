@@ -55,7 +55,7 @@ No official documentation available
 Azure DevOps feature settings can be imported using the project id, e.g.
 
 ```sh
-terraform import azuredevops_project_features.project_id 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_project_features.example 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

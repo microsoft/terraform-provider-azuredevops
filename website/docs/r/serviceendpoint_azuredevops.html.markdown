@@ -60,5 +60,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint Azure DevOps can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-terraform import azuredevops_serviceendpoint_azuredevops.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_azuredevops.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

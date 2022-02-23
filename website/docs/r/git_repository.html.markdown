@@ -196,13 +196,13 @@ In addition to all arguments above, except `initialization`, the following attri
 Azure DevOps Repositories can be imported using the repo name or by the repo Guid e.g.
 
 ```sh
-terraform import azuredevops_git_repository.repository projectName/repoName
+terraform import azuredevops_git_repository.example projectName/repoName
 ```
 
 or
 
 ```sh
-terraform import azuredevops_git_repository.repository projectName/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_git_repository.example projectName/00000000-0000-0000-0000-000000000000
 ```
 **NOTE:** Importing an existing repository and running `terraform plan` will detect a difference on the initialization block. The plan and apply will then attempt to delete the repository and recreate it so that the configuration matches. The initialization block must be ignored from the plan in order to support configuring existing repositories imported into Terraform state.
 

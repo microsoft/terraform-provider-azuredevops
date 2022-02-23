@@ -53,13 +53,13 @@ The following arguments are supported:
 Repository files can be imported using a combination of the `repositroy ID` and `file`, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore
+terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000-000000000000/.gitignore
 ```
 
 To import a file from a branch other than `master`, append `:` and the branch name, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/master
+terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/master
 ```
 
 ## Relevant Links

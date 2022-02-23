@@ -79,5 +79,5 @@ In addition to all arguments above, the following attributes are exported:
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_repository_policy_author_email_pattern.p 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_repository_policy_author_email_pattern.example 00000000-0000-0000-0000-000000000000/0
 ```

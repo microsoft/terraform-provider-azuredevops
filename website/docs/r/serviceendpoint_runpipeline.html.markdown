@@ -63,5 +63,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id`, e.g.
 
 ```sh
-terraform import azuredevops_serviceendpoint_runpipeline.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_runpipeline.example projectID/00000000-0000-0000-0000-000000000000
 ```

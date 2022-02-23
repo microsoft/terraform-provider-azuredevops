@@ -53,6 +53,6 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 Azure DevOps Environments can be imported using the project ID and environment ID, e.g.:
 
-```shell
+```sh
 terraform import azuredevops_environment.example 00000000-0000-0000-0000-000000000000/0
 ```
