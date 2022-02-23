@@ -12,24 +12,24 @@ Use this data source to access information about an existing Iteration (Sprint) 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_iteration" "root-iteration" {
-	project_id = azuredevops_project.project.id
-	path = "/"
-	fetch_children = true
+data "azuredevops_iteration" "example-root-iteration" {
+  project_id     = azuredevops_project.example.id
+  path           = "/"
+  fetch_children = true
 }
 
-data "azuredevops_iteration" "child-iteration" {
-	project_id = azuredevops_project.project.id
-	path = "/Iteration 1"
-	fetch_children = true
+data "azuredevops_iteration" "example-child-iteration" {
+  project_id     = azuredevops_project.example.id
+  path           = "/Iteration 1"
+  fetch_children = true
 }
 ```
 

@@ -12,32 +12,12 @@ Use this data source to access information about an existing Project within Azur
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "p" {
-  name = "Sample Project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-output "id" {
-  value = data.azuredevops_project.p.id
-}
-
-output "name" {
-  value = data.azuredevops_project.p.name
-}
-
-output "visibility" {
-  value = data.azuredevops_project.p.visibility
-}
-
-output "version_control" {
-  value = data.azuredevops_project.p.version_control
-}
-
-output "work_item_template" {
-  value = data.azuredevops_project.p.work_item_template
-}
-
-output "process_template_id" {
-  value = data.azuredevops_project.p.process_template_id
+output "project" {
+  value = data.azuredevops_project.example
 }
 ```
 

@@ -12,17 +12,17 @@ Use this data source to access information about an existing Team in a Project w
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_team" "team" {
-  project_id = azuredevops_project.project.id
-  name       = "Team Project Team"
+data "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Project Team"
 }
 ```
 

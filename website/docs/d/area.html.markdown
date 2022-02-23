@@ -12,19 +12,17 @@ Use this data source to access information about an existing Area (Component) wi
 ## Example Usage
 
 ```hcl
-#---------------------------------------------------------------------------
-# Azure DevOps project
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_area" "area" {
-  project_id = azuredevops_project.project.id
-  path = "/"
+data "azuredevops_area" "example" {
+  project_id     = azuredevops_project.example.id
+  path           = "/"
   fetch_children = "false"
 }
 ```

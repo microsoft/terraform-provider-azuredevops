@@ -13,15 +13,14 @@ To read information about **multiple** Git Repositories use the data source [`az
 ## Example Usage
 
 ```hcl
-# Load all projects of an organization, that are accessible by the current user
-data "azuredevops_project" "project" {
-  name = "contoso-project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
 # Load a specific Git repository by name
-data "azuredevops_git_repository" "single_repo" {
-  project_id = data.azuredevops_project.project.id
-  name       = "contoso-repo"
+data "azuredevops_git_repository" "example-single-repo" {
+  project_id = data.azuredevops_project.example.id
+  name       = "Example Repository"
 }
 ```
 

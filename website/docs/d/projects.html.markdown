@@ -12,25 +12,25 @@ Use this data source to access information about existing Projects within Azure 
 ## Example Usage
 
 ```hcl
-data "azuredevops_projects" "test" {
-  name = "contoso"
-  state        = "wellFormed"
+data "azuredevops_projects" "example" {
+  name  = "Example Project"
+  state = "wellFormed"
 }
 
 output "project_id" {
-  value = data.azuredevops_projects.test.projects.*.project_id
+  value = data.azuredevops_projects.example.projects.*.project_id
 }
 
 output "name" {
-  value = data.azuredevops_projects.test.projects.*.name
+  value = data.azuredevops_projects.example.projects.*.name
 }
 
 output "project_url" {
-  value = data.azuredevops_projects.test.projects.*.project_url
+  value = data.azuredevops_projects.example.projects.*.project_url
 }
 
 output "state" {
-  value = data.azuredevops_projects.test.projects.*.state
+  value = data.azuredevops_projects.example.projects.*.state
 }
 ```
 

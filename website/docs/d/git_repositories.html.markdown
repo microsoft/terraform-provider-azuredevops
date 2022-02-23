@@ -13,21 +13,20 @@ To read informations about a **single** Git Repository use the data source [`azu
 ## Example Usage
 
 ```hcl
-# Load all projects of an organization, that are accessible by the current user
-data "azuredevops_project" "p" {
-  name = "contoso-project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
 # Load all Git repositories of a project, which are accessible for the current user
-data "azuredevops_git_repositories" "all_repos" {
-  project_id     = data.azuredevops_project.p.id
+data "azuredevops_git_repositories" "example-all-repos" {
+  project_id     = data.azuredevops_project.example.id
   include_hidden = true
 }
 
 # Load a specific Git repository by name
-data "azuredevops_git_repositories" "single_repo" {
-  project_id = data.azuredevops_project.p.id
-  name       = "contoso-repo"
+data "azuredevops_git_repositories" "example-single-repo" {
+  project_id = data.azuredevops_project.example.id
+  name       = "Example Repository"
 }
 ```
 

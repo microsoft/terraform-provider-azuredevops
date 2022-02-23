@@ -12,20 +12,20 @@ Use this data source to access information about an existing Agent Pool within A
 ## Example Usage
 
 ```hcl
-data "azuredevops_agent_pool" "pool" {
-  name = "Sample Agent Pool"
+data "azuredevops_agent_pool" "example" {
+  name = "Example Agent Pool"
 }
 
 output "name" {
-  value = data.azuredevops_agent_pool.pool.name
+  value = data.azuredevops_agent_pool.example.name
 }
 
 output "pool_type" {
-  value = data.azuredevops_agent_pool.pool.pool_type
+  value = data.azuredevops_agent_pool.example.pool_type
 }
 
 output "auto_provision" {
-  value = data.azuredevops_agent_pool.pool.auto_provision
+  value = data.azuredevops_agent_pool.example.auto_provision
 }
 ```
 
@@ -41,7 +41,7 @@ The following attributes are exported:
 
 `name` - The name of the agent pool
 `pool_type` - Specifies whether the agent pool type is Automation or Deployment.
-`auto_provision` - Specifies whether or not a queue should be automatically provisioned for each project collection.
+`auto_provision` - Specifies whether a queue should be automatically provisioned for each project collection.
 
 ## Relevant Links
 

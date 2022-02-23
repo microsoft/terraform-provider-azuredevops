@@ -12,10 +12,10 @@ Use this data source to access information about the Azure DevOps organization c
 ## Example Usage
 
 ```hcl
-data "azuredevops_client_config" "c" {}
+data "azuredevops_client_config" "example" {}
 
 output "org_url" {
-  value = data.azuredevops_client_config.c.organization_url
+  value = data.azuredevops_client_config.example.organization_url
 }
 ```
 

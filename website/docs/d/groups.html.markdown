@@ -12,15 +12,18 @@ Use this data source to access information about existing Groups within Azure De
 ## Example Usage
 
 ```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
 # load all existing groups inside an organization
-data "azuredevops_groups" "all-groups" {
+data "azuredevops_groups" "example-all-groups" {
 }
 
 # load all existing groups inside a specific project
-data "azuredevops_groups" "project-groups" {
-  project_id = data.azuredevops_project.p.id
+data "azuredevops_groups" "example-project-groups" {
+  project_id = data.azuredevops_project.example.id
 }
-
 ```
 
 ## Argument Reference
