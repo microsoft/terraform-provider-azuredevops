@@ -36,9 +36,6 @@ func ResourceGroup() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 				Optional:     true,
 				ForceNew:     true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return true
-				},
 			},
 
 			// ***
@@ -386,6 +383,10 @@ func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]gr
 		}
 		d.Set("members", dMembers)
 	}
+
+	if projectId := domain2ProjectID(*group.Domain); projectId != "" {
+		d.Set("scope", projectId)
+	}
 	return nil
 }
 
@@ -405,4 +406,14 @@ func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) 
 	}
 
 	return &members, nil
+}
+
+func domain2ProjectID(domain string) (projectID string) {
+	if domain == "" {
+		return ""
+	}
+	if !strings.HasPrefix(domain, "vstfs:///Classification/TeamProject") {
+		return ""
+	}
+	return domain[36:]
 }
