@@ -40,7 +40,6 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-
 resource "azuredevops_serviceendpoint_github" "example" {
   project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example GitHub"
@@ -51,8 +50,16 @@ resource "azuredevops_serviceendpoint_github" "example" {
 ```
 
 ```hcl
-resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_3" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_serviceendpoint_github" "example" {
+  project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example GitHub Apps: Azure Pipelines"
   # Note Github Apps do not support a description and will always be empty string. Must be explicitly set to override the default value.  
   description = "Managed by Terraform"
