@@ -54,7 +54,8 @@ resource "azuredevops_serviceendpoint_github" "example" {
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_gh_3" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "Example GitHub Apps: Azure Pipelines"
-  # Note Github Apps do not support a description and will always be empty string. Must be explicitly set to override the default value.  description = "Managed by Terraform"
+  # Note Github Apps do not support a description and will always be empty string. Must be explicitly set to override the default value.  
+  description = "Managed by Terraform"
 }
 ```
 
