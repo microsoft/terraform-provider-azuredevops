@@ -20,44 +20,44 @@ For detailed steps to create a service principal with Azure cli see the [documen
 ### Manual AzureRM Service Endpoint
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample AzureRM"
-  description = "Managed by Terraform" 
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example AzureRM"
+  description           = "Managed by Terraform"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name = "Sample Subscription"
+  azurerm_subscription_name = "Example Subscription Name"
 }
 ```
 
 ### Automatic AzureRM Service Endpoint
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint_azurerm" "endpointazure" {
-  project_id                = azuredevops_project.project.id
-  service_endpoint_name     = "Sample AzureRM"
-  description = "Managed by Terraform" 
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                = azuredevops_project.example.id
+  service_endpoint_name     = "Example AzureRM"
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name = "Microsoft Azure DEMO"
+  azurerm_subscription_name = "Example Subscription Name"
 }
 ```
 
@@ -91,12 +91,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Service End points](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Service End points](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint Azure Resource Manage can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_azurerm.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_azurerm.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

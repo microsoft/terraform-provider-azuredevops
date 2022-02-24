@@ -11,23 +11,23 @@ Manage files within an Azure DevOps Git repository.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "repo" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Git Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Git Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_git_repository_file" "repo_file" {
-  repository_id       = azuredevops_git_repository.repo.id
+resource "azuredevops_git_repository_file" "example" {
+  repository_id       = azuredevops_git_repository.example.id
   file                = ".gitignore"
   content             = "**/*.tfstate"
   branch              = "refs/heads/master"
@@ -53,15 +53,15 @@ The following arguments are supported:
 Repository files can be imported using a combination of the `repositroy ID` and `file`, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore
+terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000-000000000000/.gitignore
 ```
 
 To import a file from a branch other than `master`, append `:` and the branch name, e.g.
 
 ```sh
-terraform import azuredevops_git_repository_file.repo_file 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/master
+terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000-000000000000/.gitignore:refs/heads/master
 ```
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-6.0)

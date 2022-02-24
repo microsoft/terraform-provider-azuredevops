@@ -14,16 +14,17 @@ Manages an Azure DevOps service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_azuredevops" "test" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample Azure DevOps"
+resource "azuredevops_serviceendpoint_azuredevops" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Azure DevOps"
   org_url               = "https://dev.azure.com/testorganization"
   release_api_url       = "https://vsrm.dev.azure.com/testorganization"
   personal_access_token = "0000000000000000000000000000000000000000000000000000"
@@ -52,12 +53,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint Azure DevOps can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_azuredevops.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_azuredevops.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

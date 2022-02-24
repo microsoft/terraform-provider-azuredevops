@@ -12,15 +12,18 @@ Use this data source to access information about existing Groups within Azure De
 ## Example Usage
 
 ```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
 # load all existing groups inside an organization
-data "azuredevops_groups" "all-groups" {
+data "azuredevops_groups" "example-all-groups" {
 }
 
 # load all existing groups inside a specific project
-data "azuredevops_groups" "project-groups" {
-  project_id = data.azuredevops_project.p.id
+data "azuredevops_groups" "example-project-groups" {
+  project_id = data.azuredevops_project.example.id
 }
-
 ```
 
 ## Argument Reference
@@ -47,4 +50,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Groups - List](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/list?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Groups - List](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/list?view=azure-devops-rest-6.0)

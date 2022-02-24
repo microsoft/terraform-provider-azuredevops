@@ -12,53 +12,53 @@ Manages a build validation branch policy within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_build_definition" "b" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Build Definition"
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
 
   repository {
     repo_type = "TfsGit"
-    repo_id   = azuredevops_git_repository.r.id
+    repo_id   = azuredevops_git_repository.example.id
     yml_path  = "azure-pipelines.yml"
   }
 }
 
-resource "azuredevops_branch_policy_build_validation" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_build_validation" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
 
   settings {
-    display_name        = "Don't break the build!"
-    build_definition_id = azuredevops_build_definition.b.id
+    display_name        = "Example build validation policy"
+    build_definition_id = azuredevops_build_definition.example.id
     valid_duration      = 720
-    filename_patterns =  [
+    filename_patterns = [
       "/WebApp/*",
       "!/WebApp/Tests/*",
       "*.cs"
     ]
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
+      repository_id  = azuredevops_git_repository.example.id
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
@@ -99,12 +99,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-$ terraform import azuredevops_branch_policy_build_validation.p 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_branch_policy_build_validation.example 00000000-0000-0000-0000-000000000000/0
 ```

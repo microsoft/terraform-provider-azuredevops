@@ -11,20 +11,20 @@ Manages a AWS service endpoint within Azure DevOps. Using this service endpoint 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_aws" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample AWS"
-  description           = "Managed by AzureDevOps"
-
+resource "azuredevops_serviceendpoint_aws" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example AWS"
   access_key_id         = "00000000-0000-0000-0000-000000000000"
   secret_access_key     = "accesskey"
+  description           = "Managed by AzureDevOps"
 }
 ```
 
@@ -52,11 +52,11 @@ The following attributes are exported:
 
 ## Relevant Links
 * [aws-toolkit-azure-devops](https://github.com/aws/aws-toolkit-azure-devops)
-* [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+* [Azure DevOps Service REST API 6.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 Azure DevOps Service Endpoint AWS can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
-```
- terraform import azuredevops_serviceendpoint_aws.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```sh
+ terraform import azuredevops_serviceendpoint_aws.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

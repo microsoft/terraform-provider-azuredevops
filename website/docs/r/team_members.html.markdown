@@ -12,30 +12,30 @@ Manages members of a team within a project in a Azure DevOps organization.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "builtin_project_readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_team" "team" {
-  project_id = azuredevops_project.project.id
-  name       = "${azuredevops_project.project.name} Team 2"
+resource "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "${azuredevops_project.example.name} Team 2"
 }
 
-resource "azuredevops_team_members" "team_members" {
-  project_id = azuredevops_team.team.project_id
-  team_id    = azuredevops_team.team.id
+resource "azuredevops_team_members" "example-team-members" {
+  project_id = azuredevops_team.example.project_id
+  team_id    = azuredevops_team.example.id
   mode       = "overwrite"
   members = [
-    data.azuredevops_group.builtin_project_readers.descriptor
+    data.azuredevops_group.example-project-readers.descriptor
   ]
 }
 ```
@@ -64,7 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Teams - Update](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/update?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Teams - Update](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/update?view=azure-devops-rest-6.0)
 
 ## Import
 

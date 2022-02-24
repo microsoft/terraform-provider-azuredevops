@@ -14,30 +14,30 @@ Manages permissions for a Build Definition
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
 }
 
-resource "azuredevops_git_repository" "repository" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Repository"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_build_definition" "build" {
-  project_id = azuredevops_project.project.id
-  name       = "Sample Build Definition"
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
   path       = "\\ExampleFolder"
 
   ci_trigger {
@@ -46,24 +46,24 @@ resource "azuredevops_build_definition" "build" {
 
   repository {
     repo_type   = "TfsGit"
-    repo_id     = azuredevops_git_repository.repository.id
-    branch_name = azuredevops_git_repository.repository.default_branch
+    repo_id     = azuredevops_git_repository.example.id
+    branch_name = azuredevops_git_repository.example.default_branch
     yml_path    = "azure-pipelines.yml"
   }
 }
 
-resource "azuredevops_build_definition_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_build_definition_permissions" "example" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
 
-	build_definition_id = azuredevops_build_definition.build.id
+  build_definition_id = azuredevops_build_definition.example.id
 
-	permissions = {
-	  ViewBuilds       = "Allow"
-	  EditBuildQuality = "Deny"
-	  DeleteBuilds     = "Deny"
-	  StopBuilds       = "Allow"
-	}
+  permissions = {
+    ViewBuilds       = "Allow"
+    EditBuildQuality = "Deny"
+    DeleteBuilds     = "Deny"
+    StopBuilds       = "Allow"
+  }
 }
 ```
 
@@ -97,7 +97,7 @@ The following arguments are supported:
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 5.1 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-5.1)
+* [Azure DevOps Service REST API 6.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-6.0)
 
 ## Import
 

@@ -12,7 +12,7 @@ Manages a user entitlement within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_user_entitlement" "user" {
+resource "azuredevops_user_entitlement" "example" {
   principal_name = "foo@contoso.com"
 }
 ```
@@ -36,7 +36,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - User Entitlements - Add](https://docs.microsoft.com/en-us/rest/api/azure/devops/memberentitlementmanagement/user%20entitlements/add?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - User Entitlements - Add](https://docs.microsoft.com/en-us/rest/api/azure/devops/memberentitlementmanagement/user-entitlements/add?view=azure-devops-rest-6.0)
 - [Programmatic mapping of access levels](https://docs.microsoft.com/en-us/azure/devops/organizations/security/access-levels?view=azure-devops#programmatic-mapping-of-access-levels)
 
 ## Import

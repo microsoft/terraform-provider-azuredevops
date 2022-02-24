@@ -13,28 +13,28 @@ Use this data source to access information about an existing users within Azure 
 
 ```hcl
 # Load single user by using it's principal name
-data "azuredevops_users" "user" {
+data "azuredevops_users" "example" {
   principal_name = "contoso-user@contoso.onmicrosoft.com"
 }
 
 # Load all users know inside an organization
-data "azuredevops_users" "all-users" {
+data "azuredevops_users" "example-all-users" {
 }
 
 # Load all users know inside an organization originating from a specific source (origin)
-data "azuredevops_users" "all-from-origin" {
+data "azuredevops_users" "example-all-from-origin" {
   origin = "aad"
 }
 
 # Load all users know inside an organization filtered by their subject types
-data "azuredevops_users" "all-from-subject_types" {
-  subject_types = [ "aad", "msa" ]
+data "azuredevops_users" "example-all-from-subject_types" {
+  subject_types = ["aad", "msa"]
 }
 
 # Load a single user by origin and origin ID
-data "azuredevops_users" "all-from-origin-id" {
-  origin = "aad"
-  origin_id = "a7ead982-8438-4cd2-b9e3-c3aa51a7b675"
+data "azuredevops_users" "example-all-from-origin-id" {
+  origin    = "aad"
+  origin_id = "00000000-0000-0000-0000-000000000000"
 }
 ```
 
@@ -52,11 +52,11 @@ DataSource without specifying any arguments will return all users inside an orga
 List of possible subject types
 
 ```hcl
-AadUser                 = "aad"    # Azure Active Directory Tenant
-MsaUser                 = "msa"    # Windows Live
+AadUser                 = "aad" # Azure Active Directory Tenant
+MsaUser                 = "msa" # Windows Live
 UnknownUser             = "unusr"
-BindPendingUser         = "bnd"    # Invited user with pending redeem status
-WindowsIdentity         = "win"    # Windows Active Directory user
+BindPendingUser         = "bnd" # Invited user with pending redeem status
+WindowsIdentity         = "win" # Windows Active Directory user
 UnauthenticatedIdentity = "uauth"
 ServiceIdentity         = "svc"
 AggregateIdentity       = "agg"
@@ -100,4 +100,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Graph Users API](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/users?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Graph Users API](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/users?view=azure-devops-rest-6.0)

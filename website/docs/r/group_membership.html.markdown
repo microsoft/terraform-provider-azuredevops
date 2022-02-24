@@ -12,23 +12,23 @@ Manages group membership within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name = "Test Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_user_entitlement" "user" {
+resource "azuredevops_user_entitlement" "example" {
   principal_name = "foo@contoso.com"
 }
 
-data "azuredevops_group" "group" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example" {
+  project_id = azuredevops_project.example.id
   name       = "Build Administrators"
 }
 
-resource "azuredevops_group_membership" "membership" {
-  group = data.azuredevops_group.group.descriptor
+resource "azuredevops_group_membership" "example" {
+  group = data.azuredevops_group.example.descriptor
   members = [
-    azuredevops_user_entitlement.user.descriptor
+    azuredevops_user_entitlement.example.descriptor
   ]
 }
 ```
@@ -53,7 +53,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Memberships](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/memberships?view=azure-devops-rest-5.0)
+- [Azure DevOps Service REST API 6.0 - Memberships](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/memberships?view=azure-devops-rest-6.0)
 
 ## Import
 

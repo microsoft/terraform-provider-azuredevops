@@ -14,19 +14,20 @@ using basic authentication via a username and password. This is mostly useful fo
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
+resource "azuredevops_serviceendpoint_generic_git" "example" {
+  project_id            = azuredevops_project.example.id
   repository_url        = "https://dev.azure.com/org/project/_git/repository"
   username              = "username"
   password              = "password"
-  service_endpoint_name = "Sample Generic Git"
+  service_endpoint_name = "Example Generic Git"
   description           = "Managed by Terraform"
 }
 ```
@@ -57,7 +58,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
@@ -65,5 +66,5 @@ Azure DevOps Service Endpoint Generic Git can be imported using **projectID/serv
 **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_generic_git.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_generic_git.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

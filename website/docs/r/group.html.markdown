@@ -12,28 +12,28 @@ Manages a group within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Test Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-data "azuredevops_group" "tf-project-readers" {
-  project_id = azuredevops_project.p.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-data "azuredevops_group" "tf-project-contributors" {
-  project_id = azuredevops_project.p.id
+data "azuredevops_group" "example-contributors" {
+  project_id = azuredevops_project.example.id
   name       = "Contributors"
 }
 
-resource "azuredevops_group" "g" {
-  scope        = azuredevops_project.p.id
-  display_name = "Test group"
-  description  = "Test description"
+resource "azuredevops_group" "example" {
+  scope        = azuredevops_project.example.id
+  display_name = "Example group"
+  description  = "Example description"
 
   members = [
-    data.azuredevops_group.tf-project-readers.descriptor,
-    data.azuredevops_group.tf-project-contributors.descriptor
+    data.azuredevops_group.example-readers.descriptor,
+    data.azuredevops_group.example-contributors.descriptor
   ]
 }
 ```
@@ -64,14 +64,14 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Groups](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Groups](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps groups can be imported using the group identity descriptor, e.g.
 
 ```sh
-$ terraform import azuredevops_group.id aadgp.Uy0xLTktMTU1MTM3NDI0NS0xMjA0NDAwOTY5LTI0MDI5ODY0MTMtMjE3OTQwODYxNi0zLTIxNjc2NjQyNTMtMzI1Nzg0NDI4OS0yMjU4MjcwOTc0LTI2MDYxODY2NDU
+terraform import azuredevops_group.example aadgp.Uy0xLTktMTU1MTM3NDI0NS0xMjA0NDAwOTY5LTI0MDI5ODY0MTMtMjE3OTQwODYxNi0zLTIxNjc2NjQyNTMtMzI1Nzg0NDI4OS0yMjU4MjcwOTc0LTI2MDYxODY2NDU
 ```
 
 ## PAT Permissions Required

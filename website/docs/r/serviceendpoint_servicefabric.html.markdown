@@ -14,16 +14,17 @@ Manages a Service Fabric service endpoint within Azure DevOps.
 ### Client Certificate Authentication
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_servicefabric" "test" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample Service Fabric"
+resource "azuredevops_serviceendpoint_servicefabric" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Service Fabric"
   description           = "Managed by Terraform"
   cluster_endpoint      = "tcp://test"
 
@@ -123,12 +124,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint Service Fabric can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_servicefabric.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_servicefabric.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

@@ -12,35 +12,34 @@ Use this data source to access information about an existing Group within Azure 
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "p" {
-  name = "contoso-project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-data "azuredevops_group" "test" {
-  project_id = data.azuredevops_project.p.id
-  name       = "Test Group"
+data "azuredevops_group" "example" {
+  project_id = data.azuredevops_project.example.id
+  name       = "Example Group"
 }
 
 output "group_id" {
-  value = data.azuredevops_group.test.id
+  value = data.azuredevops_group.example.id
 }
 
 output "group_descriptor" {
-  value = data.azuredevops_group.test.descriptor
+  value = data.azuredevops_group.example.descriptor
 }
 
-data "azuredevops_group" "test-collection-group" {
-  name       = "Project Collection Administrators"
+data "azuredevops_group" "example-collection-group" {
+  name = "Project Collection Administrators"
 }
 
 output "collection_group_id" {
-  value = data.azuredevops_group.test-collection-group.id
+  value = data.azuredevops_group.example.id
 }
 
 output "collection_group_descriptor" {
-  value = data.azuredevops_group.test-collection-group.descriptor
+  value = data.azuredevops_group.example.descriptor
 }
-
 ```
 
 ## Argument Reference
@@ -61,4 +60,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Groups - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Groups - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups/get?view=azure-devops-rest-6.0)

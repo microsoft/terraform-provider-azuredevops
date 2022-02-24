@@ -12,19 +12,19 @@ Use this data source to access information about existing Agent Pools within Azu
 ## Example Usage
 
 ```hcl
-data "azuredevops_agent_pools" "pools" {
+data "azuredevops_agent_pools" "example" {
 }
 
 output "agent_pool_name" {
-  value = data.azuredevops_agent_pools.pools.agent_pools.*.name
+  value = data.azuredevops_agent_pools.example.agent_pools.*.name
 }
 
 output "auto_provision" {
-  value = data.azuredevops_agent_pools.pools.agent_pools.*.auto_provision
+  value = data.azuredevops_agent_pools.example.agent_pools.*.auto_provision
 }
 
 output "pool_type" {
-  value = data.azuredevops_agent_pools.pools.agent_pools.*.pool_type
+  value = data.azuredevops_agent_pools.example.agent_pools.*.pool_type
 }
 ```
 
@@ -43,4 +43,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Pools - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/pools/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Agent Pools - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/pools/get?view=azure-devops-rest-6.0)

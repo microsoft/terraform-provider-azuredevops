@@ -12,17 +12,18 @@ Manages a Azure DevOps Service Connection service endpoint within Azure DevOps. 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample Pipeline Runner"
-  organization_name     = "MyOrganization"
+resource "azuredevops_serviceendpoint_runpipeline" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Pipeline Runner"
+  organization_name     = "Organization Name"
   auth_personal {
     # Also can be set with AZDO_PERSONAL_ACCESS_TOKEN environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -55,12 +56,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint can be imported using the `project id`, `service connection id`, e.g.
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_runpipeline.serviceendpoint projectID/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_runpipeline.example projectID/00000000-0000-0000-0000-000000000000
 ```

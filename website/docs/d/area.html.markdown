@@ -12,19 +12,17 @@ Use this data source to access information about an existing Area (Component) wi
 ## Example Usage
 
 ```hcl
-#---------------------------------------------------------------------------
-# Azure DevOps project
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_area" "area" {
-  project_id = azuredevops_project.project.id
-  path = "/"
+data "azuredevops_area" "example" {
+  project_id     = azuredevops_project.example.id
+  path           = "/"
   fetch_children = "false"
 }
 ```
@@ -56,7 +54,7 @@ A `children` block supports the following:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Classification Nodes - Get Classification Nodes](https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/classification%20nodes/get%20classification%20nodes?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Classification Nodes - Get Classification Nodes](https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/classification-nodes/create-or-update?view=azure-devops-rest-6.0)
 
 ## PAT Permissions Required
 

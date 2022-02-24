@@ -12,16 +12,15 @@ Manages a project within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-
+  description        = "Managed by Terraform"
   features = {
-      "testplans" = "disabled"
-      "artifacts" = "disabled"
+    "testplans" = "disabled"
+    "artifacts" = "disabled"
   }
 }
 ```
@@ -52,20 +51,20 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Projects can be imported using the project name or by the project Guid, e.g.
 
 ```sh
-$ terraform import azuredevops_project.project "Test Project"
+terraform import azuredevops_project.example "Example Project"
 ```
 
 or
 
 ```sh
-$ terraform import azuredevops_project.project 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_project.example 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

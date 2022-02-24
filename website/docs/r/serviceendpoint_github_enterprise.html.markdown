@@ -12,19 +12,20 @@ Manages a GitHub Enterprise Server service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint_ghes_1" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample GitHub Enterprise"
+resource "azuredevops_serviceendpoint_github_enterprise" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example GitHub Enterprise"
   url                   = "https://github.contoso.com"
   description           = "Managed by Terraform"
-  
+
   auth_personal {
     # Also can be set with AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT environment variable
     personal_access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -58,12 +59,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint GitHub Enterprise Server can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_github_enterprise.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_github_enterprise.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

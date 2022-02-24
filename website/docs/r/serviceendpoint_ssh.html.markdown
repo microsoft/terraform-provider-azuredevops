@@ -12,16 +12,17 @@ Manages a SSH service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_ssh" "test" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample SSH"
+resource "azuredevops_serviceendpoint_ssh" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example SSH"
   host                  = "1.2.3.4"
   username              = "username"
   description           = "Managed by Terraform"
@@ -51,7 +52,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
@@ -59,5 +60,5 @@ Azure DevOps Service Endpoint SSH can be imported using **projectID/serviceEndpo
 projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_ssh.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_ssh.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

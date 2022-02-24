@@ -17,23 +17,22 @@ Those levels are reflected by specifying (or omitting) values for the argument `
 ## Example Usage
 
 ```hcl
-
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_servicehook_permissions" "root-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_servicehook_permissions" "example-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     ViewSubscriptions   = "allow"
     EditSubscriptions   = "allow"

@@ -12,32 +12,32 @@ Manages a Docker Registry service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
 # dockerhub registry service connection
-resource "azuredevops_serviceendpoint_dockerregistry" "dockerhubregistry" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample Docker Hub"
-
-    docker_username        = "sample"
-    docker_email           = "email@example.com"
-    docker_password        = "12345"
-    registry_type          = "DockerHub"
+resource "azuredevops_serviceendpoint_dockerregistry" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Docker Hub"
+  docker_username       = "example"
+  docker_email          = "email@example.com"
+  docker_password       = "12345"
+  registry_type         = "DockerHub"
 }
 
 # other docker registry service connection
-resource "azuredevops_serviceendpoint_dockerregistry" "otherregistry" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "Sample Docker Registry"
-    docker_registry      = "https://sample.azurecr.io/v1"
-    docker_username        = "sample"
-    docker_password        = "12345"
-    registry_type          = "Others"
+resource "azuredevops_serviceendpoint_dockerregistry" "example-other" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Docker Registry"
+  docker_registry       = "https://sample.azurecr.io/v1"
+  docker_username       = "sample"
+  docker_password       = "12345"
+  registry_type         = "Others"
 }
 ```
 
@@ -64,7 +64,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 - [Docker Registry Service Connection](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#sep-docreg)
 
 ## Import
@@ -72,5 +72,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint Docker Registry can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_dockerregistry.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_dockerregistry.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

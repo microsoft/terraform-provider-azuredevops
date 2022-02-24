@@ -12,25 +12,25 @@ Use this data source to access information about existing Projects within Azure 
 ## Example Usage
 
 ```hcl
-data "azuredevops_projects" "test" {
-  name = "contoso"
-  state        = "wellFormed"
+data "azuredevops_projects" "example" {
+  name  = "Example Project"
+  state = "wellFormed"
 }
 
 output "project_id" {
-  value = data.azuredevops_projects.test.projects.*.project_id
+  value = data.azuredevops_projects.example.projects.*.project_id
 }
 
 output "name" {
-  value = data.azuredevops_projects.test.projects.*.name
+  value = data.azuredevops_projects.example.projects.*.name
 }
 
 output "project_url" {
-  value = data.azuredevops_projects.test.projects.*.project_url
+  value = data.azuredevops_projects.example.projects.*.project_url
 }
 
 output "state" {
-  value = data.azuredevops_projects.test.projects.*.state
+  value = data.azuredevops_projects.example.projects.*.state
 }
 ```
 
@@ -57,4 +57,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-6.0)

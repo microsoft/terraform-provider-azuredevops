@@ -12,29 +12,33 @@ Manages a Kubernetes service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "p" {
-  name = "contoso"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
-  project_id            = data.azuredevops_project.p.id
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-azure" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "AzureSubscription"
 
   azure_subscription {
-    subscription_id   = "00000000-0000-0000-0000-000000000000" # fake value
-    subscription_name = "Microsoft Azure DEMO"
-    tenant_id         = "00000000-0000-0000-0000-000000000000" # fake value
-    resourcegroup_id  = "sample-rg"
+    subscription_id   = "00000000-0000-0000-0000-000000000000"
+    subscription_name = "Example"
+    tenant_id         = "00000000-0000-0000-0000-000000000000"
+    resourcegroup_id  = "example-rg"
     namespace         = "default"
-    cluster_name      = "sample-aks"
+    cluster_name      = "example-aks"
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_kubeconfig" {
-  project_id            = data.azuredevops_project.p
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-kubeconfig" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "Kubeconfig"
 
@@ -66,15 +70,15 @@ resource "azuredevops_serviceendpoint_kubernetes" "se_kubeconfig" {
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_service_account" {
-  project_id            = data.azuredevops_project.p
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-service-account" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "ServiceAccount"
 
   service_account {
-    token   = "bXktYXBw[...]K8bPxc2uQ=="
-    ca_cert = "Mzk1MjgkdmRnN0pi[...]mHHRUH14gw4Q=="
+    token   = "000000000000000000000000"
+    ca_cert = "0000000000000000000000000000000"
   }
 }
 ```
@@ -114,12 +118,12 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint Kubernetes can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-$ terraform import azuredevops_serviceendpoint_kubernetes.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_kubernetes.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

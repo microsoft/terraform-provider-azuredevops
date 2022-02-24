@@ -17,28 +17,27 @@ The project level is reflected by specifying the argument `project_id`, otherwis
 ## Example Usage
 
 ```hcl
-
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_tagging_permissions" "root-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_tagging_permissions" "example-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
-    Enumerate    = "allow"
-    Create       = "allow"
-    Update       = "allow"
-    Delete       = "allow"
+    Enumerate = "allow"
+    Create    = "allow"
+    Update    = "allow"
+    Delete    = "allow"
   }
 }
 ```

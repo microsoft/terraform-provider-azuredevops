@@ -12,23 +12,23 @@ Use this data source to access information about existing Teams in a Project or 
 ## Example Usage
 
 ```hcl
-data "azuredevops_teams" "test" {
+data "azuredevops_teams" "example" {
 }
 
 output "project_id" {
-  value = data.azuredevops_teams.test.teams.*.project_id
+  value = data.azuredevops_teams.example.teams.*.project_id
 }
 
 output "name" {
-  value = data.azuredevops_teams.test.teams.*.name
+  value = data.azuredevops_teams.example.teams.*.name
+}
+
+output "alladministrators" {
+  value = data.azuredevops_teams.example.teams.*.administrators
 }
 
 output "administrators" {
-  value = data.azuredevops_teams.test.teams.*.administrators
-}
-
-output "administrators" {
-  value = data.azuredevops_teams.test.teams.*.members
+  value = data.azuredevops_teams.example.teams.*.members
 }
 ```
 
@@ -53,7 +53,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-6.0)
 
 ## PAT Permissions Required
 

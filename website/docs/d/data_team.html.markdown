@@ -12,17 +12,17 @@ Use this data source to access information about an existing Team in a Project w
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_team" "team" {
-  project_id = azuredevops_project.project.id
-  name       = "Team Project Team"
+data "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Project Team"
 }
 ```
 
@@ -44,7 +44,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-6.0)
 
 ## PAT Permissions Required
 

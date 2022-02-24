@@ -13,15 +13,14 @@ To read information about **multiple** Git Repositories use the data source [`az
 ## Example Usage
 
 ```hcl
-# Load all projects of an organization, that are accessible by the current user
-data "azuredevops_project" "project" {
-  name = "contoso-project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
 # Load a specific Git repository by name
-data "azuredevops_git_repository" "single_repo" {
-  project_id = data.azuredevops_project.project.id
-  name       = "contoso-repo"
+data "azuredevops_git_repository" "example-single-repo" {
+  project_id = data.azuredevops_project.example.id
+  name       = "Example Repository"
 }
 ```
 
@@ -48,4 +47,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-6.0)

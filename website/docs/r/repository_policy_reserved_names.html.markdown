@@ -13,34 +13,42 @@ Manage a reserved names repository policy within Azure DevOps project. Block pus
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name               = "Sample Project"
-  description        = "Managed by Terraform"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id     = azuredevops_project.p.id
+resource "azuredevops_repository_policy_reserved_names" "example" {
+  project_id     = azuredevops_project.example.id
   enabled        = true
   blocking       = true
-  repository_ids = [azuredevops_git_repository.r.id]
+  repository_ids = [azuredevops_git_repository.example.id]
 }
 ```
 
 # Set project level repository policy
 ```hcl
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_repository_policy_reserved_names" "example" {
+  project_id = azuredevops_project.example.id
   enabled    = true
   blocking   = true
 }
@@ -63,12 +71,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps repository policies can be imported using the projectID/policyID or projectName/policyID:
 
 ```sh
-$ terraform import azuredevops_repository_policy_reserved_names.p 00000000-0000-0000-0000-000000000000/0
+terraform import azuredevops_repository_policy_reserved_names.example 00000000-0000-0000-0000-000000000000/0
 ```

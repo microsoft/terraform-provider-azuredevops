@@ -12,32 +12,32 @@ Manages a team within a project in a Azure DevOps organization.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "builtin_project_contributors" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-contributors" {
+  project_id = azuredevops_project.example.id
   name       = "Contributors"
 }
 
-data "azuredevops_group" "builtin_project_readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-resource "azuredevops_team" "team" {
-  project_id = azuredevops_project.project.id
-  name       = "My Test Team"
+resource "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Team"
   administrators = [
-    data.azuredevops_group.builtin_project_contributors.descriptor
+    data.azuredevops_group.example-project-contributors.descriptor
   ]
   members = [
-    data.azuredevops_group.builtin_project_readers.descriptor
+    data.azuredevops_group.example-project-readers.descriptor
   ]
 }
 ```
@@ -71,14 +71,14 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Teams - Create](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/create?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Teams - Create](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/create?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps teams can be imported using the complete resource id `<project_id>/<team_id>` e.g.
 
 ```sh
-$ terraform import azuredevops_team.team 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_team.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

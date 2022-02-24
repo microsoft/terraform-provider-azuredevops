@@ -12,30 +12,30 @@ Manages administrators of a team within a project in a Azure DevOps organization
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
-  description        = "My first project"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "builtin_project_contributors" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-contributors" {
+  project_id = azuredevops_project.example.id
   name       = "Contributors"
 }
 
-resource "azuredevops_team" "team" {
-  project_id = azuredevops_project.project.id
-  name       = "${azuredevops_project.project.name} Team 2"
+resource "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "${azuredevops_project.example.name} Team 2"
 }
 
-resource "azuredevops_team_administrators" "team_administrators" {
-  project_id = azuredevops_team.team.project_id
-  team_id    = azuredevops_team.team.id
+resource "azuredevops_team_administrators" "example-team-administrators" {
+  project_id = azuredevops_team.example.project_id
+  team_id    = azuredevops_team.example.id
   mode       = "overwrite"
   administrators = [
-    data.azuredevops_group.builtin_project_contributors.descriptor
+    data.azuredevops_group.example-project-contributors.descriptor
   ]
 }
 ```
@@ -64,7 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Teams - Update](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/update?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Teams - Update](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/update?view=azure-devops-rest-6.0)
 
 ## Import
 

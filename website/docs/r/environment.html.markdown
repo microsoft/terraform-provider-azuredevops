@@ -13,12 +13,16 @@ Manages an Environment.
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name = "Sample Project"
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
 }
 
 resource "azuredevops_environment" "example" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Environment"
+  project_id = azuredevops_project.example.id
+  name       = "Example Environment"
 }
 ```
 
@@ -40,12 +44,15 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Environment.
 
+## Relevant Links
+
+* [Azure DevOps Service REST API 6.0 - Environments](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/environments?view=azure-devops-rest-6.0)
 
 
 ## Import
 
 Azure DevOps Environments can be imported using the project ID and environment ID, e.g.:
 
-```shell
-$ terraform import azuredevops_environment.example 00000000-0000-0000-0000-000000000000/0
+```sh
+terraform import azuredevops_environment.example 00000000-0000-0000-0000-000000000000/0
 ```

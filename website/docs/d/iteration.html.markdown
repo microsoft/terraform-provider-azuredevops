@@ -12,24 +12,24 @@ Use this data source to access information about an existing Iteration (Sprint) 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_iteration" "root-iteration" {
-	project_id = azuredevops_project.project.id
-	path = "/"
-	fetch_children = true
+data "azuredevops_iteration" "example-root-iteration" {
+  project_id     = azuredevops_project.example.id
+  path           = "/"
+  fetch_children = true
 }
 
-data "azuredevops_iteration" "child-iteration" {
-	project_id = azuredevops_project.project.id
-	path = "/Iteration 1"
-	fetch_children = true
+data "azuredevops_iteration" "example-child-iteration" {
+  project_id     = azuredevops_project.example.id
+  path           = "/Iteration 1"
+  fetch_children = true
 }
 ```
 
@@ -60,7 +60,7 @@ A `children` block supports the following:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Classification Nodes - Get Classification Nodes](https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/classification%20nodes/get%20classification%20nodes?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Classification Nodes - Get Classification Nodes](https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/classification-nodes/get-classification-nodes?view=azure-devops-rest-6.0)
 
 ## PAT Permissions Required
 

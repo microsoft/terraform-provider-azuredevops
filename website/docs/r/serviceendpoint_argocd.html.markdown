@@ -11,36 +11,42 @@ Manages a ArgoCD service endpoint within Azure DevOps. Using this service endpoi
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name               = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
 }
 
-resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
-
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample ArgoCD"
+resource "azuredevops_serviceendpoint_argocd" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example ArgoCD"
   description           = "Managed by Terraform"
   url                   = "https://argocd.my.com"
   authentication_token {
-      token      = "0000000000000000000000000000000000000000"
+    token = "0000000000000000000000000000000000000000"
   }
 }
 ```
 Alternatively a username and password may be used.
 
 ```hcl
-resource "azuredevops_serviceendpoint_argocd" "serviceendpoint" {
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
 
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "Sample ArgoCD"
+resource "azuredevops_serviceendpoint_argocd" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example ArgoCD"
   description           = "Managed by Terraform"
   url                   = "https://argocd.my.com"
   authentication_basic {
-      username              = "sampleuser"
-      password              = "0000000000000000000000000000000000000000"
+    username = "username"
+    password = "password"
   }
 }
 ```
@@ -84,6 +90,6 @@ The following attributes are exported:
 Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/serviceEndpointID**, e.g.
 
 
-```shell
-$ terraform import azuredevops_serviceendpoint_argocd.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```sh
+terraform import azuredevops_serviceendpoint_argocd.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

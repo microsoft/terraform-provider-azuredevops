@@ -12,32 +12,12 @@ Use this data source to access information about an existing Project within Azur
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "p" {
-  name = "Sample Project"
+data "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-output "id" {
-  value = data.azuredevops_project.p.id
-}
-
-output "name" {
-  value = data.azuredevops_project.p.name
-}
-
-output "visibility" {
-  value = data.azuredevops_project.p.visibility
-}
-
-output "version_control" {
-  value = data.azuredevops_project.p.version_control
-}
-
-output "work_item_template" {
-  value = data.azuredevops_project.p.work_item_template
-}
-
-output "process_template_id" {
-  value = data.azuredevops_project.p.process_template_id
+output "project" {
+  value = data.azuredevops_project.example
 }
 ```
 
@@ -61,4 +41,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-6.0)
