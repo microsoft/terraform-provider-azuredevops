@@ -64,7 +64,7 @@ func ResourceBranchPolicyBuildValidation() *schema.Resource {
 		ValidateFunc: validation.IntAtLeast(0),
 	}
 	settingsSchema[filenamePatterns] = &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Optional: true,
 		Elem: &schema.Schema{
 			Type:         schema.TypeString,
@@ -119,16 +119,15 @@ func buildValidationExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*polic
 	policySettings["manualQueueOnly"] = settings[manualQueueOnly].(bool)
 	policySettings["queueOnSourceUpdateOnly"] = settings[queueOnSourceUpdateOnly].(bool)
 	policySettings["validDuration"] = settings[validDuration].(int)
-	policySettings["filenamePatterns"] = expandFilenamePatterns(settings[filenamePatterns].(*schema.Set))
+	policySettings["filenamePatterns"] = expandFilenamePatterns(settings[filenamePatterns].([]interface{}))
 
 	return policyConfig, projectID, nil
 }
 
-func expandFilenamePatterns(patterns *schema.Set) *[]string {
-	patternsList := patterns.List()
-	patternsArray := make([]string, len(patternsList))
+func expandFilenamePatterns(patterns []interface{}) *[]string {
+	patternsArray := make([]string, len(patterns))
 
-	for i, variableGroup := range patternsList {
+	for i, variableGroup := range patterns {
 		patternsArray[i] = variableGroup.(string)
 	}
 
