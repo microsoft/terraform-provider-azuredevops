@@ -54,7 +54,7 @@ resource "azuredevops_serviceendpoint_argocd" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `url` - (Required) URL of the ArgoCD server to connect with.
 - `description` - (Optional) The Service Endpoint description.
@@ -78,7 +78,7 @@ A `authentication_basic` block supports the following:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links

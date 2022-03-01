@@ -37,24 +37,24 @@ resource "azuredevops_serviceendpoint_github_enterprise" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
-- `url` - (Required) Github Enterprise Server Url.
+- `url` - (Required) GitHub Enterprise Server Url.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 
-**NOTE: Github Apps can not be created or updated via terraform. You must install and configure the app on Github and then import it. You must also set the `description` to "" explicitly."**
+**NOTE: GitHub Apps can not be created or updated via terraform. You must install and configure the app on GitHub and then import it. You must also set the `description` to "" explicitly."**
 
 `auth_personal` block supports the following:
 
-- `personal_access_token` - (Required) The Personal Access Token for Github.
+- `personal_access_token` - (Required) The Personal Access Token for GitHub.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links

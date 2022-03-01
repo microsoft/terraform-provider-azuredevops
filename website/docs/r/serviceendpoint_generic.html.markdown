@@ -36,7 +36,7 @@ resource "azuredevops_serviceendpoint_generic" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The service endpoint name.
 - `server_url` - (Required) The URL of the server associated with the service endpoint.
 - `username` - (Optional) The username used to authenticate to the server url using basic authentication.
@@ -48,7 +48,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project associated with the service endpoint.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The name of the service endpoint.
 
 ## Relevant Links

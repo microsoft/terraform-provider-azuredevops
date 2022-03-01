@@ -71,7 +71,7 @@ resource "azuredevops_serviceendpoint_permissions" "example-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The ID of the project to assign the permissions.
+* `project_id` - (Required) The ID of the project.
 * `principal` - (Required) The **group** principal to assign the permissions.
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 * `serviceendpoint_id` - (Optional) The id of the service endpoint to assign the permissions.

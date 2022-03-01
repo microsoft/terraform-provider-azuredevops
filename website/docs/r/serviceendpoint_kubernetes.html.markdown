@@ -87,7 +87,7 @@ resource "azuredevops_serviceendpoint_kubernetes" "example-service-account" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `apiserver_url` - (Required) The hostname (in form of URI) of the Kubernetes API.
 - `authorization_type` - (Required) The authentication method used to authenticate on the Kubernetes cluster. The value should be one of AzureSubscription, Kubeconfig, ServiceAccount.
@@ -113,7 +113,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links

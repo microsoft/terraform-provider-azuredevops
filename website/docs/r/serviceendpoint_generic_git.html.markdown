@@ -36,7 +36,7 @@ resource "azuredevops_serviceendpoint_generic_git" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name to associate with the service endpoint.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The name of the service endpoint.
 - `repository_url` - (Required) The URL of the repository associated with the service endpoint.
 - `username` - (Optional) The username used to authenticate to the git repository.
@@ -52,7 +52,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name associated with the service endpoint.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The name of the service endpoint.
 - `enable_pipelines_access` - A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
 

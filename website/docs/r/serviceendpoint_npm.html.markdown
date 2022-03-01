@@ -33,7 +33,7 @@ resource "azuredevops_serviceendpoint_npm" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `url` - (Required) URL of the npm registry to connect with.
 - `access_token` - (Required) The access token for npm registry.
@@ -44,7 +44,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
