@@ -24,7 +24,7 @@ IMPROVEMENTS:
   - Refactor the implementation of `SecurityNamespace` and the according helper functions. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
   - All permission resources will now clear the `Id` on a `Read` operation when the connected ACLs not found. [#149](https://github.com/microsoft/terraform-provider-azuredevops/pull/149)
   
-BREAKING CHANGE
+BREAKING CHANGE:
 * All service endpoint - Service endpoint `project_id` only support project ID, project name is no longer supported since v0.2.0. [#494](https://github.com/microsoft/terraform-provider-azuredevops/issues/494)
 
 ## 0.1.8 
