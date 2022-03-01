@@ -36,7 +36,7 @@ resource "azuredevops_serviceendpoint_azurecr" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
 - `resource_group` - (Required) The resource group to which the container registry belongs.
 - `azurecr_spn_tenantid` - (Required) The tenant id of the service principal.
@@ -50,7 +50,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 - `service_principal_id` - The service principal ID.
 

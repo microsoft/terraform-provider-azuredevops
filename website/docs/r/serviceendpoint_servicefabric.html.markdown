@@ -89,7 +89,7 @@ resource "azuredevops_serviceendpoint_servicefabric" "test" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `cluster_endpoint` - (Required) Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
@@ -119,7 +119,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links

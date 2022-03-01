@@ -45,7 +45,7 @@ resource "azuredevops_serviceendpoint_dockerregistry" "example-other" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 - `docker_registry` - (Optional) The URL of the Docker registry. (Default: "https://index.docker.io/v1/")
@@ -59,7 +59,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
