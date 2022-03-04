@@ -39,10 +39,24 @@ func ResourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"description": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "",
-				ValidateFunc: validation.StringLenBetween(0, 256),
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+				ValidateFunc: func(i interface{}, k string) (warnings []string, errors []error) {
+					v, ok := i.(string)
+					if !ok {
+						return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
+					}
+					if strings.HasPrefix(v, " ") || strings.HasSuffix(v, " ") {
+						errors = append(errors, fmt.Errorf(" %q should not start or end with space, got %q. ", k, v))
+						return warnings, errors
+					}
+					if len(v) > 256 {
+						errors = append(errors, fmt.Errorf("expected %s length between (0 - 256), got %s", k, v))
+						return warnings, errors
+					}
+					return warnings, errors
+				},
 			},
 			"administrators": {
 				Type: schema.TypeSet,
@@ -314,7 +328,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			}
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   5 * time.Minute,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 2,
