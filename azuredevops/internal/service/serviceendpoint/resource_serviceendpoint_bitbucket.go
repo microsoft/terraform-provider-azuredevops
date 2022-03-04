@@ -35,5 +35,4 @@ func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *se
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
-	d.Set("password", (*serviceEndpoint.Authorization.Parameters)["password"])
 }
