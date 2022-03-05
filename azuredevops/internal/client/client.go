@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdk/taskagentkubernetesresource"
+
 	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
 	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
@@ -36,24 +38,25 @@ import (
 // allow for mocking to support unit testing of the funcs that invoke the
 // Azure DevOps client.
 type AggregatedClient struct {
-	OrganizationURL               string
-	CoreClient                    core.Client
-	BuildClient                   build.Client
-	GitReposClient                git.Client
-	GraphClient                   graph.Client
-	V5GraphClient                 v5graph.Client
-	OperationsClient              operations.Client
-	PolicyClient                  policy.Client
-	ReleaseClient                 release.Client
-	ServiceEndpointClient         serviceendpoint.Client
-	TaskAgentClient               taskagent.Client
-	V5TaskAgentClient             v5taskagent.Client
-	MemberEntitleManagementClient memberentitlementmanagement.Client
-	FeatureManagementClient       featuremanagement.Client
-	SecurityClient                security.Client
-	IdentityClient                identity.Client
-	WorkItemTrackingClient        workitemtracking.Client
-	Ctx                           context.Context
+	OrganizationURL                   string
+	CoreClient                        core.Client
+	BuildClient                       build.Client
+	GitReposClient                    git.Client
+	GraphClient                       graph.Client
+	V5GraphClient                     v5graph.Client
+	OperationsClient                  operations.Client
+	PolicyClient                      policy.Client
+	ReleaseClient                     release.Client
+	ServiceEndpointClient             serviceendpoint.Client
+	TaskAgentClient                   taskagent.Client
+	V5TaskAgentClient                 v5taskagent.Client
+	TaskAgentKubernetesResourceClient taskagentkubernetesresource.Client
+	MemberEntitleManagementClient     memberentitlementmanagement.Client
+	FeatureManagementClient           featuremanagement.Client
+	SecurityClient                    security.Client
+	IdentityClient                    identity.Client
+	WorkItemTrackingClient            workitemtracking.Client
+	Ctx                               context.Context
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -111,6 +114,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
+		return nil, err
+	}
+	// client for creating a Kubernetes resource via the taskagent API
+	taskagentKubernetesResourceClient, err := taskagentkubernetesresource.NewTaskAgentKubernetesResourceClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): NewTaskAgentKubernetesResourceClient failed.")
 		return nil, err
 	}
 
@@ -173,24 +182,25 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	}
 
 	aggregatedClient := &AggregatedClient{
-		OrganizationURL:               organizationURL,
-		CoreClient:                    coreClient,
-		BuildClient:                   buildClient,
-		GitReposClient:                gitReposClient,
-		GraphClient:                   graphClient,
-		V5GraphClient:                 v5GraphClient,
-		OperationsClient:              operationsClient,
-		PolicyClient:                  policyClient,
-		ReleaseClient:                 releaseClient,
-		ServiceEndpointClient:         serviceEndpointClient,
-		TaskAgentClient:               taskagentClient,
-		V5TaskAgentClient:             v5TaskAgentClient,
-		MemberEntitleManagementClient: memberentitlementmanagementClient,
-		FeatureManagementClient:       featuremanagementClient,
-		SecurityClient:                securityClient,
-		IdentityClient:                identityClient,
-		WorkItemTrackingClient:        workitemtrackingClient,
-		Ctx:                           ctx,
+		OrganizationURL:                   organizationURL,
+		CoreClient:                        coreClient,
+		BuildClient:                       buildClient,
+		GitReposClient:                    gitReposClient,
+		GraphClient:                       graphClient,
+		V5GraphClient:                     v5GraphClient,
+		OperationsClient:                  operationsClient,
+		PolicyClient:                      policyClient,
+		ReleaseClient:                     releaseClient,
+		ServiceEndpointClient:             serviceEndpointClient,
+		TaskAgentClient:                   taskagentClient,
+		V5TaskAgentClient:                 v5TaskAgentClient,
+		TaskAgentKubernetesResourceClient: taskagentKubernetesResourceClient,
+		MemberEntitleManagementClient:     memberentitlementmanagementClient,
+		FeatureManagementClient:           featuremanagementClient,
+		SecurityClient:                    securityClient,
+		IdentityClient:                    identityClient,
+		WorkItemTrackingClient:            workitemtrackingClient,
+		Ctx:                               ctx,
 	}
 
 	log.Printf("getAzdoClient(): Created core, build, operations, and serviceendpoint clients successfully!")

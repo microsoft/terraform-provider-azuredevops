@@ -66,6 +66,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_servicehook_permissions",
 		"azuredevops_tagging_permissions",
 		"azuredevops_environment",
+		"azuredevops_environment_resource_kubernetes",
 	}
 
 	resources := Provider().ResourcesMap

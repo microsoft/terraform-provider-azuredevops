@@ -64,7 +64,7 @@ function generate_mock_clients() {
     # Note: the `|| true` and related wrapping with `()` is here to prevent the script from failing
     #       in the case that the status code from `go list all` is non-zero. This can happen, for example,
     #       if the mocks do not exist at the time the script is initially run.
-    AZDO_SDK_PACKAGES=$( (go list all || true) | grep 'azure-devops-go-api/azuredevops/')
+    AZDO_SDK_PACKAGES=$( (go list all || true) | grep 'azure-devops-go-api/azuredevops/\|terraform-provider-azuredevops/azdosdk/')
 
     info "Found $(echo "$AZDO_SDK_PACKAGES" | wc -l) packages that may need mocking..."
     for PACKAGE in $AZDO_SDK_PACKAGES; do

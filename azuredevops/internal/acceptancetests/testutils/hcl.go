@@ -938,3 +938,25 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
+
+func getEnvironmentResourceKubernetes(resourceName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_environment_resource_kubernetes" "kubernetes" {
+	project_id          = azuredevops_project.project.id
+	environment_id      = azuredevops_environment.environment.id
+	service_endpoint_id = azuredevops_serviceendpoint_kubernetes.serviceendpoint.id
+	
+	name         = "%s"
+	namespace    = "default"
+	cluster_name = "example-aks"
+	tags         = ["tag1", "tag2"]
+}`, resourceName)
+}
+
+// HclEnvironmentResourceKubernetesResource HCL describing an AzDO environment kubernetes resource
+func HclEnvironmentResourceKubernetesResource(projectName string, environmentName string, serviceEndpointName string, resourceName string) string {
+	serviceEndpointResource := HclServiceEndpointKubernetesResource(projectName, serviceEndpointName, "ServiceAccount")
+	azureEnvironmentResource := getEnvironmentResource(environmentName)
+	environmentKubernetesResource := getEnvironmentResourceKubernetes(resourceName)
+	return fmt.Sprintf("%s\n%s\n%s", serviceEndpointResource, azureEnvironmentResource, environmentKubernetesResource)
+}

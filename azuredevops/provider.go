@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
+			"azuredevops_environment_resource_kubernetes":        taskagent.ResourceKubernetesResource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
