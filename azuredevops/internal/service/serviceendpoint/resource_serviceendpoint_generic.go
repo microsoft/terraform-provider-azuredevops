@@ -56,5 +56,4 @@ func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("server_url", *serviceEndpoint.Url)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
-	d.Set("password", (*serviceEndpoint.Authorization.Parameters)["password"])
 }

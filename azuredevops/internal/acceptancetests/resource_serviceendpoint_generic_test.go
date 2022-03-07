@@ -53,9 +53,9 @@ func TestAccServiceEndpointGeneric_complete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://some-server.example.com"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -91,9 +91,9 @@ func TestAccServiceEndpointGeneric_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://some-server.example.com"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
