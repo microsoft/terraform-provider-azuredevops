@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	v5azuredevops "github.com/microsoft/azure-devops-go-api/azuredevops"
+	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -167,7 +167,7 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
 	}
 
-	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters)
+	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID)
 	if err != nil {
 		return fmt.Errorf(" creating variable group in Azure DevOps: %+v", err)
 	}
@@ -198,9 +198,9 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
 	}
 
-	variableGroup, err := clients.TaskAgentClient.GetVariableGroup(
+	variableGroup, err := clients.V5TaskAgentClient.GetVariableGroup(
 		clients.Ctx,
-		taskagent.GetVariableGroupArgs{
+		v5taskagent.GetVariableGroupArgs{
 			GroupId: &variableGroupID,
 			Project: &projectID,
 		},
@@ -257,7 +257,7 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
 	}
 
-	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID)
+	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
 	if err != nil {
 		return fmt.Errorf("Error updating variable group in Azure DevOps: %+v", err)
 	}
@@ -297,22 +297,24 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 // Make the Azure DevOps API call to create the variable group
-func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *taskagent.VariableGroupParameters) (*taskagent.VariableGroup, error) {
-	createdVariableGroup, err := clients.TaskAgentClient.AddVariableGroup(
+func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *v5taskagent.VariableGroupParameters, project *string) (*v5taskagent.VariableGroup, error) {
+	createdVariableGroup, err := clients.V5TaskAgentClient.AddVariableGroup(
 		clients.Ctx,
-		taskagent.AddVariableGroupArgs{
-			VariableGroupParameters: variableGroupParams,
+		v5taskagent.AddVariableGroupArgs{
+			Group:   variableGroupParams,
+			Project: project,
 		})
 	return createdVariableGroup, err
 }
 
 // Make the Azure DevOps API call to update the variable group
-func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int) (*taskagent.VariableGroup, error) {
-	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
+func updateVariableGroup(clients *client.AggregatedClient, parameters *v5taskagent.VariableGroupParameters, variableGroupID *int, project *string) (*v5taskagent.VariableGroup, error) {
+	updatedVariableGroup, err := clients.V5TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
-		taskagent.UpdateVariableGroupArgs{
-			GroupId:                 variableGroupID,
-			VariableGroupParameters: parameters,
+		v5taskagent.UpdateVariableGroupArgs{
+			Project: project,
+			GroupId: variableGroupID,
+			Group:   parameters,
 		})
 
 	return updatedVariableGroup, err
@@ -320,12 +322,10 @@ func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent
 
 // Make the Azure DevOps API call to delete the variable group
 func deleteVariableGroup(clients *client.AggregatedClient, projectId *string, variableGroupID *int) error {
-	err := clients.TaskAgentClient.DeleteVariableGroup(
+	err := clients.V5TaskAgentClient.DeleteVariableGroup(
 		clients.Ctx,
-		taskagent.DeleteVariableGroupArgs{
-			ProjectIds: &[]string{
-				*projectId,
-			},
+		v5taskagent.DeleteVariableGroupArgs{
+			Project: projectId,
 			GroupId: variableGroupID,
 		})
 
@@ -333,7 +333,7 @@ func deleteVariableGroup(clients *client.AggregatedClient, projectId *string, va
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.ResourceData) (*taskagent.VariableGroupParameters, *string, error) {
+func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.ResourceData) (*v5taskagent.VariableGroupParameters, *string, error) {
 	projectID := converter.String(d.Get(vgProjectID).(string))
 	variables := d.Get(vgVariable).(*schema.Set).List()
 
@@ -344,35 +344,22 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 
 		isSecret := converter.Bool(asMap[vgIsSecret].(bool))
 		if *isSecret {
-			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+			variableMap[asMap[vgName].(string)] = v5taskagent.VariableValue{
 				Value:    converter.String(asMap[secretVgValue].(string)),
 				IsSecret: isSecret,
 			}
 		} else {
-			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+			variableMap[asMap[vgName].(string)] = v5taskagent.VariableValue{
 				Value:    converter.String(asMap[vgValue].(string)),
 				IsSecret: isSecret,
 			}
 		}
 	}
 
-	projId, err := uuid.Parse(*projectID)
-	if err != nil {
-		return nil, nil, fmt.Errorf(" faild parse project ID to UUID: %s", *projectID)
-	}
-	variableGroup := &taskagent.VariableGroupParameters{
+	variableGroup := &v5taskagent.VariableGroupParameters{
 		Name:        converter.String(d.Get(vgName).(string)),
 		Description: converter.String(d.Get(vgDescription).(string)),
 		Variables:   &variableMap,
-		VariableGroupProjectReferences: &[]taskagent.VariableGroupProjectReference{
-			{
-				Name:        converter.String(d.Get(vgName).(string)),
-				Description: converter.String(d.Get(vgDescription).(string)),
-				ProjectReference: &taskagent.ProjectReference{
-					Id: &projId,
-				},
-			},
-		},
 	}
 
 	keyVault := d.Get(vgKeyVault).([]interface{})
@@ -388,7 +375,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 			return nil, nil, err
 		}
 
-		variableGroup.ProviderData = taskagent.AzureKeyVaultVariableGroupProviderData{
+		variableGroup.ProviderData = v5taskagent.AzureKeyVaultVariableGroupProviderData{
 			ServiceEndpointId: &serviceEndpointUUID,
 			Vault:             &kvName,
 		}
@@ -411,7 +398,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.VariableGroup, projectID *string) error {
+func flattenVariableGroup(d *schema.ResourceData, variableGroup *v5taskagent.VariableGroup, projectID *string) error {
 	d.SetId(fmt.Sprintf("%d", *variableGroup.Id))
 	d.Set(vgName, *variableGroup.Name)
 	d.Set(vgDescription, converter.ToString(variableGroup.Description, ""))
@@ -449,7 +436,7 @@ func isKeyVaultVariableGroupType(variableGrouptype *string) bool {
 //
 // Note: The AzDO API does not return the value for variables marked as a secret. For this reason
 //		 variables marked as secret will need to be pulled from the state itself
-func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
+func flattenVariables(d *schema.ResourceData, variableGroup *v5taskagent.VariableGroup) (interface{}, error) {
 	variables := make([]map[string]interface{}, len(*variableGroup.Variables))
 
 	index := 0
@@ -476,7 +463,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 }
 
 func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]interface{}, error) {
-	var variable taskagent.AzureKeyVaultVariableValue
+	var variable v5taskagent.AzureKeyVaultVariableValue
 	err := json.Unmarshal(variableAsJSON, &variable)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
@@ -497,7 +484,7 @@ func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]
 }
 
 func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName string) (map[string]interface{}, error) {
-	var variable taskagent.AzureKeyVaultVariableValue
+	var variable v5taskagent.AzureKeyVaultVariableValue
 	err := json.Unmarshal(variableAsJSON, &variable)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
@@ -519,13 +506,13 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 	return val, nil
 }
 
-func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
+func flattenKeyVault(d *schema.ResourceData, variableGroup *v5taskagent.VariableGroup) (interface{}, error) {
 	providerDataAsJSON, err := json.Marshal(variableGroup.ProviderData)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to marshal provider data into JSON: %+v", err)
 	}
 
-	var providerData taskagent.AzureKeyVaultVariableGroupProviderData
+	var providerData v5taskagent.AzureKeyVaultVariableGroupProviderData
 	err = json.Unmarshal(providerDataAsJSON, &providerData)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to unmarshal provider data (%+v): %+v", providerData, err)
@@ -540,7 +527,7 @@ func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGr
 }
 
 // Convert internal Terraform data structure to an AzDO data structure for Allow Access
-func expandAllowAccess(d *schema.ResourceData, createdVariableGroup *taskagent.VariableGroup) []build.DefinitionResourceReference {
+func expandAllowAccess(d *schema.ResourceData, createdVariableGroup *v5taskagent.VariableGroup) []build.DefinitionResourceReference {
 	resourceRefType := "variablegroup"
 	variableGroupID := strconv.Itoa(*createdVariableGroup.Id)
 
@@ -624,7 +611,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 		secretNames[name] = name
 	}
 	for {
-		kvSecretsMap := make(map[string]taskagent.AzureKeyVaultVariableValue)
+		kvSecretsMap := make(map[string]v5taskagent.AzureKeyVaultVariableValue)
 		if azKVSecrets, err := getKVSecretServiceEndpointProxy(clients, kvName, projectID, serviceEndpointID, token); err == nil {
 			azkvSecretsRaw, token, err = parseKVSecretResp(azKVSecrets)
 			if err != nil {
@@ -632,14 +619,14 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 			}
 			for _, secret := range *azkvSecretsRaw.Value {
 				name := getSecretName(*secret.ID)
-				kvVariable := taskagent.AzureKeyVaultVariableValue{
+				kvVariable := v5taskagent.AzureKeyVaultVariableValue{
 					Value:       nil,
 					ContentType: secret.ContentType,
 					IsSecret:    converter.Bool(true),
 					Enabled:     secret.Enabled,
 				}
 				if secret.Expire != nil {
-					kvVariable.Expires = &azuredevops.Time{
+					kvVariable.Expires = &v5azuredevops.Time{
 						Time: time.Unix(*secret.Expire, 0),
 					}
 				}
