@@ -1,17 +1,11 @@
 package taskagent
 
-import (
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
-)
-
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
-var azProjectRef = &core.TeamProjectReference{
-	Id:   testhelper.CreateUUID(),
-	Name: converter.String("project-01"),
-}
+//var azProjectRef = &core.TeamProjectReference{
+//	Id:   testhelper.CreateUUID(),
+//	Name: converter.String("project-01"),
+//}
 
 //
 //func TestDataSourceVariableGroup_Read_VariableGroup(t *testing.T) {
