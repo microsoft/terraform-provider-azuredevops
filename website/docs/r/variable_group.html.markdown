@@ -26,7 +26,7 @@ resource "azuredevops_project" "example" {
 
 resource "azuredevops_variable_group" "example" {
   project_id   = azuredevops_project.example.id
-  name         = "example Variable Group"
+  name         = "Example Variable Group"
   description  = "Example Variable Group Description"
   allow_access = true
 
@@ -134,8 +134,6 @@ terraform import azuredevops_variable_group.example 00000000-0000-0000-0000-0000
 _Note that for secret variables, the import command retrieve blank value in the tfstate._
 
 ## PAT Permissions Required
-
-~> **Note** After upgrading the API to v6, creating Variable Group linked to Key Vault requires full access permission or you wil get a 401 error.
 
 - **Variable Groups**: Read, Create, & Manage
 - **Build**: Read & execute

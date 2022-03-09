@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
+	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
@@ -43,6 +45,7 @@ type AggregatedClient struct {
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
+	V5TaskAgentClient             v5taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
 	FeatureManagementClient       featuremanagement.Client
 	SecurityClient                security.Client
@@ -65,6 +68,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 	connection := azuredevops.NewPatConnection(organizationURL, azdoPAT)
 	setUserAgent(connection, tfVersion)
+
+	v5Connection := v5api.NewPatConnection(organizationURL, azdoPAT)
 
 	// client for these APIs (includes CRUD for AzDO projects...):
 	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/?view=azure-devops-rest-5.1
@@ -96,6 +101,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 	// client for these APIs (includes CRUD for AzDO variable groups):
 	taskagentClient, err := taskagent.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
+		return nil, err
+	}
+	// client for these APIs (includes CRUD for AzDO variable groups):
+	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
@@ -163,6 +174,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
+		V5TaskAgentClient:             v5TaskAgentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
 		SecurityClient:                securityClient,
