@@ -109,24 +109,28 @@ func configureProjectPipelineGeneralSettings(clients *client.AggregatedClient, p
 		NewSettings: &build.PipelineGeneralSettings{},
 	}
 
-	// must use GetOkExists to determine if the boolean property has been set from the resource
-	if val, ok := d.GetOkExists("enforce_job_scope"); ok {
+	//lint:ignore SA1019 - must use GetOkExists to determine if the boolean property has been set from the resource
+	if val, exists := d.GetOkExists("enforce_job_scope"); exists { //nolint:staticcheck
 		settings.NewSettings.EnforceJobAuthScope = converter.Bool(val.(bool))
 	}
 
-	if val, ok := d.GetOkExists("enforce_referenced_repo_scoped_token"); ok {
+	//lint:ignore SA1019 - must use GetOkExists to determine if the boolean property has been set from the resource
+	if val, exists := d.GetOkExists("enforce_referenced_repo_scoped_token"); exists { //nolint:staticcheck
 		settings.NewSettings.EnforceReferencedRepoScopedToken = converter.Bool(val.(bool))
 	}
 
-	if val, ok := d.GetOkExists("enforce_settable_var"); ok {
+	//lint:ignore SA1019 - must use GetOkExists to determine if the boolean property has been set from the resource
+	if val, exists := d.GetOkExists("enforce_settable_var"); exists { //nolint:staticcheck
 		settings.NewSettings.EnforceSettableVar = converter.Bool(val.(bool))
 	}
 
-	if val, ok := d.GetOkExists("publish_pipeline_metadata"); ok {
+	//lint:ignore SA1019 - must use GetOkExists to determine if the boolean property has been set from the resource
+	if val, exists := d.GetOkExists("publish_pipeline_metadata"); exists { //nolint:staticcheck
 		settings.NewSettings.PublishPipelineMetadata = converter.Bool(val.(bool))
 	}
 
-	if val, ok := d.GetOkExists("status_badges_are_private"); ok {
+	//lint:ignore SA1019 - must use GetOkExists to determine if the boolean property has been set from the resource
+	if val, exists := d.GetOkExists("status_badges_are_private"); exists { //nolint:staticcheck
 		settings.NewSettings.StatusBadgesArePrivate = converter.Bool(val.(bool))
 	}
 
