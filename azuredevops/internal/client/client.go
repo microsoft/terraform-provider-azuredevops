@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
+	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
@@ -40,6 +41,7 @@ type AggregatedClient struct {
 	BuildClient                   build.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
+	V5GraphClient                 v5graph.Client
 	OperationsClient              operations.Client
 	PolicyClient                  policy.Client
 	ReleaseClient                 release.Client
@@ -127,6 +129,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	// client for these APIs (includes CRUD for AzDO variable groups):
+	v5GraphClient, err := v5graph.NewClient(ctx, v5Connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
+		return nil, err
+	}
+
 	memberentitlementmanagementClient, err := memberentitlementmanagement.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): memberentitlementmanagement.NewClient failed.")
@@ -169,6 +178,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
+		V5GraphClient:                 v5GraphClient,
 		OperationsClient:              operationsClient,
 		PolicyClient:                  policyClient,
 		ReleaseClient:                 releaseClient,
