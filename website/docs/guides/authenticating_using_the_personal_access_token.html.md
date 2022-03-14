@@ -20,7 +20,7 @@ Azure DevOps provider support personal access token for authenticating to Azure 
 
 ## Configure Environment Variables
 
-Set the two environment variables. For more details, see the [Readme](../../../README.md).
+Set the two environment variables. For more details, see the [Readme](https://github.com/microsoft/terraform-provider-azuredevops#terraform-provider-for-azure-devops-devops-resource-manager).
 `AZDO_PERSONAL_ACCESS_TOKEN` and `AZDO_ORG_SERVICE_URL`. If you use bash, you can try this.
 
 ```sh
