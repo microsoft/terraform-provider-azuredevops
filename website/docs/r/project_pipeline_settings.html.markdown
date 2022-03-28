@@ -49,7 +49,9 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-No attributes are exported
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the project.
 
 ## Relevant Links
 
@@ -65,4 +67,4 @@ terraform import azuredevops_project_pipeline_settings.example 00000000-0000-000
 
 ## PAT Permissions Required
 
-- **Project & Team**: Read, Write, & Manage
+- Full Access

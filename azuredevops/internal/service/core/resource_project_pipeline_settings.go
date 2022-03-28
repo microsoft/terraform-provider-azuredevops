@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -85,6 +86,10 @@ func resourceProjectPipelineSettingsRead(ctx context.Context, d *schema.Resource
 
 	buildSettings, err := clients.BuildClient.GetBuildGeneralSettings(ctx, getSettings)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(fmt.Errorf("Error reading project build general settings: %v", err))
 	}
 
