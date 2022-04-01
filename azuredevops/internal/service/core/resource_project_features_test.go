@@ -225,7 +225,7 @@ func TestProjectFeatures_SetProjectFeatureStates_HandleError(t *testing.T) {
 
 	err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStates)
 	require.NotNil(t, err)
-	require.Equal(t, errMsg, err.Error())
+	require.Contains(t, err.Error(), errMsg)
 }
 
 func TestProjectFeatures_SetProjectFeatureStates_OnlyValidProjectFeatures(t *testing.T) {

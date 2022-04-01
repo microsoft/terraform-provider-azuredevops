@@ -38,7 +38,7 @@ var projectFeatureNameMap = map[string]ProjectFeatureType{
 	"ms.vss-code.version-control": ProjectFeatureTypeValues.Repositories,
 	"ms.vss-build.pipelines":      ProjectFeatureTypeValues.Pipelines,
 	"ms.vss-test-web.test":        ProjectFeatureTypeValues.TestPlans,
-	"ms.feed.feed":                ProjectFeatureTypeValues.Artifacts,
+	"ms.azure-artifacts.feature":  ProjectFeatureTypeValues.Artifacts,
 }
 
 var projectFeatureNameMapReverse = map[ProjectFeatureType]string{}
@@ -200,7 +200,7 @@ func setProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 			ScopeValue: &projectID,
 		})
 		if nil != err {
-			return err
+			return fmt.Errorf(" Faild to update project features. Feature type: %s,  Error: %+v", f, err)
 		}
 	}
 
