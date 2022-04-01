@@ -1,3 +1,12 @@
+## 0.2.2 Unreleased
+
+## 0.2.1
+
+FEATURES:
+BUG FIX:
+IMPROVEMENTS:
+BREAKING CHANGE:
+
 ## 0.2.0 
 
 FEATURES:
