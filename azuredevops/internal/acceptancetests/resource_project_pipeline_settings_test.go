@@ -28,7 +28,6 @@ func TestAccProjectPipelineSettings_Enabled(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "publish_pipeline_metadata", "false"),
 					resource.TestCheckResourceAttr(tfNode, "status_badges_are_private", "false"),
 				),
-				Destroy: false,
 			},
 			{
 				Config: testutils.HclProjectPipelineSettings(projectName, true, true, true, true, true),

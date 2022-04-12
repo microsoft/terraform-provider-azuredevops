@@ -70,10 +70,10 @@ func resourceProjectPipelineSettingsCreateUpdate(ctx context.Context, d *schema.
 
 	err := configureProjectPipelineGeneralSettings(clients, projectID, d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error creating/updating project build general settings: %v", err))
+		return diag.FromErr(fmt.Errorf(" creating/updating project build general settings: %v", err))
 	}
 	d.SetId(projectID)
-	return nil
+	return resourceProjectPipelineSettingsRead(ctx, d, m)
 }
 
 func resourceProjectPipelineSettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -99,7 +99,6 @@ func resourceProjectPipelineSettingsRead(ctx context.Context, d *schema.Resource
 	d.Set("enforce_settable_var", buildSettings.EnforceSettableVar)
 	d.Set("publish_pipeline_metadata", buildSettings.PublishPipelineMetadata)
 	d.Set("status_badges_are_private", buildSettings.StatusBadgesArePrivate)
-
 	return nil
 }
 
