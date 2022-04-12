@@ -3,7 +3,6 @@
 ## 0.2.1
 
 FEATURES:
-
 * **New Resource** `azuredevops_project_pipeline_settings` [#556](https://github.com/microsoft/terraform-provider-azuredevops/issues/556)
 
 BUG FIX:
