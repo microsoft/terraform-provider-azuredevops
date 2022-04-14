@@ -1,3 +1,21 @@
+## 0.2.2 Unreleased
+
+## 0.2.1
+
+FEATURES:
+* **New Resource** `azuredevops_project_pipeline_settings` [#556](https://github.com/microsoft/terraform-provider-azuredevops/issues/556)
+
+BUG FIX:
+* `azuredevops_group` - Fix scope not set [#542](https://github.com/microsoft/terraform-provider-azuredevops/issues/542)
+* `azuredevops_branch_policy_build_validation` - Fix `file_pattern` disordered.  [#539](https://github.com/microsoft/terraform-provider-azuredevops/issues/539)
+* `azuredevops_variable_group` - Fix create 401 authorization error.  [#541](https://github.com/microsoft/terraform-provider-azuredevops/issues/541)
+* `azuredevops_group` - Can not create group at project level.  [#558](https://github.com/microsoft/terraform-provider-azuredevops/issues/558)
+* `azuredevops_project` - Unable disable/enable project feature artifacts.  [#568](https://github.com/microsoft/terraform-provider-azuredevops/issues/568)
+
+IMPROVEMENTS:
+* Update document - [#543](https://github.com/microsoft/terraform-provider-azuredevops/issues/543)
+* Deprecate `azuredevops_serviceendpoint_azuredevops`, use `azuredevops_serviceendpoint_runpipeline` instead - [#565](https://github.com/microsoft/terraform-provider-azuredevops/issues/565)
+
 ## 0.2.0 
 
 FEATURES:
