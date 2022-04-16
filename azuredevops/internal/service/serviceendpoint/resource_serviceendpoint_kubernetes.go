@@ -227,7 +227,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"acceptUntrustedCerts": fmt.Sprintf("%v", configuration["accept_untrusted_certs"].(bool)),
 		}
 	case "ServiceAccount":
-		configurationRaw := d.Get(resourceBlockServiceAccount).([]interface {})
+		configurationRaw := d.Get(resourceBlockServiceAccount).([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -299,7 +299,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set(resourceBlockKubeconfig, kubeconfigList)
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
-		serviceAccountSet := d.Get("service_account").([]interface {})
+		serviceAccountSet := d.Get("service_account").([]interface{})
 
 		if len(serviceAccountSet) == 0 {
 			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "token")
