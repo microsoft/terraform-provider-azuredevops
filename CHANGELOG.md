@@ -7,7 +7,7 @@ FEATURES:
 
 BUG FIX:
 * `azuredevops_group` - Fix scope not set [#542](https://github.com/microsoft/terraform-provider-azuredevops/issues/542)
-* `azuredevops_branch_policy_build_validation` - Fix `file_pattern` disordered.  [#539](https://github.com/microsoft/terraform-provider-azuredevops/issues/539)
+* `azuredevops_branch_policy_build_validation` - Fix `filename_patterns` disordered.  [#539](https://github.com/microsoft/terraform-provider-azuredevops/issues/539)
 * `azuredevops_variable_group` - Fix create 401 authorization error.  [#541](https://github.com/microsoft/terraform-provider-azuredevops/issues/541)
 * `azuredevops_group` - Can not create group at project level.  [#558](https://github.com/microsoft/terraform-provider-azuredevops/issues/558)
 * `azuredevops_project` - Unable disable/enable project feature artifacts.  [#568](https://github.com/microsoft/terraform-provider-azuredevops/issues/568)
