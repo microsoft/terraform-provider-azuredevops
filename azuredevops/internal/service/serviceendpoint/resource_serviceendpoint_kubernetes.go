@@ -140,7 +140,8 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 	makeProtectedSchema(resourceElemSchema, "ca_cert", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", "Secret cert")
 	makeProtectedSchema(resourceElemSchema, "token", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", "Secret token")
 	r.Schema[resourceBlockServiceAccount] = &schema.Schema{
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
+		MaxItems:    1,
 		Optional:    true,
 		Description: "'ServiceAccount'-type of configuration",
 		Elem:        resourceElemSchema,
@@ -226,7 +227,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"acceptUntrustedCerts": fmt.Sprintf("%v", configuration["accept_untrusted_certs"].(bool)),
 		}
 	case "ServiceAccount":
-		configurationRaw := d.Get(resourceBlockServiceAccount).(*schema.Set).List()
+		configurationRaw := d.Get(resourceBlockServiceAccount).([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -298,7 +299,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set(resourceBlockKubeconfig, kubeconfigList)
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
-		serviceAccountSet := d.Get("service_account").(*schema.Set).List()
+		serviceAccountSet := d.Get("service_account").([]interface{})
 
 		if len(serviceAccountSet) == 0 {
 			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "token")
