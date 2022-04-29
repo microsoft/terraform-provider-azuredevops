@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_octopusdeploy
 
-Manages an Octopus Deploy service endpoint within Azure DevOps.
+Manages an Octopus Deploy service endpoint within Azure DevOps. Using this service endpoint requires you to install [Octopus Deploy](https://marketplace.visualstudio.com/items?itemName=octopusdeploy.octopus-deploy-build-release-tasks).
 
 ## Example Usage
 
