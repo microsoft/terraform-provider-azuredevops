@@ -89,7 +89,7 @@ The following arguments are supported:
       qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such
       as `refs/heads/releases`.
     - `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default)
-      or `Prefix`.
+      , `Prefix` or `DefaultBranch`.
 
 ## Attributes Reference
 
