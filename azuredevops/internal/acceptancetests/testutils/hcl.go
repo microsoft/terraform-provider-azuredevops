@@ -843,6 +843,22 @@ resource "azuredevops_project_permissions" "project-permissions" {
 `, projectResource)
 }
 
+// HclBuildFolder creates HCL for testing Build Folders
+func HclBuildFolder(projectName string, path string, description string) string {
+	projectResource := HclProjectResource(projectName)
+
+	escapedBuildPath := strings.ReplaceAll(path, `\`, `\\`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_build_folder" "test_folder" {
+	project_id  = azuredevops_project.project.id
+	path        = "%s"
+	description = "%s"
+}
+`, projectResource, escapedBuildPath, description)
+}
+
 // HclGitPermissions creates HCl for testing to set permissions for a the all Git repositories of AzDO project
 func HclGitPermissions(projectName string) string {
 	projectResource := HclProjectResource(projectName)
