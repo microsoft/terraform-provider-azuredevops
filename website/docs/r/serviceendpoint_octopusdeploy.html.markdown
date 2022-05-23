@@ -36,7 +36,7 @@ The following arguments are supported:
 - `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `url` - (Required) Octopus Server url.
-- `api_key` - (Required) API key for connection to Octopus Deploy.
+- `api_key` - (Required) API key to connect to Octopus Deploy.
 - `ignore_ssl_error` - (Optional) Whether to ignore SSL errors when connecting to the Octopus server from the agent. Default to `false`.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
