@@ -107,12 +107,9 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
+		(*serviceEndpoint.Data)["scopeLevel"] = "Subscription"
 		(*serviceEndpoint.Data)["subscriptionId"] = d.Get("azurerm_subscription_id").(string)
 		(*serviceEndpoint.Data)["subscriptionName"] = d.Get("azurerm_subscription_name").(string)
-	}
-
-	if scopeLevel == "Subscription" {
-		(*serviceEndpoint.Data)["scopeLevel"] = "Subscription"
 	}
 
 	if scopeLevel == "ResourceGroup" {
