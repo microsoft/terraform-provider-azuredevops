@@ -150,6 +150,17 @@ func makeUnprotectedSchema(r *schema.Resource, keyName, envVarName, description 
 	}
 }
 
+// makeUnprotectedOptionalSchema create unprotected schema with optional arguments
+func makeUnprotectedOptionalSchema(r *schema.Resource, keyName, envVarName, description string, conflictsWith []string) {
+	r.Schema[keyName] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		DefaultFunc:   schema.EnvDefaultFunc(envVarName, nil),
+		Description:   description,
+		ConflictsWith: conflictsWith,
+	}
+}
+
 func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
