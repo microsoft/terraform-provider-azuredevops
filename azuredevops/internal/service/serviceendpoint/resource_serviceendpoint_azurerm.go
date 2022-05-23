@@ -72,8 +72,8 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	mgmtGrpName := d.Get("azurerm_management_group_name").(string)
 
 	scopeLevelMap := map[string][]string{
-		"subscription":    []string{subId, subName},
-		"managementGroup": []string{mgmtGrpId, mgmtGrpName},
+		"subscription":    {subId, subName},
+		"managementGroup": {mgmtGrpId, mgmtGrpName},
 	}
 
 	if err := validateScopeLevel(scopeLevelMap); err != nil {
