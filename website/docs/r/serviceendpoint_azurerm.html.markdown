@@ -100,7 +100,7 @@ The following arguments are supported:
 - `azurerm_subscription_id` - (Optional) The subscription Id of the Azure targets.
 - `azurerm_subscription_name` - (Optional) The subscription Name of the targets.
 
-~> **NOTE:** One of either `Subscription` scoped i.e. `azure_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azure_management_group_id`, `azurerm_management_group_name` values must be specified.
+~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 
 - `description` - (Optional) Service connection description.
 - `credentials` - (Optional) A `credentials` block.
