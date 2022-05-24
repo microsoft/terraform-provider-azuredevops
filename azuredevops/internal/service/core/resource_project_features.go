@@ -41,14 +41,20 @@ var projectFeatureNameMap = map[string]ProjectFeatureType{
 	"ms.azure-artifacts.feature":  ProjectFeatureTypeValues.Artifacts,
 }
 
-var projectFeatureNameMapReverse = map[ProjectFeatureType]string{}
+var projectFeatureNameMapReverse = map[ProjectFeatureType]string{
+	ProjectFeatureTypeValues.Boards:       "ms.vss-work.agile",
+	ProjectFeatureTypeValues.Repositories: "ms.vss-code.version-control",
+	ProjectFeatureTypeValues.Pipelines:    "ms.vss-build.pipelines",
+	ProjectFeatureTypeValues.TestPlans:    "ms.vss-test-web.test",
+	ProjectFeatureTypeValues.Artifacts:    "ms.azure-artifacts.feature",
+}
 
 // ResourceProjectFeatures schema and implementation for project features
 func ResourceProjectFeatures() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceProjectFeaturesCreate,
+		CreateContext: resourceProjectFeaturesCreateUpdate,
 		ReadContext:   resourceProjectFeaturesRead,
-		UpdateContext: resourceProjectFeaturesUpdate,
+		UpdateContext: resourceProjectFeaturesCreateUpdate,
 		DeleteContext: resourceProjectFeaturesDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -73,65 +79,13 @@ func ResourceProjectFeatures() *schema.Resource {
 	}
 }
 
-func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
-	var errors []error
-	var warnings []string
-
-	m := i.(map[string]interface{})
-
-	if len(m) <= 0 {
-		errors = append(errors, fmt.Errorf("Feature map must contain at least on entry"))
-	}
-	for feature, state := range m {
-		lfeature := strings.ToLower(feature)
-		if _, ok := getProjectFeatureID(ProjectFeatureType(lfeature)); !ok {
-			errors = append(errors, fmt.Errorf("unknown feature: %s", feature))
-		}
-
-		if state != string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled) && state != string(featuremanagement.ContributedFeatureEnabledValueValues.Disabled) {
-			errors = append(errors, fmt.Errorf("invalid state: %s", state))
-		}
-	}
-
-	return warnings, errors
-}
-
-func getProjectFeatureIDs() *[]string {
-	keys := make([]string, len(projectFeatureNameMap))
-	idx := 0
-	for k := range projectFeatureNameMap {
-		keys[idx] = k
-		idx++
-	}
-	return &keys
-}
-
-func getProjectFeatureNameMap() *map[string]ProjectFeatureType {
-	return &projectFeatureNameMap
-}
-
-func getProjectFeatureNameMapReverse() *map[ProjectFeatureType]string {
-	if len(projectFeatureNameMapReverse) <= 0 {
-		for k, v := range *getProjectFeatureNameMap() {
-			projectFeatureNameMapReverse[v] = k
-		}
-	}
-	return &projectFeatureNameMapReverse
-}
-
-func getProjectFeatureID(fname ProjectFeatureType) (string, bool) {
-	reverseNameMap := getProjectFeatureNameMapReverse()
-	f, ok := (*reverseNameMap)[fname]
-	return f, ok
-}
-
-func resourceProjectFeaturesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceProjectFeaturesCreateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
 	featureStates := d.Get("features").(map[string]interface{})
 
-	err := setProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
+	err := updateProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,9 +104,27 @@ func resourceProjectFeaturesRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 	if currentFeatureStates == nil {
-		return diag.FromErr(fmt.Errorf("Failed to retrieve current feature states for project %s", projectID))
+		d.SetId("")
+		return diag.FromErr(fmt.Errorf(" failed to retrieve current feature states for project: %s", projectID))
 	}
 	d.Set("features", currentFeatureStates)
+	return nil
+}
+
+func resourceProjectFeaturesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+
+	projectID := d.Get("project_id").(string)
+	featureStates := d.Get("features").(map[string]interface{})
+	for k := range featureStates {
+		featureStates[k] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
+	}
+	err := updateProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
 	return nil
 }
 
@@ -161,7 +133,7 @@ func getConfiguredProjectFeatureStates(ctx context.Context, fc featuremanagement
 		return nil, nil
 	}
 
-	currentFeatureStates, err := readProjectFeatureStates(ctx, fc, projectID)
+	currentFeatureStates, err := getProjectFeatureStates(ctx, fc, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -174,15 +146,15 @@ func getConfiguredProjectFeatureStates(ctx context.Context, fc featuremanagement
 	return currentFeatureStates, nil
 }
 
-func setProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, projectID string, featureStates *map[string]interface{}) error {
+func updateProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, projectID string, featureStates *map[string]interface{}) error {
 	if featureStates == nil {
 		return nil
 	}
 	for k, v := range *featureStates {
 		enabledValue := featuremanagement.ContributedFeatureEnabledValue(v.(string))
-		f, ok := getProjectFeatureID(ProjectFeatureType(k))
+		f, ok := projectFeatureNameMapReverse[ProjectFeatureType(k)]
 		if !ok {
-			return fmt.Errorf("unknown feature: %s", k)
+			return fmt.Errorf(" unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts`", k)
 		}
 		//TODO handle response state
 		_, err := fc.SetFeatureStateForScope(ctx, featuremanagement.SetFeatureStateForScopeArgs{
@@ -203,14 +175,19 @@ func setProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 			return fmt.Errorf(" Faild to update project features. Feature type: %s,  Error: %+v", f, err)
 		}
 	}
-
 	return nil
 }
 
-func readProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, projectID string) (*map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue, error) {
+func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, projectID string) (*map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue, error) {
 	states, err := fc.QueryFeatureStates(ctx, featuremanagement.QueryFeatureStatesArgs{
 		Query: &featuremanagement.ContributedFeatureStateQuery{
-			FeatureIds: getProjectFeatureIDs(),
+			FeatureIds: &[]string{
+				"ms.vss-work.agile",
+				"ms.vss-code.version-control",
+				"ms.vss-build.pipelines",
+				"ms.vss-test-web.test",
+				"ms.azure-artifacts.feature",
+			},
 			ScopeValues: &map[string]string{
 				"project": projectID,
 			},
@@ -218,43 +195,21 @@ func readProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, 
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(" Get project features error, project: %s, error: %+v", projectID, err)
 	}
 
 	featureStates := make(map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue)
-	for k, v := range *getProjectFeatureNameMap() {
-		state, ok := (*states.FeatureStates)[k]
-		if ok {
+	for k, v := range projectFeatureNameMap {
+		if state, ok := (*states.FeatureStates)[k]; ok {
 			featureStates[v] = *state.State
 		}
 	}
 	return &featureStates, nil
 }
 
-func resourceProjectFeaturesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return resourceProjectFeaturesCreate(ctx, d, m)
-}
-
-func resourceProjectFeaturesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
-
-	projectID := d.Get("project_id").(string)
-	featureStates := d.Get("features").(map[string]interface{})
-	for k := range featureStates {
-		featureStates[k] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
-	}
-	err := setProjectFeatureStates(ctx, clients.FeatureManagementClient, projectID, &featureStates)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
-}
-
 func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string]interface{}, error) {
 	featureStates := map[string]interface{}{}
-	for k := range *getProjectFeatureNameMapReverse() {
+	for k := range projectFeatureNameMapReverse {
 		if states != nil {
 			if _, ok := (*states)[string(k)]; !ok {
 				continue
@@ -263,4 +218,26 @@ func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string
 		featureStates[string(k)] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
 	}
 	return &featureStates, nil
+}
+
+func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
+	var errors []error
+	var warnings []string
+
+	m := i.(map[string]interface{})
+
+	if len(m) <= 0 {
+		errors = append(errors, fmt.Errorf("Feature map must contain at least on entry"))
+	}
+	for feature, state := range m {
+		if _, ok := projectFeatureNameMapReverse[ProjectFeatureType(strings.ToLower(feature))]; !ok {
+			errors = append(errors, fmt.Errorf("unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts` ", feature))
+		}
+
+		if state != string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled) &&
+			state != string(featuremanagement.ContributedFeatureEnabledValueValues.Disabled) {
+			errors = append(errors, fmt.Errorf("invalid state: %s", state))
+		}
+	}
+	return warnings, errors
 }

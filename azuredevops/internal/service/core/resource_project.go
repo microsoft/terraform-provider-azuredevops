@@ -107,7 +107,7 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	err = createProject(clients, project, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error creating project: %v", err))
+		return diag.FromErr(fmt.Errorf(" creating project: %v", err))
 	}
 
 	featureStates, ok := d.GetOk("features")
@@ -163,7 +163,7 @@ func configureProjectFeatures(clients *client.AggregatedClient, projectID string
 		return err
 	}
 	projectID = project.Id.String()
-	err = setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStateMap)
+	err = updateProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, projectID, &featureStateMap)
 	if err != nil {
 		ierr := deleteProject(clients, projectID, timeout)
 		if ierr != nil {
@@ -203,19 +203,16 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, m interfac
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("Error looking up project with ID %s and Name %s", id, name))
+		return diag.FromErr(fmt.Errorf(" looking up project with (ID: %s or Name: %s). Error: %+v", id, name, err))
 	}
 
 	err = flattenProject(clients, d, project)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error flattening project: %v", err))
+		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
 	}
 	return nil
 }
 
-// projectRead Lookup a project using the ID, or name if the ID is not set. Note, usage of the name in place
-// of the ID is an explicitly stated supported behavior:
-//		https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-5.0
 func projectRead(clients *client.AggregatedClient, projectID string, projectName string) (*core.TeamProject, error) {
 	identifier := projectID
 	if identifier == "" {
@@ -240,7 +237,7 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf(" Project not found. ID:%s, name: %s , %+v", projectID, projectName, err)
+		return nil, fmt.Errorf(" Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
 	}
 	return project, nil
 }
@@ -249,7 +246,7 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	clients := m.(*client.AggregatedClient)
 	project, err := expandProject(clients, d, false)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err))
+		return diag.FromErr(fmt.Errorf(" converting terraform data model to AzDO project reference: %+v", err))
 	}
 
 	requiresUpdate := false
@@ -295,7 +292,7 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			featureStates = newFeatureStates.(map[string]interface{})
 		}
 
-		err := setProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, project.Id.String(), &featureStates)
+		err := updateProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, project.Id.String(), &featureStates)
 		if err != nil {
 			return diag.FromErr(err)
 		}
