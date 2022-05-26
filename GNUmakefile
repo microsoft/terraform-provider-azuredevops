@@ -45,7 +45,7 @@ test: fmtcheck
     		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=60s -parallel=4
 
 testacc: fmtcheck
-	@echo "==> Sourcing .env file if avaliable"
+	@echo "==> Sourcing .env file if available"
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
 	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 

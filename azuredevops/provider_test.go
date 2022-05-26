@@ -40,6 +40,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_generic",
 		"azuredevops_serviceendpoint_generic_git",
+		"azuredevops_serviceendpoint_octopusdeploy",
 		"azuredevops_variable_group",
 		"azuredevops_repository_policy_author_email_pattern",
 		"azuredevops_repository_policy_case_enforcement",
