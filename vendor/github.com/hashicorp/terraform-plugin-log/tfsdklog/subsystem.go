@@ -63,13 +63,7 @@ func NewSubsystem(ctx context.Context, subsystem string, options ...logging.Opti
 		subLoggerOptions.Level = opts.Level
 	}
 
-	subLogger := hclog.New(subLoggerOptions)
-
-	if opts.IncludeRootFields {
-		subLogger = subLogger.With(logger.ImpliedArgs()...)
-	}
-
-	return logging.SetSDKSubsystemLogger(ctx, subsystem, subLogger)
+	return logging.SetSDKSubsystemLogger(ctx, subsystem, hclog.New(subLoggerOptions))
 }
 
 // SubsystemWith returns a new context.Context that has a modified logger for

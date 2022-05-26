@@ -57,6 +57,14 @@ var ValidLevels = []string{"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "OFF"}
 // Only show invalid log level message once across any number of level lookups.
 var invalidLogLevelMessage sync.Once
 
+func getSink(ctx context.Context) hclog.Logger {
+	logger := ctx.Value(logging.SinkKey)
+	if logger == nil {
+		return nil
+	}
+	return logger.(hclog.Logger)
+}
+
 // RegisterTestSink sets up a logging sink, for use with test frameworks and
 // other cases where plugin logs don't get routed through Terraform. This
 // applies the same filtering and file output behaviors that Terraform does.
@@ -67,15 +75,10 @@ var invalidLogLevelMessage sync.Once
 // RegisterTestSink must be called prior to any loggers being setup or
 // instantiated.
 func RegisterTestSink(ctx context.Context, t testing.T) context.Context {
-	logger, loggerOptions := newSink(t)
-
-	ctx = logging.SetSink(ctx, logger)
-	ctx = logging.SetSinkOptions(ctx, loggerOptions)
-
-	return ctx
+	return context.WithValue(ctx, logging.SinkKey, newSink(t))
 }
 
-func newSink(t testing.T) (hclog.Logger, *hclog.LoggerOptions) {
+func newSink(t testing.T) hclog.Logger {
 	logOutput := io.Writer(os.Stderr)
 	var json bool
 	var logLevel hclog.Level
@@ -131,14 +134,12 @@ func newSink(t testing.T) (hclog.Logger, *hclog.LoggerOptions) {
 		})
 	}
 
-	loggerOptions := &hclog.LoggerOptions{
+	return hclog.New(&hclog.LoggerOptions{
 		Level:             logLevel,
 		Output:            logOutput,
 		IndependentLevels: true,
 		JSONFormat:        json,
-	}
-
-	return hclog.New(loggerOptions), loggerOptions
+	})
 }
 
 func isValidLogLevel(level string) bool {

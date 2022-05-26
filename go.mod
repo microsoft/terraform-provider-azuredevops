@@ -12,7 +12,7 @@ require (
 	github.com/microsoft/azure-devops-go-api/azuredevops/v6 v6.0.0-20211202191553-0974d0145be8
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0
 )
 
 require (
@@ -22,7 +22,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -32,12 +32,12 @@ require (
 	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/go-version v1.4.0 // indirect
 	github.com/hashicorp/hc-install v0.3.1 // indirect
-	github.com/hashicorp/hcl/v2 v2.12.0 // indirect
+	github.com/hashicorp/hcl/v2 v2.11.1 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform-exec v0.16.1 // indirect
+	github.com/hashicorp/terraform-exec v0.16.0 // indirect
 	github.com/hashicorp/terraform-json v0.13.0 // indirect
-	github.com/hashicorp/terraform-plugin-go v0.9.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.4.0 // indirect
+	github.com/hashicorp/terraform-plugin-go v0.8.0 // indirect
+	github.com/hashicorp/terraform-plugin-log v0.3.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
@@ -46,7 +46,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -60,6 +60,5 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200711021454-869866162049 // indirect
 	google.golang.org/grpc v1.45.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
