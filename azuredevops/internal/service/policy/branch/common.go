@@ -190,14 +190,17 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 // baseExpandFunc expands each of the base elements of the schema
 func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	projectID := d.Get(SchemaProjectID).(string)
-
+	policySettings, err := expandSettings(d)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error parsing policy configuration settings: (%+v)", err)
+	}
 	policyConfig := policy.PolicyConfiguration{
 		IsEnabled:  converter.Bool(d.Get(SchemaEnabled).(bool)),
 		IsBlocking: converter.Bool(d.Get(SchemaBlocking).(bool)),
 		Type: &policy.PolicyTypeRef{
 			Id: &typeID,
 		},
-		Settings: expandSettings(d),
+		Settings: policySettings,
 	}
 
 	if d.Id() != "" {
