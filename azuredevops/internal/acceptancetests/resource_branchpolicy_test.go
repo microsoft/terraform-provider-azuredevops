@@ -342,8 +342,8 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.invalidate_on_update", "true"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.applicability", "default"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.filename_patterns.#", "3"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.match_type", "defaultBranch"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.repository_ref", ""),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "DefaultBranch"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", ""),
 				),
 			}, {
 				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional", "\"ref/heads/release\"", "prefix"),
