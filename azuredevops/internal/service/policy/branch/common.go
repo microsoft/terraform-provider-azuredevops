@@ -241,6 +241,12 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 				scopeSetting["matchKind"] = matchType
 			}
 		}
+		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
+			return fmt.Errorf("conflicting settings, 'repository_id' is set to %q and 'repository_ref' is set to %q but neither must be set when using a 'match_type' of %q, ",
+				scopeSetting["repositoryId"],
+				scopeSetting["refName"],
+				"DefaultBranch")
+		}
 		scopes[index] = scopeSetting
 	}
 	return map[string]interface{}{
