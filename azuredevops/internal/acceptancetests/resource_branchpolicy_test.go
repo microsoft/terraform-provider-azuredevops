@@ -73,7 +73,7 @@ func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool, r
 		on_push_reset_%[3]s_votes = true
 		`, reviewers, flag, votes)
 
-	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings, repositoryRef, matchType)
+	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings,"azuredevops_git_repository.repository.id", repositoryRef, matchType)
 }
 
 func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
@@ -120,7 +120,7 @@ func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, mes
 	return strings.Join(
 		[]string{
 			userEntitlement,
-			getBranchPolicyHcl("azuredevops_branch_policy_auto_reviewers", enabled, blocking, settings, repositoryRef, matchType),
+			getBranchPolicyHcl("azuredevops_branch_policy_auto_reviewers", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType),
 		},
 		"\n",
 	)
@@ -168,7 +168,7 @@ func getBuildValidationHcl(enabled bool, blocking bool, displayName string, vali
 		`, displayName, validDuration,
 	)
 
-	return getBranchPolicyHcl("azuredevops_branch_policy_build_validation", enabled, blocking, settings, repositoryRef, matchType)
+	return getBranchPolicyHcl("azuredevops_branch_policy_build_validation", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType)
 }
 
 func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
@@ -180,12 +180,12 @@ func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getBranchPolicyHcl(resourceName, true, true, "", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "true"),
 				),
 			}, {
-				Config: getBranchPolicyHcl(resourceName, false, false, "", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "false"),
 				),
@@ -208,12 +208,12 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getBranchPolicyHcl(resourceName, true, true, "", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "true"),
 				),
 			}, {
-				Config: getBranchPolicyHcl(resourceName, false, false, "", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "false"),
 				),
@@ -271,10 +271,10 @@ func getMergeTypesHcl(enabled bool, blocking bool, allowSquash bool, allowRebase
 		`, allowSquash, allowRebase, allowNoFastForward, allowRebaseMerge,
 	)
 
-	return getBranchPolicyHcl("azuredevops_branch_policy_merge_types", enabled, blocking, settings, repositoryRef, matchType)
+	return getBranchPolicyHcl("azuredevops_branch_policy_merge_types", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType)
 }
 
-func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settings string, repositoryRef string, matchType string) string {
+func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settings string, repositoryId string, repositoryRef string, matchType string) string {
 	branchPolicy := fmt.Sprintf(`
 	resource "%s" "p" {
 		project_id = azuredevops_project.project.id
@@ -283,13 +283,13 @@ func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settin
 		settings {
 			%s
 			scope {
-				repository_id  = azuredevops_git_repository.repository.id
+				repository_id  = %s
 				repository_ref = %s
 				match_type     = "%s"
 			}
 		}
 	}
-	`, resourceName, enabled, blocking, settings, repositoryRef, matchType)
+	`, resourceName, enabled, blocking, settings, repositoryId repositoryRef, matchType)
 	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
 	buildDef := testutils.HclBuildDefinitionResource(
 		"Sample Build Definition",
@@ -310,7 +310,7 @@ func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settin
 	)
 }
 
-func getStatusCheckHcl(enabled bool, blocking bool, name string, invalidateOnUpdate bool, applicability string, repositoryRef string, matchType string) string {
+func getStatusCheckHcl(enabled bool, blocking bool, name string, invalidateOnUpdate bool, applicability string, repositoryId string, repositoryRef string, matchType string) string {
 	settings := fmt.Sprintf(
 		`
 		name = "%s"
@@ -324,7 +324,7 @@ func getStatusCheckHcl(enabled bool, blocking bool, name string, invalidateOnUpd
 		`, name, invalidateOnUpdate, applicability,
 	)
 
-	return getBranchPolicyHcl("azuredevops_branch_policy_status_check", enabled, blocking, settings, repositoryRef, matchType)
+	return getBranchPolicyHcl("azuredevops_branch_policy_status_check", enabled, blocking, settings, repositoryId, repositoryRef, matchType)
 }
 
 func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
@@ -334,7 +334,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getStatusCheckHcl(true, true, "abc-1", true, "default", "null", "defaultBranch"),
+				Config: getStatusCheckHcl(true, true, "abc-1", true, "default", "null", "null", "defaultBranch"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "blocking", "true"),
@@ -344,25 +344,28 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.filename_patterns.#", "3"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "DefaultBranch"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", ""),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", ""),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional", "\"ref/heads/release\"", "prefix"),
+				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional","null", "\"ref/heads/release\"", "prefix"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "blocking", "false"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.name", "abc-2"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.invalidate_on_update", "false"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.applicability", "conditional"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.repository_ref", "refs/heads/release"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.match_type", "prefix"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_id", ""),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", "refs/heads/release"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "prefix"),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "exact"),
+				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional","null", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.name", "abc-3"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.match_type", "exact"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.repository_ref", ""),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.match_type", "exact"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "exact"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_id", ""),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", ""),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "exact"),
 				),
 			}, {
 				ResourceName:      statusCheckTfNode,
