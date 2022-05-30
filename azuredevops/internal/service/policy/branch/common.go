@@ -211,7 +211,7 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 	return &policyConfig, &projectID, nil
 }
 
-func expandSettings(d *schema.ResourceData) map[string]interface{} {
+func expandSettings(d *schema.ResourceData) (map[string]interface{}, error) {
 	settingsList := d.Get(SchemaSettings).([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 	settingsScopes := settings[SchemaScope].([]interface{})
@@ -243,7 +243,7 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 			}
 		}
 		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
-			return fmt.Errorf("conflicting settings, 'repository_id' is set to %q and 'repository_ref' is set to %q but neither must be set when using a 'match_type' of %q, ",
+			return nil, fmt.Errorf("conflicting settings, 'repository_id' is set to %q and 'repository_ref' is set to %q but neither must be set when using a 'match_type' of %q, ",
 				scopeSetting["repositoryId"].(string),
 				scopeSetting["refName"].(string),
 				"DefaultBranch")
@@ -252,7 +252,7 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	}
 	return map[string]interface{}{
 		SchemaScope: scopes,
-	}
+	}, nil
 }
 
 //lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
