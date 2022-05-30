@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -243,8 +244,8 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 		}
 		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
 			return fmt.Errorf("conflicting settings, 'repository_id' is set to %q and 'repository_ref' is set to %q but neither must be set when using a 'match_type' of %q, ",
-				scopeSetting["repositoryId"],
-				scopeSetting["refName"],
+				scopeSetting["repositoryId"].(string),
+				scopeSetting["refName"].(string,
 				"DefaultBranch")
 		}
 		scopes[index] = scopeSetting
