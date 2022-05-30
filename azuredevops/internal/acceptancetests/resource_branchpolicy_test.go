@@ -289,7 +289,7 @@ func getBranchPolicyHcl(resourceName string, enabled bool, blocking bool, settin
 			}
 		}
 	}
-	`, resourceName, enabled, blocking, settings, repositoryId repositoryRef, matchType)
+	`, resourceName, enabled, blocking, settings, repositoryId, repositoryRef, matchType)
 	projectAndRepo := testutils.HclGitRepoResource(testutils.GenerateResourceName(), testutils.GenerateResourceName(), "Clean")
 	buildDef := testutils.HclBuildDefinitionResource(
 		"Sample Build Definition",
