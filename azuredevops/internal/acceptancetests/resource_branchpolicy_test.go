@@ -73,7 +73,7 @@ func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool, r
 		on_push_reset_%[3]s_votes = true
 		`, reviewers, flag, votes)
 
-	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings,"azuredevops_git_repository.repository.id", repositoryRef, matchType)
+	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType)
 }
 
 func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
@@ -347,7 +347,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "DefaultBranch"),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional","null", "\"ref/heads/release\"", "prefix"),
+				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional", "null", "\"ref/heads/release\"", "prefix"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "blocking", "false"),
@@ -359,7 +359,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "prefix"),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional","null", "null", "exact"),
+				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "null", "exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.name", "abc-3"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "exact"),

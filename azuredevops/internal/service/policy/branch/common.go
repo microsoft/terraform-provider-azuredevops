@@ -219,7 +219,7 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	for index, scope := range settingsScopes {
 		scopeMap := scope.(map[string]interface{})
 
-		scopeSetting := map[string]interface{}{}		
+		scopeSetting := map[string]interface{}{}
 		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
 			if repoID == "" {
 				scopeSetting["repositoryId"] = nil
@@ -239,7 +239,7 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 				scopeSetting["matchKind"] = nil
 			} else {
 				scopeSetting["matchKind"] = matchType
-			}	
+			}
 		}
 		scopes[index] = scopeSetting
 	}
