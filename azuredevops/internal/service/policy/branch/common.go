@@ -219,15 +219,27 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	for index, scope := range settingsScopes {
 		scopeMap := scope.(map[string]interface{})
 
-		scopeSetting := map[string]interface{}{}
+		scopeSetting := map[string]interface{}{}		
 		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
-			scopeSetting["repositoryId"] = repoID
+			if repoID == "" {
+				scopeSetting["repositoryId"] = nil
+			} else {
+				scopeSetting["repositoryId"] = repoID
+			}
 		}
 		if repoRef, ok := scopeMap[SchemaRepositoryRef]; ok {
-			scopeSetting["refName"] = repoRef
+			if repoRef == "" {
+				scopeSetting["refName"] = nil
+			} else {
+				scopeSetting["refName"] = repoRef
+			}
 		}
 		if matchType, ok := scopeMap[SchemaMatchType]; ok {
-			scopeSetting["matchKind"] = matchType
+			if matchType == "" {
+				scopeSetting["matchKind"] = nil
+			} else {
+				scopeSetting["matchKind"] = matchType
+			}	
 		}
 		scopes[index] = scopeSetting
 	}
