@@ -90,7 +90,7 @@ func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
 				),
 			}, {
-				Config: getAutoReviewersHcl(false, false, true, "new auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md"), "null", "exact"),
+				Config: getAutoReviewersHcl(false, false, true, "new auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md"), "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "false"),
