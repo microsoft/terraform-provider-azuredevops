@@ -133,7 +133,7 @@ func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getBuildValidationHcl(true, true, "build validation", 0, "null", "exact"),
+				Config: getBuildValidationHcl(true, true, "build validation", 0, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
