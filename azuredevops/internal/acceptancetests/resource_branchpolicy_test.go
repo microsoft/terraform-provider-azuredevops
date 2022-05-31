@@ -139,7 +139,7 @@ func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
 				),
 			}, {
-				Config: getBuildValidationHcl(false, false, "build validation rename", 720, "null", "exact"),
+Config: getBuildValidationHcl(false, false, "build validation rename", 720, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
@@ -180,12 +180,12 @@ func TestAccBranchPolicyWorkItemLinking_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "true"),
 				),
 			}, {
-				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "false"),
 				),
@@ -208,12 +208,12 @@ func TestAccBranchPolicyCommentResolution_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, true, true, "", "azuredevops_git_repository.repository.id", "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "true"),
 				),
 			}, {
-				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "null", "exact"),
+				Config: getBranchPolicyHcl(resourceName, false, false, "", "azuredevops_git_repository.repository.id", "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(workItemLinkingTfNode, "enabled", "false"),
 				),
