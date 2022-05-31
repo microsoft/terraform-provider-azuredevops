@@ -139,7 +139,7 @@ func TestAccBranchPolicyBuildValidation_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
 				),
 			}, {
-Config: getBuildValidationHcl(false, false, "build validation rename", 720, "\"refs/heads/release\"", "Exact"),
+				Config: getBuildValidationHcl(false, false, "build validation rename", 720, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.filename_patterns.#", "3"),
