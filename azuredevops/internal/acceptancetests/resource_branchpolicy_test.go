@@ -36,7 +36,7 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_approved_votes", "true"),
 				),
 			}, {
-				Config: getMinReviewersHcl(false, false, 2, true, "null", "exact"),
+				Config: getMinReviewersHcl(false, false, 2, true, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
