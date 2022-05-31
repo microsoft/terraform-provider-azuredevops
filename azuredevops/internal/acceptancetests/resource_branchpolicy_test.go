@@ -243,7 +243,7 @@ Config: getMergeTypesHcl(true, true, true, true, true, true, "\"refs/heads/relea
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_rebase_with_merge", "true"),
 				),
 			}, {
-				Config: getMergeTypesHcl(false, false, false, false, false, false, "null", "exact"),
+				Config: getMergeTypesHcl(false, false, false, false, false, false, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "false"),
