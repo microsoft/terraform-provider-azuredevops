@@ -246,7 +246,7 @@ func expandSettings(d *schema.ResourceData) (map[string]interface{}, error) {
 			}
 		}
 		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
-			return nil, fmt.Errorf("conflicting settings, 'repository_id' is set to %q and 'repository_ref' is set to %q but neither must be set when using a 'match_type' of %q, ",
+			return nil, fmt.Errorf(" neither 'repository_id' nor 'repository_ref' can be set when 'match_type=DefaultBranch'")
 				scopeSetting["repositoryId"].(string),
 				scopeSetting["refName"].(string),
 				matchTypeDefaultBranch)
