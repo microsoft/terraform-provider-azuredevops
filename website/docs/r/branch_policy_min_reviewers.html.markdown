@@ -51,8 +51,6 @@ resource "azuredevops_branch_policy_min_reviewers" "example" {
     }
     
     scope {
-      repository_id  = azuredevops_git_repository.example.id
-      repository_ref = null
       match_type     = "DefaultBranch"
     }
   }

@@ -45,9 +45,7 @@ resource "azuredevops_branch_policy_work_item_linking" "example" {
     }
     
     scope {
-      repository_id  = azuredevops_git_repository.example.id
       match_type     = "DefaultBranch"
-      repository_ref = null
     }
   }
 }

@@ -49,9 +49,7 @@ resource "azuredevops_branch_policy_merge_types" "example" {
     }
     
     scope {
-      repository_id  = azuredevops_git_repository.example.id
       match_type     = "DefaultBranch"
-      repository_ref = null
     }
   }
 }
