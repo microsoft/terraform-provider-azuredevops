@@ -23,7 +23,7 @@ func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getMinReviewersHcl(true, true, 1, false, "null", "exact"),
+				Config: getMinReviewersHcl(true, true, 1, false, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
 					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "true"),
