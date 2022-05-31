@@ -347,7 +347,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "DefaultBranch"),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional", "null", "\"ref/heads/release\"", "prefix"),
+				Config: getStatusCheckHcl(false, false, "abc-2", false, "conditional", "null", "\"refs/heads/release\"", "Prefix"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "enabled", "false"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "blocking", "false"),
