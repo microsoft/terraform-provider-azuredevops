@@ -234,7 +234,7 @@ func TestAccBranchPolicyMergeTypes_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: getMergeTypesHcl(true, true, true, true, true, true, "null", "exact"),
+Config: getMergeTypesHcl(true, true, true, true, true, true, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "true"),
