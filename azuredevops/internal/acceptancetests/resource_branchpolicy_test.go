@@ -359,13 +359,12 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "Prefix"),
 				),
 			}, {
-				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "null", "exact"),
+				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.name", "abc-3"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "exact"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "Exact"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_id", ""),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", ""),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "exact"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", "refs/heads/release"),
 				),
 			}, {
 				ResourceName:      statusCheckTfNode,
