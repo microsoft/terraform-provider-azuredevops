@@ -356,7 +356,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.applicability", "conditional"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_id", ""),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", "refs/heads/release"),
-					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "prefix"),
+resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "Prefix"),
 				),
 			}, {
 				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "null", "exact"),
