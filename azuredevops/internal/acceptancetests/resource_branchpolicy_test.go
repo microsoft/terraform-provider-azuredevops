@@ -234,7 +234,7 @@ func TestAccBranchPolicyMergeTypes_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-Config: getMergeTypesHcl(true, true, true, true, true, true, "\"refs/heads/release\"", "Exact"),
+				Config: getMergeTypesHcl(true, true, true, true, true, true, "\"refs/heads/release\"", "Exact"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(buildValidationTfNode, "enabled", "true"),
 					resource.TestCheckResourceAttr(buildValidationTfNode, "settings.0.allow_squash", "true"),
@@ -356,7 +356,7 @@ func TestAccBranchPolicyStatusCheck_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.applicability", "conditional"),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_id", ""),
 					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.repository_ref", "refs/heads/release"),
-resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "Prefix"),
+					resource.TestCheckResourceAttr(statusCheckTfNode, "settings.0.scope.0.match_type", "Prefix"),
 				),
 			}, {
 				Config: getStatusCheckHcl(false, false, "abc-3", false, "conditional", "null", "\"refs/heads/release\"", "Exact"),
