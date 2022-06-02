@@ -1445,7 +1445,7 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 }
 
 type Release interface {
-	release.ParallelExecutionInputBase
+	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1657,7 +1657,7 @@ func expandJobsList(d []interface{}) []interface{} {
 
 func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) release.ReleaseDefinitionEnvironment {
 	variableGroups := expandIntList(d["variable_groups"].([]interface{}))
-	deployStep := expandReleaseDefinitionDeployStepListFirstOrNil(d["deploy_step"].([]interface{}))
+	deployStep := expandFirstOrNil(d["deploy_step"].([]interface{}), expandReleaseDefinitionDeployStep)
 	variables := expandReleaseConfigurationVariableValueList(d["variable"].([]interface{}))
 	demands := expandReleaseDefinitionDemandList(d["demand"].([]interface{}))
 	environmentOptions := expandReleaseEnvironmentOptionsListFirstOrNil(d["environment_options"].([]interface{}))
@@ -1817,22 +1817,6 @@ func expandReleaseDefinitionDeployStep(d map[string]interface{}) release.Release
 		Id:    converter.Int(d["id"].(int)),
 		Tasks: &tasks,
 	}
-}
-func expandReleaseDefinitionDeployStepList(d []interface{}) []release.ReleaseDefinitionDeployStep {
-	vs := make([]release.ReleaseDefinitionDeployStep, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionDeployStep(val))
-		}
-	}
-	return vs
-}
-func expandReleaseDefinitionDeployStepListFirstOrNil(d []interface{}) *release.ReleaseDefinitionDeployStep {
-	d2 := expandReleaseDefinitionDeployStepList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
 }
 
 func expandReleaseDeployPhase(d map[string]interface{}, t release.DeployPhaseTypes) ReleaseDeployPhase {
