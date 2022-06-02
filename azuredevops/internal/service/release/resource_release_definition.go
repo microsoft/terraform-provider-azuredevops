@@ -1445,7 +1445,7 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 }
 
 type Release interface {
-	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions
+	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions | MachineGroupDeploymentMultiple
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1868,22 +1868,6 @@ func expandReleaseEnvironmentOptions(d map[string]interface{}) release.Environme
 func expandReleaseMachineGroupDeploymentInputMultiple(d map[string]interface{}) MachineGroupDeploymentMultiple {
 	return MachineGroupDeploymentMultiple{}
 }
-func expandReleaseMachineGroupDeploymentInputMultipleList(d []interface{}) []MachineGroupDeploymentMultiple {
-	vs := make([]MachineGroupDeploymentMultiple, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseMachineGroupDeploymentInputMultiple(val))
-		}
-	}
-	return vs
-}
-func expandReleaseMachineGroupDeploymentInputMultipleListFirstOrNil(d []interface{}) *MachineGroupDeploymentMultiple {
-	d2 := expandReleaseMachineGroupDeploymentInputMultipleList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
-}
 
 func expandReleaseMultiConfigInput(d map[string]interface{}) release.MultiConfigInput {
 	return release.MultiConfigInput{
@@ -1973,7 +1957,7 @@ func expandReleaseHostedAzurePipelinesSet(d *schema.Set) (*release.AgentSpecific
 
 func expandReleaseMachineGroupDeploymentInput(d map[string]interface{}) *release.MachineGroupDeploymentInput {
 	tags := tfhelper.ExpandStringList(d["tags"].([]interface{}))
-	multiple := expandReleaseMachineGroupDeploymentInputMultipleListFirstOrNil(d["multiple"].([]interface{}))
+	multiple := expandFirstOrNil(d["multiple"].([]interface{}), expandReleaseMachineGroupDeploymentInputMultiple)
 	deploymentHealthOption := DeploymentHealthOptionTypeValues.OneTargetAtATime
 	if multiple != nil {
 		deploymentHealthOption = DeploymentHealthOptionTypeValues.Custom
