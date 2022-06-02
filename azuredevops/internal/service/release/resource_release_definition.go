@@ -1231,7 +1231,7 @@ func expandReleaseDefinition(d *schema.ResourceData) (*release.ReleaseDefinition
 	environments := expandReleaseDefinitionEnvironmentList(d.Get("stage").([]interface{}))
 	variables := expandReleaseConfigurationVariableValueList(d.Get("variable").([]interface{}))
 	properties := expandStringMapStringFirstOrNil(d.Get("properties").([]interface{}), expandReleaseDefinitionProperties)
-	triggers := expandReleaseDefinitionTriggersList(d.Get("triggers").([]interface{}))
+	triggers := expandList(d.Get("triggers").([]interface{}), expandReleaseDefinitionTriggers)
 	buildArtifacts := expandReleaseArtifactList(d.Get("build_artifact").([]interface{}), release.AgentArtifactTypeValues.Build)
 
 	artifacts := buildArtifacts
@@ -1548,17 +1548,8 @@ func expandReleaseDefinitionProperties(d map[string]interface{}) map[string]inte
 	}
 }
 
-func expandReleaseDefinitionTriggers(d map[string]interface{}) map[string]interface{} {
+func expandReleaseDefinitionTriggers(d map[string]interface{}) interface{} {
 	return map[string]interface{}{}
-}
-func expandReleaseDefinitionTriggersList(d []interface{}) []interface{} {
-	vs := make([]interface{}, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionTriggers(val))
-		}
-	}
-	return vs
 }
 
 func expandReleaseCondition(d map[string]interface{}, t release.ConditionType) release.Condition {
