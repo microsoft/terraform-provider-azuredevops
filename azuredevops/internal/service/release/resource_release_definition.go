@@ -1445,7 +1445,7 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 }
 
 type Release interface {
-	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions | MachineGroupDeploymentMultiple
+	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions | MachineGroupDeploymentMultiple | release.MultiConfigInput
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1877,22 +1877,6 @@ func expandReleaseMultiConfigInput(d map[string]interface{}) release.MultiConfig
 		ContinueOnError:       converter.Bool(d["continue_on_error"].(bool)),
 	}
 }
-func expandReleaseMultiConfigInputList(d []interface{}) []release.MultiConfigInput {
-	vs := make([]release.MultiConfigInput, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseMultiConfigInput(val))
-		}
-	}
-	return vs
-}
-func expandReleaseMultiConfigInputListFirstOrNil(d []interface{}) *release.MultiConfigInput {
-	d2 := expandReleaseMultiConfigInputList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
-}
 
 func expandReleaseParallelExecutionInputBase(d map[string]interface{}) release.ParallelExecutionInputBase {
 	return release.ParallelExecutionInputBase{
@@ -1996,7 +1980,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 	var parallelExecution interface{} = &release.ExecutionInput{
 		ParallelExecutionType: &release.ParallelExecutionTypesValues.None,
 	}
-	multiConfiguration := expandReleaseMultiConfigInputListFirstOrNil(d["multi_configuration"].([]interface{}))
+	multiConfiguration := expandFirstOrNil(d["multi_configuration"].([]interface{}), expandReleaseMultiConfigInput)
 	multiAgent := expandFirstOrNil(d["multi_agent"].([]interface{}), expandReleaseParallelExecutionInputBase)
 	//if multiConfiguration != nil && multiAgent != nil { // TODO : how to solve
 	//	return nil, fmt.Errorf("conflit %s and %s specify only one", "multi_configuration", "multi_agent")
@@ -2027,7 +2011,7 @@ func expandReleaseServerDeploymentInput(d map[string]interface{}) *ServerDeploym
 	var parallelExecution interface{} = &release.ExecutionInput{
 		ParallelExecutionType: &release.ParallelExecutionTypesValues.None,
 	}
-	multiConfiguration := expandReleaseMultiConfigInputListFirstOrNil(d["multi_configuration"].([]interface{}))
+	multiConfiguration := expandFirstOrNil(d["multi_configuration"].([]interface{}), expandReleaseMultiConfigInput)
 	if multiConfiguration != nil {
 		parallelExecution = multiConfiguration
 	}
