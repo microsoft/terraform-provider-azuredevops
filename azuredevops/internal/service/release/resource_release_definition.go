@@ -1448,24 +1448,6 @@ type Release interface {
 	release.ParallelExecutionInputBase
 }
 
-func expandList[T Release | map[string]interface{}](d []interface{}, f func(map[string]interface{}) T) []T {
-	vs := make([]T, 0, 0)
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, f(val))
-		}
-	}
-	return vs
-}
-
-func expandFirstOrNil[T Release](d []interface{}, f func(map[string]interface{}) T) *T {
-	d2 := expandList(d, f)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
-}
-
 func expandStringMapString(d map[string]interface{}) map[string]string {
 	vs := make(map[string]string)
 	for k, v := range d {
@@ -1482,6 +1464,16 @@ func expandStringMapString(d map[string]interface{}) map[string]string {
 	return vs
 }
 
+func expandList[T Release | map[string]interface{} | interface{}](d []interface{}, f func(map[string]interface{}) T) []T {
+	vs := make([]T, 0, 0)
+	for _, v := range d {
+		if val, ok := v.(map[string]interface{}); ok {
+			vs = append(vs, f(val))
+		}
+	}
+	return vs
+}
+
 func expandIntList(d []interface{}) []int {
 	vs := make([]int, 0, len(d))
 	for _, v := range d {
@@ -1491,6 +1483,30 @@ func expandIntList(d []interface{}) []int {
 		}
 	}
 	return vs
+}
+
+func expandFirstOrNil[T Release](d []interface{}, f func(map[string]interface{}) T) *T {
+	d2 := expandList(d, f)
+	if len(d2) != 1 {
+		return nil
+	}
+	return &d2[0]
+}
+
+func expandStringMapStringFirstOrNil[T map[string]interface{}](d []interface{}, f func(map[string]interface{}) T) T {
+	d2 := expandList(d, f)
+	if len(d2) != 1 {
+		return nil
+	}
+	return d2[0]
+}
+
+func expandInterfaceFirstOrNil(d []interface{}, f func(map[string]interface{}) map[string]interface{}) interface{} {
+	d2 := expandList(d, f)
+	if len(d2) != 1 {
+		return nil
+	}
+	return d2[0]
 }
 
 func expandReleaseDefinitionSource(d string) release.ReleaseDefinitionSource {
@@ -1514,14 +1530,6 @@ func expandReleaseStringProperty(d string) interface{} {
 	}
 }
 
-func expandStringMapStringFirstOrNil[T map[string]interface{}](d []interface{}, f func(map[string]interface{}) T) T {
-	d2 := expandList(d, f)
-	if len(d2) != 1 {
-		return nil
-	}
-	return d2[0]
-}
-
 func expandReleaseEnvironmentProperties(d map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
 		"BoardsEnvironmentType": expandReleaseStringProperty(d["boards_environment_type"].(string)),
@@ -1529,22 +1537,6 @@ func expandReleaseEnvironmentProperties(d map[string]interface{}) map[string]int
 		"JiraEnvironmentType":   expandReleaseStringProperty(d["jira_environment_type"].(string)),
 		"LinkJiraWorkItems":     expandReleaseStringProperty(strconv.FormatBool(d["link_jira_work_items"].(bool))),
 	}
-}
-func expandReleaseEnvironmentList(d []interface{}) []map[string]interface{} {
-	vs := make([]map[string]interface{}, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseEnvironmentProperties(val))
-		}
-	}
-	return vs
-}
-func expandReleaseEnvironmentPropertiesListFirstOrNil(d []interface{}) interface{} {
-	d2 := expandReleaseEnvironmentList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return d2[0]
 }
 
 func expandReleaseDefinitionProperties(d map[string]interface{}) map[string]interface{} {
@@ -1683,7 +1675,7 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	postApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.AfterSuccessfulGates)
 	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}), preApprovalOptions)
 	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}), postApprovalOptions)
-	properties := expandReleaseEnvironmentPropertiesListFirstOrNil(d["properties"].([]interface{}))
+	properties := expandInterfaceFirstOrNil(d["properties"].([]interface{}), expandReleaseEnvironmentProperties)
 	deployPhases := expandJobsList(d["job"].([]interface{}))
 	preDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["pre_deploy_gate"].([]interface{}))
 	postDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["post_deploy_gate"].([]interface{}))
