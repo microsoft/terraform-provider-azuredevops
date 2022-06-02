@@ -7,22 +7,24 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/featuremanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/operations"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/policy"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/release"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
+	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
+	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/release"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -39,11 +41,13 @@ type AggregatedClient struct {
 	BuildClient                   build.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
+	V5GraphClient                 v5graph.Client
 	OperationsClient              operations.Client
 	PolicyClient                  policy.Client
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
+	V5TaskAgentClient             v5taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
 	FeatureManagementClient       featuremanagement.Client
 	SecurityClient                security.Client
@@ -66,6 +70,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 	connection := azuredevops.NewPatConnection(organizationURL, azdoPAT)
 	setUserAgent(connection, tfVersion)
+
+	v5Connection := v5api.NewPatConnection(organizationURL, azdoPAT)
 
 	// client for these APIs (includes CRUD for AzDO projects...):
 	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/?view=azure-devops-rest-5.1
@@ -101,6 +107,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
+	// client for these APIs (includes CRUD for AzDO variable groups):
+	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
+		return nil, err
+	}
 
 	// client for these APIs:
 	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1
@@ -114,6 +126,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	graphClient, err := graph.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): graph.NewClient failed.")
+		return nil, err
+	}
+
+	// client for these APIs (includes CRUD for AzDO variable groups):
+	v5GraphClient, err := v5graph.NewClient(ctx, v5Connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
 
@@ -159,11 +178,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
+		V5GraphClient:                 v5GraphClient,
 		OperationsClient:              operationsClient,
 		PolicyClient:                  policyClient,
 		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
+		V5TaskAgentClient:             v5TaskAgentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
 		SecurityClient:                securityClient,
@@ -178,8 +199,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 // setUserAgent set UserAgent for http headers
 func setUserAgent(connection *azuredevops.Connection, tfVersion string) {
-	tfUserAgent := httpclient.TerraformUserAgent(tfVersion)
-	providerUserAgent := fmt.Sprintf("%s terraform-provider-azuredevops/%s", tfUserAgent, version.ProviderVersion)
+	providerUserAgent := fmt.Sprintf("terraform-provider-azuredevops/%s", version.ProviderVersion)
 	connection.UserAgent = strings.TrimSpace(fmt.Sprintf("%s %s", connection.UserAgent, providerUserAgent))
 
 	// append the CloudShell version to the user agent if it exists

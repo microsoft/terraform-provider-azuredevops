@@ -1,3 +1,4 @@
+//go:build (all || core || data_sources || data_area) && (!exclude_data_sources || !exclude_data_area)
 // +build all core data_sources data_area
 // +build !exclude_data_sources !exclude_data_area
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -23,7 +24,7 @@ data "azuredevops_area" "root-area" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_area.root-area"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
@@ -55,7 +56,7 @@ data "azuredevops_area" "root-area" {
 `, testutils.HclProjectResource(projectName))
 
 	tfNode := "data.azuredevops_area.root-area"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

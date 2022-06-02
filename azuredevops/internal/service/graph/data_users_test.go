@@ -1,3 +1,4 @@
+//go:build (all || core || data_sources || data_users) && (!exclude_data_sources || !exclude_data_users)
 // +build all core data_sources data_users
 // +build !exclude_data_sources !exclude_data_users
 
@@ -13,15 +14,17 @@ import (
 	"testing"
 
 	"github.com/ahmetb/go-linq"
+	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-
-	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	"github.com/stretchr/testify/require"
 )
+
+var id, _ = uuid.Parse("00000000-0000-0000-0000-000000000000")
 
 var usrList1 = []graph.GraphUser{
 	{
@@ -137,6 +140,14 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 		}, nil).
 		Times(1))
 
+	calls = append(calls, graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).Times(7))
+
 	gomock.InOrder(calls...)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
@@ -201,6 +212,15 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 		}, nil).
 		Times(1)
 
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).
+		Times(1)
+
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("principal_name", "DesireeMCollins@jourrapide.com")
 	err := dataUsersRead(resourceData, clients)
@@ -237,6 +257,15 @@ func TestDataSourceUser_Read_TestFilterByOrigin(t *testing.T) {
 			GraphUsers: &usrList1,
 		}, nil).
 		Times(1)
+
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).
+		Times(2)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin", "aad")
@@ -285,6 +314,15 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 		}, nil).
 		Times(1)
 
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).
+		Times(3)
+
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin_id", "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77")
 	err := dataUsersRead(resourceData, clients)
@@ -331,6 +369,15 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 			GraphUsers: &usrList1,
 		}, nil).
 		Times(1)
+
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).
+		Times(2)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin", "aad")
@@ -386,6 +433,15 @@ func TestDataSourceUser_Read_TestFilterBySubjectType(t *testing.T) {
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
 			GraphUsers: &usrList,
+		}, nil).
+		Times(1)
+
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
 		}, nil).
 		Times(1)
 

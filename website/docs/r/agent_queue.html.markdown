@@ -16,23 +16,23 @@ the `azuredevops_resource_authorization` resource can be used to grant authoriza
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-data "azuredevops_agent_pool" "pool" {
-  name = "contoso-pool"
+data "azuredevops_agent_pool" "example" {
+  name = "example-pool"
 }
 
-resource "azuredevops_agent_queue" "queue" {
-  project_id    = azuredevops_project.project.id
-  agent_pool_id = data.azuredevops_agent_pool.pool.id
+resource "azuredevops_agent_queue" "example" {
+  project_id    = azuredevops_project.example.id
+  agent_pool_id = data.azuredevops_agent_pool.example.id
 }
 
-# Grant acccess to queue to all pipelines in the project
-resource "azuredevops_resource_authorization" "auth" {
-  project_id  = azuredevops_project.project.id
-  resource_id = azuredevops_agent_queue.queue.id
+# Grant access to queue to all pipelines in the project
+resource "azuredevops_resource_authorization" "example" {
+  project_id  = azuredevops_project.example.id
+  resource_id = azuredevops_agent_queue.example.id
   type        = "queue"
   authorized  = true
 }
@@ -53,12 +53,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Agent Queues](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/queues?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Agent Queues](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/queues?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Agent Pools can be imported using the project ID and agent queue ID, e.g.
 
 ```sh
-terraform import azuredevops_agent_queue.q 44cbf614-4dfd-4032-9fae-87b0da3bec30/1381
+terraform import azuredevops_agent_queue.example 00000000-0000-0000-0000-000000000000/0
 ```

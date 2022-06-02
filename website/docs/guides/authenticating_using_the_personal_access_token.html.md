@@ -1,3 +1,10 @@
+---
+layout: "azuredevops"
+page_title: "Azure DevOps Provider: Authenticating with Personal Access Token"
+description: |-
+  This guide will cover how to use a Personal Access Token as authentication for the Azure Provider.
+---
+
 # Azure DevOps Provider: Authenticating using the Personal Access Token
 
 Azure DevOps provider support personal access token for authenticating to Azure DevOps.
@@ -13,7 +20,7 @@ Azure DevOps provider support personal access token for authenticating to Azure 
 
 ## Configure Environment Variables
 
-Set the two environment variables. For more details, see the [Readme](../../../README.md).
+Set the two environment variables. For more details, see the [Readme](https://github.com/microsoft/terraform-provider-azuredevops#terraform-provider-for-azure-devops-devops-resource-manager).
 `AZDO_PERSONAL_ACCESS_TOKEN` and `AZDO_ORG_SERVICE_URL`. If you use bash, you can try this.
 
 ```sh
@@ -26,8 +33,13 @@ export AZDO_ORG_SERVICE_URL=https://dev.azure.com/<Your Org Name>
 Configuration file requires `azuredevops` provider section. Then use any resources and data sources you want.
 
 ```hcl
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {

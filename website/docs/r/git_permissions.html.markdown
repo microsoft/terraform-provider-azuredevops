@@ -23,9 +23,22 @@ Permissions for all Git Repositories inside a project (existing or newly created
 #### Example usage
 
 ```hcl
-resource "azuredevops_git_permissions" "project-git-root-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
+}
+
+resource "azuredevops_git_permissions" "example-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-readers.id
   permissions = {
     CreateRepository = "Deny"
     DeleteRepository = "Deny"
@@ -41,11 +54,31 @@ Permissions for a specific Git Repository and all existing or newly created bran
 #### Example usage
 
 ```hcl
-resource "azuredevops_git_permissions" "project-git-repo-permissions" {
-  project_id    = data.azuredevops_git_repository.git-repo.project_id
-  repository_id = data.azuredevops_git_repository.git-repo.id
-  principal     = data.azuredevops_group.project-administrators.id
-  permissions   = {
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_group" "example-group" {
+  name = "Project Collection Administrators"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Empty Git Repository"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_git_permissions" "example-permissions" {
+  project_id    = azuredevops_git_repository.example.project_id
+  repository_id = azuredevops_git_repository.example.id
+  principal     = data.azuredevops_group.example-group.id
+  permissions = {
     RemoveOthersLocks = "Allow"
     ManagePermissions = "Deny"
     CreateTag         = "Deny"
@@ -61,12 +94,32 @@ Permissions for a specific branch inside a Git Repository are specified if all a
 #### Example usage
 
 ```hcl
-resource "azuredevops_git_permissions" "project-git-branch-permissions" {
-  project_id    = data.azuredevops_git_repository.git-repo.project_id
-  repository_id = data.azuredevops_git_repository.git-repo.id
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Empty Git Repository"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+data "azuredevops_group" "example-group" {
+  name = "Project Collection Administrators"
+}
+
+resource "azuredevops_git_permissions" "example-permissions" {
+  project_id    = azuredevops_git_repository.example.project_id
+  repository_id = azuredevops_git_repository.example.id
   branch_name   = "refs/heads/master"
-  principal     = data.azuredevops_group.project-contributors.id
-  permissions   = {
+  principal     = data.azuredevops_group.example-group.id
+  permissions = {
     RemoveOthersLocks = "Allow"
     ForcePush         = "Deny"
   }
@@ -76,32 +129,32 @@ resource "azuredevops_git_permissions" "project-git-branch-permissions" {
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-readers" {
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
-data "azuredevops_group" "project-contributors" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-contributors" {
+  project_id = azuredevops_project.example.id
   name       = "Contributors"
 }
 
-data "azuredevops_group" "project-administrators" {
-  project_id = azuredevops_project.project.id
+data "azuredevops_group" "example-project-administrators" {
+  project_id = azuredevops_project.example.id
   name       = "Project administrators"
 }
 
-resource "azuredevops_git_permissions" "project-git-root-permissions" {
-  project_id  = azuredevops_project.project.id
-  principal   = data.azuredevops_group.project-readers.id
+resource "azuredevops_git_permissions" "example-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-project-readers.id
   permissions = {
     CreateRepository = "Deny"
     DeleteRepository = "Deny"
@@ -109,20 +162,20 @@ resource "azuredevops_git_permissions" "project-git-root-permissions" {
   }
 }
 
-resource "azuredevops_git_repository" "git-repo" {
-  project_id = azuredevops_project.project.id
-  name = "TestRepo"
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "TestRepo"
   default_branch = "refs/heads/master"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_git_permissions" "project-git-repo-permissions" {
-  project_id    = azuredevops_git_repository.git-repo.project_id
-  repository_id = azuredevops_git_repository.git-repo.id
-  principal     = data.azuredevops_group.project-administrators.id
-  permissions   = {
+resource "azuredevops_git_permissions" "example-repo-permissions" {
+  project_id    = azuredevops_git_repository.example.project_id
+  repository_id = azuredevops_git_repository.example.id
+  principal     = data.azuredevops_group.example-project-administrators.id
+  permissions = {
     RemoveOthersLocks = "Allow"
     ManagePermissions = "Deny"
     CreateTag         = "Deny"
@@ -130,12 +183,12 @@ resource "azuredevops_git_permissions" "project-git-repo-permissions" {
   }
 }
 
-resource "azuredevops_git_permissions" "project-git-branch-permissions" {
-  project_id    = azuredevops_git_repository.git-repo.project_id
-  repository_id = azuredevops_git_repository.git-repo.id
+resource "azuredevops_git_permissions" "example-branch-permissions" {
+  project_id    = azuredevops_git_repository.example.project_id
+  repository_id = azuredevops_git_repository.example.id
   branch_name   = "master"
-  principal     = data.azuredevops_group.project-contributors.id
-  permissions   = {
+  principal     = data.azuredevops_group.example-project-contributors.id
+  permissions = {
     RemoveOthersLocks = "Allow"
     ForcePush         = "Deny"
   }
@@ -178,7 +231,7 @@ The following arguments are supported:
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 5.1 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-5.1)
+* [Azure DevOps Service REST API 6.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-6.0)
 
 ## Import
 

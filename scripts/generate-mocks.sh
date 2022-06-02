@@ -45,7 +45,8 @@ function generate_single_mock_client() {
         -package $MOCK_PKG_NAME \
         -destination "$OUTPUT_DIR/$OUTPUT_FILE" \
         -mock_names "$2=$MOCK_NAME" \
-        $1 $2 > /dev/null 2>&1
+        --build_flags=--mod=mod \
+        $1 $2
 
     if [ $? -eq 0 ]
     then

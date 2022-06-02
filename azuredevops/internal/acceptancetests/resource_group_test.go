@@ -1,3 +1,4 @@
+//go:build (all || core || resource_group) && !exclude_resource_group
 // +build all core resource_group
 // +build !exclude_resource_group
 
@@ -7,9 +8,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -21,7 +22,7 @@ func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGroupDestroyed,

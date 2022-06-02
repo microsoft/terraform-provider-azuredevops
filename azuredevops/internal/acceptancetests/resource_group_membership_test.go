@@ -1,3 +1,4 @@
+//go:build (all || core || resource_group_membership) && !exclude_resource_group_membership
 // +build all core resource_group_membership
 // +build !exclude_resource_group_membership
 
@@ -10,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -40,7 +41,7 @@ func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
 	//	- The second step is the same as the first except it omits the group membership.
 	//	  This lets us test that the membership is removed in isolation of the project being deleted
 	//	- There is no CheckDestroy function because that is covered based on the above point
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

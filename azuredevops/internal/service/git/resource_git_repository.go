@@ -7,15 +7,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // RepoInitType strategy for initializing the repo
@@ -39,11 +40,11 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGitRepositoryCreate,
-		Read:   resourceGitRepositoryRead,
-		Update: resourceGitRepositoryUpdate,
-		Delete: resourceGitRepositoryDelete,
-
+		Create:   resourceGitRepositoryCreate,
+		Read:     resourceGitRepositoryRead,
+		Update:   resourceGitRepositoryUpdate,
+		Delete:   resourceGitRepositoryDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:             schema.TypeString,
@@ -96,14 +97,16 @@ func ResourceGitRepository() *schema.Resource {
 				Computed: true,
 			},
 			"initialization": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
+				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"init_type": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 							ValidateFunc: validation.StringInSlice([]string{
 								string(RepoInitTypeValues.Clean),
 								string(RepoInitTypeValues.Fork),
@@ -117,7 +120,6 @@ func ResourceGitRepository() *schema.Resource {
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
 							RequiredWith: []string{"initialization.0.source_url"},
-							Default:      "Git",
 						},
 						"source_url": {
 							Type:         schema.TypeString,
@@ -126,6 +128,15 @@ func ResourceGitRepository() *schema.Resource {
 							Default:      "",
 							RequiredWith: []string{"initialization.0.source_type"},
 							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+						},
+						"service_connection_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							RequiredWith: []string{
+								"initialization.0.source_url",
+								"initialization.0.source_type",
+							},
+							Default: "",
 						},
 					},
 				},
@@ -136,16 +147,18 @@ func ResourceGitRepository() *schema.Resource {
 
 // A helper type that is used for transient info only used during repo creation
 type repoInitializationMeta struct {
-	initType   string
-	sourceType string
-	sourceURL  string
+	initType            string
+	sourceType          string
+	sourceURL           string
+	serviceConnectionID string
 }
 
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding repository resource data: %+v", err)
+		return fmt.Errorf(" failed expanding repository resource data (ProjectID:  %s, Repository: %s) Error: %+v",
+			d.Get("project_id").(string), d.Get("name").(string), err)
 	}
 
 	var parentRepoRef *git.GitRepositoryRef = nil
@@ -166,6 +179,10 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
 	}
 
+	// set the id immediately after successfully creating the repository, which will allow terraform to track the
+	// repository in state and will taint the resource if further errors are encountered during initialization
+	d.SetId(createdRepo.Id.String())
+
 	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
 		strings.EqualFold(initialization.sourceType, "Git") {
 		importRequest := git.GitImportRequest{
@@ -176,21 +193,25 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			},
 			Repository: createdRepo,
 		}
+
+		if initialization.serviceConnectionID != "" {
+			importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
+			importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
+		}
+
 		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 		if importErr != nil {
-			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", err)
+			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
 		}
 	}
 
 	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
 		err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
 		if err != nil {
-			if err := deleteGitRepository(clients, createdRepo.Id.String()); err != nil {
-				log.Printf("[WARN] Unable to delete new Git Repository after initialization failed: %+v", err)
-			}
 			return fmt.Errorf("Error initializing repository in Azure DevOps: %+v", err)
 		}
 	}
+
 	if initialization != nil && !(strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) && parentRepoRef == nil) {
 		err := waitForBranch(clients, repo.Name, projectID)
 		if err != nil {
@@ -198,7 +219,6 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.SetId(createdRepo.Id.String())
 	return resourceGitRepositoryRead(d, m)
 }
 
@@ -224,7 +244,7 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 		Delay:                     1 * time.Second,
 		ContinuousTargetOccurence: 1,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf("Error retrieving expected branch for repository [%s]: %+v", *repoName, err)
 	}
 	return nil
@@ -356,6 +376,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	d.SetId("")
 	return nil
 }
@@ -365,7 +386,6 @@ func deleteGitRepository(clients *client.AggregatedClient, repoID string) error 
 	if err != nil {
 		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
 	}
-
 	return clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &uuid,
 	})
@@ -429,24 +449,31 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	}
 
 	var initialization *repoInitializationMeta = nil
-	initData := d.Get("initialization").(*schema.Set).List()
+	initData := d.Get("initialization").([]interface{})
 	// Note: If configured, this will be of length 1 based on the schema definition above.
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})
 
 		initialization = &repoInitializationMeta{
-			initType:   initValues["init_type"].(string),
-			sourceType: initValues["source_type"].(string),
-			sourceURL:  initValues["source_url"].(string),
+			initType:            initValues["init_type"].(string),
+			sourceType:          initValues["source_type"].(string),
+			sourceURL:           initValues["source_url"].(string),
+			serviceConnectionID: initValues["service_connection_id"].(string),
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
+			initialization.serviceConnectionID = ""
+		}
+
+		if _, ok := d.GetOk("default_branch"); ok {
+			if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
+				return nil, nil, nil, fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
+			}
 		}
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
 	}
-
 	return repo, initialization, &projectID, nil
 }

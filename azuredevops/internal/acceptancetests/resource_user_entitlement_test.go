@@ -1,3 +1,4 @@
+//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
 // +build all resource_user_entitlement
 // +build !exclude_resource_user_entitlement
 
@@ -11,9 +12,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -22,7 +23,7 @@ import (
 func TestAccUserEntitlement_Create(t *testing.T) {
 	tfNode := "azuredevops_user_entitlement.user"
 	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkUserEntitlementDestroyed,

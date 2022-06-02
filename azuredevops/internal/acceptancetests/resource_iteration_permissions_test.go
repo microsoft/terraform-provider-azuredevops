@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_iteration_permissions) && (!exclude_permissions || !exclude_resource_iteration_permissions)
 // +build all permissions resource_iteration_permissions
 // +build !exclude_permissions !exclude_resource_iteration_permissions
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
@@ -61,7 +62,7 @@ func TestAccIterationPermissions_SetPermissions(t *testing.T) {
 	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
 	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -119,7 +120,7 @@ func TestAccIterationPermissions_UpdatePermissions(t *testing.T) {
 	tfNodeRoot := "azuredevops_iteration_permissions.root-permissions"
 	tfNodeIteration := "azuredevops_iteration_permissions.iteration-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

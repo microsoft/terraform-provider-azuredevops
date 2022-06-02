@@ -12,19 +12,19 @@ Manages features for Azure DevOps projects
 ## Example Usage
 
 ```hcl
-provider "azuredevops" {
-  version = ">= 0.0.1"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-data "azuredevops_project" "tf-project-test-001" {
-  name = "Test Project"
-}
-
-resource "azuredevops_project_features" "my-project-features" {
-  project_id = data.azuredevops_project.tf-project-test-001.id
+resource "azuredevops_project_features" "example-features" {
+  project_id = azuredevops_project.example.id
   features = {
-      "testplans" = "disabled"
-      "artifacts" = "enabled"
+    "testplans" = "disabled"
+    "artifacts" = "enabled"
   }
 }
 ```
@@ -40,7 +40,7 @@ The following arguments are supported:
 > **NOTE:**  
 > It's possible to define project features both within the [`azuredevops_project_features` resource](project_features.html) and
 > via the `features` block by using the [`azuredevops_project` resource](project.html).
-> However it's not possible to use both methods to manage group members, since there'll be conflicts.
+> However it's not possible to use both methods to manage features, since there'll be conflicts.
 
 ## Attributes Reference
 
@@ -55,7 +55,7 @@ No official documentation available
 Azure DevOps feature settings can be imported using the project id, e.g.
 
 ```sh
-terraform import azuredevops_project_features.project_id 2785562e-8f45-4534-a10e-b9ca1666b17e
+terraform import azuredevops_project_features.example 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

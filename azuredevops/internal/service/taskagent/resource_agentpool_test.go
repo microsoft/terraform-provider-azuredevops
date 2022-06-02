@@ -1,3 +1,4 @@
+//go:build (all || resource_agentpool) && !exclude_resource_agentpool
 // +build all resource_agentpool
 // +build !exclude_resource_agentpool
 
@@ -14,8 +15,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"

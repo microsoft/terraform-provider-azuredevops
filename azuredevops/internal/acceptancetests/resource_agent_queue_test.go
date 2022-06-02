@@ -1,3 +1,4 @@
+//go:build (all || resource_agent_queue) && !exclude_resource_agent_queue
 // +build all resource_agent_queue
 // +build !exclude_resource_agent_queue
 
@@ -6,7 +7,7 @@ package acceptancetests
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -15,7 +16,7 @@ func TestAccResourceAgentQueue_CreateAndUpdate(t *testing.T) {
 	poolName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_agent_queue.q"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

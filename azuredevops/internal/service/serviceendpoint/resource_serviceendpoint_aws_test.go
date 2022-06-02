@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_aws) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_aws
 // +build !exclude_serviceendpoints
 
@@ -10,8 +11,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -19,7 +20,7 @@ import (
 )
 
 var awsTestServiceEndpointID = uuid.New()
-var awsRandomServiceEndpointProjectID = uuid.New().String()
+var awsRandomServiceEndpointProjectID = uuid.New()
 var awsTestServiceEndpointProjectID = &awsRandomServiceEndpointProjectID
 
 var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -34,12 +35,20 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:          &awsTestServiceEndpointID,
-	Name:        converter.String("UNIT_TEST_CONN_NAME"),
-	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
-	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("aws"),
-	Url:         converter.String("https://aws.amazon.com/"),
+	Id:    &awsTestServiceEndpointID,
+	Name:  converter.String("UNIT_TEST_CONN_NAME"),
+	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:  converter.String("aws"),
+	Url:   converter.String("https://aws.amazon.com/"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: awsTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
@@ -66,7 +75,7 @@ func TestServiceEndpointAws_Create_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &awsTestServiceEndpoint, Project: awsTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &awsTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -89,7 +98,10 @@ func TestServiceEndpointAws_Read_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: awsTestServiceEndpoint.Id, Project: awsTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: awsTestServiceEndpoint.Id,
+		Project:    converter.String(awsTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -112,7 +124,12 @@ func TestServiceEndpointAws_Delete_DoesNotSwallowError(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: awsTestServiceEndpoint.Id, Project: awsTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: awsTestServiceEndpoint.Id,
+		ProjectIds: &[]string{
+			awsTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -138,7 +155,6 @@ func TestServiceEndpointAws_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   &awsTestServiceEndpoint,
 		EndpointId: awsTestServiceEndpoint.Id,
-		Project:    awsTestServiceEndpointProjectID,
 	}
 
 	buildClient.

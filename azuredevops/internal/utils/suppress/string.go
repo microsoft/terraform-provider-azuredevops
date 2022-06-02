@@ -3,7 +3,7 @@ package suppress
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // CaseDifference reports whether old and new, interpreted as UTF-8 strings,

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
 )
 
@@ -21,9 +21,17 @@ func GetProvider() *schema.Provider {
 	return provider
 }
 
+func GetProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"azuredevops": func() (*schema.Provider, error) {
+			return GetProvider(), nil
+		},
+	}
+}
+
 // GetProviders returns a map of all providers needed for the project
-func GetProviders() map[string]terraform.ResourceProvider {
-	return map[string]terraform.ResourceProvider{
+func GetProviders() map[string]*schema.Provider {
+	return map[string]*schema.Provider{
 		"azuredevops": GetProvider(),
 	}
 }
@@ -49,11 +57,15 @@ func PreCheck(t *testing.T, additionalEnvVars *[]string) {
 	if additionalEnvVars != nil {
 		requiredEnvVars = append(requiredEnvVars, *additionalEnvVars...)
 	}
-
+	missing := false
 	for _, variable := range requiredEnvVars {
 		if _, ok := os.LookupEnv(variable); !ok {
-			t.Fatalf("`%s` must be set for this acceptance test!", variable)
+			missing = true
+			t.Errorf("`%s` must be set for this acceptance test!", variable)
 		}
+	}
+	if missing {
+		t.Fatalf("Some environment variables missing.")
 	}
 }
 
@@ -89,4 +101,18 @@ func containsPropertyWithValue(m map[string]string, property string, value strin
 		}
 	}
 	return false
+}
+
+func RunTestsInSequence(t *testing.T, tests map[string]map[string]func(t *testing.T)) {
+	for group, m := range tests {
+		m := m
+		t.Run(group, func(t *testing.T) {
+			for name, tc := range m {
+				tc := tc
+				t.Run(name, func(t *testing.T) {
+					tc(t)
+				})
+			}
+		})
+	}
 }

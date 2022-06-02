@@ -1,3 +1,4 @@
+//go:build all || core
 // +build all core
 
 package acceptancetests
@@ -6,14 +7,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
 // Verifies that the client config data source loads the configured AzDO org
 func TestAccClientConfig_LoadsCorrectProperties(t *testing.T) {
 	tfNode := "data.azuredevops_client_config.c"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

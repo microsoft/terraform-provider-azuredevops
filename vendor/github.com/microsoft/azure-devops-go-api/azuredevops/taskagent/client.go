@@ -1311,7 +1311,7 @@ func (client *ClientImpl) GetTaskGroups(ctx context.Context, args GetTaskGroupsA
 		queryParams.Add("$top", strconv.Itoa(*args.Top))
 	}
 	if args.ContinuationToken != nil {
-		queryParams.Add("continuationToken", (*args.ContinuationToken).String())
+		queryParams.Add("continuationToken", (*args.ContinuationToken).AsQueryParameter())
 	}
 	if args.QueryOrder != nil {
 		queryParams.Add("queryOrder", string(*args.QueryOrder))

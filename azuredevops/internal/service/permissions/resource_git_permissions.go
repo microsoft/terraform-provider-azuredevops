@@ -5,10 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/ahmetb/go-linq"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/git"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -121,46 +119,12 @@ func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (s
 		if !repoOk {
 			return "", fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
 		}
-		branch, err := getBranchByName(clients,
-			converter.StringFromInterface(repositoryID),
-			converter.StringFromInterface(branchName))
+		branchPath := strings.Split(branchName.(string), "/")
+		branchName, err := converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
 		if err != nil {
 			return "", err
 		}
-		branchPath := strings.Split(*branch.Name, "/")
-		branchName, err = converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
-		if err != nil {
-			return "", err
-		}
-		aclToken += "/refs/heads/" + branchName.(string)
+		aclToken += "/refs/heads/" + branchName
 	}
 	return aclToken, nil
-}
-
-func getBranchByName(clients *client.AggregatedClient, repositoryID *string, branchName *string) (*git.GitRef, error) {
-	filter := "heads/" + *branchName
-	currentToken := ""
-	args := git.GetRefsArgs{
-		RepositoryId: repositoryID,
-		Filter:       &filter,
-	}
-	for hasMore := true; hasMore; {
-		if currentToken != "" {
-			args.ContinuationToken = &currentToken
-		}
-		res, err := clients.GitReposClient.GetRefs(clients.Ctx, args)
-		if err != nil {
-			return nil, err
-		}
-		currentToken = res.ContinuationToken
-		hasMore = currentToken != ""
-		item := linq.From(res.Value).FirstWith(func(elem interface{}) bool {
-			return strings.HasSuffix(*(elem.(git.GitRef).Name), *branchName)
-		})
-		if item != nil {
-			gitRef := item.(git.GitRef)
-			return &gitRef, nil
-		}
-	}
-	return nil, fmt.Errorf("No branch found with name [%s] in repository with id [%s]", *branchName, *repositoryID)
 }

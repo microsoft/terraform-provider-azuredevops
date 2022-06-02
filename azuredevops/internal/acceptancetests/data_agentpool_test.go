@@ -1,3 +1,4 @@
+//go:build (all || data_sources || data_agent_pool) && (!exclude_data_sources || !exclude_data_agent_pool)
 // +build all data_sources data_agent_pool
 // +build !exclude_data_sources !exclude_data_agent_pool
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -17,7 +18,7 @@ func TestAccAgentPool_DataSource(t *testing.T) {
 	createAndGetAgentPoolData := fmt.Sprintf("%s\n%s", createAgentPool, testutils.HclAgentPoolDataSource())
 
 	tfNode := "data.azuredevops_agent_pool.pool"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_github) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_github
 // +build !exclude_serviceendpoints
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -17,7 +18,7 @@ func TestAccServiceEndpointGitHub_PersonalTokenBasic(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_github"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -44,7 +45,7 @@ func TestAccServiceEndpointGitHub_PersonalTokenUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_github"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -77,7 +78,7 @@ func TestAccServiceEndpointGitHub_OauthBasic(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_github"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -102,7 +103,7 @@ func TestAccServiceEndpointGitHub_OauthUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_github"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -139,7 +140,7 @@ func TestAccServiceEndpointGitHub_CreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_github"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),

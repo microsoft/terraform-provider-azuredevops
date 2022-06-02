@@ -1,3 +1,4 @@
+//go:build (all || resource_build_definition) && !exclude_resource_build_definition
 // +build all resource_build_definition
 // +build !exclude_resource_build_definition
 
@@ -9,10 +10,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -34,7 +35,7 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 	buildDefinitionPathFourth := `\` + buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	tfBuildDefNode := "azuredevops_build_definition.build"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
@@ -118,7 +119,7 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 // Verifies a build for Bitbucket can happen. Note: the update/import logic is tested in other tests
 func TestAccBuildDefinitionBitbucket_Create(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
@@ -164,7 +165,7 @@ func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	tfNode := "azuredevops_build_definition.build"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
@@ -175,6 +176,30 @@ func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 			}, {
 				Config: testutils.HclBuildDefinitionWithVariables("foo2", "bar2", name),
 				Check:  checkForVariableValues(tfNode, "foo2", "bar2"),
+			},
+		},
+	})
+}
+
+func TestAccBuildDefinition_Schedules(t *testing.T) {
+	name := testutils.GenerateResourceName()
+	tfNode := "azuredevops_build_definition.build"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkBuildDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclBuildDefinitionSchedules(name),
+				Check: resource.ComposeTestCheckFunc(
+					checkBuildDefinitionExists(name),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "revision"),
+					resource.TestCheckResourceAttrSet(tfNode, "repository.0.repo_id"),
+					resource.TestCheckResourceAttr(tfNode, "schedules.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "schedules.0.days_to_build.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "name", name),
+				),
 			},
 		},
 	})
@@ -264,4 +289,63 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 		Project:      &projectID,
 		DefinitionId: &buildDefID,
 	})
+}
+
+func hclBuildDefinitionSchedules(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "acc-%[1]s"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_build_definition" "build" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    override {
+      batch = true
+      branch_filter {
+        include = ["master"]
+      }
+      path_filter {
+        include = ["*/**.ts"]
+      }
+      max_concurrent_builds_per_branch = 2
+      polling_interval                 = 0
+    }
+  }
+
+  schedules {
+    branch_filter {
+      include = ["master"]
+    }
+
+    days_to_build              = ["Mon"]
+    schedule_only_with_changes = true
+    start_hours                = 0
+    start_minutes              = 0
+    time_zone                  = "(UTC) Coordinated Universal Time"
+  }
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
+}
+`, name)
 }

@@ -12,29 +12,33 @@ Manages a Kubernetes service endpoint within Azure DevOps.
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "p" {
-  name = "contoso"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_azure_sub" {
-  project_id            = data.azuredevops_project.p
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-azure" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "AzureSubscription"
 
   azure_subscription {
-    subscription_id   = "00000000-0000-0000-0000-000000000000" # fake value
-    subscription_name = "Microsoft Azure DEMO"
-    tenant_id         = "00000000-0000-0000-0000-000000000000" # fake value
-    resourcegroup_id  = "sample-rg"
+    subscription_id   = "00000000-0000-0000-0000-000000000000"
+    subscription_name = "Example"
+    tenant_id         = "00000000-0000-0000-0000-000000000000"
+    resourcegroup_id  = "example-rg"
     namespace         = "default"
-    cluster_name      = "sample-aks"
+    cluster_name      = "example-aks"
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_kubeconfig" {
-  project_id            = data.azuredevops_project.p
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-kubeconfig" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "Kubeconfig"
 
@@ -66,15 +70,15 @@ resource "azuredevops_serviceendpoint_kubernetes" "se_kubeconfig" {
   }
 }
 
-resource "azuredevops_serviceendpoint_kubernetes" "se_service_account" {
-  project_id            = data.azuredevops_project.p
-  service_endpoint_name = "Sample Kubernetes"
+resource "azuredevops_serviceendpoint_kubernetes" "example-service-account" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Kubernetes"
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "ServiceAccount"
 
   service_account {
-    token   = "bXktYXBw[...]K8bPxc2uQ=="
-    ca_cert = "Mzk1MjgkdmRnN0pi[...]mHHRUH14gw4Q=="
+    token   = "000000000000000000000000"
+    ca_cert = "0000000000000000000000000000000"
   }
 }
 ```
@@ -83,42 +87,60 @@ resource "azuredevops_serviceendpoint_kubernetes" "se_service_account" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
-- `apiserver_url` - (Required) The Service Endpoint description.
+- `apiserver_url` - (Required) The hostname (in form of URI) of the Kubernetes API.
 - `authorization_type` - (Required) The authentication method used to authenticate on the Kubernetes cluster. The value should be one of AzureSubscription, Kubeconfig, ServiceAccount.
-- `azure_subscription` - (Optional) The configuration for authorization_type="AzureSubscription".
-  - `azure_environment` - (Optional) Azure environment refers to whether the public cloud offering or domestic (government) clouds are being used. Currently, only the public cloud is supported. The value must be AzureCloud. This is also the default-value.
-  - `cluster_name` - (Required) The name of the Kubernetes cluster.
-  - `subscription_id` - (Required) The id of the Azure subscription.
-  - `subscription_name` - (Required) The name of the Azure subscription.
-  - `tenant_id` - (Required) The id of the tenant used by the subscription.
-  - `resourcegroup_id` - (Required) The resource group name, to which the Kubernetes cluster is deployed.
-  - `namespace` - (Optional) The Kubernetes namespace. Default value is "default".
-- `kubeconfig` - (Optional) The configuration for authorization_type="Kubeconfig".
-  - `kube_config` - (Required) The content of the kubeconfig in yaml notation to be used to communicate with the API-Server of Kubernetes.
-  - `accept_untrusted_certs` - (Optional) Set this option to allow clients to accept a self-signed certificate.
-  - `cluster_context` - (Optional) Context within the kubeconfig file that is to be used for identifying the cluster. Default value is the current-context set in kubeconfig.
-- `service_account` - (Optional) The configuration for authorization_type="ServiceAccount". This type uses the credentials of a service account currently deployed to the cluster.
-  - `token` - (Required) The token from a Kubernetes secret object.
-  - `ca_cert` - (Required) The certificate from a Kubernetes secret object.
+- `azure_subscription` - (Optional) A `azure_subscription` block defined blow. 
+- `kubeconfig` - (Optional) A `kubeconfig` block defined blow.
+- `service_account` - (Optional)  A `service_account` block defined blow.
+
+---
+
+A `azure_subscription` block supports the following:
+
+The configuration for authorization_type="AzureSubscription".
+
+- `azure_environment` - (Optional) Azure environment refers to whether the public cloud offering or domestic (government) clouds are being used. Currently, only the public cloud is supported. The value must be AzureCloud. This is also the default-value.
+- `cluster_name` - (Required) The name of the Kubernetes cluster.
+- `subscription_id` - (Required) The id of the Azure subscription.
+- `subscription_name` - (Required) The name of the Azure subscription.
+- `tenant_id` - (Required) The id of the tenant used by the subscription.
+- `resourcegroup_id` - (Required) The resource group name, to which the Kubernetes cluster is deployed.
+- `namespace` - (Optional) The Kubernetes namespace. Default value is "default".
+- `cluster_admin` - (Optional) Set this option to allow use cluster admin credentials.
+
+A `kubeconfig` block supports the following: 
+
+The configuration for authorization_type="Kubeconfig". 
+
+- `kube_config` - (Required) The content of the kubeconfig in yaml notation to be used to communicate with the API-Server of Kubernetes.
+- `accept_untrusted_certs` - (Optional) Set this option to allow clients to accept a self-signed certificate.
+- `cluster_context` - (Optional) Context within the kubeconfig file that is to be used for identifying the cluster. Default value is the current-context set in kubeconfig.
+
+A `service_account` block supports the following:  
+
+The configuration for authorization_type="ServiceAccount". This type uses the credentials of a service account currently deployed to the cluster.
+
+- `token` - (Required) The token from a Kubernetes secret object.
+- `ca_cert` - (Required) The certificate from a Kubernetes secret object.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 - `id` - The ID of the service endpoint.
-- `project_id` - The project ID or project name.
+- `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Service Endpoint Kubernetes can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_kubernetes.serviceendpoint 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_kubernetes.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

@@ -12,16 +12,15 @@ Manages a project within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-
+  description        = "Managed by Terraform"
   features = {
-      "testplans" = "disabled"
-      "artifacts" = "disabled"
+    "testplans" = "disabled"
+    "artifacts" = "disabled"
   }
 }
 ```
@@ -34,14 +33,14 @@ The following arguments are supported:
 - `description` - (Optional) The Description of the Project.
 - `visibility` - (Optional) Specifies the visibility of the Project. Valid values: `private` or `public`. Defaults to `private`.
 - `version_control` - (Optional) Specifies the version control system. Valid values: `Git` or `Tfvc`. Defaults to `Git`.
-- `work_item_template` - (Optional) Specifies the work item template. Defaults to `Agile`.
+- `work_item_template` - (Optional) Specifies the work item template. Valid values: `Agile`, `Basic`, `CMMI` or `Scrum`. Defaults to `Agile`.
 - `features` - (Optional) Defines the status (`enabled`, `disabled`) of the project features.  
-   Valid features `boards`, `repositories`, `pipelines`, `testplans`, `artifacts`
+   Valid features are `boards`, `repositories`, `pipelines`, `testplans`, `artifacts`
 
 > **NOTE:**  
 > It's possible to define project features both within the [`azuredevops_project_features` resource](project_features.html) and
 > via the `features` block by using the [`azuredevops_project` resource](project.html).
-> However it's not possible to use both methods to manage group members, since there'll be conflicts.
+> However it's not possible to use both methods to manage features, since there'll be conflicts.
 
 ## Attributes Reference
 
@@ -52,20 +51,20 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Projects can be imported using the project name or by the project Guid, e.g.
 
 ```sh
-terraform import azuredevops_project.project "Test Project"
+terraform import azuredevops_project.example "Example Project"
 ```
 
 or
 
 ```sh
-terraform import azuredevops_project.project 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_project.example 00000000-0000-0000-0000-000000000000
 ```
 
 ## PAT Permissions Required

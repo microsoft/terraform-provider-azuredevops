@@ -1,3 +1,4 @@
+//go:build (all || resource_variable_group) && !exclude_resource_variable_group
 // +build all resource_variable_group
 // +build !exclude_resource_variable_group
 
@@ -11,10 +12,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -29,7 +30,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,
@@ -67,6 +68,7 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccVariableGroupKeyVault_CreateAndUpdate: azure key vault not provisioned on test infrastructure")
 	projectName := testutils.GenerateResourceName()
 
 	vargroupKeyvault := testutils.GenerateResourceName()
@@ -74,7 +76,7 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 	allowAccessFalse := false
 	tfVarGroupNode := "azuredevops_variable_group.vg"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkVariableGroupDestroyed,

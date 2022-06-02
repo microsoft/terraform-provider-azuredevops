@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_kubernetes) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_kubernetes
 // +build !exclude_serviceendpoints
 
@@ -8,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -21,6 +22,7 @@ const terraformServiceEndpointNode = "azuredevops_serviceendpoint_kubernetes.ser
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointKubernetesForAzureSubscriptionCreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccServiceEndpointKubernetesForAzureSubscriptionCreateAndUpdate: test resource limit")
 	authorizationType := "AzureSubscription"
 
 	var attrTestCheckFuncList []resource.TestCheckFunc
@@ -82,7 +84,7 @@ func runSvcEndpointAcceptanceTest(t *testing.T, attrTestCheckFuncList []resource
 		checkSvcEndpointKubernetesExists(serviceEndpointNameSecond),
 	)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkSvcEndpointKubernetesDestroyed,

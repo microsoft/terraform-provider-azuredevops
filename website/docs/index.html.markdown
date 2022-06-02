@@ -7,7 +7,7 @@ description: |-
 
 # Azure DevOps provider
 
-The Azure DevOps provider can be used to configure Azure DevOps project in [Microsoft Azure](https://azure.microsoft.com/en-us/) using [Azure DevOps Service REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1)
+The Azure DevOps provider can be used to configure Azure DevOps project in [Microsoft Azure](https://azure.microsoft.com/en-us/) using [Azure DevOps Service REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-6.0)
 
 Use the navigation to the left to read about the available resources.
 
@@ -16,8 +16,13 @@ Interested in the provider's latest features, or want to make sure you're up to 
 ## Example Usage
 
 ```hcl
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {

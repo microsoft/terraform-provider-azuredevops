@@ -1,3 +1,4 @@
+//go:build (all || utils || securitynamespaces) && !exclude_securitynamespaces
 // +build all utils securitynamespaces
 // +build !exclude_securitynamespaces
 
@@ -13,9 +14,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/security"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -319,7 +320,7 @@ func TestSecurityNamespace_GetActionDefinitions_HandleError(t *testing.T) {
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	defs, err := sn.getActionDefinitions()
+	defs, err := sn.GetActionDefinitions()
 	assert.Nil(t, defs)
 	assert.EqualError(t, err, errMsg)
 }
@@ -350,12 +351,12 @@ func TestSecurityNamespace_GetActionDefinitions_EnsureExistingValuesUnchanged(t 
 		Return(&securityNamespaceDescriptionProject, nil).
 		Times(1)
 
-	defs1, err := sn.getActionDefinitions()
+	defs1, err := sn.GetActionDefinitions()
 	assert.Nil(t, err)
 	assert.NotNil(t, defs1)
 
 	// ensure second call does not call QuerySecurityNamespaces again
-	defs2, err := sn.getActionDefinitions()
+	defs2, err := sn.GetActionDefinitions()
 	assert.Nil(t, err)
 	assert.NotNil(t, defs2)
 
@@ -389,7 +390,7 @@ func TestSecurityNamespace_GetActionDefinitions_EmptyResultError(t *testing.T) {
 		Return(&securityNamespaceDescriptionProjectEmpty, nil).
 		Times(1)
 
-	defs, err := sn.getActionDefinitions()
+	defs, err := sn.GetActionDefinitions()
 	assert.NotNil(t, err)
 	assert.Nil(t, defs)
 }
@@ -420,7 +421,7 @@ func TestSecurityNamespace_GetActionDefinitions_ValidMapping(t *testing.T) {
 		Return(&securityNamespaceDescriptionProject, nil).
 		Times(1)
 
-	defs, err := sn.getActionDefinitions()
+	defs, err := sn.GetActionDefinitions()
 	assert.Nil(t, err)
 	assert.NotNil(t, defs)
 	assert.Equal(t, len(*securityNamespaceDescriptionProject[0].Actions), len(*defs))
@@ -460,7 +461,7 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 		Return(nil, fmt.Errorf(errMsg)).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.NotNil(t, err)
 	assert.Nil(t, acl)
 	assert.EqualError(t, err, errMsg)
@@ -501,7 +502,7 @@ func TestSecurityNamespace_GetAccessControlList_EmptyResult(t *testing.T) {
 		Return(&projectAccessControlListEmpty, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
@@ -541,7 +542,7 @@ func TestSecurityNamespace_GetAccessControlList_NilResult(t *testing.T) {
 		Return(nil, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.Nil(t, acl)
 }
@@ -581,7 +582,7 @@ func TestSecurityNamespace_GetAccessControlList_VerifyReturn(t *testing.T) {
 		Return(&projectAccessControlList, nil).
 		Times(1)
 
-	acl, err := sn.getAccessControlList(&descriptorList)
+	acl, err := sn.GetAccessControlList(&descriptorList)
 	assert.Nil(t, err)
 	assert.NotNil(t, acl)
 	assert.Equal(t, &projectAccessControlList[0], acl)

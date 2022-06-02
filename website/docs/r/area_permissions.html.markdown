@@ -19,29 +19,29 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name       = "Sample Project"
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
   work_item_template = "Agile"
   version_control    = "Git"
   visibility         = "private"
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_group" "project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+data "azuredevops_group" "example-project-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
 }
 
-resource "azuredevops_area_permissions" "root-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
-	path        = "/"
-	permissions = {
-	  CREATE_CHILDREN = "Deny"
-	  GENERIC_READ    = "Allow"
-	  DELETE          = "Deny"
-	  WORK_ITEM_READ  = "Allow"
-	}
+resource "azuredevops_area_permissions" "example-root-permissions" {
+  project_id = azuredevops_project.example.id
+  principal  = data.azuredevops_group.example-project-readers.id
+  path       = "/"
+  permissions = {
+    CREATE_CHILDREN = "Deny"
+    GENERIC_READ    = "Allow"
+    DELETE          = "Deny"
+    WORK_ITEM_READ  = "Allow"
+  }
 }
 ```
 
@@ -68,7 +68,7 @@ The following arguments are supported:
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 5.1 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-5.1)
+* [Azure DevOps Service REST API 6.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-6.0)
 
 ## Import
 

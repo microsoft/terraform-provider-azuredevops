@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_kubernetes) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_kubernetes
 // +build !exclude_serviceendpoints
 
@@ -9,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -17,7 +18,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 )
 
 const errMsgCreateServiceEndpoint = "CreateServiceEndpoint() Failed"
@@ -26,7 +27,7 @@ const errMsgGetServiceEndpoint = "GetServiceEndpoint() Failed"
 const errMsgDeleteServiceEndpoint = "DeleteServiceEndpoint() Failed"
 
 var kubernetesTestServiceEndpointID = uuid.New()
-var kubernetesRandomServiceEndpointProjectID = uuid.New().String()
+var kubernetesRandomServiceEndpointProjectID = uuid.New()
 var kubernetesTestServiceEndpointProjectID = &kubernetesRandomServiceEndpointProjectID
 
 var kubernetesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -36,7 +37,15 @@ var kubernetesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:         converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:          converter.String("kubernetes"),
 	Url:           converter.String("https://kubernetes.apiserver.com/"),
-	Description:   converter.String("description"),
+	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+		{
+			ProjectReference: &serviceendpoint.ProjectReference{
+				Id: kubernetesTestServiceEndpointProjectID,
+			},
+			Name:        converter.String("UNIT_TEST_CONN_NAME"),
+			Description: converter.String("description"),
+		},
+	},
 }
 
 func createkubernetesTestServiceEndpointForAzureSubscription() *serviceendpoint.ServiceEndpoint {
@@ -52,6 +61,7 @@ func createkubernetesTestServiceEndpointForAzureSubscription() *serviceendpoint.
 		"azureSubscriptionName": "kubernetes_TEST_subscription_name",
 		"clusterId":             "/subscriptions/kubernetes_TEST_subscription_id/resourcegroups/kubernetes_TEST_resource_group_id/providers/Microsoft.ContainerService/managedClusters/kubernetes_TEST_cluster_name",
 		"namespace":             "default",
+		"clusterAdmin":          "false",
 	}
 
 	return &serviceEndpoint
@@ -133,7 +143,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionCreateDoesNotSwallowError(
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForAzureSubscription, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForAzureSubscription}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -157,7 +167,10 @@ func TestServiceEndpointKubernetesForAzureSubscriptionReadDoesNotSwallowError(t 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id,
+		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -181,7 +194,13 @@ func TestServiceEndpointKubernetesForAzureSubscriptionDeleteDoesNotSwallowError(
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id,
+		ProjectIds: &[]string{
+			kubernetesTestServiceEndpointProjectID.String(),
+		},
+	}
+
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -208,7 +227,6 @@ func TestServiceEndpointKubernetesForAzureSubscriptionUpdateDoesNotSwallowError(
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   kubernetesTestServiceEndpointForAzureSubscription,
 		EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id,
-		Project:    kubernetesTestServiceEndpointProjectID,
 	}
 
 	buildClient.
@@ -248,7 +266,7 @@ func TestServiceEndpointKubernetesForKubeconfigCreateDoesNotSwallowError(t *test
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForKubeconfig, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForKubeconfig}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -273,7 +291,10 @@ func TestServiceEndpointKubernetesForKubeconfigReadDoesNotSwallowError(t *testin
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id,
+		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -298,7 +319,12 @@ func TestServiceEndpointKubernetesForKubeconfigDeleteDoesNotSwallowError(t *test
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id,
+		ProjectIds: &[]string{
+			kubernetesTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -326,7 +352,6 @@ func TestServiceEndpointKubernetesForKubeconfigUpdateDoesNotSwallowError(t *test
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   kubernetesTestServiceEndpointForKubeconfig,
 		EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id,
-		Project:    kubernetesTestServiceEndpointProjectID,
 	}
 
 	buildClient.
@@ -367,7 +392,7 @@ func TestServiceEndpointKubernetesForServiceAccountCreateDoesNotSwallowError(t *
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForServiceAccount, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: kubernetesTestServiceEndpointForServiceAccount}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -392,7 +417,10 @@ func TestServiceEndpointKubernetesForServiceAccountReadDoesNotSwallowError(t *te
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id,
+		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+	}
 	buildClient.
 		EXPECT().
 		GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -417,7 +445,12 @@ func TestServiceEndpointKubernetesForServiceAccountDeleteDoesNotSwallowError(t *
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id, Project: kubernetesTestServiceEndpointProjectID}
+	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+		EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id,
+		ProjectIds: &[]string{
+			kubernetesTestServiceEndpointProjectID.String(),
+		},
+	}
 	buildClient.
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -445,7 +478,6 @@ func TestServiceEndpointKubernetesForServiceAccountUpdateDoesNotSwallowError(t *
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   kubernetesTestServiceEndpointForServiceAccount,
 		EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id,
-		Project:    kubernetesTestServiceEndpointProjectID,
 	}
 
 	buildClient.

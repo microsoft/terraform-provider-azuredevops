@@ -1,3 +1,4 @@
+//go:build (all || resource_authorization) && !exclude_resource_authorization
 // +build all resource_authorization
 // +build !exclude_resource_authorization
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -20,7 +21,7 @@ func TestAccResourceAuthorization_CRUD(t *testing.T) {
 	unAuthedHCL := testutils.HclResourceAuthorization("azuredevops_serviceendpoint_github.serviceendpoint.id", false)
 
 	tfAuthNode := "azuredevops_resource_authorization.auth"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testutils.PreCheck(t, &[]string{"AZDO_GITHUB_SERVICE_CONNECTION_PAT"})
 		},
@@ -57,7 +58,7 @@ func TestAccResourceAuthorization_Definition_CRUD(t *testing.T) {
 	unAuthedHCL := testutils.HclDefinitionResourceAuthorization("azuredevops_variable_group.vg.id", "azuredevops_build_definition.build.id", "variablegroup", false)
 
 	tfAuthNode := "azuredevops_resource_authorization.auth"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{

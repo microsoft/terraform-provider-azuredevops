@@ -1,3 +1,4 @@
+//go:build (all || resource_resource_authorization) && !exclude_resource_authorization
 // +build all resource_resource_authorization
 // +build !exclude_resource_authorization
 
@@ -11,12 +12,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"

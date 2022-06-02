@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_project_permissions) && (!exclude_permissions || !resource_project_permissions)
 // +build all permissions resource_project_permissions
 // +build !exclude_permissions !resource_project_permissions
 
@@ -10,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
 

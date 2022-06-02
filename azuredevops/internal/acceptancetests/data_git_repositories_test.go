@@ -1,3 +1,4 @@
+//go:build (all || data_sources || git || data_git_repositories) && (!exclude_data_sources || !exclude_git || !exclude_data_git_repositories)
 // +build all data_sources git data_git_repositories
 // +build !exclude_data_sources !exclude_git !exclude_data_git_repositories
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -21,7 +22,7 @@ func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
 	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testutils.HclProjectGitRepositories(projectName, gitRepoName))
 
 	tfNode := "data.azuredevops_git_repositories.repositories"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { testutils.PreCheck(t, nil) },
 		Providers:                 testutils.GetProviders(),
 		PreventPostDestroyRefresh: true,

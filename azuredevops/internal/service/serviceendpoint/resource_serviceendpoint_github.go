@@ -3,15 +3,16 @@ package serviceendpoint
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 const (
-	personalAccessToken = "personal_access_token"
+	personalAccessTokenGithub = "personal_access_token"
 )
 
 // ResourceServiceEndpointGitHub schema and implementation for github service endpoint resource
@@ -19,7 +20,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHub, expandServiceEndpointGitHub)
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			personalAccessToken: {
+			personalAccessTokenGithub: {
 				Type:         schema.TypeString,
 				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
@@ -29,7 +30,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessToken)
+	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithub)
 	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:          schema.TypeSet,
@@ -60,7 +61,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
@@ -68,7 +69,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 
 	if config, ok := d.GetOk("auth_personal"); ok {
 		scheme = "Token"
-		parameters = expandAuthPersonalSet(config.(*schema.Set))
+		parameters = expandAuthPersonalSetGithub(config.(*schema.Set))
 	}
 
 	if config, ok := d.GetOk("auth_oauth"); ok {
@@ -86,10 +87,10 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	return serviceEndpoint, projectID, nil
 }
 
-func expandAuthPersonalSet(d *schema.Set) map[string]string {
+func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	authPerson["AccessToken"] = val[personalAccessToken].(string)
+	authPerson["AccessToken"] = val[personalAccessTokenGithub].(string)
 	return authPerson
 }
 
@@ -102,7 +103,7 @@ func expandAuthOauthSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
 		d.Set("auth_oauth", &[]map[string]interface{}{
@@ -123,7 +124,7 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessToken)
+			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
 			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}

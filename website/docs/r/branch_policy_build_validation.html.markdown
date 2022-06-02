@@ -12,55 +12,59 @@ Manages a build validation branch policy within Azure DevOps.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "p" {
-  name = "Sample Project"
+resource "azuredevops_project" "example" {
+  name = "Example Project"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_build_definition" "b" {
-  project_id = azuredevops_project.p.id
-  name       = "Sample Build Definition"
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
 
   repository {
     repo_type = "TfsGit"
-    repo_id   = azuredevops_git_repository.r.id
+    repo_id   = azuredevops_git_repository.example.id
     yml_path  = "azure-pipelines.yml"
   }
 }
 
-resource "azuredevops_branch_policy_build_validation" "p" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_branch_policy_build_validation" "example" {
+  project_id = azuredevops_project.example.id
 
   enabled  = true
   blocking = true
 
   settings {
-    display_name        = "Don't break the build!"
-    build_definition_id = azuredevops_build_definition.b.id
+    display_name        = "Example build validation policy"
+    build_definition_id = azuredevops_build_definition.example.id
     valid_duration      = 720
-    filename_patterns =  [
+    filename_patterns = [
       "/WebApp/*",
       "!/WebApp/Tests/*",
       "*.cs"
     ]
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
-      repository_ref = azuredevops_git_repository.r.default_branch
+      repository_id  = azuredevops_git_repository.example.id
+      repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
 
     scope {
-      repository_id  = azuredevops_git_repository.r.id
+      repository_id  = azuredevops_git_repository.example.id
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
+    }
+    
+    scope {
+      match_type     = "DefaultBranch"
     }
   }
 }
@@ -82,14 +86,14 @@ A `settings` block supports the following:
 - `manual_queue_only` - (Optional) If set to true, the build will need to be manually queued. Defaults to `false`
 - `queue_on_source_update_only` - (Optional) True if the build should queue on source updates only. Defaults to `true`.
 - `valid_duration` - (Optional) The number of minutes for which the build is valid. If `0`, the build will not expire. Defaults to `720` (12 hours).
-- `filename_patterns` - (Optional) If a path filter is set, the policy wil only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
+- `filename_patterns` - (Optional) If a path filter is set, the policy will only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 
 A `settings` `scope` block supports the following:
 
-- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository.
-- `repository_ref` - (Optional) The ref pattern to use for the match. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
-- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default) or `Prefix`.
+- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type` is `DefaultBranch`, this should not be defined.
+- `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
+- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
 
 ## Attributes Reference
 
@@ -99,12 +103,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 5.1 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-5.1)
+- [Azure DevOps Service REST API 6.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-6.0)
 
 ## Import
 
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
 
 ```sh
-terraform import azuredevops_branch_policy_build_validation.p aa4a9756-8a86-4588-86d7-b3ee2d88b033/60
+terraform import azuredevops_branch_policy_build_validation.example 00000000-0000-0000-0000-000000000000/0
 ```

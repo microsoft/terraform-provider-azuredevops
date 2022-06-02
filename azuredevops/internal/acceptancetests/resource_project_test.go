@@ -1,3 +1,4 @@
+//go:build (all || core || resource_project) && !exclude_resource_project
 // +build all core resource_project
 // +build !exclude_resource_project
 
@@ -6,7 +7,7 @@ package acceptancetests
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -23,10 +24,10 @@ func TestAccProject_CreateAndUpdate(t *testing.T) {
 	projectNameSecond := testutils.GenerateResourceName()
 	tfNode := "azuredevops_project.project"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclProjectResource(projectNameFirst),
@@ -64,10 +65,10 @@ func TestAccProject_CreateAndUpdateWithFeatures(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_project.project"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclProjectResourceWithFeature(projectName, "disabled", "disabled"),

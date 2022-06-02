@@ -1,3 +1,4 @@
+//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
 // +build all resource_user_entitlement
 // +build !exclude_resource_user_entitlement
 
@@ -10,12 +11,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/licensing"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/memberentitlementmanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -297,26 +299,21 @@ func TestUserEntitlement_Import_TestUPN(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	memberEntitlementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
 	clients := &client.AggregatedClient{
-		MemberEntitleManagementClient: memberEntitlementClient,
-		Ctx:                           context.Background(),
+		IdentityClient: identityClient,
+		Ctx:            context.Background(),
 	}
 
-	accountLicenseType := licensing.AccountLicenseTypeValues.Express
-	origin := ""
-	originID := ""
 	principalName := "foobar@microsoft.com"
-	descriptor := "baz"
 	id := uuid.New()
-	mockUserEntitlement := getMockUserEntitlement(&id, accountLicenseType, origin, originID, principalName, descriptor)
 
-	memberEntitlementClient.
+	identityClient.
 		EXPECT().
-		GetUserEntitlements(gomock.Any(), gomock.Any()).
-		Return(&memberentitlementmanagement.PagedGraphMemberList{
-			Members: &[]memberentitlementmanagement.UserEntitlement{
-				*mockUserEntitlement,
+		ReadIdentities(gomock.Any(), gomock.Any()).
+		Return(&[]identity.Identity{
+			{
+				Id: &id,
 			},
 		}, nil).
 		Times(1)

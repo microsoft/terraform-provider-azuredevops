@@ -1,3 +1,4 @@
+//go:build all || utils || classification_helper
 // +build all utils classification_helper
 
 package utils
@@ -10,7 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -35,7 +36,7 @@ func TestClassificationNode_CreateIterationToken_RootIteration(t *testing.T) {
 			EXPECT().
 			GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 				Project:        &iterationProjectID,
-				Path:           converter.String(""),
+				Path:           nil,
 				StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 				Depth:          converter.Int(1),
 			}).
@@ -66,7 +67,7 @@ func TestClassificationNode_CreateIterationToken_HandleError(t *testing.T) {
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -94,7 +95,7 @@ func TestClassificationNode_CreateIterationToken_HandleErrorInPath(t *testing.T)
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -134,7 +135,7 @@ func TestClassificationNode_CreateIterationToken_HandleNoChildren(t *testing.T) 
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
@@ -162,7 +163,7 @@ func TestClassificationNode_CreateIterationToken_ValidToken(t *testing.T) {
 		EXPECT().
 		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 			Project:        &iterationProjectID,
-			Path:           converter.String(""),
+			Path:           nil,
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).

@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_bitbucket) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_bitbucket
 // +build !exclude_serviceendpoints
 
@@ -5,10 +6,9 @@ package acceptancetests
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -53,8 +53,8 @@ func TestAccServiceEndpointBitBucket_complete(t *testing.T) {
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -89,9 +89,9 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "password", ""),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -119,15 +119,10 @@ func TestAccServiceEndpointBitBucket_RequiresImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclSvcEndpointBitBucketResourceRequiresImport(projectName, serviceEndpointName),
-				ExpectError: requiresImportError(serviceEndpointName),
+				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
-}
-
-func requiresImportError(resourceName string) *regexp.Regexp {
-	message := "Error creating service endpoint in Azure DevOps: Service connection with name %[1]s already exists. Only a user having Administrator/User role permissions on service connection %[1]s can see it."
-	return regexp.MustCompile(fmt.Sprintf(message, resourceName))
 }
 
 func hclSvcEndpointBitBucketResourceBasic(projectName string, serviceEndpointName string) string {

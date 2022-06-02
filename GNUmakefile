@@ -12,7 +12,6 @@ endif
 .EXPORT_ALL_VARIABLES:
   TF_SCHEMA_PANIC_ON_ERROR=1
   GO111MODULE=on
-  GOFLAGS=-mod=vendor
 
 default: build
 
@@ -20,10 +19,10 @@ tools:
 	@echo "==> installing required tooling..."
 	@sh "$(CURDIR)/scripts/gogetcookie.sh"
 	@echo "GOPATH: $(GOPATH)"
-	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
-	GO111MODULE=off go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint
-	GO111MODULE=off go get -u github.com/bflad/tfproviderdocs
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.27.0
+	go install github.com/client9/misspell/cmd/misspell@latest
+	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
+	go install github.com/bflad/tfproviderdocs@latest
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.45.2
 
 build: fmtcheck check-vendor-vs-mod
 	go install
@@ -43,10 +42,10 @@ lint:
 test: fmtcheck
 	go test -tags "all" -i $(UNITTEST) || exit 1
 	echo $(UNITTEST) | \
-    		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=30s -parallel=4
+    		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=60s -parallel=4
 
 testacc: fmtcheck
-	@echo "==> Sourcing .env file if avaliable"
+	@echo "==> Sourcing .env file if available"
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
 	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 
@@ -78,7 +77,7 @@ vet:
 		exit 1; \
 	fi
 
-ci: check-vendor-vs-mod lint test
+ci: check-vendor-vs-mod lint test website-lint
 
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
@@ -90,6 +89,8 @@ endif
 website-lint:
 	@echo "==> Checking website against linters..."
 	@misspell -error -source=text website/
+	@echo "==> Checking documentation for errors..."
+	@tfproviderdocs check -provider-name=azuredevops
 
 website-test:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
@@ -97,5 +98,8 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
+
+scaffold-website:
+	./scripts/scaffold-website.sh
 
 .PHONY: build test testacc vet fmt fmtcheck lint tools test-compile website website-lint website-test

@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_dockerregistry) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_dockerregistry
 // +build !exclude_serviceendpoints
 
@@ -6,7 +7,7 @@ package acceptancetests
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -19,7 +20,7 @@ func TestAccServiceEndpointDockerRegistry_CreateAndUpdate(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_dockerregistry"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testutils.PreCheck(t, nil)
 		},

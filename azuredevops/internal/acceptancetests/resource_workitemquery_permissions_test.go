@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_workitemquery_permissions) && (!exclude_permissions || !resource_workitemquery_permissions)
 // +build all permissions resource_workitemquery_permissions
 // +build !exclude_permissions !resource_workitemquery_permissions
 
@@ -8,7 +9,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
@@ -50,7 +51,7 @@ func TestAccWorkItemQueryPermissions_SetProjectPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -85,7 +86,7 @@ func TestAccWorkItemQueryPermissions_UpdateProjectPermissions(t *testing.T) {
 	})
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -128,7 +129,7 @@ func TestAccWorkItemQueryPermissions_SetSharedQueriesPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "/", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -159,7 +160,7 @@ func TestAccWorkItemQueryPermissions_SetInvalidFolderPermissions(t *testing.T) {
 	config := hclWorkItemQueryPermissions(projectName, "/invalid", permissions)
 
 	tfNode := "azuredevops_workitemquery_permissions.wiq-permissions"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

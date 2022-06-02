@@ -1,6 +1,6 @@
 # Debugging your Terraform Provider
 
-Terraform runs providers in their own processes and they only run for a fraction of a second before exiting. Terraform captures stdout and stderr from the provider. This architecture tends to limit the debugging techniques available. The note describes a coupler of techniques that might be useful.
+Terraform runs providers in their own processes and they only run for a fraction of a second before exiting. Terraform captures stdout and stderr from the provider. This architecture tends to limit the debugging techniques available. The note describes a couple of techniques that might be useful.
 
 ## Option 1 - Avoid debugging in Terraform
 

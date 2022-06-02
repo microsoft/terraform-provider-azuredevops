@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform/helper/hashcode"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // DataUsers schema and implementation for users data source
@@ -53,6 +54,10 @@ func DataUsers() *schema.Resource {
 				Set:      getUserHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"descriptor": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -130,6 +135,18 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 		users = append(users, fusers...)
 	}
 
+	for _, user := range users {
+		usr := user.(map[string]interface{})
+
+		storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+			SubjectDescriptor: converter.String(usr["descriptor"].(string)),
+		})
+		if err != nil {
+			return err
+		}
+		usr["id"] = storageKey.Value.String()
+	}
+
 	var descriptors []string
 	linq.From(users).
 		SelectT(
@@ -153,7 +170,7 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func getUserHash(v interface{}) int {
-	return hashcode.String(v.(map[string]interface{})["descriptor"].(string))
+	return tfhelper.HashString(v.(map[string]interface{})["descriptor"].(string))
 }
 
 func flattenUsers(input *[]graph.GraphUser) ([]interface{}, error) {

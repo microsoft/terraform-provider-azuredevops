@@ -1,3 +1,4 @@
+//go:build (all || resource_agentpool) && !exclude_resource_agentpool
 // +build all resource_agentpool
 // +build !exclude_resource_agentpool
 
@@ -8,9 +9,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -28,7 +29,7 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 	poolNameSecond := testutils.GenerateResourceName()
 	tfNode := "azuredevops_agent_pool.pool"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkAgentPoolDestroyed,

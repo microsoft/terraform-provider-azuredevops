@@ -3,8 +3,13 @@
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
 #   AZDO_GITHUB_SERVICE_CONNECTION_PAT
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {
@@ -24,7 +29,7 @@ resource "azuredevops_serviceendpoint_github" "github_serviceendpoint" {
 
 resource "azuredevops_build_definition" "nightly_build" {
   project_id      = azuredevops_project.project.id
-  agent_pool_name = "Hosted Ubuntu 1604"
+  agent_pool_name = "Azure Pipelines"
   name            = "Nightly Build"
   path            = "\\"
 

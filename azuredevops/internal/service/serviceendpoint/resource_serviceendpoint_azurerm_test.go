@@ -1,3 +1,4 @@
+//go:build (all || resource_serviceendpoint_azurerm) && !exclude_serviceendpoints
 // +build all resource_serviceendpoint_azurerm
 // +build !exclude_serviceendpoints
 
@@ -10,8 +11,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -19,7 +20,7 @@ import (
 )
 
 var azurermTestServiceEndpointAzureRMID = uuid.New()
-var azurermRandomServiceEndpointAzureRMProjectID = uuid.New().String()
+var azurermRandomServiceEndpointAzureRMProjectID = uuid.New()
 var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
 
 func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
@@ -40,12 +41,20 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:          &azurermTestServiceEndpointAzureRMID,
-		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:        converter.String("azurerm"),
-		Url:         converter.String("https://management.azure.com/"),
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
 	}
 }
 
@@ -68,12 +77,20 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:          &azurermTestServiceEndpointAzureRMID,
-		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:        converter.String("azurerm"),
-		Url:         converter.String("https://management.azure.com/"),
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
 	},
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
@@ -93,12 +110,20 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:          &azurermTestServiceEndpointAzureRMID,
-		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:        converter.String("azurerm"),
-		Url:         converter.String("https://management.azure.com/"),
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
 	},
 }
 
@@ -127,7 +152,8 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource}
+
 		buildClient.
 			EXPECT().
 			CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -153,7 +179,11 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
+			EndpointId: resource.Id,
+			Project:    converter.String(azurermTestServiceEndpointAzureRMProjectID.String()),
+		}
+
 		buildClient.
 			EXPECT().
 			GetServiceEndpointDetails(clients.Ctx, expectedArgs).
@@ -178,7 +208,13 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{EndpointId: resource.Id, Project: azurermTestServiceEndpointAzureRMProjectID}
+		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
+			EndpointId: resource.Id,
+			ProjectIds: &[]string{
+				azurermTestServiceEndpointAzureRMProjectID.String(),
+			},
+		}
+
 		buildClient.
 			EXPECT().
 			DeleteServiceEndpoint(clients.Ctx, expectedArgs).
@@ -206,7 +242,6 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 		expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   &resource,
 			EndpointId: resource.Id,
-			Project:    azurermTestServiceEndpointAzureRMProjectID,
 		}
 
 		buildClient.
@@ -220,16 +255,6 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 	}
 }
 
-func TestServiceEndpointAzureRM_ExpandCredentials(t *testing.T) {
-	spnKeyExistsWithValue := map[string]interface{}{"serviceprincipalkey": "fake-spn-key"}
-	spnKeyExistsWithEmptyValue := map[string]interface{}{"serviceprincipalkey": ""}
-	spnKeyDoesNotExists := map[string]interface{}{}
-
-	require.Equal(t, expandSpnKey(spnKeyExistsWithValue), "fake-spn-key")
-	require.Equal(t, expandSpnKey(spnKeyExistsWithEmptyValue), "null")
-	require.Equal(t, expandSpnKey(spnKeyDoesNotExists), "null")
-}
-
 // This is a little different than most. The steps done, along with the motivation behind each, are as follows:
 //	(1) The service endpoint is configured. The `serviceprincipalkey` is set to `""`, which matches
 //		the Azure DevOps API behavior. The service will intentionally hide the value of
@@ -240,25 +265,29 @@ func TestServiceEndpointAzureRM_ExpandCredentials(t *testing.T) {
 //		Azure DevOps API as an indicator to "not update" the field. The resulting behavior is that
 //		this Terraform Resource will be able to update the Service Endpoint without needing to
 //		pass the password along in each request.
-func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
-	// step (1)
-	endpoint := getManualAuthServiceEndpoint()
-	resourceData := getResourceData(t, endpoint)
-	(*endpoint.Authorization.Parameters)["serviceprincipalkey"] = ""
-
-	// step (2)
-	flattenServiceEndpointAzureRM(resourceData, &endpoint, azurermTestServiceEndpointAzureRMProjectID)
-	expandedEndpoint, _, _ := expandServiceEndpointAzureRM(resourceData)
-
-	// step (3)
-	spnKeyProperty := (*expandedEndpoint.Authorization.Parameters)["serviceprincipalkey"]
-	require.Equal(t, "null", spnKeyProperty)
-}
+//func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
+//	// step (1)
+//	endpoint := getManualAuthServiceEndpoint()
+//	resourceData := getResourceData(t, endpoint)
+//	(*endpoint.Authorization.Parameters)["serviceprincipalkey"] = ""
+//
+//	// step (2)
+//	flattenServiceEndpointAzureRM(resourceData, &endpoint, azurermTestServiceEndpointAzureRMProjectID)
+//	expandedEndpoint, _, _ := expandServiceEndpointAzureRM(resourceData)
+//
+//	// step (3)
+//	spnKeyProperty := (*expandedEndpoint.Authorization.Parameters)["serviceprincipalkey"]
+//	require.Equal(t, "null", spnKeyProperty)
+//}
 
 func getResourceData(t *testing.T, resource serviceendpoint.ServiceEndpoint) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureRM().Schema, nil)
 	if key := (*resource.Authorization.Parameters)["serviceprincipalkey"]; key != "" {
-		resourceData.Set("credentials", []map[string]interface{}{{"serviceprincipalkey_hash": key}})
+		resourceData.Set("credentials", []map[string]interface{}{{
+			"serviceprincipalid":       (*resource.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalkey":      (*resource.Authorization.Parameters)["serviceprincipalkey"],
+			"serviceprincipalkey_hash": key,
+		}})
 	}
 	return resourceData
 }

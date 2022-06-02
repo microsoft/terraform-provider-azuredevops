@@ -5,12 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/serviceendpoint"
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -68,6 +69,13 @@ func makeSchemaAzureSubscription(r *schema.Resource) {
 					Optional:    true,
 					Default:     "default",
 					Description: "accessed namespace",
+				},
+				"cluster_admin": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					ForceNew:    true,
+					Default:     false,
+					Description: "Enable Cluster Admin",
 				},
 			},
 		},
@@ -132,7 +140,8 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 	makeProtectedSchema(resourceElemSchema, "ca_cert", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", "Secret cert")
 	makeProtectedSchema(resourceElemSchema, "token", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", "Secret token")
 	r.Schema[resourceBlockServiceAccount] = &schema.Schema{
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
+		MaxItems:    1,
 		Optional:    true,
 		Description: "'ServiceAccount'-type of configuration",
 		Elem:        resourceElemSchema,
@@ -162,7 +171,7 @@ func ResourceServiceEndpointKubernetes() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *string, error) {
+func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("kubernetes")
 	serviceEndpoint.Url = converter.String(d.Get(resourceAttrAPIURL).(string))
@@ -186,6 +195,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"azureSubscriptionName": configuration["subscription_name"].(string),
 			"clusterId":             clusterID,
 			"namespace":             configuration["namespace"].(string),
+			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
 		configurationRaw := d.Get(resourceBlockKubeconfig).(*schema.Set).List()
@@ -217,7 +227,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"acceptUntrustedCerts": fmt.Sprintf("%v", configuration["accept_untrusted_certs"].(bool)),
 		}
 	case "ServiceAccount":
-		configurationRaw := d.Get(resourceBlockServiceAccount).(*schema.Set).List()
+		configurationRaw := d.Get(resourceBlockServiceAccount).([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -237,7 +247,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *string) {
+func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set(resourceAttrAuthType, (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType])
 	d.Set(resourceAttrAPIURL, (*serviceEndpoint.Url))
@@ -255,6 +265,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
+		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
 			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
@@ -263,6 +274,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			"cluster_name":      clusterIDSplit[clusterNameIndex],
 			"resourcegroup_id":  clusterIDSplit[resourceGroupIDIndex],
 			"namespace":         (*serviceEndpoint.Data)["namespace"],
+			"cluster_admin":     clusterAdmin,
 		}
 		configItemList := make([]map[string]interface{}, 1)
 		configItemList[0] = configItems
@@ -287,16 +299,27 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set(resourceBlockKubeconfig, kubeconfigList)
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
-		serviceAccountSet := d.Get("service_account").(*schema.Set).List()
+		serviceAccountSet := d.Get("service_account").([]interface{})
 
-		configuration := serviceAccountSet[0].(map[string]interface{})
-		newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "token")
-		newHashCert, hashKeyCert := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "ca_cert")
-		serviceAccount = map[string]interface{}{
-			"token":      configuration["token"].(string),
-			"ca_cert":    configuration["ca_cert"].(string),
-			hashKeyToken: newHashToken,
-			hashKeyCert:  newHashCert,
+		if len(serviceAccountSet) == 0 {
+			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "token")
+			newHashCert, hashKeyCert := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "ca_cert")
+			serviceAccount = map[string]interface{}{
+				"token":      "",
+				"ca_cert":    "",
+				hashKeyToken: newHashToken,
+				hashKeyCert:  newHashCert,
+			}
+		} else {
+			configuration := serviceAccountSet[0].(map[string]interface{})
+			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "token")
+			newHashCert, hashKeyCert := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "ca_cert")
+			serviceAccount = map[string]interface{}{
+				"token":      configuration["token"].(string),
+				"ca_cert":    configuration["ca_cert"].(string),
+				hashKeyToken: newHashToken,
+				hashKeyCert:  newHashCert,
+			}
 		}
 
 		serviceAccountList := make([]map[string]interface{}, 1)

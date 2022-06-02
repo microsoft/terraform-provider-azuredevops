@@ -1,12 +1,12 @@
-ARG GO_VERSION=1.14
+ARG GO_VERSION=1.18
 
 FROM golang:${GO_VERSION}-stretch
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG TERRAFORM_VERSION=0.12.28
-ARG TFLINT_VERSION=0.15.3
+ARG TERRAFORM_VERSION=1.1.8
+ARG TFLINT_VERSION=0.35.0
 ARG TERRAFORM_PROVIDER_AZUREDEVOPS_NAME=terraform-provider-azuredevops
 
 RUN apt-get update \
@@ -25,10 +25,10 @@ RUN apt-get update \
     && curl -sSL -o /tmp/docker-downloads/tflint.zip https://github.com/wata727/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip \
     && unzip /tmp/docker-downloads/tflint.zip \
     && mv tflint /usr/local/bin \
-    && cd ~ \ 
+    && cd ~ \
     && rm -rf /tmp/docker-downloads \
     # Install goreleaser
-    && (cd /usr/local && curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- "v0.132.1") \
+    && go install github.com/goreleaser/goreleaser@latest \
     #
     # Clean up
     && apt-get autoremove -y \
@@ -41,13 +41,11 @@ ENV GO111MODULE=on
 # Install Go tools
 RUN \
     # --> Delve for debugging
-    go get github.com/go-delve/delve/cmd/dlv@v1.4.1 \
+    go install github.com/go-delve/delve/cmd/dlv@v1.7.3 \
     # --> Go language server
-    && go get golang.org/x/tools/gopls@v0.4.1 \
+    && go install golang.org/x/tools/gopls@latest \
     # --> GolangCI-lint
     && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sed 's/tar -/tar --no-same-owner -/g' | sh -s -- -b $(go env GOPATH)/bin \
-    # --> Go-outline for extracting a JSON representation of the declarations in a Go source file
-    && go get -v github.com/ramya-rao-a/go-outline \
     #
     # Clean up
     && rm -rf /go/src/ && rm -rf /go/pkg

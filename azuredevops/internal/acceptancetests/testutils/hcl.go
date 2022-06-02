@@ -40,6 +40,19 @@ func HclForkedGitRepoResource(projectName string, gitRepoName string, gitForkedR
 	return fmt.Sprintf("%s\n%s", gitRepoResource, azureGitRepoResource)
 }
 
+// HclGitRepoFileResource HCl describing a file in an AzDO GIT repository
+func HclGitRepoFileResource(projectName, gitRepoName, initType, branch, file, content string) string {
+	gitRepoFileResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository_file" "file" {
+		repository_id = azuredevops_git_repository.repository.id
+		file          = "%s"
+		content       = "%s"
+		branch        = "%s"
+	}`, file, content, branch)
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, initType)
+	return fmt.Sprintf("%s\n%s", gitRepoFileResource, gitRepoResource)
+}
+
 // HclGroupDataSource HCL describing an AzDO Group Data Source
 func HclGroupDataSource(projectName string, groupName string) string {
 	if projectName == "" {
@@ -114,6 +127,23 @@ resource "azuredevops_project_features" "project-features" {
 	return fmt.Sprintf("%s\n%s", projectResource, projectFeatures)
 }
 
+// HclProjectFeatures HCL describing an AzDO project including feature setup using azuredevops_git_repositories
+func HclProjectPipelineSettings(projectName string, enforceJobAuthScope bool, enforceReferencedRepoScopedToken bool, enforceSettableVar bool, publishPipelineMetadata bool, statusBadgesArePrivate bool) string {
+	projectPipelineSettings := fmt.Sprintf(`
+resource "azuredevops_project_pipeline_settings" "this" {
+	project_id = azuredevops_project.project.id
+
+	enforce_job_scope = %t
+	enforce_referenced_repo_scoped_token = %t
+	enforce_settable_var = %t
+	publish_pipeline_metadata = %t
+	status_badges_are_private = %t
+}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, projectPipelineSettings)
+}
+
 // HclProjectsDataSource HCL describing a data source for multiple AzDO projects
 func HclProjectsDataSource(projectName string) string {
 	projectResource := HclProjectResource(projectName)
@@ -176,6 +206,29 @@ func HclProjectGitRepositoryImport(gitRepoName string, projectName string) strin
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
+func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName string) string {
+	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, "Clean")
+	serviceEndpointResource := fmt.Sprintf(`
+	resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
+		project_id            = azuredevops_project.project.id
+		service_endpoint_name = "%s"
+		repository_url        = azuredevops_git_repository.repository.remote_url
+	}
+	`, serviceEndpointName)
+	importGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "import" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		initialization {
+		   init_type             = "Import"
+		   source_type           = "Git"
+		   source_url            = azuredevops_git_repository.repository.remote_url
+		   service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
+		 }
+	}`, gitImportRepoName)
+	return fmt.Sprintf("%s\n%s\n%s", gitRepoResource, serviceEndpointResource, importGitRepoResource)
+}
+
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
 func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
@@ -197,6 +250,50 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func HclServiceEndpointGitHubEnterpriseResource(projectName string, serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
+	project_id             = azuredevops_project.project.id
+	service_endpoint_name  = "%s"
+	url                    = "https://github.contoso.com"
+	auth_personal {
+		personal_access_token = "hcl_test_token_basic"
+	}
+}`, serviceEndpointName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+// HclServiceEndpointRunPipelineResource HCL describing an AzDO service endpoint
+func HclServiceEndpointRunPipelineResourceSimple(serviceEndpointName string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
+  project_id             = azuredevops_project.project.id
+  organization_name      = "example"
+  service_endpoint_name  = "%[1]s"
+	auth_personal {
+	}
+}`, serviceEndpointName)
+
+	return serviceEndpointResource
+}
+
+func HclServiceEndpointRunPipelineResource(serviceEndpointName string, accessToken string, description string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_runpipeline" "serviceendpoint" {
+  project_id             = azuredevops_project.project.id
+  organization_name      = "example"
+  service_endpoint_name  = "%[1]s"
+  auth_personal {
+    personal_access_token= "%[2]s"
+  }
+	description = "%[3]s"
+}`, serviceEndpointName, accessToken, description)
+
+	return serviceEndpointResource
 }
 
 // HclServiceEndpointDockerRegistryResource HCL describing an AzDO service endpoint
@@ -304,20 +401,19 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string) string {
+func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	credentials {
-		serviceprincipalid 	="e318e66b-ec4b-4dff-9124-41129b9d7150"
-		serviceprincipalkey ="d9d210dd-f9f0-4176-afb8-a4df60e1ae72"
-	}
-	azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-    azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-    azurerm_subscription_name = "Microsoft Azure DEMO"
-
-}`, serviceEndpointName)
+  project_id             = azuredevops_project.project.id
+  service_endpoint_name  = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+    serviceprincipalkey = "%s"
+  }
+  azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name = "Microsoft Azure DEMO"
+}`, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -335,6 +431,52 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 
 }`, serviceEndpointName)
 
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+// HclServiceEndpointServiceFabricResource HCL describing an AzDO service endpoint
+func HclServiceEndpointServiceFabricResource(projectName string, serviceEndpointName string, authorizationType string) string {
+	var serviceEndpointResource string
+	switch authorizationType {
+	case "Certificate":
+		serviceEndpointResource = fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  cluster_endpoint      = "tcp://test"
+  certificate {
+    server_certificate_lookup     = "Thumbprint"
+    server_certificate_thumbprint = "test"
+    client_certificate            = "test"
+    client_certificate_password   = "test"
+  }
+}`, serviceEndpointName)
+	case "UsernamePassword":
+		serviceEndpointResource = fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  cluster_endpoint      = "tcp://test"
+  azure_active_directory {
+    server_certificate_lookup     = "Thumbprint"
+    server_certificate_thumbprint = "test"
+    username                      = "test"
+    password                      = "test"
+  }
+}`, serviceEndpointName)
+	case "None":
+		serviceEndpointResource = fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  cluster_endpoint      = "tcp://test"
+  none {
+    unsecured   = false
+    cluster_spn = "test"
+  }
+}`, serviceEndpointName)
+	}
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
@@ -391,7 +533,7 @@ resource "azuredevops_variable_group" "vg" {
 
 // HclVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
 func HclVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
-	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection")
+	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection", "e318e66b-ec4b-4dff-9124-41129b9d7150", "d9d210dd-f9f0-4176-afb8-a4df60e1ae72")
 
 	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, HclVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
 }
@@ -412,6 +554,15 @@ resource "azuredevops_variable_group" "vg" {
 		name = "key1"
 	}
 }`, variableGroupName, allowAccess, keyVaultName)
+}
+
+// HclVariableGroupDataSource HCL describing a data source for an AzDO Variable Group
+func HclVariableGroupDataSource() string {
+	return `
+data "azuredevops_variable_group" "vg" {
+	project_id  = azuredevops_project.project.id
+	name        = azuredevops_variable_group.vg.name
+}`
 }
 
 // HclAgentPoolResource HCL describing an AzDO Agent Pool
@@ -533,7 +684,7 @@ func HclBuildDefinitionResource(
 	resource "azuredevops_build_definition" "build" {
 		project_id      = azuredevops_project.project.id
 		name            = "%s"
-		agent_pool_name = "Hosted Ubuntu 1604"
+		agent_pool_name = "Azure Pipelines"
 		path			= "%s"
 
 		repository {
@@ -1044,3 +1195,67 @@ resource "azuredevops_release_definition" "release" {
 }`, releaseDefinitionName, escapedReleasePath)
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
+
+
+func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {
+	var teamResource string
+	projectResource := HclProjectResource(projectName)
+	if teamDescription != "" {
+		teamResource = fmt.Sprintf(`
+%s
+
+resource "azuredevops_team" "team" {
+	project_id = azuredevops_project.project.id
+	name = "%s"
+	description = "%s"
+`, projectResource, teamName, teamDescription)
+	} else {
+		teamResource = fmt.Sprintf(`
+%s
+
+resource "azuredevops_team" "team" {
+	project_id = azuredevops_project.project.id
+	name = "%s"
+`, projectResource, teamName)
+	}
+
+	if teamAdministrators != nil {
+		teamResource = fmt.Sprintf(`
+%s
+	administrators = [
+		%s
+	]
+`, teamResource, strings.Join(*teamAdministrators, ","))
+	}
+
+	if teamMembers != nil {
+		teamResource = fmt.Sprintf(`
+%s
+	members = [
+		%s
+	]
+`, teamResource, strings.Join(*teamMembers, ","))
+	}
+
+	return fmt.Sprintf(`
+%s
+}
+`, teamResource)
+}
+
+func getEnvironmentResource(environmentName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_environment" "environment" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+}`, environmentName)
+}
+
+// HclEnvironmentResource HCL describing an AzDO environment resource
+func HclEnvironmentResource(projectName string, environmentName string) string {
+	azureEnvironmentResource := getEnvironmentResource(environmentName)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
+}
+

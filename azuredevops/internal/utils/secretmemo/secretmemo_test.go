@@ -1,3 +1,4 @@
+//go:build all || utils || secretmemo
 // +build all utils secretmemo
 
 package secretmemo

@@ -1,3 +1,4 @@
+//go:build (all || permissions || resource_area_permissions) && (!exclude_permissions || !exclude_resource_area_permissions)
 // +build all permissions resource_area_permissions
 // +build !exclude_permissions !exclude_resource_area_permissions
 
@@ -7,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
@@ -46,7 +47,7 @@ func TestAccAreaPermissions_SetPermissions(t *testing.T) {
 	})
 	tfNodeRoot := "azuredevops_area_permissions.root-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,
@@ -89,7 +90,7 @@ func TestAccAreaPermissions_UpdatePermissions(t *testing.T) {
 	})
 	tfNodeRoot := "azuredevops_area_permissions.root-permissions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckProjectDestroyed,

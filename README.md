@@ -19,8 +19,13 @@ The AzureRM Provider supports Terraform 0.12.x and later.
 # Make sure to set the following environment variables:
 #   AZDO_PERSONAL_ACCESS_TOKEN
 #   AZDO_ORG_SERVICE_URL
-provider "azuredevops" {
-  version = ">= 0.0.1"
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
 }
 
 resource "azuredevops_project" "project" {
@@ -52,8 +57,8 @@ resource "azuredevops_build_definition" "build_definition" {
 
 ## Developer Requirements
 
-* [Terraform](https://www.terraform.io/downloads.html) version 0.12.x +
-* [Go](https://golang.org/doc/install) version 1.14.x (to build the provider plugin)
+* [Terraform](https://www.terraform.io/downloads.html) version 0.13.x +
+* [Go](https://golang.org/doc/install) version 1.16.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
 
@@ -71,7 +76,7 @@ As [described below](#build-using-powerShell-scripts) we provide some PowerShell
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.16+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 ### Using the GOPATH model
 
@@ -83,7 +88,7 @@ $ git clone git@github.com:microsoft/terraform-provider-azuredevops.git
 $ cd terraform-provider-azuredevops
 ```
 
-Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/microsoft/terraform-provider-azuredevops/blob/master/docs/contributing.md#3-build--install-provider).
+Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/microsoft/terraform-provider-azuredevops/blob/main/docs/contributing.md#3-build--install-provider).
 These commands will sideload the plugin for Terraform.
 
 ### Using a directory separate from GOPATH
@@ -139,6 +144,25 @@ The several options to run the tests are:
   ```
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
+
+### Scaffolding the Website Documentation
+
+You can scaffold the documentation for a Data Source by running:
+
+```sh
+$ make scaffold-website BRAND_NAME="Agent Pool" RESOURCE_NAME="azuredevops_agent_pool" RESOURCE_TYPE="data"
+```
+
+You can scaffold the documentation for a Resource by running:
+
+```sh
+$ make scaffold-website BRAND_NAME="Agent Pool" RESOURCE_NAME="azuredevops_agent_pool" RESOURCE_TYPE="resource" RESOURCE_ID="00000000-0000-0000-0000-000000000000"
+```
+
+>
+> `BRAND_NAME` is the human readable name of the object that is handled by a
+> Terraform resource or datasource, like `Agent Pool`, `User Entitlement` or `Kubernetes Service Endpoint`
+>
 
 ### Build using PowerShell scripts
 

@@ -1,3 +1,4 @@
+//go:build all || utils || string
 // +build all utils string
 
 package suppress
