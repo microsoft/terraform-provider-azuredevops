@@ -1230,7 +1230,7 @@ func expandReleaseDefinition(d *schema.ResourceData) (*release.ReleaseDefinition
 	variableGroups := expandIntList(d.Get("variable_groups").([]interface{}))
 	environments := expandReleaseDefinitionEnvironmentList(d.Get("stage").([]interface{}))
 	variables := expandReleaseConfigurationVariableValueList(d.Get("variable").([]interface{}))
-	properties := expandReleaseDefinitionPropertiesListFirstOrNil(d.Get("properties").([]interface{}))
+	properties := expandStringMapStringFirstOrNil(d.Get("properties").([]interface{}), expandReleaseDefinitionProperties)
 	triggers := expandReleaseDefinitionTriggersList(d.Get("triggers").([]interface{}))
 	buildArtifacts := expandReleaseArtifactList(d.Get("build_artifact").([]interface{}), release.AgentArtifactTypeValues.Build)
 
@@ -1444,6 +1444,28 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 	Unmapped:    "unmapped",
 }
 
+type Release interface {
+	release.ParallelExecutionInputBase
+}
+
+func expandList[T Release | map[string]interface{}](d []interface{}, f func(map[string]interface{}) T) []T {
+	vs := make([]T, 0, 0)
+	for _, v := range d {
+		if val, ok := v.(map[string]interface{}); ok {
+			vs = append(vs, f(val))
+		}
+	}
+	return vs
+}
+
+func expandFirstOrNil[T Release](d []interface{}, f func(map[string]interface{}) T) *T {
+	d2 := expandList(d, f)
+	if len(d2) != 1 {
+		return nil
+	}
+	return &d2[0]
+}
+
 func expandStringMapString(d map[string]interface{}) map[string]string {
 	vs := make(map[string]string)
 	for k, v := range d {
@@ -1492,6 +1514,14 @@ func expandReleaseStringProperty(d string) interface{} {
 	}
 }
 
+func expandStringMapStringFirstOrNil[T map[string]interface{}](d []interface{}, f func(map[string]interface{}) T) T {
+	d2 := expandList(d, f)
+	if len(d2) != 1 {
+		return nil
+	}
+	return d2[0]
+}
+
 func expandReleaseEnvironmentProperties(d map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
 		"BoardsEnvironmentType": expandReleaseStringProperty(d["boards_environment_type"].(string)),
@@ -1524,22 +1554,6 @@ func expandReleaseDefinitionProperties(d map[string]interface{}) map[string]inte
 		"IntegrateBoardsWorkItems": expandReleaseStringProperty(strconv.FormatBool(d["integrate_boards_work_items"].(bool))),
 		"JiraServiceEndpointId":    expandReleaseStringProperty(d["jira_service_endpoint_id"].(string)),
 	}
-}
-func expandReleaseDefinitionPropertiesList(d []interface{}) []map[string]interface{} {
-	vs := make([]map[string]interface{}, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionProperties(val))
-		}
-	}
-	return vs
-}
-func expandReleaseDefinitionPropertiesListFirstOrNil(d []interface{}) interface{} {
-	d2 := expandReleaseDefinitionPropertiesList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return d2[0]
 }
 
 func expandReleaseDefinitionTriggers(d map[string]interface{}) map[string]interface{} {
@@ -1952,22 +1966,6 @@ func expandReleaseParallelExecutionInputBase(d map[string]interface{}) release.P
 		ContinueOnError:       converter.Bool(d["continue_on_error"].(bool)),
 	}
 }
-func expandReleaseParallelExecutionInputBaseList(d []interface{}) []release.ParallelExecutionInputBase {
-	vs := make([]release.ParallelExecutionInputBase, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseParallelExecutionInputBase(val))
-		}
-	}
-	return vs
-}
-func expandReleaseParallelExecutionInputBaseListFirstOrNil(d []interface{}) *release.ParallelExecutionInputBase {
-	d2 := expandReleaseParallelExecutionInputBaseList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
-}
 
 func expandReleaseAgentSpecification(d map[string]interface{}) release.AgentSpecification {
 	return release.AgentSpecification{
@@ -2064,7 +2062,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 		ParallelExecutionType: &release.ParallelExecutionTypesValues.None,
 	}
 	multiConfiguration := expandReleaseMultiConfigInputListFirstOrNil(d["multi_configuration"].([]interface{}))
-	multiAgent := expandReleaseParallelExecutionInputBaseListFirstOrNil(d["multi_agent"].([]interface{}))
+	multiAgent := expandFirstOrNil(d["multi_agent"].([]interface{}), expandReleaseParallelExecutionInputBase)
 	//if multiConfiguration != nil && multiAgent != nil { // TODO : how to solve
 	//	return nil, fmt.Errorf("conflit %s and %s specify only one", "multi_configuration", "multi_agent")
 	//}
