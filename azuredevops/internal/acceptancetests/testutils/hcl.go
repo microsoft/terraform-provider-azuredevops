@@ -1196,7 +1196,6 @@ resource "azuredevops_release_definition" "release" {
 	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
-
 func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {
 	var teamResource string
 	projectResource := HclProjectResource(projectName)
@@ -1258,4 +1257,3 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
-
