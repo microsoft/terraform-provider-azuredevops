@@ -1445,7 +1445,7 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 }
 
 type Release interface {
-	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep
+	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1660,7 +1660,7 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	deployStep := expandFirstOrNil(d["deploy_step"].([]interface{}), expandReleaseDefinitionDeployStep)
 	variables := expandReleaseConfigurationVariableValueList(d["variable"].([]interface{}))
 	demands := expandReleaseDefinitionDemandList(d["demand"].([]interface{}))
-	environmentOptions := expandReleaseEnvironmentOptionsListFirstOrNil(d["environment_options"].([]interface{}))
+	environmentOptions := expandFirstOrNil(d["environment_options"].([]interface{}), expandReleaseEnvironmentOptions)
 	retentionPolicy := expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d["retention_policy"].([]interface{}))
 	preApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.BeforeGates)
 	postApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.AfterSuccessfulGates)
@@ -1863,22 +1863,6 @@ func expandReleaseEnvironmentOptions(d map[string]interface{}) release.Environme
 		PublishDeploymentStatus:      converter.Bool(d["publish_deployment_status"].(bool)),
 		PullRequestDeploymentEnabled: converter.Bool(d["pull_request_deployment_enabled"].(bool)),
 	}
-}
-func expandReleaseEnvironmentOptionsList(d []interface{}) []release.EnvironmentOptions {
-	vs := make([]release.EnvironmentOptions, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseEnvironmentOptions(val))
-		}
-	}
-	return vs
-}
-func expandReleaseEnvironmentOptionsListFirstOrNil(d []interface{}) *release.EnvironmentOptions {
-	d2 := expandReleaseEnvironmentOptionsList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
 }
 
 func expandReleaseMachineGroupDeploymentInputMultiple(d map[string]interface{}) MachineGroupDeploymentMultiple {
