@@ -1,3 +1,4 @@
+//go:build (all || resource_release_definition) && !exclude_resource_release_definition
 // +build all resource_release_definition
 // +build !exclude_resource_release_definition
 

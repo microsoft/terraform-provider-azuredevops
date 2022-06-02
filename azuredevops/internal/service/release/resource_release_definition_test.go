@@ -3,19 +3,19 @@ package release
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/webapi"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"github.com/stretchr/testify/require"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/release"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/release"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/stretchr/testify/require"
 )
 
 var testReleaseProjectID = uuid.New().String()
@@ -161,7 +161,7 @@ var testReleaseDefinition = release.ReleaseDefinition{
 				Gates:        &[]release.ReleaseDefinitionGate{},
 			},
 			Owner: &webapi.IdentityRef{
-				Id: converter.String(testReleaseProjectID),
+				Id: converter.String("library"), // Supported values are "library", "agentcloud",
 			},
 
 			DeployPhases: &[]interface{}{
