@@ -32,7 +32,6 @@ This fixes the behaviour of apply. Otherwise apply will sometimes result in chan
 */
 
 func ResourceReleaseDefinition() *schema.Resource {
-
 	id := &schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
