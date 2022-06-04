@@ -166,7 +166,6 @@ github.com/microsoft/azure-devops-go-api/azuredevops/forminput
 github.com/microsoft/azure-devops-go-api/azuredevops/graph
 github.com/microsoft/azure-devops-go-api/azuredevops/identity
 github.com/microsoft/azure-devops-go-api/azuredevops/profile
-github.com/microsoft/azure-devops-go-api/azuredevops/release
 github.com/microsoft/azure-devops-go-api/azuredevops/system
 github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/webapi
