@@ -1452,7 +1452,8 @@ type Release interface {
 		release.MultiConfigInput |
 		release.AgentSpecification |
 		release.WorkflowTask |
-		release.EnvironmentRetentionPolicy
+		release.EnvironmentRetentionPolicy |
+		release.ReleaseDefinitionGate
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -2198,18 +2199,9 @@ func expandReleaseDefinitionGate(d map[string]interface{}) release.ReleaseDefini
 		Tasks: &workflowTasks,
 	}
 }
-func expandReleaseDefinitionGateList(d []interface{}) []release.ReleaseDefinitionGate {
-	vs := make([]release.ReleaseDefinitionGate, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionGate(val))
-		}
-	}
-	return vs
-}
 
 func expandReleaseDefinitionGatesStep(d map[string]interface{}) release.ReleaseDefinitionGatesStep {
-	gates := expandReleaseDefinitionGateList(d["gate"].([]interface{}))
+	gates := expandList(d["gate"].([]interface{}), expandReleaseDefinitionGate)
 	return release.ReleaseDefinitionGatesStep{
 		Id:    converter.Int(d["id"].(int)),
 		Gates: &gates,
