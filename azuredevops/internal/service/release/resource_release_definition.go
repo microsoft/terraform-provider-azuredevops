@@ -1453,7 +1453,8 @@ type Release interface {
 		release.AgentSpecification |
 		release.WorkflowTask |
 		release.EnvironmentRetentionPolicy |
-		release.ReleaseDefinitionGate
+		release.ReleaseDefinitionGate |
+		release.ReleaseDefinitionGatesStep
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1676,8 +1677,8 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	postDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["post_deploy_approval"].([]interface{}), postApprovalOptions)
 	properties := expandInterfaceFirstOrNil(d["properties"].([]interface{}), expandReleaseEnvironmentProperties)
 	deployPhases := expandJobsList(d["job"].([]interface{}))
-	preDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["pre_deploy_gate"].([]interface{}))
-	postDeploymentGates := expandReleaseDefinitionGatesStepListFirstOrNil(d["post_deploy_gate"].([]interface{}))
+	preDeploymentGates := expandFirstOrNil(d["pre_deploy_gate"].([]interface{}), expandReleaseDefinitionGatesStep)
+	postDeploymentGates := expandFirstOrNil(d["post_deploy_gate"].([]interface{}), expandReleaseDefinitionGatesStep)
 	afterStageConditions := expandReleaseConditionList(d["after_stage"].([]interface{}), release.ConditionTypeValues.EnvironmentState, nil)
 	afterReleaseConditions := expandReleaseConditionList(d["after_release"].([]interface{}), release.ConditionTypeValues.Event, converter.String("ReleaseStarted"))
 	artifactFilters := expandReleaseConditionArtifactFilterList(d["artifact_filter"].([]interface{}))
@@ -2206,22 +2207,6 @@ func expandReleaseDefinitionGatesStep(d map[string]interface{}) release.ReleaseD
 		Id:    converter.Int(d["id"].(int)),
 		Gates: &gates,
 	}
-}
-func expandReleaseDefinitionGatesStepList(d []interface{}) []release.ReleaseDefinitionGatesStep {
-	vs := make([]release.ReleaseDefinitionGatesStep, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionGatesStep(val))
-		}
-	}
-	return vs
-}
-func expandReleaseDefinitionGatesStepListFirstOrNil(d []interface{}) *release.ReleaseDefinitionGatesStep {
-	d2 := expandReleaseDefinitionGatesStepList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
 }
 
 func flattenStringList(list []*string) []interface{} {
