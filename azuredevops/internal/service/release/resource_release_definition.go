@@ -1920,13 +1920,6 @@ func expandReleaseHostedAzurePipelinesListFirstOrNil(d []interface{}) (*release.
 	}
 	return d2[0].AgentSpecification, *d2[0].QueueID
 }
-func expandReleaseHostedAzurePipelinesSet(d *schema.Set) (*release.AgentSpecification, int) {
-	d2 := expandReleaseHostedAzurePipelinesList(d.List())
-	if len(d2) != 1 {
-		return nil, 0
-	}
-	return d2[0].AgentSpecification, *d2[0].QueueID
-}
 
 func expandReleaseMachineGroupDeploymentInput(d map[string]interface{}) *release.MachineGroupDeploymentInput {
 	tags := tfhelper.ExpandStringList(d["tags"].([]interface{}))
@@ -1952,7 +1945,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 	buildArtifactDownloads := expandReleaseArtifactDownloadInputBaseList(d["build_artifact_download"].([]interface{}), release.AgentArtifactTypeValues.Build)
 	downloadInputs := append(buildArtifactDownloads)
 
-	demands := expandReleaseDeployPhaseDemandList(d["demand"].([]interface{}))
+	demands := expandList(d["demand"].([]interface{}), expandReleaseDeployPhaseDemand)
 	agentPoolPrivate := expandFirstOrNil(d["agent_pool_private"].([]interface{}), expandReleaseAgentSpecification)
 
 	agentPoolHostedAzurePipelines, queueID := expandReleaseHostedAzurePipelinesListFirstOrNil(d["agent_pool_hosted_azure_pipelines"].([]interface{}))
@@ -2044,22 +2037,13 @@ func expandReleaseArtifactDownloadInputBaseList(d []interface{}, t release.Agent
 	return vs
 }
 
-func expandReleaseDeployPhaseDemand(d map[string]interface{}) string {
+func expandReleaseDeployPhaseDemand(d map[string]interface{}) interface{} {
 	name := d["name"].(string)
 	configValue := d["value"].(string)
 	if len(configValue) > 0 {
 		name += " -equals " + configValue
 	}
 	return name
-}
-func expandReleaseDeployPhaseDemandList(d []interface{}) []interface{} {
-	vs := make([]interface{}, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDeployPhaseDemand(val))
-		}
-	}
-	return vs
 }
 
 func expandReleaseDefinitionDemand(d map[string]interface{}) ReleaseDefinitionDemand {
