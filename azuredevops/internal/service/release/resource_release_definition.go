@@ -1445,7 +1445,12 @@ var DeploymentTypeValues = deploymentTypeValuesType{
 }
 
 type Release interface {
-	release.ParallelExecutionInputBase | release.ReleaseDefinitionDeployStep | release.EnvironmentOptions | MachineGroupDeploymentMultiple | release.MultiConfigInput
+	release.ParallelExecutionInputBase |
+		release.ReleaseDefinitionDeployStep |
+		release.EnvironmentOptions |
+		MachineGroupDeploymentMultiple |
+		release.MultiConfigInput |
+		release.AgentSpecification
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1891,22 +1896,6 @@ func expandReleaseAgentSpecification(d map[string]interface{}) release.AgentSpec
 		Identifier: converter.String(d["agent_specification"].(string)),
 	}
 }
-func expandReleaseAgentSpecificationList(d []interface{}) []release.AgentSpecification {
-	vs := make([]release.AgentSpecification, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseAgentSpecification(val))
-		}
-	}
-	return vs
-}
-func expandReleaseAgentSpecificationListFirstOrNil(d []interface{}) *release.AgentSpecification {
-	d2 := expandReleaseAgentSpecificationList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
-}
 
 func expandReleaseHostedAzurePipelines(d map[string]interface{}) ReleaseHostedAzurePipelines {
 	agentSpecification := expandReleaseAgentSpecification(d)
@@ -1964,7 +1953,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 	downloadInputs := append(buildArtifactDownloads)
 
 	demands := expandReleaseDeployPhaseDemandList(d["demand"].([]interface{}))
-	agentPoolPrivate := expandReleaseAgentSpecificationListFirstOrNil(d["agent_pool_private"].([]interface{}))
+	agentPoolPrivate := expandFirstOrNil(d["agent_pool_private"].([]interface{}), expandReleaseAgentSpecification)
 
 	agentPoolHostedAzurePipelines, queueID := expandReleaseHostedAzurePipelinesListFirstOrNil(d["agent_pool_hosted_azure_pipelines"].([]interface{}))
 	//if agentPoolPrivate != nil && agentPoolHostedAzurePipelines != nil { // TODO : how to solve
