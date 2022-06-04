@@ -1451,7 +1451,8 @@ type Release interface {
 		MachineGroupDeploymentMultiple |
 		release.MultiConfigInput |
 		release.AgentSpecification |
-		release.WorkflowTask
+		release.WorkflowTask |
+		release.EnvironmentRetentionPolicy
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1667,7 +1668,7 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	variables := expandReleaseConfigurationVariableValueList(d["variable"].([]interface{}))
 	demands := expandList(d["demand"].([]interface{}), expandReleaseDefinitionDemand)
 	environmentOptions := expandFirstOrNil(d["environment_options"].([]interface{}), expandReleaseEnvironmentOptions)
-	retentionPolicy := expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d["retention_policy"].([]interface{}))
+	retentionPolicy := expandFirstOrNil(d["retention_policy"].([]interface{}), expandReleaseEnvironmentRetentionPolicy)
 	preApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.BeforeGates)
 	postApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.AfterSuccessfulGates)
 	preDeployApprovals := expandReleaseDefinitionApprovalsListFirstOrNil(d["pre_deploy_approval"].([]interface{}), preApprovalOptions)
@@ -2089,22 +2090,6 @@ func expandReleaseEnvironmentRetentionPolicy(d map[string]interface{}) release.E
 		RetainBuild:    converter.Bool(d["retain_build"].(bool)),
 		ReleasesToKeep: converter.Int(d["releases_to_keep"].(int)),
 	}
-}
-func expandReleaseEnvironmentRetentionPolicyList(d []interface{}) []release.EnvironmentRetentionPolicy {
-	vs := make([]release.EnvironmentRetentionPolicy, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseEnvironmentRetentionPolicy(val))
-		}
-	}
-	return vs
-}
-func expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d []interface{}) *release.EnvironmentRetentionPolicy {
-	d2 := expandReleaseEnvironmentRetentionPolicyList(d)
-	if len(d2) != 1 {
-		return nil
-	}
-	return &d2[0]
 }
 
 func automaticReleaseDefinitionApprovalStep() release.ReleaseDefinitionApprovalStep {
