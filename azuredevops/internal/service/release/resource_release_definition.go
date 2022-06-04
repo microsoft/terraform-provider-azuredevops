@@ -158,7 +158,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 				task := strings.Split(v, "@")
 				taskName := task[0]
 				if _, ok := taskagent.TaskNameToUUID[taskName]; !ok {
-					return nil, []error{fmt.Errorf("unkown task %q", taskName)}
+					return nil, []error{fmt.Errorf("unknown task %q", taskName)}
 				}
 				return nil, nil
 			},
@@ -1946,7 +1946,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 
 	agentPoolHostedAzurePipelines, queueID := expandReleaseHostedAzurePipelinesListFirstOrNil(d["agent_pool_hosted_azure_pipelines"].([]interface{}))
 	//if agentPoolPrivate != nil && agentPoolHostedAzurePipelines != nil { // TODO : how to solve
-	//	return nil, fmt.Errorf("conflit %s and %s specify only one", "agent_pool_hosted_azure_pipelines", "agent_pool_private")
+	//	return nil, fmt.Errorf("conflict %s and %s specify only one", "agent_pool_hosted_azure_pipelines", "agent_pool_private")
 	//}
 	var agentSpecification *release.AgentSpecification
 	if agentPoolHostedAzurePipelines != nil {
@@ -1961,7 +1961,7 @@ func expandReleaseAgentDeploymentInput(d map[string]interface{}) AgentDeployment
 	multiConfiguration := expandFirstOrNil(d["multi_configuration"].([]interface{}), expandReleaseMultiConfigInput)
 	multiAgent := expandFirstOrNil(d["multi_agent"].([]interface{}), expandReleaseParallelExecutionInputBase)
 	//if multiConfiguration != nil && multiAgent != nil { // TODO : how to solve
-	//	return nil, fmt.Errorf("conflit %s and %s specify only one", "multi_configuration", "multi_agent")
+	//	return nil, fmt.Errorf("conflict %s and %s specify only one", "multi_configuration", "multi_agent")
 	//}
 	if multiConfiguration != nil {
 		parallelExecution = multiConfiguration
@@ -2003,22 +2003,21 @@ func expandReleaseServerDeploymentInput(d map[string]interface{}) *ServerDeploym
 }
 
 func expandReleaseArtifactDownloadInputBase(d map[string]interface{}, t release.AgentArtifactType) release.ArtifactDownloadInputBase {
-	mode := ArtifactDownloadModeTypeValues.All
-	artifactItems := make([]string, 0, 0)
-	artifactItems = tfhelper.ExpandStringList(d["include"].([]interface{}))
+	var mode string
+	var artifactItems = tfhelper.ExpandStringList(d["include"].([]interface{}))
 	if len(artifactItems) > 0 {
 		if artifactItems[0] == "*" {
 			artifactItems = []string{}
-			mode = ArtifactDownloadModeTypeValues.All
+			mode = string(ArtifactDownloadModeTypeValues.All)
 		} else {
-			mode = ArtifactDownloadModeTypeValues.Selective
+			mode = string(ArtifactDownloadModeTypeValues.Selective)
 		}
 	} else {
-		mode = ArtifactDownloadModeTypeValues.Skip
+		mode = string(ArtifactDownloadModeTypeValues.Skip)
 	}
 	return release.ArtifactDownloadInputBase{
 		Alias:                converter.String(d["artifact_alias"].(string)),
-		ArtifactDownloadMode: converter.String(string(mode)),
+		ArtifactDownloadMode: converter.String(mode),
 		ArtifactItems:        &artifactItems,
 		ArtifactType:         converter.String(strings.Title(string(t))),
 	}
@@ -2199,28 +2198,6 @@ func expandReleaseDefinitionGatesStep(d map[string]interface{}) release.ReleaseD
 		Id:    converter.Int(d["id"].(int)),
 		Gates: &gates,
 	}
-}
-
-func flattenStringList(list []*string) []interface{} {
-	vs := make([]interface{}, 0, len(list))
-	for _, v := range list {
-		vs = append(vs, *v)
-	}
-	return vs
-}
-func flattenStringSet(list []*string) *schema.Set {
-	return schema.NewSet(schema.HashString, flattenStringList(list))
-}
-
-func flattenIntList(list []*int) []interface{} {
-	vs := make([]interface{}, 0, len(list))
-	for _, v := range list {
-		vs = append(vs, *v)
-	}
-	return vs
-}
-func flattenIntSet(list []*int) *schema.Set {
-	return schema.NewSet(schema.HashString, flattenIntList(list))
 }
 
 func flattenStringMap(m *map[string]string) map[string]interface{} {
