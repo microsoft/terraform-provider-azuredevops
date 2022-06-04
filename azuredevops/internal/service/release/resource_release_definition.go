@@ -1454,7 +1454,8 @@ type Release interface {
 		release.WorkflowTask |
 		release.EnvironmentRetentionPolicy |
 		release.ReleaseDefinitionGate |
-		release.ReleaseDefinitionGatesStep
+		release.ReleaseDefinitionGatesStep |
+		ReleaseHostedAzurePipelines
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1908,17 +1909,8 @@ func expandReleaseHostedAzurePipelines(d map[string]interface{}) ReleaseHostedAz
 		QueueID:            converter.Int(d["agent_pool_id"].(int)),
 	}
 }
-func expandReleaseHostedAzurePipelinesList(d []interface{}) []ReleaseHostedAzurePipelines {
-	vs := make([]ReleaseHostedAzurePipelines, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseHostedAzurePipelines(val))
-		}
-	}
-	return vs
-}
 func expandReleaseHostedAzurePipelinesListFirstOrNil(d []interface{}) (*release.AgentSpecification, int) {
-	d2 := expandReleaseHostedAzurePipelinesList(d)
+	d2 := expandList(d, expandReleaseHostedAzurePipelines)
 	if len(d2) != 1 {
 		return nil, 0
 	}
