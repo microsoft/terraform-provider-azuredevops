@@ -1664,7 +1664,7 @@ func expandReleaseDefinitionEnvironment(d map[string]interface{}, rank int) rele
 	variableGroups := expandIntList(d["variable_groups"].([]interface{}))
 	deployStep := expandFirstOrNil(d["deploy_step"].([]interface{}), expandReleaseDefinitionDeployStep)
 	variables := expandReleaseConfigurationVariableValueList(d["variable"].([]interface{}))
-	demands := expandReleaseDefinitionDemandList(d["demand"].([]interface{}))
+	demands := expandList(d["demand"].([]interface{}), expandReleaseDefinitionDemand)
 	environmentOptions := expandFirstOrNil(d["environment_options"].([]interface{}), expandReleaseEnvironmentOptions)
 	retentionPolicy := expandReleaseEnvironmentRetentionPolicyListFirstOrNil(d["retention_policy"].([]interface{}))
 	preApprovalOptions := expandReleaseApprovalOptionsListFirstOrNil(d["approval_options"].([]interface{}), release.ApprovalExecutionOrderValues.BeforeGates)
@@ -2046,7 +2046,7 @@ func expandReleaseDeployPhaseDemand(d map[string]interface{}) interface{} {
 	return name
 }
 
-func expandReleaseDefinitionDemand(d map[string]interface{}) ReleaseDefinitionDemand {
+func expandReleaseDefinitionDemand(d map[string]interface{}) interface{} {
 	name := d["name"].(string)
 	configValue := d["value"].(string)
 	if len(configValue) > 0 {
@@ -2055,15 +2055,6 @@ func expandReleaseDefinitionDemand(d map[string]interface{}) ReleaseDefinitionDe
 	return ReleaseDefinitionDemand{
 		Name: converter.String(name),
 	}
-}
-func expandReleaseDefinitionDemandList(d []interface{}) []interface{} {
-	vs := make([]interface{}, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseDefinitionDemand(val))
-		}
-	}
-	return vs
 }
 
 func expandReleaseWorkFlowTask(d map[string]interface{}) release.WorkflowTask {
