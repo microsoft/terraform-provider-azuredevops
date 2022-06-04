@@ -1450,7 +1450,8 @@ type Release interface {
 		release.EnvironmentOptions |
 		MachineGroupDeploymentMultiple |
 		release.MultiConfigInput |
-		release.AgentSpecification
+		release.AgentSpecification |
+		release.WorkflowTask
 }
 
 func expandStringMapString(d map[string]interface{}) map[string]string {
@@ -1817,7 +1818,7 @@ func expandReleaseConfigurationVariableValueList(d []interface{}) map[string]rel
 }
 
 func expandReleaseDefinitionDeployStep(d map[string]interface{}) release.ReleaseDefinitionDeployStep {
-	tasks := expandReleaseWorkFlowTaskList(d["task"].([]interface{}))
+	tasks := expandList(d["task"].([]interface{}), expandReleaseWorkFlowTask)
 	return release.ReleaseDefinitionDeployStep{
 		Id:    converter.Int(d["id"].(int)),
 		Tasks: &tasks,
@@ -1825,7 +1826,7 @@ func expandReleaseDefinitionDeployStep(d map[string]interface{}) release.Release
 }
 
 func expandReleaseDeployPhase(d map[string]interface{}, t release.DeployPhaseTypes) ReleaseDeployPhase {
-	workflowTasks := expandReleaseWorkFlowTaskList(d["task"].([]interface{}))
+	workflowTasks := expandList(d["task"].([]interface{}), expandReleaseWorkFlowTask)
 	var deploymentInput interface{}
 	switch t {
 	case release.DeployPhaseTypesValues.AgentBasedDeployment:
@@ -2081,15 +2082,6 @@ func expandReleaseWorkFlowTask(d map[string]interface{}) release.WorkflowTask {
 		Version:          &version,
 	}
 }
-func expandReleaseWorkFlowTaskList(d []interface{}) []release.WorkflowTask {
-	vs := make([]release.WorkflowTask, 0, len(d))
-	for _, v := range d {
-		if val, ok := v.(map[string]interface{}); ok {
-			vs = append(vs, expandReleaseWorkFlowTask(val))
-		}
-	}
-	return vs
-}
 
 func expandReleaseEnvironmentRetentionPolicy(d map[string]interface{}) release.EnvironmentRetentionPolicy {
 	return release.EnvironmentRetentionPolicy{
@@ -2216,7 +2208,7 @@ func expandReleaseDefinitionApprovalsListFirstOrNil(d []interface{}, approvalOpt
 }
 
 func expandReleaseDefinitionGate(d map[string]interface{}) release.ReleaseDefinitionGate {
-	workflowTasks := expandReleaseWorkFlowTaskList(d["task"].([]interface{}))
+	workflowTasks := expandList(d["task"].([]interface{}), expandReleaseWorkFlowTask)
 	return release.ReleaseDefinitionGate{
 		Tasks: &workflowTasks,
 	}
