@@ -2,6 +2,8 @@ package build
 
 import (
 	"fmt"
+	"log"
+
 	// "strconv"
 	"strings"
 
@@ -33,8 +35,7 @@ func ResourceBuildFolder() *schema.Resource {
 			},
 			"path": {
 				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      `\`,
+				Required:     true,
 				ValidateFunc: validate.Path,
 			},
 			"description": {
@@ -66,7 +67,7 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
-	path := d.Get("path").(string)
+	path := d.Id()
 
 	buildFolders, err := clients.BuildClient.GetFolders(clients.Ctx, build.GetFoldersArgs{
 		Project: &projectID,
@@ -80,6 +81,13 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
+
+	if len(*buildFolders) == 0 {
+		d.SetId("")
+		log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Folder [%s] not found. Removing from state.", path)
+		return nil
+	}
+
 	buildFolder := (*buildFolders)[0]
 
 	flattenBuildFolder(d, &buildFolder, projectID)
@@ -130,8 +138,8 @@ func resourceBuildFolderDelete(d *schema.ResourceData, m interface{}) error {
 func flattenBuildFolder(d *schema.ResourceData, buildFolder *build.Folder, projectID string) {
 	d.SetId(*buildFolder.Path)
 	d.Set("project_id", projectID)
-	d.Set("path", *buildFolder.Path)
-	d.Set("description", *buildFolder.Description)
+	d.Set("path", buildFolder.Path)
+	d.Set("description", buildFolder.Description)
 }
 
 // create a Folder object to pass to the API
