@@ -20,7 +20,6 @@ import (
 
 // ResourceBuildDefinition schema and implementation for build folder resource
 func ResourceBuildFolder() *schema.Resource {
-
 	return &schema.Resource{
 		Create:   resourceBuildFolderCreate,
 		Read:     resourceBuildFolderRead,
@@ -144,7 +143,6 @@ func flattenBuildFolder(d *schema.ResourceData, buildFolder *build.Folder, proje
 
 // create a Folder object to pass to the API
 func createBuildFolder(clients *client.AggregatedClient, path string, project string, description string) (*build.Folder, error) {
-
 	projectUuid, err := uuid.Parse(project)
 	if err != nil {
 		return nil, err
