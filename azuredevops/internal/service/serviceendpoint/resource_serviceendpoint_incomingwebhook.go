@@ -55,7 +55,7 @@ func expandServiceEndpointIncomingWebhook(d *schema.ResourceData) (*serviceendpo
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	tfhelper.HelpFlattenSecret(d, "secret")
 	d.Set("webhook_name", (*serviceEndpoint.Authorization.Parameters)["webhookname"])
 	d.Set("http_header", (*serviceEndpoint.Authorization.Parameters)["header"])
+	// secret value won't be returned by service and should not be overwritten
 }

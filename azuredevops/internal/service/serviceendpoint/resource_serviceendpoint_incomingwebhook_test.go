@@ -27,7 +27,7 @@ var incomingWebhookTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"webhookname": "myTestWebhook",
-			"secret":      "INCOMING_WEBHOOK_TEST_secret",
+			"secret":      "",
 			"header":      "X-Test-Header",
 		},
 		Scheme: converter.String("None"),
