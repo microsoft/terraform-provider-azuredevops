@@ -696,6 +696,16 @@ func HclBuildDefinitionResource(
 	}`, buildDefinitionName, buildPath, repoType, repoID, branchName, yamlPath, serviceConnectionID)
 }
 
+// HclBuildDefinitionDataSource HCL describing a data source for an AzDO Variable Group
+func HclBuildDefinitionDataSource(path string) string {
+	return fmt.Sprintf(`
+data "azuredevops_build_definition" "build" {
+	project_id  = azuredevops_project.project.id
+	name        = azuredevops_build_definition.build.name
+	path        = "%s"
+}`, path)
+}
+
 // HclBuildDefinitionResourceWithProject HCL describing an AzDO build definition and a project
 func HclBuildDefinitionResourceWithProject(
 	projectName string,
