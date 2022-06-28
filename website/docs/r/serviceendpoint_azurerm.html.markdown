@@ -17,8 +17,7 @@ For detailed steps to create a service principal with Azure cli see the [documen
 
 ## Example Usage
 
-### Manual AzureRM Service Endpoint
-#### Subscription Scoped
+### Manual AzureRM Service Endpoint (Subscription Scoped)
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -43,8 +42,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 ```
 
-### Manual AzureRM Service Endpoint
-#### ManagementGroup Scoped
+### Manual AzureRM Service Endpoint (ManagementGroup Scoped)
 
 ```hcl
 resource "azuredevops_project" "example" {
