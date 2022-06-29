@@ -15,16 +15,22 @@ import (
 func ResourceServiceEndpointAzureRM() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureRM, expandServiceEndpointAzureRM)
 	makeUnprotectedSchema(r, "azurerm_spn_tenantid", "ARM_TENANT_ID", "The service principal tenant id which should be used.")
-	makeUnprotectedSchema(r, "azurerm_subscription_id", "ARM_SUBSCRIPTION_ID", "The Azure subscription Id which should be used.")
-	makeUnprotectedSchema(r, "azurerm_subscription_name", "ARM_SUBSCRIPTION_NAME", "The Azure subscription name which should be used.")
 
 	r.Schema["resource_group"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		ForceNew:      true,
 		Description:   "Scope Resource Group",
-		ConflictsWith: []string{"credentials"},
+		ConflictsWith: []string{"credentials", "azurerm_management_group_id"},
 	}
+
+	// Subscription scopeLevel
+	makeUnprotectedOptionalSchema(r, "azurerm_subscription_id", "ARM_SUBSCRIPTION_ID", "The Azure subscription Id which should be used.", []string{"azurerm_management_group_id"})
+	makeUnprotectedOptionalSchema(r, "azurerm_subscription_name", "ARM_SUBSCRIPTION_NAME", "The Azure subscription name which should be used.", []string{"azurerm_management_group_id"})
+
+	// ManagementGroup scopeLevel
+	makeUnprotectedOptionalSchema(r, "azurerm_management_group_id", "ARM_MGMT_GROUP_ID", "The Azure managementGroup Id which should be used.", []string{"azurerm_subscription_id", "resource_group"})
+	makeUnprotectedOptionalSchema(r, "azurerm_management_group_name", "ARM_MGMT_GROUP_NAME", "The Azure managementGroup name which should be used.", []string{"azurerm_subscription_id", "resource_group"})
 
 	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("serviceprincipalkey")
 	r.Schema["credentials"] = &schema.Schema{
@@ -58,11 +64,32 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
-	scope := fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
-	scopeLevel := "Subscription"
-	if _, ok := d.GetOk("resource_group"); ok {
-		scope += fmt.Sprintf("/resourcegroups/%s", d.Get("resource_group"))
-		scopeLevel = "ResourceGroup"
+	// Validate one of either subscriptionId or managementGroupId is set
+	subId := d.Get("azurerm_subscription_id").(string)
+	subName := d.Get("azurerm_subscription_name").(string)
+
+	mgmtGrpId := d.Get("azurerm_management_group_id").(string)
+	mgmtGrpName := d.Get("azurerm_management_group_name").(string)
+
+	scopeLevelMap := map[string][]string{
+		"subscription":    {subId, subName},
+		"managementGroup": {mgmtGrpId, mgmtGrpName},
+	}
+
+	if err := validateScopeLevel(scopeLevelMap); err != nil {
+		return nil, nil, err
+	}
+
+	var scope string
+	var scopeLevel string
+
+	if _, ok := d.GetOk("azurerm_subscription_id"); ok {
+		scope = fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
+		scopeLevel = "Subscription"
+		if _, ok := d.GetOk("resource_group"); ok {
+			scope += fmt.Sprintf("/resourcegroups/%s", d.Get("resource_group"))
+			scopeLevel = "ResourceGroup"
+		}
 	}
 
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -75,15 +102,24 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		Scheme: converter.String("ServicePrincipal"),
 	}
 	serviceEndpoint.Data = &map[string]string{
-		"creationMode":     "Automatic",
-		"environment":      "AzureCloud",
-		"scopeLevel":       "Subscription",
-		"subscriptionId":   d.Get("azurerm_subscription_id").(string),
-		"subscriptionName": d.Get("azurerm_subscription_name").(string),
+		"creationMode": "Automatic",
+		"environment":  "AzureCloud",
+	}
+
+	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
+		(*serviceEndpoint.Data)["scopeLevel"] = "Subscription"
+		(*serviceEndpoint.Data)["subscriptionId"] = d.Get("azurerm_subscription_id").(string)
+		(*serviceEndpoint.Data)["subscriptionName"] = d.Get("azurerm_subscription_name").(string)
 	}
 
 	if scopeLevel == "ResourceGroup" {
 		(*serviceEndpoint.Authorization.Parameters)["scope"] = scope
+	}
+
+	if _, ok := d.GetOk("azurerm_management_group_id"); ok {
+		(*serviceEndpoint.Data)["scopeLevel"] = "ManagementGroup"
+		(*serviceEndpoint.Data)["managementGroupId"] = d.Get("azurerm_management_group_id").(string)
+		(*serviceEndpoint.Data)["managementGroupName"] = d.Get("azurerm_management_group_name").(string)
 	}
 
 	if _, ok := d.GetOk("credentials"); ok {
@@ -124,6 +160,48 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	}
 
 	d.Set("azurerm_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantid"])
-	d.Set("azurerm_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
-	d.Set("azurerm_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+
+	if _, ok := (*serviceEndpoint.Data)["managementGroupId"]; ok {
+		d.Set("azurerm_management_group_id", (*serviceEndpoint.Data)["managementGroupId"])
+		d.Set("azurerm_management_group_name", (*serviceEndpoint.Data)["managementGroupName"])
+	}
+
+	if _, ok := (*serviceEndpoint.Data)["subscriptionId"]; ok {
+		d.Set("azurerm_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
+		d.Set("azurerm_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+	}
+}
+
+// Validation function to ensure either Subscription or ManagementGroup scopeLevels are set correctly
+func validateScopeLevel(scopeMap map[string][]string) error {
+	// Check for empty
+	if strings.TrimSpace(strings.Join(scopeMap["subscription"], "")) == "" && strings.TrimSpace(strings.Join(scopeMap["managementGroup"], "")) == "" {
+		return fmt.Errorf("One of either subscription scoped (azurerm_subscription_id, azurerm_subscription_name) or managementGroup scoped (azurerm_management_ggroup_id, azurerm_management_group_name) details must be provided")
+	}
+
+	// check for valid subscription details
+	var subElementCount int
+	for _, ele := range scopeMap["subscription"] {
+		if ele == "" {
+			subElementCount = subElementCount + 1
+		}
+	}
+
+	if subElementCount == 1 {
+		return fmt.Errorf("azurerm_subscription_id and azurerm_subscription_name must be provided")
+	}
+
+	// check for valid managementGroup details
+	var mgmtElementCount int
+	for _, ele := range scopeMap["managementGroup"] {
+		if ele == "" {
+			mgmtElementCount = mgmtElementCount + 1
+		}
+	}
+
+	if mgmtElementCount == 1 {
+		return fmt.Errorf("azurerm_management_group_id and azurerm_management_group_name must be provided")
+	}
+
+	return nil
 }

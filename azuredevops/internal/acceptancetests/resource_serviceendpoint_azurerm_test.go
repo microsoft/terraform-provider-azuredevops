@@ -62,6 +62,38 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
+	t.Skip("Skipping test TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate: test resource limit")
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkey := uuid.New().String()
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	tfSvcEpNode := resourceType + ".serviceendpointrm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclServiceEndpointAzureRMResourceWithMG(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkey),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_name"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalid),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkey),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 	t.Skip("Skipping test TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate: test resource limit")
 
