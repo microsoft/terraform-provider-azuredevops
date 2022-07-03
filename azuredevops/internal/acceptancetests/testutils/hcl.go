@@ -634,7 +634,7 @@ func HclBuildDefinitionResourceGitHub(projectName string, buildDefinitionName st
 		buildPath,
 		"GitHub",
 		"repoOrg/repoName",
-		"master",
+		"refs/heads/master",
 		"path/to/yaml",
 		"")
 }
@@ -660,7 +660,7 @@ func HclBuildDefinitionResourceTfsGit(projectName string, gitRepoName string, bu
 		buildPath,
 		"TfsGit",
 		"${azuredevops_git_repository.repository.id}",
-		"master",
+		"refs/heads/master",
 		"path/to/yaml",
 		"")
 
