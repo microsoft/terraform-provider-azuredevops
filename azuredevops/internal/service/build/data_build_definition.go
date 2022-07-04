@@ -62,7 +62,6 @@ func DataBuildDefinition() *schema.Resource {
 			},
 			"path": {
 				Type:         schema.TypeString,
-				Required:     false,
 				Optional:     true,
 				Default:      `\`,
 				ValidateFunc: validate.Path,

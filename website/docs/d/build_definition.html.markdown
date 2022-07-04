@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ---
 
-* `path` - (Optional) The path of the build definition.
+* `path` - (Optional) The path of the build definition. Default to `\`.
 
 ## Attributes Reference
 
@@ -58,7 +58,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `variable` - A `variable` block as defined below.
 
-* `variable_groups` - A `variable_groups` block as defined below.
+* `variable_groups` - A list of variable group IDs.
 
 ---
 
@@ -89,13 +89,13 @@ A `ci_trigger` `override` block supports the following:
 
 * `branch_filter` block supports the following:
 
-* `include` - (Optional) List of branch patterns to include.
-* `exclude` - (Optional) List of branch patterns to exclude.
+  * `include` - (Optional) List of branch patterns to include.
+  * `exclude` - (Optional) List of branch patterns to exclude.
 
 * `path_filter` block supports the following:
 
-* `include` - (Optional) List of path patterns to include.
-* `exclude` - (Optional) List of path patterns to exclude.
+  * `include` - (Optional) List of path patterns to include.
+  * `exclude` - (Optional) List of path patterns to exclude.
 
 ---
 
@@ -115,8 +115,7 @@ A `pull_request_trigger` block exports the following:
 
 A `forks` block exports the following:
 
-* `enabled` - Is the forks enabled?
-
+* `enabled` - Build pull requests from forks of this repository.
 * `share_secrets` - Make secrets available to builds of forks.
 
 ---
@@ -129,13 +128,13 @@ A `pull_request_trigger` `override` block supports the following:
 
 * `branch_filter` block supports the following:
 
-* `include` - (Optional) List of branch patterns to include.
-* `exclude` - (Optional) List of branch patterns to exclude.
+  * `include` - (Optional) List of branch patterns to include.
+  * `exclude` - (Optional) List of branch patterns to exclude.
 
 * `path_filter` block supports the following:
 
-* `include` - (Optional) List of path patterns to include.
-* `exclude` - (Optional) List of path patterns to exclude.
+  * `include` - (Optional) List of path patterns to include.
+  * `exclude` - (Optional) List of path patterns to exclude.
 
 ---
 
@@ -177,9 +176,9 @@ A `schedules` block exports the following:
 
 A `variable` block exports the following:
 
-* `allow_override` - True if the variable can be overridden.
+* `allow_override` - `true` if the variable can be overridden.
 
-* `is_secret` - True if the variable is a secret.
+* `is_secret` - `true` if the variable is a secret.
 
 * `name` - The name of the variable.
 
