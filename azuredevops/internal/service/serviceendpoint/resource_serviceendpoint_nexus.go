@@ -58,11 +58,11 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 	}
 
 	r.Schema["authentication_basic"] = &schema.Schema{
-		Type:         schema.TypeList,
-		Required:     true,
-		MinItems:     1,
-		MaxItems:     1,
-		Elem:         aup,
+		Type:     schema.TypeList,
+		Required: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem:     aup,
 	}
 
 	return r
@@ -73,7 +73,7 @@ func expandServiceEndpointNexus(d *schema.ResourceData) (*serviceendpoint.Servic
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("NexusIqServiceConnection")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	
+
 	authScheme := "UsernamePassword"
 	authParams := make(map[string]string)
 
