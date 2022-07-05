@@ -168,5 +168,6 @@ func flattenServiceEndpointMaven(d *schema.ResourceData, serviceEndpoint *servic
 	}
 
 	d.Set("url", *serviceEndpoint.Url)
+
 	d.Set("repository_id", (*serviceEndpoint.Data)["RepositoryId"])
 }
