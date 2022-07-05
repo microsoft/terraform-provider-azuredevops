@@ -55,6 +55,9 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_github":                 serviceendpoint.ResourceServiceEndpointGitHub(),
 			"azuredevops_serviceendpoint_github_enterprise":      serviceendpoint.ResourceServiceEndpointGitHubEnterprise(),
 			"azuredevops_serviceendpoint_kubernetes":             serviceendpoint.ResourceServiceEndpointKubernetes(),
+			"azuredevops_serviceendpoint_maven":	              serviceendpoint.ResourceServiceEndpointMaven(),
+			"azuredevops_serviceendpoint_nexus":	              serviceendpoint.ResourceServiceEndpointNexus(),
+			"azuredevops_serviceendpoint_jenkins":	              serviceendpoint.ResourceServiceEndpointJenkins(),
 			"azuredevops_serviceendpoint_octopusdeploy":          serviceendpoint.ResourceServiceEndpointOctopusDeploy(),
 			"azuredevops_serviceendpoint_runpipeline":            serviceendpoint.ResourceServiceEndpointRunPipeline(),
 			"azuredevops_serviceendpoint_servicefabric":          serviceendpoint.ResourceServiceEndpointServiceFabric(),
@@ -85,7 +88,6 @@ func Provider() *schema.Provider {
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_build_definition": build.DataBuildDefinition(),
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
 			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
 			"azuredevops_agent_queue":      taskagent.DataAgentQueue(),
