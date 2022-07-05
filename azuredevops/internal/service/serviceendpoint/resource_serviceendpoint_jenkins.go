@@ -2,8 +2,8 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,7 +36,7 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 	}
 
 	r.Schema["accept_untrusted_certs"] = &schema.Schema{
-		Type:     schema.TypeBool,
+		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
 		Description: "Allows the Jenkins clients to accept self-signed SSL server certificates without installing them into the TFS service role and/or Build Agent computers.",
@@ -66,11 +66,11 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 	}
 
 	r.Schema["authentication_basic"] = &schema.Schema{
-		Type:         schema.TypeList,
-		Required:     true,
-		MinItems:     1,
-		MaxItems:     1,
-		Elem:         aup,
+		Type:     schema.TypeList,
+		Required: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem:     aup,
 	}
 
 	return r
@@ -81,7 +81,7 @@ func expandServiceEndpointJenkins(d *schema.ResourceData) (*serviceendpoint.Serv
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("jenkins")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	
+
 	authScheme := "UsernamePassword"
 	authParams := make(map[string]string)
 

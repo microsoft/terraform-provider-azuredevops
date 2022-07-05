@@ -32,7 +32,7 @@ var mavenTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 		Scheme: converter.String("UsernamePassword"),
 	},
 	Data: &map[string]string{
-		"RepositoryId":        "MAVEN_TESTrepo",
+		"RepositoryId": "MAVEN_TESTrepo",
 	},
 	Id:    &mavenTestServiceEndpointIDpassword,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
@@ -62,7 +62,7 @@ var mavenTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		Scheme: converter.String("Token"),
 	},
 	Data: &map[string]string{
-		"RepositoryId":        "MAVEN_TEST_REPO",
+		"RepositoryId": "MAVEN_TEST_REPO",
 	},
 	Id:    &mavenTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
