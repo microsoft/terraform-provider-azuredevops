@@ -26,8 +26,8 @@ var mavenTestServiceEndpointProjectIDpassword = &mavenRandomServiceEndpointProje
 var mavenTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "MAVEN_TEST_username",
-			"password": "MAVEN_TEST_password",
+			"username": "MAVEN_TEST_USERNAME",
+			"password": "MAVEN_TEST_PASSWORD",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -57,12 +57,12 @@ var mavenTestServiceEndpointProjectID = &mavenRandomServiceEndpointProjectID
 var mavenTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "MAVEN_TEST_token",
+			"apitoken": "MAVEN_TEST_TOKEN",
 		},
 		Scheme: converter.String("Token"),
 	},
 	Data: &map[string]string{
-		"RepositoryId":        "MAVEN_TESTrepo",
+		"RepositoryId":        "MAVEN_TEST_REPO",
 	},
 	Id:    &mavenTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),

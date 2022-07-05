@@ -98,7 +98,6 @@ func expandServiceEndpointJenkins(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	data := map[string]string{}
 	data["AcceptUntrustedCerts"] = strconv.FormatBool(d.Get("accept_untrusted_certs").(bool))
-//	data["AcceptUntrustedCerts"] = d.Get("accept_untrusted_certs").(bool)
 
 	serviceEndpoint.Data = &data
 
@@ -129,7 +128,6 @@ func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serv
 	}
 
 	d.Set("url", *serviceEndpoint.Url)
-//	d.Set("accept_untrusted_certs", (*serviceEndpoint.Data)["AcceptUntrustedCerts"])
 	unsecured, err := strconv.ParseBool((*serviceEndpoint.Data)["AcceptUntrustedCerts"])
 	if err != nil {
 		return
