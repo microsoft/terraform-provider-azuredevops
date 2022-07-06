@@ -133,5 +133,4 @@ func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serv
 		return
 	}
 	d.Set("accept_untrusted_certs", unsecured)
-
 }
