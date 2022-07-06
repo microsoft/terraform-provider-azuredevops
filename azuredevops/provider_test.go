@@ -84,7 +84,6 @@ func TestProvider_HasChildResources(t *testing.T) {
 
 func TestProvider_HasChildDataSources(t *testing.T) {
 	expectedDataSources := []string{
-		"azuredevops_build_definition",
 		"azuredevops_client_config",
 		"azuredevops_group",
 		"azuredevops_project",
