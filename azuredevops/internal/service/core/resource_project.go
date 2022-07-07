@@ -231,12 +231,18 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 			IncludeHistory:      converter.Bool(false),
 		})
 		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return resource.NonRetryableError(err)
+			}
 			return resource.RetryableError(err)
 		}
 		return nil
 	})
 
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			return nil, err
+		}
 		return nil, fmt.Errorf(" Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
 	}
 	return project, nil
