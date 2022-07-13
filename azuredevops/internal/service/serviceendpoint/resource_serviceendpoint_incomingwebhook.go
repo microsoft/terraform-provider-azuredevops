@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointIncomingWebhook schema and implementation for incoming webhook service endpoint resource
@@ -18,15 +17,12 @@ func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
 		Description: "The name of the WebHook.",
 	}
 	r.Schema["secret"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		DefaultFunc:      schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_SECRET", nil),
-		Description:      "Optional secret for the webhook. WebHook service will use this secret to calculate the payload checksum.",
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		Type:        schema.TypeString,
+		Optional:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_SECRET", nil),
+		Description: "Optional secret for the webhook. WebHook service will use this secret to calculate the payload checksum.",
+		Sensitive:   true,
 	}
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("secret")
-	r.Schema[secretHashKey] = secretHashSchema
 	r.Schema["http_header"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,

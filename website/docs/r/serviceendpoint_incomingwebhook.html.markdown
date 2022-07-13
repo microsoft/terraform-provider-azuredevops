@@ -59,8 +59,8 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 
 ## Import
 
-Service Connection Incoming WebHooks can be imported using the `resource id`, e.g.
+Azure DevOps Service Endpoint Incoming WebHook can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```shell
-terraform import azuredevops_serviceendpoint_incomingwebhook.example 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_incomingwebhook.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
