@@ -62,10 +62,10 @@ The following arguments are supported:
 In addition to the Arguments list above - the following Attributes are exported:
 
 * `authorization` - Specifies the Authorization Scheme Map.
-* `azurerm_management_group_id` - Specified the Management Group ID of the Service Endpoint is target, if availble.
-* `azurerm_management_group_name` - Specified the Management Group Name of the Service Endpoint target, if availble.
+* `azurerm_management_group_id` - Specified the Management Group ID of the Service Endpoint is target, if available.
+* `azurerm_management_group_name` - Specified the Management Group Name of the Service Endpoint target, if available.
 * `azurerm_subscription_id` - Specifies the Subscription ID of the Service Endpoint target, if available.
 * `azurerm_subscription_name` - Specifies the Subscription Name of the Service Endpoint target, if available.
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
-* `azurerm_spn_tenanid` - Specifies the Tenant ID of the Azure targets.
+* `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
 * `description` - Specifies the description of the Service Endpoint.
