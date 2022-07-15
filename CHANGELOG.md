@@ -1,4 +1,34 @@
-## 0.2.2 Unreleased
+## 0.2.3 Unreleased
+
+
+## 0.2.2
+
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_octopusdeploy` [#529](https://github.com/microsoft/terraform-provider-azuredevops/issues/529)
+* **New Resource** `azuredevops_serviceendpoint_incomingwebhook ` [#531](https://github.com/microsoft/terraform-provider-azuredevops/issues/531)
+* **New Data Resource** `azuredevops_build_definitions ` [#562](https://github.com/microsoft/terraform-provider-azuredevops/issues/562)
+
+
+BUG FIX:
+* `azuredevops_serviceendpoint_kubernetes` - Does not update `service_account` values when changed. [#576](https://github.com/microsoft/terraform-provider-azuredevops/issues/576)
+* `azuredevops_project_features` - Fix concurrent modification error. [#593](https://github.com/microsoft/terraform-provider-azuredevops/issues/593)
+* `azuredevops_project` - Fix concurrent modification error.  [#593](https://github.com/microsoft/terraform-provider-azuredevops/issues/593)
+* `azuredevops_project` - Handling 404 error code.  [#614](https://github.com/microsoft/terraform-provider-azuredevops/issues/614)
+
+IMPROVEMENTS:
+* `azuredevops_serviceendpoint_azurerm` - Support for management group scope. [#527](https://github.com/microsoft/terraform-provider-azuredevops/issues/527)
+* `azuredevops_branch_policy_build_validation"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_min_reviewers"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_auto_reviewers"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_work_item_linking"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_comment_resolution"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_merge_types"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_branch_policy_status_check"` - Adding `DefaultBranch` into `match_type` setting. [#305](https://github.com/microsoft/terraform-provider-azuredevops/issues/305)
+* `azuredevops_project_pipeline_settings` - Replace deprecated APIs with latest SDK APIs. [#609](https://github.com/microsoft/terraform-provider-azuredevops/issues/609)
+* Upgrade Terraform Plugin SDK to `v2.11.0` - [#587](https://github.com/microsoft/terraform-provider-azuredevops/issues/587)
+
+BREAKING CHANGE:
+* `azuredevops_serviceendpoint_servicefabric` - Remove sensitive data hashes. [#613](https://github.com/microsoft/terraform-provider-azuredevops/issues/613)
 
 ## 0.2.1
 
