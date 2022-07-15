@@ -63,7 +63,6 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
-	t.Skip("Skipping test TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
