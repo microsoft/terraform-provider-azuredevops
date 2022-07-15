@@ -168,6 +168,10 @@ func getServiceEndpointByNameAndProject(clients *client.AggregatedClient, servic
 		return nil, err
 	}
 
+	if len(*serviceEndpoints) == 0 {
+		return nil, fmt.Errorf("%v not found!", serviceEndpointName)
+	}
+
 	if len(*serviceEndpoints) > 1 {
 		return nil, fmt.Errorf("%v returns more than one serviceEndpoint!", serviceEndpointName)
 	}
