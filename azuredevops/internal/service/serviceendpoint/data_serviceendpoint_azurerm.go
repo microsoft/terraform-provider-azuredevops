@@ -14,7 +14,7 @@ import (
 
 func DataServiceEndpointAzureRM() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceServiceEndpointAzureRMRead, // Implement below
+		Read: dataSourceServiceEndpointAzureRMRead,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
