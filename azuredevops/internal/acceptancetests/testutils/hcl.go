@@ -400,28 +400,27 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 }
 
 // HclServiceEndpointAzureRMDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
-func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(serviceEndpointID string, projectName string) string {
+func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id = azuredevops_project.project.id
-  id         = "%s"
+  id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
 }
-`, serviceEndpointID)
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointDataSource)
+`)
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
 }
 
 // HclServiceEndpointAzureRMDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
-func HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointName string, projectName string) string {
+func HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointName string) string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
+	depends_on            = [azuredevops_serviceendpoint_azurerm.serviceendpointrm]
 }
 `, serviceEndpointName)
 
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointDataSource)
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint

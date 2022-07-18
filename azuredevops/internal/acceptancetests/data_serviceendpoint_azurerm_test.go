@@ -14,10 +14,13 @@ import (
 )
 
 func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.T) {
-	serviceEndpointAzureRMID := uuid.New().String()
+	serviceEndpointAzureRMName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkey := uuid.New().String()
 	projectName := testutils.GenerateResourceName()
-	createServiceEndpointAzureRMWithServiceEndpointIDData := fmt.Sprintf("%s",
-		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(serviceEndpointAzureRMID, projectName),
+	createServiceEndpointAzureRMWithServiceEndpointIDData := fmt.Sprintf("%s\n%s",
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(),
 	)
 
 	tfNode := "data.azuredevops_serviceendpoint_azurerm.serviceendpointrm"
@@ -28,7 +31,8 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 			{
 				Config: createServiceEndpointAzureRMWithServiceEndpointIDData,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "id", serviceEndpointAzureRMID),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 		},
@@ -38,8 +42,11 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testing.T) {
 	serviceEndpointAzureRMName := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
-	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s",
-		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName, projectName),
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkey := uuid.New().String()
+	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName),
 	)
 
 	tfNode := "data.azuredevops_serviceendpoint_azurerm.serviceendpointrm"
@@ -51,6 +58,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 				Config: createServiceEndpointAzureRMWithServiceEndpointNameData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 		},
