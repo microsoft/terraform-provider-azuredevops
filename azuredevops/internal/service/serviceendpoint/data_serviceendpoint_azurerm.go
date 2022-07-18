@@ -39,10 +39,8 @@ func DataServiceEndpointAzureRM() *schema.Resource {
 			},
 
 			"authorization": {
-				Type:         schema.TypeMap,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Type:     schema.TypeMap,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -121,13 +119,8 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 			return fmt.Errorf("Error looking up service endpoint with ID (%v) and projectID (%v): %v", serviceEndpointID, projectID, err)
 		}
 
-		if serviceEndpoint.Id == nil {
-			d.SetId("")
-		} else {
-			// prevent credential leak into data source
-			(*serviceEndpoint.Data)["creationMode"] = ""
-			flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
-		}
+		(*serviceEndpoint.Data)["creationMode"] = ""
+		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
 		return nil
 	}
 
@@ -142,13 +135,8 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 			return fmt.Errorf("Error looking up service endpoint with name (%v) and projectID (%v): %v", serviceEndpointName, projectID, err)
 		}
 
-		if serviceEndpoint.Id == nil {
-			d.SetId("")
-		} else {
-			// prevent credential leak into data source
-			(*serviceEndpoint.Data)["creationMode"] = ""
-			flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
-		}
+		(*serviceEndpoint.Data)["creationMode"] = ""
+		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
 		return nil
 	}
 	return nil
