@@ -414,9 +414,9 @@ data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 func HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointName string) string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
-  project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
-  depends_on            = [azuredevops_serviceendpoint_azurerm.serviceendpointrm]
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  depends_on = [azuredevops_serviceendpoint_azurerm.serviceendpointrm]
 }
 `, serviceEndpointName)
 
