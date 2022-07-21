@@ -21,11 +21,11 @@ func DataServiceEndpointAzureRM() *schema.Resource {
 				Required: true,
 			},
 
-			"name": {
+			"service_endpoint_name": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"name", "id"},
+				ExactlyOneOf: []string{"service_endpoint_name", "id"},
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
@@ -34,13 +34,8 @@ func DataServiceEndpointAzureRM() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"name", "id"},
+				ExactlyOneOf: []string{"service_endpoint_name", "id"},
 				ValidateFunc: validation.IsUUID,
-			},
-
-			"service_endpoint_name": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 
 			"authorization": {
@@ -125,12 +120,11 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 		}
 
 		(*serviceEndpoint.Data)["creationMode"] = ""
-		d.Set("name", serviceEndpoint.Name)
 		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
 		return nil
 	}
 
-	if serviceEndpointName, ok := d.GetOk("name"); ok {
+	if serviceEndpointName, ok := d.GetOk("service_endpoint_name"); ok {
 		// get service endpointdetails by name
 		serviceEndpoint, err := getServiceEndpointByNameAndProject(clients, serviceEndpointName.(string), projectID)
 		if err != nil {

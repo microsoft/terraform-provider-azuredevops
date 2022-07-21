@@ -24,7 +24,7 @@ data "azuredevops_serviceendpoint_azurerm" "id" {
 }
 
 output "service_endpoint_name" {
-  value = data.azuredevops_serviceendpoint_azurerm.name
+  value = data.azuredevops_serviceendpoint_azurerm.service_endpoint_name
 }
 ```
 
@@ -36,8 +36,8 @@ data "azuredevops_project" "sample" {
 }
 
 data "azuredevops_serviceendpoint_azurerm" "id" {
-  project_id = data.azuredevops_project.sample.id
-  name       = "Example-Service-Endpoint"
+  project_id            = data.azuredevops_project.sample.id
+  service_endpoint_name = "Example-Service-Endpoint"
 }
 
 output "service_endpoint_id" {
@@ -53,9 +53,9 @@ The following arguments are supported:
 
 * `id` - (Optional) the ID of the Service Endpoint.
 
-* `name` - (Optional) the Name of the Service Endpoint.
+* `service_endpoint_name` - (Optional) the Name of the Service Endpoint.
 
-~> **NOTE:** One of either `id` or `name` must be specified.
+~> **NOTE:** One of either `id` or `service_endpoint_name` must be specified.
 
 ## Attributes Reference
 
@@ -69,4 +69,3 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
 * `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
 * `description` - Specifies the description of the Service Endpoint.
-* `service_endpoint_name` - Specifies the friendly name of the Service Endpoint, same as the `name` attribute.
