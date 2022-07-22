@@ -135,6 +135,31 @@ func TestAccBuildDefinitionBitbucket_Create(t *testing.T) {
 	})
 }
 
+// Verifies a build for with tags can create and update
+func TestAccBuildDefinition_WithTags_CreateAndUpdate(t *testing.T) {
+	name := testutils.GenerateResourceName()
+	tfNode := "azuredevops_build_definition.build"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkBuildDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclBuildDefinitionWithTags([]string{"one", "two"}, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "tags.#", "2"),
+				),
+			}, {
+				Config: testutils.HclBuildDefinitionWithTags([]string{"one", "two", "three"}, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 // Verifies a build for with variables can create and update, including secret variables
 func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 	name := testutils.GenerateResourceName()

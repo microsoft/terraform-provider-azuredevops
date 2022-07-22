@@ -12,6 +12,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_resource_authorization",
 		"azuredevops_build_definition",
 		"azuredevops_build_definition_permissions",
+		"azuredevops_release_definition",
 		"azuredevops_branch_policy_build_validation",
 		"azuredevops_branch_policy_min_reviewers",
 		"azuredevops_branch_policy_auto_reviewers",

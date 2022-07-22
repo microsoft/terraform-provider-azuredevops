@@ -15,6 +15,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/release"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
@@ -33,6 +34,7 @@ func Provider() *schema.Provider {
 			"azuredevops_branch_policy_merge_types":              branch.ResourceBranchPolicyMergeTypes(),
 			"azuredevops_branch_policy_status_check":             branch.ResourceBranchPolicyStatusCheck(),
 			"azuredevops_build_definition":                       build.ResourceBuildDefinition(),
+			"azuredevops_release_definition":                     release.ResourceReleaseDefinition(),
 			"azuredevops_project":                                core.ResourceProject(),
 			"azuredevops_project_features":                       core.ResourceProjectFeatures(),
 			"azuredevops_project_pipeline_settings":              core.ResourceProjectPipelineSettings(),
@@ -136,8 +138,8 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			terraformVersion = "0.11+compatible"
 		}
 
-		client, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
+		azdoClient, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
 
-		return client, diag.FromErr(err)
+		return azdoClient, diag.FromErr(err)
 	}
 }

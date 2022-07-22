@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -798,6 +799,29 @@ func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) stri
 	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
 }
 
+// HclBuildDefinitionWithTags A build definition with tags
+func HclBuildDefinitionWithTags(tags []string, name string) string {
+	jsonTags, _ := json.MarshalIndent(tags, "", "")
+	buildDefinitionResource := fmt.Sprintf(`
+resource "azuredevops_build_definition" "build" {
+	project_id = azuredevops_project.project.id
+	name       = "%s"
+
+	repository {
+		repo_type   = "TfsGit"
+		repo_id     = azuredevops_git_repository.repository.id
+		branch_name = azuredevops_git_repository.repository.default_branch
+		yml_path    = "azure-pipelines.yml"
+	}
+
+	tags 	   = %s
+}`,
+		name, jsonTags)
+	repoAndProjectResource := HclGitRepoResource(name, name+"-repo", "Clean")
+
+	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
+}
+
 // HclGroupMembershipResource full terraform stanza to standup a group membership
 func HclGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
 	membershipDependenciesStanza := HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
@@ -946,6 +970,284 @@ resource "azuredevops_git_permissions" "git-permissions" {
 	}
 }
 `, projectResource, gitRepository)
+}
+
+// TestAccReleaseDefinitionTasks yaml of release tasks
+func YamlReleaseJobTasks() string {
+	return `
+#refName: ''
+# definitionType: task
+# taskId: a433f589-fce1-4460-9ee6-44a624aeb1fb
+# version: 0.*
+- task: DownloadBuildArtifacts@0
+  displayName: "Download Build Artifacts"        # name: Download Build Artifacts
+  environment:			                        # default nil
+    FOO: bar
+  enabled: true				                    # default
+#  alwaysRun: false			                    # default
+  continueOnError: false	                     # default
+  timeoutInMinutes: 0
+  overrideInputs:			                    # default nil
+    version: abc
+  condition: succeeded()	                    # default
+  inputs:
+    buildType: current                          # default
+    project: 0350d34d-fc00-4e9d-b1c5-78f8a7350b25
+    definition: 80
+    specificBuildWithTriggering: false          # default
+    buildVersionToDownload: specific            # default
+    allowPartiallySucceededBuilds: false        # default
+    branchName: refs/heads/master
+    buildId: ''                                 # default
+    tags: ''                                    # default
+    downloadType: specific                      # default
+    artifactName: ''
+    itemPattern: "**"
+    downloadPath: "$(System.DefaultWorkingDirectory)"
+    parallelizationLimit: '8'
+# taskId: d9bafed4-0b18-4f58-968d-86655b4d2ce9
+# version: 2.*
+- task: CmdLine@2
+  displayName: Add Permissions to AWS Provider Plugin Facility
+  inputs:
+    script: |
+      ls -R
+      chmod 0777 -R .terraform/plugins
+    workingDirectory: "$(System.DefaultWorkingDirectory)/Infrastructure/AWS/environments/dev-1/us-west-2/service_facility/"
+    failOnStderr: false
+- task: TerraformInstaller@0
+  displayName: "Install Terraform 0.12.13"
+  inputs:
+    terraformVersion: '0.12.13'
+- task: AWSShellScript@1
+  displayName: "Terraform Apply Tenant"
+  inputs:
+    awsCredentials: 'merlin-shared-azure-pipelines-build'
+    regionName: 'us-west-2'
+    scriptType: 'inline'
+    inlineScript: |
+      terraform apply tfplan
+    disableAutoCwd: true
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Infrastructure/AWS/environments/dev-1/us-west-2/service_tenant/'
+`
+}
+
+// HclReleaseDefinition HCL describing an AzDO release definition with agent jobs
+func HclReleaseDefinitionAgent(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
+	tasks := YamlReleaseJobTasks()
+	releaseDefinitionResource := fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
+
+data "azuredevops_agent_pool" "pool" {
+  name = "Azure Pipelines"
+}
+
+data "azuredevops_agent_queue" "queue" {
+	project_id    = azuredevops_project.project.id
+	name = "Azure Pipelines"
+}
+
+resource "azuredevops_release_definition" "release" {
+  project_id = azuredevops_project.project.id
+  name = "%s"
+  path = "%s"
+
+  stage {
+    name = "Stage 1"
+    owner_id = data.azuredevops_group.group.origin_id
+    variable_groups = []
+
+    job {
+      agent {
+        name = "Agent job 1"
+        timeout_in_minutes = 0
+        max_execution_time_in_minutes = 1
+        allow_scripts_to_access_oauth_token = false
+        skip_artifacts_download = false
+
+        agent_pool_hosted_azure_pipelines {
+          agent_pool_id = data.azuredevops_agent_queue.queue.id
+          agent_specification = "ubuntu-18.04"
+        }
+      }
+    }
+
+    deploy_step {
+    }
+
+    pre_deploy_approval {
+      approval {
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+      }
+    }
+
+    retention_policy {
+    }
+
+    pre_deploy_gate {
+    }
+
+    post_deploy_gate {
+    }
+  }
+}
+
+locals {
+  tasks = yamldecode(<<YAML
+%s
+YAML
+  )
+}
+
+`, releaseDefinitionName, escapedReleasePath, tasks)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
+}
+
+// HclReleaseDefinition HCL describing an AzDO release definition with deployment group jobs
+func HclReleaseDefinitionDeploymentGroup(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
+	releaseDefinitionResource := fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
+
+resource "azuredevops_release_definition" "release" {
+  project_id = azuredevops_project.project.id
+  name = "%s"
+  path = "%s"
+
+  stage {
+    name = "Stage 1"
+	owner_id = data.azuredevops_group.group.origin_id
+
+    deployment_group_job {
+      name = "Deployment group job 1"
+      deployment_group_id = 1619 // QueueID
+      //DeploymentHealthOption: OneAtATime
+      tags = ["deployment_group_job_1"]
+      timeout_in_minutes = 0
+      max_execution_time_in_minutes = 1
+      // download_artifact = {}
+      allow_scripts_to_access_oauth_token = true
+      condition = "succeedeed()"
+    }
+
+	deployment_group_job {
+      name = "Deployment group job 2"
+      deployment_group_id = 1619
+      tags = ["deployment_group_job_2"]
+      multiple { //DeploymentHealthOption: Custom
+        max_targets_in_parallel = 0 // HealthPercent
+      }
+      timeout_in_minutes = 0
+      max_execution_time_in_minutes = 1
+      // download_artifact = {}
+      allow_scripts_to_access_oauth_token = true
+      condition = "succeedeed()"
+    }
+
+    pre_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+        is_automated = true
+        rank = 1
+      }
+    }
+
+    retention_policy {
+      days_to_keep = 1
+      releases_to_keep = 1
+    }
+  }
+}`, releaseDefinitionName, escapedReleasePath)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
+}
+
+// HclReleaseDefinition HCL describing an AzDO build definition with agentless jobs
+func HclReleaseDefinitionAgentless(projectName string, releaseDefinitionName string, releasePath string) string {
+	projectResource := HclProjectResource(projectName)
+	escapedReleasePath := strings.ReplaceAll(releasePath, `\`, `\\`)
+	releaseDefinitionResource := fmt.Sprintf(`
+data "azuredevops_group" "group" {
+	project_id = azuredevops_project.project.id
+	name       = "Build Administrators"
+}
+
+resource "azuredevops_release_definition" "release" {
+  project_id = azuredevops_project.project.id
+  name = "%s"
+  path = "%s"
+
+  stage {
+    name = "Stage 1"
+	owner_id = data.azuredevops_group.group.origin_id
+
+	job {
+      agentless {
+      	name = "Agentless job 1"
+      
+      	max_execution_time_in_minutes = 1
+      	timeout_in_minutes = 0
+      	condition = "succeeded()"
+	  }
+	}
+	
+	job {
+      agentless {
+        name = "Agentless job 2"
+
+        multi_configuration {
+          multipliers = "OperatingSystem"
+        }
+	    max_execution_time_in_minutes = 1
+        timeout_in_minutes = 0
+        condition = "succeeded()"
+      }
+	}
+
+	deploy_step {
+	}
+
+    pre_deploy_approval {
+      approval {
+      }
+    }
+
+    post_deploy_approval {
+      approval {
+      }
+    }
+
+    retention_policy {
+      days_to_keep = 1
+      releases_to_keep = 1
+    }
+
+ 	pre_deploy_gate {
+	}
+
+    post_deploy_gate {
+	}
+  }
+}`, releaseDefinitionName, escapedReleasePath)
+	return fmt.Sprintf("%s\n%s", projectResource, releaseDefinitionResource)
 }
 
 func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {
