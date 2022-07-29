@@ -399,12 +399,36 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointAzureRMDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
+func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
+	serviceEndpointDataSource := fmt.Sprintf(`
+data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id = azuredevops_project.project.id
+  id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
+}
+`)
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
+}
+
+// HclServiceEndpointAzureRMDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
+func HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointName string) string {
+	serviceEndpointDataSource := fmt.Sprintf(`
+data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  depends_on            = [azuredevops_serviceendpoint_azurerm.serviceendpointrm]
+}
+`, serviceEndpointName)
+
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
+}
+
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
 func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
-  project_id             = azuredevops_project.project.id
-  service_endpoint_name  = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
   credentials {
     serviceprincipalid  = "%s"
     serviceprincipalkey = "%s"
@@ -431,7 +455,8 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   azurerm_spn_tenantid          = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
   azurerm_management_group_id   = "Microsoft_Azure_Demo_MG"
   azurerm_management_group_name = "Microsoft Azure Demo MG"
-}`, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
+}
+`, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
