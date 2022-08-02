@@ -89,7 +89,7 @@ func Provider() *schema.Provider {
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_build_definition":        build.DataBuildDefinition(),
+			"azuredevops_build_definition": build.DataBuildDefinition(),
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
 			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
 			"azuredevops_agent_queue":      taskagent.DataAgentQueue(),
