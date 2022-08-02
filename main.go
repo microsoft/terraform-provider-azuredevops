@@ -15,7 +15,8 @@ func main() {
 	flag.Parse()
 
 	plugin.Serve(&plugin.ServeOpts{
-		Debug: debug,
+		Debug:        debug,
+		ProviderAddr: "registry.terraform.io/microsoft/azuredevops",
 		ProviderFunc: func() *schema.Provider {
 			return azuredevops.Provider()
 		},

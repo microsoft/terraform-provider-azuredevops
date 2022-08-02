@@ -35,6 +35,7 @@ resource "azuredevops_build_folder" "example" {
 
 resource "azuredevops_build_folder_permissions" "example" {
   project_id = azuredevops_project.example.id
+  path       = "\\ExampleFolder"
   principal  = data.azuredevops_group.example-readers.id
 
   permissions = {
@@ -62,6 +63,7 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
 * `principal` - (Required) The **group** principal to assign the permissions.
+* `path` - (Required) The folder path to assign the permissions.
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`.
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 

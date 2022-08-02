@@ -140,5 +140,5 @@ func TestBuildFolder_Update_DoesNotSwallowError(t *testing.T) {
 		Times(1)
 
 	err := resourceBuildFolderUpdate(resourceData, clients)
-	require.Equal(t, "UpdateFolder() Failed", err.Error())
+	require.Contains(t, err.Error(),  "UpdateFolder() Failed")
 }

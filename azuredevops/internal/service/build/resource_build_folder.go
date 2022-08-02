@@ -3,8 +3,6 @@ package build
 import (
 	"fmt"
 	"log"
-
-	// "strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -18,7 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
-// ResourceBuildDefinition schema and implementation for build folder resource
+// ResourceBuildFolder schema and implementation for build folder resource
 func ResourceBuildFolder() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceBuildFolderCreate,
@@ -55,7 +53,7 @@ func resourceBuildFolderCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdBuildFolder, err := createBuildFolder(clients, path, projectID, description)
 	if err != nil {
-		return fmt.Errorf("error creating resource Build Folder: %+v", err)
+		return fmt.Errorf(" failed creating resource Build Folder, project ID: %s. Error: %+v", projectID, err)
 	}
 
 	flattenBuildFolder(d, createdBuildFolder, projectID)
@@ -99,7 +97,7 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 	path := d.Get("path").(string)
 	buildFolder, projectID, err := expandBuildFolder(d)
 	if err != nil {
-		return err
+		return fmt.Errorf(" failed to expand build folder configurations. Project ID: %s , Error: %+v", projectID, err)
 	}
 
 	updatedBuildFolder, err := clients.BuildClient.UpdateFolder(m.(*client.AggregatedClient).Ctx, build.UpdateFolderArgs{
@@ -109,7 +107,7 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update build folder.  Project ID: %s, Error: %+v ", projectID, err)
 	}
 
 	flattenBuildFolder(d, updatedBuildFolder, projectID)
@@ -148,18 +146,14 @@ func createBuildFolder(clients *client.AggregatedClient, path string, project st
 		return nil, err
 	}
 
-	projectReference := core.TeamProjectReference{
-		Id: &projectUuid,
-	}
-
-	var folder = build.Folder{
-		Description: &description,
-		Path:        &path,
-		Project:     &projectReference,
-	}
-
 	createdBuild, err := clients.BuildClient.CreateFolder(clients.Ctx, build.CreateFolderArgs{
-		Folder:  &folder,
+		Folder: &build.Folder{
+			Description: &description,
+			Path:        &path,
+			Project: &core.TeamProjectReference{
+				Id: &projectUuid,
+			},
+		},
 		Project: &project,
 		Path:    &path,
 	})

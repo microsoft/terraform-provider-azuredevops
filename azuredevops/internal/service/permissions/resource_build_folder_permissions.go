@@ -104,7 +104,7 @@ func createBuildFolderToken(d *schema.ResourceData, clients *client.AggregatedCl
 	})
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf(" failed to get the folder. Project ID: %s, path: %s. %+v", projectID, buildFolderPath, err)
 	}
 
 	Folder := (*buildFolders)[0]

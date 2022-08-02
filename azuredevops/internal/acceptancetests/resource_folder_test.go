@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestBuildFolder(t *testing.T) {
+func TestAccBuildFolder(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := testutils.HclBuildFolder(projectName, "\\test-folder", "Acceptance Test Folder")
 
