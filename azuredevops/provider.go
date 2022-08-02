@@ -89,7 +89,6 @@ func Provider() *schema.Provider {
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"azuredevops_build_definition": build.DataBuildDefinition(),
 			"azuredevops_agent_pool":       taskagent.DataAgentPool(),
 			"azuredevops_agent_pools":      taskagent.DataAgentPools(),
 			"azuredevops_agent_queue":      taskagent.DataAgentQueue(),
@@ -106,6 +105,7 @@ func Provider() *schema.Provider {
 			"azuredevops_teams":            core.DataTeams(),
 			"azuredevops_groups":           graph.DataGroups(),
 			"azuredevops_variable_group":   taskagent.DataVariableGroup(),
+			"azuredevops_serviceendpoint_azurerm": serviceendpoint.DataServiceEndpointAzureRM(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
