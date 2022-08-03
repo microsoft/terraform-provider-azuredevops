@@ -455,11 +455,26 @@ func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, for
 }
 
 func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
+	var err error
+	processTemplateName := ""
 	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
-	processTemplateName, err := lookupProcessTemplateName(clients, processTemplateID)
+	if len(processTemplateID) > 0 {
+		processTemplateName, err = lookupProcessTemplateName(clients, processTemplateID)
+		if err != nil {
+			return err
+		}
+	} else { // fallback to the organization default process
+		processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		for _, p := range *processes {
+			if *p.IsDefault == true {
+				processTemplateName = *p.Name
+				break
+			}
+		}
 	}
 
 	var currentFeatureStates *map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue
