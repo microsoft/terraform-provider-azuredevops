@@ -104,6 +104,7 @@ func Provider() *schema.Provider {
 			"azuredevops_groups":                  graph.DataGroups(),
 			"azuredevops_variable_group":          taskagent.DataVariableGroup(),
 			"azuredevops_serviceendpoint_azurerm": serviceendpoint.DataServiceEndpointAzureRM(),
+			"azuredevops_serviceendpoint_github":  serviceendpoint.DataServiceEndpointGithub(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
