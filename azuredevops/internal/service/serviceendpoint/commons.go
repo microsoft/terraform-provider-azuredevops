@@ -481,7 +481,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 
 		return serviceEndpoint, projectID, nil
 	}
-	return nil, nil, nil
+	return nil, projectID, nil
 }
 
 func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClient, serviceEndpointName string, projectID *uuid.UUID) (*serviceendpoint.ServiceEndpoint, error) {
