@@ -78,7 +78,6 @@ func ResourceProject() *schema.Resource {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 				Default:          "Agile",
 			},
@@ -416,10 +415,20 @@ func deleteProject(clients *client.AggregatedClient, id string, timeoutSeconds t
 
 // Convert internal Terraform data structure to an AzDO data structure
 func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, forCreate bool) (*core.TeamProject, error) {
-	workItemTemplate := d.Get("work_item_template").(string)
-	processTemplateID, err := lookupProcessTemplateID(clients, workItemTemplate)
-	if err != nil {
-		return nil, err
+	var processTemplateID string
+	var err error
+	workItemTemplate := strings.TrimSpace(d.Get("work_item_template").(string))
+	if len(workItemTemplate) > 0 {
+		processTemplateID, err = lookupProcessTemplateID(clients, workItemTemplate)
+		if err != nil {
+			return nil, err
+		}
+	} else { // use the organization default template if an empty string is set
+		processTemplateUUID, err := getDefaultProcessTemplateID(clients)
+		if err != nil {
+			return nil, err
+		}
+		processTemplateID = processTemplateUUID.String()
 	}
 
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
@@ -464,16 +473,9 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 			return err
 		}
 	} else { // fallback to the organization default process
-		processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+		processTemplateName, err = getDefaultProcessTemplateName(clients)
 		if err != nil {
 			return err
-		}
-
-		for _, p := range *processes {
-			if *p.IsDefault == true {
-				processTemplateName = *p.Name
-				break
-			}
 		}
 	}
 
@@ -498,6 +500,36 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 	d.Set("features", currentFeatureStates)
 
 	return nil
+}
+
+func getDefaultProcessTemplateID(clients *client.AggregatedClient) (*uuid.UUID, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range *processes {
+		if *p.IsDefault == true {
+			return p.Id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No default process template found")
+}
+
+func getDefaultProcessTemplateName(clients *client.AggregatedClient) (string, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, p := range *processes {
+		if *p.IsDefault == true {
+			return *p.Name, nil
+		}
+	}
+
+	return "", fmt.Errorf("No default process template found")
 }
 
 // given a process template name, get the process template ID
