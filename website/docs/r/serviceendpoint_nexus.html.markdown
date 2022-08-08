@@ -8,6 +8,7 @@ description: |-
 # azuredevops_serviceendpoint_nexus
 
 Manages a Nexus IQ service endpoint within Azure DevOps, which can be used as a resource in YAML pipelines to connect to a Nexus IQ instance.
+Nexus IQ is not supported by default, to manage a nexus service connection resource, it is necessary to install the nexus extension in Azure DevOps.
 
 ## Example Usage
 
