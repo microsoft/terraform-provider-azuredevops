@@ -123,10 +123,9 @@ func expandServiceEndpointMaven(d *schema.ResourceData) (*serviceendpoint.Servic
 		Scheme:     &authScheme,
 	}
 
-	data := map[string]string{}
-	data["RepositoryId"] = d.Get("repository_id").(string)
-
-	serviceEndpoint.Data = &data
+	serviceEndpoint.Data = &map[string]string{
+		"RepositoryId": d.Get("repository_id").(string),
+	}
 
 	return serviceEndpoint, projectID, nil
 }
