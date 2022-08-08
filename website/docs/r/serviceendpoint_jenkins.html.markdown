@@ -55,7 +55,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Import
 
-Service Connection Jenkins can be imported using the `resource id`, e.g.
+Service Connection Jenkins can be imported using the `projectId/id` or or `projectName/id`, e.g.
 
 ```shell
 terraform import azuredevops_serviceendpoint_jenkins.example 00000000-0000-0000-0000-000000000000
