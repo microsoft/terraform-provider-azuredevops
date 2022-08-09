@@ -13,9 +13,9 @@ import (
 func ResourceServiceEndpointCustom() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointCustom, expandServiceEndpointCustom)
 	r.Schema["service_type"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The Service Type of the Custom service connection.",
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The Service Type of the Custom service connection.",
 	}
 	r.Schema["server_url"] = &schema.Schema{
 		Type:         schema.TypeString,
