@@ -1,0 +1,31 @@
+trigger:
+  branches:
+    include:
+      - 'main'
+
+  paths:
+    exclude:
+      - '/**/*.md'
+      - '/**/*.markdown'
+      - '/**/*.erb'
+
+pr:
+  branches:
+    include:
+      - '*'
+
+  paths:
+    exclude:
+      - '/**/*.md'
+
+jobs:
+  - template: ./ci.yml
+    parameters:
+      unitTest: true
+      goVersions:
+        - value: '1.18.1'
+          ymlSafeName: '1_18_1'
+
+      vmImages:
+        - value: 'ubuntu-20.04'
+          ymlSafeName: ubuntu_20_04
