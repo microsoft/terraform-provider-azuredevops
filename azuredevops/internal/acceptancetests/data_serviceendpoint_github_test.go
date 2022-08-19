@@ -29,7 +29,7 @@ func TestAccServiceEndpointGitHub_with_serviceEndpointID_DataSource(t *testing.T
 				Config: createServiceEndpointGitHubWithServiceEndpointIDData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointGitHubName),
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
 				),
 			},
 		},
@@ -53,7 +53,7 @@ func TestAccServiceEndpointGitHub_with_serviceEndpointName_DataSource(t *testing
 				Config: createServiceEndpointGitHubWithServiceEndpointNameData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointGitHubName),
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
 				),
 			},
 		},

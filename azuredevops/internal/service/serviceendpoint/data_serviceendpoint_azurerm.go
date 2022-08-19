@@ -22,6 +22,7 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 	}
 	if serviceEndpoint != nil {
 		(*serviceEndpoint.Data)["creationMode"] = ""
+		d.Set("service_endpoint_id", serviceEndpoint.Id.String())
 		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
 		return nil
 	}

@@ -256,7 +256,7 @@ func HclServiceEndpointGitHubDataSourceWithServiceEndpointID() string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_github" "serviceendpoint" {
   project_id = azuredevops_project.project.id
-  id         = azuredevops_serviceendpoint_github.serviceendpoint.id
+  service_endpoint_id         = azuredevops_serviceendpoint_github.serviceendpoint.id
 }
 `)
 	return fmt.Sprintf("%s", serviceEndpointDataSource)
@@ -428,7 +428,7 @@ func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id = azuredevops_project.project.id
-  id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
+  service_endpoint_id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
 }
 `)
 	return fmt.Sprintf("%s", serviceEndpointDataSource)

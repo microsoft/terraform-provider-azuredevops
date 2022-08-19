@@ -17,6 +17,7 @@ func dataSourceServiceEndpointGithubRead(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 	if serviceEndpoint != nil {
+		d.Set("service_endpoint_id", serviceEndpoint.Id.String())
 		doBaseFlattening(d, serviceEndpoint, projectID)
 		return nil
 	}

@@ -395,16 +395,16 @@ func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "id"},
+				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
-			"id": {
+			"service_endpoint_id": {
 				Description:  "The ID of the serviceendpoint",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "id"},
+				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
 				ValidateFunc: validation.IsUUID,
 			},
 
@@ -443,7 +443,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 
 	projectID = &parsedProjectID
 
-	if serviceEndpointIDString, ok := d.GetOk("id"); ok {
+	if serviceEndpointIDString, ok := d.GetOk("service_endpoint_id"); ok {
 		var serviceEndpointID *uuid.UUID
 		parsedServiceEndpointID, err := uuid.Parse(serviceEndpointIDString.(string))
 		if err != nil {
