@@ -251,6 +251,30 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointGitHubDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
+func HclServiceEndpointGitHubDataSourceWithServiceEndpointID() string {
+	serviceEndpointDataSource := fmt.Sprintf(`
+data "azuredevops_serviceendpoint_github" "serviceendpoint" {
+  project_id = azuredevops_project.project.id
+  service_endpoint_id         = azuredevops_serviceendpoint_github.serviceendpoint.id
+}
+`)
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
+}
+
+// HclServiceEndpointGitHubDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
+func HclServiceEndpointGitHubDataSourceWithServiceEndpointName(serviceEndpointName string) string {
+	serviceEndpointDataSource := fmt.Sprintf(`
+data "azuredevops_serviceendpoint_github" "serviceendpoint" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  depends_on            = [azuredevops_serviceendpoint_github.serviceendpoint]
+}
+`, serviceEndpointName)
+
+	return fmt.Sprintf("%s", serviceEndpointDataSource)
+}
+
 func HclServiceEndpointGitHubEnterpriseResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
@@ -404,7 +428,7 @@ func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
 	serviceEndpointDataSource := fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id = azuredevops_project.project.id
-  id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
+  service_endpoint_id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
 }
 `)
 	return fmt.Sprintf("%s", serviceEndpointDataSource)

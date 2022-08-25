@@ -381,3 +381,130 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 		return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, *projectID, serviceEndpoint.OperationStatus)
 	}
 }
+
+func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource {
+	return &schema.Resource{
+		Read: dataSourceReadFunc,
+		Schema: map[string]*schema.Schema{
+			"project_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+
+			"service_endpoint_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+
+			"service_endpoint_id": {
+				Description:  "The ID of the serviceendpoint",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+				ValidateFunc: validation.IsUUID,
+			},
+
+			"authorization": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
+			"description": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func dataSourceMakeUnprotectedComputedSchema(r *schema.Resource, keyName string) {
+	r.Schema[keyName] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+}
+
+func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+	clients := m.(*client.AggregatedClient)
+
+	var projectID *uuid.UUID
+	projectIDString := d.Get("project_id").(string)
+	parsedProjectID, err := uuid.Parse(projectIDString)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error parsing projectID from the Terraform data source declaration: %v", err)
+	}
+
+	projectID = &parsedProjectID
+
+	if serviceEndpointIDString, ok := d.GetOk("service_endpoint_id"); ok {
+		var serviceEndpointID *uuid.UUID
+		parsedServiceEndpointID, err := uuid.Parse(serviceEndpointIDString.(string))
+		if err != nil {
+			return nil, nil, fmt.Errorf("Error parsing serviceEndpointID from the Terraform data source declaration: %v", err)
+		}
+		serviceEndpointID = &parsedServiceEndpointID
+
+		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
+			clients.Ctx,
+			serviceendpoint.GetServiceEndpointDetailsArgs{
+				EndpointId: serviceEndpointID,
+				Project:    converter.String(projectID.String()),
+			},
+		)
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil, projectID, nil
+			}
+			return nil, projectID, fmt.Errorf("Error looking up service endpoint with ID (%v) and projectID (%v): %v", serviceEndpointID, projectID, err)
+		}
+
+		return serviceEndpoint, projectID, nil
+	}
+
+	if serviceEndpointName, ok := d.GetOk("service_endpoint_name"); ok {
+		serviceEndpoint, err := dataSourceGetServiceEndpointByNameAndProject(clients, serviceEndpointName.(string), projectID)
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil, projectID, nil
+			}
+			return nil, projectID, fmt.Errorf("Error looking up service endpoint with name (%v) and projectID (%v): %v", serviceEndpointName, projectID, err)
+		}
+
+		return serviceEndpoint, projectID, nil
+	}
+	return nil, projectID, nil
+}
+
+func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClient, serviceEndpointName string, projectID *uuid.UUID) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpointNameList := &[]string{serviceEndpointName}
+
+	serviceEndpoints, err := clients.ServiceEndpointClient.GetServiceEndpointsByNames(
+		clients.Ctx,
+		serviceendpoint.GetServiceEndpointsByNamesArgs{
+			Project:       converter.String(projectID.String()),
+			EndpointNames: serviceEndpointNameList,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(*serviceEndpoints) == 0 {
+		return nil, fmt.Errorf("%v not found!", serviceEndpointName)
+	}
+
+	if len(*serviceEndpoints) > 1 {
+		return nil, fmt.Errorf("%v returns more than one serviceEndpoint!", serviceEndpointName)
+	}
+
+	return &(*serviceEndpoints)[0], nil
+}
