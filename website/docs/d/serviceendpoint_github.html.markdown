@@ -19,8 +19,8 @@ data "azuredevops_project" "sample" {
 }
 
 data "azuredevops_serviceendpoint_github" "serviceendpoint" {
-  project_id = data.azuredevops_project.sample.id
-  service_endpoint_id         = "00000000-0000-0000-0000-000000000000"
+  project_id          = data.azuredevops_project.sample.id
+  service_endpoint_id = "00000000-0000-0000-0000-000000000000"
 }
 
 output "service_endpoint_name" {
