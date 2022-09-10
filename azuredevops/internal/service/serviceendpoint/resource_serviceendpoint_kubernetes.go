@@ -88,6 +88,8 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 			"kube_config": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", nil),
 				Description: "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.",
 			},
 			"cluster_context": {
@@ -103,10 +105,11 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 			},
 		},
 	}
-	makeProtectedSchema(resourceElemSchema, "kube_config", "AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.")
 	r.Schema[resourceBlockKubeconfig] = &schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
+		MinItems:    1,
+		MaxItems:    1,
 		Description: "'Kubeconfig'-type of configuration",
 		Elem:        resourceElemSchema,
 	}
@@ -285,13 +288,11 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		kubeconfigSet := d.Get("kubeconfig").(*schema.Set).List()
 
 		configuration := kubeconfigSet[0].(map[string]interface{})
-		newHashKubeconfig, hashKeyKubeconfig := tfhelper.HelpFlattenSecretNested(d, resourceBlockKubeconfig, configuration, "kube_config")
 		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
 		kubeconfig = map[string]interface{}{
 			"kube_config":            configuration["kube_config"].(string),
 			"cluster_context":        (*serviceEndpoint.Authorization.Parameters)["clusterContext"],
 			"accept_untrusted_certs": acceptUntrustedCerts,
-			hashKeyKubeconfig:        newHashKubeconfig,
 		}
 
 		kubeconfigList := make([]map[string]interface{}, 1)
