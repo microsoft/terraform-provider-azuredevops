@@ -95,6 +95,7 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 			"cluster_context": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Context of your cluster",
 			},
 			"accept_untrusted_certs": {
@@ -213,7 +214,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 				errResult := fmt.Errorf("kube_config contains an invalid YAML: %s", err)
 				return nil, nil, errResult
 			}
-			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[interface{}]interface{})
+			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[string]interface{})
 			clusterContextInput = clusterContextInputList["name"].(string)
 		}
 
