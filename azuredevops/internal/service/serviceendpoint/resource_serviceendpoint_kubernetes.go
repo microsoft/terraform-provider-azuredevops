@@ -106,7 +106,7 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 		},
 	}
 	r.Schema[resourceBlockKubeconfig] = &schema.Schema{
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Optional:    true,
 		MinItems:    1,
 		MaxItems:    1,
@@ -201,7 +201,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
-		configurationRaw := d.Get(resourceBlockKubeconfig).(*schema.Set).List()
+		configurationRaw := d.Get(resourceBlockKubeconfig).([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		clusterContextInput := configuration["cluster_context"].(string)
@@ -285,7 +285,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set(resourceBlockAzSubscription, configItemList)
 	case "Kubeconfig":
 		var kubeconfig map[string]interface{}
-		kubeconfigSet := d.Get("kubeconfig").(*schema.Set).List()
+		kubeconfigSet := d.Get("kubeconfig").([]interface{})
 
 		configuration := kubeconfigSet[0].(map[string]interface{})
 		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
