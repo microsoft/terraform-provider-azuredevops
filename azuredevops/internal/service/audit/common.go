@@ -2,8 +2,11 @@ package audit
 
 import (
 	"fmt"
+	"log"
 	"strconv"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/audit"
@@ -27,6 +30,12 @@ func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 		Delete: genAuditStreamDeleteFunc(),
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"days_to_backfill": {
@@ -82,7 +91,7 @@ func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *
 		clients := m.(*client.AggregatedClient)
 		auditStream, daysToBackfill, enabled := expandFunc(d)
 
-		createdAuditStream, err := createAuditStream(clients, auditStream, daysToBackfill)
+		createdAuditStream, err := createAuditStream(clients, auditStream, daysToBackfill, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf("Error creating audit stream in Azure DevOps: %+v", err)
 		}
@@ -164,13 +173,40 @@ func genAuditStreamDeleteFunc() schema.DeleteFunc {
 	}
 }
 
-func createAuditStream(clients *client.AggregatedClient, stream *audit.AuditStream, daysToBackfill *int) (*audit.AuditStream, error) {
+func createAuditStream(clients *client.AggregatedClient, stream *audit.AuditStream, daysToBackfill *int, timeoutSeconds time.Duration) (*audit.AuditStream, error) {
 	createdAuditStream, err := clients.AuditClient.CreateStream(
 		clients.Ctx,
 		audit.CreateStreamArgs{
 			Stream:         stream,
 			DaysToBackfill: daysToBackfill,
 		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending: []string{
+			string(audit.AuditStreamStatusValues.Backfilling),
+		},
+		Target: []string{
+			string(audit.AuditStreamStatusValues.Enabled),
+			string(audit.AuditStreamStatusValues.DisabledByUser),
+			string(audit.AuditStreamStatusValues.DisabledBySystem),
+		},
+		Refresh: readStreamStatus(clients, *createdAuditStream.Id),
+		Timeout: timeoutSeconds,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		// if delErr := deleteServiceEndpoint(clients, projectID, createdServiceEndpoint.Id, d.Timeout(schema.TimeoutDelete)); delErr != nil {
+		// 	log.Printf("[DEBUG] Failed to delete the failed service endpoint: %v ", delErr)
+		// }
+		return nil, fmt.Errorf(" waiting for auditstream ready. %v ", err)
+	}
 
 	return createdAuditStream, err
 }
@@ -221,5 +257,21 @@ func setStreamStatusState(clients *client.AggregatedClient, stream *audit.AuditS
 		return updatedAuditStream, err
 	} else {
 		return stream, nil
+	}
+}
+
+func readStreamStatus(clients *client.AggregatedClient, streamId int) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		auditStream, err := readAuditStream(clients, streamId)
+
+		if err != nil {
+			return nil, string(audit.AuditStreamStatusValues.Unknown), err
+		}
+
+		if *auditStream.Status != audit.AuditStreamStatusValues.Enabled {
+			log.Printf("[DEBUG] Waiting for audit stream creation. Operation result %v", auditStream.Status)
+		}
+
+		return auditStream, string(*auditStream.Status), nil
 	}
 }
