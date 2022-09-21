@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
-	testing "github.com/mitchellh/go-testing-interface"
+	"github.com/mitchellh/go-testing-interface"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/internal/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/internal/plugintest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testStepNewImportState(ctx context.Context, t testing.T, c TestCase, helper *plugintest.Helper, wd *plugintest.WorkingDir, step TestStep, cfg string) error {
+func testStepNewImportState(ctx context.Context, t testing.T, helper *plugintest.Helper, wd *plugintest.WorkingDir, step TestStep, cfg string, providers *providerFactories) error {
 	t.Helper()
 
 	spewConf := spew.NewDefaultConfig()
@@ -33,10 +33,7 @@ func testStepNewImportState(ctx context.Context, t testing.T, c TestCase, helper
 			return err
 		}
 		return nil
-	}, wd, providerFactories{
-		legacy:  c.ProviderFactories,
-		protov5: c.ProtoV5ProviderFactories,
-		protov6: c.ProtoV6ProviderFactories})
+	}, wd, providers)
 	if err != nil {
 		t.Fatalf("Error getting state: %s", err)
 	}
@@ -89,8 +86,17 @@ func testStepNewImportState(ctx context.Context, t testing.T, c TestCase, helper
 			t.Fatal("Cannot import state with no specified config")
 		}
 	}
-	importWd := helper.RequireNewWorkingDir(ctx, t)
-	defer importWd.Close()
+
+	var importWd *plugintest.WorkingDir
+
+	// Use the same working directory to persist the state from import
+	if step.ImportStatePersist {
+		importWd = wd
+	} else {
+		importWd = helper.RequireNewWorkingDir(ctx, t)
+		defer importWd.Close()
+	}
+
 	err = importWd.SetConfig(ctx, step.Config)
 	if err != nil {
 		t.Fatalf("Error setting test config: %s", err)
@@ -98,22 +104,18 @@ func testStepNewImportState(ctx context.Context, t testing.T, c TestCase, helper
 
 	logging.HelperResourceDebug(ctx, "Running Terraform CLI init and import")
 
-	err = runProviderCommand(ctx, t, func() error {
-		return importWd.Init(ctx)
-	}, importWd, providerFactories{
-		legacy:  c.ProviderFactories,
-		protov5: c.ProtoV5ProviderFactories,
-		protov6: c.ProtoV6ProviderFactories})
-	if err != nil {
-		t.Fatalf("Error running init: %s", err)
+	if !step.ImportStatePersist {
+		err = runProviderCommand(ctx, t, func() error {
+			return importWd.Init(ctx)
+		}, importWd, providers)
+		if err != nil {
+			t.Fatalf("Error running init: %s", err)
+		}
 	}
 
 	err = runProviderCommand(ctx, t, func() error {
 		return importWd.Import(ctx, step.ResourceName, importId)
-	}, importWd, providerFactories{
-		legacy:  c.ProviderFactories,
-		protov5: c.ProtoV5ProviderFactories,
-		protov6: c.ProtoV6ProviderFactories})
+	}, importWd, providers)
 	if err != nil {
 		return err
 	}
@@ -125,10 +127,7 @@ func testStepNewImportState(ctx context.Context, t testing.T, c TestCase, helper
 			return err
 		}
 		return nil
-	}, importWd, providerFactories{
-		legacy:  c.ProviderFactories,
-		protov5: c.ProtoV5ProviderFactories,
-		protov6: c.ProtoV6ProviderFactories})
+	}, importWd, providers)
 	if err != nil {
 		t.Fatalf("Error getting state: %s", err)
 	}
