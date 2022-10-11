@@ -37,6 +37,7 @@ func TestAccTeam_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
 					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 			{
@@ -47,7 +48,7 @@ func TestAccTeam_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "name", teamName2),
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription2),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
-					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 		},
@@ -113,6 +114,7 @@ data "azuredevops_group" "builtin_project_readers" {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttr(tfNode, "administrators.#", "1"),
 					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 			{
@@ -124,6 +126,7 @@ data "azuredevops_group" "builtin_project_readers" {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttr(tfNode, "administrators.#", "2"),
 					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 			{
@@ -199,6 +202,7 @@ data "azuredevops_group" "builtin_project_readers" {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 			{
@@ -210,6 +214,8 @@ data "azuredevops_group" "builtin_project_readers" {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
 					resource.TestCheckResourceAttr(tfNode, "members.#", "2"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 			{
@@ -221,6 +227,7 @@ data "azuredevops_group" "builtin_project_readers" {
 					resource.TestCheckResourceAttr(tfNode, "description", teamDescription),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 		},

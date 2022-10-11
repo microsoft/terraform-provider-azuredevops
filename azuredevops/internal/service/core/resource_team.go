@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
@@ -65,6 +66,10 @@ func ResourceTeam() *schema.Resource {
 				Computed:   true,
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Set:        schema.HashString,
+			},
+			"descriptor": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -171,6 +176,15 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	flattenTeam(d, team, members, administrators)
+
+	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
+		StorageKey: team.Id,
+	})
+	if err != nil {
+		return fmt.Errorf(" get team descriptor. Error: %+v", err)
+	}
+
+	d.Set("descriptor", descriptor.Value)
 	return nil
 }
 
