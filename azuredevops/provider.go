@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project_features":                       core.ResourceProjectFeatures(),
 			"azuredevops_project_pipeline_settings":              core.ResourceProjectPipelineSettings(),
 			"azuredevops_variable_group":                         taskagent.ResourceVariableGroup(),
+			"azuredevops_variable_group_values":                  taskagent.ResourceVariableGroupVariables(),
 			"azuredevops_repository_policy_author_email_pattern": repository.ResourceRepositoryPolicyAuthorEmailPatterns(),
 			"azuredevops_repository_policy_file_path_pattern":    repository.ResourceRepositoryFilePathPatterns(),
 			"azuredevops_repository_policy_case_enforcement":     repository.ResourceRepositoryEnforceConsistentCase(),

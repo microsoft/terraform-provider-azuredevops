@@ -21,6 +21,72 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+var config = `data "azuredevops_project" "example" {
+  name = "ADDTest"
+}
+
+
+resource "azuredevops_variable_group" "example" {
+  project_id   = data.azuredevops_project.example.id
+  name         = "Example Variable Group"
+  description  = "Example Variable Group Description"
+  allow_access = true
+
+  variable {
+    name  = "key1"
+  }
+
+  lifecycle {
+    ignore_changes = [variable]
+  }
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id            = data.azuredevops_project.example.id
+  service_endpoint_name = "Example AzureRM"
+  description           = "Managed by Terraform"
+  credentials {
+    serviceprincipalid  = "52b594f4-8ebf-4371-8e93-a1fdeb9822fb"
+    serviceprincipalkey = "Hl48Q~MEW8tBfM3YjJgDLXdvPk8cY3rTsRfLycP3"
+  }
+  azurerm_spn_tenantid      = "8c08a505-9ab1-4f32-910c-8a8639e53c4f"
+  azurerm_subscription_id   = "e393adb3-b5be-4789-bdc9-848367f0d152"
+  azurerm_subscription_name = "Visual Studio Enterprise"
+}
+
+resource "azuredevops_variable_group_values" "variables" {
+  project_id        = data.azuredevops_project.example.id
+  variable_group_id = azuredevops_variable_group.example.id
+
+  key_vault {
+    name                = "xz-ado-test-kv"
+    service_endpoint_id = azuredevops_serviceendpoint_azurerm.example.id
+  }
+
+  variable {
+    name = "var04"
+  }
+
+  variable {
+    name = "var05"
+  }
+}`
+
+func TestAccVariableGroup_DDDD(t *testing.T) {
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
 func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 

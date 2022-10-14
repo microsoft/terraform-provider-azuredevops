@@ -238,7 +238,7 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 	}
 }
 
-//Get real project ID
+// GetRealProjectId Get real project ID
 func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
 	//If request params is project name, try get the project ID
 	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {
@@ -262,6 +262,17 @@ func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) 
 // If no such map is found, `nil` is returned
 func FindMapInSetWithGivenKeyValue(d *schema.ResourceData, setName string, keyName string, keyValue interface{}) map[string]interface{} {
 	for _, value := range d.Get(setName).(*schema.Set).List() {
+		valueAsMap := value.(map[string]interface{})
+		// Note: casing matters here so we will use `==` over `strings.EqualFold`
+		if valueAsMap[keyName] == keyValue {
+			return valueAsMap
+		}
+	}
+	return nil
+}
+
+func FindMapInListWithGivenKeyValue(d *schema.ResourceData, setName string, keyName string, keyValue interface{}) map[string]interface{} {
+	for _, value := range d.Get(setName).([]interface{}) {
 		valueAsMap := value.(map[string]interface{})
 		// Note: casing matters here so we will use `==` over `strings.EqualFold`
 		if valueAsMap[keyName] == keyValue {

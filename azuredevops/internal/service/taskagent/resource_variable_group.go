@@ -40,7 +40,7 @@ const (
 const (
 	azureKeyVaultType                         = "AzureKeyVault"
 	invalidVariableGroupIDErrorMessageFormat  = "Error parsing the variable group ID from the Terraform resource data: %v"
-	flatteningVariableGroupErrorMessageFormat = "Error flattening variable group: %v"
+	flatteningVariableGroupErrorMessageFormat = "Error flattening variable group: %+v"
 	expandingVariableGroupErrorMessageFormat  = "Expanding variable group resource data: %+v"
 )
 
@@ -95,7 +95,8 @@ func ResourceVariableGroup() *schema.Resource {
 			},
 			vgVariable: {
 				Type:     schema.TypeSet,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -140,6 +141,7 @@ func ResourceVariableGroup() *schema.Resource {
 			vgKeyVault: {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
