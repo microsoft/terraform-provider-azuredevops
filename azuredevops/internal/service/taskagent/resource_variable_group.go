@@ -530,7 +530,7 @@ func flattenKeyVault(d *schema.ResourceData, variableGroup *v5taskagent.Variable
 	}}
 
 	keyVaultRaw := d.Get("key_vault").([]interface{})
-	if len(keyVault) == 1 {
+	if len(keyVaultRaw) == 1 {
 		kvConfigures := keyVaultRaw[0].(map[string]interface{})
 		keyVault[0]["search_depth"] = kvConfigures["search_depth"].(int)
 	}
