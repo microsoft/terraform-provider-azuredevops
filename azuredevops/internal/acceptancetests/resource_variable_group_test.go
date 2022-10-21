@@ -90,10 +90,11 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 				),
 			}, {
 				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
-				ResourceName:      tfVarGroupNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            tfVarGroupNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key_vault.0.search_depth"},
 			},
 		},
 	})
