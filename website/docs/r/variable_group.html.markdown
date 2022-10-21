@@ -97,6 +97,7 @@ The following arguments are supported:
 - `description` - (Optional) The description of the Variable Group.
 - `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
 - `variable` - (Optional) One or more `variable` blocks as documented below.
+- `key_vault` -(Optional) A list of `key_vault` blocks as documented below.
 
 A `variable` block supports the following:
 
@@ -104,6 +105,11 @@ A `variable` block supports the following:
 - `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
 - `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
 - `is_secret` - (Optional) A boolean flag describing if the variable value is sensitive. Defaults to `false`.
+
+A `key_vault` block supports the following:
+
+- `name` - The name of the Azure key vault to link secrets from as variables.
+- `service_endpoint_id` - The id of the Azure subscription endpoint to access the key vault.
 
 ## Attributes Reference
 
