@@ -110,6 +110,7 @@ A `key_vault` block supports the following:
 
 - `name` - The name of the Azure key vault to link secrets from as variables.
 - `service_endpoint_id` - The id of the Azure subscription endpoint to access the key vault.
+- `search_depth` - Set the Azure Key Vault Secret search depth. Defaults to `20`. 
 
 ## Attributes Reference
 
