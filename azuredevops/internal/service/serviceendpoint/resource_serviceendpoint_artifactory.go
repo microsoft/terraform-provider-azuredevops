@@ -140,11 +140,11 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 		auth := make(map[string]interface{})
 		if x, ok := d.GetOk("authentication_token"); ok {
-			authList := x.([]interface{})[0].(map[string]interface{})
-			if len(authList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
+			authMap := x.([]interface{})[0].(map[string]interface{})
+			if len(authMap) > 0 {
+				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authMap, "token")
 				auth[hashKey] = newHash
-				auth["token"] = authList["token"]
+				auth["token"] = authMap["token"]
 			}
 		}
 		d.Set("authentication_token", []interface{}{auth})
