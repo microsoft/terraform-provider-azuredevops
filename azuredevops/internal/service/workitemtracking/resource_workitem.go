@@ -40,6 +40,12 @@ func ResourceWorkItem() *schema.Resource {
 				ForceNew:     true,
 				Description:  "Type of the Work Item",
 			},
+			"state": {
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Optional:     true,
+				Description:  "state of the Ticket",
+			},
 			"custom_fields": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -55,6 +61,7 @@ func ResourceWorkItemCreateOrUpdate(d *schema.ResourceData, m interface{}) error
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project").(string)
 	workItemType := d.Get("type").(string)
+	state := d.Get("state").(string)
 
 	title := d.Get("title").(string)
 	var operations []webapi.JsonPatchOperation
@@ -64,6 +71,14 @@ func ResourceWorkItemCreateOrUpdate(d *schema.ResourceData, m interface{}) error
 		Path:  converter.String("/fields/System.Title"),
 		Value: title,
 	})
+	if state != "" {
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &webapi.OperationValues.Add,
+			From:  nil,
+			Path:  converter.String("/fields/System.State"),
+			Value: state,
+		})
+	}
 
 	args := workitemtracking.CreateWorkItemArgs{
 		Project:  &project,
@@ -112,5 +127,15 @@ func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func mapSystemFields(d *schema.ResourceData, m *map[string]interface{}) {
-	d.Set("title", "TestTitle")
+	biMap := map[string]string{
+		"System.State": "state",
+		"System.Title": "title",
+	}
+
+	for key, value := range *m {
+		v, ok := biMap[key]
+		if ok {
+			d.Set(v, value)
+		}
+	}
 }

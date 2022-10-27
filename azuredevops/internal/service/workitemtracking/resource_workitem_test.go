@@ -15,14 +15,15 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 	r := ResourceWorkItem()
 	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{})
 	input := map[string]interface{}{
-		"System.State":      "To Do",
-		"System.Title":      "TestTitle",
-		"instance_protocol": "http",
-		"lb_protocol":       "http",
+		"System.State":    "To Do",
+		"System.Title":    "TestTitle",
+		"Custom.SomeName": "SomeValue",
 	}
 	mapSystemFields(d, &input)
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
+	require.Equal(t, "To Do", d.Get("state").(string))
+	require.Equal(t, "SomeValue", d.Get("custom_fields").(string))
 	//if !reflect.DeepEqual(out, c.expected) {
 	//   t.Fatalf("Error matching output and expected: %#v vs %#v", out, c.expected)
 	//}
