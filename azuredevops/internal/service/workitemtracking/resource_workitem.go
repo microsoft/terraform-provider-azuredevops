@@ -36,8 +36,9 @@ func ResourceWorkItem() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Optional:     true,
+				Optional:     false,
 				ForceNew:     true,
+				Required:     true,
 				Description:  "Type of the Work Item",
 			},
 			"state": {
@@ -47,10 +48,12 @@ func ResourceWorkItem() *schema.Resource {
 				Description:  "state of the Ticket",
 			},
 			"custom_fields": {
-				Type:         schema.TypeString,
+				Type:          schema.TypeMap,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
-				ForceNew:     true,
+				Elem: schema.Schema{
+					Type: schema.TypeString,
+				  },
 			},
 		},
 	}

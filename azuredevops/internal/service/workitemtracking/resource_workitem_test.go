@@ -21,9 +21,11 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 	}
 	mapSystemFields(d, &input)
 
+	custom_fields := d.Get("custom_fields").(map[string]string)
+
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
-	require.Equal(t, "SomeValue", d.Get("custom_fields").(string))
+	require.Equal(t, "SomeValue", custom_fields["SomeName"])
 	//if !reflect.DeepEqual(out, c.expected) {
 	//   t.Fatalf("Error matching output and expected: %#v vs %#v", out, c.expected)
 	//}
