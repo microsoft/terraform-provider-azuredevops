@@ -71,6 +71,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_environment",
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
+		"azuredevops_workitem",
 	}
 
 	resources := Provider().ResourcesMap
