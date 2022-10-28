@@ -27,7 +27,6 @@ func ResourceWorkItem() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Required:     true,
 				Optional:     false,
-				ForceNew:     true,
 			},
 			"project": {
 				Type:         schema.TypeString,
@@ -110,10 +109,12 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project").(string)
+	id, _ := strconv.Atoi(d.Id())
 
 	operations := GetPatchOperations(d)
 
 	args := workitemtracking.UpdateWorkItemArgs{
+		Id:       &id,
 		Project:  &project,
 		Document: &operations,
 	}
