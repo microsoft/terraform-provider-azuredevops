@@ -17,9 +17,9 @@ import (
 // ResourceWorkItem schema and implementation for project workitem ressource
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceWorkItemCreateOrUpdate,
+		Create: ResourceWorkItemCreate,
 		Read:   ResourceWorkItemRead,
-		Update: ResourceWorkItemCreateOrUpdate,
+		Update: ResourceWorkItemUpdate,
 		Delete: ResourceWorkItemDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
@@ -67,8 +67,8 @@ var systemFieldMapping = map[string]string{
 	"System.WorkItemType": "type",
 }
 
-// ResourceWorkItemCreateOrUpdate create or update workitem
-func ResourceWorkItemCreateOrUpdate(d *schema.ResourceData, m interface{}) error {
+// ResourceWorkItemCreateOrUpdate create workitem
+func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project").(string)
 	workItemType := d.Get("type").(string)
@@ -108,6 +108,30 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+// ResourceWorkItemUpdate update a workitem
+func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	project := d.Get("project").(string)
+	workItemType := d.Get("type").(string)
+
+	var operations []webapi.JsonPatchOperation
+	operations = SetSystemFields(d, operations)
+	operations = setCustomFields(d, operations)
+
+	args := workitemtracking.CreateWorkItemArgs{
+		Project:  &project,
+		Type:     &workItemType,
+		Document: &operations,
+	}
+	workitem, err := clients.WorkItemTrackingClient.CreateWorkItem(clients.Ctx, args)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(fmt.Sprintf("%d", *workitem.Id))
+	return ResourceWorkItemRead(d, m)
+}
+
 // ResourceWorkItemDelete remove workitem
 func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
@@ -124,7 +148,7 @@ func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func setCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
-	custom_fields := d.Get("custom_fields").(map[string]string)
+	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	for customFieldName, customFieldValue := range *&custom_fields {
 		operations = append(operations, webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Add,
@@ -161,7 +185,7 @@ func mapFields(d *schema.ResourceData, m *map[string]interface{}) {
 		if ok {
 			d.Set(v, value)
 		} else if strings.HasPrefix(key, "Custom.") {
-			key_without_custom := strings.Trim(key, "Custom.")
+			key_without_custom := strings.ReplaceAll(key, "Custom.", "")
 			custom_fields[key_without_custom] = value
 		}
 
