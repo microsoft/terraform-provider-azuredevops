@@ -19,14 +19,12 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 		"System.Title":    "TestTitle",
 		"Custom.SomeName": "SomeValue",
 	}
-	mapSystemFields(d, &input)
-
-	custom_fields := d.Get("custom_fields").(map[string]string)
+	mapFields(d, &input)
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
-	require.Equal(t, "SomeValue", custom_fields["SomeName"])
-	//if !reflect.DeepEqual(out, c.expected) {
-	//   t.Fatalf("Error matching output and expected: %#v vs %#v", out, c.expected)
-	//}
+
+	custom_fields := d.Get("custom_fields").(map[string]interface{})
+	require.Equal(t, "SomeValue", custom_fields["SomeName"].(string))
+
 }

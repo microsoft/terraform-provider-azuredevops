@@ -3,6 +3,7 @@ package workitemtracking
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -10,6 +11,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
 // ResourceWorkItem schema and implementation for project workitem ressource
@@ -48,15 +50,21 @@ func ResourceWorkItem() *schema.Resource {
 				Description:  "state of the Ticket",
 			},
 			"custom_fields": {
-				Type:          schema.TypeMap,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Optional:     true,
-				Elem: schema.Schema{
-					Type: schema.TypeString,
-				  },
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
 			},
 		},
 	}
+}
+
+var systemFieldMapping = map[string]string{
+	"System.State":        "state",
+	"System.Title":        "title",
+	"System.WorkItemType": "type",
 }
 
 // ResourceWorkItemCreateOrUpdate create or update workitem
@@ -64,24 +72,10 @@ func ResourceWorkItemCreateOrUpdate(d *schema.ResourceData, m interface{}) error
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project").(string)
 	workItemType := d.Get("type").(string)
-	state := d.Get("state").(string)
 
-	title := d.Get("title").(string)
 	var operations []webapi.JsonPatchOperation
-	operations = append(operations, webapi.JsonPatchOperation{
-		Op:    &webapi.OperationValues.Add,
-		From:  nil,
-		Path:  converter.String("/fields/System.Title"),
-		Value: title,
-	})
-	if state != "" {
-		operations = append(operations, webapi.JsonPatchOperation{
-			Op:    &webapi.OperationValues.Add,
-			From:  nil,
-			Path:  converter.String("/fields/System.State"),
-			Value: state,
-		})
-	}
+	operations = SetSystemFields(d, operations)
+	operations = setCustomFields(d, operations)
 
 	args := workitemtracking.CreateWorkItemArgs{
 		Project:  &project,
@@ -109,7 +103,7 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	mapSystemFields(d, workitem.Fields)
+	mapFields(d, workitem.Fields)
 
 	return nil
 }
@@ -129,16 +123,49 @@ func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func mapSystemFields(d *schema.ResourceData, m *map[string]interface{}) {
-	biMap := map[string]string{
-		"System.State": "state",
-		"System.Title": "title",
-	}
+func setCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+	custom_fields := d.Get("custom_fields").(map[string]string)
+	for customFieldName, customFieldValue := range *&custom_fields {
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &webapi.OperationValues.Add,
+			From:  nil,
+			Path:  converter.String("/fields/Custom." + customFieldName),
+			Value: customFieldValue,
+		})
 
-	for key, value := range *m {
-		v, ok := biMap[key]
-		if ok {
-			d.Set(v, value)
+	}
+	return operations
+}
+
+func SetSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+	systemFieldReverseMapping := datahelper.ReverseMap(systemFieldMapping)
+	for terraformProperty, apiName := range *&systemFieldReverseMapping {
+		value := d.Get(terraformProperty).(string)
+		if value != "" {
+			operations = append(operations, webapi.JsonPatchOperation{
+				Op:    &webapi.OperationValues.Add,
+				From:  nil,
+				Path:  converter.String("/fields/" + apiName),
+				Value: value,
+			})
 		}
 	}
+	return operations
+}
+
+func mapFields(d *schema.ResourceData, m *map[string]interface{}) {
+
+	custom_fields := make(map[string]interface{})
+	for key, value := range *m {
+		v, ok := systemFieldMapping[key]
+		if ok {
+			d.Set(v, value)
+		} else if strings.HasPrefix(key, "Custom.") {
+			key_without_custom := strings.Trim(key, "Custom.")
+			custom_fields[key_without_custom] = value
+		}
+
+	}
+
+	d.Set("custom_fields", custom_fields)
 }
