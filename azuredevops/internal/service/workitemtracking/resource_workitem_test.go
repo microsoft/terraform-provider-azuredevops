@@ -18,13 +18,14 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 		"System.State":    "To Do",
 		"System.Title":    "TestTitle",
 		"Custom.SomeName": "SomeValue",
+		"Custom.foo":      "bar",
 	}
-	mapFields(d, &input)
+	GetFields(d, &input)
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
 
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	require.Equal(t, "SomeValue", custom_fields["SomeName"].(string))
-
+	require.Equal(t, "bar", custom_fields["foo"].(string))
 }
