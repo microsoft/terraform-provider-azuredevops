@@ -32,9 +32,9 @@ func ResourceServiceEndpointSonarCloud() *schema.Resource {
 func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Scheme: converter.String("UsernamePassword"),
+		Scheme: converter.String("Token"),
 		Parameters: &map[string]string{
-			"username": d.Get("token").(string),
+			"token": d.Get("token").(string),
 		},
 	}
 	serviceEndpoint.Type = converter.String("sonarcloud")
@@ -48,5 +48,5 @@ func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *s
 
 	tfhelper.HelpFlattenSecret(d, "token")
 
-	d.Set("token", (*serviceEndpoint.Authorization.Parameters)["username"])
+	d.Set("token", (*serviceEndpoint.Authorization.Parameters)["token"])
 }
