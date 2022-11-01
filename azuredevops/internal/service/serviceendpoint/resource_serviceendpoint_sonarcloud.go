@@ -34,7 +34,7 @@ func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.S
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("Token"),
 		Parameters: &map[string]string{
-			"token": d.Get("token").(string),
+			"apitoken": d.Get("token").(string),
 		},
 	}
 	serviceEndpoint.Type = converter.String("sonarcloud")
@@ -47,6 +47,4 @@ func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *s
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	tfhelper.HelpFlattenSecret(d, "token")
-
-	d.Set("token", (*serviceEndpoint.Authorization.Parameters)["token"])
 }
