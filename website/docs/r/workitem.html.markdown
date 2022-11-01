@@ -19,8 +19,8 @@ resource "azuredevops_workitem" "example" {
   custom_fields = {
     foo = "SomeCustomField"
   } 
- state = "To Do"
-
+  state = "To Do"
+  tags = ["Tag"]
 }
 ```
 
@@ -40,6 +40,8 @@ The following arguments are supported:
 
 * `state` - (Optional) Initial State of the Work Item.
 
+* `tags` - (Optional) Specifies a list of Tags.
+  
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
@@ -50,7 +52,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Import
 
-Work Item can be imported using the `resource id`, e.g.
+Work Items can be imported using the `resource id`, e.g.
 
 ```shell
 terraform import azuredevops_workitem.example 00000000-0000-0000-0000-000000000000

@@ -60,6 +60,15 @@ func ResourceWorkItem() *schema.Resource {
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
 			},
+			"tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
+			},
 		},
 	}
 }
@@ -150,6 +159,7 @@ func GetPatchOperations(d *schema.ResourceData) []webapi.JsonPatchOperation {
 	var operations []webapi.JsonPatchOperation
 	operations = SetSystemFields(d, operations)
 	operations = SetCustomFields(d, operations)
+	operations = SetTags(d, operations)
 	return operations
 }
 
@@ -183,6 +193,21 @@ func SetSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperat
 	return operations
 }
 
+func SetTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+	tags := d.Get("tags").([]interface{})
+	if len(tags) == 0 {
+		return operations
+	}
+	operations = append(operations, webapi.JsonPatchOperation{
+		Op:    &webapi.OperationValues.Add,
+		From:  nil,
+		Path:  converter.String("/fields/System.Tags"),
+		Value: strings.Join(tfhelper.ExpandStringList(tags), "; "),
+	})
+
+	return operations
+}
+
 func GetFields(d *schema.ResourceData, m *map[string]interface{}) {
 
 	custom_fields := make(map[string]interface{})
@@ -193,9 +218,9 @@ func GetFields(d *schema.ResourceData, m *map[string]interface{}) {
 		} else if strings.HasPrefix(key, "Custom.") {
 			key_without_custom := strings.ReplaceAll(key, "Custom.", "")
 			custom_fields[key_without_custom] = value
+		} else if "System.Tags" == key {
+			d.Set("tags", strings.Split(value.(string), "; "))
 		}
-
 	}
-
 	d.Set("custom_fields", custom_fields)
 }

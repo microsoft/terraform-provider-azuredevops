@@ -1060,6 +1060,6 @@ resource "azuredevops_workitem" "workitem" {
 	project_id = azuredevops_project.project.id
 	type = "Issue"
 	state = "Active"
-
+    tags = ["tag1", "tag2=value"]
 }`, projectResource, workitemTitle)
 }

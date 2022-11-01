@@ -30,6 +30,8 @@ func TestAccWorkitem_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttr(tfNode, "type", "Issue"),
 					resource.TestCheckResourceAttr(tfNode, "state", "Active"),
+					resource.TestCheckResourceAttr(tfNode, "tags.0", "tag1"),
+					resource.TestCheckResourceAttr(tfNode, "tags.1", "tag2=value"),
 				),
 			},
 			{

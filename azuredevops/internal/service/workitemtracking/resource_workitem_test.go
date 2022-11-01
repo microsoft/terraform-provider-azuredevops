@@ -19,13 +19,17 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 		"System.Title":    "TestTitle",
 		"Custom.SomeName": "SomeValue",
 		"Custom.foo":      "bar",
+		"System.Tags":     "tag1; tag2=value",
 	}
 	GetFields(d, &input)
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
+	require.Equal(t, "tag1", d.Get("tags").([]interface{})[0].(string))
+	require.Equal(t, "tag2=value", d.Get("tags").([]interface{})[1].(string))
 
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	require.Equal(t, "SomeValue", custom_fields["SomeName"].(string))
 	require.Equal(t, "bar", custom_fields["foo"].(string))
+
 }
