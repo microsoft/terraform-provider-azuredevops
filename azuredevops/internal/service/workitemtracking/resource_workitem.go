@@ -12,15 +12,18 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceWorkItem schema and implementation for project workitem ressource
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceWorkItemCreate,
-		Read:   ResourceWorkItemRead,
-		Update: ResourceWorkItemUpdate,
-		Delete: ResourceWorkItemDelete,
+		Create:   ResourceWorkItemCreate,
+		Read:     ResourceWorkItemRead,
+		Update:   ResourceWorkItemUpdate,
+		Delete:   ResourceWorkItemDelete,
+		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
 			"title": {
 				Type:         schema.TypeString,
@@ -28,11 +31,12 @@ func ResourceWorkItem() *schema.Resource {
 				Required:     true,
 				Optional:     false,
 			},
-			"project": {
-				Type:         schema.TypeString,
-				ValidateFunc: validation.IsUUID,
-				Required:     true,
-				ForceNew:     true,
+			"project_id": {
+				Type:             schema.TypeString,
+				ValidateFunc:     validation.IsUUID,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -69,7 +73,7 @@ var systemFieldMapping = map[string]string{
 // ResourceWorkItemCreateOrUpdate create workitem
 func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	project := d.Get("project").(string)
+	project := d.Get("project_id").(string)
 	workItemType := d.Get("type").(string)
 
 	operations := GetPatchOperations(d)
@@ -84,7 +88,7 @@ func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%d", *workitem.Id))
+	d.SetId(strconv.Itoa(*workitem.Id))
 	return ResourceWorkItemRead(d, m)
 }
 
@@ -108,7 +112,7 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 // ResourceWorkItemUpdate update a workitem
 func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	project := d.Get("project").(string)
+	project := d.Get("project_id").(string)
 	id, _ := strconv.Atoi(d.Id())
 
 	operations := GetPatchOperations(d)

@@ -14,7 +14,7 @@ Manages a Work Item in Azure Devops.
 ```hcl
 resource "azuredevops_workitem" "example" {
   title = "Testing Terraform with"
-  project = "9a6ec7fd-a679-4b11-af60-0b1fc8cae540"
+  project_id = "9a6ec7fd-a679-4b11-af60-0b1fc8cae540"
   type = "Issue"
   custom_fields = {
     foo = "SomeCustomField"
@@ -28,7 +28,7 @@ resource "azuredevops_workitem" "example" {
 
 The following arguments are supported:
 
-* `project` - (Required) UUID of the Project.
+* `project_id` - (Required) UUID of the Project.
 
 * `title` - (Required) Title of the Work Item.
 
