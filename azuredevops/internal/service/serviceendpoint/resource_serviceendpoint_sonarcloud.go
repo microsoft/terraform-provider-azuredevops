@@ -46,7 +46,5 @@ func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.S
 func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	tfhelper.HelpFlattenSecret(d, "token")
-
 	d.Get("")
 }
