@@ -47,4 +47,6 @@ func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *s
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	tfhelper.HelpFlattenSecret(d, "token")
+
+	d.Get("")
 }
