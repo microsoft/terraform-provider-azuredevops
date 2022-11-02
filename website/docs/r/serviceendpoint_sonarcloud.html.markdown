@@ -33,7 +33,7 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
 * `service_endpoint_name` - (Required) The Service Endpoint name.
-* `token` - (Required) Authentication Token generated through SonarCloud (go to My Account > Security > Generate Tokens).
+* `token` - (Required) Authentication Token generated through SonarCloud (go to `My Account > Security > Generate Tokens`).
 * `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference
@@ -48,7 +48,7 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 6.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
 - [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-- [SonarCloud User Token](https://docs.sonarcloud.org/latest/user-guide/user-token/)
+- [SonarCloud User Token](https://docs.sonarcloud.io/advanced-setup/user-accounts/)
 
 ## Import
 Azure DevOps Service Endpoint SonarCloud can be imported using the **projectID/serviceEndpointID**, e.g.

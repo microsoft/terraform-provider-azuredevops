@@ -52,7 +52,6 @@ func TestAccServiceEndpointSonarCloud_complete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "token_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -87,7 +86,6 @@ func TestAccServiceEndpointSonarCloud_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "token_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -124,9 +122,9 @@ func TestAccServiceEndpointSonarCloud_RequiresImportErrorStep(t *testing.T) {
 func hclSvcEndpointSonarCloudResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarcloud" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	token			   	   = "redacted"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  token                 = "redacted"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -136,10 +134,10 @@ resource "azuredevops_serviceendpoint_sonarcloud" "test" {
 func hclSvcEndpointSonarCloudResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarcloud" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	token			   	   = "redacted"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  token                 = "redacted"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -149,10 +147,10 @@ resource "azuredevops_serviceendpoint_sonarcloud" "test" {
 func hclSvcEndpointSonarCloudResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarcloud" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	token			   	   = "redacted2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  token                 = "redacted2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -164,10 +162,10 @@ func hclSvcEndpointSonarCloudResourceRequiresImport(projectName string, serviceE
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_sonarcloud" "import" {
-  project_id                = azuredevops_serviceendpoint_sonarcloud.test.project_id
+  project_id            = azuredevops_serviceendpoint_sonarcloud.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_sonarcloud.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_sonarcloud.test.description
-  token          = "redacted"
+  description           = azuredevops_serviceendpoint_sonarcloud.test.description
+  token                 = "redacted"
 }
 `, template)
 }
