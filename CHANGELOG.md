@@ -1,12 +1,13 @@
-## 0.2.3
+## 0.3.0
 
 FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_sonarcloud` [#658](https://github.com/microsoft/terraform-provider-azuredevops/pull/658)
 * **New Data Resource** `azuredevops_serviceendpoint_azurerm` [#623](https://github.com/microsoft/terraform-provider-azuredevops/pull/623)
 * **New Data Resource** `azuredevops_serviceendpoint_github` [#627](https://github.com/microsoft/terraform-provider-azuredevops/pull/627)
 
 BUG FIX:
 * `azuredevops_project` - Fall back to organization default template if template ID not found. [#626](https://github.com/microsoft/terraform-provider-azuredevops/pull/626)
-* `azuredevops_serviceendpoint_kubernetes` - Fix a plugin crash when the `cluster_context` attribute was not specified. [#638](https://github.com/microsoft/terraform-provider-azuredevops/pull/638)
+* `azuredevops_serviceendpoint_kubernetes` - Fix plugin crash when the `cluster_context` attribute was not specified. [#638](https://github.com/microsoft/terraform-provider-azuredevops/pull/638)
 * `azuredevops_build_definition_permissions` - Recreate the resource if relate build definition not found. [#644](https://github.com/microsoft/terraform-provider-azuredevops/pull/644)
 * `azuredevops_serviceendpoint_artifactory` - Fix token lost when update other properties. [#656](https://github.com/microsoft/terraform-provider-azuredevops/pull/656)
 
