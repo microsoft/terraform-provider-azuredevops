@@ -118,6 +118,30 @@ func TestAccServiceEndpointExternalTFS_CreateAndUpdate(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointExternalTFS_RequiresImportErrorStep(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	resourceType := "azuredevops_serviceendpoint_externaltfs"
+	tfSvcEpNode := resourceType + ".serviceendpoint"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSvcEndpointExternalTFSResourceBasic(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+				),
+			},
+			{
+				Config:      hclSvcEndpointExternalTFSResourceRequiresImport(projectName, serviceEndpointName),
+				ExpectError: testutils.RequiresImportError(serviceEndpointName),
+			},
+		},
+	})
+}
+
 func hclSvcEndpointExternalTFSResourceBasic(projectName string, serviceEndpointName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 	serviceEndpointResource := fmt.Sprintf(`
@@ -145,4 +169,19 @@ resource "azuredevops_serviceendpoint_externaltfs" "serviceendpoint" {
     description             = "%[2]s"
 }`, serviceEndpointName, description)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func hclSvcEndpointExternalTFSResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointExternalTFSResourceBasic(projectName, serviceEndpointName)
+	return fmt.Sprintf(`
+%s
+resource "azuredevops_serviceendpoint_externaltfs" "import" {
+    project_id              = azuredevops_serviceendpoint_externaltfs.serviceendpoint.project_id
+    service_endpoint_name   = azuredevops_serviceendpoint_externaltfs.serviceendpoint.service_endpoint_name
+    connection_url          = azuredevops_serviceendpoint_externaltfs.serviceendpoint.connection_url 
+    auth_personal {
+      personal_access_token = "test_token_basic"
+    }
+}
+`, template)
 }
