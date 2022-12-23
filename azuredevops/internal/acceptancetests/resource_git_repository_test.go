@@ -18,10 +18,11 @@ import (
 )
 
 // Verifies that the following sequence of events occurrs without error:
+//
 //	(1) TF apply creates resource
 //	(2) TF state values are set
 //	(3) resource can be queried by ID and has expected name
-// 	(4) TF destroy deletes resource
+//	(4) TF destroy deletes resource
 //	(5) resource can no longer be queried by ID
 func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()

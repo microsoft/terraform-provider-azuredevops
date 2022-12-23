@@ -80,6 +80,7 @@ func DataGroups() *schema.Resource {
 }
 
 // Performs a lookup of a project group. This involves the following actions:
+//
 //	(1) Identify AzDO graph descriptor for the project in which the group exists
 //	(2) Query for all AzDO groups that exist within the project. This leverages the AzDO graph descriptor for the project.
 //		This involves querying a paginated API, so multiple API calls may be needed for this step.

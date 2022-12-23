@@ -20,14 +20,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
-//var origin = "TEST_ORIGIN"
+// var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
+// var origin = "TEST_ORIGIN"
 var originID = "5d466068-fe00-47c8-80d7-bb268165820c"
 var displayName = "TEST_GROUP"
 
 //var description = "TEST_DESCRIPTION"
 
-//var orgurl = "https://dev.azure.com/_test_organization"
+// var orgurl = "https://dev.azure.com/_test_organization"
 var email = "test_group@test.local"
 
 //var subjectKind = "group"

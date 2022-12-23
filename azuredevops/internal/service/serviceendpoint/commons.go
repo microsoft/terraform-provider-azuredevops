@@ -285,7 +285,7 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return createdServiceEndpoint, err
 }
 
-//Service endpoint delete is an async operation, make sure service endpoint is deleted.
+// Service endpoint delete is an async operation, make sure service endpoint is deleted.
 func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(

@@ -16,6 +16,7 @@ import (
 )
 
 // Policy type IDs. These are global and can be listed using the following endpoint:
+//
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
 	AuthorEmailPattern = uuid.MustParse("77ed4bd3-b063-4689-934a-175e4d0a78d7")
