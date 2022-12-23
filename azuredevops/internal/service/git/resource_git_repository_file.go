@@ -179,7 +179,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
-			return err
+			return nil
 		}
 		return fmt.Errorf("Query repository item failed, repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}
