@@ -25,17 +25,21 @@ func ResourceServiceEndpointCustom() *schema.Resource {
 	}
 	r.Schema["username"] = &schema.Schema{
 		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_Custom_SERVICE_CONNECTION_USERNAME", nil),
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_CUSTOM_SERVICE_CONNECTION_USERNAME", nil),
 		Description: "The username to use for the Custom service connection.",
 		Optional:    true,
 	}
 	r.Schema["password"] = &schema.Schema{
 		Type:             schema.TypeString,
-		DefaultFunc:      schema.EnvDefaultFunc("AZDO_Custom_SERVICE_CONNECTION_PASSWORD", nil),
+		DefaultFunc:      schema.EnvDefaultFunc("AZDO_CUSTOM_SERVICE_CONNECTION_PASSWORD", nil),
 		Description:      "The password or token key to use for the Custom service connection.",
 		Sensitive:        true,
 		Optional:         true,
 		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+	}
+	r.Schema["data"] = &schema.Schema{
+		Type:        schema.TypeMap,
+		Description: "Optional payload required for the creation of the endpoint",
 	}
 	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("password")
 	r.Schema[secretHashKey] = secretHashSchema
@@ -53,6 +57,7 @@ func expandServiceEndpointCustom(d *schema.ResourceData) (*serviceendpoint.Servi
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
+	serviceEndpoint.Data = d.Get("data").(*map[string]string)
 	return serviceEndpoint, projectID, nil
 }
 
@@ -61,5 +66,6 @@ func flattenServiceEndpointCustom(d *schema.ResourceData, serviceEndpoint *servi
 	d.Set("service_type", *serviceEndpoint.Type)
 	d.Set("server_url", *serviceEndpoint.Url)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	d.Set("data", *serviceEndpoint.Data)
 	tfhelper.HelpFlattenSecret(d, "password")
 }
