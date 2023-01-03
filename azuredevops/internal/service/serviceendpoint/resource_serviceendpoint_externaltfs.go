@@ -1,7 +1,6 @@
 package serviceendpoint
 
 import (
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,13 +79,6 @@ func flattenServiceEndpointExternalTFS(
 ) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-    d.Set("auth_personal", &[]map[string]interface{}{
-      {
-        personalAccessTokenExternalTFS: (*serviceEndpoint.Authorization.Parameters)["apitoken"],
-      },
-    })
-	}
-
+  d.Get("")
 	d.Set("connection_url", *serviceEndpoint.Url)
 }
