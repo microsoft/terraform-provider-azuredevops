@@ -16,6 +16,7 @@ func ResourceServiceEndpointCustom() *schema.Resource {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "The Service Type of the Custom service connection.",
+		ForceNew:    true,
 	}
 	r.Schema["server_url"] = &schema.Schema{
 		Type:         schema.TypeString,
