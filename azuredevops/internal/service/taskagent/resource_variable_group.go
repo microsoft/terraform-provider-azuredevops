@@ -441,7 +441,8 @@ func isKeyVaultVariableGroupType(variableGrouptype *string) bool {
 // Convert AzDO Variables data structure to Terraform TypeSet
 //
 // Note: The AzDO API does not return the value for variables marked as a secret. For this reason
-//		 variables marked as secret will need to be pulled from the state itself
+//
+//	variables marked as secret will need to be pulled from the state itself
 func flattenVariables(d *schema.ResourceData, variableGroup *v5taskagent.VariableGroup) (interface{}, error) {
 	variables := make([]map[string]interface{}, len(*variableGroup.Variables))
 
