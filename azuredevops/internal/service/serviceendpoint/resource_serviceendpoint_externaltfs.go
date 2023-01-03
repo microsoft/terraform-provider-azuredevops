@@ -1,7 +1,6 @@
 package serviceendpoint
 
 import (
-
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -79,6 +78,6 @@ func flattenServiceEndpointExternalTFS(
 ) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-  d.Get("")
+	d.Get("")
 	d.Set("connection_url", *serviceEndpoint.Url)
 }
