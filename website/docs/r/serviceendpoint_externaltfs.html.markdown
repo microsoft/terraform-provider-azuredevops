@@ -40,8 +40,8 @@ The following arguments are supported:
 - `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint name.
 - `url` - (Required) Azure DevOps Organization or TFS Project Collection Url.
+- `auth_personal` - (Required) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 - `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-- `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
 
 `auth_personal` block supports the following:
 
