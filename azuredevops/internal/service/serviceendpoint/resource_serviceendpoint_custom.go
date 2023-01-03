@@ -41,8 +41,6 @@ func ResourceServiceEndpointCustom() *schema.Resource {
 		Type:        schema.TypeMap,
 		Description: "Optional payload required for the creation of the endpoint",
 	}
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("password")
-	r.Schema[secretHashKey] = secretHashSchema
 	return r
 }
 
