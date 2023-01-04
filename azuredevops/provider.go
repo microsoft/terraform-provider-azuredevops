@@ -66,6 +66,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_npm":                    serviceendpoint.ResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_generic":                serviceendpoint.ResourceServiceEndpointGeneric(),
 			"azuredevops_serviceendpoint_generic_git":            serviceendpoint.ResourceServiceEndpointGenericGit(),
+			"azuredevops_serviceendpoint_externaltfs":            serviceendpoint.ResourceServiceEndpointExternalTFS(),
 			"azuredevops_git_repository":                         git.ResourceGitRepository(),
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),
