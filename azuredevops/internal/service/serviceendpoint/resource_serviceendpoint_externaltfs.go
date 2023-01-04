@@ -71,13 +71,8 @@ func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func flattenServiceEndpointExternalTFS(
-	d *schema.ResourceData,
-	serviceEndpoint *serviceendpoint.ServiceEndpoint,
-	projectID *uuid.UUID,
-) {
+func flattenServiceEndpointExternalTFS(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	d.Get("")
 	d.Set("connection_url", *serviceEndpoint.Url)
 }

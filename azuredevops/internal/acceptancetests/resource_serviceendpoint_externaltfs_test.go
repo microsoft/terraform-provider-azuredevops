@@ -146,12 +146,12 @@ func hclSvcEndpointExternalTFSResourceBasic(projectName string, serviceEndpointN
 	projectResource := testutils.HclProjectResource(projectName)
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_externaltfs" "serviceendpoint" {
-    project_id              = azuredevops_project.project.id
-    service_endpoint_name   = "%[1]s"
-    connection_url          = "https://dev.azure.com/myorganization"
-    auth_personal {
-      personal_access_token = "test_token_basic"
-    }
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  connection_url        = "https://dev.azure.com/myorganization"
+  auth_personal {
+    personal_access_token = "test_token_basic"
+  }
 }`, serviceEndpointName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
@@ -160,13 +160,13 @@ func hclSvcEndpointExternalTFSResourceUpdate(projectName string, serviceEndpoint
 	projectResource := testutils.HclProjectResource(projectName)
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_externaltfs" "serviceendpoint" {
-    project_id              = azuredevops_project.project.id
-    service_endpoint_name   = "%[1]s"
-    connection_url          = "https://dev.azure.com/myorganization"
-    auth_personal {
-      personal_access_token = "test_token_update"
-    }
-    description             = "%[2]s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  connection_url        = "https://dev.azure.com/myorganization"
+  auth_personal {
+    personal_access_token = "test_token_update"
+  }
+  description = "%[2]s"
 }`, serviceEndpointName, description)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
@@ -176,12 +176,12 @@ func hclSvcEndpointExternalTFSResourceRequiresImport(projectName string, service
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_externaltfs" "import" {
-    project_id              = azuredevops_serviceendpoint_externaltfs.serviceendpoint.project_id
-    service_endpoint_name   = azuredevops_serviceendpoint_externaltfs.serviceendpoint.service_endpoint_name
-    connection_url          = azuredevops_serviceendpoint_externaltfs.serviceendpoint.connection_url 
-    auth_personal {
-      personal_access_token = "test_token_basic"
-    }
+  project_id            = azuredevops_serviceendpoint_externaltfs.serviceendpoint.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_externaltfs.serviceendpoint.service_endpoint_name
+  connection_url        = azuredevops_serviceendpoint_externaltfs.serviceendpoint.connection_url
+  auth_personal {
+    personal_access_token = "test_token_basic"
+  }
 }
 `, template)
 }
