@@ -20,13 +20,13 @@ import (
 )
 
 // Verifies that the following sequence of events occurs without error:
+//
 //	(1) TF apply creates resource
 //	(2) TF state values are set
 //	(3) Group membership exists and can be queried for
-// 	(4) TF destroy removes group memberships
+//	(4) TF destroy removes group memberships
 //
 // Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
-//
 func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
 	t.Skip("Skipping test TestAccGroupMembership_CreateAndRemove due to service inconsistent")
 	projectName := testutils.GenerateResourceName()

@@ -155,6 +155,11 @@ func ResourceVariableGroup() *schema.Resource {
 							Required:     true,
 							ValidateFunc: validation.IsUUID,
 						},
+						"search_depth": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  20,
+						},
 					},
 				},
 			},
@@ -371,6 +376,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		kvConfigures := keyVault[0].(map[string]interface{})
 		kvName := kvConfigures[vgName].(string)
 		serviceEndpointID := kvConfigures[vgServiceEndpointID].(string)
+		depth := kvConfigures["search_depth"].(int)
 
 		serviceEndpointUUID, err := uuid.Parse(serviceEndpointID)
 		if err != nil {
@@ -383,7 +389,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variables)
+		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variables, depth)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -437,7 +443,8 @@ func isKeyVaultVariableGroupType(variableGrouptype *string) bool {
 // Convert AzDO Variables data structure to Terraform TypeSet
 //
 // Note: The AzDO API does not return the value for variables marked as a secret. For this reason
-//		 variables marked as secret will need to be pulled from the state itself
+//
+//	variables marked as secret will need to be pulled from the state itself
 func flattenVariables(d *schema.ResourceData, variableGroup *v5taskagent.VariableGroup) (interface{}, error) {
 	variables := make([]map[string]interface{}, len(*variableGroup.Variables))
 
@@ -525,6 +532,12 @@ func flattenKeyVault(d *schema.ResourceData, variableGroup *v5taskagent.Variable
 		vgServiceEndpointID: providerData.ServiceEndpointId.String(),
 	}}
 
+	keyVaultRaw := d.Get("key_vault").([]interface{})
+	if len(keyVaultRaw) == 1 {
+		kvConfigures := keyVaultRaw[0].(map[string]interface{})
+		keyVault[0]["search_depth"] = kvConfigures["search_depth"].(int)
+	}
+
 	return keyVault, nil
 }
 
@@ -598,11 +611,7 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set(vgAllowAccess, allowAccess)
 }
 
-func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
-	// in case for too many secrets in the KV(For example: 10000+ secrets), limit the iteration to 20 times, secrets more
-	// than this will not be fetched
-	// TODO custom ENV configuration for iteration times
-
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
 	var token, loop, azkvSecretsRaw = "", 0, &KeyVaultSecretResult{}
 	kvSecrets = make(map[string]interface{})
 	invalidSecrets = make([]string, 0)
@@ -647,7 +656,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 			}
 
 			// stop search
-			if token == "" || loop == 20 || len(secretNames) == 0 {
+			if token == "" || loop == depth || len(secretNames) == 0 {
 				for k := range secretNames {
 					invalidSecrets = append(invalidSecrets, k)
 				}
