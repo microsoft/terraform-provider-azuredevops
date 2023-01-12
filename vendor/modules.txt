@@ -202,6 +202,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v6/system
 github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/v6/test
 github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi
+github.com/microsoft/azure-devops-go-api/azuredevops/v6/wiki
 github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15

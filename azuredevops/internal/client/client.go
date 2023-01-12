@@ -24,6 +24,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
@@ -53,6 +54,7 @@ type AggregatedClient struct {
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
 	WorkItemTrackingClient        workitemtracking.Client
+	WikiClient                    wiki.Client
 	Ctx                           context.Context
 }
 
@@ -164,6 +166,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	wikiClient, err := wiki.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): wiki.NewClient failed.")
+		return nil, err
+	}
+
 	featuremanagementClient := featuremanagement.NewClient(ctx, connection)
 
 	workitemtrackingClient, err := workitemtracking.NewClient(ctx, connection)
@@ -190,6 +198,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
+		WikiClient:                    wikiClient,
 		Ctx:                           ctx,
 	}
 
