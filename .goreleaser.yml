@@ -15,7 +15,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "terraform-provider-azuredevops"
+  name_template: "ni-azuredevops"
 changelog:
   sort: asc
   filters:
@@ -24,5 +24,5 @@ changelog:
     - '^test:'
 release:
   github:
-    owner: microsoft
-    name: terraform-provider-azuredevops
+    owner: ni
+    name: terraform-provider-azuredevops-ni
