@@ -14,7 +14,7 @@ import (
 
 // ResourceServiceEndpointJFrogDistributionV2 schema and implementation for JFrog Artifactory service endpoint resource
 func ResourceServiceEndpointJFrogDistributionV2() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointJFrogDistributionV2, expandServiceEndpointJFrogDistributionV2)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointJFrogDistributionV2)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -116,40 +116,4 @@ func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*servicee
 	}
 
 	return serviceEndpoint, projectID, nil
-}
-
-// Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointJFrogDistributionV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		auth := make(map[string]interface{})
-		if x, ok := d.GetOk("authentication_token"); ok {
-			authMap := x.([]interface{})[0].(map[string]interface{})
-			if len(authMap) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authMap, "token")
-				auth[hashKey] = newHash
-				auth["token"] = authMap["token"]
-			}
-		}
-		d.Set("authentication_token", []interface{}{auth})
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
-		auth := make(map[string]interface{})
-		if old, ok := d.GetOk("authentication_basic"); ok {
-			oldAuthList := old.([]interface{})[0].(map[string]interface{})
-			if len(oldAuthList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "password")
-				auth[hashKey] = newHash
-				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
-				auth[hashKey] = newHash
-
-				auth["password"] = oldAuthList["password"]
-				auth["username"] = oldAuthList["username"]
-			}
-		}
-		d.Set("authentication_basic", []interface{}{auth})
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme %s", *serviceEndpoint.Authorization.Scheme))
-	}
-
-	d.Set("url", *serviceEndpoint.Url)
 }
