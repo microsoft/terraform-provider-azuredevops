@@ -25,4 +25,4 @@ changelog:
 release:
   github:
     owner: ni
-    name: terraform-provider-azuredevops-ni
+    name: terraform-provider-azuredevops
