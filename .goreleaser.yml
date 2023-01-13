@@ -15,7 +15,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "ni-azuredevops"
+  name_template: "terraform-provider-azuredevops"
 changelog:
   sort: asc
   filters:
