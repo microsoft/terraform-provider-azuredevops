@@ -60,14 +60,14 @@ function compile() {
         if ($DebugBuild) {
             $argv += @( '-gcflags="all=-N -l"' )
         }
-        go @argv 
+        go @argv
         if ($LASTEXITCODE) {
             throw "Build failed"
         }
     }
     finally {
         'GO111MODULE' `
-        | ForEach-Object -Process {Remove-Item -Path "Env:$_" }    
+        | ForEach-Object -Process {Remove-Item -Path "Env:$_" }
         Pop-Location
     }
 }

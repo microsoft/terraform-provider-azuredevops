@@ -22,6 +22,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
+		"azuredevops_serviceendpoint_check_branch_control",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
 		"azuredevops_serviceendpoint_dockerregistry",
