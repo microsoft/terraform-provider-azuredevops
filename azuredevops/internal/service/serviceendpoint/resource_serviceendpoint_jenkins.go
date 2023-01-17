@@ -128,7 +128,7 @@ func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serv
 	unsecured, err := strconv.ParseBool((*serviceEndpoint.Data)["AcceptUntrustedCerts"])
 	if err != nil {
 		fmt.Println(err)
-        return
+		return
 	}
 	d.Set("accept_untrusted_certs", unsecured)
 }
