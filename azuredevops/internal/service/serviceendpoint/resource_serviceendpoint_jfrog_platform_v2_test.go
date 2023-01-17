@@ -31,10 +31,10 @@ var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &artifactoryTestServiceEndpointIDpassword,
+	Id:    &platformV2TestServiceEndpointIDpassword,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
+	Type:  converter.String("jfrogPlatformService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
@@ -58,10 +58,10 @@ var platformV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &artifactoryTestServiceEndpointID,
+	Id:    &platformV2TestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
+	Type:  converter.String("jfrogPlatformService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
@@ -81,7 +81,7 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogPlatformV2().Schema, nil)
 		flattenServiceEndpointArtifactory(resourceData, ep, id)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
+		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogPlatformV2(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, projectID)
@@ -89,11 +89,11 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 	}
 }
 func TestServiceEndpointplatformV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
-	testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
 func TestServiceEndpointplatformV2_ExpandFlatten_RoundtripToken(t *testing.T) {
-	testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -119,10 +119,10 @@ func testServiceEndpointplatformV2_Create_DoesNotSwallowError(t *testing.T, ep *
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
 func TestServiceEndpointplatformV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointplatformV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
@@ -151,10 +151,10 @@ func testServiceEndpointplatformV2_Read_DoesNotSwallowError(t *testing.T, ep *se
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
 func TestServiceEndpointplatformV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointplatformV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
@@ -185,10 +185,10 @@ func testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t *testing.T, ep *
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
 func TestServiceEndpointplatformV2_Delete_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointplatformV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
@@ -218,8 +218,8 @@ func testServiceEndpointplatformV2_Update_DoesNotSwallowError(t *testing.T, ep *
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
