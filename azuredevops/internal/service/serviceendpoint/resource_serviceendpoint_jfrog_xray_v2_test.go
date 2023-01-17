@@ -31,10 +31,10 @@ var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &artifactoryTestServiceEndpointIDpassword,
+	Id:    &xrayV2TestServiceEndpointIDpassword,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
+	Type:  converter.String("jfrogXrayService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
@@ -58,10 +58,10 @@ var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &artifactoryTestServiceEndpointID,
+	Id:    &xrayV2TestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
+	Type:  converter.String("jfrogXrayService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
@@ -81,7 +81,7 @@ func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogXRayV2().Schema, nil)
 		flattenServiceEndpointArtifactory(resourceData, ep, id)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
+		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogXRayV2(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, projectID)
@@ -89,11 +89,11 @@ func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 	}
 }
 func TestServiceEndpointxrayV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
-	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 func TestServiceEndpointxrayV2_ExpandFlatten_RoundtripToken(t *testing.T) {
-	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -119,10 +119,10 @@ func testServiceEndpointxrayV2_Create_DoesNotSwallowError(t *testing.T, ep *serv
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
 func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
@@ -151,10 +151,10 @@ func testServiceEndpointxrayV2_Read_DoesNotSwallowError(t *testing.T, ep *servic
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
 func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
@@ -185,10 +185,10 @@ func testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
 func TestServiceEndpointxrayV2_Delete_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointxrayV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
@@ -218,8 +218,8 @@ func testServiceEndpointxrayV2_Update_DoesNotSwallowError(t *testing.T, ep *serv
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
 func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
