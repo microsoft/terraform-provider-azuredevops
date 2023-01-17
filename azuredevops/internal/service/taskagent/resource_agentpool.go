@@ -46,6 +46,11 @@ func ResourceAgentPool() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"auto_update": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -147,6 +152,7 @@ func flattenAzureAgentPool(d *schema.ResourceData, agentPool *taskagent.TaskAgen
 	d.Set("name", converter.ToString(agentPool.Name, ""))
 	d.Set("pool_type", *agentPool.PoolType)
 	d.Set("auto_provision", *agentPool.AutoProvision)
+	d.Set("auto_update", *agentPool.AutoUpdate)
 }
 
 func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAgentPool, error) {
@@ -162,6 +168,7 @@ func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAge
 		Name:          converter.String(d.Get("name").(string)),
 		PoolType:      &poolType,
 		AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
+		AutoUpdate:    converter.Bool(d.Get("auto_update").(bool)),
 	}
 
 	return pool, nil

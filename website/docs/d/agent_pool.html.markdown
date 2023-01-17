@@ -27,6 +27,10 @@ output "pool_type" {
 output "auto_provision" {
   value = data.azuredevops_agent_pool.example.auto_provision
 }
+
+output "auto_update" {
+  value = data.azuredevops_agent_pool.example.auto_update
+}
 ```
 
 ## Argument Reference
@@ -42,6 +46,7 @@ The following attributes are exported:
 `name` - The name of the agent pool
 `pool_type` - Specifies whether the agent pool type is Automation or Deployment.
 `auto_provision` - Specifies whether a queue should be automatically provisioned for each project collection.
+`auto_update` - Specifies whether or not agents within the pool should be automatically updated.
 
 ## Relevant Links
 

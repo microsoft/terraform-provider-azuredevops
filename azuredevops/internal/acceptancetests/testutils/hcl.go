@@ -638,6 +638,7 @@ func HclAgentPoolResource(poolName string) string {
 resource "azuredevops_agent_pool" "pool" {
 	name           = "%s"
 	auto_provision = false
+	auto_update    = false
 	pool_type      = "automation"
 	}`, poolName)
 }
@@ -648,6 +649,7 @@ func HclAgentPoolResourceAppendPoolNameToResourceName(poolName string) string {
 resource "azuredevops_agent_pool" "pool_%[1]s" {
 	name           = "%[1]s"
 	auto_provision = false
+	auto_update    = false
 	pool_type      = "automation"
 	}`, poolName)
 }

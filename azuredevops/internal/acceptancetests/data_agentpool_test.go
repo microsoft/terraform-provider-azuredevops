@@ -28,6 +28,7 @@ func TestAccAgentPool_DataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "name", agentPoolName),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
 				),
 			},
