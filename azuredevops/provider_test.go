@@ -31,6 +31,9 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
+		"azuredevops_serviceendpoint_jenkins",
+		"azuredevops_serviceendpoint_maven",
+		"azuredevops_serviceendpoint_nexus",
 		"azuredevops_serviceendpoint_servicefabric",
 		"azuredevops_serviceendpoint_argocd",
 		"azuredevops_serviceendpoint_aws",
@@ -86,7 +89,6 @@ func TestProvider_HasChildResources(t *testing.T) {
 
 func TestProvider_HasChildDataSources(t *testing.T) {
 	expectedDataSources := []string{
-		"azuredevops_build_definition",
 		"azuredevops_client_config",
 		"azuredevops_group",
 		"azuredevops_project",
