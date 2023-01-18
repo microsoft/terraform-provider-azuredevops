@@ -143,6 +143,7 @@ func azureAgentPoolUpdate(clients *client.AggregatedClient, agentPool *taskagent
 				Name:          agentPool.Name,
 				PoolType:      agentPool.PoolType,
 				AutoProvision: agentPool.AutoProvision,
+				AutoUpdate:    agentPool.AutoUpdate,
 			},
 		})
 }

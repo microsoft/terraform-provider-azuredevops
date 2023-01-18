@@ -30,6 +30,7 @@ var testAgentPool = taskagent.TaskAgentPool{
 	Name:          converter.String("Name"),
 	PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 	AutoProvision: converter.Bool(false),
+	AutoUpdate:    converter.Bool(false),
 }
 
 // verifies that the flatten/expand round trip yields the same agent pool definition
@@ -105,6 +106,7 @@ func TestAgentPool_UpdateAgentPool_UpdateAndRead(t *testing.T) {
 		Name:          converter.String("Foo"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Deployment,
 		AutoProvision: converter.Bool(true),
+		AutoUpdate:    converter.Bool(true),
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceAgentPool().Schema, nil)
@@ -118,6 +120,7 @@ func TestAgentPool_UpdateAgentPool_UpdateAndRead(t *testing.T) {
 				Name:          agentToUpdate.Name,
 				PoolType:      agentToUpdate.PoolType,
 				AutoProvision: agentToUpdate.AutoProvision,
+				AutoUpdate:    agentToUpdate.AutoUpdate,
 			},
 		}).
 		Return(&agentToUpdate, nil).
@@ -139,6 +142,7 @@ func TestAgentPool_UpdateAgentPool_UpdateAndRead(t *testing.T) {
 	require.Equal(t, agentToUpdate.Name, updatedTaskAgent.Name)
 	require.Equal(t, agentToUpdate.PoolType, updatedTaskAgent.PoolType)
 	require.Equal(t, agentToUpdate.AutoProvision, updatedTaskAgent.AutoProvision)
+	require.Equal(t, agentToUpdate.AutoUpdate, updatedTaskAgent.AutoUpdate)
 }
 
 // validates supported pool types are allowed by the schema
