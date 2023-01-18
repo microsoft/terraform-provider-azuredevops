@@ -78,8 +78,8 @@ func expandServiceEndpointNexus(d *schema.ResourceData) (*serviceendpoint.Servic
 	if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["username"] = expandSecret(msi, "username")
-		authParams["password"] = expandSecret(msi, "password")
+		authParams["username"] = expandNexusSecret(msi, "username")
+		authParams["password"] = expandNexusSecret(msi, "password")
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &authParams,
@@ -113,4 +113,20 @@ func flattenServiceEndpointNexus(d *schema.ResourceData, serviceEndpoint *servic
 	}
 
 	d.Set("url", *serviceEndpoint.Url)
+}
+
+func expandNexusSecret(credentials map[string]interface{}, key string) string {
+	// Note: if this is an update for a field other than `key`, the `key` will be
+	// set to `""`. Without catching this case and setting the value to `"null"`, the `key` will
+	// actually be set to `""` by the Azure DevOps service.
+	//
+	// This step is critical in order to ensure that the service connection can update without loosing its password!
+	//
+	// This behavior is unfortunately not documented in the API documentation.
+	val, ok := credentials[key]
+	if !ok || val.(string) == "" {
+		return "null"
+	}
+
+	return val.(string)
 }
