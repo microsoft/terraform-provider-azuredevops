@@ -97,6 +97,7 @@ The following arguments are supported:
 - `azurerm_management_group_name` - (Optional) The management group Name of the targets.
 - `azurerm_subscription_id` - (Optional) The subscription Id of the Azure targets.
 - `azurerm_subscription_name` - (Optional) The subscription Name of the targets.
+- `environment` - (Optional) cloud environment to use, can be `AzureCloud` (which is default) or `AzureChinaCloud`.
 
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 

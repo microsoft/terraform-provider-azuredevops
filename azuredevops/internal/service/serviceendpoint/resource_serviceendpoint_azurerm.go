@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -56,7 +57,14 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 			},
 		},
 	}
-
+	r.Schema["environment"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		ForceNew:     true,
+		Description:  "Environment (Azure Cloud type)",
+		Default:      "AzureCloud",
+		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
+	}
 	return r
 }
 
@@ -70,6 +78,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	mgmtGrpId := d.Get("azurerm_management_group_id").(string)
 	mgmtGrpName := d.Get("azurerm_management_group_name").(string)
+	environment := d.Get("environment").(string)
 
 	scopeLevelMap := map[string][]string{
 		"subscription":    {subId, subName},
@@ -101,9 +110,15 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		},
 		Scheme: converter.String("ServicePrincipal"),
 	}
+	var endpointUrl string
+	if environment == "AzureCloud" {
+		endpointUrl = "https://management.azure.com/"
+	} else if environment == "AzureChinaCloud" {
+		endpointUrl = "https://management.chinacloudapi.cn/"
+	}
 	serviceEndpoint.Data = &map[string]string{
 		"creationMode": "Automatic",
-		"environment":  "AzureCloud",
+		"environment":  environment,
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
@@ -130,7 +145,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	}
 
 	serviceEndpoint.Type = converter.String("azurerm")
-	serviceEndpoint.Url = converter.String("https://management.azure.com/")
+	serviceEndpoint.Url = converter.String(endpointUrl)
 	return serviceEndpoint, projectID, nil
 }
 
