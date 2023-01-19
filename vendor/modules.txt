@@ -4,6 +4,9 @@ github.com/agext/levenshtein
 # github.com/ahmetb/go-linq v3.0.0+incompatible
 ## explicit
 github.com/ahmetb/go-linq
+# github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
+## explicit; go 1.12
+github.com/alexedwards/argon2id
 # github.com/apparentlymart/go-cidr v1.1.0
 ## explicit
 github.com/apparentlymart/go-cidr/cidr
@@ -254,7 +257,8 @@ github.com/zclconf/go-cty/cty/json
 github.com/zclconf/go-cty/cty/set
 # golang.org/x/crypto v0.0.0-20220517005047-85d78b3ac167
 ## explicit; go 1.17
-golang.org/x/crypto/bcrypt
+golang.org/x/crypto/argon2
+golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
 golang.org/x/crypto/chacha20
