@@ -59,8 +59,8 @@ func TestIsValidMemo(t *testing.T) {
 }
 
 func isValidMemo(memo string) bool {
-	validBcryptHashPrefixes := [3]string{"$2a$", "$2b$", "$2y$"}
-	for _, s := range validBcryptHashPrefixes {
+	validHashPrefixes := [4]string{"$2a$", "$2b$", "$2y$", "$arg"}
+	for _, s := range validHashPrefixes {
 		if strings.HasPrefix(memo, s) {
 			return true
 		}
