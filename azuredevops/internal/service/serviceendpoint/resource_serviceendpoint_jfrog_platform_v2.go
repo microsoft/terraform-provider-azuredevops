@@ -12,9 +12,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-// ResourceServiceEndpointArtifactory schema and implementation for Artifactory service endpoint resource
-func ResourceServiceEndpointArtifactory() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointArtifactory)
+// ResourceServiceEndpointJFrogPlatformV2 schema and implementation for JFrog Artifactory service endpoint resource
+func ResourceServiceEndpointJFrogPlatformV2() *schema.Resource {
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointJFrogPlatformV2)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -31,14 +31,14 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 			}
 			return validation.IsURLWithHTTPorHTTPS(url, key)
 		},
-		Description: "Url for the Artifactory Server",
+		Description: "Url for the JFrog Artifactory Server",
 	}
 
 	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("token")
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
-				Description:      "The Artifactory access token.",
+				Description:      "The JFrog Artifactory access token.",
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
@@ -53,7 +53,7 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The Artifactory user name.",
+				Description:      "The JFrog Artifactory user name.",
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
@@ -61,7 +61,7 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 			},
 			patHashKeyU: patHashSchemaU,
 			"password": {
-				Description:      "The Artifactory password.",
+				Description:      "The JFrog Artifactory password.",
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
@@ -92,9 +92,9 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointJFrogPlatformV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-	serviceEndpoint.Type = converter.String("artifactoryService")
+	serviceEndpoint.Type = converter.String("jfrogPlatformService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	authScheme := "Token"
 
@@ -116,59 +116,4 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 	}
 
 	return serviceEndpoint, projectID, nil
-}
-
-func expandSecret(credentials map[string]interface{}, key string) string {
-	// Note: if this is an update for a field other than `key`, the `key` will be
-	// set to `""`. Without catching this case and setting the value to `"null"`, the `key` will
-	// actually be set to `""` by the Azure DevOps service.
-	//
-	// This step is critical in order to ensure that the service connection can update without loosing its password!
-	//
-	// This behavior is unfortunately not documented in the API documentation.
-	val, ok := credentials[key]
-	if !ok || val.(string) == "" {
-		return "null"
-	}
-
-	return val.(string)
-}
-
-// Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		auth := make(map[string]interface{})
-		if x, ok := d.GetOk("authentication_token"); ok {
-			authList := x.([]interface{})[0].(map[string]interface{})
-			if len(authList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
-				auth[hashKey] = newHash
-			}
-		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
-		}
-		d.Set("authentication_token", []interface{}{auth})
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
-		auth := make(map[string]interface{})
-		if old, ok := d.GetOk("authentication_basic"); ok {
-			oldAuthList := old.([]interface{})[0].(map[string]interface{})
-			if len(oldAuthList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "password")
-				auth[hashKey] = newHash
-				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
-				auth[hashKey] = newHash
-			}
-		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
-			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
-		}
-		d.Set("authentication_basic", []interface{}{auth})
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
-	}
-
-	d.Set("url", *serviceEndpoint.Url)
 }
