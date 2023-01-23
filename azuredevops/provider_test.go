@@ -65,6 +65,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_area_permissions",
 		"azuredevops_iteration_permissions",
 		"azuredevops_team",
+		"azuredevops_wiki",
 		"azuredevops_team_members",
 		"azuredevops_team_administrators",
 		"azuredevops_serviceendpoint_permissions",

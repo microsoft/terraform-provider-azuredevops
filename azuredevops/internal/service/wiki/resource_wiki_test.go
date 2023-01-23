@@ -1,6 +1,6 @@
-//go:build (all || resource_variable_group) && !exclude_resource_variable_group
-// +build all resource_variable_group
-// +build !exclude_resource_variable_group
+//go:build (all || wiki || resource_wiki) && !exclude_resource_wiki
+// +build all wiki resource_wiki
+// +build !exclude_resource_wiki
 
 package wiki
 
