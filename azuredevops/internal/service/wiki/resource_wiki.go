@@ -175,20 +175,17 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 	//  codewiki can be deleted normally, for project wiki the repo needs to be deleted
 	wikiType := wiki.WikiType(d.Get("type").(string))
 	if wikiType == "codeWiki" {
-
 		_, err := clients.WikiClient.DeleteWiki(clients.Ctx, wiki.DeleteWikiArgs{
 			WikiIdentifier: converter.String(d.Id()),
 			Project:        converter.String(d.Get("project_id").(string))})
 		if err != nil {
 			return err
 		}
-
 	} else if wikiType == "projectWiki" {
 		resp, err := clients.WikiClient.GetWiki(clients.Ctx, wiki.GetWikiArgs{WikiIdentifier: converter.String(d.Id())})
 		if err != nil {
 			return err
 		}
-
 		err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 			RepositoryId: resp.RepositoryId,
 			Project:      converter.String(d.Get("project_id").(string)),
