@@ -1,56 +1,30 @@
 package serviceendpoint
 
 import (
-	"context"
 	"fmt"
-	"log"
-	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/pipelinestaskcheck"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-var branchControlCheckType = pipelineschecks.CheckType{
+var taskCheckType = pipelineschecks.CheckType{
 	Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
 }
 
-var branchProtectionDefName = "evaluatebranchProtection"
-var branchProtetctinoDefVersion = "0.0.1"
+var evaluateBranchProtectionDefVersion = "0.0.1"
+var evaluateBranchProtectionDefId = "86b05a0c-73e6-4f7d-b3cf-e38f3b39a75b"
 
-type TaskCheckDefinitionReference struct {
-	Id      *uuid.UUID `json:"id,omitempty"`
-	Name    *string    `json:"name,omitempty"`
-	Version *string    `json:"version,omitempty"`
+var evaluateBranchProtectionDef = map[string]string{
+	"id":      evaluateBranchProtectionDefId,
+	"name":    "evaluatebranchProtection",
+	"version": evaluateBranchProtectionDefVersion,
 }
-
-var evaluateBranchProtectionDef = pipelinestaskcheck.TaskCheckDefinitionReference{
-	Id:      converter.UUID("86b05a0c-73e6-4f7d-b3cf-e38f3b39a75b"),
-	Name:    &branchProtectionDefName,
-	Version: &branchProtetctinoDefVersion,
-}
-
-/*
-type BranchControlInputs struct {
-	AllowedBranches            *string `json:"allowedBranches,omitempty"`
-	EnsureProtectionOfBranches bool    `json:"ensureProtectionOfBranch,omitempty"`
-	AllowUnknownStatusBranch   bool    `json:"allowUnknownStatusBranch,omitempty"`
-}
-
-type BranchControlSettings struct {
-	DisplayName   *string                       `json:"displayName,omitempty"`
-	Inputs        *BranchControlInputs          `json:"inputs,omitempty"`
-	DefinitionRef *TaskCheckDefinitionReference `json:"definitionRef,omitempty"`
-}*/
 
 // ResourceBranchControlCheck schema and implementation for build definition resource
 func ResourceServiceEndpointCheckBranchControl() *schema.Resource {
@@ -91,6 +65,11 @@ func ResourceServiceEndpointCheckBranchControl() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"resource_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "endpoint",
+			},
 		},
 	}
 }
@@ -122,19 +101,16 @@ func resourceBranchControlCheckRead(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	branchControlCheck, err := GetCheckConfiguration(&clients.V5PipelinesChecksClient, clients.Ctx, pipelineschecks.GetCheckConfigurationArgs{
+	branchControlCheck, err := clients.V5PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecks.GetCheckConfigurationArgs{
 		Project: &projectID,
 		Id:      &branchControlCheckID,
 	})
 
 	if err != nil {
-		log.Printf("HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %+v", err)
 		if utils.ResponseWasNotFound(err) || strings.Contains(err.Error(), "does not exist.") {
-			log.Printf("HERE empy")
 			d.SetId("")
 			return nil
 		}
-		log.Printf("HERE errr")
 		return err
 	}
 
@@ -190,14 +166,36 @@ func resourceBranchControlCheckDelete(d *schema.ResourceData, m interface{}) err
 func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipelineschecks.CheckConfiguration, projectID string) error {
 	d.SetId(fmt.Sprintf("%d", *branchControlCheck.Id))
 
-	// verify definitionRef?
-
 	d.Set("project_id", projectID)
 	d.Set("endpoint_id", branchControlCheck.Resource.Id)
+	d.Set("resource_type", branchControlCheck.Resource.Type)
 
 	if branchControlCheck.Settings == nil {
-		log.Printf("[DEBUG] -------------------------------    %#v", branchControlCheck)
 		return fmt.Errorf("Settings nil")
+	}
+
+	var definitionRef map[string]interface{}
+
+	if definitionRefMap, found := branchControlCheck.Settings.(map[string]interface{})["definitionRef"]; found {
+		definitionRef = definitionRefMap.(map[string]interface{})
+	} else {
+		return fmt.Errorf("definitionRef not found")
+	}
+
+	if id, found := definitionRef["id"]; found {
+		if !strings.EqualFold(id.(string), evaluateBranchProtectionDefId) {
+			return fmt.Errorf("invalid definitionRef id, not a branch control")
+		}
+	} else {
+		return fmt.Errorf("definitionRef id not found")
+	}
+
+	if version, found := definitionRef["version"]; found {
+		if version != evaluateBranchProtectionDefVersion {
+			return fmt.Errorf("unsupported definitionRef version")
+		}
+	} else {
+		return fmt.Errorf("unsupported definitionRef version")
 	}
 
 	if DisplayName, found := branchControlCheck.Settings.(map[string]interface{})["displayName"]; found {
@@ -221,13 +219,21 @@ func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipel
 	}
 
 	if verifyBranchProtection, found := inputs["ensureProtectionOfBranch"]; found {
-		d.Set("verify_branch_protection", verifyBranchProtection)
+		value, err := strconv.ParseBool(verifyBranchProtection.(string))
+		if err != nil {
+			return err
+		}
+		d.Set("verify_branch_protection", value)
 	} else {
 		return fmt.Errorf("ensureProtectionOfBranch input not found")
 	}
 
 	if ignoreUnknownProtectionStatus, found := inputs["allowUnknownStatusBranch"]; found {
-		d.Set("ignore_unknown_protection_status", ignoreUnknownProtectionStatus)
+		value, err := strconv.ParseBool(ignoreUnknownProtectionStatus.(string))
+		if err != nil {
+			return err
+		}
+		d.Set("ignore_unknown_protection_status", value)
 	} else {
 		return fmt.Errorf("allowUnknownStatusBranch input not found")
 	}
@@ -239,7 +245,7 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckCon
 	projectID := d.Get("project_id").(string)
 	endpointID := d.Get("endpoint_id").(string)
 	displayName := d.Get("display_name").(string)
-	allowedBranchs := d.Get("allowed_branches").(string)
+	allowedBranches := d.Get("allowed_branches").(string)
 	verifyBranchProtection := d.Get("verify_branch_protection").(bool)
 	ignoreUnknownProtectionStatus := d.Get("ignore_unknown_protection_status").(bool)
 
@@ -250,20 +256,20 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckCon
 	}
 
 	branchControlInputs := map[string]string{
-		"allowedBranches":          allowedBranchs,
+		"allowedBranches":          allowedBranches,
 		"ensureProtectionOfBranch": strconv.FormatBool(verifyBranchProtection),
 		"allowUnknownStatusBranch": strconv.FormatBool(ignoreUnknownProtectionStatus),
 	}
 
-	branchControlCheckSettings := pipelinestaskcheck.TaskCheckConfig{
-		DefinitionRef: &evaluateBranchProtectionDef,
-		DisplayName:   &displayName,
-		Inputs:        &branchControlInputs,
+	branchControlCheckSettings := map[string]interface{}{
+		"definitionRef": evaluateBranchProtectionDef,
+		"displayName":   displayName,
+		"inputs":        branchControlInputs,
 	}
 
 	branchControlCheck := pipelineschecks.CheckConfiguration{
-		Type:     &branchControlCheckType,
-		Settings: &branchControlCheckSettings,
+		Type:     &taskCheckType,
+		Settings: branchControlCheckSettings,
 		Resource: &endpointResource,
 	}
 
@@ -276,33 +282,4 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckCon
 	}
 
 	return &branchControlCheck, projectID, nil
-}
-
-// The v5 client is missing the expand option, but the v6 client is missing the Settings parameter
-// in the configuration. Copying the v6 `GetCheckConfiguration` here but with the v5 types to reconcil
-// the discrepencies.
-func GetCheckConfiguration(client *pipelineschecks.Client, ctx context.Context, args pipelineschecks.GetCheckConfigurationArgs) (*pipelineschecks.CheckConfiguration, error) {
-	fullClient := (*client).(*pipelineschecks.ClientImpl)
-	routeValues := make(map[string]string)
-	if args.Project == nil || *args.Project == "" {
-		return nil, &azuredevops.ArgumentNilOrEmptyError{ArgumentName: "args.Project"}
-	}
-	routeValues["project"] = *args.Project
-	if args.Id == nil {
-		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.Id"}
-	}
-	routeValues["id"] = strconv.Itoa(*args.Id)
-
-	queryParams := url.Values{}
-	queryParams.Add("$expand", "1")
-
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
-	resp, err := fullClient.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var responseValue pipelineschecks.CheckConfiguration
-	err = fullClient.Client.UnmarshalBody(resp, &responseValue)
-	return &responseValue, err
 }

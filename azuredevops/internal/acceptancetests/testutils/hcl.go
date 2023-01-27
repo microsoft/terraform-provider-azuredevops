@@ -548,6 +548,22 @@ resource "azuredevops_serviceendpoint_servicefabric" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointGenericResource HCL describing an AzDO service endpoint
+func HclServiceEndpointGenericResource(projectName string, serviceEndpointName string, serverUrl string, username string, password string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_generic" "test" {
+	project_id            = azuredevops_project.project.id
+	service_endpoint_name = "%s"
+	description           = "test"
+	server_url            = "%s"
+	username              = "%s"
+	password              = "%s"
+}`, serviceEndpointName, serverUrl, username, password)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
 // HclVariableGroupResource HCL describing an AzDO group
 func HclVariableGroupResource(variableGroupName string, allowAccess bool) string {
 	return fmt.Sprintf(`
