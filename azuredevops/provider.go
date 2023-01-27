@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvals_and_checks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
@@ -45,7 +46,8 @@ func Provider() *schema.Provider {
 			"azuredevops_repository_policy_max_path_length":      repository.ResourceRepositoryMaxPathLength(),
 			"azuredevops_repository_policy_max_file_size":        repository.ResourceRepositoryMaxFileSize(),
 			"azuredevops_repository_policy_check_credentials":    repository.ResourceRepositoryPolicyCheckCredentials(),
-			"azuredevops_serviceendpoint_check_branch_control":   serviceendpoint.ResourceServiceEndpointCheckBranchControl(),
+			"azuredevops_check_branch_control":                   approvals_and_checks.ResourceCheckBranchControl(),
+			"azuredevops_check_business_hours":                   approvals_and_checks.ResourceCheckBusinessHours(),
 			"azuredevops_serviceendpoint_argocd":                 serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_aws":                    serviceendpoint.ResourceServiceEndpointAws(),

@@ -1,8 +1,8 @@
-//go:build (all || resource_serviceendpoint_dockerregistry) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_dockerregistry
+//go:build (all || resource_checks_branch_control_check) && !exclude_serviceendpoints
+// +build all resource_checks_branch_control_check
 // +build !exclude_serviceendpoints
 
-package serviceendpoint
+package approvals_and_checks
 
 import (
 	"context"
@@ -30,7 +30,7 @@ var endpointResource = pipelineschecks.Resource{
 	Type: &endpointType,
 }
 
-var branchControlInputs = map[string]string{
+var branchControlInputs = map[string]interface{}{
 	"allowedBranches":          "refs/heads/releases/*",
 	"ensureProtectionOfBranch": strconv.FormatBool(false),
 	"allowUnknownStatusBranch": strconv.FormatBool(true),
@@ -51,7 +51,7 @@ var branchControlCheckTest = pipelineschecks.CheckConfiguration{
 
 // verifies that the flatten/expand round trip yields the same branch control
 func TestCheckBranchControl_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointCheckBranchControl().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, ResourceCheckBranchControl().Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
 	branchControlCheckAfterRoundTrip, projectID, err := expandBranchControlCheck(resourceData)
@@ -66,7 +66,7 @@ func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointCheckBranchControl()
+	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
@@ -89,7 +89,7 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointCheckBranchControl()
+	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
@@ -116,7 +116,7 @@ func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointCheckBranchControl()
+	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
@@ -143,7 +143,7 @@ func TestCheckBranchControl_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointCheckBranchControl()
+	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
