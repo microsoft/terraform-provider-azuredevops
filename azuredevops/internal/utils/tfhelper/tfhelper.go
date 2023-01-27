@@ -34,7 +34,7 @@ func calcSecretHashKey(secretKey string) string {
 // DiffFuncSuppressSecretChanged is used to suppress unneeded `apply` updates to a resource.
 //
 // It returns `true` when `new` appears to be the same value
-// as a previously stored and bcrypt'd value stored in state during a previous `apply`.
+// as a previously stored and argon2ed value stored in state during a previous `apply`.
 // Relies on flatten/expand logic to help store that hash. See FlattenSecret, below.*/
 func DiffFuncSuppressSecretChanged(k, old, new string, d *schema.ResourceData) bool {
 	memoKey := calcSecretHashKey(k)
@@ -96,7 +96,7 @@ func GenerateSecreteMemoSchema(secretKey string) (string, *schema.Schema) {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Default:     nil,
-		Description: fmt.Sprintf("A bcrypted hash of the attribute '%s'", secretKey),
+		Description: fmt.Sprintf("A argon2ed hash of the attribute '%s'", secretKey),
 		Sensitive:   true,
 	}
 	return calcSecretHashKey(secretKey), &out
@@ -168,8 +168,9 @@ func ExpandStringSet(d *schema.Set) []string {
 }
 
 // ImportProjectQualifiedResource Import a resource by an ID that looks like one of the following:
-//		<project ID>/<resource ID>
-//		<project name>/<resource ID>
+//
+//	<project ID>/<resource ID>
+//	<project name>/<resource ID>
 func ImportProjectQualifiedResource() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -190,8 +191,9 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 }
 
 // ImportProjectQualifiedResourceInteger Import a resource by an ID that looks like one of the following:
-//		<project ID>/<resource ID as integer>
-//		<project name>/<resource ID as integer>
+//
+//	<project ID>/<resource ID as integer>
+//	<project name>/<resource ID as integer>
 func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -217,8 +219,9 @@ func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 }
 
 // ImportProjectQualifiedResourceUUID Import a resource by an ID that looks like one of the following:
-//		<project ID>/<resource ID as uuid>
-//		<project name>/<resource ID as uuid>
+//
+//	<project ID>/<resource ID as uuid>
+//	<project name>/<resource ID as uuid>
 func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -238,7 +241,7 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 	}
 }
 
-//Get real project ID
+// Get real project ID
 func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
 	//If request params is project name, try get the project ID
 	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {

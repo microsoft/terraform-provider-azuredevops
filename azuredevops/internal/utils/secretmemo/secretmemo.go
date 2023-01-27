@@ -3,7 +3,7 @@ package secretmemo
 import (
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/alexedwards/argon2id"
 )
 
 const isUpdating = true
@@ -15,11 +15,11 @@ func isBlank(s string) bool {
 }
 
 func calcMementoForSecret(secret, memento string) (string, error) {
-	secretAsBytes := []byte(secret)
-	hash, err := bcrypt.GenerateFromPassword(secretAsBytes, bcrypt.MinCost)
+	hash, err := argon2id.CreateHash(secret, argon2id.DefaultParams)
 	if err != nil {
 		return "", err
 	}
+
 	return string(hash), nil
 }
 
@@ -27,10 +27,11 @@ func doesMemoMatchSecret(secret, memento string) bool {
 	if isBlank(memento) {
 		return false
 	}
-	secretAsBytes := []byte(secret)
-	mementoAsBytes := []byte(memento)
-	err := bcrypt.CompareHashAndPassword(mementoAsBytes, secretAsBytes)
-	return err == nil
+	match, err := argon2id.ComparePasswordAndHash(secret, memento)
+	if err != nil {
+		return false
+	}
+	return match
 }
 
 // IsUpdating is used to determine if the secret getting updated?
