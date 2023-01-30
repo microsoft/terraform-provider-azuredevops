@@ -1,6 +1,6 @@
-//go:build (all || resource_checks_branch_control_check) && !exclude_serviceendpoints
-// +build all resource_checks_branch_control_check
-// +build !exclude_serviceendpoints
+//go:build (all || resource_check_branch_control) && !exclude_approvals_and_checks
+// +build all resource_check_branch_control
+// +build !exclude_approvals_and_checks
 
 package approvals_and_checks
 

@@ -19,8 +19,9 @@ var taskCheckType = pipelineschecks.CheckType{
 	Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
 }
 
-// TODO: Figure out the complete list for these
-var targetResourceTypes = []string{"endpoint", "environment", "variablegroup"}
+// NOTE: In theory the API should accept "agentpool" as well, but the API client requires a project ID
+// so it doesn't seem to work and the website UI doesn't have it available
+var targetResourceTypes = []string{"endpoint", "environment", "queue", "repository", "securefile", "variablegroup"}
 
 type flatFunc func(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string) error
 type expandFunc func(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error)

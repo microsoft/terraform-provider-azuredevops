@@ -25,7 +25,6 @@ func ResourceCheckBranchControl() *schema.Resource {
 		Type:     schema.TypeString,
 		Optional: true,
 		Default:  `*`,
-		// TODO: Custom validate function to validate wildcard placement?
 	}
 	r.Schema["verify_branch_protection"] = &schema.Schema{
 		Type:     schema.TypeBool,
