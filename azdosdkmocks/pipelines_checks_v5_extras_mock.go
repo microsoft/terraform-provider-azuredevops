@@ -3,6 +3,7 @@
 
 // Package mock_pipelineschecks is a generated GoMock package.
 package azdosdkmocks
+
 import (
 	context "context"
 	reflect "reflect"
