@@ -72,13 +72,13 @@ resource "azuredevops_project" "example" {
   name = "Example Project"
 }
 
-data "azuredevops_agent_pool" "example" {
+resource "azuredevops_agent_pool" "example" {
   name = "example-pool"
 }
 
 resource "azuredevops_agent_queue" "example" {
   project_id    = azuredevops_project.example.id
-  agent_pool_id = data.azuredevops_agent_pool.example.id
+  agent_pool_id = azuredevops_agent_pool.example.id
 }
 
 resource "azuredevops_check_business_hours" "example" {
