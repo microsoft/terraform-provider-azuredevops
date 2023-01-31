@@ -19,8 +19,8 @@ param (
 )
 
 $script:PSDefaultParameterValues = @{
-    '*:Confirm'     = $false
-    '*:ErrorAction' = 'Stop'
+    '*:Confirm'           = $false
+    '*:ErrorAction'       = 'Stop'
 }
 
 . (Join-Path -Path $PSScriptRoot -ChildPath 'commons.ps1' -Resolve)
@@ -37,14 +37,14 @@ function compile() {
     $NAME = Get-Content -Raw -Path $PROVIDER_NAME_FILE
     $VERSION = Get-Content -Raw -Path $PROVIDER_VERSION_FILE
 
-    $BUILD_ARTIFACT = "terraform-provider-${NAME}_v${VERSION}"
+    $BUILD_ARTIFACT="terraform-provider-${NAME}_v${VERSION}"
     if ($env:OS -like '*Windows*') {
         $BUILD_ARTIFACT += '.exe'
     }
     Write-Host "Attempting to build $BUILD_ARTIFACT"
     Push-Location -Path $SOURCE_DIR
     try {
-        $env:GO111MODULE = 'on'
+        $env:GO111MODULE='on'
 
         go mod download
         if ($LASTEXITCODE) {
@@ -60,14 +60,14 @@ function compile() {
         if ($DebugBuild) {
             $argv += @( '-gcflags="all=-N -l"' )
         }
-        go @argv
+        go @argv 
         if ($LASTEXITCODE) {
             throw "Build failed"
         }
     }
     finally {
         'GO111MODULE' `
-        | ForEach-Object -Process { Remove-Item -Path "Env:$_" }
+        | ForEach-Object -Process {Remove-Item -Path "Env:$_" }    
         Pop-Location
     }
 }

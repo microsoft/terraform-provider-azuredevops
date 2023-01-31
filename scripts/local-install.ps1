@@ -6,14 +6,14 @@ param (
 )
 
 $script:PSDefaultParameterValues = @{
-    '*:Confirm'     = $false
-    '*:ErrorAction' = 'Stop'
+    '*:Confirm'           = $false
+    '*:ErrorAction'       = 'Stop'
 }
 
 function Install-Provider {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, Position=0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [string]
         $LiteralPath
@@ -48,10 +48,10 @@ if (-not $PluginsDirectory) {
     Install-Provider -LiteralPath $PluginsDirectory
 
     ## Terraform >= v0.13 requires different layout
-    $ProviderName = Get-Content -LiteralPath "$PROVIDER_NAME_FILE"
-    $ProviderVersion = Get-Content -LiteralPath "$PROVIDER_VERSION_FILE"
-    $ProviderRegistry = 'registry.terraform.io'
-    $ProviderOrganization = 'terraform-providers'
+    $ProviderName=Get-Content -LiteralPath "$PROVIDER_NAME_FILE"
+    $ProviderVersion=Get-Content -LiteralPath "$PROVIDER_VERSION_FILE"
+    $ProviderRegistry='registry.terraform.io'
+    $ProviderOrganization='terraform-providers'
 
     $PluginsDirectory = [System.IO.Path]::Combine($PluginsDirectory, $ProviderRegistry, $ProviderOrganization, $ProviderName, $ProviderVersion, "${OS}_${PROC}")
     Install-Provider -LiteralPath $PluginsDirectory
