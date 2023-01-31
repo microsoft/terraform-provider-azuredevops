@@ -1,27 +1,27 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 builds:
-  - binary: "{{ .ProjectName }}_{{ .Tag }}"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
+- binary: "{{ .ProjectName }}_{{ .Tag }}"
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        format: zip
+- name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+  format_overrides:
+    - goos: windows
+      format: zip
 checksum:
-  name_template: "checksums.txt"
+  name_template: 'checksums.txt'
 snapshot:
   name_template: "terraform-provider-azuredevops"
 changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
+    - '^docs:'
+    - '^test:'
 release:
   github:
     owner: microsoft
