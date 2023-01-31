@@ -34,7 +34,7 @@ func calcSecretHashKey(secretKey string) string {
 // DiffFuncSuppressSecretChanged is used to suppress unneeded `apply` updates to a resource.
 //
 // It returns `true` when `new` appears to be the same value
-// as a previously stored and argon2ed value stored in state during a previous `apply`.
+// as a previously stored and bcrypt'd value stored in state during a previous `apply`.
 // Relies on flatten/expand logic to help store that hash. See FlattenSecret, below.*/
 func DiffFuncSuppressSecretChanged(k, old, new string, d *schema.ResourceData) bool {
 	memoKey := calcSecretHashKey(k)
@@ -96,7 +96,7 @@ func GenerateSecreteMemoSchema(secretKey string) (string, *schema.Schema) {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Default:     nil,
-		Description: fmt.Sprintf("A argon2ed hash of the attribute '%s'", secretKey),
+		Description: fmt.Sprintf("A bcrypted hash of the attribute '%s'", secretKey),
 		Sensitive:   true,
 	}
 	return calcSecretHashKey(secretKey), &out
