@@ -233,7 +233,7 @@ func resourceGroupEntitlementUpdate(d *schema.ResourceData, m interface{}) error
 	return resourceGroupEntitlementRead(d, m)
 }
 
-var uuidRegexp = regexp.MustCompile("^(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var uuidRegexp = regexp.MustCompile("^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$")
 
 func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	_, err := uuid.Parse(d.Id())
