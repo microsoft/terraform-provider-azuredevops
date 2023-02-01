@@ -239,7 +239,7 @@ func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Re
 	_, err := uuid.Parse(d.Id())
 	if err != nil {
 		upn := d.Id()
-		if !emailRegexp.MatchString(upn) {
+		if !uuidRegexp.MatchString(upn) {
 			return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
 		}
 		clients := m.(*client.AggregatedClient)
