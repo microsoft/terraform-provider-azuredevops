@@ -2,6 +2,9 @@ package memberentitlementmanagement
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +19,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
-	"regexp"
-	"strings"
 )
 
 var (
