@@ -237,6 +237,15 @@ resource "azuredevops_user_entitlement" "user" {
 }`, principalName)
 }
 
+// HclGroupEntitlementResource HCL describing an AzDO GroupEntitlement
+func HclGroupEntitlementResource(principalName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_group_entitlement" "group" {
+	principal_name     = "%s"
+	account_license_type = "express"
+}`, principalName)
+}
+
 // HclServiceEndpointGitHubResource HCL describing an AzDO service endpoint
 func HclServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
