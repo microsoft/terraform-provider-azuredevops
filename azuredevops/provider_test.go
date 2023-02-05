@@ -53,6 +53,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_repository_policy_reserved_names",
 		"azuredevops_repository_policy_check_credentials",
 		"azuredevops_git_repository",
+		"azuredevops_git_repository_branch",
 		"azuredevops_git_repository_file",
 		"azuredevops_user_entitlement",
 		"azuredevops_group_membership",
