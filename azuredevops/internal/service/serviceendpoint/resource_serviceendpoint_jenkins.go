@@ -42,7 +42,6 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 		Description: "Allows the Jenkins clients to accept self-signed SSL server certificates without installing them into the TFS service role and/or Build Agent computers.",
 	}
 
-	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
 	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -128,7 +127,8 @@ func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("url", *serviceEndpoint.Url)
 	unsecured, err := strconv.ParseBool((*serviceEndpoint.Data)["AcceptUntrustedCerts"])
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
 	d.Set("accept_untrusted_certs", unsecured)
 }
