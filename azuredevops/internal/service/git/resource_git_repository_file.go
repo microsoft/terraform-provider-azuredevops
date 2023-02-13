@@ -106,9 +106,14 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
 		return err
 	}
+	version := shortBranchName(branch)
 	repoItem, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
 		RepositoryId: &repoId,
 		Path:         &file,
+		VersionDescriptor: &git.GitVersionDescriptor{
+			Version:     &version,
+			VersionType: &git.GitVersionTypeValues.Branch,
+		},
 	})
 	if err != nil && !utils.ResponseWasNotFound(err) {
 		return fmt.Errorf("Repository branch not found, repositoryID: %s, branch: %s. Error:  %+v", repoId, branch, err)
