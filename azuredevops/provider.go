@@ -61,6 +61,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_dockerregistry":         serviceendpoint.ResourceServiceEndpointDockerRegistry(),
 			"azuredevops_serviceendpoint_azurecr":                serviceendpoint.ResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_github":                 serviceendpoint.ResourceServiceEndpointGitHub(),
+			"azuredevops_serviceendpoint_gcp":                    serviceendpoint.ResourceServiceEndpointGcp(),
 			"azuredevops_serviceendpoint_incomingwebhook":        serviceendpoint.ResourceServiceEndpointIncomingWebhook(),
 			"azuredevops_serviceendpoint_github_enterprise":      serviceendpoint.ResourceServiceEndpointGitHubEnterprise(),
 			"azuredevops_serviceendpoint_kubernetes":             serviceendpoint.ResourceServiceEndpointKubernetes(),
