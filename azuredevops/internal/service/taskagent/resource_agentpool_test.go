@@ -30,7 +30,6 @@ var testAgentPool = taskagent.TaskAgentPool{
 	Name:          converter.String("Name"),
 	PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 	AutoProvision: converter.Bool(false),
-	AutoUpdate:    converter.Bool(false),
 }
 
 // verifies that the flatten/expand round trip yields the same agent pool definition
