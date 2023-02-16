@@ -19,6 +19,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_comment_resolution",
 		"azuredevops_branch_policy_merge_types",
 		"azuredevops_branch_policy_status_check",
+		"azuredevops_library_permissions",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
@@ -77,6 +78,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_environment",
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
+		"azuredevops_variable_group_permissions",
 	}
 
 	resources := Provider().ResourcesMap
