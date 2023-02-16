@@ -34,6 +34,7 @@ func Provider() *schema.Provider {
 			"azuredevops_branch_policy_status_check":             branch.ResourceBranchPolicyStatusCheck(),
 			"azuredevops_build_definition":                       build.ResourceBuildDefinition(),
 			"azuredevops_build_folder":                           build.ResourceBuildFolder(),
+			"azuredevops_library_permissions":                    permissions.ResourceLibraryPermissions(),
 			"azuredevops_project":                                core.ResourceProject(),
 			"azuredevops_project_features":                       core.ResourceProjectFeatures(),
 			"azuredevops_project_pipeline_settings":              core.ResourceProjectPipelineSettings(),
@@ -91,6 +92,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_permissions":            permissions.ResourceServiceEndpointPermissions(),
 			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
+			"azuredevops_variable_group_permissions":             permissions.ResourceVariableGroupPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
