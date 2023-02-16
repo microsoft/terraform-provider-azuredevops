@@ -24,6 +24,7 @@ import (
  */
 
 // Policy type IDs. These are global and can be listed using the following endpoint:
+//
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
 	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
