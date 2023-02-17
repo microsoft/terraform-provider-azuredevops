@@ -66,6 +66,14 @@ func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating agent pool in Azure DevOps: %+v", err)
 	}
 
+	if agentPool.AutoUpdate != nil && !*agentPool.AutoUpdate {
+		agentPool.Id = createdAgentPool.Id
+		createdAgentPool, err = azureAgentPoolUpdate(clients, agentPool)
+		if err != nil {
+			return fmt.Errorf("Error updating agent pool in Azure DevOps: %+v", err)
+		}
+	}
+
 	flattenAzureAgentPool(d, createdAgentPool)
 
 	return resourceAzureAgentPoolRead(d, m)
