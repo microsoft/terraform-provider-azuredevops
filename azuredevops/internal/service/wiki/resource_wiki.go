@@ -44,7 +44,7 @@ func ResourceWiki() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
-			"mappedPath": {
+			"mapped_path": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
