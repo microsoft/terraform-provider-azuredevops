@@ -49,7 +49,7 @@ func ResourceWiki() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"remoteurl": {
+			"remote_url": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
