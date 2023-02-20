@@ -95,8 +95,7 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 		wikiArgs.RepositoryId = &repositoryUuid
 	}
 
-	version, b := d.GetOk("versions")
-	if b {
+	if version, ok := d.GetOk("versions"); ok {
 		wikiArgs.Version = &git.GitVersionDescriptor{Version: converter.String(version.(string))}
 	}
 
