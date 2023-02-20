@@ -34,6 +34,10 @@ func ResourceWiki() *schema.Resource {
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(wiki.WikiTypeValues.ProjectWiki),
+					string(wiki.WikiTypeValues.CodeWiki)},
+					false),
 			},
 			"isdisabled": {
 				Type:     schema.TypeBool,
