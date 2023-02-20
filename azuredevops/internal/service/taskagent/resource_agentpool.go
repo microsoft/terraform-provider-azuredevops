@@ -49,6 +49,7 @@ func ResourceAgentPool() *schema.Resource {
 			"auto_update": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  true,
 			},
 		},
 	}
@@ -179,13 +180,7 @@ func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAge
 		Name:          converter.String(d.Get("name").(string)),
 		PoolType:      &poolType,
 		AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
-	}
-
-	if autoUpdate, ok := d.GetOk("auto_update"); ok {
-		if forCreate && !autoUpdate.(bool) {
-			return nil, fmt.Errorf("auto_update can only be set to true on create")
-		}
-		pool.AutoUpdate = converter.Bool(d.Get("auto_update").(bool))
+		AutoUpdate:    converter.Bool(d.Get("auto_update").(bool)),
 	}
 
 	return pool, nil
