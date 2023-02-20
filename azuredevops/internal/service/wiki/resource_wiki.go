@@ -99,8 +99,8 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 		wikiArgs.Version = &git.GitVersionDescriptor{Version: converter.String(version.(string))}
 	}
 
-	CreateWikiArgs := wiki.CreateWikiArgs{WikiCreateParams: wikiArgs}
-	resp, err := clients.WikiClient.CreateWiki(clients.Ctx, CreateWikiArgs)
+		resp, err := clients.WikiClient.CreateWiki(clients.Ctx, wiki.CreateWikiArgs{WikiCreateParams: wikiArgs})
+
 
 	if err != nil {
 		return err
