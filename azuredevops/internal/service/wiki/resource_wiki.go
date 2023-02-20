@@ -87,8 +87,7 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 	if b {
 		wikiArgs.MappedPath = converter.String(mappedPath.(string))
 	}
-	repositoryId, b := d.GetOk("repository_id")
-	if b {
+	if repositoryId, ok := d.GetOk("repository_id"); ok {
 		repositoryUuid, err := uuid.Parse(repositoryId.(string))
 		if err != nil {
 			return err
