@@ -40,6 +40,7 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", poolNameFirst),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
 					checkAgentPoolExists(poolNameFirst),
 				),
@@ -49,6 +50,7 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", poolNameSecond),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
 					checkAgentPoolExists(poolNameSecond),
 				),

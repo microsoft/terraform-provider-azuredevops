@@ -86,6 +86,10 @@ func flattenAgentPoolReferences(input *[]taskagent.TaskAgentPool) []interface{} 
 			output["auto_provision"] = *element.AutoProvision
 		}
 
+		if element.AutoUpdate != nil {
+			output["auto_update"] = *element.AutoUpdate
+		}
+
 		results = append(results, output)
 	}
 

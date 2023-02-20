@@ -52,18 +52,21 @@ var dataTestAgentPools = []taskagent.TaskAgentPool{
 		Name:          converter.String("AgentPool"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 		AutoProvision: converter.Bool(false),
+		AutoUpdate:    converter.Bool(false),
 	},
 	{
 		Id:            converter.Int(65092),
 		Name:          converter.String("AgentPool_AutoProvisioned"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 		AutoProvision: converter.Bool(true),
+		AutoUpdate:    converter.Bool(true),
 	},
 	{
 		Id:            converter.Int(650792),
 		Name:          converter.String("AgentPool_Deployment"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Deployment,
 		AutoProvision: converter.Bool(false),
+		AutoUpdate:    converter.Bool(false),
 	},
 }
 

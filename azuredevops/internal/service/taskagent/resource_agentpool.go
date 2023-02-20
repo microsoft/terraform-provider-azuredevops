@@ -46,6 +46,11 @@ func ResourceAgentPool() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"auto_update": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
@@ -60,6 +65,14 @@ func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 	createdAgentPool, err := createAzureAgentPool(clients, agentPool)
 	if err != nil {
 		return fmt.Errorf("Error creating agent pool in Azure DevOps: %+v", err)
+	}
+
+	if agentPool.AutoUpdate != nil && !*agentPool.AutoUpdate {
+		agentPool.Id = createdAgentPool.Id
+		createdAgentPool, err = azureAgentPoolUpdate(clients, agentPool)
+		if err != nil {
+			return fmt.Errorf("Error updating agent pool in Azure DevOps: %+v", err)
+		}
 	}
 
 	flattenAzureAgentPool(d, createdAgentPool)
@@ -138,6 +151,7 @@ func azureAgentPoolUpdate(clients *client.AggregatedClient, agentPool *taskagent
 				Name:          agentPool.Name,
 				PoolType:      agentPool.PoolType,
 				AutoProvision: agentPool.AutoProvision,
+				AutoUpdate:    agentPool.AutoUpdate,
 			},
 		})
 }
@@ -147,6 +161,10 @@ func flattenAzureAgentPool(d *schema.ResourceData, agentPool *taskagent.TaskAgen
 	d.Set("name", converter.ToString(agentPool.Name, ""))
 	d.Set("pool_type", *agentPool.PoolType)
 	d.Set("auto_provision", *agentPool.AutoProvision)
+
+	if agentPool.AutoUpdate != nil {
+		d.Set("auto_update", *agentPool.AutoUpdate)
+	}
 }
 
 func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAgentPool, error) {
@@ -162,6 +180,7 @@ func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAge
 		Name:          converter.String(d.Get("name").(string)),
 		PoolType:      &poolType,
 		AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
+		AutoUpdate:    converter.Bool(d.Get("auto_update").(bool)),
 	}
 
 	return pool, nil
