@@ -14,7 +14,7 @@ import (
 
 // ResourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog Artifactory service endpoint resource
 func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointJFrogXRayV2)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactoryV2, expandServiceEndpointJFrogXRayV2)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -34,7 +34,6 @@ func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
 		Description: "Url for the JFrog Artifactory Server",
 	}
 
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("token")
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
@@ -44,30 +43,23 @@ func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
 				Sensitive:        true,
 				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
-			patHashKey: patHashSchema,
 		},
 	}
 
-	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
-	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The JFrog Artifactory user name.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The JFrog Artifactory user name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
-			patHashKeyU: patHashSchemaU,
 			"password": {
-				Description:      "The JFrog Artifactory password.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The JFrog Artifactory password.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
-			patHashKeyP: patHashSchemaP,
 		},
 	}
 
