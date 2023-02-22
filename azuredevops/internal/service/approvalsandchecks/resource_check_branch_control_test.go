@@ -1,8 +1,8 @@
-//go:build (all || resource_check_branch_control) && !exclude_approvals_and_checks
+//go:build (all || resource_check_branch_control) && !exclude_approvalsandchecks
 // +build all resource_check_branch_control
-// +build !exclude_approvals_and_checks
+// +build !exclude_approvalsandchecks
 
-package approvals_and_checks
+package approvalsandchecks
 
 import (
 	"context"

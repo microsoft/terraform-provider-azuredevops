@@ -1,4 +1,4 @@
-package approvals_and_checks
+package approvalsandchecks
 
 import (
 	"fmt"
