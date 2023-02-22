@@ -61,9 +61,10 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 				ValidateFunc: validation.StringInSlice(targetResourceTypes, false),
 			},
 			"display_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "Managed by Terraform",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Managed by Terraform",
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 	}
@@ -72,25 +73,18 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 // doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
 func doBaseExpansion(d *schema.ResourceData, inputs map[string]interface{}, definitionRef interface{}) (*pipelineschecks.CheckConfiguration, string, error) {
 	projectID := d.Get("project_id").(string)
-	targetResourceId := d.Get("target_resource_id").(string)
-	displayName := d.Get("display_name").(string)
-	targetResourceType := d.Get("target_resource_type").(string)
-
-	endpointResource := pipelineschecks.Resource{
-		Id:   &targetResourceId,
-		Type: &targetResourceType,
-	}
-
-	taskCheckSettings := map[string]interface{}{
-		"definitionRef": definitionRef,
-		"displayName":   displayName,
-		"inputs":        inputs,
-	}
 
 	taskCheck := pipelineschecks.CheckConfiguration{
-		Type:     &taskCheckType,
-		Settings: taskCheckSettings,
-		Resource: &endpointResource,
+		Type: &taskCheckType,
+		Settings: map[string]interface{}{
+			"definitionRef": definitionRef,
+			"displayName":   d.Get("display_name").(string),
+			"inputs":        inputs,
+		},
+		Resource: &pipelineschecks.Resource{
+			Id:   converter.String(d.Get("target_resource_id").(string)),
+			Type: converter.String(d.Get("target_resource_type").(string)),
+		},
 	}
 
 	if d.Id() != "" {
