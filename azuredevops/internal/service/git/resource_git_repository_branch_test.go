@@ -28,19 +28,44 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 		want diag.Diagnostics
 	}{
 		{
-			"When source_ref is not given, create push does not swallow error",
+			"When ref is given, refs update does not swallow error",
 			func(g *azdosdkmocks.MockGitClient) args {
 				clients := &client.AggregatedClient{
 					GitReposClient: g,
 					Ctx:            context.Background(),
 				}
-				expectedArgs := branchCreatePushArgs(withRefsHeadsPrefix("a-branch"), "a-repo")
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				d.Set("name", "a-branch")
-				d.Set("repository_id", "a-repo")
+				ref := "refs/heads/another-branch"
+				fakeCommitId := "a-commit"
+				branchName := "a-branch"
+				repoId := "a-repo"
+				d.Set("ref", ref)
+				d.Set("name", branchName)
+				d.Set("repository_id", repoId)
 
 				g.EXPECT().
-					CreatePush(clients.Ctx, expectedArgs).
+					GetRefs(clients.Ctx, git.GetRefsArgs{
+						RepositoryId: &repoId,
+						Filter:       converter.String(strings.TrimPrefix(ref, "refs/")),
+						Top:          converter.Int(1),
+						PeelTags:     converter.Bool(true),
+					}).
+					Return(&git.GetRefsResponseValue{
+						Value: []git.GitRef{{
+							Name:     &ref,
+							ObjectId: &fakeCommitId,
+						}},
+					}, nil)
+
+				g.EXPECT().
+					UpdateRefs(clients.Ctx, git.UpdateRefsArgs{
+						RefUpdates: &[]git.GitRefUpdate{{
+							Name:        converter.String(withPrefix("refs/heads/", "a-branch")),
+							NewObjectId: &fakeCommitId,
+							OldObjectId: converter.String("0000000000000000000000000000000000000000"),
+						}},
+						RepositoryId: converter.String("a-repo"),
+					}).
 					Return(nil, fmt.Errorf("an-error"))
 				return args{
 					context.Background(),
@@ -48,43 +73,30 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 					clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error initialising new branch: an-error")),
+			diag.FromErr(fmt.Errorf("Error creating branch \"a-branch\": an-error")),
 		},
 		{
-			"When source_ref is given, refs update does not swallow error",
+			"When more than one of commitId, tag, or ref are given, the first one from left to right wins",
 			func(g *azdosdkmocks.MockGitClient) args {
 				clients := &client.AggregatedClient{
 					GitReposClient: g,
 					Ctx:            context.Background(),
 				}
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				source_ref := "refs/heads/another-branch"
-				commit := "a-commit"
+				tag := "refs/tag/v1.0.0"
+				fakeCommitId := "a-commit"
 				branchName := "a-branch"
 				repoId := "a-repo"
-				d.Set("source_ref", source_ref)
+				d.Set("commit_id", fakeCommitId)
+				d.Set("tag", tag)
 				d.Set("name", branchName)
 				d.Set("repository_id", repoId)
 
 				g.EXPECT().
-					GetRefs(clients.Ctx, git.GetRefsArgs{
-						RepositoryId: &repoId,
-						Filter:       converter.String(strings.TrimPrefix(source_ref, "refs/")),
-						Top:          converter.Int(1),
-						PeelTags:     converter.Bool(true),
-					}).
-					Return(&git.GetRefsResponseValue{
-						Value: []git.GitRef{{
-							Name:     &source_ref,
-							ObjectId: &commit,
-						}},
-					}, nil)
-
-				g.EXPECT().
 					UpdateRefs(clients.Ctx, git.UpdateRefsArgs{
 						RefUpdates: &[]git.GitRefUpdate{{
-							Name:        converter.String(withRefsHeadsPrefix("a-branch")),
-							NewObjectId: &commit,
+							Name:        converter.String(withPrefix("refs/heads/", "a-branch")),
+							NewObjectId: &fakeCommitId,
 							OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 						}},
 						RepositoryId: converter.String("a-repo"),
@@ -106,33 +118,33 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 					Ctx:            context.Background(),
 				}
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				source_ref := "refs/heads/another-branch"
-				commit := "a-commit"
+				ref := "refs/heads/another-branch"
+				fakeCommitId := "a-commit"
 				branchName := "a-branch"
 				repoId := "a-repo"
-				d.Set("source_ref", source_ref)
+				d.Set("ref", ref)
 				d.Set("name", branchName)
 				d.Set("repository_id", repoId)
 
 				g.EXPECT().
 					GetRefs(clients.Ctx, git.GetRefsArgs{
 						RepositoryId: &repoId,
-						Filter:       converter.String(strings.TrimPrefix(source_ref, "refs/")),
+						Filter:       converter.String(strings.TrimPrefix(ref, "refs/")),
 						Top:          converter.Int(1),
 						PeelTags:     converter.Bool(true),
 					}).
 					Return(&git.GetRefsResponseValue{
 						Value: []git.GitRef{{
-							Name:     &source_ref,
-							ObjectId: &commit,
+							Name:     &ref,
+							ObjectId: &fakeCommitId,
 						}},
 					}, nil)
 
 				g.EXPECT().
 					UpdateRefs(clients.Ctx, git.UpdateRefsArgs{
 						RefUpdates: &[]git.GitRefUpdate{{
-							Name:        converter.String(withRefsHeadsPrefix("a-branch")),
-							NewObjectId: &commit,
+							Name:        converter.String(withPrefix("refs/heads/", "a-branch")),
+							NewObjectId: &fakeCommitId,
 							OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 						}},
 						RepositoryId: converter.String("a-repo"),
@@ -260,7 +272,7 @@ func TestGitRepositoryBranch_Delete(t *testing.T) {
 				g.EXPECT().
 					UpdateRefs(clients.Ctx, git.UpdateRefsArgs{
 						RefUpdates: &[]git.GitRefUpdate{{
-							Name:        converter.String(withRefsHeadsPrefix("a-branch")),
+							Name:        converter.String(withPrefix("refs/heads/", "a-branch")),
 							OldObjectId: converter.String("a-commit"),
 							NewObjectId: converter.String("0000000000000000000000000000000000000000"),
 						}},

@@ -30,7 +30,6 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.NoZeroValues,
-				Sensitive:    false,
 			},
 			"repository_id": {
 				Type:         schema.TypeString,
@@ -38,28 +37,30 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			"source_ref": {
+			"ref": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			"source_sha": {
+			"tag": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"commit_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			"is_default_branch": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"ref": {
+			"branch_reference": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"sha": {
+			"branch_head": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -71,31 +72,28 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 	clients := m.(*client.AggregatedClient)
 	repoId := d.Get("repository_id").(string)
 	branchName := d.Get("name").(string)
-	branchRef := withRefsHeadsPrefix(branchName)
-	sourceRef, hasSourceRef := d.GetOk("source_ref")
-	_, hasSourceSha := d.GetOk("source_sha")
+	branchRefHeadName := withPrefix("refs/heads/", branchName)
+	ref, hasRef := d.GetOk("ref")
+	tag, hasTag := d.GetOk("tag")
+	_, hasCommitId := d.GetOk("commit_id")
 
-	// Initialise new orphan branch
-	if !hasSourceRef && !hasSourceSha {
-		args := branchCreatePushArgs(branchRef, repoId)
-
-		_, err := clients.GitReposClient.CreatePush(clients.Ctx, args)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error initialising new branch: %w", err))
-		}
-
-		d.SetId(fmt.Sprintf("%s:%s", repoId, branchName))
-
-		return resourceGitRepositoryBranchRead(ctx, d, m)
+	if !hasRef && !hasTag && !hasCommitId {
+		return diag.Errorf("One of 'ref' or 'tag' or 'commit_id' must be provided.")
 	}
 
-	// Get sha from source ref which can be a branch or a tag
-	if !hasSourceSha {
+	// Get a commitId from a head or tag if it is not provided in the resource
+	if !hasCommitId {
+		var rs string
+		if hasRef {
+			rs = withPrefix("refs/heads/", ref.(string))
+		}
+		if hasTag {
+			rs = withPrefix("refs/tags/", tag.(string))
+		}
+
 		// Azuredevops GetRefs api returns refs whose "prefix" matches Filter sorted from shortest to longest
 		// Top1 should return best match
-		sourceRefName := sourceRef.(string)
-		filter := strings.TrimPrefix(sourceRefName, "refs/")
-
+		filter := strings.TrimPrefix(rs, "refs/")
 		gotRefs, err := clients.GitReposClient.GetRefs(clients.Ctx, git.GetRefsArgs{
 			RepositoryId: converter.String(repoId),
 			Filter:       converter.String(filter),
@@ -107,7 +105,7 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		if len(gotRefs.Value) == 0 {
-			return diag.FromErr(fmt.Errorf("No refs found that match source_ref %q.", sourceRefName))
+			return diag.FromErr(fmt.Errorf("No refs found that match ref %q.", rs))
 		}
 
 		gotRef := gotRefs.Value[0]
@@ -116,7 +114,7 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		// Check for complete match. Sometimes refs exist that match prefix with Ref, but do not match completely.
-		if *gotRef.Name != sourceRefName {
+		if *gotRef.Name != rs {
 			return diag.FromErr(fmt.Errorf("Ref %q not found, closest match is %q.", filter, *gotRef.Name))
 		}
 
@@ -129,13 +127,13 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		} else {
 			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
-		d.Set("source_sha", *refObjectIdSha)
+		d.Set("commit_id", *refObjectIdSha)
 	}
-	newObjectId := d.Get("source_sha").(string)
+	newObjectId := d.Get("commit_id").(string)
 
 	_, err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
-			Name:        &branchRef,
+			Name:        &branchRefHeadName,
 			NewObjectId: &newObjectId,
 			OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
@@ -158,7 +156,7 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	branchStats, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
+	gotBranch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
 		RepositoryId: converter.String(repoId),
 		Name:         converter.String(name),
 	})
@@ -173,9 +171,8 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(fmt.Sprintf("%s:%s", repoId, name))
 	d.Set("name", name)
 	d.Set("repository_id", repoId)
-	d.Set("is_default_branch", *branchStats.IsBaseVersion)
-	d.Set("ref", converter.String(withRefsHeadsPrefix(name)))
-	d.Set("sha", *branchStats.Commit.CommitId)
+	d.Set("branch_reference", converter.String(withPrefix("refs/heads/", name)))
+	d.Set("branch_head", *gotBranch.Commit.CommitId)
 
 	return nil
 }
@@ -188,7 +185,7 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	branchStats, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
+	gotBranch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
 		RepositoryId: converter.String(repoId),
 		Name:         converter.String(name),
 	})
@@ -198,8 +195,8 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 
 	_, err = updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
-			Name:        converter.String(withRefsHeadsPrefix(name)),
-			OldObjectId: branchStats.Commit.CommitId,
+			Name:        converter.String(withPrefix("refs/heads/", name)),
+			OldObjectId: gotBranch.Commit.CommitId,
 			NewObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
 		RepositoryId: converter.String(repoId),
@@ -212,53 +209,11 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceGitRepositoryBranchImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	_, branchName, err := tfhelper.ParseGitRepoBranchID(d.Id())
+	_, _, err := tfhelper.ParseGitRepoBranchID(d.Id())
 	if err != nil {
 		return nil, err
 	}
-
-	diags := resourceGitRepositoryBranchRead(ctx, d, m)
-	if diags.HasError() {
-		return nil, fmt.Errorf(diags[0].Summary)
-	}
-
-	if d.Id() == "" {
-		return nil, fmt.Errorf("Branch %q not found", branchName)
-	}
-
 	return []*schema.ResourceData{d}, nil
-}
-
-func branchCreatePushArgs(name, repoId string) git.CreatePushArgs {
-	args := git.CreatePushArgs{
-		RepositoryId: converter.String(repoId),
-		Push: &git.GitPush{
-			RefUpdates: &[]git.GitRefUpdate{
-				{
-					Name:        converter.String(name),
-					OldObjectId: converter.String("0000000000000000000000000000000000000000"),
-				},
-			},
-			Commits: &[]git.GitCommitRef{
-				{
-					Comment: converter.String("Initial commit."),
-					Changes: &[]interface{}{
-						git.Change{
-							ChangeType: &git.VersionControlChangeTypeValues.Add,
-							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
-							},
-							NewContent: &git.ItemContent{
-								ContentType: &git.ItemContentTypeValues.RawText,
-								Content:     converter.String("Branch initialized with azuredevops terraform provider"),
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	return args
 }
 
 func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]git.GitRefUpdateResult, error) {
@@ -276,10 +231,9 @@ func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]g
 	return updateRefResults, nil
 }
 
-func withRefsHeadsPrefix(branchName string) string {
-	prefix := "refs/heads/"
-	if strings.HasPrefix(branchName, prefix) {
-		return branchName
+func withPrefix(prefix, name string) string {
+	if strings.HasPrefix(name, prefix) {
+		return name
 	}
-	return prefix + branchName
+	return prefix + name
 }
