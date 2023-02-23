@@ -33,7 +33,7 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 		Create: genCheckCreateFunc(f, e),
 		Read:   genCheckReadFunc(f),
 		Update: genCheckUpdateFunc(f, e),
-		Delete: genCheckDeleteFunc(e),
+		Delete: genCheckDeleteFunc(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(2 * time.Minute),
 			Read:   schema.DefaultTimeout(1 * time.Minute),
@@ -219,7 +219,7 @@ func genCheckUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateF
 	}
 }
 
-func genCheckDeleteFunc(expandFunc expandFunc) schema.DeleteFunc { //nolint:staticcheck
+func genCheckDeleteFunc() schema.DeleteFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		if strings.EqualFold(d.Id(), "") {
 			return nil
