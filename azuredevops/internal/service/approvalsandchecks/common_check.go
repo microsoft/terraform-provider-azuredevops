@@ -40,7 +40,6 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 			Update: schema.DefaultTimeout(2 * time.Minute),
 			Delete: schema.DefaultTimeout(2 * time.Minute),
 		},
-		Importer: nil,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -103,6 +102,11 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfig
 	d.SetId(fmt.Sprintf("%d", *check.Id))
 
 	d.Set("project_id", projectID)
+
+	if check.Resource == nil {
+		return fmt.Errorf("Resource nil")
+	}
+
 	d.Set("target_resource_id", check.Resource.Id)
 	d.Set("target_resource_type", check.Resource.Type)
 
@@ -110,32 +114,28 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfig
 		return fmt.Errorf("Settings nil")
 	}
 
-	var definitionRef map[string]interface{}
-
 	if definitionRefMap, found := check.Settings.(map[string]interface{})["definitionRef"]; found {
-		definitionRef = definitionRefMap.(map[string]interface{})
+		definitionRef := definitionRefMap.(map[string]interface{})
+		if id, found := definitionRef["id"]; found {
+			if !strings.EqualFold(id.(string), definitionId) {
+				return fmt.Errorf("invalid definitionRef id")
+			}
+		} else {
+			return fmt.Errorf("definitionRef ID not found. Expect ID: %s", definitionId)
+		}
+		if version, found := definitionRef["version"]; found {
+			if version != definitionVersion {
+				return fmt.Errorf("unsupported definitionRef version. Expect version: %s", definitionVersion)
+			}
+		} else {
+			return fmt.Errorf("unsupported definitionRef version")
+		}
 	} else {
 		return fmt.Errorf("definitionRef not found")
 	}
 
-	if id, found := definitionRef["id"]; found {
-		if !strings.EqualFold(id.(string), definitionId) {
-			return fmt.Errorf("invalid definitionRef id")
-		}
-	} else {
-		return fmt.Errorf("definitionRef id not found")
-	}
-
-	if version, found := definitionRef["version"]; found {
-		if version != definitionVersion {
-			return fmt.Errorf("unsupported definitionRef version")
-		}
-	} else {
-		return fmt.Errorf("unsupported definitionRef version")
-	}
-
-	if DisplayName, found := check.Settings.(map[string]interface{})["displayName"]; found {
-		d.Set("display_name", DisplayName.(string))
+	if displayName, found := check.Settings.(map[string]interface{})["displayName"]; found {
+		d.Set("display_name", displayName.(string))
 	} else {
 		return fmt.Errorf("displayName setting not found")
 	}
@@ -159,7 +159,10 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 			return fmt.Errorf(" failed creating check, project ID: %s. Error: %+v", projectID, err)
 		}
 
-		flatFunc(d, createdCheck, projectID)
+		err = flatFunc(d, createdCheck, projectID)
+		if err != nil {
+			return err
+		}
 		return genCheckReadFunc(flatFunc)(d, m)
 	}
 }
@@ -185,8 +188,7 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			return err
 		}
 
-		flatFunc(d, taskCheck, projectID)
-		return nil
+		return flatFunc(d, taskCheck, projectID)
 	}
 }
 
@@ -209,7 +211,10 @@ func genCheckUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateF
 			return err
 		}
 
-		flatFunc(d, updatedBusinessHours, projectID)
+		err = flatFunc(d, updatedBusinessHours, projectID)
+		if err != nil {
+			return err
+		}
 		return genCheckReadFunc(flatFunc)(d, m)
 	}
 }

@@ -41,44 +41,42 @@ func ResourceCheckBranchControl() *schema.Resource {
 }
 
 func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipelineschecks.CheckConfiguration, projectID string) error {
-	doBaseFlattening(d, branchControlCheck, projectID, evaluateBranchProtectionDefId, evaluateBranchProtectionDefVersion)
+	err := doBaseFlattening(d, branchControlCheck, projectID, evaluateBranchProtectionDefId, evaluateBranchProtectionDefVersion)
+	if err != nil {
+		return err
+	}
 
 	if branchControlCheck.Settings == nil {
 		return fmt.Errorf("Settings nil")
 	}
 
-	var inputs map[string]interface{}
-
 	if inputMap, found := branchControlCheck.Settings.(map[string]interface{})["inputs"]; found {
-		inputs = inputMap.(map[string]interface{})
+		inputs := inputMap.(map[string]interface{})
+		if AllowedBranches, found := inputs["allowedBranches"]; found {
+			d.Set("allowed_branches", AllowedBranches)
+		} else {
+			return fmt.Errorf("allowedBranches input not found")
+		}
+		if verifyBranchProtection, found := inputs["ensureProtectionOfBranch"]; found {
+			value, err := strconv.ParseBool(verifyBranchProtection.(string))
+			if err != nil {
+				return err
+			}
+			d.Set("verify_branch_protection", value)
+		} else {
+			return fmt.Errorf("ensureProtectionOfBranch input not found")
+		}
+		if ignoreUnknownProtectionStatus, found := inputs["allowUnknownStatusBranch"]; found {
+			value, err := strconv.ParseBool(ignoreUnknownProtectionStatus.(string))
+			if err != nil {
+				return err
+			}
+			d.Set("ignore_unknown_protection_status", value)
+		} else {
+			return fmt.Errorf("allowUnknownStatusBranch input not found")
+		}
 	} else {
 		return fmt.Errorf("inputs not found")
-	}
-
-	if AllowedBranches, found := inputs["allowedBranches"]; found {
-		d.Set("allowed_branches", AllowedBranches)
-	} else {
-		return fmt.Errorf("allowedBranches input not found")
-	}
-
-	if verifyBranchProtection, found := inputs["ensureProtectionOfBranch"]; found {
-		value, err := strconv.ParseBool(verifyBranchProtection.(string))
-		if err != nil {
-			return err
-		}
-		d.Set("verify_branch_protection", value)
-	} else {
-		return fmt.Errorf("ensureProtectionOfBranch input not found")
-	}
-
-	if ignoreUnknownProtectionStatus, found := inputs["allowUnknownStatusBranch"]; found {
-		value, err := strconv.ParseBool(ignoreUnknownProtectionStatus.(string))
-		if err != nil {
-			return err
-		}
-		d.Set("ignore_unknown_protection_status", value)
-	} else {
-		return fmt.Errorf("allowUnknownStatusBranch input not found")
 	}
 
 	return nil

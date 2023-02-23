@@ -45,7 +45,7 @@ func (client *ClientImpl) GetCheckConfiguration(ctx context.Context, args pipeli
 	routeValues["id"] = strconv.Itoa(*args.Id)
 
 	queryParams := url.Values{}
-	queryParams.Add("$expand", "1")
+	queryParams.Add("$expand", "settings")
 
 	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)

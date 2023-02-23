@@ -91,44 +91,41 @@ func ResourceCheckBusinessHours() *schema.Resource {
 }
 
 func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelineschecks.CheckConfiguration, projectID string) error {
-	doBaseFlattening(d, businessHoursCheck, projectID, evaulateBusinessHoursDefId, evaluateBranchProtectionDefVersion)
+	err := doBaseFlattening(d, businessHoursCheck, projectID, evaulateBusinessHoursDefId, evaluateBranchProtectionDefVersion)
+	if err != nil {
+		return err
+	}
 
 	if businessHoursCheck.Settings == nil {
 		return fmt.Errorf("Settings nil")
 	}
 
-	var inputs map[string]interface{}
-
 	if inputMap, found := businessHoursCheck.Settings.(map[string]interface{})["inputs"]; found {
-		inputs = inputMap.(map[string]interface{})
-	} else {
-		return fmt.Errorf("inputs not found")
-	}
-
-	if businessDays, found := inputs["businessDays"]; found {
-		for _, day := range daysOfBusinessWeek {
-			d.Set(day.TfName, strings.Contains(businessDays.(string), day.AdoName))
+		inputs := inputMap.(map[string]interface{})
+		if businessDays, found := inputs["businessDays"]; found {
+			for _, day := range daysOfBusinessWeek {
+				d.Set(day.TfName, strings.Contains(businessDays.(string), day.AdoName))
+			}
+		} else {
+			return fmt.Errorf("businessDays input not found")
+		}
+		if timeZone, found := inputs["timeZone"]; found {
+			d.Set("time_zone", timeZone)
+		} else {
+			return fmt.Errorf("timeZone input not found")
+		}
+		if startTime, found := inputs["startTime"]; found {
+			d.Set("start_time", startTime)
+		} else {
+			return fmt.Errorf("startTime input not found")
+		}
+		if endTime, found := inputs["endTime"]; found {
+			d.Set("end_time", endTime)
+		} else {
+			return fmt.Errorf("endTime input not found")
 		}
 	} else {
-		return fmt.Errorf("businessDays input not found")
-	}
-
-	if timeZone, found := inputs["timeZone"]; found {
-		d.Set("time_zone", timeZone)
-	} else {
-		return fmt.Errorf("timeZone input not found")
-	}
-
-	if startTime, found := inputs["startTime"]; found {
-		d.Set("start_time", startTime)
-	} else {
-		return fmt.Errorf("startTime input not found")
-	}
-
-	if endTime, found := inputs["endTime"]; found {
-		d.Set("end_time", endTime)
-	} else {
-		return fmt.Errorf("endTime input not found")
+		return fmt.Errorf("inputs not found")
 	}
 
 	return nil
