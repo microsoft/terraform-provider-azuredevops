@@ -147,7 +147,7 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID.
 - `target_resource_id` - (Required) The ID of the resource being protected by the check.
 - `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`.
-- `display_name` - (Required) The name of the branch control displayed in the web UI.
+- `display_name` - (Required) The name of the branch control check displayed in the web UI.
 - `allowed_branches` - (Optional) The branches allowed to use the resource. Specify a comma separated list of allowed branches in `refs/heads/branch_name` format. To allow deployments from all branches, specify ` * ` . `refs/heads/features/* , refs/heads/releases/*` restricts deployments to all branches under features/ or releases/ . Defaults to `*`.
 - `verify_branch_protection` - (Optional) Validate the branches being deployed are protected. Defaults to `false`.
 - `ignore_unknown_protection_status` - (Optional) Allow deployment from branches for which protection status could not be obtained. Only relevant when verify_branch_protection is `true`. Defaults to `false`.
