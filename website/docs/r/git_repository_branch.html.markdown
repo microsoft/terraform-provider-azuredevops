@@ -23,25 +23,20 @@ resource "azuredevops_git_repository" "example" {
   project_id = azuredevops_project.example.id
   name       = "Example Git Repository"
   initialization {
-    init_type = "Uninitialized"
+    init_type = "Clean"
   }
 }
 
-resource "azuredevops_git_repository_branch" "example_orphan" {
+resource "azuredevops_git_repository_branch" "example" {
   repository_id = azuredevops_git_repository.example.id
-  name          = "master"
+  name          = "example-branch-name"
+  ref_branch    = azuredevops_git_repository.example.default_branch
 }
 
-resource "azuredevops_git_repository_branch" "example_from_ref" {
+resource "azuredevops_git_repository_branch" "example_from_commit_id" {
   repository_id = azuredevops_git_repository.example.id
-  name          = "develop"
-  source_ref    = azuredevops_git_repository_branch.example_orphan.ref
-}
-
-resource "azuredevops_git_repository_branch" "example_from_sha" {
-  repository_id = azuredevops_git_repository.example.id
-  name          = "somebranch"
-  source_sha    = azuredevops_git_repository_branch.example_orphan.sha
+  name          = "example-from-commit-id"
+  ref_commit_id = azuredevops_git_repository_branch.example.last_commit_id
 }
 ```
 
@@ -49,30 +44,20 @@ resource "azuredevops_git_repository_branch" "example_from_sha" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the branch (not prefixed with `refs/heads/`).
+- `name` - (Required) The name of the branch in short format not prefixed with `refs/heads/`.
 
 - `repository_id` - (Required) The ID of the repository the branch is created against.
 
-- `source_ref` - (Optional) The ref the branch is created from. (prefixed with `refs/heads/` or `refs/tags/`)
+- `ref_branch` - (Optional) The reference to the source branch to create the branch from, in `<name>` or `refs/heads/<name>` format. Throws error if set when `ref_tag` or `ref_commit_id` is also set.
 
-- `source_sha` - (Optional) The commit object id the branch is created from. Set to commit object id of `source_ref` if not given. Otherwise, `source_ref` is ignored.
+- `ref_tag` - (Optional) The reference to the tag to create the branch from, in `<name>` or `refs/tags/<name>` format. Throws error if set when `ref_branch` or `ref_commit_id` is also set.
+
+- `ref_commit_id` - (Optional) The commit object id to create the branch from. Throws error if set when `ref_branch` or `ref_tag` is also set.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
-- `id` - The ID of the Git Repository Branch.
+- `id` - The ID of the Git Repository Branch, in the format `<repository_id>:<name>`.
 
-- `is_default_branch` - True if the branch is the default branch of the git repository.
-
-- `ref` - The branch reference in `refs/heads/<name>` format.
-
-- `sha` - The commit SHA1 object id of the branch tip.
-
-## Import
-
-Git Repository Branches can be imported using the `resource id`, e.g.
-
-```shell
-terraform import azuredevops_git_repository_branch.example 00000000-0000-0000-0000-000000000000:master
-```
+- `last_commit_id` - The commit object id of last commit on the branch.
