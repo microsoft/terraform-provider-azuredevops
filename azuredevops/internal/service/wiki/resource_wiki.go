@@ -1,8 +1,11 @@
 package wiki
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -19,17 +22,13 @@ func ResourceWiki() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			"project_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
@@ -38,11 +37,6 @@ func ResourceWiki() *schema.Resource {
 					string(wiki.WikiTypeValues.ProjectWiki),
 					string(wiki.WikiTypeValues.CodeWiki)},
 					false),
-			},
-			"isdisabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
 			},
 			"mapped_path": {
 				Type:     schema.TypeString,
@@ -82,7 +76,7 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	wikiArgs := &wiki.WikiCreateParametersV2{Name: converter.String(d.Get("name").(string)), ProjectId: &uuidProject, Type: &wikiType}
-	if mappedPath, ok := d.GetOk("mappedpath"); ok {
+	if mappedPath, ok := d.GetOk("mapped_path"); ok {
 		wikiArgs.MappedPath = converter.String(mappedPath.(string))
 	}
 	if repositoryId, ok := d.GetOk("repository_id"); ok {
@@ -92,13 +86,11 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		wikiArgs.RepositoryId = &repositoryUuid
 	}
-
 	if version, ok := d.GetOk("versions"); ok {
 		wikiArgs.Version = &git.GitVersionDescriptor{Version: converter.String(version.(string))}
 	}
 
-		resp, err := clients.WikiClient.CreateWiki(clients.Ctx, wiki.CreateWikiArgs{WikiCreateParams: wikiArgs})
-
+	resp, err := clients.WikiClient.CreateWiki(clients.Ctx, wiki.CreateWikiArgs{WikiCreateParams: wikiArgs})
 
 	if err != nil {
 		return err
@@ -118,31 +110,30 @@ func resourceWikiRead(d *schema.ResourceData, m interface{}) error {
 
 	if resp.Id != nil {
 		d.SetId(resp.Id.String())
-		d.Set("id", *resp.Id)
 	}
 	if resp.Name != nil {
 		d.Set("name", *resp.Name)
 	}
 	if resp.ProjectId != nil {
-		d.Set("project_id", *resp.ProjectId)
+		d.Set("project_id", resp.ProjectId.String())
 	}
 	if resp.Type != nil {
 		d.Set("type", *resp.Type)
 	}
 	if resp.MappedPath != nil {
-		d.Set("mappedpath", *resp.MappedPath)
+		d.Set("mapped_path", *resp.MappedPath)
 	}
 	if resp.RemoteUrl != nil {
-		d.Set("remoteurl", *resp.RemoteUrl)
+		d.Set("remote_url", *resp.RemoteUrl)
 	}
 	if resp.RepositoryId != nil {
-		d.Set("repository_id", *resp.RepositoryId)
+		d.Set("repository_id", resp.RepositoryId.String())
 	}
 	if resp.Url != nil {
 		d.Set("url", *resp.Url)
 	}
 	if resp.Versions != nil {
-		d.Set("versions", *resp.Versions)
+		d.Set("versions", (*resp.Versions)[0].Version)
 	}
 
 	return nil
@@ -151,28 +142,25 @@ func resourceWikiRead(d *schema.ResourceData, m interface{}) error {
 func resourceWikiUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	requiresUpdate := false
-	var updateParameters wiki.WikiUpdateParameters
-
 	if d.HasChange("name") {
-		updateParameters.Name = converter.String(d.Get("name").(string))
-		requiresUpdate = true
-	}
-	if requiresUpdate {
 		_, err := clients.WikiClient.UpdateWiki(clients.Ctx, wiki.UpdateWikiArgs{
-			WikiIdentifier:   converter.String(d.Id()),
-			UpdateParameters: &updateParameters})
+			WikiIdentifier: converter.String(d.Id()),
+			UpdateParameters: &wiki.WikiUpdateParameters{
+				Name: converter.String(d.Get("name").(string)),
+			},
+		})
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
 func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	//  codewiki can be deleted normally, for project wiki the repo needs to be deleted
+	//  codewiki can be deleted normally, for project wiki the project needs to be deleted
 	wikiType := wiki.WikiType(d.Get("type").(string))
 	if wikiType == "codeWiki" {
 		_, err := clients.WikiClient.DeleteWiki(clients.Ctx, wiki.DeleteWikiArgs{
@@ -186,12 +174,8 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
-			RepositoryId: resp.RepositoryId,
-			Project:      converter.String(d.Get("project_id").(string)),
-		})
-		if err != nil {
-			return err
+		if resp.Id == nil {
+			return errors.New("projectWiki can only be removed when attached project is removed.")
 		}
 	}
 	d.SetId("")

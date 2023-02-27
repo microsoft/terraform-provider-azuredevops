@@ -1049,3 +1049,37 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
+
+// HclWiki HCL describing an wiki setup using azuredevops_wiki
+func HclWiki(projectName string) string {
+	projectResource := HclProjectResource(projectName)
+	projectFeatures := fmt.Sprintf(`
+	
+	  %s
+
+	  resource "azuredevops_git_repository" "repository" {
+		project_id = azuredevops_project.project.id
+		name       = "Repo"
+		initialization {
+		  init_type = "Clean"
+		}
+	  }
+	  
+	  resource "azuredevops_wiki" "code_wiki" {
+		name = "codeWikiRepo"
+		project_id = azuredevops_project.project.id
+		repository_id = azuredevops_git_repository.repository.id
+		versions = "master"
+		type = "codeWiki"
+		mapped_path = "/"
+	  }
+
+	  resource "azuredevops_wiki" "project_wiki" {
+		name = "projectWikiRepo"
+		project_id = azuredevops_project.project.id
+		type = "projectWiki"
+	  }
+	  `, projectResource)
+
+	return fmt.Sprintf("%s", projectFeatures)
+}
