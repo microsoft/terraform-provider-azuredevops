@@ -30,14 +30,14 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchName)),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref", "master"),
+					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref_branch", "master"),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "branch_reference", fmt.Sprintf("refs/heads/testbranch-%s", branchName)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "branch_head"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "last_commit_id"),
 					// test-branch2
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "name", fmt.Sprintf("testbranch2-%s", branchName)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "commit_id"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "ref_commit_id"),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "branch_reference", fmt.Sprintf("refs/heads/testbranch2-%s", branchName)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "branch_head"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
 			// Test import branch created from ref, ignore fields set only on create
@@ -45,7 +45,7 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 				ResourceName:            "azuredevops_git_repository_branch.from_master",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ref", "tag", "commit_id"},
+				ImportStateVerifyIgnore: []string{"ref_branch", "ref_tag", "ref_commit_id"},
 			},
 			// Test replace/update branch when name changes
 			{
@@ -53,14 +53,14 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchNameChanged)),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref", "master"),
+					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref_branch", "master"),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "branch_reference", fmt.Sprintf("refs/heads/testbranch-%s", branchNameChanged)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "branch_head"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "last_commit_id"),
 					// test-branch2
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "name", fmt.Sprintf("testbranch2-%s", branchNameChanged)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "commit_id"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "ref_commit_id"),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "branch_reference", fmt.Sprintf("refs/heads/testbranch2-%s", branchNameChanged)),
-					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "branch_head"),
+					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
 			// Test invalid ref
@@ -71,7 +71,7 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 resource "azuredevops_git_repository_branch" "from_nonexistent_tag" {
 	repository_id = azuredevops_git_repository.repository.id
     name = "testbranch-non-existent-tag"
-	tag = "0.0.0"
+	ref_tag = "0.0.0"
 }
 `, hclGitRepoBranches(projectName, gitRepoName, "Clean", branchNameChanged)),
 				ExpectError: regexp.MustCompile(`No refs found that match ref "refs/tags/0.0.0"`),
@@ -89,12 +89,12 @@ func hclGitRepoBranches(projectName, gitRepoName, initType, branchName string) s
 resource "azuredevops_git_repository_branch" "from_master" {
 	repository_id = azuredevops_git_repository.repository.id
 	name = "testbranch-%[2]s"
-    ref = "master"
+    ref_branch = "master"
 }
 resource "azuredevops_git_repository_branch" "from_commit_id" {
 	repository_id = azuredevops_git_repository.repository.id
     name = "testbranch2-%[2]s"
-	commit_id = azuredevops_git_repository_branch.from_master.branch_head
+	ref_commit_id = azuredevops_git_repository_branch.from_master.last_commit_id
 }
   `, gitRepoResource, branchName)
 }

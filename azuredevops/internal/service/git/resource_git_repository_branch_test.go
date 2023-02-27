@@ -39,7 +39,7 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 				fakeCommitId := "a-commit"
 				branchName := "a-branch"
 				repoId := "a-repo"
-				d.Set("ref", ref)
+				d.Set("ref_branch", ref)
 				d.Set("name", branchName)
 				d.Set("repository_id", repoId)
 
@@ -76,19 +76,19 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 			diag.FromErr(fmt.Errorf("Error creating branch \"a-branch\": an-error")),
 		},
 		{
-			"When more than one of commitId, tag, or ref are given, the first one from left to right wins",
+			"When more than one of ref_commit_id, ref_tag, or ref_branch are given, the first one from left to right wins",
 			func(g *azdosdkmocks.MockGitClient) args {
 				clients := &client.AggregatedClient{
 					GitReposClient: g,
 					Ctx:            context.Background(),
 				}
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				tag := "refs/tag/v1.0.0"
+				tag := "refs/tags/v1.0.0"
 				fakeCommitId := "a-commit"
 				branchName := "a-branch"
 				repoId := "a-repo"
-				d.Set("commit_id", fakeCommitId)
-				d.Set("tag", tag)
+				d.Set("ref_commit_id", fakeCommitId)
+				d.Set("ref_tag", tag)
 				d.Set("name", branchName)
 				d.Set("repository_id", repoId)
 
@@ -122,7 +122,7 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 				fakeCommitId := "a-commit"
 				branchName := "a-branch"
 				repoId := "a-repo"
-				d.Set("ref", ref)
+				d.Set("ref_branch", ref)
 				d.Set("name", branchName)
 				d.Set("repository_id", repoId)
 
@@ -197,7 +197,7 @@ func TestGitRepositoryBranch_Read(t *testing.T) {
 				}
 
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				d.Set("ref", "another-branch")
+				d.Set("ref_branch", "another-branch")
 				d.Set("name", "a-branch")
 				d.Set("repository_id", "a-repo")
 				d.SetId("a-repo:a-branch")
@@ -253,7 +253,7 @@ func TestGitRepositoryBranch_Delete(t *testing.T) {
 				}
 
 				d := schema.TestResourceDataRaw(t, ResourceGitRepositoryBranch().Schema, nil)
-				d.Set("ref", "another-branch")
+				d.Set("ref_branch", "another-branch")
 				d.Set("name", "a-branch")
 				d.Set("repository_id", "a-repo")
 				d.SetId("a-repo:a-branch")

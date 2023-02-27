@@ -37,30 +37,33 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			"ref": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+			"ref_branch": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.StringIsNotEmpty,
+				ConflictsWith: []string{"ref_tag", "ref_commit_id"},
 			},
-			"tag": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+			"ref_tag": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.StringIsNotEmpty,
+				ConflictsWith: []string{"ref_branch", "ref_commit_id"},
 			},
-			"commit_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+			"ref_commit_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ValidateFunc:  validation.StringIsNotEmpty,
+				ConflictsWith: []string{"ref_branch", "ref_tag"},
 			},
 			"branch_reference": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"branch_head": {
+			"last_commit_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -73,9 +76,9 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 	repoId := d.Get("repository_id").(string)
 	branchName := d.Get("name").(string)
 	branchRefHeadName := withPrefix("refs/heads/", branchName)
-	ref, hasRef := d.GetOk("ref")
-	tag, hasTag := d.GetOk("tag")
-	_, hasCommitId := d.GetOk("commit_id")
+	ref, hasRef := d.GetOk("ref_branch")
+	tag, hasTag := d.GetOk("ref_tag")
+	_, hasCommitId := d.GetOk("ref_commit_id")
 
 	if !hasRef && !hasTag && !hasCommitId {
 		return diag.Errorf("One of 'ref' or 'tag' or 'commit_id' must be provided.")
@@ -127,9 +130,9 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		} else {
 			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
-		d.Set("commit_id", *refObjectIdSha)
+		d.Set("ref_commit_id", *refObjectIdSha)
 	}
-	newObjectId := d.Get("commit_id").(string)
+	newObjectId := d.Get("ref_commit_id").(string)
 
 	_, err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
@@ -172,7 +175,7 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 	d.Set("name", name)
 	d.Set("repository_id", repoId)
 	d.Set("branch_reference", converter.String(withPrefix("refs/heads/", name)))
-	d.Set("branch_head", *gotBranch.Commit.CommitId)
+	d.Set("last_commit_id", *gotBranch.Commit.CommitId)
 
 	return nil
 }
