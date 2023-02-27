@@ -31,12 +31,10 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchName)),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref_branch", "master"),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "branch_reference", fmt.Sprintf("refs/heads/testbranch-%s", branchName)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "last_commit_id"),
 					// test-branch2
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "name", fmt.Sprintf("testbranch2-%s", branchName)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "ref_commit_id"),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "branch_reference", fmt.Sprintf("refs/heads/testbranch2-%s", branchName)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
@@ -54,12 +52,10 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchNameChanged)),
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "ref_branch", "master"),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "branch_reference", fmt.Sprintf("refs/heads/testbranch-%s", branchNameChanged)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_master", "last_commit_id"),
 					// test-branch2
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "name", fmt.Sprintf("testbranch2-%s", branchNameChanged)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "ref_commit_id"),
-					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_commit_id", "branch_reference", fmt.Sprintf("refs/heads/testbranch2-%s", branchNameChanged)),
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
