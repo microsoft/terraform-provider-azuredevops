@@ -174,7 +174,6 @@ func SetCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperat
 			Path:  converter.String("/fields/Custom." + customFieldName),
 			Value: customFieldValue,
 		})
-
 	}
 	return operations
 }
@@ -211,7 +210,6 @@ func SetTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []w
 }
 
 func GetFields(d *schema.ResourceData, m *map[string]interface{}) {
-
 	custom_fields := make(map[string]interface{})
 	for key, value := range *m {
 		v, ok := systemFieldMapping[key]
