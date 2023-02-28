@@ -83,25 +83,18 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", name)
 	}
 
-	ref, hasRef := d.GetOk("ref_branch")
-	tag, hasTag := d.GetOk("ref_tag")
-	_, hasCommitId := d.GetOk("ref_commit_id")
-	if !hasRef && !hasTag && !hasCommitId {
-		return diag.Errorf("One of 'ref' or 'tag' or 'commit_id' must be provided.")
-	}
-
-	// Get a commitId from a head or tag if it is not provided in the resource
-	if !hasCommitId {
+	var newObjectId string
+	if v, ok := d.GetOk("ref_commit_id"); ok {
+		newObjectId = v.(string)
+	} else {
 		var rs string
-		if hasRef {
-			rs = withPrefix(REF_BRANCH_PREFIX, ref.(string))
+		if v, ok := d.GetOk("ref_branch"); ok {
+			rs = withPrefix(REF_BRANCH_PREFIX, v.(string))
 		}
-		if hasTag {
-			rs = withPrefix(REF_TAG_PREFIX, tag.(string))
+		if v, ok := d.GetOk("ref_tag"); ok {
+			rs = withPrefix(REF_TAG_PREFIX, v.(string))
 		}
 
-		// Azuredevops GetRefs api returns refs whose "prefix" matches Filter sorted from shortest to longest
-		// Top1 should return best match
 		filter := strings.TrimPrefix(rs, "refs/")
 		gotRefs, err := clients.GitReposClient.GetRefs(clients.Ctx, git.GetRefsArgs{
 			RepositoryId: converter.String(repoId),
@@ -127,18 +120,15 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("Ref %q not found, closest match is %q.", filter, *gotRef.Name))
 		}
 
-		// Check if ref was a tag and we need to use PeeledObjectId to get the commit id of the tag
-		var refObjectIdSha *string
 		if gotRef.PeeledObjectId != nil {
-			refObjectIdSha = gotRef.PeeledObjectId
+			newObjectId = *gotRef.PeeledObjectId
 		} else if gotRef.ObjectId != nil {
-			refObjectIdSha = gotRef.ObjectId
+			newObjectId = *gotRef.ObjectId
 		} else {
 			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
-		d.Set("ref_commit_id", *refObjectIdSha)
 	}
-	newObjectId := d.Get("ref_commit_id").(string)
+
 
 	_, err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
