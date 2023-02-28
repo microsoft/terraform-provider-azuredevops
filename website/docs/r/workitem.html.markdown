@@ -12,15 +12,19 @@ Manages a Work Item in Azure Devops.
 ## Example Usage
 
 ```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
 resource "azuredevops_workitem" "example" {
-  title = "Testing Terraform with"
-  project_id = "9a6ec7fd-a679-4b11-af60-0b1fc8cae540"
-  type = "Issue"
-  custom_fields = {
-    foo = "SomeCustomField"
-  } 
-  state = "To Do"
-  tags = ["Tag"]
+  project_id    = data.azuredevops_project.example.id
+  title         = "Testing Terraform Item"
+  type          = "Issue"
+  state = "Active"
+  tags  = ["Tag"]
 }
 ```
 
@@ -28,7 +32,7 @@ resource "azuredevops_workitem" "example" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) UUID of the Project.
+* `project_id` - (Required) The ID of the Project.
 
 * `title` - (Required) Title of the Work Item.
 
@@ -52,8 +56,8 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Import
 
-Work Items can be imported using the `resource id`, e.g.
+Work Items  can be imported using the project name/variable group ID or by the project Guid/variable group ID, e.g.
 
-```shell
-terraform import azuredevops_workitem.example 00000000-0000-0000-0000-000000000000
+```sh
+terraform import azuredevops_workitem.example "Example Project/10"
 ```

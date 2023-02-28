@@ -10,9 +10,9 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
@@ -29,19 +29,16 @@ func ResourceWorkItem() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Required:     true,
-				Optional:     false,
 			},
 			"project_id": {
-				Type:             schema.TypeString,
-				ValidateFunc:     validation.IsUUID,
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: suppress.CaseDifference,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.IsUUID,
+				Required:     true,
+				ForceNew:     true,
 			},
 			"type": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Optional:     false,
 				ForceNew:     true,
 				Required:     true,
 				Description:  "Type of the Work Item",
@@ -82,14 +79,12 @@ var systemFieldMapping = map[string]string{
 // ResourceWorkItemCreateOrUpdate create workitem
 func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	project := d.Get("project_id").(string)
-	workItemType := d.Get("type").(string)
 
 	operations := GetPatchOperations(d)
 
 	args := workitemtracking.CreateWorkItemArgs{
-		Project:  &project,
-		Type:     &workItemType,
+		Project:  converter.String(d.Get("project_id").(string)),
+		Type:     converter.String(d.Get("type").(string)),
 		Document: &operations,
 	}
 	workitem, err := clients.WorkItemTrackingClient.CreateWorkItem(clients.Ctx, args)
@@ -143,12 +138,19 @@ func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 // ResourceWorkItemDelete remove workitem
 func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	id, _ := strconv.Atoi(d.Id())
+	id, errConvert := strconv.Atoi(d.Id())
+	if errConvert != nil {
+		return fmt.Errorf("Error getting Workitem Id: %+v", errConvert)
+	}
 	args := workitemtracking.DeleteWorkItemArgs{
 		Id: &id,
 	}
 	_, err := clients.WorkItemTrackingClient.DeleteWorkItem(clients.Ctx, args)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	d.SetId("")
