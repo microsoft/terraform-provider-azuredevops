@@ -60,7 +60,6 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				Computed:      true,
 				ValidateFunc:  validation.StringIsNotEmpty,
 				ConflictsWith: []string{"ref_branch", "ref_tag"},
 			},
@@ -128,7 +127,6 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
 	}
-
 
 	_, err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
