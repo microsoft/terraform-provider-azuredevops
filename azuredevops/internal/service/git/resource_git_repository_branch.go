@@ -26,9 +26,6 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 		CreateContext: resourceGitRepositoryBranchCreate,
 		ReadContext:   resourceGitRepositoryBranchRead,
 		DeleteContext: resourceGitRepositoryBranchDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: resourceGitRepositoryBranchImport,
-		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -213,14 +210,6 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	return nil
-}
-
-func resourceGitRepositoryBranchImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	_, _, err := tfhelper.ParseGitRepoBranchID(d.Id())
-	if err != nil {
-		return nil, err
-	}
-	return []*schema.ResourceData{d}, nil
 }
 
 func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]git.GitRefUpdateResult, error) {

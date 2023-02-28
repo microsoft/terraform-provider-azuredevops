@@ -38,13 +38,6 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
-			// Test import branch created from ref, ignore fields set only on create
-			{
-				ResourceName:            "azuredevops_git_repository_branch.from_master",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ref_branch", "ref_tag", "ref_commit_id"},
-			},
 			// Test replace/update branch when name changes
 			{
 				Config: hclGitRepoBranches(projectName, gitRepoName, "Clean", branchNameChanged),
