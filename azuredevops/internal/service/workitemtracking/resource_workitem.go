@@ -12,7 +12,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
@@ -74,6 +73,12 @@ var systemFieldMapping = map[string]string{
 	"System.State":        "state",
 	"System.Title":        "title",
 	"System.WorkItemType": "type",
+}
+
+var fieldMapping = map[string]string{
+	"state": "System.State",
+	"title": "System.Title",
+	"type":  "System.WorkItemType",
 }
 
 // ResourceWorkItemCreateOrUpdate create workitem
@@ -179,8 +184,7 @@ func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOpe
 }
 
 func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
-	systemFieldReverseMapping := datahelper.ReverseMap(systemFieldMapping)
-	for terraformProperty, apiName := range systemFieldReverseMapping {
+	for terraformProperty, apiName := range fieldMapping {
 		value := d.Get(terraformProperty).(string)
 		if value != "" {
 			operations = append(operations, webapi.JsonPatchOperation{
