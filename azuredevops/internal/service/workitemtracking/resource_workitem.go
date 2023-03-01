@@ -225,7 +225,6 @@ func expandTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) 
 func flattenFields(d *schema.ResourceData, m *map[string]interface{}) {
 	customFields := make(map[string]interface{})
 	for key, value := range *m {
-
 		if v, ok := systemFieldMapping[key]; ok {
 			d.Set(v, value)
 		} else if strings.HasPrefix(key, "Custom.") {
