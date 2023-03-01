@@ -113,6 +113,10 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	}
 	workitem, err := clients.WorkItemTrackingClient.GetWorkItem(clients.Ctx, args)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
