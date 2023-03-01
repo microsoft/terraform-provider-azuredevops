@@ -104,7 +104,10 @@ func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 // ResourceWorkItemRead read workitem
 func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	id, _ := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return err
+	}
 	args := workitemtracking.GetWorkItemArgs{
 		Id: &id,
 	}
@@ -122,8 +125,10 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project_id").(string)
-	id, _ := strconv.Atoi(d.Id())
-
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return err
+	}
 	operations := expandPatchOperations(d)
 
 	args := workitemtracking.UpdateWorkItemArgs{
