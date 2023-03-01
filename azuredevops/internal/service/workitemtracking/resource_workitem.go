@@ -80,7 +80,7 @@ var systemFieldMapping = map[string]string{
 func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	operations := GetPatchOperations(d)
+	operations := expandPatchOperations(d)
 
 	args := workitemtracking.CreateWorkItemArgs{
 		Project:  converter.String(d.Get("project_id").(string)),
@@ -108,7 +108,7 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	GetFields(d, workitem.Fields)
+	flattenFields(d, workitem.Fields)
 
 	return nil
 }
@@ -119,7 +119,7 @@ func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	project := d.Get("project_id").(string)
 	id, _ := strconv.Atoi(d.Id())
 
-	operations := GetPatchOperations(d)
+	operations := expandPatchOperations(d)
 
 	args := workitemtracking.UpdateWorkItemArgs{
 		Id:       &id,
@@ -157,15 +157,15 @@ func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func GetPatchOperations(d *schema.ResourceData) []webapi.JsonPatchOperation {
+func expandPatchOperations(d *schema.ResourceData) []webapi.JsonPatchOperation {
 	var operations []webapi.JsonPatchOperation
-	operations = SetSystemFields(d, operations)
-	operations = SetCustomFields(d, operations)
-	operations = SetTags(d, operations)
+	operations = expandSystemFields(d, operations)
+	operations = expandCustomFields(d, operations)
+	operations = expandTags(d, operations)
 	return operations
 }
 
-func SetCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	for customFieldName, customFieldValue := range *&custom_fields {
 		operations = append(operations, webapi.JsonPatchOperation{
@@ -178,9 +178,9 @@ func SetCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperat
 	return operations
 }
 
-func SetSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
 	systemFieldReverseMapping := datahelper.ReverseMap(systemFieldMapping)
-	for terraformProperty, apiName := range *&systemFieldReverseMapping {
+	for terraformProperty, apiName := range systemFieldReverseMapping {
 		value := d.Get(terraformProperty).(string)
 		if value != "" {
 			operations = append(operations, webapi.JsonPatchOperation{
@@ -194,7 +194,7 @@ func SetSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperat
 	return operations
 }
 
-func SetTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+func expandTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
 	tags := d.Get("tags").([]interface{})
 	if len(tags) == 0 {
 		return operations
@@ -209,18 +209,18 @@ func SetTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []w
 	return operations
 }
 
-func GetFields(d *schema.ResourceData, m *map[string]interface{}) {
-	custom_fields := make(map[string]interface{})
+func flattenFields(d *schema.ResourceData, m *map[string]interface{}) {
+	customFields := make(map[string]interface{})
 	for key, value := range *m {
-		v, ok := systemFieldMapping[key]
-		if ok {
+
+		if v, ok := systemFieldMapping[key]; ok {
 			d.Set(v, value)
 		} else if strings.HasPrefix(key, "Custom.") {
-			key_without_custom := strings.ReplaceAll(key, "Custom.", "")
-			custom_fields[key_without_custom] = value
+			keyWithoutCustom := strings.ReplaceAll(key, "Custom.", "")
+			customFields[keyWithoutCustom] = value
 		} else if "System.Tags" == key {
 			d.Set("tags", strings.Split(value.(string), "; "))
 		}
 	}
-	d.Set("custom_fields", custom_fields)
+	d.Set("custom_fields", customFields)
 }

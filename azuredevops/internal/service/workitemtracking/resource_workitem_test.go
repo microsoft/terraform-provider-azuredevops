@@ -21,7 +21,7 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 		"Custom.foo":      "bar",
 		"System.Tags":     "tag1; tag2=value",
 	}
-	GetFields(d, &input)
+	flattenFields(d, &input)
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
