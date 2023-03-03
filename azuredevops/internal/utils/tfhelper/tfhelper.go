@@ -110,6 +110,18 @@ func ParseProjectIDAndResourceID(d *schema.ResourceData) (string, int, error) {
 	return projectID, resourceID, err
 }
 
+func ParseGitRepoBranchID(id string) (string, string, error) {
+	return parseTwoPartID(id, ":", "repositoryID:branchName")
+}
+
+func parseTwoPartID(id, sep, want string) (string, string, error) {
+	parts := strings.SplitN(id, sep, 2)
+	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected %s", id, want)
+	}
+	return parts[0], parts[1], nil
+}
+
 // ParseImportedID parse the imported int Id from the terraform import
 func ParseImportedID(id string) (string, int, error) {
 	parts := strings.SplitN(id, "/", 2)
@@ -175,7 +187,6 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
-
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
@@ -198,7 +209,6 @@ func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
-
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
@@ -226,7 +236,6 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 			projectNameOrID, resourceID, err := ParseImportedUUID(d.Id())
-
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
@@ -243,7 +252,7 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 
 // Get real project ID
 func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) {
-	//If request params is project name, try get the project ID
+	// If request params is project name, try get the project ID
 	if _, err := uuid.ParseUUID(projectNameOrID); err != nil {
 		clients := meta.(*client.AggregatedClient)
 		project, err := clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{

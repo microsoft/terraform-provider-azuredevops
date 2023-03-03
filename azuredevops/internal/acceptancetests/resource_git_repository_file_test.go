@@ -8,9 +8,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
-
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"

@@ -21,8 +21,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testRepoProjectID = uuid.New()
-var testRepoID = uuid.New()
+var (
+	testRepoProjectID = uuid.New()
+	testRepoID        = uuid.New()
+)
 
 // This definition matches the overall structure of what a configured git repository would
 // look like. Note that the ID and Name attributes match -- this is the service-side behavior
