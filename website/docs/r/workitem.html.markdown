@@ -20,11 +20,11 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 resource "azuredevops_workitem" "example" {
-  project_id    = data.azuredevops_project.example.id
-  title         = "Testing Terraform Item"
-  type          = "Issue"
-  state = "Active"
-  tags  = ["Tag"]
+  project_id = data.azuredevops_project.example.id
+  title      = "Testing Terraform Item"
+  type       = "Issue"
+  state      = "Active"
+  tags       = ["Tag"]
 }
 ```
 
