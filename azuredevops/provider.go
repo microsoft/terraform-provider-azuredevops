@@ -89,6 +89,7 @@ func Provider() *schema.Provider {
 			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
+			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":        build.DataBuildDefinition(),
