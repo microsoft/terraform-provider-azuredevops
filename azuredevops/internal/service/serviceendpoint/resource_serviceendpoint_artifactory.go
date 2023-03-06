@@ -146,6 +146,8 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 				auth[hashKey] = newHash
 				auth["token"] = authMap["token"]
 			}
+		} else {
+			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
 		}
 		d.Set("authentication_token", []interface{}{auth})
 	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
@@ -161,6 +163,9 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 				auth["password"] = oldAuthList["password"]
 				auth["username"] = oldAuthList["username"]
 			}
+		} else {
+			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
+			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
 		}
 		d.Set("authentication_basic", []interface{}{auth})
 	} else {
