@@ -18,11 +18,10 @@ import (
 // ResourceWorkItem schema and implementation for Project WorkItem resource
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceWorkItemCreate,
-		Read:     ResourceWorkItemRead,
-		Update:   ResourceWorkItemUpdate,
-		Delete:   ResourceWorkItemDelete,
-		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
+		Create: resourceWorkItemCreate,
+		Read:   resourceWorkItemRead,
+		Update: resourceWorkItemUpdate,
+		Delete: resourceWorkItemDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
 				Type:         schema.TypeString,
@@ -81,7 +80,7 @@ var fieldMapping = map[string]string{
 	"type":  "System.WorkItemType",
 }
 
-func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
+func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	var operations []webapi.JsonPatchOperation
@@ -100,10 +99,10 @@ func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(strconv.Itoa(*workItem.Id))
-	return ResourceWorkItemRead(d, m)
+	return resourceWorkItemRead(d, m)
 }
 
-func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
+func resourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -126,8 +125,8 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// ResourceWorkItemUpdate update a workitem
-func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
+// resourceWorkItemUpdate update a workitem
+func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project_id").(string)
 	id, err := strconv.Atoi(d.Id())
@@ -150,11 +149,11 @@ func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(fmt.Sprintf("%d", *workItem.Id))
-	return ResourceWorkItemRead(d, m)
+	return resourceWorkItemRead(d, m)
 }
 
-// ResourceWorkItemDelete remove workitem
-func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
+// resourceWorkItemDelete remove workitem
+func resourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, errConvert := strconv.Atoi(d.Id())
 	if errConvert != nil {
@@ -206,14 +205,20 @@ func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOpe
 func expandTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation, op webapi.Operation) []webapi.JsonPatchOperation {
 	tags := d.Get("tags").(*schema.Set).List()
 	if len(tags) == 0 {
-		return operations
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &op,
+			From:  nil,
+			Path:  converter.String("/fields/System.Tags"),
+			Value: "",
+		})
+	} else {
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &op,
+			From:  nil,
+			Path:  converter.String("/fields/System.Tags"),
+			Value: strings.Join(tfhelper.ExpandStringList(tags), "; "),
+		})
 	}
-	operations = append(operations, webapi.JsonPatchOperation{
-		Op:    &op,
-		From:  nil,
-		Path:  converter.String("/fields/System.Tags"),
-		Value: strings.Join(tfhelper.ExpandStringList(tags), "; "),
-	})
 
 	return operations
 }
