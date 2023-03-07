@@ -1051,17 +1051,3 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
-
-// HclWorkitemResource HCL describing an AzDO project
-func HclWorkitemResource(projectName string, workitemTitle string) string {
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf(`
-	%s
-resource "azuredevops_workitem" "workitem" {
-	title       = "%s"
-	project_id = azuredevops_project.project.id
-	type = "Issue"
-	state = "Active"
-    tags = ["tag1", "tag2=value"]
-}`, projectResource, workitemTitle)
-}
