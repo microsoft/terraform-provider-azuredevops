@@ -158,14 +158,14 @@ func TestAccCheckBusinessHours_update(t *testing.T) {
 func hclCheckBusinessHoursResourceBasic(projectName string, checkName string, start_time string, end_time string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_business_hours" "test" {
-	project_id           = azuredevops_project.project.id
-	display_name         = "%s"
-	target_resource_id   = azuredevops_serviceendpoint_generic.test.id
-	target_resource_type = "endpoint"
-	time_zone            = "UTC"
-	start_time           = "%s"
-	end_time             = "%s"
-	monday               = true
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_serviceendpoint_generic.test.id
+  target_resource_type = "endpoint"
+  time_zone            = "UTC"
+  start_time           = "%s"
+  end_time             = "%s"
+  monday               = true
 }`, checkName, start_time, end_time)
 
 	genericServiceEndpointResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
@@ -176,20 +176,20 @@ func hclCheckBusinessHoursResourceComplete(projectName string, checkName string,
 	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_business_hours" "test" {
-	project_id                       = azuredevops_project.project.id
-	display_name                     = "%s"
-	target_resource_id               = azuredevops_serviceendpoint_generic.test.id
-	target_resource_type             = "endpoint"
-	start_time                       = "%s"
-	end_time                         = "%s"
-	time_zone                        = "%s"
-	monday                           = "%s"
-	tuesday                          = "%s"
-	wednesday                        = "%s"
-	thursday                         = "%s"
-	friday                           = "%s"
-	saturday                         = "%s"
-	sunday                           = "%s"
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_serviceendpoint_generic.test.id
+  target_resource_type = "endpoint"
+  start_time           = "%s"
+  end_time             = "%s"
+  time_zone            = "%s"
+  monday               = "%s"
+  tuesday              = "%s"
+  wednesday            = "%s"
+  thursday             = "%s"
+  friday               = "%s"
+  saturday             = "%s"
+  sunday               = "%s"
 }`, checkName, start_time, end_time, time_zone, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
 	)
 
@@ -200,22 +200,22 @@ resource "azuredevops_check_business_hours" "test" {
 func hclCheckBusinessHoursResourceUpdate(projectName string, checkName string, start_time string, end_time string, time_zone string,
 	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string) string {
 	checkResource := fmt.Sprintf(`
-	resource "azuredevops_check_business_hours" "test" {
-		project_id                       = azuredevops_project.project.id
-		display_name                     = "%s"
-		target_resource_id               = azuredevops_serviceendpoint_generic.test.id
-		target_resource_type             = "endpoint"
-		start_time                       = "%s"
-		end_time                         = "%s"
-		time_zone                        = "%s"
-		monday                           = "%s"
-		tuesday                          = "%s"
-		wednesday                        = "%s"
-		thursday                         = "%s"
-		friday                           = "%s"
-		saturday                         = "%s"
-		sunday                           = "%s"
-	}`, checkName, start_time, end_time, time_zone, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
+resource "azuredevops_check_business_hours" "test" {
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_serviceendpoint_generic.test.id
+  target_resource_type = "endpoint"
+  start_time           = "%s"
+  end_time             = "%s"
+  time_zone            = "%s"
+  monday               = "%s"
+  tuesday              = "%s"
+  wednesday            = "%s"
+  thursday             = "%s"
+  friday               = "%s"
+  saturday             = "%s"
+  sunday               = "%s"
+}`, checkName, start_time, end_time, time_zone, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
 	)
 
 	genericServiceEndpointResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")

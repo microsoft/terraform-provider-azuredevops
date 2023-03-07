@@ -40,11 +40,11 @@ func TestAccCheckEndpoint(t *testing.T) {
 func hclBranchControlCheckResourceBasicEndpoint(projectName string, checkName string, branches string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id           = azuredevops_project.project.id
-	display_name         = "%s"
-	target_resource_id   = azuredevops_serviceendpoint_generic.test.id
-	allowed_branches     = "%s"
-	target_resource_type = "endpoint"
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_serviceendpoint_generic.test.id
+  allowed_branches     = "%s"
+  target_resource_type = "endpoint"
 }`, checkName, branches)
 
 	genericServiceEndpointResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
@@ -79,11 +79,11 @@ func TestAccCheckEnvironment(t *testing.T) {
 func hclBranchControlCheckResourceBasicEnvironment(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id           = azuredevops_project.project.id
-	display_name         = "%s"
-	target_resource_id   = azuredevops_environment.environment.id
-	target_resource_type = "environment"
-	allowed_branches     = "%s"
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_environment.environment.id
+  target_resource_type = "environment"
+  allowed_branches     = "%s"
 }`, checkName, branches)
 
 	environmentResource := testutils.HclEnvironmentResource(projectName, "environment_test")
@@ -118,11 +118,11 @@ func TestAccCheckQueue(t *testing.T) {
 func hclBranchControlCheckResourceBasicQueue(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id           = azuredevops_project.p.id
-	display_name         = "%s"
-	target_resource_id   = azuredevops_agent_queue.q.id
-	target_resource_type = "queue"
-	allowed_branches     = "%s"
+  project_id           = azuredevops_project.p.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_agent_queue.q.id
+  target_resource_type = "queue"
+  allowed_branches     = "%s"
 }`, checkName, branches)
 
 	queueResource := testutils.HclAgentQueueResource(projectName, "test_queue")
@@ -157,11 +157,11 @@ func TestAccCheckRepo(t *testing.T) {
 func hclBranchControlCheckResourceBasicRepo(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id           = azuredevops_project.project.id
-	display_name         = "%s"
-	target_resource_id   = "${azuredevops_project.project.id}.${azuredevops_git_repository.repository.id}"
-	target_resource_type = "repository"
-	allowed_branches     = "%s"
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = "${azuredevops_project.project.id}.${azuredevops_git_repository.repository.id}"
+  target_resource_type = "repository"
+  allowed_branches     = "%s"
 }`, checkName, branches)
 
 	projectAndRepoResource := testutils.HclGitRepoResource(projectName, testutils.GenerateResourceName(), "Clean")
@@ -195,13 +195,13 @@ func TestAccCheckVariableGroup(t *testing.T) {
 
 func hclBranchControlCheckResourceBasicVariableGroup(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
-	resource "azuredevops_check_branch_control" "test" {
-		project_id           = azuredevops_project.project.id
-		display_name         = "%s"
-		target_resource_id   = azuredevops_variable_group.vg.id
-		target_resource_type = "variablegroup"
-		allowed_branches     = "%s"
-	}`, checkName, branches)
+resource "azuredevops_check_branch_control" "test" {
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_variable_group.vg.id
+  target_resource_type = "variablegroup"
+  allowed_branches     = "%s"
+}`, checkName, branches)
 
 	variableGroupResource := testutils.HclVariableGroupResource(testutils.GenerateResourceName(), true)
 	projectResource := testutils.HclProjectResource(projectName)
