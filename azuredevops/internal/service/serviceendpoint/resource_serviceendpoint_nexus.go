@@ -42,7 +42,6 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
 			"password": {
 				Description:      "The Nexus password.",

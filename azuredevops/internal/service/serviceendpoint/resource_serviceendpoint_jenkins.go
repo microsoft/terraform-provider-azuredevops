@@ -49,7 +49,6 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 				Description:      "The Jenkins user name.",
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
 			"password": {
 				Description:      "The Jenkins password.",
