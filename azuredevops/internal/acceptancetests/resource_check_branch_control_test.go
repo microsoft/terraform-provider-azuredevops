@@ -104,11 +104,11 @@ func TestAccBranchControlCheck_update(t *testing.T) {
 func hclBranchControlCheckResourceBasic(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id           = azuredevops_project.project.id
-	display_name         = "%s"
-	target_resource_id   = azuredevops_serviceendpoint_generic.test.id
-	allowed_branches     = "%s"
-	target_resource_type = "endpoint"
+  project_id           = azuredevops_project.project.id
+  display_name         = "%s"
+  target_resource_id   = azuredevops_serviceendpoint_generic.test.id
+  allowed_branches     = "%s"
+  target_resource_type = "endpoint"
 }`, checkName, branches)
 
 	genericcheckResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
@@ -118,13 +118,13 @@ resource "azuredevops_check_branch_control" "test" {
 func hclBranchControlCheckResourceComplete(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id                       = azuredevops_project.project.id
-	display_name                     = "%s"
-	target_resource_id               = azuredevops_serviceendpoint_generic.test.id
-	allowed_branches                 = "%s"
-	verify_branch_protection         = true
-	ignore_unknown_protection_status = false
-	target_resource_type             = "endpoint"
+  project_id                       = azuredevops_project.project.id
+  display_name                     = "%s"
+  target_resource_id               = azuredevops_serviceendpoint_generic.test.id
+  allowed_branches                 = "%s"
+  verify_branch_protection         = true
+  ignore_unknown_protection_status = false
+  target_resource_type             = "endpoint"
 }`, checkName, branches)
 
 	genericcheckResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
@@ -134,13 +134,13 @@ resource "azuredevops_check_branch_control" "test" {
 func hclBranchControlCheckResourceUpdate(projectName string, checkName string, branches string) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_branch_control" "test" {
-	project_id                       = azuredevops_project.project.id
-	display_name                     = "%s"
-	target_resource_id               = azuredevops_serviceendpoint_generic.test.id
-	target_resource_type             = "endpoint"
-	allowed_branches                 = "%s"
-	verify_branch_protection         = true
-	ignore_unknown_protection_status = false
+  project_id                       = azuredevops_project.project.id
+  display_name                     = "%s"
+  target_resource_id               = azuredevops_serviceendpoint_generic.test.id
+  target_resource_type             = "endpoint"
+  allowed_branches                 = "%s"
+  verify_branch_protection         = true
+  ignore_unknown_protection_status = false
 
 }`, checkName, branches)
 

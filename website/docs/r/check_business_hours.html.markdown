@@ -15,7 +15,7 @@ Manages a branch control check on a resource within Azure DevOps.
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name               = "Example Project"
+  name = "Example Project"
 }
 
 resource "azuredevops_serviceendpoint_generic" "example" {
@@ -44,7 +44,7 @@ resource "azuredevops_check_business_hours" "example" {
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name               = "Example Project"
+  name = "Example Project"
 }
 
 resource "azuredevops_environment" "example" {
@@ -98,7 +98,7 @@ resource "azuredevops_check_business_hours" "example" {
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name               = "Example Project"
+  name = "Example Project"
 }
 
 resource "azuredevops_git_repository" "example" {
@@ -126,7 +126,7 @@ resource "azuredevops_check_business_hours" "example" {
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name               = "Example Project"
+  name = "Example Project"
 }
 
 resource "azuredevops_variable_group" "example" {
@@ -164,20 +164,20 @@ resource "azuredevops_check_business_hours" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID.
-- `target_resource_id` - (Required) The ID of the resource being protected by the check.
-- `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`.
-- `display_name` - (Required) The name of the business hours check displayed in the web UI.
-- `start_time` - (Required) The beginning of the time period that this check will be allowed to pass, specified as 24-hour time with leading zeros.
-- `end_time` - (Required) The end of the time period that this check will be allowed to pass, specified as 24-hour time with leading zeros.
-- `time_zone` - (Required) The time zone this check will be evaluated in. See below for supported values.
-- `monday` - (Optional) This check will pass on Mondays. Defaults to `false`.
-- `tuesday` - (Optional) This check will pass on Tuesday. Defaults to `false`.
-- `wednesday` - (Optional) This check will pass on Wednesdays. Defaults to `false`.
-- `thursday` - (Optional) This check will pass on Thursdays. Defaults to `false`.
-- `friday` - (Optional) This check will pass on Fridays. Defaults to `false`.
-- `saturday` - (Optional) This check will pass on Saturdays. Defaults to `false`.
-- `sunday` - (Optional) This check will pass on Sundays. Defaults to `false`.
+* `project_id` - (Required) The project ID.
+* `target_resource_id` - (Required) The ID of the resource being protected by the check.
+* `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`.
+* `display_name` - (Required) The name of the business hours check displayed in the web UI.
+* `start_time` - (Required) The beginning of the time period that this check will be allowed to pass, specified as 24-hour time with leading zeros.
+* `end_time` - (Required) The end of the time period that this check will be allowed to pass, specified as 24-hour time with leading zeros.
+* `time_zone` - (Required) The time zone this check will be evaluated in. See below for supported values.
+* `monday` - (Optional) This check will pass on Mondays. Defaults to `false`.
+* `tuesday` - (Optional) This check will pass on Tuesday. Defaults to `false`.
+* `wednesday` - (Optional) This check will pass on Wednesdays. Defaults to `false`.
+* `thursday` - (Optional) This check will pass on Thursdays. Defaults to `false`.
+* `friday` - (Optional) This check will pass on Fridays. Defaults to `false`.
+* `saturday` - (Optional) This check will pass on Saturdays. Defaults to `false`.
+* `sunday` - (Optional) This check will pass on Sundays. Defaults to `false`.
 
 ## Attributes Reference
 
