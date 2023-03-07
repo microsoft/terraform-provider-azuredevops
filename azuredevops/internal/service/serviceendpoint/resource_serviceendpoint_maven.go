@@ -55,7 +55,6 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 		},
 	}
 
-	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
 	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -64,9 +63,7 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
-			patHashKeyU: patHashSchemaU,
 			"password": {
 				Description:      "The Maven password.",
 				Type:             schema.TypeString,

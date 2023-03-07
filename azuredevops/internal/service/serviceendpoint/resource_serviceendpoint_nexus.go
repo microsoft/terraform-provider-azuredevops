@@ -34,7 +34,6 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 		Description: "Url for the Nexus Repository",
 	}
 
-	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
 	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -43,9 +42,7 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 			},
-			patHashKeyU: patHashSchemaU,
 			"password": {
 				Description:      "The Nexus password.",
 				Type:             schema.TypeString,
