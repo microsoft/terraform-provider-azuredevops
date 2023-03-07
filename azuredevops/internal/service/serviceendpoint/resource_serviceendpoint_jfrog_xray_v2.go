@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog Artifactory service endpoint resource
@@ -37,11 +36,10 @@ func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
-				Description:      "The JFrog Artifactory access token.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The JFrog Artifactory access token.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
