@@ -171,6 +171,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
 github.com/microsoft/azure-devops-go-api/azuredevops/forminput
 github.com/microsoft/azure-devops-go-api/azuredevops/graph
 github.com/microsoft/azure-devops-go-api/azuredevops/identity
+github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks
 github.com/microsoft/azure-devops-go-api/azuredevops/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/system
 github.com/microsoft/azure-devops-go-api/azuredevops/taskagent

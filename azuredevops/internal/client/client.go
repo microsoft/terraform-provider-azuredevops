@@ -9,6 +9,7 @@ import (
 
 	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
 	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
+	v5pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
@@ -25,6 +26,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -43,6 +45,8 @@ type AggregatedClient struct {
 	GraphClient                   graph.Client
 	V5GraphClient                 v5graph.Client
 	OperationsClient              operations.Client
+	V5PipelinesChecksClient       v5pipelineschecks.Client
+	V5PipelinesChecksClientExtras pipelineschecksextras.Client
 	PolicyClient                  policy.Client
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
@@ -172,6 +176,18 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	v5PipelinesChecksClient, err := v5pipelineschecks.NewClient(ctx, v5Connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): v5pipelineschecks.NewClient failed.")
+		return nil, err
+	}
+
+	v5PipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, v5Connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): pipelineschecksextras.NewClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -180,6 +196,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		GraphClient:                   graphClient,
 		V5GraphClient:                 v5GraphClient,
 		OperationsClient:              operationsClient,
+		V5PipelinesChecksClient:       v5PipelinesChecksClient,
+		V5PipelinesChecksClientExtras: v5PipelinesChecksClientExtras,
 		PolicyClient:                  policyClient,
 		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
