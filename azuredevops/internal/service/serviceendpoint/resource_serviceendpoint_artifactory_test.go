@@ -88,6 +88,7 @@ func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *se
 
 	}
 }
+
 func TestServiceEndpointArtifactory_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }
