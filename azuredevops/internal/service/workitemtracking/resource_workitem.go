@@ -15,38 +15,36 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-// ResourceWorkItem schema and implementation for project workitem ressource
+// ResourceWorkItem schema and implementation for Project WorkItem resource
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceWorkItemCreate,
-		Read:     ResourceWorkItemRead,
-		Update:   ResourceWorkItemUpdate,
-		Delete:   ResourceWorkItemDelete,
-		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
+		Create: resourceWorkItemCreate,
+		Read:   resourceWorkItemRead,
+		Update: resourceWorkItemUpdate,
+		Delete: resourceWorkItemDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Required:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.IsUUID,
 				Required:     true,
 				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 			"type": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
 				ForceNew:     true,
 				Required:     true,
-				Description:  "Type of the Work Item",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"state": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
-				Description:  "State of the Ticket",
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"custom_fields": {
 				Type:     schema.TypeMap,
@@ -57,9 +55,10 @@ func ResourceWorkItem() *schema.Resource {
 				},
 			},
 			"tags": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				MinItems: 1,
+				Set:      schema.HashString,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -81,28 +80,29 @@ var fieldMapping = map[string]string{
 	"type":  "System.WorkItemType",
 }
 
-// ResourceWorkItemCreateOrUpdate create workitem
-func ResourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
+func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	operations := expandPatchOperations(d)
+	var operations []webapi.JsonPatchOperation
+	operations = expandSystemFields(d, operations)
+	operations = expandCustomFields(d, operations)
+	operations = expandTags(d, operations, webapi.OperationValues.Add)
 
 	args := workitemtracking.CreateWorkItemArgs{
 		Project:  converter.String(d.Get("project_id").(string)),
 		Type:     converter.String(d.Get("type").(string)),
 		Document: &operations,
 	}
-	workitem, err := clients.WorkItemTrackingClient.CreateWorkItem(clients.Ctx, args)
+	workItem, err := clients.WorkItemTrackingClient.CreateWorkItem(clients.Ctx, args)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(strconv.Itoa(*workitem.Id))
-	return ResourceWorkItemRead(d, m)
+	d.SetId(strconv.Itoa(*workItem.Id))
+	return resourceWorkItemRead(d, m)
 }
 
-// ResourceWorkItemRead read workitem
-func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
+func resourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -111,7 +111,7 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	args := workitemtracking.GetWorkItemArgs{
 		Id: &id,
 	}
-	workitem, err := clients.WorkItemTrackingClient.GetWorkItem(clients.Ctx, args)
+	workItem, err := clients.WorkItemTrackingClient.GetWorkItem(clients.Ctx, args)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -120,37 +120,40 @@ func ResourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	flattenFields(d, workitem.Fields)
+	flattenFields(d, workItem.Fields)
 
 	return nil
 }
 
-// ResourceWorkItemUpdate update a workitem
-func ResourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
+// resourceWorkItemUpdate update a workitem
+func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	project := d.Get("project_id").(string)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return err
 	}
-	operations := expandPatchOperations(d)
+	var operations []webapi.JsonPatchOperation
+	operations = expandSystemFields(d, operations)
+	operations = expandCustomFields(d, operations)
+	operations = expandTags(d, operations, webapi.OperationValues.Replace)
 
 	args := workitemtracking.UpdateWorkItemArgs{
 		Id:       &id,
 		Project:  &project,
 		Document: &operations,
 	}
-	workitem, err := clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
+	workItem, err := clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%d", *workitem.Id))
-	return ResourceWorkItemRead(d, m)
+	d.SetId(fmt.Sprintf("%d", *workItem.Id))
+	return resourceWorkItemRead(d, m)
 }
 
-// ResourceWorkItemDelete remove workitem
-func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
+// resourceWorkItemDelete remove workitem
+func resourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, errConvert := strconv.Atoi(d.Id())
 	if errConvert != nil {
@@ -169,14 +172,6 @@ func ResourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId("")
 	return nil
-}
-
-func expandPatchOperations(d *schema.ResourceData) []webapi.JsonPatchOperation {
-	var operations []webapi.JsonPatchOperation
-	operations = expandSystemFields(d, operations)
-	operations = expandCustomFields(d, operations)
-	operations = expandTags(d, operations)
-	return operations
 }
 
 func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
@@ -207,17 +202,23 @@ func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOpe
 	return operations
 }
 
-func expandTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
-	tags := d.Get("tags").([]interface{})
+func expandTags(d *schema.ResourceData, operations []webapi.JsonPatchOperation, op webapi.Operation) []webapi.JsonPatchOperation {
+	tags := d.Get("tags").(*schema.Set).List()
 	if len(tags) == 0 {
-		return operations
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &op,
+			From:  nil,
+			Path:  converter.String("/fields/System.Tags"),
+			Value: "",
+		})
+	} else {
+		operations = append(operations, webapi.JsonPatchOperation{
+			Op:    &op,
+			From:  nil,
+			Path:  converter.String("/fields/System.Tags"),
+			Value: strings.Join(tfhelper.ExpandStringList(tags), "; "),
+		})
 	}
-	operations = append(operations, webapi.JsonPatchOperation{
-		Op:    &webapi.OperationValues.Add,
-		From:  nil,
-		Path:  converter.String("/fields/System.Tags"),
-		Value: strings.Join(tfhelper.ExpandStringList(tags), "; "),
-	})
 
 	return operations
 }

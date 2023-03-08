@@ -25,8 +25,7 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))
-	require.Equal(t, "tag1", d.Get("tags").([]interface{})[0].(string))
-	require.Equal(t, "tag2=value", d.Get("tags").([]interface{})[1].(string))
+	require.Equal(t, 2, len(d.Get("tags").(*schema.Set).List()))
 
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	require.Equal(t, "SomeValue", custom_fields["SomeName"].(string))
