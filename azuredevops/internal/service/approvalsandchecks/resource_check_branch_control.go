@@ -3,9 +3,12 @@ package approvalsandchecks
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 var evaluateBranchProtectionDefVersion = "0.0.1"
@@ -37,17 +40,52 @@ func ResourceCheckBranchControl() *schema.Resource {
 		Default:  false,
 	}
 
+	r.Schema["display_name"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Default:      "Managed by Terraform",
+		ValidateFunc: validation.StringIsNotEmpty,
+	}
+
 	return r
 }
 
 func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipelineschecks.CheckConfiguration, projectID string) error {
-	err := doBaseFlattening(d, branchControlCheck, projectID, evaluateBranchProtectionDefId, evaluateBranchProtectionDefVersion)
+	err := doBaseFlattening(d, branchControlCheck, projectID)
 	if err != nil {
 		return err
 	}
 
 	if branchControlCheck.Settings == nil {
 		return fmt.Errorf("Settings nil")
+	}
+
+	branchControlCheck.Type.Id = converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7")
+
+	if displayName, found := branchControlCheck.Settings.(map[string]interface{})["displayName"]; found {
+		d.Set("display_name", displayName.(string))
+	} else {
+		return fmt.Errorf("displayName setting not found")
+	}
+
+	if definitionRefMap, found := branchControlCheck.Settings.(map[string]interface{})["definitionRef"]; found {
+		definitionRef := definitionRefMap.(map[string]interface{})
+		if id, found := definitionRef["id"]; found {
+			if !strings.EqualFold(id.(string), evaluateBranchProtectionDefId) {
+				return fmt.Errorf("invalid definitionRef id")
+			}
+		} else {
+			return fmt.Errorf("definitionRef ID not found. Expect ID: %s", evaluateBranchProtectionDefId)
+		}
+		if version, found := definitionRef["version"]; found {
+			if version != evaluateBranchProtectionDefVersion {
+				return fmt.Errorf("unsupported definitionRef version. Expect version: %s", evaluateBranchProtectionDefVersion)
+			}
+		} else {
+			return fmt.Errorf("unsupported definitionRef version")
+		}
+	} else {
+		return fmt.Errorf("definitionRef not found")
 	}
 
 	if inputMap, found := branchControlCheck.Settings.(map[string]interface{})["inputs"]; found {
@@ -89,5 +127,14 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckCon
 		"allowUnknownStatusBranch": strconv.FormatBool(d.Get("ignore_unknown_protection_status").(bool)),
 	}
 
-	return doBaseExpansion(d, inputs, evaluateBranchProtectionDef)
+	settings := map[string]interface{}{}
+	settings["inputs"] = inputs
+	settings["definitionRef"] = evaluateBranchProtectionDef
+	settings["displayName"] = d.Get("display_name").(string)
+
+	checkType := &pipelineschecks.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	}
+
+	return doBaseExpansion(d, checkType, settings, nil)
 }

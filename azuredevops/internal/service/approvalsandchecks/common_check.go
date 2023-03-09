@@ -59,31 +59,30 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(targetResourceTypes, false),
 			},
-			"display_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "Managed by Terraform",
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
 		},
 	}
 }
 
 // doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
-func doBaseExpansion(d *schema.ResourceData, inputs map[string]interface{}, definitionRef interface{}) (*pipelineschecks.CheckConfiguration, string, error) {
+func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecks.CheckType, settings map[string]interface{}, timeout *int) (*pipelineschecks.CheckConfiguration, string, error) {
 	projectID := d.Get("project_id").(string)
 
 	taskCheck := pipelineschecks.CheckConfiguration{
-		Type: &taskCheckType,
-		Settings: map[string]interface{}{
-			"definitionRef": definitionRef,
-			"displayName":   d.Get("display_name").(string),
-			"inputs":        inputs,
-		},
+		Type:     checkType,
+		Settings: settings,
+		// Settings: map[string]interface{}{
+		// 	"definitionRef": definitionRef,
+		// 	"displayName":   d.Get("display_name").(string),
+		// 	"inputs":        inputs,
+		// },
 		Resource: &pipelineschecks.Resource{
 			Id:   converter.String(d.Get("target_resource_id").(string)),
 			Type: converter.String(d.Get("target_resource_type").(string)),
 		},
+	}
+
+	if timeout != nil {
+		taskCheck.Timeout = timeout
 	}
 
 	if d.Id() != "" {
@@ -98,7 +97,7 @@ func doBaseExpansion(d *schema.ResourceData, inputs map[string]interface{}, defi
 }
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string, definitionId string, definitionVersion string) error {
+func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string) error {
 	d.SetId(fmt.Sprintf("%d", *check.Id))
 
 	d.Set("project_id", projectID)
@@ -112,32 +111,6 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfig
 
 	if check.Settings == nil {
 		return fmt.Errorf("Settings nil")
-	}
-
-	if definitionRefMap, found := check.Settings.(map[string]interface{})["definitionRef"]; found {
-		definitionRef := definitionRefMap.(map[string]interface{})
-		if id, found := definitionRef["id"]; found {
-			if !strings.EqualFold(id.(string), definitionId) {
-				return fmt.Errorf("invalid definitionRef id")
-			}
-		} else {
-			return fmt.Errorf("definitionRef ID not found. Expect ID: %s", definitionId)
-		}
-		if version, found := definitionRef["version"]; found {
-			if version != definitionVersion {
-				return fmt.Errorf("unsupported definitionRef version. Expect version: %s", definitionVersion)
-			}
-		} else {
-			return fmt.Errorf("unsupported definitionRef version")
-		}
-	} else {
-		return fmt.Errorf("definitionRef not found")
-	}
-
-	if displayName, found := check.Settings.(map[string]interface{})["displayName"]; found {
-		d.Set("display_name", displayName.(string))
-	} else {
-		return fmt.Errorf("displayName setting not found")
 	}
 
 	return nil
