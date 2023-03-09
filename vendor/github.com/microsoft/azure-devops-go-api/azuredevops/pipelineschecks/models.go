@@ -35,6 +35,8 @@ type CheckConfiguration struct {
 	ModifiedOn *azuredevops.Time `json:"modifiedOn,omitempty"`
 	// Settings for the check configuration.
 	Settings interface{} `json:"settings,omitempty"`
+	// Timeout in minutes for the check.
+	Timeout *int `json:"timeout,omitempty"`
 }
 
 type CheckConfigurationRef struct {
