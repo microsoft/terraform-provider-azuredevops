@@ -44,7 +44,7 @@ var branchControlCheckSettings = map[string]interface{}{
 
 var branchControlCheckTest = pipelineschecks.CheckConfiguration{
 	Id:       &branchControlCheckID,
-	Type:     &taskCheckType,
+	Type:     checkTypeBranchControl,
 	Settings: branchControlCheckSettings,
 	Resource: &endpointResource,
 }

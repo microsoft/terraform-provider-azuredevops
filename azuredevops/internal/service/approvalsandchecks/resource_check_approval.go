@@ -9,6 +9,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+var checkTypeApproval = &pipelineschecks.CheckType{
+	Id:   converter.UUID("8C6F20A7-A545-4486-9777-F762FAFE0D4D"),
+	Name: converter.ToPtr("Approval"),
+}
+
 // ResourceCheckApproval schema and implementation for branch check resources
 func ResourceCheckApproval() *schema.Resource {
 	r := genBaseCheckResource(flattenCheckApproval, expandCheckApproval)
@@ -121,10 +126,5 @@ func expandCheckApproval(d *schema.ResourceData) (*pipelineschecks.CheckConfigur
 		"approvers":                 approvers,
 	}
 
-	checkType := &pipelineschecks.CheckType{
-		Id:   converter.UUID("8C6F20A7-A545-4486-9777-F762FAFE0D4D"),
-		Name: converter.ToPtr("Approval"),
-	}
-
-	return doBaseExpansion(d, checkType, settings, converter.ToPtr(d.Get("timeout").(int)))
+	return doBaseExpansion(d, checkTypeApproval, settings, converter.ToPtr(d.Get("timeout").(int)))
 }

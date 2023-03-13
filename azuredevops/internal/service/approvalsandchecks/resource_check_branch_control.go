@@ -20,6 +20,10 @@ var evaluateBranchProtectionDef = map[string]interface{}{
 	"version": evaluateBranchProtectionDefVersion,
 }
 
+var checkTypeBranchControl = &pipelineschecks.CheckType{
+	Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+}
+
 // ResourceBranchControlCheck schema and implementation for branch check resources
 func ResourceCheckBranchControl() *schema.Resource {
 	r := genBaseCheckResource(flattenBranchControlCheck, expandBranchControlCheck)
@@ -132,9 +136,5 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckCon
 	settings["definitionRef"] = evaluateBranchProtectionDef
 	settings["displayName"] = d.Get("display_name").(string)
 
-	checkType := &pipelineschecks.CheckType{
-		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
-	}
-
-	return doBaseExpansion(d, checkType, settings, nil)
+	return doBaseExpansion(d, checkTypeBranchControl, settings, nil)
 }
