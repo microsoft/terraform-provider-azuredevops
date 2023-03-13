@@ -163,7 +163,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.14
 ## explicit; go 1.12
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5
+# github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5 => github.com/josh-barker/azure-devops-go-api/azuredevops v1.0.0-b5-checkconfig
 ## explicit; go 1.12
 github.com/microsoft/azure-devops-go-api/azuredevops
 github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
@@ -397,3 +397,4 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# github.com/microsoft/azure-devops-go-api/azuredevops => github.com/josh-barker/azure-devops-go-api/azuredevops v1.0.0-b5-checkconfig

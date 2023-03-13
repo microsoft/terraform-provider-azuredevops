@@ -50,26 +50,35 @@ var versionSuffix = " (dev)"
 // Base user agent string.  The UserAgent set on the connection will be appended to this.
 var baseUserAgent = "go/" + runtime.Version() + " (" + runtime.GOOS + " " + runtime.GOARCH + ") azure-devops-go-api/" + version + versionSuffix
 
+// NewClient provides an Azure DevOps client
+// and copies the TLS config and timeout from the supplied connection
 func NewClient(connection *Connection, baseUrl string) *Client {
-	var client *http.Client
-
+	httpClient := &http.Client{}
 	if connection.TlsConfig != nil {
-		client = &http.Client{Transport: &http.Transport{TLSClientConfig: connection.TlsConfig}}
-	} else {
-		client = &http.Client{}
+		httpClient.Transport = &http.Transport{TLSClientConfig: connection.TlsConfig}
+	}
+	if connection.Timeout != nil {
+		httpClient.Timeout = *connection.Timeout
 	}
 
-	if connection.Timeout != nil {
-		client.Timeout = *connection.Timeout
-	}
-	return &Client{
+	return NewClientWithOptions(connection, baseUrl, WithHTTPClient(httpClient))
+}
+
+// NewClientWithOptions returns an Azure DevOps client modified by the options
+func NewClientWithOptions(connection *Connection, baseUrl string, options ...ClientOptionFunc) *Client {
+	httpClient := &http.Client{}
+	client := &Client{
 		baseUrl:                 baseUrl,
-		client:                  client,
+		client:                  httpClient,
 		authorization:           connection.AuthorizationString,
 		suppressFedAuthRedirect: connection.SuppressFedAuthRedirect,
 		forceMsaPassThrough:     connection.ForceMsaPassThrough,
 		userAgent:               connection.UserAgent,
 	}
+	for _, fn := range options {
+		fn(client)
+	}
+	return client
 }
 
 type Client struct {
