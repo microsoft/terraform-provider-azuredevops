@@ -99,17 +99,17 @@ func buildFolderRequiresImportError(resourceName, projectName string) *regexp.Re
 func buildFolderBasic(projectName, path, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_build_folder" "test" {
-	project_id  = azuredevops_project.project.id
-	path        = "%[2]s"
-	description = "%[3]s"
+  project_id  = azuredevops_project.project.id
+  path        = "%[2]s"
+  description = "%[3]s"
 }
 `, projectName, path, description)
 }
@@ -118,12 +118,13 @@ func buildFolderRequiresImport(projectName, path, description string) string {
 	basicConfig := buildFolderBasic(projectName, path, description)
 	return fmt.Sprintf(`
 
+
 %s
 
 resource "azuredevops_build_folder" "import" {
-	project_id  = azuredevops_build_folder.test.project_id
-	path        = azuredevops_build_folder.test.path
-	description = azuredevops_build_folder.test.description
+  project_id  = azuredevops_build_folder.test.project_id
+  path        = azuredevops_build_folder.test.path
+  description = azuredevops_build_folder.test.description
 }
 `, basicConfig)
 }
