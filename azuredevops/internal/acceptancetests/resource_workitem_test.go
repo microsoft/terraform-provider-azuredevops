@@ -23,7 +23,7 @@ func TestAccWorkItem_basic(t *testing.T) {
 		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basic(projectName, workItemTitle),
+				Config: workItemBasic(projectName, workItemTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
@@ -48,14 +48,14 @@ func TestAccWorkItem_titleUpdate(t *testing.T) {
 		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basic(projectName, workItemTitle),
+				Config: workItemBasic(projectName, workItemTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
 				),
 			},
 			{
-				Config: basic(projectName, workItemTitleUpdated),
+				Config: workItemBasic(projectName, workItemTitleUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitleUpdated),
 				),
@@ -75,20 +75,20 @@ func TestAccWorkItem_tagUpdate(t *testing.T) {
 		CheckDestroy:      testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basic(projectName, workItemTitle),
+				Config: workItemBasic(projectName, workItemTitle),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
 				),
 			},
 			{
-				Config: tagUpdate(projectName, workItemTitle),
+				Config: workItemTagUpdate(projectName, workItemTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
 				),
 			},
 			{
-				Config: basic(projectName, workItemTitle),
+				Config: workItemBasic(projectName, workItemTitle),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
 				),
@@ -96,8 +96,8 @@ func TestAccWorkItem_tagUpdate(t *testing.T) {
 		},
 	})
 }
-func basic(projectNane string, title string) string {
-	template := template(projectNane)
+func workItemBasic(projectNane string, title string) string {
+	template := workItemTemplate(projectNane)
 	return fmt.Sprintf(`
 %s
 
@@ -109,8 +109,8 @@ resource "azuredevops_workitem" "test" {
 `, template, title)
 }
 
-func tagUpdate(projectNane string, title string) string {
-	template := template(projectNane)
+func workItemTagUpdate(projectNane string, title string) string {
+	template := workItemTemplate(projectNane)
 	return fmt.Sprintf(`
 %s
 
@@ -124,7 +124,7 @@ resource "azuredevops_workitem" "test" {
 `, template, title)
 }
 
-func template(name string) string {
+func workItemTemplate(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name               = "%[1]s"
