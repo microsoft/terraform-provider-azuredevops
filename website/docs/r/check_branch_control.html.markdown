@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_check_business_hours"
+page_title: "AzureDevops: azuredevops_check_branch_control"
 description: |-
   Manages a branch control check.
 ---
 
-# azuredevops_check_business_hours
+# azuredevops_check_branch_control
 
 Manages a branch control check on a resource within Azure DevOps.
 
