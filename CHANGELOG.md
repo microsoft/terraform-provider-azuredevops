@@ -1,3 +1,26 @@
+## 0.4.0
+
+FEATURES:
+* **New Resource** `azuredevops_workitem` [#659](https://github.com/microsoft/terraform-provider-azuredevops/pull/659)
+* **New Resource** `azuredevops_serviceendpoint_externaltfs` [#676](https://github.com/microsoft/terraform-provider-azuredevops/pull/676)
+* **New Resource** `azuredevops_check_branch_control` [#706](https://github.com/microsoft/terraform-provider-azuredevops/pull/706)
+* **New Resource** `azuredevops_check_business_hours` [#706](https://github.com/microsoft/terraform-provider-azuredevops/pull/706)
+* **New Resource** `azuredevops_git_repository_branch` [#713](https://github.com/microsoft/terraform-provider-azuredevops/pull/713)
+
+BUG FIX:
+* `azuredevops_git_repository_file` - Create new file if deleted. [#680](https://github.com/microsoft/terraform-provider-azuredevops/pull/680)
+* `azuredevops_serviceendpoint_npm` - Fix `access_token` not updated after change. [#708](https://github.com/microsoft/terraform-provider-azuredevops/pull/708)
+* `azuredevops_serviceendpoint_artifactory` - Fix unit test. [#725](https://github.com/microsoft/terraform-provider-azuredevops/pull/725)
+* `azuredevops_build_folder` - Fix `path` cannot be updated. [#730](https://github.com/microsoft/terraform-provider-azuredevops/pull/730)
+
+IMPROVEMENTS:
+* `azuredevops_build_folder_permissions` - Check if the folder exists. [#714](https://github.com/microsoft/terraform-provider-azuredevops/pull/714)
+* `azuredevops_branch_policy_auto_reviewers` - Support config minimum number of reviewers. [#672](https://github.com/microsoft/terraform-provider-azuredevops/pull/672)
+* `azuredevops_agent_pool` - Enhance create/update handler. [#716](https://github.com/microsoft/terraform-provider-azuredevops/pull/716)
+* `azuredevops_serviceendpoint_azurerm` - Support for `environment` property. [#699](https://github.com/microsoft/terraform-provider-azuredevops/pull/699)
+* `azuredevops_agent_pool` - Support for `auto_update` property. [#690](https://github.com/microsoft/terraform-provider-azuredevops/pull/690)
+* **Date Resource** `azuredevops_agent_pool` - Support for `auto_update` property. [#690](https://github.com/microsoft/terraform-provider-azuredevops/pull/690)
+
 ## 0.3.0
 
 FEATURES:
