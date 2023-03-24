@@ -12,25 +12,40 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccAgentPool_DataSource(t *testing.T) {
+func TestAccDataSourceAgentPool_basic(t *testing.T) {
 	agentPoolName := testutils.GenerateResourceName()
-	createAgentPool := testutils.HclAgentPoolResource(agentPoolName)
-	createAndGetAgentPoolData := fmt.Sprintf("%s\n%s", createAgentPool, testutils.HclAgentPoolDataSource())
+	tfNode := "data.azuredevops_agent_pool.test"
 
-	tfNode := "data.azuredevops_agent_pool.pool"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: createAndGetAgentPoolData,
+				Config: hclDataSourceAgentPoolBasic(agentPoolName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "name", agentPoolName),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
 				),
 			},
 		},
 	})
+}
+
+func hclDataSourceAgentPoolBasic(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_agent_pool" "test" {
+  name           = "%s"
+  auto_provision = false
+  auto_update    = false
+  pool_type      = "automation"
+}
+
+data "azuredevops_agent_pool" "test" {
+  name = azuredevops_agent_pool.test.name
+}
+
+`, name)
 }

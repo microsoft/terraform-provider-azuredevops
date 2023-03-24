@@ -33,6 +33,10 @@ func Int(value int) *int {
 	return &value
 }
 
+func ToPtr[E any](e E) *E {
+	return &e
+}
+
 // ASCIIToIntPtr Convert a string to an Int Pointer
 func ASCIIToIntPtr(value string) (*int, error) {
 	i, err := strconv.Atoi(value)

@@ -145,6 +145,8 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
 				auth[hashKey] = newHash
 			}
+		} else {
+			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
 		}
 		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
 			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
@@ -160,6 +162,9 @@ func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *
 				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
 				auth[hashKey] = newHash
 			}
+		} else {
+			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
+			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
 		}
 		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
 			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]

@@ -52,7 +52,9 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error expanding the agent queue resource from state: %+v", err)
 	}
 
-	referencedPool, err := azureAgentPoolRead(clients, *queue.Pool.Id)
+	referencedPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{
+		PoolId: queue.Pool.Id,
+	})
 	if err != nil {
 		return fmt.Errorf("Error looking up referenced agent pool: %+v", err)
 	}

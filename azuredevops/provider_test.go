@@ -23,6 +23,8 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
+		"azuredevops_check_branch_control",
+		"azuredevops_check_business_hours",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
 		"azuredevops_serviceendpoint_dockerregistry",
@@ -58,6 +60,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_repository_policy_reserved_names",
 		"azuredevops_repository_policy_check_credentials",
 		"azuredevops_git_repository",
+		"azuredevops_git_repository_branch",
 		"azuredevops_git_repository_file",
 		"azuredevops_user_entitlement",
 		"azuredevops_group_membership",
@@ -78,7 +81,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_environment",
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
-		"azuredevops_variable_group_permissions",
+		"azuredevops_workitem",
 	}
 
 	resources := Provider().ResourcesMap

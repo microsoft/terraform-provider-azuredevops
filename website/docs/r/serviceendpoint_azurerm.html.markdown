@@ -91,12 +91,13 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 The following arguments are supported:
 
 - `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `azurerm_spn_tenantid` - (Required) The tenant id if the service principal.
-- `azurerm_management_group_id` - (Optional) The management group Id of the Azure targets.
-- `azurerm_management_group_name` - (Optional) The management group Name of the targets.
-- `azurerm_subscription_id` - (Optional) The subscription Id of the Azure targets.
-- `azurerm_subscription_name` - (Optional) The subscription Name of the targets.
+- `service_endpoint_name` - (Required) The Service Endpoint Name.
+- `azurerm_spn_tenantid` - (Required) The Tenant ID if the service principal.
+- `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
+- `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
+- `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
+- `azurerm_subscription_name` - (Optional) The Subscription Name of the targets.
+- `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`. Changing this forces a new resource to be created.
 
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 

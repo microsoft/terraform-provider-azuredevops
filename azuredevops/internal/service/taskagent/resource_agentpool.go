@@ -3,7 +3,9 @@ package taskagent
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
@@ -22,6 +24,12 @@ func ResourceAgentPool() *schema.Resource {
 		Delete: resourceAzureAgentPoolDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -46,57 +54,108 @@ func ResourceAgentPool() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"auto_update": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
 
 func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	agentPool, err := expandAgentPool(d, true)
-	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to AzDO agentPool reference: %+v", err)
+
+	args := taskagent.AddAgentPoolArgs{
+		Pool: &taskagent.TaskAgentPool{
+			Name:          converter.String(d.Get("name").(string)),
+			PoolType:      converter.ToPtr(taskagent.TaskAgentPoolType(d.Get("pool_type").(string))),
+			AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
+			AutoUpdate:    converter.Bool(d.Get("auto_update").(bool)),
+		},
 	}
 
-	createdAgentPool, err := createAzureAgentPool(clients, agentPool)
+	agentPool, err := clients.TaskAgentClient.AddAgentPool(clients.Ctx, args)
 	if err != nil {
-		return fmt.Errorf("Error creating agent pool in Azure DevOps: %+v", err)
+		return fmt.Errorf(" creating agent pool in Azure DevOps: %+v", err)
 	}
 
-	flattenAzureAgentPool(d, createdAgentPool)
+	// auto update can only be set to true on creation
+	if args.Pool.AutoUpdate != nil && !*args.Pool.AutoUpdate {
+		updateArgs := taskagent.UpdateAgentPoolArgs{
+			PoolId: agentPool.Id,
+			Pool: &taskagent.TaskAgentPool{
+				Name:          args.Pool.Name,
+				PoolType:      args.Pool.PoolType,
+				AutoProvision: args.Pool.AutoProvision,
+				AutoUpdate:    args.Pool.AutoUpdate,
+			},
+		}
+		agentPool, err = clients.TaskAgentClient.UpdateAgentPool(clients.Ctx, updateArgs)
 
+		if err := syncStatus(updateArgs, clients); err != nil {
+			return err
+		}
+
+		if err != nil {
+			return fmt.Errorf(" updating agent pool in Azure DevOps: %+v", err)
+		}
+	}
+	d.SetId(strconv.Itoa(*agentPool.Id))
 	return resourceAzureAgentPoolRead(d, m)
 }
 
 func resourceAzureAgentPoolRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error getting agent pool Id: %+v", err)
+		return fmt.Errorf(" parse agent pool ID: %+v", err)
 	}
 
-	clients := m.(*client.AggregatedClient)
-	agentPool, err := azureAgentPoolRead(clients, poolID)
+	agentPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{PoolId: &poolID})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error looking up agent pool with ID %d. Error: %v", poolID, err)
+		return fmt.Errorf(" looking up Agent Pool with ID %d. Error: %v", poolID, err)
 	}
 
-	flattenAzureAgentPool(d, agentPool)
+	d.Set("name", agentPool.Name)
+	d.Set("pool_type", agentPool.PoolType)
+	d.Set("auto_provision", agentPool.AutoProvision)
+
+	if agentPool.AutoUpdate != nil {
+		d.Set("auto_update", agentPool.AutoUpdate)
+	}
 	return nil
 }
 
 func resourceAzureAgentPoolUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	agentPool, err := expandAgentPool(d, false)
-	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to AzDO agent pool reference: %+v", err)
+
+	parameter := taskagent.UpdateAgentPoolArgs{
+		Pool: &taskagent.TaskAgentPool{
+			Name:          converter.String(d.Get("name").(string)),
+			PoolType:      converter.ToPtr(taskagent.TaskAgentPoolType(d.Get("pool_type").(string))),
+			AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
+			AutoUpdate:    converter.Bool(d.Get("auto_update").(bool)),
+		},
 	}
 
-	_, err = azureAgentPoolUpdate(clients, agentPool)
+	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error updating agent pool in Azure DevOps: %+v", err)
+		return fmt.Errorf(" getting agent pool Id: %+v", err)
+	}
+	parameter.PoolId = &poolID
+
+	if _, err = clients.TaskAgentClient.UpdateAgentPool(clients.Ctx, parameter); err != nil {
+		return fmt.Errorf(" updating agent pool in Azure DevOps: %+v", err)
+	}
+
+	if err := syncStatus(parameter, clients); err != nil {
+		return err
 	}
 
 	return resourceAzureAgentPoolRead(d, m)
@@ -105,64 +164,68 @@ func resourceAzureAgentPoolUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error getting agent pool Id: %+v", err)
+		return fmt.Errorf(" parse agent pool ID: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
-	return clients.TaskAgentClient.DeleteAgentPool(clients.Ctx, taskagent.DeleteAgentPoolArgs{
-		PoolId: &poolID,
-	})
-}
-
-func createAzureAgentPool(clients *client.AggregatedClient, agentPool *taskagent.TaskAgentPool) (*taskagent.TaskAgentPool, error) {
-	args := taskagent.AddAgentPoolArgs{
-		Pool: agentPool,
+	if err := clients.TaskAgentClient.DeleteAgentPool(clients.Ctx, taskagent.DeleteAgentPoolArgs{PoolId: &poolID}); err != nil {
+		return err
 	}
 
-	newTaskAgent, err := clients.TaskAgentClient.AddAgentPool(clients.Ctx, args)
-	return newTaskAgent, err
-}
-
-func azureAgentPoolRead(clients *client.AggregatedClient, poolID int) (*taskagent.TaskAgentPool, error) {
-	return clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{
-		PoolId: &poolID,
-	})
-}
-
-func azureAgentPoolUpdate(clients *client.AggregatedClient, agentPool *taskagent.TaskAgentPool) (*taskagent.TaskAgentPool, error) {
-	return clients.TaskAgentClient.UpdateAgentPool(
-		clients.Ctx,
-		taskagent.UpdateAgentPoolArgs{
-			PoolId: agentPool.Id,
-			Pool: &taskagent.TaskAgentPool{
-				Name:          agentPool.Name,
-				PoolType:      agentPool.PoolType,
-				AutoProvision: agentPool.AutoProvision,
-			},
-		})
-}
-
-func flattenAzureAgentPool(d *schema.ResourceData, agentPool *taskagent.TaskAgentPool) {
-	d.SetId(strconv.Itoa(*agentPool.Id))
-	d.Set("name", converter.ToString(agentPool.Name, ""))
-	d.Set("pool_type", *agentPool.PoolType)
-	d.Set("auto_provision", *agentPool.AutoProvision)
-}
-
-func expandAgentPool(d *schema.ResourceData, forCreate bool) (*taskagent.TaskAgentPool, error) {
-	poolID, err := strconv.Atoi(d.Id())
-	if !forCreate && err != nil {
-		return nil, fmt.Errorf("Error getting agent pool Id: %+v", err)
+	//  waiting resource deleted
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+			agentPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{PoolId: &poolID})
+			if err != nil {
+				if utils.ResponseWasNotFound(err) {
+					state = "Synched"
+				} else {
+					return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+				}
+			}
+			if agentPool == nil {
+				state = "Synched"
+			}
+			return state, state, nil
+		},
+		Timeout:                   5 * time.Minute,
+		MinTimeout:                3 * time.Second,
+		Delay:                     1 * time.Second,
+		ContinuousTargetOccurence: 2,
 	}
-
-	poolType := taskagent.TaskAgentPoolType(d.Get("pool_type").(string))
-
-	pool := &taskagent.TaskAgentPool{
-		Id:            &poolID,
-		Name:          converter.String(d.Get("name").(string)),
-		PoolType:      &poolType,
-		AutoProvision: converter.Bool(d.Get("auto_provision").(bool)),
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return fmt.Errorf(" waiting for Agent Pool deleted. %v ", err)
 	}
+	return nil
+}
 
-	return pool, nil
+func syncStatus(params taskagent.UpdateAgentPoolArgs, client *client.AggregatedClient) error {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+			agentPool, err := client.TaskAgentClient.GetAgentPool(client.Ctx, taskagent.GetAgentPoolArgs{PoolId: params.PoolId})
+			if err != nil {
+				return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+			}
+			if *agentPool.AutoUpdate == *params.Pool.AutoUpdate &&
+				*agentPool.AutoProvision == *params.Pool.AutoProvision &&
+				*agentPool.PoolType == *params.Pool.PoolType {
+				state = "Synched"
+			}
+			return state, state, nil
+		},
+		Timeout:                   5 * time.Minute,
+		MinTimeout:                3 * time.Second,
+		Delay:                     1 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+	if _, err := stateConf.WaitForStateContext(client.Ctx); err != nil {
+		return fmt.Errorf(" waiting for Agent Pool ready. %v ", err)
+	}
+	return nil
 }

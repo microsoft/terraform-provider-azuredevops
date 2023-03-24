@@ -26,7 +26,7 @@ var npmTestServiceEndpointProjectID = &npmRandomServiceEndpointProjectID
 var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "NPM_TEST_access_token",
+			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},
