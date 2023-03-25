@@ -6,7 +6,7 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_jfrog_artifactory_v2
-Manages a JFrog Artifactory V2 server endpoint within an Azure DevOps organization.
+Manages a JFrog Artifactory V2 server endpoint within an Azure DevOps organization. Using this service endpoint requires you to first install [JFrog Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-azure-devops-extension).
 
 ## Example Usage
 
