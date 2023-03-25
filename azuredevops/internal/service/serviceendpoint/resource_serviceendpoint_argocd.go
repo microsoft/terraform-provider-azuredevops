@@ -1,6 +1,7 @@
 package serviceendpoint
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -102,13 +103,23 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 	authParams := make(map[string]string)
 
 	if x, ok := d.GetOk("authentication_token"); ok {
+		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["apitoken"] = expandSecret(msi, "token")
+		authParams["apitoken"], ok = msi["token"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'token'")
+		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["username"] = expandSecret(msi, "username")
-		authParams["password"] = expandSecret(msi, "password")
+		authParams["username"], ok = msi["username"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'username'")
+		}
+		authParams["password"], ok = msi["password"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'password'")
+		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &authParams,
@@ -121,38 +132,5 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		auth := make(map[string]interface{})
-		if x, ok := d.GetOk("authentication_token"); ok {
-			authList := x.([]interface{})[0].(map[string]interface{})
-			if len(authList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
-				auth[hashKey] = newHash
-			}
-		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
-		}
-		d.Set("authentication_token", []interface{}{auth})
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
-		auth := make(map[string]interface{})
-		if old, ok := d.GetOk("authentication_basic"); ok {
-			oldAuthList := old.([]interface{})[0].(map[string]interface{})
-			if len(oldAuthList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "password")
-				auth[hashKey] = newHash
-				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
-				auth[hashKey] = newHash
-			}
-		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
-			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
-		}
-		d.Set("authentication_basic", []interface{}{auth})
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
-	}
-
 	d.Set("url", *serviceEndpoint.Url)
 }
