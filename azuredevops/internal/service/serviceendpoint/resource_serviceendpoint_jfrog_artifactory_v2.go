@@ -85,6 +85,11 @@ func ResourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointArtifactoryV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
+
+	if !(strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") || strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword")) {
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
+	}
+
 	d.Set("url", *serviceEndpoint.Url)
 }
 
