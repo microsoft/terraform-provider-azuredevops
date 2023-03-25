@@ -1,6 +1,7 @@
 package serviceendpoint
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -93,12 +94,21 @@ func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*servicee
 	if x, ok := d.GetOk("authentication_token"); ok {
 		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["apitoken"] = expandSecret(msi, "token")
+		authParams["apitoken"], ok = msi["token"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'token'")
+		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["username"] = expandSecret(msi, "username")
-		authParams["password"] = expandSecret(msi, "password")
+		authParams["username"], ok = msi["username"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'username'")
+		}
+		authParams["password"], ok = msi["password"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'password'")
+		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &authParams,
