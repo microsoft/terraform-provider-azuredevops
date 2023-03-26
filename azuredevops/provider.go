@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
@@ -45,6 +46,8 @@ func Provider() *schema.Provider {
 			"azuredevops_repository_policy_max_path_length":      repository.ResourceRepositoryMaxPathLength(),
 			"azuredevops_repository_policy_max_file_size":        repository.ResourceRepositoryMaxFileSize(),
 			"azuredevops_repository_policy_check_credentials":    repository.ResourceRepositoryPolicyCheckCredentials(),
+			"azuredevops_check_branch_control":                   approvalsandchecks.ResourceCheckBranchControl(),
+			"azuredevops_check_business_hours":                   approvalsandchecks.ResourceCheckBusinessHours(),
 			"azuredevops_serviceendpoint_argocd":                 serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_jfrog_artifactory_v2":   serviceendpoint.ResourceServiceEndpointJFrogArtifactoryV2(),
@@ -72,6 +75,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_generic_git":            serviceendpoint.ResourceServiceEndpointGenericGit(),
 			"azuredevops_serviceendpoint_externaltfs":            serviceendpoint.ResourceServiceEndpointExternalTFS(),
 			"azuredevops_git_repository":                         git.ResourceGitRepository(),
+			"azuredevops_git_repository_branch":                  git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_group_membership":                       graph.ResourceGroupMembership(),
@@ -92,6 +96,7 @@ func Provider() *schema.Provider {
 			"azuredevops_servicehook_permissions":                permissions.ResourceServiceHookPermissions(),
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
+			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":        build.DataBuildDefinition(),

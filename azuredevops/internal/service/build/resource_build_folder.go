@@ -53,7 +53,7 @@ func resourceBuildFolderCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdBuildFolder, err := createBuildFolder(clients, path, projectID, description)
 	if err != nil {
-		return fmt.Errorf(" failed creating resource Build Folder, project ID: %s. Error: %+v", projectID, err)
+		return fmt.Errorf(" failed creating resource Build Folder, %+v", err)
 	}
 
 	flattenBuildFolder(d, createdBuildFolder, projectID)
@@ -94,7 +94,7 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	path := d.Get("path").(string)
+	oldPath, _ := d.GetChange("path")
 	buildFolder, projectID, err := expandBuildFolder(d)
 	if err != nil {
 		return fmt.Errorf(" failed to expand build folder configurations. Project ID: %s , Error: %+v", projectID, err)
@@ -102,7 +102,7 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 
 	updatedBuildFolder, err := clients.BuildClient.UpdateFolder(m.(*client.AggregatedClient).Ctx, build.UpdateFolderArgs{
 		Project: &projectID,
-		Path:    &path,
+		Path:    converter.String(oldPath.(string)),
 		Folder:  buildFolder,
 	})
 

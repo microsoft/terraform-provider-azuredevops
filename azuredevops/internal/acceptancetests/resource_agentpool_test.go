@@ -6,6 +6,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -16,19 +17,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// Verifies that the following sequence of events occurrs without error:
-//
-//	(1) TF apply creates agent pool
-//	(2) TF state values are set
-//	(3) Agent pool can be queried by ID and has expected name
-//	(4) TF apply updates agent pool with new name
-//	(5) Agent pool can be queried by ID and has expected name
-//	(6) TF destroy deletes agent pool
-//	(7) Agent pool can no longer be queried by ID
-func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
-	poolNameFirst := testutils.GenerateResourceName()
-	poolNameSecond := testutils.GenerateResourceName()
-	tfNode := "azuredevops_agent_pool.pool"
+func TestAccAgentPool_basic(t *testing.T) {
+	poolName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_agent_pool.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -36,25 +27,15 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkAgentPoolDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclAgentPoolResource(poolNameFirst),
+				Config: hclAgentPoolBasic(poolName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", poolNameFirst),
+					resource.TestCheckResourceAttr(tfNode, "name", poolName),
 					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
-					checkAgentPoolExists(poolNameFirst),
 				),
 			},
 			{
-				Config: testutils.HclAgentPoolResource(poolNameSecond),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", poolNameSecond),
-					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
-					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
-					checkAgentPoolExists(poolNameSecond),
-				),
-			},
-			{
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -63,37 +44,74 @@ func TestAccAgentPool_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-// Given the name of an agent pool, this will return a function that will check whether
-// or not the pool (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func checkAgentPoolExists(expectedName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources["azuredevops_agent_pool.pool"]
-		if !ok {
-			return fmt.Errorf("Did not find a agent pool in the TF state")
-		}
+func TestAccAgentPool_update(t *testing.T) {
+	poolName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_agent_pool.test"
 
-		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-		id, err := strconv.Atoi(resource.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Parse ID error, ID:  %v !. Error= %v", resource.Primary.ID, err)
-		}
-
-		pool, agentPoolErr := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{PoolId: &id})
-
-		if agentPoolErr != nil {
-			return fmt.Errorf("Agent Pool with ID=%d cannot be found!. Error=%v", id, err)
-		}
-
-		if *pool.Name != expectedName {
-			return fmt.Errorf("Agent Pool with ID=%d has Name=%s, but expected Name=%s", id, *pool.Name, expectedName)
-		}
-
-		return nil
-	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkAgentPoolDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclAgentPoolBasic(poolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", poolName),
+					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
+					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: hclAgentPoolUpdate(poolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", poolName),
+					resource.TestCheckResourceAttr(tfNode, "auto_provision", "true"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "true"),
+					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
-// verifies that agent pool referenced in the state is destroyed. This will be invoked
-// *after* terraform destroys the resource but *before* the state is wiped clean.
+func TestAccAgentPool_requiresImportErrorStep(t *testing.T) {
+	poolName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_agent_pool.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkAgentPoolDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclAgentPoolBasic(poolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", poolName),
+					resource.TestCheckResourceAttr(tfNode, "auto_provision", "false"),
+					resource.TestCheckResourceAttr(tfNode, "auto_update", "false"),
+					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
+				),
+			},
+
+			{
+				Config:      hclAgentPoolResourceRequiresImport(poolName),
+				ExpectError: requiresImportError(poolName),
+			},
+		},
+	})
+}
+
 func checkAgentPoolDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
@@ -115,4 +133,41 @@ func checkAgentPoolDestroyed(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func requiresImportError(resourceName string) *regexp.Regexp {
+	message := "creating agent pool in Azure DevOps: Agent pool %[1]s already exists."
+	return regexp.MustCompile(fmt.Sprintf(message, resourceName))
+}
+
+func hclAgentPoolBasic(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_agent_pool" "test" {
+  name           = "%s"
+  auto_provision = false
+  auto_update    = false
+  pool_type      = "automation"
+}`, name)
+}
+
+func hclAgentPoolUpdate(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_agent_pool" "test" {
+  name           = "%s"
+  auto_provision = true
+  auto_update    = true
+  pool_type      = "automation"
+}`, name)
+}
+
+func hclAgentPoolResourceRequiresImport(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_agent_pool" "import" {
+  name           = azuredevops_agent_pool.test.name
+  auto_provision = azuredevops_agent_pool.test.auto_provision
+  auto_update    = azuredevops_agent_pool.test.auto_update
+  pool_type      = azuredevops_agent_pool.test.pool_type
+}`, hclAgentPoolBasic(name))
 }
