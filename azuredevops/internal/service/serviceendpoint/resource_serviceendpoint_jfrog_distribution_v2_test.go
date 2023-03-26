@@ -26,8 +26,8 @@ var distributionV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServi
 var distributionV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"password": "",
 			"username": "",
+			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -53,8 +53,10 @@ var distributionV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpoi
 
 var distributionV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{},
-		Scheme:     converter.String("Token"),
+		Parameters: &map[string]string{
+			"apitoken": "",
+		},
+		Scheme: converter.String("Token"),
 	},
 	Id:    &distributionV2TestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),

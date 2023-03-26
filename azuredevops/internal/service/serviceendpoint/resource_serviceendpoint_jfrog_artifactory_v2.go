@@ -83,10 +83,25 @@ func ResourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
+// Note that 'username', 'password', and 'apitoken' service connection fields
+// are all marked as confidential and therefore cannot be read from Azure DevOps
 func flattenServiceEndpointArtifactoryV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	if !(strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") || strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword")) {
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+		if _, ok := d.GetOk("authentication_basic"); !ok {
+			auth := make(map[string]interface{})
+			auth["username"] = ""
+			auth["password"] = ""
+			d.Set("authentication_basic", []interface{}{auth})
+		}
+	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+		if _, ok := d.GetOk("authentication_token"); !ok {
+			auth := make(map[string]interface{})
+			auth["token"] = ""
+			d.Set("authentication_token", []interface{}{auth})
+		}
+	} else {
 		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
 	}
 

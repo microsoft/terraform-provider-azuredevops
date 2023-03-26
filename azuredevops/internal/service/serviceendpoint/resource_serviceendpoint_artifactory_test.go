@@ -53,8 +53,10 @@ var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointP
 
 var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{},
-		Scheme:     converter.String("Token"),
+		Parameters: &map[string]string{
+			"apitoken": "",
+		},
+		Scheme: converter.String("Token"),
 	},
 	Id:    &artifactoryTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),

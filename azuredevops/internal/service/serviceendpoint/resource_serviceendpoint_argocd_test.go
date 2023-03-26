@@ -53,8 +53,10 @@ var argocdTestServiceEndpointProjectID = &argocdRandomServiceEndpointProjectID
 
 var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{},
-		Scheme:     converter.String("Token"),
+		Parameters: &map[string]string{
+			"apitoken": "",
+		},
+		Scheme: converter.String("Token"),
 	},
 	Id:    &argocdTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
