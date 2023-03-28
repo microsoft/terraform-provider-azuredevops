@@ -24,10 +24,10 @@ type expandFunc func(d *schema.ResourceData) (*audit.AuditStream, *int, *bool)
 // that all Audit Streams require.
 func genBaseAuditStreamResource(f flatFunc, e expandFunc) *schema.Resource {
 	return &schema.Resource{
-		Create: genAuditStreamCreateFunc(f, e),
-		Read:   genAuditStreamReadFunc(f),
-		Update: genAuditStreamUpdateFunc(f, e),
-		Delete: genAuditStreamDeleteFunc(),
+		Create: resourceAuditStreamCreate(f, e),
+		Read:   resourceAuditStreamRead(f),
+		Update: resourceAuditStreamUpdate(f, e),
+		Delete: resourceAuditStreamDelete(),
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -86,7 +86,7 @@ func doBaseFlattening(d *schema.ResourceData, auditStream *audit.AuditStream, da
 	d.Set("name", auditStream.DisplayName)
 }
 
-func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
+func resourceAuditStreamCreate(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		auditStream, daysToBackfill, enabled := expandFunc(d)
@@ -96,17 +96,18 @@ func genAuditStreamCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *
 			return fmt.Errorf("Error creating audit stream in Azure DevOps: %+v", err)
 		}
 
+		// If stream set to disabled during create, update stream
 		statefulStream, err := setStreamStatusState(clients, createdAuditStream, *enabled)
 		if err != nil {
 			return fmt.Errorf(errMsgUpdateAuditStream, err)
 		}
 
 		d.SetId(strconv.Itoa(*statefulStream.Id))
-		return genAuditStreamReadFunc(flatFunc)(d, m)
+		return resourceAuditStreamRead(flatFunc)(d, m)
 	}
 }
 
-func genAuditStreamReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interface{}) error {
+func resourceAuditStreamRead(flatFunc flatFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		streamId, err := strconv.Atoi(d.Id())
@@ -136,7 +137,7 @@ func genAuditStreamReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m in
 	}
 }
 
-func genAuditStreamUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateFunc {
+func resourceAuditStreamUpdate(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		auditStream, daysToBackfill, enabled := expandFunc(d)
@@ -152,11 +153,11 @@ func genAuditStreamUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.U
 		}
 
 		flatFunc(d, statefulStream, daysToBackfill, enabled)
-		return genAuditStreamReadFunc(flatFunc)(d, m)
+		return resourceAuditStreamRead(flatFunc)(d, m)
 	}
 }
 
-func genAuditStreamDeleteFunc() schema.DeleteFunc {
+func resourceAuditStreamDelete() schema.DeleteFunc {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		streamId, err := strconv.Atoi(d.Id())
@@ -185,6 +186,7 @@ func createAuditStream(clients *client.AggregatedClient, stream *audit.AuditStre
 		return nil, err
 	}
 
+	// Wait for stream to provision and disable after complete
 	stateConf := &resource.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     5 * time.Second,
@@ -194,17 +196,12 @@ func createAuditStream(clients *client.AggregatedClient, stream *audit.AuditStre
 		},
 		Target: []string{
 			string(audit.AuditStreamStatusValues.Enabled),
-			string(audit.AuditStreamStatusValues.DisabledByUser),
-			string(audit.AuditStreamStatusValues.DisabledBySystem),
 		},
 		Refresh: readStreamStatus(clients, *createdAuditStream.Id),
 		Timeout: timeoutSeconds,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		// if delErr := deleteServiceEndpoint(clients, projectID, createdServiceEndpoint.Id, d.Timeout(schema.TimeoutDelete)); delErr != nil {
-		// 	log.Printf("[DEBUG] Failed to delete the failed service endpoint: %v ", delErr)
-		// }
 		return nil, fmt.Errorf(" waiting for auditstream ready. %v ", err)
 	}
 
