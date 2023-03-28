@@ -1,5 +1,5 @@
-//go:build (all || resource_serviceendpoint_artifactory) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_artifactory
+//go:build (all || resource_serviceendpoint_jfrog_xray_v2) && !exclude_serviceendpoints
+// +build all resource_serviceendpoint_jfrog_xray_v2
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -19,27 +19,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var artifactoryTestServiceEndpointIDpassword = uuid.New()
-var artifactoryRandomServiceEndpointProjectIDpassword = uuid.New()
-var artifactoryTestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
+var xrayV2TestServiceEndpointIDpassword = uuid.New()
+var xrayV2RandomServiceEndpointProjectIDpassword = uuid.New()
+var xrayV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
 
-var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
+var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"password": "",
 			"username": "",
+			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &artifactoryTestServiceEndpointIDpassword,
+	Id:    &xrayV2TestServiceEndpointIDpassword,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("artifactoryService"),
+	Type:  converter.String("jfrogXrayService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
-				Id: artifactoryTestServiceEndpointProjectIDpassword,
+				Id: xrayV2TestServiceEndpointProjectIDpassword,
 			},
 			Name:        converter.String("UNIT_TEST_CONN_NAME"),
 			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
@@ -47,26 +47,26 @@ var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var artifactoryTestServiceEndpointID = uuid.New()
-var artifactoryRandomServiceEndpointProjectID = uuid.New()
-var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var xrayV2TestServiceEndpointID = uuid.New()
+var xrayV2RandomServiceEndpointProjectID = uuid.New()
+var xrayV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
 
-var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &artifactoryTestServiceEndpointID,
+	Id:    &xrayV2TestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("artifactoryService"),
+	Type:  converter.String("jfrogXrayService"),
 	Url:   converter.String("https://www.artifactory.com"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
-				Id: artifactoryTestServiceEndpointProjectID,
+				Id: xrayV2TestServiceEndpointProjectID,
 			},
 			Name:        converter.String("UNIT_TEST_CONN_NAME"),
 			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
@@ -75,33 +75,33 @@ var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
-func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
-		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
+		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogXRayV2().Schema, nil)
 		flattenServiceEndpointArtifactory(resourceData, ep, id)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
+		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogXRayV2(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, projectID)
+
 	}
 }
-
-func TestServiceEndpointArtifactory_ExpandFlatten_RoundtripPassword(t *testing.T) {
-	testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+func TestServiceEndpointxrayV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
+	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
-func TestServiceEndpointArtifactory_ExpandFlatten_RoundtripToken(t *testing.T) {
-	testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+func TestServiceEndpointxrayV2_ExpandFlatten_RoundtripToken(t *testing.T) {
+	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func testServiceEndpointxrayV2_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointArtifactory()
+	r := ResourceServiceEndpointJFrogXRayV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
@@ -118,19 +118,19 @@ func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
-func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
-func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func testServiceEndpointxrayV2_Read_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointArtifactory()
+	r := ResourceServiceEndpointJFrogXRayV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
@@ -150,19 +150,19 @@ func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *s
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
-func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
-func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointArtifactory()
+	r := ResourceServiceEndpointJFrogXRayV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
@@ -184,19 +184,19 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
-func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+func TestServiceEndpointxrayV2_Delete_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
-func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+func TestServiceEndpointxrayV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func testServiceEndpointxrayV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceServiceEndpointArtifactory()
+	r := ResourceServiceEndpointJFrogXRayV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointArtifactory(resourceData, ep, id)
 
@@ -217,9 +217,9 @@ func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
-func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
-func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
+	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }

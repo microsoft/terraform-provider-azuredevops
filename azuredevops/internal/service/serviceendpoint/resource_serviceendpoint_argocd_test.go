@@ -26,8 +26,8 @@ var argocdTestServiceEndpointProjectIDpassword = &argocdRandomServiceEndpointPro
 var argocdTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "AR_TEST_username",
-			"password": "AR_TEST_password",
+			"username": "",
+			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -54,7 +54,7 @@ var argocdTestServiceEndpointProjectID = &argocdRandomServiceEndpointProjectID
 var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "AR_TEST_token",
+			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},

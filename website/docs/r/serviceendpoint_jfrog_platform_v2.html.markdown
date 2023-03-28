@@ -1,12 +1,12 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_serviceendpoint_artifactory"
+page_title: "AzureDevops: azuredevops_serviceendpoint_jfrog_platform_v2"
 description: |-
-  Manages an Artifactory server endpoint within an Azure DevOps organization.
+  Manages a JFrog Platform V2 server endpoint within an Azure DevOps organization.
 ---
 
-# azuredevops_serviceendpoint_artifactory
-Manages an Artifactory server endpoint within an Azure DevOps organization. Using this service endpoint requires you to first install [JFrog Artifactory Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-artifactory-vsts-extension).
+# azuredevops_serviceendpoint_jfrog_platform_v2
+Manages a JFrog Platform V2 server endpoint within an Azure DevOps organization. Using this service endpoint requires you to first install [JFrog Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-azure-devops-extension).
 
 ## Example Usage
 
@@ -19,7 +19,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_artifactory" "example" {
+resource "azuredevops_serviceendpoint_jfrog_platform_v2" "example" {
   project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example Artifactory"
   description           = "Managed by Terraform"
@@ -40,7 +40,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_artifactory" "example" {
+resource "azuredevops_serviceendpoint_jfrog_platform_v2" "example" {
   project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example Artifactory"
   description           = "Managed by Terraform"
@@ -60,14 +60,24 @@ The following arguments are supported:
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 * `url` - (Required) URL of the Artifactory server to connect with.
 
-   _Note: URL should not end in a slash character._
-* either `authentication_token` or `authentication_basic` (one is required)
-  * `authentication_token`
-    * `token` - Authentication Token generated through Artifactory.
-  * `authentication_basic`
-      * `username` - Artifactory Username.
-      * `password` - Artifactory Password.
+   ~> **NOTE:** URL should not end in a slash character.
+
+* `authentication_token` - (Optional) A `authentication_token` block as documented below.
+* `authentication_basic` - (Optional) A `authentication_basic` block as documented below.
 * `description` - (Optional) The Service Endpoint description.
+
+---
+
+A `authentication_token` block supports the following:
+
+* `token` - Authentication Token generated through Artifactory.
+
+---
+
+A `authentication_basic` block supports the following:
+
+* `username` - Artifactory Username.
+* `password` - Artifactory Password.
 
 ## Attributes Reference
 
@@ -82,8 +92,8 @@ The following attributes are exported:
 * [Artifactory User Token](https://docs.artifactory.org/latest/user-guide/user-token/)
 
 ## Import
-Azure DevOps Service Endpoint Artifactory can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps Service Endpoint JFrog Platform V2 can be imported using the **projectID/serviceEndpointID**, e.g.
 
 ```sh
-terraform import azuredevops_serviceendpoint_artifactory.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_jfrog_platform_v2.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

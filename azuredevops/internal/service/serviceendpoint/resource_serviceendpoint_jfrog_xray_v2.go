@@ -12,9 +12,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// ResourceServiceEndpointArtifactory schema and implementation for Artifactory service endpoint resource
-func ResourceServiceEndpointArtifactory() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointArtifactory)
+// ResourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog Artifactory service endpoint resource
+func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactoryV2, expandServiceEndpointJFrogXRayV2)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -31,13 +31,13 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 			}
 			return validation.IsURLWithHTTPorHTTPS(url, key)
 		},
-		Description: "Url for the Artifactory Server",
+		Description: "Url for the JFrog Artifactory Server",
 	}
 
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
-				Description: "The Artifactory access token.",
+				Description: "The JFrog Artifactory access token.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
@@ -48,13 +48,13 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description: "The Artifactory user name.",
+				Description: "The JFrog Artifactory user name.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 			},
 			"password": {
-				Description: "The Artifactory password.",
+				Description: "The JFrog Artifactory password.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
@@ -83,9 +83,9 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointJFrogXRayV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
-	serviceEndpoint.Type = converter.String("artifactoryService")
+	serviceEndpoint.Type = converter.String("jfrogXrayService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	authScheme := "Token"
 
@@ -116,30 +116,4 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 	}
 
 	return serviceEndpoint, projectID, nil
-}
-
-// Convert AzDO data structure to internal Terraform data structure
-// Note that 'username', 'password', and 'apitoken' service connection fields
-// are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
-		if _, ok := d.GetOk("authentication_basic"); !ok {
-			auth := make(map[string]interface{})
-			auth["username"] = ""
-			auth["password"] = ""
-			d.Set("authentication_basic", []interface{}{auth})
-		}
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		if _, ok := d.GetOk("authentication_token"); !ok {
-			auth := make(map[string]interface{})
-			auth["token"] = ""
-			d.Set("authentication_token", []interface{}{auth})
-		}
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
-	}
-
-	d.Set("url", *serviceEndpoint.Url)
 }
