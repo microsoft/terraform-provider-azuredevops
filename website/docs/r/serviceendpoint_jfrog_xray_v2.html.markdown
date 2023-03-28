@@ -6,7 +6,10 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_jfrog_xray_v2
-Manages an JFrog XRay V2 server endpoint within an Azure DevOps organization. Using this service endpoint requires you to first install [JFrog Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-azure-devops-extension).
+
+Manages an JFrog XRay V2 server endpoint within an Azure DevOps organization. 
+
+~> **Note:** Using this service endpoint requires you to first install [JFrog Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-azure-devops-extension).
 
 ## Example Usage
 
