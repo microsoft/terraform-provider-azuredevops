@@ -26,8 +26,8 @@ var platformV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEn
 var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "AR_TEST_username",
-			"password": "AR_TEST_password",
+			"username": "",
+			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -54,7 +54,7 @@ var platformV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointPr
 var platformV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "AR_TEST_token",
+			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},

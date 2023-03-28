@@ -1,6 +1,7 @@
 package serviceendpoint
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointArgoCD schema and implementation for ArgoCD service endpoint resource
@@ -34,41 +34,32 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 		Description: "Url for the ArgoCD Server",
 	}
 
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("token")
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
-				Description:      "The ArgoCD access token.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The ArgoCD access token.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
-			patHashKey: patHashSchema,
 		},
 	}
 
-	patHashKeyU, patHashSchemaU := tfhelper.GenerateSecreteMemoSchema("username")
-	patHashKeyP, patHashSchemaP := tfhelper.GenerateSecreteMemoSchema("password")
 	aup := &schema.Resource{
 		// Normally we don’t mark username as sensitive data, but author of the ArgoCD extension have declared this property as sensitive
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The ArgoCD user name.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The ArgoCD user name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
-			patHashKeyU: patHashSchemaU,
 			"password": {
-				Description:      "The ArgoCD password.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+				Description: "The ArgoCD password.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
-			patHashKeyP: patHashSchemaP,
 		},
 	}
 
@@ -102,13 +93,23 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 	authParams := make(map[string]string)
 
 	if x, ok := d.GetOk("authentication_token"); ok {
+		authScheme = "Token"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["apitoken"] = expandSecret(msi, "token")
+		authParams["apitoken"], ok = msi["token"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'token'")
+		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
-		authParams["username"] = expandSecret(msi, "username")
-		authParams["password"] = expandSecret(msi, "password")
+		authParams["username"], ok = msi["username"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'username'")
+		}
+		authParams["password"], ok = msi["password"].(string)
+		if !ok {
+			return nil, nil, errors.New("Unable to read 'password'")
+		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &authParams,
@@ -119,37 +120,24 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 }
 
 // Convert AzDO data structure to internal Terraform data structure
+// Note that 'username', 'password', and 'apitoken' service connection fields
+// are all marked as confidential and therefore cannot be read from Azure DevOps
 func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		auth := make(map[string]interface{})
-		if x, ok := d.GetOk("authentication_token"); ok {
-			authList := x.([]interface{})[0].(map[string]interface{})
-			if len(authList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_token", authList, "token")
-				auth[hashKey] = newHash
-			}
+
+	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+		if _, ok := d.GetOk("authentication_basic"); !ok {
+			auth := make(map[string]interface{})
+			auth["username"] = ""
+			auth["password"] = ""
+			d.Set("authentication_basic", []interface{}{auth})
 		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["token"] = (*serviceEndpoint.Authorization.Parameters)["apitoken"]
+	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+		if _, ok := d.GetOk("authentication_token"); !ok {
+			auth := make(map[string]interface{})
+			auth["token"] = ""
+			d.Set("authentication_token", []interface{}{auth})
 		}
-		d.Set("authentication_token", []interface{}{auth})
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
-		auth := make(map[string]interface{})
-		if old, ok := d.GetOk("authentication_basic"); ok {
-			oldAuthList := old.([]interface{})[0].(map[string]interface{})
-			if len(oldAuthList) > 0 {
-				newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "password")
-				auth[hashKey] = newHash
-				newHash, hashKey = tfhelper.HelpFlattenSecretNested(d, "authentication_basic", oldAuthList, "username")
-				auth[hashKey] = newHash
-			}
-		}
-		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-			auth["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
-			auth["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
-		}
-		d.Set("authentication_basic", []interface{}{auth})
 	} else {
 		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
 	}

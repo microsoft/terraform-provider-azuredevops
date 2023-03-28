@@ -26,8 +26,8 @@ var xrayV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpoi
 var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "AR_TEST_username",
-			"password": "AR_TEST_password",
+			"username": "",
+			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -54,7 +54,7 @@ var xrayV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjec
 var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "AR_TEST_token",
+			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},

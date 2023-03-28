@@ -6,7 +6,10 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_jfrog_xray_v2
+
 Manages an JFrog XRay V2 server endpoint within an Azure DevOps organization.
+
+~> **Note:** Using this service endpoint requires you to first install [JFrog Extension](https://marketplace.visualstudio.com/items?itemName=JFrog.jfrog-azure-devops-extension).
 
 ## Example Usage
 
@@ -60,14 +63,24 @@ The following arguments are supported:
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 * `url` - (Required) URL of the Artifactory server to connect with.
 
-   _Note: URL should not end in a slash character._
-* either `authentication_token` or `authentication_basic` (one is required)
-  * `authentication_token`
-    * `token` - Authentication Token generated through Artifactory.
-  * `authentication_basic`
-      * `username` - Artifactory Username.
-      * `password` - Artifactory Password.
+~> **NOTE:** URL should not end in a slash character.
+
+* `authentication_token` - (Optional) A `authentication_token` block as documented below.
+* `authentication_basic` - (Optional) A `authentication_basic` block as documented below.
 * `description` - (Optional) The Service Endpoint description.
+
+---
+
+A `authentication_token` block supports the following:
+
+* `token` - Authentication Token generated through Artifactory.
+
+---
+
+A `authentication_basic` block supports the following:
+
+* `username` - Artifactory Username.
+* `password` - Artifactory Password.
 
 ## Attributes Reference
 

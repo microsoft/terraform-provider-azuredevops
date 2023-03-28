@@ -26,8 +26,8 @@ var artifactoryTestServiceEndpointProjectIDpassword = &artifactoryRandomServiceE
 var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "AR_TEST_username",
-			"password": "AR_TEST_password",
+			"password": "",
+			"username": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
@@ -54,7 +54,7 @@ var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointP
 var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"apitoken": "AR_TEST_token",
+			"apitoken": "",
 		},
 		Scheme: converter.String("Token"),
 	},
@@ -85,7 +85,6 @@ func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *se
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, projectID)
-
 	}
 }
 
