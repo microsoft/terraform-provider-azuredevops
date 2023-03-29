@@ -42,6 +42,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_serviceendpoint_ssh",
 		"azuredevops_serviceendpoint_npm",
+		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_serviceendpoint_generic",
 		"azuredevops_serviceendpoint_generic_git",
 		"azuredevops_serviceendpoint_octopusdeploy",
