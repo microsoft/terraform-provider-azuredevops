@@ -1067,9 +1067,11 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
+}
 
-func HclAuditStreamAzureEventGrid() string {
-	return `resource "azuredevops_auditstream_azureeventgrid" "test" {
+func HclAuditStreamAzureEventGrid(streamEnabled bool) string {
+	return fmt.Sprintf(`
+	resource "azuredevops_auditstream_azureeventgrid" "test" {
 		topic_url 		= "https://topic1.westus2-1.eventgrid.azure.net/api/events"
 		access_key 		= "secret"
 		enabled			= %s
@@ -1077,7 +1079,8 @@ func HclAuditStreamAzureEventGrid() string {
 }
 
 func HclAuditStreamAzureMonitorLogs(streamEnabled bool) string {
-	return fmt.Sprintf(`resource "azuredevops_auditstream_azuremonitorlogs" "test" {
+	return fmt.Sprintf(`
+	resource "azuredevops_auditstream_azuremonitorlogs" "test" {
 		workspace_id 		= "451bdfd1-be13-4366-a184-3f6be690919e"
 		shared_key			= "secret"
 		enabled				= %s
@@ -1085,7 +1088,8 @@ func HclAuditStreamAzureMonitorLogs(streamEnabled bool) string {
 }
 
 func HclAuditStreamSplunk(streamEnabled bool) string {
-	return fmt.Sprintf(`resource "azuredevops_auditstream_splunk" "test" {
+	return fmt.Sprintf(`
+	resource "azuredevops_auditstream_splunk" "test" {
 		url 				= "https://splunk.contoso.com:8088"
 		token			    = "secret"
 		enabled				= %s
