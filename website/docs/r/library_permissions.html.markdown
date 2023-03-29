@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_library_permissions"
 description: |-
-  Manages permissions for a AzureDevOps Library
+  Manages permissions for an Azure DevOps Library
 ---
 
 # azuredevops_library_permissions
