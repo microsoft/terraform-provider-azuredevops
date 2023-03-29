@@ -26,7 +26,7 @@ var nugetTestServiceEndpointProjectIDpassword = &nugetRandomServiceEndpointProje
 var nugetTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "",
+			"username": "NUGET_TEST_username",
 			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
