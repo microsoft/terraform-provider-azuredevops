@@ -92,7 +92,7 @@ resource "azuredevops_variable_group" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
+- `project_id` - (Required) The ID of the project.
 - `name` - (Required) The name of the Variable Group.
 - `description` - (Optional) The description of the Variable Group.
 - `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.

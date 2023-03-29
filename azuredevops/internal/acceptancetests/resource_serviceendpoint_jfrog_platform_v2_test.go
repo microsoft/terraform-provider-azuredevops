@@ -239,13 +239,13 @@ func TestAccServiceEndpointJFrogPlatformV2_RequiresImportErrorStepUsernamePasswo
 func hclSvcEndpointJFrogPlatformV2ResourceBasic(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	authentication_token {
-		token			   	   = "redacted"
-	}
-	url			   		   = "http://url.com/1"
-	description 		   = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  authentication_token {
+    token = "redacted"
+  }
+  url         = "http://url.com/1"
+  description = "%s"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -255,14 +255,14 @@ resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
 func hclSvcEndpointJFrogPlatformV2ResourceBasicUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
-	url			   		   = "http://url.com/1"
-	description 		   = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  authentication_basic {
+    username = "u"
+    password = "redacted"
+  }
+  url         = "http://url.com/1"
+  description = "%s"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -272,14 +272,14 @@ resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
 func hclSvcEndpointJFrogPlatformV2ResourceCompleteUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
-	url			   		   = "https://url.com/1"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  authentication_basic {
+    username = "u"
+    password = "redacted"
+  }
+  url = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -289,13 +289,13 @@ resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
 func hclSvcEndpointJFrogPlatformV2ResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	authentication_token {
-		token          = "redacted"
-	}
-	  url			   		   = "https://url.com/1"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  authentication_token {
+    token = "redacted"
+  }
+  url = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -305,13 +305,13 @@ resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
 func hclSvcEndpointJFrogPlatformV2ResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	authentication_token {
-		token          = "redacted2"
-	}
-	  url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  authentication_token {
+    token = "redacted2"
+  }
+  url = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -321,14 +321,14 @@ resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
 func hclSvcEndpointJFrogPlatformV2ResourceUpdateUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	authentication_basic {
-		username			   = "u2"
-		password			   = "redacted2"
-	}
-	url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  authentication_basic {
+    username = "u2"
+    password = "redacted2"
+  }
+  url = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -340,12 +340,12 @@ func hclSvcEndpointJFrogPlatformV2ResourceRequiresImport(projectName string, ser
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "import" {
-  project_id                = azuredevops_serviceendpoint_jfrog_platform_v2.test.project_id
+  project_id            = azuredevops_serviceendpoint_jfrog_platform_v2.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_jfrog_platform_v2.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_jfrog_platform_v2.test.description
-  url          = azuredevops_serviceendpoint_jfrog_platform_v2.test.url
+  description           = azuredevops_serviceendpoint_jfrog_platform_v2.test.description
+  url                   = azuredevops_serviceendpoint_jfrog_platform_v2.test.url
   authentication_token {
-	  token          = "redacted"
+    token = "redacted"
   }
 }
 `, template)
@@ -355,13 +355,13 @@ func hclSvcEndpointJFrogPlatformV2ResourceRequiresImportUsernamePassword(project
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "import" {
-  project_id                = azuredevops_serviceendpoint_jfrog_platform_v2.test.project_id
+  project_id            = azuredevops_serviceendpoint_jfrog_platform_v2.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_jfrog_platform_v2.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_jfrog_platform_v2.test.description
-  url          	= azuredevops_serviceendpoint_jfrog_platform_v2.test.url
+  description           = azuredevops_serviceendpoint_jfrog_platform_v2.test.description
+  url                   = azuredevops_serviceendpoint_jfrog_platform_v2.test.url
   authentication_basic {
-	username			   = "u"
-	password			   = "redacted"
+    username = "u"
+    password = "redacted"
   }
 }
 `, template)
