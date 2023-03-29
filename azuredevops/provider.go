@@ -89,6 +89,8 @@ func Provider() *schema.Provider {
 			"azuredevops_iteration_permissions":                  permissions.ResourceIterationPermissions(),
 			"azuredevops_build_definition_permissions":           permissions.ResourceBuildDefinitionPermissions(),
 			"azuredevops_build_folder_permissions":               permissions.ResourceBuildFolderPermissions(),
+			"azuredevops_variable_group_permissions":             permissions.ResourceVariableGroupPermissions(),
+			"azuredevops_library_permissions":                    permissions.ResourceLibraryPermissions(),
 			"azuredevops_team":                                   core.ResourceTeam(),
 			"azuredevops_team_members":                           core.ResourceTeamMembers(),
 			"azuredevops_team_administrators":                    core.ResourceTeamAdministrators(),
