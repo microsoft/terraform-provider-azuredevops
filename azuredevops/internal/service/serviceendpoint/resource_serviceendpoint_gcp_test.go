@@ -33,8 +33,8 @@ var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("JWT"),
 	},
-	serviceEndpoint.Data = &map[string]string{
-		"project":     "GCP_TEST_project_id",
+	serviceEndpoint.Data: &map[string]string{
+		"project": "GCP_TEST_project_id",
 	},
 	Id:    &gcpTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
