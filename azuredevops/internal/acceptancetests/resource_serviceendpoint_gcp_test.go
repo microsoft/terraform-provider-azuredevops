@@ -46,6 +46,7 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 	scope := "scope"
 	clientEmail := "client_email"
 	tokenUri := "tokenUri"
+	projectId := "projectId"
 
 	resourceType := "azuredevops_serviceendpoint_gcp"
 	tfSvcEpNode := resourceType + ".test"
@@ -55,10 +56,9 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointGcpResourceComplete(projectName, serviceEndpointName, description, sessionToken, scope, clientEmail, tokenUri, projectId),
+				Config: hclSvcEndpointGcpResourceComplete(projectName, serviceEndpointName, description, scope, clientEmail, tokenUri, projectId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "external_id", externalId),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "private_key", ""),
@@ -66,7 +66,7 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "token_uri", tokenUri),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "gcp_project_id", projectId),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "scope", scope),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "client_email", client_email),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "client_email", clientEmail),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
 			},
@@ -80,6 +80,7 @@ func TestAccServiceEndpointGcp_update(t *testing.T) {
 
 	description := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
+	tokenUri := "tokenUri"
 
 	resourceType := "azuredevops_serviceendpoint_gcp"
 	tfSvcEpNode := resourceType + ".test"
@@ -96,12 +97,13 @@ func TestAccServiceEndpointGcp_update(t *testing.T) {
 				),
 			},
 			{
-				Config: hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointNameSecond, description),
+				Config: hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointNameSecond, description, tokenUri),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "token_uri", tokenUri),
 				),
 			},
 		},
@@ -136,7 +138,7 @@ func TestAccServiceEndpointGcp_requiresImportErrorStep(t *testing.T) {
 }
 
 func hclSvcEndpointGcpResource(projectName string, serviceEndpointName string) string {
-	return hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointName, "description")
+	return hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointName, "description", "tokenUri")
 }
 
 func hclSvcEndpointGcpResourceUpdate(projectName string, serviceEndpointName string, description string, tokenUri string) string {

@@ -26,14 +26,14 @@ var gcpTestServiceEndpointProjectID = &gcpRandomServiceEndpointProjectID
 var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"client_email": "GCP_TEST_client_email",
-			"private_key":  "GCP_TEST_private_key",
-			"token_uri":    "GCP_TEST_token_uri",
-			"scope":        "GCP_TEST_scope",
+			"Issuer":     "GCP_TEST_client_email",
+			"Audience":   "GCP_TEST_token_uri",
+			"Scope":      "GCP_TEST_scope",
+			"PrivateKey": "GCP_TEST_private_key",
 		},
 		Scheme: converter.String("JWT"),
 	},
-	serviceEndpoint.Data: &map[string]string{
+	Data: &map[string]string{
 		"project": "GCP_TEST_project_id",
 	},
 	Id:    &gcpTestServiceEndpointID,

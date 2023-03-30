@@ -75,6 +75,7 @@ func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *servicee
 
 	tfhelper.HelpFlattenSecret(d, "private_key")
 
+	d.Set("private_key", (*serviceEndpoint.Authorization.Parameters)["PrivateKey"])
 	d.Set("client_email", (*serviceEndpoint.Authorization.Parameters)["Issuer"])
 	d.Set("token_uri", (*serviceEndpoint.Authorization.Parameters)["Audience"])
 	d.Set("scope", (*serviceEndpoint.Authorization.Parameters)["Scope"])
