@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccAuditStreamAzureEventGrid_CreateAndUpdate(t *testing.T) {
-	// t.Skip("Skipping test TestAccAuditStreamAzureEventGrid_CreateAndUpdate: event grid not provisioned on test infrastructure")
+	t.Skip("Skipping test TestAccAuditStreamAzureEventGrid_CreateAndUpdate: event grid not provisioned on test infrastructure")
 	streamType := "AzureEventGrid"
 
 	resourceType := "azuredevops_auditstream_azureeventgrid"
@@ -49,7 +49,7 @@ func TestAccAuditStreamAzureEventGrid_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccAuditStreamAzureEventGrid_CreateDisabled(t *testing.T) {
-	// t.Skip("Skipping test TestAccAuditStreamAzureEventGrid_CreateDisabled: event grid not provisioned on test infrastructure")
+	t.Skip("Skipping test TestAccAuditStreamAzureEventGrid_CreateDisabled: event grid not provisioned on test infrastructure")
 	streamType := "AzureEventGrid"
 
 	resourceType := "azuredevops_auditstream_azureeventgrid"
