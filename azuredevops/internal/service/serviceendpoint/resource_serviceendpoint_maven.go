@@ -59,10 +59,10 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The Maven user name.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
+				Description: "The Maven user name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
 			"password": {
 				Description:      "The Maven password.",

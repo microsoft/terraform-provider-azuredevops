@@ -38,10 +38,10 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The Nexus user name.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
+				Description: "The Nexus user name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
 			"password": {
 				Description:      "The Nexus password.",
