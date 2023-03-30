@@ -46,9 +46,9 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 	aup := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description:      "The Jenkins user name.",
-				Type:             schema.TypeString,
-				Required:         true,
+				Description: "The Jenkins user name.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"password": {
 				Description:      "The Jenkins password.",
