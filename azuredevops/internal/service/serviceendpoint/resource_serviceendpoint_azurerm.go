@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
@@ -33,7 +32,6 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	makeUnprotectedOptionalSchema(r, "azurerm_management_group_id", "ARM_MGMT_GROUP_ID", "The Azure managementGroup Id which should be used.", []string{"azurerm_subscription_id", "resource_group"})
 	makeUnprotectedOptionalSchema(r, "azurerm_management_group_name", "ARM_MGMT_GROUP_NAME", "The Azure managementGroup name which should be used.", []string{"azurerm_subscription_id", "resource_group"})
 
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("serviceprincipalkey")
 	r.Schema["credentials"] = &schema.Schema{
 		Type:          schema.TypeList,
 		Optional:      true,
@@ -47,13 +45,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 					Description: "The service principal id which should be used.",
 				},
 				"serviceprincipalkey": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      "The service principal secret which should be used.",
-					Sensitive:        true,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "The service principal secret which should be used.",
+					Sensitive:   true,
 				},
-				secretHashKey: secretHashSchema,
 			},
 		},
 	}
@@ -164,9 +160,12 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
-		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
-		d.Set("credentials", credentials)
+		if _, ok := d.GetOk("credentials"); !ok {
+			credentials := make(map[string]interface{})
+			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
+			credentials["serviceprincipalkey"] = ""
+			d.Set("credentials", []interface{}{credentials})
+		}
 	}
 
 	s := strings.SplitN(scope, "/", -1)

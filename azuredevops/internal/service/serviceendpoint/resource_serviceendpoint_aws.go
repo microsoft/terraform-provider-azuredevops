@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointAws schema and implementation for aws service endpoint resource
@@ -18,25 +17,19 @@ func ResourceServiceEndpointAws() *schema.Resource {
 		Description: "The AWS access key ID for signing programmatic requests.",
 	}
 	r.Schema["secret_access_key"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Required:         true,
-		DefaultFunc:      schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
-		Description:      "The AWS secret access key for signing programmatic requests.",
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
+		Description: "The AWS secret access key for signing programmatic requests.",
+		Sensitive:   true,
 	}
-	saSecretHashKey, saSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("secret_access_key")
-	r.Schema[saSecretHashKey] = saSecretHashSchema
 	r.Schema["session_token"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		DefaultFunc:      schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SESSION_TOKEN", nil),
-		Description:      "The AWS session token for signing programmatic requests.",
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		Type:        schema.TypeString,
+		Optional:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SESSION_TOKEN", nil),
+		Description: "The AWS session token for signing programmatic requests.",
+		Sensitive:   true,
 	}
-	stSecretHashKey, stSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("session_token")
-	r.Schema[stSecretHashKey] = stSecretHashSchema
 	r.Schema["role_to_assume"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -81,12 +74,7 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	tfhelper.HelpFlattenSecret(d, "secret_access_key")
-	tfhelper.HelpFlattenSecret(d, "session_token")
-
 	d.Set("access_key_id", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("secret_access_key", (*serviceEndpoint.Authorization.Parameters)["password"])
-	d.Set("session_token", (*serviceEndpoint.Authorization.Parameters)["sessionToken"])
 	d.Set("role_to_assume", (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"])
 	d.Set("role_session_name", (*serviceEndpoint.Authorization.Parameters)["roleSessionName"])
 	d.Set("external_id", (*serviceEndpoint.Authorization.Parameters)["externalId"])

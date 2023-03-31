@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 const (
@@ -30,8 +29,6 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithub)
-	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:          schema.TypeSet,
 		Optional:      true,
@@ -124,8 +121,6 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
-			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}
 	}
