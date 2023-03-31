@@ -131,3 +131,19 @@ func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serv
 	}
 	d.Set("accept_untrusted_certs", unsecured)
 }
+
+func expandSecret(credentials map[string]interface{}, key string) string {
+	// Note: if this is an update for a field other than `key`, the `key` will be
+	// set to `""`. Without catching this case and setting the value to `"null"`, the `key` will
+	// actually be set to `""` by the Azure DevOps service.
+	//
+	// This step is critical in order to ensure that the service connection can update without loosing its password!
+	//
+	// This behavior is unfortunately not documented in the API documentation.
+	val, ok := credentials[key]
+	if !ok || val.(string) == "" {
+		return "null"
+	}
+
+	return val.(string)
+}
