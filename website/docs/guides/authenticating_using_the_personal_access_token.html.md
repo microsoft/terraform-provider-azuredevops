@@ -7,7 +7,7 @@ description: |-
 
 # Azure DevOps Provider: Authenticating using the Personal Access Token
 
-Azure DevOps provider support personal access token for authenticating to Azure DevOps.
+Azure DevOps provider supports personal access tokens for authenticating to Azure DevOps.
 
 ## Create a personal access token
 
