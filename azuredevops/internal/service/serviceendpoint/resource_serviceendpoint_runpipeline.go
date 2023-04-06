@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointRunPipeline schema and implementation for Azure DevOps service endpoint resource
@@ -78,9 +77,6 @@ func rpPersonalAccessTokenField() *schema.Resource {
 			},
 		},
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(fieldName)
-	personalAccessToken.Schema[patHashKey] = patHashSchema
-
 	return personalAccessToken
 }
 
@@ -97,8 +93,6 @@ func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *
 func rpFlattenAuthPersonal(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, "personal_access_token")
-			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}
 	}

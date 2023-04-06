@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointNuget schema and implementation for Nuget service endpoint resource
@@ -35,7 +34,6 @@ func ResourceServiceEndpointNuget() *schema.Resource {
 		Description: "Url for the Nuget Feed",
 	}
 
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema("token")
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
@@ -44,7 +42,6 @@ func ResourceServiceEndpointNuget() *schema.Resource {
 				Required:    true,
 				Sensitive:   true,
 			},
-			patHashKey: patHashSchema,
 		},
 	}
 

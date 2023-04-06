@@ -53,5 +53,4 @@ func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoi
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("webhook_name", (*serviceEndpoint.Authorization.Parameters)["webhookname"])
 	d.Set("http_header", (*serviceEndpoint.Authorization.Parameters)["header"])
-	// secret value won't be returned by service and should not be overwritten
 }

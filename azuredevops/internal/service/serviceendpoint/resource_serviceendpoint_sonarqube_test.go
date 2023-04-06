@@ -26,7 +26,7 @@ var sonarQubeTestServiceEndpointProjectID = &sonarQubeRandomServiceEndpointProje
 var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "SQ_TEST_token",
+			"username": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
