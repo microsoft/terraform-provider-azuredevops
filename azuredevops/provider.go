@@ -423,7 +423,11 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 			if len(jwtParts) != 3 {
 				return "", errors.New("Unable to split TFC_WORKLOAD_IDENTITY_TOKEN jwt")
 			}
-			tokenClaims, err := base64.StdEncoding.DecodeString(jwtParts[1])
+			jwtClaims := jwtParts[1]
+			if i := len(jwtClaims) % 4; i != 0 {
+				jwtClaims += strings.Repeat("=", 4-i)
+			}
+			tokenClaims, err := base64.StdEncoding.DecodeString(jwtClaims)
 			if err != nil {
 				return "", err
 			}
