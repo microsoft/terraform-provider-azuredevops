@@ -73,7 +73,8 @@ func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipel
 			}
 			d.Set("ignore_unknown_protection_status", value)
 		} else {
-			return fmt.Errorf("allowUnknownStatusBranch input not found")
+			// Variable groups don't appear to support this property
+			d.Set("ignore_unknown_protection_status", false)
 		}
 	} else {
 		return fmt.Errorf("inputs not found")
