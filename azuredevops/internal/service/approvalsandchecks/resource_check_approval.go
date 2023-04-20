@@ -9,11 +9,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-var checkTypeApproval = &pipelineschecks.CheckType{
-	Id:   converter.UUID("8C6F20A7-A545-4486-9777-F762FAFE0D4D"),
-	Name: converter.ToPtr("Approval"),
-}
-
 // ResourceCheckApproval schema and implementation for branch check resources
 func ResourceCheckApproval() *schema.Resource {
 	r := genBaseCheckResource(flattenCheckApproval, expandCheckApproval)
@@ -33,7 +28,7 @@ func ResourceCheckApproval() *schema.Resource {
 		Optional: true,
 	}
 
-	r.Schema["requestor_can_approve"] = &schema.Schema{
+	r.Schema["requester_can_approve"] = &schema.Schema{
 		Type:     schema.TypeBool,
 		Optional: true,
 		Default:  false,
@@ -63,8 +58,7 @@ func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecks.CheckCo
 		return fmt.Errorf("settings nil")
 	}
 
-	check.Type.Id = converter.UUID("8C6F20A7-A545-4486-9777-F762FAFE0D4D")
-	check.Type.Name = converter.ToPtr("Approval")
+	check.Type = approvalAndCheckType.Approval
 
 	settings := check.Settings.(map[string]interface{})
 
@@ -81,9 +75,9 @@ func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecks.CheckCo
 	}
 
 	if requesterCannotBeApprover, found := settings["requesterCannotBeApprover"]; found {
-		d.Set("requestor_can_approve", !requesterCannotBeApprover.(bool))
+		d.Set("requester_can_approve", !requesterCannotBeApprover.(bool))
 	} else {
-		d.Set("requestor_can_approve", true)
+		d.Set("requester_can_approve", true)
 	}
 
 	if approversRaw, found := settings["approvers"]; found {
@@ -122,9 +116,14 @@ func expandCheckApproval(d *schema.ResourceData) (*pipelineschecks.CheckConfigur
 	settings := map[string]interface{}{
 		"instructions":              d.Get("instructions").(string),
 		"minRequiredApprovers":      d.Get("minimum_required_approvers").(int),
-		"requesterCannotBeApprover": !d.Get("requestor_can_approve").(bool),
+		"requesterCannotBeApprover": !d.Get("requester_can_approve").(bool),
 		"approvers":                 approvers,
 	}
 
-	return doBaseExpansion(d, checkTypeApproval, settings, converter.ToPtr(d.Get("timeout").(int)))
+	timeout := 43200 // 12 hour default
+	if val, ok := d.GetOk("timeout"); ok {
+		timeout = val.(int)
+	}
+
+	return doBaseExpansion(d, approvalAndCheckType.Approval, settings, converter.ToPtr(timeout))
 }

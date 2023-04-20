@@ -22,6 +22,29 @@ var targetResourceTypes = []string{"endpoint", "environment", "queue", "reposito
 type flatFunc func(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string) error
 type expandFunc func(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error)
 
+type approvalAndCheckTypes struct {
+	Approval         *pipelineschecks.CheckType
+	BranchProtection *pipelineschecks.CheckType
+	BusinessHours    *pipelineschecks.CheckType
+	TaskCheck        *pipelineschecks.CheckType
+}
+
+var approvalAndCheckType = approvalAndCheckTypes{
+	Approval: &pipelineschecks.CheckType{
+		Id:   converter.UUID("8c6f20a7-a545-4486-9777-f762fafe0d4d"),
+		Name: converter.ToPtr("Approval"),
+	},
+	TaskCheck: &pipelineschecks.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+	BranchProtection: &pipelineschecks.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+	BusinessHours: &pipelineschecks.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+}
+
 // genBaseCheckResource creates a Resource with the common parts
 // that all checks require.
 func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
@@ -66,11 +89,6 @@ func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecks.CheckTyp
 	taskCheck := pipelineschecks.CheckConfiguration{
 		Type:     checkType,
 		Settings: settings,
-		// Settings: map[string]interface{}{
-		// 	"definitionRef": definitionRef,
-		// 	"displayName":   d.Get("display_name").(string),
-		// 	"inputs":        inputs,
-		// },
 		Resource: &pipelineschecks.Resource{
 			Id:   converter.String(d.Get("target_resource_id").(string)),
 			Type: converter.String(d.Get("target_resource_type").(string)),

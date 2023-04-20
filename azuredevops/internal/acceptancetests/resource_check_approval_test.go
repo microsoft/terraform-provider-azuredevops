@@ -29,7 +29,7 @@ func TestAccCheckApproval_basic(t *testing.T) {
 				Config: hclCheckApprovalResourceBasic(projectName, principalName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					resource.TestCheckResourceAttr(tfCheckNode, "requestor_can_approve", "false"),
+					resource.TestCheckResourceAttr(tfCheckNode, "requester_can_approve", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "43200"),
 					resource.TestCheckResourceAttr(tfCheckNode, "approvers.#", "1"),
 				),
@@ -55,7 +55,7 @@ func TestAccCheckApproval_complete(t *testing.T) {
 				Config: hclCheckApprovalResourceComplete(projectName, principalName, azdoGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					resource.TestCheckResourceAttr(tfCheckNode, "requestor_can_approve", "true"),
+					resource.TestCheckResourceAttr(tfCheckNode, "requester_can_approve", "true"),
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "40000"),
 					resource.TestCheckResourceAttr(tfCheckNode, "approvers.#", "2"),
 				),
@@ -106,7 +106,7 @@ resource "azuredevops_check_approval" "test" {
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
 
-  requestor_can_approve = false
+  requester_can_approve = false
   approvers = [
     one(data.azuredevops_users.test.users).id,
   ]
@@ -134,7 +134,7 @@ resource "azuredevops_check_approval" "test" {
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
 
-  requestor_can_approve = true
+  requester_can_approve = true
   approvers = [
     one(data.azuredevops_users.test.users).id,
     azuredevops_group.test.origin_id,

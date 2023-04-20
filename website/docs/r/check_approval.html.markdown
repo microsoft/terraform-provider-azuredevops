@@ -36,7 +36,7 @@ resource "azuredevops_check_approval" "example" {
   target_resource_id   = azuredevops_serviceendpoint_generic.example.id
   target_resource_type = "endpoint"
 
-  requestor_can_approve = false
+  requester_can_approve = false
   approvers = [
     one(data.azuredevops_users.example.users).id,
   ]
@@ -66,7 +66,7 @@ resource "azuredevops_check_approval" "example" {
   target_resource_id   = azuredevops_environment.example.id
   target_resource_type = "environment"
 
-  requestor_can_approve = true
+  requester_can_approve = true
   approvers = [
     azuredevops_group.example.origin_id,
   ]
@@ -77,21 +77,21 @@ resource "azuredevops_check_approval" "example" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The ID of the TODO. Changing this forces a new Approval Check to be created.
+* `project_id` - (Required) The project ID. Changing this forces a new Approval Check to be created.
 
-* `target_resource_id` - (Required) The ID of the TODO. Changing this forces a new Approval Check to be created.
+* `target_resource_id` - (Required) The ID of the resource being protected by the check. Changing this forces a new Approval Check to be created.
 
-* `target_resource_type` - (Required) TODO. Changing this forces a new Approval Check to be created.
+* `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`. Changing this forces a new Approval Check to be created.
 
 ---
 
-* `approvers` - (Required) Specifies a list of TODO.
+* `approvers` - (Required) Specifies a list of approvers.
 
 * `instructions` - (Optional) The instructions for the approvers.
 
-* `minimum_required_approvers` - (Optional) The minimum number of approvers.
+* `minimum_required_approvers` - (Optional) The minimum number of approvers. This property is applicable when there is more than 1 approver.
 
-* `requestor_can_approve` - (Optional) Can the requestor approve? Defaults to false.
+* `requester_can_approve` - (Optional) Can the requestor approve? Defaults to false.
 
 * `timeout` - (Optional) The timeout in minutes for the approval.
 

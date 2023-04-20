@@ -44,7 +44,7 @@ var ApprovalCheckSettings = map[string]interface{}{
 
 var ApprovalCheckTest = pipelineschecks.CheckConfiguration{
 	Id:       &ApprovalCheckID,
-	Type:     checkTypeApproval,
+	Type:     approvalAndCheckType.Approval,
 	Settings: ApprovalCheckSettings,
 	Timeout:  converter.ToPtr(20000),
 	Resource: &endpointResourceApproval,

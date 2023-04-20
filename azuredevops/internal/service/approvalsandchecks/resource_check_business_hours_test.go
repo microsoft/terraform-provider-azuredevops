@@ -37,7 +37,7 @@ var CheckBusinessHoursSettings = map[string]interface{}{
 
 var CheckBusinessHoursTest = pipelineschecks.CheckConfiguration{
 	Id:       &CheckBusinessHoursID,
-	Type:     checkTypeBusinessHours,
+	Type:     approvalAndCheckType.BusinessHours,
 	Settings: CheckBusinessHoursSettings,
 	Resource: &endpointResource,
 }
