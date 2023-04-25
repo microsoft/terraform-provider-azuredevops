@@ -1,6 +1,6 @@
-ARG GO_VERSION=1.18
+ARG GO_VERSION=1.19
 
-FROM golang:${GO_VERSION}-stretch
+FROM golang:${GO_VERSION}-bullseye
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
