@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	v5azuredevops "github.com/microsoft/azure-devops-go-api/azuredevops"
@@ -172,7 +173,7 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
 	}
 
-	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID)
+	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(" creating variable group in Azure DevOps: %+v", err)
 	}
@@ -302,14 +303,40 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 // Make the Azure DevOps API call to create the variable group
-func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *v5taskagent.VariableGroupParameters, project *string) (*v5taskagent.VariableGroup, error) {
-	createdVariableGroup, err := clients.V5TaskAgentClient.AddVariableGroup(
+func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *v5taskagent.VariableGroupParameters, project *string, timeOut time.Duration) (*v5taskagent.VariableGroup, error) {
+	createdVG, err := clients.V5TaskAgentClient.AddVariableGroup(
 		clients.Ctx,
 		v5taskagent.AddVariableGroupArgs{
 			Group:   variableGroupParams,
 			Project: project,
 		})
-	return createdVariableGroup, err
+
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 2,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending:                   []string{"inProgress"},
+		Target:                    []string{"succeeded"},
+		Refresh: func() (result interface{}, state string, err error) {
+			createdVG, err = clients.V5TaskAgentClient.GetVariableGroup(
+				clients.Ctx,
+				v5taskagent.GetVariableGroupArgs{
+					GroupId: createdVG.Id,
+					Project: project,
+				},
+			)
+			if createdVG != nil && createdVG.Variables != nil && (len(*variableGroupParams.Variables) == len(*createdVG.Variables)) {
+				return createdVG, "succeeded", nil
+			}
+			return createdVG, "inProgress", nil
+		},
+		Timeout: timeOut,
+	}
+
+	if _, err = stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return nil, fmt.Errorf(" waiting for Variable Group ready. %v ", err)
+	}
+	return createdVG, nil
 }
 
 // Make the Azure DevOps API call to update the variable group
