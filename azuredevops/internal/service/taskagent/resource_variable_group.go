@@ -310,6 +310,9 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 			Group:   variableGroupParams,
 			Project: project,
 		})
+	if err != nil {
+		return nil, err
+	}
 
 	stateConf := &resource.StateChangeConf{
 		ContinuousTargetOccurence: 2,
@@ -336,7 +339,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	if _, err = stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return nil, fmt.Errorf(" waiting for Variable Group ready. %v ", err)
 	}
-	return createdVG, err
+	return createdVG, nil
 }
 
 // Make the Azure DevOps API call to update the variable group
