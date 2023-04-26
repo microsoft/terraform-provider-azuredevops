@@ -336,7 +336,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	if _, err = stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return nil, fmt.Errorf(" waiting for Variable Group ready. %v ", err)
 	}
-	return createdVG, nil
+	return createdVG, err
 }
 
 // Make the Azure DevOps API call to update the variable group
