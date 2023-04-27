@@ -26,7 +26,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/pipelineschecksextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -181,6 +181,9 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		log.Printf("getAzdoClient(): v5pipelineschecks.NewClient failed.")
 		return nil, err
 	}
+
+	// connection := pipelineschecksextras.NewPatConnection(organizationURL, azdoPAT)
+	// v5ExtrasConnection = nil
 
 	v5PipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, v5Connection)
 	if err != nil {

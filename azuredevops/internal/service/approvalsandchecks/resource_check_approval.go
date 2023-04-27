@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
 // ResourceCheckApproval schema and implementation for branch check resources
@@ -48,7 +48,7 @@ func ResourceCheckApproval() *schema.Resource {
 	return r
 }
 
-func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string) error {
+func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
 	err := doBaseFlattening(d, check, projectID)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecks.CheckCo
 	return nil
 }
 
-func expandCheckApproval(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error) {
+func expandCheckApproval(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	approvers := make([]interface{}, 0)
 
 	if userApproversRaw, ok := d.GetOk("approvers"); ok {

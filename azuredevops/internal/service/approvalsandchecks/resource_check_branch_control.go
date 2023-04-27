@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
 var evaluateBranchProtectionDefVersion = "0.0.1"
@@ -50,7 +50,7 @@ func ResourceCheckBranchControl() *schema.Resource {
 	return r
 }
 
-func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipelineschecks.CheckConfiguration, projectID string) error {
+func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipelineschecksextras.CheckConfiguration, projectID string) error {
 	err := doBaseFlattening(d, branchControlCheck, projectID)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipel
 	return nil
 }
 
-func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error) {
+func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	inputs := map[string]interface{}{
 		"allowedBranches":          d.Get("allowed_branches").(string),
 		"ensureProtectionOfBranch": strconv.FormatBool(d.Get("verify_branch_protection").(bool)),

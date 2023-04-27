@@ -13,9 +13,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ var branchControlCheckProjectID = uuid.New().String()
 var branchControlCheckTestProjectID = &branchControlCheckProjectID
 
 var endpointType = "endpoint"
-var endpointResource = pipelineschecks.Resource{
+var endpointResource = pipelineschecksextras.Resource{
 	Id:   &branchControlEndpointID,
 	Type: &endpointType,
 }
@@ -42,7 +42,7 @@ var branchControlCheckSettings = map[string]interface{}{
 	"inputs":        branchControlInputs,
 }
 
-var branchControlCheckTest = pipelineschecks.CheckConfiguration{
+var branchControlCheckTest = pipelineschecksextras.CheckConfiguration{
 	Id:       &branchControlCheckID,
 	Type:     approvalAndCheckType.BranchProtection,
 	Settings: branchControlCheckSettings,
@@ -70,10 +70,10 @@ func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.AddCheckConfigurationArgs{Configuration: &branchControlCheckTest, Project: &branchControlCheckProjectID}
+	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &branchControlCheckTest, Project: &branchControlCheckProjectID}
 	pipelinesChecksClient.
 		EXPECT().
 		AddCheckConfiguration(clients.Ctx, expectedArgs).
@@ -96,7 +96,7 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.GetCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      branchControlCheckTest.Id,
 		Project: &branchControlCheckProjectID,
 	}
@@ -120,10 +120,10 @@ func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.DeleteCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
 		Id:      branchControlCheckTest.Id,
 		Project: &branchControlCheckProjectID,
 	}
@@ -147,10 +147,10 @@ func TestCheckBranchControl_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.UpdateCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
 		Project:       &branchControlCheckProjectID,
 		Configuration: &branchControlCheckTest,
 		Id:            &branchControlCheckID,

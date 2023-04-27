@@ -110,8 +110,6 @@ resource "azuredevops_check_approval" "test" {
   approvers = [
     one(data.azuredevops_users.test.users).id,
   ]
-
-  timeout = 43200
 }
 `, principalName)
 

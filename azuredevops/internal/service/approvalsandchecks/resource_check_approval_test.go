@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ var ApprovalCheckProjectID = uuid.New().String()
 var ApprovalCheckTestProjectID = &ApprovalCheckProjectID
 
 var endpointTypeApproval = "endpoint"
-var endpointResourceApproval = pipelineschecks.Resource{
+var endpointResourceApproval = pipelineschecksextras.Resource{
 	Id:   &ApprovalEndpointID,
 	Type: &endpointTypeApproval,
 }
@@ -42,7 +42,7 @@ var ApprovalCheckSettings = map[string]interface{}{
 	"approvers":                 approvers,
 }
 
-var ApprovalCheckTest = pipelineschecks.CheckConfiguration{
+var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
 	Id:       &ApprovalCheckID,
 	Type:     approvalAndCheckType.Approval,
 	Settings: ApprovalCheckSettings,
@@ -71,10 +71,10 @@ func TestCheckApproval_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.AddCheckConfigurationArgs{Configuration: &ApprovalCheckTest, Project: &ApprovalCheckProjectID}
+	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &ApprovalCheckTest, Project: &ApprovalCheckProjectID}
 	pipelinesChecksClient.
 		EXPECT().
 		AddCheckConfiguration(clients.Ctx, expectedArgs).
@@ -97,7 +97,7 @@ func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.GetCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      ApprovalCheckTest.Id,
 		Project: &ApprovalCheckProjectID,
 	}
@@ -121,10 +121,10 @@ func TestCheckApproval_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.DeleteCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
 		Id:      ApprovalCheckTest.Id,
 		Project: &ApprovalCheckProjectID,
 	}
@@ -148,10 +148,10 @@ func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
+	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.UpdateCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
 		Project:       &ApprovalCheckProjectID,
 		Configuration: &ApprovalCheckTest,
 		Id:            &ApprovalCheckID,

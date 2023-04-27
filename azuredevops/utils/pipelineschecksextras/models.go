@@ -1,12 +1,9 @@
-// --------------------------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-// --------------------------------------------------------------------------------------------
-// Generated file, DO NOT EDIT
-// Changes may cause incorrect behavior and will be lost if the code is regenerated.
-// --------------------------------------------------------------------------------------------
+// This is a copy of github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks/models.go
+// The existing version does not contain the "Timeout" property on the CheckConfiguration struct
 
-package pipelineschecks
+// This file cannot be under "internal", because azdosdkmocks/pipelines_checks_v5_extras_mock.go depends on it.
+
+package pipelineschecksextras
 
 import (
 	"github.com/google/uuid"
@@ -35,6 +32,8 @@ type CheckConfiguration struct {
 	ModifiedOn *azuredevops.Time `json:"modifiedOn,omitempty"`
 	// Settings for the check configuration.
 	Settings interface{} `json:"settings,omitempty"`
+	// Timeout in minutes for the check.
+	Timeout *int `json:"timeout,omitempty"`
 }
 
 type CheckConfigurationRef struct {

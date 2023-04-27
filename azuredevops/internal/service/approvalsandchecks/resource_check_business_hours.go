@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
 var evaluateBusinessHoursDefVersion = "0.0.1"
@@ -98,7 +98,7 @@ func ResourceCheckBusinessHours() *schema.Resource {
 	return r
 }
 
-func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelineschecks.CheckConfiguration, projectID string) error {
+func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelineschecksextras.CheckConfiguration, projectID string) error {
 	err := doBaseFlattening(d, businessHoursCheck, projectID)
 	if err != nil {
 		return err
@@ -167,7 +167,7 @@ func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelinesc
 	return nil
 }
 
-func expandBusinessHours(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error) {
+func expandBusinessHours(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	var days []string
 	for _, day := range daysOfBusinessWeek {
 		if d.Get(day.TfName).(bool) {
