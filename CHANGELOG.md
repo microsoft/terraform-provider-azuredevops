@@ -1,3 +1,16 @@
+## 0.5.0
+
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_jfrog_distribution_v2` [#737](https://github.com/microsoft/terraform-provider-azuredevops/pull/737)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_artifactory_v2` [#737](https://github.com/microsoft/terraform-provider-azuredevops/pull/737)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_platform_v2` [#737](https://github.com/microsoft/terraform-provider-azuredevops/pull/737)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_xray_v2` [#737](https://github.com/microsoft/terraform-provider-azuredevops/pull/737)
+
+IMPROVEMENTS: 
+* `azuredevops_serviceendpoint_azurerm` - Add support for resource state migration created prior to v0.4.0. [#754](https://github.com/microsoft/terraform-provider-azuredevops/pull/754)
+* `azuredevops_variable_group` - Enhance create state handler. [#756](https://github.com/microsoft/terraform-provider-azuredevops/pull/756)
+* **Data Resource** `azuredevops_team` - Support export `descriptor`. [#753](https://github.com/microsoft/terraform-provider-azuredevops/pull/753)
+
 ## 0.4.0
 
 FEATURES:
