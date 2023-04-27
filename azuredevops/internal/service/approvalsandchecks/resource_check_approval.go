@@ -64,20 +64,14 @@ func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecksextras.C
 
 	if instructions, found := settings["instructions"]; found {
 		d.Set("instructions", instructions)
-	} else {
-		return fmt.Errorf("instructions not found")
 	}
 
 	if minRequiredApprovers, found := settings["minRequiredApprovers"]; found {
 		d.Set("minimum_required_approvers", minRequiredApprovers)
-	} else {
-		return fmt.Errorf("minRequiredApprovers not found")
 	}
 
 	if requesterCannotBeApprover, found := settings["requesterCannotBeApprover"]; found {
 		d.Set("requester_can_approve", !requesterCannotBeApprover.(bool))
-	} else {
-		d.Set("requester_can_approve", true)
 	}
 
 	if approversRaw, found := settings["approvers"]; found {

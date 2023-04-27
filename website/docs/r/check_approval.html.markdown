@@ -85,7 +85,7 @@ The following arguments are supported:
 
 ---
 
-* `approvers` - (Required) Specifies a list of approvers.
+* `approvers` - (Required) Specifies a list of approver IDs.
 
 * `instructions` - (Optional) The instructions for the approvers.
 
