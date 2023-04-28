@@ -7,7 +7,6 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
-	"strconv"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -15,65 +14,67 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/stretchr/testify/require"
 )
 
-var branchControlCheckID = 123456789
-var branchControlEndpointID = uuid.New().String()
-var branchControlCheckProjectID = uuid.New().String()
-var branchControlCheckTestProjectID = &branchControlCheckProjectID
+var ApprovalCheckID = 123456789
+var ApprovalEndpointID = uuid.New().String()
+var ApprovalCheckProjectID = uuid.New().String()
+var ApprovalCheckTestProjectID = &ApprovalCheckProjectID
 
-var endpointType = "endpoint"
-var endpointResource = pipelineschecksextras.Resource{
-	Id:   &branchControlEndpointID,
-	Type: &endpointType,
+var endpointTypeApproval = "endpoint"
+var endpointResourceApproval = pipelineschecksextras.Resource{
+	Id:   &ApprovalEndpointID,
+	Type: &endpointTypeApproval,
 }
 
-var branchControlInputs = map[string]interface{}{
-	"allowedBranches":          "refs/heads/releases/*",
-	"ensureProtectionOfBranch": strconv.FormatBool(false),
-	"allowUnknownStatusBranch": strconv.FormatBool(true),
+var approver = map[string]interface{}{
+	"id": "xxxx",
+}
+var approvers = []interface{}{approver}
+
+var ApprovalCheckSettings = map[string]interface{}{
+	"instructions":              "hello world",
+	"minRequiredApprovers":      1,
+	"requesterCannotBeApprover": true,
+	"approvers":                 approvers,
 }
 
-var branchControlCheckSettings = map[string]interface{}{
-	"definitionRef": evaluateBranchProtectionDef,
-	"displayName":   "Test Branch Control",
-	"inputs":        branchControlInputs,
-}
-
-var branchControlCheckTest = pipelineschecksextras.CheckConfiguration{
-	Id:       &branchControlCheckID,
-	Type:     approvalAndCheckType.BranchProtection,
-	Settings: branchControlCheckSettings,
-	Resource: &endpointResource,
+var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
+	Id:       &ApprovalCheckID,
+	Type:     approvalAndCheckType.Approval,
+	Settings: ApprovalCheckSettings,
+	Timeout:  converter.ToPtr(20000),
+	Resource: &endpointResourceApproval,
 }
 
 // verifies that the flatten/expand round trip yields the same branch control
-func TestCheckBranchControl_ExpandFlatten_Roundtrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceCheckBranchControl().Schema, nil)
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+func TestCheckApproval_ExpandFlatten_Roundtrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
+	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	branchControlCheckAfterRoundTrip, projectID, err := expandBranchControlCheck(resourceData)
+	ApprovalCheckAfterRoundTrip, projectID, err := expandCheckApproval(resourceData)
 
-	require.Equal(t, branchControlCheckTest, *branchControlCheckAfterRoundTrip)
-	require.Equal(t, branchControlCheckProjectID, projectID)
+	require.Equal(t, ApprovalCheckTest, *ApprovalCheckAfterRoundTrip)
+	require.Equal(t, ApprovalCheckProjectID, projectID)
 	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
-func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
+func TestCheckApproval_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceCheckBranchControl()
+	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &branchControlCheckTest, Project: &branchControlCheckProjectID}
+	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &ApprovalCheckTest, Project: &ApprovalCheckProjectID}
 	pipelinesChecksClient.
 		EXPECT().
 		AddCheckConfiguration(clients.Ctx, expectedArgs).
@@ -85,20 +86,20 @@ func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
-func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
+func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceCheckBranchControl()
+	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
-		Id:      branchControlCheckTest.Id,
-		Project: &branchControlCheckProjectID,
+		Id:      ApprovalCheckTest.Id,
+		Project: &ApprovalCheckProjectID,
 	}
 
 	pipelinesChecksClient.
@@ -112,20 +113,20 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
-func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
+func TestCheckApproval_Delete_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceCheckBranchControl()
+	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
-		Id:      branchControlCheckTest.Id,
-		Project: &branchControlCheckProjectID,
+		Id:      ApprovalCheckTest.Id,
+		Project: &ApprovalCheckProjectID,
 	}
 
 	pipelinesChecksClient.
@@ -139,21 +140,21 @@ func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
-func TestCheckBranchControl_Update_DoesNotSwallowError(t *testing.T) {
+func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceCheckBranchControl()
+	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
 	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
-		Project:       &branchControlCheckProjectID,
-		Configuration: &branchControlCheckTest,
-		Id:            &branchControlCheckID,
+		Project:       &ApprovalCheckProjectID,
+		Configuration: &ApprovalCheckTest,
+		Id:            &ApprovalCheckID,
 	}
 
 	pipelinesChecksClient.
