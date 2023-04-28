@@ -42,7 +42,7 @@ func ResourceCheckApproval() *schema.Resource {
 	r.Schema["timeout"] = &schema.Schema{
 		Type:     schema.TypeInt,
 		Optional: true,
-		Computed: true,
+		Default:  43200,
 	}
 
 	return r
@@ -114,10 +114,5 @@ func expandCheckApproval(d *schema.ResourceData) (*pipelineschecksextras.CheckCo
 		"approvers":                 approvers,
 	}
 
-	timeout := 43200 // 12 hour default
-	if val, ok := d.GetOk("timeout"); ok {
-		timeout = val.(int)
-	}
-
-	return doBaseExpansion(d, approvalAndCheckType.Approval, settings, converter.ToPtr(timeout))
+	return doBaseExpansion(d, approvalAndCheckType.Approval, settings, converter.ToPtr(d.Get("timeout").(int)))
 }

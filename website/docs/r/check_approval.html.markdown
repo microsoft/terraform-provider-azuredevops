@@ -83,17 +83,17 @@ The following arguments are supported:
 
 * `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`. Changing this forces a new Approval Check to be created.
 
----
-
 * `approvers` - (Required) Specifies a list of approver IDs.
+ 
+---
 
 * `instructions` - (Optional) The instructions for the approvers.
 
 * `minimum_required_approvers` - (Optional) The minimum number of approvers. This property is applicable when there is more than 1 approver.
 
-* `requester_can_approve` - (Optional) Can the requestor approve? Defaults to false.
+* `requester_can_approve` - (Optional) Can the requestor approve? Defaults to `false`.
 
-* `timeout` - (Optional) The timeout in minutes for the approval.
+* `timeout` - (Optional) The timeout in minutes for the approval.  Defaults to `43200`. 
 
 ## Attributes Reference
 
