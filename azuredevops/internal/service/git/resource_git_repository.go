@@ -300,7 +300,7 @@ func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepo
 						git.Change{
 							ChangeType: &git.VersionControlChangeTypeValues.Add,
 							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
+								Path: converter.String("/README.md"),
 							},
 							NewContent: &git.ItemContent{
 								ContentType: &git.ItemContentTypeValues.RawText,
