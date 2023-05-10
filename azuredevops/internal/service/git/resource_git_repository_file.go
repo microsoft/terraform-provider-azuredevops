@@ -153,7 +153,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Create repositroy file failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
+		return fmt.Errorf("Create repository file failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", repoId, file))
