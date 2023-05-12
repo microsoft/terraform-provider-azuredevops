@@ -58,7 +58,7 @@ func TestAccServiceEndpointAwsTerraform_Complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "access_key_id", "0000"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "secret_access_kex", ""),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "secret_access_key", ""),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "secret_access_key_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "region", ""),

@@ -59,4 +59,3 @@ Azure DevOps Service Endpoint AWS for Terraform can be imported using **projectI
 ```sh
  terraform import azuredevops_serviceendpoint_aws_terraform.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
-
