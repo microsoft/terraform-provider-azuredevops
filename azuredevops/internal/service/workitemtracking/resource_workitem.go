@@ -64,20 +64,36 @@ func ResourceWorkItem() *schema.Resource {
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
 			},
+			"area_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"iteration_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
 		},
 	}
 }
 
 var systemFieldMapping = map[string]string{
-	"System.State":        "state",
-	"System.Title":        "title",
-	"System.WorkItemType": "type",
+	"System.State":         "state",
+	"System.Title":         "title",
+	"System.WorkItemType":  "type",
+	"System.AreaPath":      "area_path",
+	"System.IterationPath": "iteration_path",
 }
 
 var fieldMapping = map[string]string{
-	"state": "System.State",
-	"title": "System.Title",
-	"type":  "System.WorkItemType",
+	"state":          "System.State",
+	"title":          "System.Title",
+	"type":           "System.WorkItemType",
+	"area_path":      "System.AreaPath",
+	"iteration_path": "System.IterationPath",
 }
 
 func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {

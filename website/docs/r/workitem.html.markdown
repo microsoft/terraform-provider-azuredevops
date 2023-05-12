@@ -64,7 +64,11 @@ The following arguments are supported:
 
 ---
 
+* `area_path` - (Optional) Specifies the area where the Work Item is used.
+
 * `custom_fields` - (Optional) Specifies a list with Custom Fields for the Work Item.
+
+* `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 
 * `state` - (Optional) The state of the Work Item. The four main states that are defined for the User Story (`Agile`) are `New`, `Active`, `Resolved`, and `Closed`. See [Workflow states](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/workflow-and-state-categories?view=azure-devops&tabs=agile-process#workflow-states) for more details.
 
