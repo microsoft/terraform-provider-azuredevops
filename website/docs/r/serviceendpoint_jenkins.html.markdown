@@ -40,11 +40,12 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project. Changing this forces a new Service Connection Jenkins to be created.
 * `service_endpoint_name` - (Required) The name of the service endpoint. Changing this forces a new Service Connection Jenkins to be created.
-* `description` - (Optional) The Service Endpoint description. Defaults to Managed by Terraform.
 * `url` - (Required) The Service Endpoint url.
-* `accept_untrusted_certs` - (Optional) Allows the Jenkins clients to accept self-signed SSL server certificates.
-* `username` - (Required) The Service Endpoint username to authenticate at the Jenkins Instance. 
+* `username` - (Required) The Service Endpoint username to authenticate at the Jenkins Instance.
 * `password` - (Required) The Service Endpoint password to authenticate at the Jenkins Instance.
+--- 
+* `description` - (Optional) The Service Endpoint description. Defaults to Managed by Terraform.
+* `accept_untrusted_certs` - (Optional) Allows the Jenkins clients to accept self-signed SSL server certificates. Defaults to `false.`
 
 ## Attributes Reference
 

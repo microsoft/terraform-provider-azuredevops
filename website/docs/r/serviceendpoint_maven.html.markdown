@@ -64,15 +64,19 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project. Changing this forces a new Service Connection Maven to be created.
 * `service_endpoint_name` - (Required) The name of the service endpoint. Changing this forces a new Service Connection Maven to be created.
+* `url` - (Required) The URL of the Maven Repository.
+* `repository_id` - (Required) The ID of the server that matches the id element of the `repository/mirror` that Maven tries to connect to.
+---
 * `description` - (Optional) The Service Endpoint description. Defaults to Managed by Terraform.
-* `url` - (Required) The Service Endpoint url.
-* `repository_id` - (Required) The Repository id.
-* either `authentication_token` or `authentication_basic` (one is required)
-  * `authentication_token`
-    * `token` - Authentication Token generated through maven repository.
-  * `authentication_basic`
-    * `username` - Maven Repository Username.
-    * `password` - Maven Repository Password.
+* `authentication_token` - (Optional) A `authentication_token` block as documented below.
+* `authentication_basic` - (Optional) A `authentication_basic` block as documented below.
+--- 
+A `authentication_token` block supports the following:
+* `token` - Authentication Token generated through maven repository.
+---
+A `authentication_basic` block supports the following:
+* `username` - The Username of the Maven Repository.
+* `password` - The password Maven Repository.
 
 ## Attributes Reference
 
