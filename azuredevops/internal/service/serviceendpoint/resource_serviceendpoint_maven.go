@@ -44,10 +44,10 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 	at := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"token": {
-				Description:      "The Maven access token.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
+				Description: "The Maven access token.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -61,10 +61,10 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 				Sensitive:   true,
 			},
 			"password": {
-				Description:      "The Maven password.",
-				Type:             schema.TypeString,
-				Required:         true,
-				Sensitive:        true,
+				Description: "The Maven password.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
