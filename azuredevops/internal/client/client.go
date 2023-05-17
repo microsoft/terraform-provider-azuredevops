@@ -12,6 +12,7 @@ import (
 	v5pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/audit"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
@@ -40,6 +41,7 @@ import (
 type AggregatedClient struct {
 	OrganizationURL               string
 	CoreClient                    core.Client
+	AuditClient                   audit.Client
 	BuildClient                   build.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
@@ -82,6 +84,14 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): core.NewClient failed.")
+		return nil, err
+	}
+
+	// client for these APIs (includes CRUD for AzDO audit streams...):
+	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/audit/?view=azure-devops-rest-6.0
+	auditClient, err := audit.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): audit.NewClient failed.")
 		return nil, err
 	}
 
@@ -194,6 +204,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
+		AuditClient:                   auditClient,
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,

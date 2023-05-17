@@ -82,6 +82,9 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
 		"azuredevops_workitem",
+		"azuredevops_auditstream_azureeventgrid",
+		"azuredevops_auditstream_azuremonitorlogs",
+		"azuredevops_auditstream_splunk",
 	}
 
 	resources := Provider().ResourcesMap
