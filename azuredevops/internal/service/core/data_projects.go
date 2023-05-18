@@ -6,12 +6,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
@@ -179,7 +180,11 @@ func getProjectsWithContinuationToken(clients *client.AggregatedClient, projectS
 		StateFilter: &state,
 	}
 	if continuationToken != "" {
-		args.ContinuationToken = &continuationToken
+		token, err := strconv.Atoi(continuationToken)
+		if err != nil {
+			return nil, "", err
+		}
+		args.ContinuationToken = &token
 	}
 
 	response, err := clients.CoreClient.GetProjects(clients.Ctx, args)

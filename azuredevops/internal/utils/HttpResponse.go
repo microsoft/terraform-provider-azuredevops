@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 )
 
 // ResponseWasNotFound was used for check if error is due to resource not found

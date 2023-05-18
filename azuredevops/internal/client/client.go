@@ -11,21 +11,21 @@ import (
 	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
 	v5pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/release"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
@@ -77,63 +77,50 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 	v5Connection := v5api.NewPatConnection(organizationURL, azdoPAT)
 
-	// client for these APIs (includes CRUD for AzDO projects...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/?view=azure-devops-rest-5.1
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): core.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO build pipelines...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/build/?view=azure-devops-rest-5.1
 	buildClient, err := build.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): build.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (monitor async operations...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/operations/operations?view=azure-devops-rest-5.1
 	operationsClient := operations.NewClient(ctx, connection)
 
-	// client for these APIs (includes CRUD for AzDO service endpoints a.k.a. service connections...):
-	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): serviceendpoint.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO variable groups):
 	taskagentClient, err := taskagent.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
-	// client for these APIs (includes CRUD for AzDO variable groups):
+
 	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs:
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1
 	gitReposClient, err := git.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): git.NewClient failed.")
 		return nil, err
 	}
 
-	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/?view=azure-devops-rest-5.1
 	graphClient, err := graph.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): graph.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO variable groups):
 	v5GraphClient, err := v5graph.NewClient(ctx, v5Connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
@@ -146,15 +133,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	// https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-5.1
 	policyClient, err := policy.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): policy.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO release pipelines...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/release/?view=azure-devops-rest-5.1
 	releaseClient, err := release.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): release.NewClient failed.")
@@ -181,9 +165,6 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		log.Printf("getAzdoClient(): v5pipelineschecks.NewClient failed.")
 		return nil, err
 	}
-
-	// connection := pipelineschecksextras.NewPatConnection(organizationURL, azdoPAT)
-	// v5ExtrasConnection = nil
 
 	v5PipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, v5Connection)
 	if err != nil {

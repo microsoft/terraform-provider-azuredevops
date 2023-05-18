@@ -14,7 +14,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/require"
@@ -274,11 +274,12 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 		Ctx:         context.Background(),
 	}
 
-	expectedCreateGroupArgs := graph.CreateGroupArgs{}
+	//expectedCreateGroupArgs := graph.CreateGroupArgs{}
+	expectedCreateGroupArgs := graph.CreateGroupVstsArgs{}
 
 	graphClient.
 		EXPECT().
-		CreateGroup(clients.Ctx, expectedCreateGroupArgs).
+		CreateGroupVsts(clients.Ctx, expectedCreateGroupArgs).
 		Return(nil, errors.New("CreateGroup() INVALID CALL")).
 		Times(0)
 
