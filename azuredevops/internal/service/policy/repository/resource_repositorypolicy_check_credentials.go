@@ -12,7 +12,7 @@ func ResourceRepositoryPolicyCheckCredentials() *schema.Resource {
 		ExpandFunc:  checkCredentialsExpandFunc,
 		PolicyType:  CheckCredentials,
 	})
-	resource.DeprecationMessage = "This Repository has been deprecated and cannot create this policy anymore." //TODO
+	resource.DeprecationMessage = "This feature has been deprecated and cannot be created."
 	return resource
 }
 
