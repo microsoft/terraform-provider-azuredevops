@@ -10,7 +10,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing"
 )
 
 // String Get a pointer to a string

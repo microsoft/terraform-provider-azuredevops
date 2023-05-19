@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -86,7 +86,7 @@ func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      gitRepoResource,
-				ExpectError: regexp.MustCompile(`config is invalid: "initialization": required field is not set`),
+				ExpectError: regexp.MustCompile(`Insufficient initialization blocks`),
 			},
 		},
 	})
