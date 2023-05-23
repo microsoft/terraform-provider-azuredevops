@@ -341,11 +341,12 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 	return nil
 }
 
-func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
+func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string, top int) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
 	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 		ProjectId:      converter.String(projectID),
 		Mine:           converter.Bool(false),
 		ExpandIdentity: converter.Bool(false),
+		Top:            converter.Int(top),
 	})
 
 	if err != nil {

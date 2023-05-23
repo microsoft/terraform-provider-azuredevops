@@ -86,12 +86,21 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			ToSlice(&projectIDList)
 	}
 
+	var top int
+	topData, topOk := d.GetOk("top")
+	if topOk {
+		top = topData.(int)
+	} else {
+		top = 2147483647
+	}
+
 	result := make([]interface{}, 0)
 	for _, projectID := range projectIDList {
 		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(projectID),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
+			Top:            converter.Int(top),
 		})
 
 		if err != nil {

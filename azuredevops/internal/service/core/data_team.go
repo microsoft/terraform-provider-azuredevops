@@ -61,7 +61,15 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	teamName := d.Get("name").(string)
 
-	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName)
+	var top int
+	data, ok := d.GetOk("top")
+	if ok {
+		top = data.(int)
+	} else {
+		top = 2147483647
+	}
+
+	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName, top)
 	if err != nil {
 		return err
 	}
