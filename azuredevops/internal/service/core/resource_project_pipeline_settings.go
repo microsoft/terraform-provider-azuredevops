@@ -60,6 +60,11 @@ func ResourceProjectPipelineSettings() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"enforce_job_scope_for_release": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -99,6 +104,7 @@ func resourceProjectPipelineSettingsRead(ctx context.Context, d *schema.Resource
 	d.Set("enforce_settable_var", buildSettings.EnforceSettableVar)
 	d.Set("publish_pipeline_metadata", buildSettings.PublishPipelineMetadata)
 	d.Set("status_badges_are_private", buildSettings.StatusBadgesArePrivate)
+	d.Set("enforce_job_scope_for_release", buildSettings.EnforceJobAuthScopeForReleases)
 	return nil
 }
 
@@ -137,6 +143,11 @@ func configureProjectPipelineGeneralSettings(clients *client.AggregatedClient, p
 	statusBadgesArePrivate := rawConfig["status_badges_are_private"]
 	if !statusBadgesArePrivate.IsNull() {
 		settings.NewSettings.StatusBadgesArePrivate = converter.Bool(statusBadgesArePrivate.True())
+	}
+
+	enforceJobAuthScopeForReleases := rawConfig["enforce_job_scope_for_release"]
+	if !statusBadgesArePrivate.IsNull() {
+		settings.NewSettings.EnforceJobAuthScopeForReleases = converter.Bool(enforceJobAuthScopeForReleases.True())
 	}
 
 	_, err := clients.BuildClient.UpdateBuildGeneralSettings(clients.Ctx, settings)

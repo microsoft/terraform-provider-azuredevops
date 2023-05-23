@@ -127,7 +127,7 @@ resource "azuredevops_project_features" "project-features" {
 }
 
 // HclProjectFeatures HCL describing an AzDO project including feature setup using azuredevops_git_repositories
-func HclProjectPipelineSettings(projectName string, enforceJobAuthScope bool, enforceReferencedRepoScopedToken bool, enforceSettableVar bool, publishPipelineMetadata bool, statusBadgesArePrivate bool) string {
+func HclProjectPipelineSettings(projectName string, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases bool) string {
 	projectPipelineSettings := fmt.Sprintf(`
 resource "azuredevops_project_pipeline_settings" "this" {
 	project_id = azuredevops_project.project.id
@@ -137,7 +137,8 @@ resource "azuredevops_project_pipeline_settings" "this" {
 	enforce_settable_var = %t
 	publish_pipeline_metadata = %t
 	status_badges_are_private = %t
-}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate)
+	enforce_job_scope_for_release = %t
+}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, projectPipelineSettings)
