@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_aws_terraform
 
-Manages a "AWS service endpoint" within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks\).
+Manages a "AWS for Terraform service endpoint" within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks).
 
 ## Example Usage
 
