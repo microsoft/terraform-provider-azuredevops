@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -12,14 +13,16 @@ import (
 func ResourceServiceEndpointAwsForTerraform() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAwsForTerraform, expandServiceEndpointAwsForTerraform)
 	r.Schema["access_key_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_TF_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
-		Description: "The AWS access key ID for signing programmatic requests.",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
+		DefaultFunc:  schema.EnvDefaultFunc("AZDO_TF_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
+		Description:  "The AWS access key ID for signing programmatic requests.",
 	}
 	r.Schema["secret_access_key"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
+		ValidateFunc:     validation.StringIsNotEmpty,
 		DefaultFunc:      schema.EnvDefaultFunc("AZDO_TF_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
 		Description:      "The AWS secret access key for signing programmatic requests.",
 		Sensitive:        true,
@@ -28,10 +31,11 @@ func ResourceServiceEndpointAwsForTerraform() *schema.Resource {
 	saSecretHashKey, saSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("secret_access_key")
 	r.Schema[saSecretHashKey] = saSecretHashSchema
 	r.Schema["region"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_TF_AWS_SERVICE_CONNECTION_REGION", nil),
-		Description: "The AWS region to use for programmatic requests.",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
+		DefaultFunc:  schema.EnvDefaultFunc("AZDO_TF_AWS_SERVICE_CONNECTION_REGION", nil),
+		Description:  "The AWS region to use for programmatic requests.",
 	}
 	return r
 }
