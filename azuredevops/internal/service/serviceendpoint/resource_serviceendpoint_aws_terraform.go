@@ -28,8 +28,6 @@ func ResourceServiceEndpointAwsForTerraform() *schema.Resource {
 		Sensitive:        true,
 		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
-	saSecretHashKey, saSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("secret_access_key")
-	r.Schema[saSecretHashKey] = saSecretHashSchema
 	r.Schema["region"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
