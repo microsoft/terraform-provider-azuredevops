@@ -7,10 +7,6 @@ import (
 	"os"
 	"strings"
 
-	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
-	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	v5pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
-	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
@@ -20,6 +16,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
@@ -43,15 +40,13 @@ type AggregatedClient struct {
 	BuildClient                   build.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
-	V5GraphClient                 v5graph.Client
 	OperationsClient              operations.Client
-	V5PipelinesChecksClient       v5pipelineschecks.Client
-	V5PipelinesChecksClientExtras pipelineschecksextras.Client
+	PipelinesChecksClient         pipelineschecks.Client
+	PipelinesChecksClientExtras   pipelineschecksextras.Client
 	PolicyClient                  policy.Client
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
-	V5TaskAgentClient             v5taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
 	FeatureManagementClient       featuremanagement.Client
 	SecurityClient                security.Client
@@ -74,8 +69,6 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 
 	connection := azuredevops.NewPatConnection(organizationURL, azdoPAT)
 	setUserAgent(connection, tfVersion)
-
-	v5Connection := v5api.NewPatConnection(organizationURL, azdoPAT)
 
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
@@ -103,12 +96,6 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
-		return nil, err
-	}
-
 	gitReposClient, err := git.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): git.NewClient failed.")
@@ -118,12 +105,6 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	graphClient, err := graph.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): graph.NewClient failed.")
-		return nil, err
-	}
-
-	v5GraphClient, err := v5graph.NewClient(ctx, v5Connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
 
@@ -160,13 +141,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	v5PipelinesChecksClient, err := v5pipelineschecks.NewClient(ctx, v5Connection)
+	pipelinesChecksClient, err := pipelineschecks.NewClient(ctx, connection)
 	if err != nil {
-		log.Printf("getAzdoClient(): v5pipelineschecks.NewClient failed.")
+		log.Printf("getAzdoClient(): pipelineschecks.NewClient failed.")
 		return nil, err
 	}
 
-	v5PipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, v5Connection)
+	pipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): pipelineschecksextras.NewClient failed.")
 		return nil, err
@@ -178,15 +159,13 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		BuildClient:                   buildClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
-		V5GraphClient:                 v5GraphClient,
 		OperationsClient:              operationsClient,
-		V5PipelinesChecksClient:       v5PipelinesChecksClient,
-		V5PipelinesChecksClientExtras: v5PipelinesChecksClientExtras,
+		PipelinesChecksClient:         pipelinesChecksClient,
+		PipelinesChecksClientExtras:   pipelinesChecksClientExtras,
 		PolicyClient:                  policyClient,
 		ReleaseClient:                 releaseClient,
 		ServiceEndpointClient:         serviceEndpointClient,
 		TaskAgentClient:               taskagentClient,
-		V5TaskAgentClient:             v5TaskAgentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
 		SecurityClient:                securityClient,

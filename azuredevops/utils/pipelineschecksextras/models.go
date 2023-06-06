@@ -26,6 +26,8 @@ type CheckConfiguration struct {
 	CreatedBy *webapi.IdentityRef `json:"createdBy,omitempty"`
 	// Time when check got configured.
 	CreatedOn *azuredevops.Time `json:"createdOn,omitempty"`
+	// Issue connected to check configuration.
+	Issue *CheckIssue `json:"issue,omitempty"`
 	// Identity of person who modified the configured check.
 	ModifiedBy *webapi.IdentityRef `json:"modifiedBy,omitempty"`
 	// Time when configured check was modified.
@@ -50,9 +52,9 @@ type CheckConfigurationRef struct {
 type CheckRun struct {
 	ResultMessage         *string                `json:"resultMessage,omitempty"`
 	Status                *CheckRunStatus        `json:"status,omitempty"`
-	CheckConfigurationRef *CheckConfigurationRef `json:"checkConfigurationRef,omitempty"`
 	CompletedDate         *azuredevops.Time      `json:"completedDate,omitempty"`
 	CreatedDate           *azuredevops.Time      `json:"createdDate,omitempty"`
+	CheckConfigurationRef *CheckConfigurationRef `json:"checkConfigurationRef,omitempty"`
 	Id                    *uuid.UUID             `json:"id,omitempty"`
 }
 
@@ -65,21 +67,29 @@ type CheckRunResult struct {
 type CheckRunStatus string
 
 type checkRunStatusValuesType struct {
-	None     CheckRunStatus
-	Queued   CheckRunStatus
-	Running  CheckRunStatus
-	Approved CheckRunStatus
-	Rejected CheckRunStatus
-	Canceled CheckRunStatus
+	None      CheckRunStatus
+	Queued    CheckRunStatus
+	Running   CheckRunStatus
+	Approved  CheckRunStatus
+	Rejected  CheckRunStatus
+	Canceled  CheckRunStatus
+	TimedOut  CheckRunStatus
+	Failed    CheckRunStatus
+	Completed CheckRunStatus
+	All       CheckRunStatus
 }
 
 var CheckRunStatusValues = checkRunStatusValuesType{
-	None:     "none",
-	Queued:   "queued",
-	Running:  "running",
-	Approved: "approved",
-	Rejected: "rejected",
-	Canceled: "canceled",
+	None:      "none",
+	Queued:    "queued",
+	Running:   "running",
+	Approved:  "approved",
+	Rejected:  "rejected",
+	Canceled:  "canceled",
+	TimedOut:  "timedOut",
+	Failed:    "failed",
+	Completed: "completed",
+	All:       "all",
 }
 
 type CheckSuite struct {
@@ -117,4 +127,51 @@ type Resource struct {
 	Id *string `json:"id,omitempty"`
 	// Type of the resource.
 	Type *string `json:"type,omitempty"`
+}
+
+type CheckConfigurationExpandParameter string
+
+type checkConfigurationExpandParameterValuesType struct {
+	None     CheckConfigurationExpandParameter
+	Settings CheckConfigurationExpandParameter
+}
+
+var CheckConfigurationExpandParameterValues = checkConfigurationExpandParameterValuesType{
+	None:     "none",
+	Settings: "settings",
+}
+
+// An issue (error, warning) associated with a check configuration.
+type CheckIssue struct {
+	// A more detailed description of issue.
+	DetailedMessage *string `json:"detailedMessage,omitempty"`
+	// A description of issue.
+	Message *string `json:"message,omitempty"`
+	// The type (error, warning) of the issue.
+	Type *CheckIssueType `json:"type,omitempty"`
+}
+
+// The type of issue based on severity.
+type CheckIssueType string
+
+type checkIssueTypeValuesType struct {
+	Error   CheckIssueType
+	Warning CheckIssueType
+}
+
+var CheckIssueTypeValues = checkIssueTypeValuesType{
+	Error:   "error",
+	Warning: "warning",
+}
+
+type CheckSuiteExpandParameter string
+
+type checkSuiteExpandParameterValuesType struct {
+	None      CheckSuiteExpandParameter
+	Resources CheckSuiteExpandParameter
+}
+
+var CheckSuiteExpandParameterValues = checkSuiteExpandParameterValuesType{
+	None:      "none",
+	Resources: "resources",
 }

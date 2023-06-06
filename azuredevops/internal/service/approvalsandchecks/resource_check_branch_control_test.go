@@ -70,8 +70,8 @@ func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &branchControlCheckTest, Project: &branchControlCheckProjectID}
 	pipelinesChecksClient.
@@ -93,8 +93,8 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      branchControlCheckTest.Id,
@@ -120,8 +120,8 @@ func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
 		Id:      branchControlCheckTest.Id,
@@ -147,8 +147,8 @@ func TestCheckBranchControl_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
 		Project:       &branchControlCheckProjectID,

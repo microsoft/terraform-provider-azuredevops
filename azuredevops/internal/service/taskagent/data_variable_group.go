@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -100,7 +100,7 @@ func dataSourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	name := d.Get(vgName).(string)
 	clients := m.(*client.AggregatedClient)
 
-	variableGroups, err := clients.V5TaskAgentClient.GetVariableGroups(clients.Ctx, v5taskagent.GetVariableGroupsArgs{
+	variableGroups, err := clients.TaskAgentClient.GetVariableGroups(clients.Ctx, taskagent.GetVariableGroupsArgs{
 		Project:   &projectID,
 		GroupName: &name,
 		Top:       converter.Int(1),
