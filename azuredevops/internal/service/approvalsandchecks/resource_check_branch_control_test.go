@@ -7,6 +7,7 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"strconv"
 	"testing"
 
@@ -99,6 +100,7 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      branchControlCheckTest.Id,
 		Project: &branchControlCheckProjectID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	}
 
 	pipelinesChecksClient.

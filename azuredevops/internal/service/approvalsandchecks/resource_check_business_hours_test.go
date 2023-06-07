@@ -7,6 +7,7 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -92,6 +93,7 @@ func TestCheckBusinessHours_Read_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      CheckBusinessHoursTest.Id,
 		Project: &CheckBusinessHoursProjectID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	}
 
 	pipelinesCheckClient.

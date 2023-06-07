@@ -100,6 +100,7 @@ func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      ApprovalCheckTest.Id,
 		Project: &ApprovalCheckProjectID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	}
 
 	pipelinesChecksClient.
