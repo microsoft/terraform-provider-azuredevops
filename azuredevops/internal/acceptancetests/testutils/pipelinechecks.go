@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
@@ -64,8 +65,9 @@ func getCheckFromState(resource *terraform.ResourceState) (*pipelineschecksextra
 
 	projectID := resource.Primary.Attributes["project_id"]
 	clients := GetProvider().Meta().(*client.AggregatedClient)
-	return clients.V5PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
+	return clients.PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
 		Project: &projectID,
 		Id:      &branchControlCheckID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	})
 }

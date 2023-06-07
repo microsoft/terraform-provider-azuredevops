@@ -138,7 +138,7 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 			return fmt.Errorf(" failed in expandFunc. Error: %+v", err)
 		}
 
-		createdCheck, err := clients.V5PipelinesChecksClientExtras.AddCheckConfiguration(clients.Ctx, pipelineschecksextras.AddCheckConfigurationArgs{
+		createdCheck, err := clients.PipelinesChecksClientExtras.AddCheckConfiguration(clients.Ctx, pipelineschecksextras.AddCheckConfigurationArgs{
 			Project:       &projectID,
 			Configuration: configuration,
 		})
@@ -162,9 +162,10 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			return err
 		}
 
-		taskCheck, err := clients.V5PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
+		taskCheck, err := clients.PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
 			Project: &projectID,
 			Id:      &taskCheckId,
+			Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 		})
 
 		if err != nil {
@@ -187,7 +188,7 @@ func genCheckUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateF
 			return err
 		}
 
-		updatedBusinessHours, err := clients.V5PipelinesChecksClientExtras.UpdateCheckConfiguration(clients.Ctx,
+		updatedBusinessHours, err := clients.PipelinesChecksClientExtras.UpdateCheckConfiguration(clients.Ctx,
 			pipelineschecksextras.UpdateCheckConfigurationArgs{
 				Project:       &projectID,
 				Configuration: taskCheck,
@@ -218,7 +219,7 @@ func genCheckDeleteFunc() schema.DeleteFunc { //nolint:staticcheck
 			return err
 		}
 
-		return clients.V5PipelinesChecksClientExtras.DeleteCheckConfiguration(m.(*client.AggregatedClient).Ctx,
+		return clients.PipelinesChecksClientExtras.DeleteCheckConfiguration(m.(*client.AggregatedClient).Ctx,
 			pipelineschecksextras.DeleteCheckConfigurationArgs{
 				Project: &projectID,
 				Id:      &BusinessHoursID,

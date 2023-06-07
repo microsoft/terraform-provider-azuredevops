@@ -166,15 +166,7 @@ github.com/mattn/go-isatty
 # github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5
 ## explicit; go 1.12
 github.com/microsoft/azure-devops-go-api/azuredevops
-github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks
-github.com/microsoft/azure-devops-go-api/azuredevops/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/system
-github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/webapi
 # github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.1.0
 ## explicit; go 1.12
@@ -194,6 +186,9 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinesapproval
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinestaskcheck
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/release

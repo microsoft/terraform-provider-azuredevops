@@ -71,8 +71,8 @@ func TestCheckApproval_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &ApprovalCheckTest, Project: &ApprovalCheckProjectID}
 	pipelinesChecksClient.
@@ -94,12 +94,13 @@ func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      ApprovalCheckTest.Id,
 		Project: &ApprovalCheckProjectID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	}
 
 	pipelinesChecksClient.
@@ -121,8 +122,8 @@ func TestCheckApproval_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
 		Id:      ApprovalCheckTest.Id,
@@ -148,8 +149,8 @@ func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
-	pipelinesChecksClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
+	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
 		Project:       &ApprovalCheckProjectID,
