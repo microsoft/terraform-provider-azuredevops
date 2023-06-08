@@ -10,6 +10,7 @@ import (
 func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_resource_authorization",
+		"azuredevops_pipeline_authorization",
 		"azuredevops_build_definition",
 		"azuredevops_build_definition_permissions",
 		"azuredevops_branch_policy_build_validation",
