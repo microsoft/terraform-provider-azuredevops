@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_serviceendpoint_gcp"
+page_title: "AzureDevops: azuredevops_serviceendpoint_gcp_terraform"
 description: |-
   Manages a GCP service endpoint within Azure DevOps organization.
 ---
 
-# azuredevops_serviceendpoint_gcp
+# azuredevops_serviceendpoint_gcp_terraform
 Manages a GCP service endpoint for Terraform within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks).
 
 ## Example Usage
@@ -19,7 +19,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_gcp" "example" {
+resource "azuredevops_serviceendpoint_gcp_terraform" "example" {
   project_id            = azuredevops_project.example.id
   token_uri             = "https://oauth2.example.com/token"
   client_email          = "gcp-sa-example@example.iam.gserviceaccount.com"
@@ -58,5 +58,5 @@ The following attributes are exported:
 Azure DevOps Service Endpoint GCP can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
- terraform import azuredevops_serviceendpoint_gcp.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+ terraform import azuredevops_serviceendpoint_gcp_terraform.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```

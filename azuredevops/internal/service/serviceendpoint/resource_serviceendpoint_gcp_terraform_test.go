@@ -1,5 +1,5 @@
-//go:build (all || resource_serviceendpoint_gcp) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_gcp
+//go:build (all || resource_serviceendpoint_gcp_terraform) && !exclude_serviceendpoints
+// +build all resource_serviceendpoint_gcp_terraform
 // +build !exclude_serviceendpoints
 
 package serviceendpoint
@@ -19,11 +19,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var gcpTestServiceEndpointID = uuid.New()
+var gcpForTerraformTestServiceEndpointID = uuid.New()
 var gcpRandomServiceEndpointProjectID = uuid.New()
-var gcpTestServiceEndpointProjectID = &gcpRandomServiceEndpointProjectID
+var gcpForTerraformTestServiceEndpointProjectID = &gcpRandomServiceEndpointProjectID
 
-var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
+var gcpForTerraformTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"Issuer":     "GCP_TEST_client_email",
@@ -36,7 +36,7 @@ var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"project": "GCP_TEST_project_id",
 	},
-	Id:    &gcpTestServiceEndpointID,
+	Id:    &gcpForTerraformTestServiceEndpointID,
 	Name:  converter.String("UNIT_TEST_CONN_NAME"),
 	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:  converter.String("GoogleCloudServiceEndpoint"),
@@ -44,7 +44,7 @@ var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
-				Id: gcpTestServiceEndpointProjectID,
+				Id: gcpForTerraformTestServiceEndpointProjectID,
 			},
 			Name:        converter.String("UNIT_TEST_CONN_NAME"),
 			Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
@@ -55,12 +55,12 @@ var gcpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointGcp_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGcp().Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpTestServiceEndpoint, gcpTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGcp(resourceData)
 
-	require.Equal(t, gcpTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, gcpTestServiceEndpointProjectID, projectID)
+	require.Equal(t, gcpForTerraformTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, gcpForTerraformTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }
 
@@ -71,12 +71,12 @@ func TestServiceEndpointGcp_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpTestServiceEndpoint, gcpTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &gcpTestServiceEndpoint}
+	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &gcpForTerraformTestServiceEndpoint}
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, expectedArgs).
@@ -94,14 +94,14 @@ func TestServiceEndpointGcp_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpTestServiceEndpoint, gcpTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: gcpTestServiceEndpoint.Id,
-		Project:    converter.String(gcpTestServiceEndpointProjectID.String()),
+		EndpointId: gcpForTerraformTestServiceEndpoint.Id,
+		Project:    converter.String(gcpForTerraformTestServiceEndpointProjectID.String()),
 	}
 	buildClient.
 		EXPECT().
@@ -120,15 +120,15 @@ func TestServiceEndpointGcp_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpTestServiceEndpoint, gcpTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
-		EndpointId: gcpTestServiceEndpoint.Id,
+		EndpointId: gcpForTerraformTestServiceEndpoint.Id,
 		ProjectIds: &[]string{
-			gcpTestServiceEndpointProjectID.String(),
+			gcpForTerraformTestServiceEndpointProjectID.String(),
 		},
 	}
 	buildClient.
@@ -148,14 +148,14 @@ func TestServiceEndpointGcp_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpTestServiceEndpoint, gcpTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   &gcpTestServiceEndpoint,
-		EndpointId: gcpTestServiceEndpoint.Id,
+		Endpoint:   &gcpForTerraformTestServiceEndpoint,
+		EndpointId: gcpForTerraformTestServiceEndpoint.Id,
 	}
 
 	buildClient.

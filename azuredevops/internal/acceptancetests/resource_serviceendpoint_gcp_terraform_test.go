@@ -1,5 +1,5 @@
-//go:build (all || resource_serviceendpoint_gcp) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_gcp
+//go:build (all || resource_serviceendpoint_gcp_terraform) && !exclude_serviceendpoints
+// +build all resource_serviceendpoint_gcp_terraform
 // +build !exclude_serviceendpoints
 
 package acceptancetests
@@ -12,11 +12,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointGcp_Basic(t *testing.T) {
+func TestAccServiceEndpointGcpTerraform_Basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_gcp"
+	resourceType := "azuredevops_serviceendpoint_gcp_terraform"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -24,7 +24,7 @@ func TestAccServiceEndpointGcp_Basic(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointGcpResource(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGcpTerraformResource(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -39,7 +39,7 @@ func TestAccServiceEndpointGcp_Basic(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointGcp_Complete(t *testing.T) {
+func TestAccServiceEndpointGcpTerraform_Complete(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	description := testutils.GenerateResourceName()
@@ -48,7 +48,7 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 	tokenUri := "tokenUri"
 	projectId := "projectId"
 
-	resourceType := "azuredevops_serviceendpoint_gcp"
+	resourceType := "azuredevops_serviceendpoint_gcp_terraform"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -56,7 +56,7 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointGcpResourceComplete(projectName, serviceEndpointName, description, scope, clientEmail, tokenUri, projectId),
+				Config: hclSvcEndpointGcpTerraformResourceComplete(projectName, serviceEndpointName, description, scope, clientEmail, tokenUri, projectId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -74,7 +74,7 @@ func TestAccServiceEndpointGcp_Complete(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointGcp_update(t *testing.T) {
+func TestAccServiceEndpointGcpTerraform_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
@@ -82,7 +82,7 @@ func TestAccServiceEndpointGcp_update(t *testing.T) {
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	tokenUri := "tokenUri"
 
-	resourceType := "azuredevops_serviceendpoint_gcp"
+	resourceType := "azuredevops_serviceendpoint_gcp_terraform"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -90,14 +90,14 @@ func TestAccServiceEndpointGcp_update(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointGcpResource(projectName, serviceEndpointNameFirst),
+				Config: hclSvcEndpointGcpTerraformResource(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 				),
 			},
 			{
-				Config: hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointNameSecond, description, tokenUri),
+				Config: hclSvcEndpointGcpTerraformResourceUpdate(projectName, serviceEndpointNameSecond, description, tokenUri),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -110,11 +110,11 @@ func TestAccServiceEndpointGcp_update(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointGcp_requiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointGcpTerraform_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_gcp"
+	resourceType := "azuredevops_serviceendpoint_gcp_terraform"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -122,7 +122,7 @@ func TestAccServiceEndpointGcp_requiresImportErrorStep(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointGcpResource(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGcpTerraformResource(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -130,20 +130,20 @@ func TestAccServiceEndpointGcp_requiresImportErrorStep(t *testing.T) {
 				),
 			},
 			{
-				Config:      hclSvcEndpointGcpResourceRequiresImport(projectName, serviceEndpointName),
+				Config:      hclSvcEndpointGcpTerraformResourceRequiresImport(projectName, serviceEndpointName),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func hclSvcEndpointGcpResource(projectName string, serviceEndpointName string) string {
-	return hclSvcEndpointGcpResourceUpdate(projectName, serviceEndpointName, "description", "tokenUri")
+func hclSvcEndpointGcpTerraformResource(projectName string, serviceEndpointName string) string {
+	return hclSvcEndpointGcpTerraformResourceUpdate(projectName, serviceEndpointName, "description", "tokenUri")
 }
 
-func hclSvcEndpointGcpResourceUpdate(projectName string, serviceEndpointName string, description string, tokenUri string) string {
+func hclSvcEndpointGcpTerraformResourceUpdate(projectName string, serviceEndpointName string, description string, tokenUri string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_gcp" "test" {
+	resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
 		project_id             = azuredevops_project.project.id
 	        private_key      = "secretkey"
 		token_uri = "%s"
@@ -156,9 +156,9 @@ func hclSvcEndpointGcpResourceUpdate(projectName string, serviceEndpointName str
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointGcpResourceComplete(projectName string, serviceEndpointName string, description string, clientEmail string, scope string, tokenUri string, projectId string) string {
+func hclSvcEndpointGcpTerraformResourceComplete(projectName string, serviceEndpointName string, description string, clientEmail string, scope string, tokenUri string, projectId string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_gcp" "test" {
+	resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
 		project_id             = azuredevops_project.project.id
 	        private_key      = "secretkey"
 		token_uri = "%s"
@@ -174,16 +174,16 @@ func hclSvcEndpointGcpResourceComplete(projectName string, serviceEndpointName s
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointGcpResourceRequiresImport(projectName string, serviceEndpointName string) string {
-	template := hclSvcEndpointGcpResource(projectName, serviceEndpointName)
+func hclSvcEndpointGcpTerraformResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointGcpTerraformResource(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 	%s
-	resource "azuredevops_serviceendpoint_gcp" "import" {
-	project_id             = azuredevops_serviceendpoint_gcp.test.project_id
+	resource "azuredevops_serviceendpoint_gcp_terraform" "import" {
+	project_id             = azuredevops_serviceendpoint_gcp_terraform.test.project_id
 	private_key      = "secretkey"
-	service_endpoint_name  = azuredevops_serviceendpoint_gcp.test.service_endpoint_name
-	description            = azuredevops_serviceendpoint_gcp.test.description
-	gcp_project_id            = azuredevops_serviceendpoint_gcp.test.gcp_project_id
+	service_endpoint_name  = azuredevops_serviceendpoint_gcp_terraform.test.service_endpoint_name
+	description            = azuredevops_serviceendpoint_gcp_terraform.test.description
+	gcp_project_id            = azuredevops_serviceendpoint_gcp_terraform.test.gcp_project_id
 	}
 	`, template)
 }
