@@ -3,7 +3,7 @@ package serviceendpoint
 import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -13,7 +13,7 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGcp, expandServiceEndpointGcp)
 	r.Schema["client_email"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Required:    false,
+		Optional:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_CLIENT_EMAIL", nil),
 		Description: "The client email field in the JSON key file for creating the JSON Web Token.",
 	}
@@ -25,11 +25,9 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 		Sensitive:        true,
 		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
-	saSecretHashKey, saSecretHashSchema := tfhelper.GenerateSecreteMemoSchema("private_key")
-	r.Schema[saSecretHashKey] = saSecretHashSchema
 	r.Schema["token_uri"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Optional:    false,
+		Required:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_TOKEN_URI", nil),
 		Description: "The token uri field in the JSON key file for creating the JSON Web Token.",
 		Sensitive:   false,
@@ -42,7 +40,7 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 	}
 	r.Schema["gcp_project_id"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Optional:    false,
+		Required:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_GCP_PROJECT_ID", nil),
 		Description: "Scope to be provided",
 	}

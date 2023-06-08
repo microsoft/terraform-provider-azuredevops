@@ -6,7 +6,7 @@ description: |-
 ---
 
 # azuredevops_serviceendpoint_gcp
-Manages a GCP service endpoint within Azure DevOps.
+Manages a GCP service endpoint for Terraform within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks).
 
 ## Example Usage
 
