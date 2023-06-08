@@ -9,6 +9,9 @@ description: |-
 
 Manage pipeline access permissions to resources。
 
+~> **Note** This resource is replacement for `azuredevops_resource_authorization`.  Pipeline authorizations managed by `azuredevops_resource_authorization` can also
+be managed by this resource 
+
 ## Example Usage 
 
 ### Authorization for all pipelines
