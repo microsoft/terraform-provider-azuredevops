@@ -7,7 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint/migration"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -64,6 +65,15 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Description:  "Environment (Azure Cloud type)",
 		Default:      "AzureCloud",
 		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
+	}
+
+	r.SchemaVersion = 1
+	r.StateUpgraders = []schema.StateUpgrader{
+		{
+			Type:    migration.ServiceEndpointAzureRmSchemaV0ToV1().CoreConfigSchema().ImpliedType(),
+			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV0ToV1(),
+			Version: 0,
+		},
 	}
 	return r
 }

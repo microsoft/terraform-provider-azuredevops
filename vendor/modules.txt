@@ -166,44 +166,39 @@ github.com/mattn/go-isatty
 # github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5
 ## explicit; go 1.12
 github.com/microsoft/azure-devops-go-api/azuredevops
-github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks
-github.com/microsoft/azure-devops-go-api/azuredevops/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/system
-github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/webapi
-# github.com/microsoft/azure-devops-go-api/azuredevops/v6 v6.0.0-20211202191553-0974d0145be8
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.1.0
 ## explicit; go 1.12
-github.com/microsoft/azure-devops-go-api/azuredevops/v6
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/accounts
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/build
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/commerce
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/core
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/git
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensingrule
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/profile
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/release
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/security
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/system
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/test
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking
+github.com/microsoft/azure-devops-go-api/azuredevops/v7
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/build
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/commerce
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/core
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/delegatedauthorization
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/distributedtaskcommon
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/forminput
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/git
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinesapproval
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinestaskcheck
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/release
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/security
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/system
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure

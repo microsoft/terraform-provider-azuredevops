@@ -13,8 +13,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -199,7 +199,7 @@ func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
 						git.Change{
 							ChangeType: &git.VersionControlChangeTypeValues.Add,
 							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
+								Path: converter.String("/README.md"),
 							},
 							NewContent: &git.ItemContent{
 								ContentType: &git.ItemContentTypeValues.RawText,

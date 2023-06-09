@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccBranchControlCheck_basic(t *testing.T) {
+func TestAccCheckBranchControl_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkName := testutils.GenerateResourceName()
 	branches := "refs/heads/main"
@@ -37,7 +37,7 @@ func TestAccBranchControlCheck_basic(t *testing.T) {
 	})
 }
 
-func TestAccBranchControlCheck_complete(t *testing.T) {
+func TestAccCheckBranchControl_complete(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkName := testutils.GenerateResourceName()
 	branches := "refs/heads/main"
@@ -64,7 +64,7 @@ func TestAccBranchControlCheck_complete(t *testing.T) {
 	})
 }
 
-func TestAccBranchControlCheck_update(t *testing.T) {
+func TestAccCheckBranchControl_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkNameFirst := testutils.GenerateResourceName()
 	branchesFirst := "refs/heads/main"

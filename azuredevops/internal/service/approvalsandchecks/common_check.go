@@ -8,23 +8,42 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
-
-var taskCheckType = pipelineschecks.CheckType{
-	Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
-}
 
 // NOTE: In theory the API should accept "agentpool" as well, but the API client requires a project ID
 // so it doesn't seem to work and the website UI doesn't have it available
 var targetResourceTypes = []string{"endpoint", "environment", "queue", "repository", "securefile", "variablegroup"}
 
-type flatFunc func(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string) error
-type expandFunc func(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error)
+type flatFunc func(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error
+type expandFunc func(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error)
+
+type approvalAndCheckTypes struct {
+	Approval         *pipelineschecksextras.CheckType
+	BranchProtection *pipelineschecksextras.CheckType
+	BusinessHours    *pipelineschecksextras.CheckType
+	TaskCheck        *pipelineschecksextras.CheckType
+}
+
+var approvalAndCheckType = approvalAndCheckTypes{
+	Approval: &pipelineschecksextras.CheckType{
+		Id:   converter.UUID("8c6f20a7-a545-4486-9777-f762fafe0d4d"),
+		Name: converter.ToPtr("Approval"),
+	},
+	TaskCheck: &pipelineschecksextras.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+	BranchProtection: &pipelineschecksextras.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+	BusinessHours: &pipelineschecksextras.CheckType{
+		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+}
 
 // genBaseCheckResource creates a Resource with the common parts
 // that all checks require.
@@ -59,31 +78,25 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(targetResourceTypes, false),
 			},
-			"display_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "Managed by Terraform",
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
 		},
 	}
 }
 
 // doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
-func doBaseExpansion(d *schema.ResourceData, inputs map[string]interface{}, definitionRef interface{}) (*pipelineschecks.CheckConfiguration, string, error) {
+func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecksextras.CheckType, settings map[string]interface{}, timeout *int) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	projectID := d.Get("project_id").(string)
 
-	taskCheck := pipelineschecks.CheckConfiguration{
-		Type: &taskCheckType,
-		Settings: map[string]interface{}{
-			"definitionRef": definitionRef,
-			"displayName":   d.Get("display_name").(string),
-			"inputs":        inputs,
-		},
-		Resource: &pipelineschecks.Resource{
+	taskCheck := pipelineschecksextras.CheckConfiguration{
+		Type:     checkType,
+		Settings: settings,
+		Resource: &pipelineschecksextras.Resource{
 			Id:   converter.String(d.Get("target_resource_id").(string)),
 			Type: converter.String(d.Get("target_resource_type").(string)),
 		},
+	}
+
+	if timeout != nil {
+		taskCheck.Timeout = timeout
 	}
 
 	if d.Id() != "" {
@@ -98,7 +111,7 @@ func doBaseExpansion(d *schema.ResourceData, inputs map[string]interface{}, defi
 }
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfiguration, projectID string, definitionId string, definitionVersion string) error {
+func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
 	d.SetId(fmt.Sprintf("%d", *check.Id))
 
 	d.Set("project_id", projectID)
@@ -114,32 +127,6 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecks.CheckConfig
 		return fmt.Errorf("Settings nil")
 	}
 
-	if definitionRefMap, found := check.Settings.(map[string]interface{})["definitionRef"]; found {
-		definitionRef := definitionRefMap.(map[string]interface{})
-		if id, found := definitionRef["id"]; found {
-			if !strings.EqualFold(id.(string), definitionId) {
-				return fmt.Errorf("invalid definitionRef id")
-			}
-		} else {
-			return fmt.Errorf("definitionRef ID not found. Expect ID: %s", definitionId)
-		}
-		if version, found := definitionRef["version"]; found {
-			if version != definitionVersion {
-				return fmt.Errorf("unsupported definitionRef version. Expect version: %s", definitionVersion)
-			}
-		} else {
-			return fmt.Errorf("unsupported definitionRef version")
-		}
-	} else {
-		return fmt.Errorf("definitionRef not found")
-	}
-
-	if displayName, found := check.Settings.(map[string]interface{})["displayName"]; found {
-		d.Set("display_name", displayName.(string))
-	} else {
-		return fmt.Errorf("displayName setting not found")
-	}
-
 	return nil
 }
 
@@ -151,7 +138,7 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 			return fmt.Errorf(" failed in expandFunc. Error: %+v", err)
 		}
 
-		createdCheck, err := clients.V5PipelinesChecksClient.AddCheckConfiguration(clients.Ctx, pipelineschecks.AddCheckConfigurationArgs{
+		createdCheck, err := clients.PipelinesChecksClientExtras.AddCheckConfiguration(clients.Ctx, pipelineschecksextras.AddCheckConfigurationArgs{
 			Project:       &projectID,
 			Configuration: configuration,
 		})
@@ -175,9 +162,10 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			return err
 		}
 
-		taskCheck, err := clients.V5PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecks.GetCheckConfigurationArgs{
+		taskCheck, err := clients.PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
 			Project: &projectID,
 			Id:      &taskCheckId,
+			Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 		})
 
 		if err != nil {
@@ -200,8 +188,8 @@ func genCheckUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateF
 			return err
 		}
 
-		updatedBusinessHours, err := clients.V5PipelinesChecksClient.UpdateCheckConfiguration(clients.Ctx,
-			pipelineschecks.UpdateCheckConfigurationArgs{
+		updatedBusinessHours, err := clients.PipelinesChecksClientExtras.UpdateCheckConfiguration(clients.Ctx,
+			pipelineschecksextras.UpdateCheckConfigurationArgs{
 				Project:       &projectID,
 				Configuration: taskCheck,
 				Id:            taskCheck.Id,
@@ -231,8 +219,8 @@ func genCheckDeleteFunc() schema.DeleteFunc { //nolint:staticcheck
 			return err
 		}
 
-		return clients.V5PipelinesChecksClient.DeleteCheckConfiguration(m.(*client.AggregatedClient).Ctx,
-			pipelineschecks.DeleteCheckConfigurationArgs{
+		return clients.PipelinesChecksClientExtras.DeleteCheckConfiguration(m.(*client.AggregatedClient).Ctx,
+			pipelineschecksextras.DeleteCheckConfigurationArgs{
 				Project: &projectID,
 				Id:      &BusinessHoursID,
 			})

@@ -42,6 +42,7 @@ data "azuredevops_team" "team" {
 					resource.TestCheckResourceAttrSet(tfNode, "description"),
 					resource.TestCheckResourceAttrSet(tfNode, "administrators.#"),
 					resource.TestCheckResourceAttrSet(tfNode, "members.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
 		},
