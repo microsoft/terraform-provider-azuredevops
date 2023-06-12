@@ -184,7 +184,7 @@ func hclSvcEndpointGcpTerraformResourceRequiresImport(projectName string, servic
 	service_endpoint_name  = azuredevops_serviceendpoint_gcp_terraform.test.service_endpoint_name
 	description            = azuredevops_serviceendpoint_gcp_terraform.test.description
 	gcp_project_id            = azuredevops_serviceendpoint_gcp_terraform.test.gcp_project_id
-        	token_uri = azuredevops_serviceendpoint_gcp_terraform.test.token_uri
+        token_uri = azuredevops_serviceendpoint_gcp_terraform.test.token_uri
 	}
 	`, template)
 }
