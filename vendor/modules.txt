@@ -186,6 +186,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinesapproval
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinestaskcheck
