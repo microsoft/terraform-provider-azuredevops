@@ -55,7 +55,7 @@ func TestAccServiceEndpointGcpTerraform_Complete(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-								Config: hclSvcEndpointGcpTerraformResourceComplete(projectName, serviceEndpointName, description, clientEmail, scope, tokenUri, projectId),
+				Config: hclSvcEndpointGcpTerraformResourceComplete(projectName, serviceEndpointName, description, clientEmail, scope, tokenUri, projectId),
 
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),

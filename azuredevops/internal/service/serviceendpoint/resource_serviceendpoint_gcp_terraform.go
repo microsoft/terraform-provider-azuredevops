@@ -18,11 +18,11 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 		Description: "The client email field in the JSON key file for creating the JSON Web Token.",
 	}
 	r.Schema["private_key"] = &schema.Schema{
-		Type:             schema.TypeString,
-		Required:         true,
-		DefaultFunc:      schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
-		Description:      "Private Key for connecting to the endpoint.",
-		Sensitive:        true,
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
+		Description: "Private Key for connecting to the endpoint.",
+		Sensitive:   true,
 	}
 	r.Schema["token_uri"] = &schema.Schema{
 		Type:        schema.TypeString,
