@@ -28,10 +28,9 @@ func TestAccServiceEndpointGcpTerraform_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "private_key"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "private_key", ""),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "private_key_hash"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "token_uri", "0000"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "token_uri", "tokenUri"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "gcp_project_id", "project_id"),
 				),
 			},
