@@ -69,7 +69,7 @@ func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceE
 func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
-	d.Set("private_key", d.Get("private_key").(string))
+	d.Set("private_key", (*serviceEndpoint.Authorization.Parameters)["PrivateKey"])
 	d.Set("client_email", (*serviceEndpoint.Authorization.Parameters)["Issuer"])
 	d.Set("token_uri", (*serviceEndpoint.Authorization.Parameters)["Audience"])
 	d.Set("scope", (*serviceEndpoint.Authorization.Parameters)["Scope"])
