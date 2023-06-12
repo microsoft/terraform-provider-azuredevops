@@ -23,7 +23,6 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 		DefaultFunc:      schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
 		Description:      "Private Key for connecting to the endpoint.",
 		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
 	r.Schema["token_uri"] = &schema.Schema{
 		Type:        schema.TypeString,
