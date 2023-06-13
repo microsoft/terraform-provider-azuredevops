@@ -29,7 +29,7 @@ var gcpForTerraformTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			"Issuer":     "GCP_TEST_client_email",
 			"Audience":   "GCP_TEST_token_uri",
 			"Scope":      "GCP_TEST_scope",
-			"PrivateKey": "GCP_TEST_private_key",
+			"PrivateKey": "",
 		},
 		Scheme: converter.String("JWT"),
 	},
