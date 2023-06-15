@@ -23,7 +23,7 @@ resource "azuredevops_serviceendpoint_gcp_terraform" "example" {
   project_id            = azuredevops_project.example.id
   token_uri             = "https://oauth2.example.com/token"
   client_email          = "gcp-sa-example@example.iam.gserviceaccount.com"
-  private_key           = google_service_account.example.private_key
+  private_key           = "0000000000000000000000000000000000000"
   service_endpoint_name = "Example GCP Terraform extension"
   gcp_project_id        = "Example GCP Project"
   description           = "Managed by Terraform"
@@ -35,12 +35,21 @@ resource "azuredevops_serviceendpoint_gcp_terraform" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
+
 * `service_endpoint_name` - (Required) The Service Endpoint name.
-* `client_email` - (Optional) The client email field in the JSON key file for creating the JSON Web Token.
+
 * `private_key` - (Required) The client email field in the JSON key file for creating the JSON Web Token.
+
 * `token_uri` - (Required) The token uri field in the JSON key file for creating the JSON Web Token.
-* `scope` - (Optional) Scope to be provided.
+
 * `gcp_project_id` - (Required) GCP project associated with the Service Connection.
+
+---
+
+* `client_email` - (Optional) The client email field in the JSON key file for creating the JSON Web Token.
+ 
+* `scope` - (Optional) Scope to be provided.
+
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
@@ -52,7 +61,7 @@ The following attributes are exported:
 * `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
-* [Azure DevOps Service REST API 6.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.1)
 
 ## Import
 Azure DevOps Service Endpoint GCP can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
