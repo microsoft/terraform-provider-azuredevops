@@ -221,22 +221,32 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	var project *core.TeamProject
 	var err error
 
-	//keep retrying until timeout to handle service inconsistent response
-	//lint:ignore SA1019
-	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError { //nolint:staticcheck
-		project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
-			ProjectId:           &identifier,
-			IncludeCapabilities: converter.Bool(true),
-			IncludeHistory:      converter.Bool(false),
-		})
-		if err != nil {
-			if utils.ResponseWasNotFound(err) {
-				return resource.NonRetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                20 * time.Second,
+		Pending:                   []string{"pending"},
+		Target:                    []string{"success"},
+		Refresh: func() (result interface{}, state string, err error) {
+			project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+				ProjectId:           &identifier,
+				IncludeCapabilities: converter.Bool(true),
+				IncludeHistory:      converter.Bool(false),
+			})
+			if err != nil {
+				if utils.ResponseWasNotFound(err) {
+					log.Printf("[INFO] Project not found. %+v", err)
+				}
+				return project, "pending", err
 			}
-			return resource.RetryableError(err)
-		}
-		return nil
-	})
+			return project, "success", nil
+		},
+		Timeout: projectRetryTimeoutDuration * time.Minute,
+	}
+
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return project, fmt.Errorf(" waiting for project ready. %v ", err)
+	}
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
