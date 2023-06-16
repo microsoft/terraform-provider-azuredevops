@@ -235,7 +235,7 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 			})
 			if err != nil {
 				if utils.ResponseWasNotFound(err) {
-					log.Printf("[INFO] Project not found. %+v", err)
+					log.Printf("[INFO] Project not found. ID/Name: %s . Error: %+v", identifier, err)
 				}
 				return project, "pending", err
 			}
