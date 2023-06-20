@@ -10,36 +10,35 @@ import (
 // ResourceServiceEndpointGcp schema and implementation for gcp service endpoint resource
 func ResourceServiceEndpointGcp() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGcp, expandServiceEndpointGcp)
-	r.Schema["client_email"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_CLIENT_EMAIL", nil),
-		Description: "The client email field in the JSON key file for creating the JSON Web Token.",
-	}
 	r.Schema["private_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
+		Sensitive:   true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
 		Description: "Private Key for connecting to the endpoint.",
-		Sensitive:   true,
 	}
 	r.Schema["token_uri"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_TOKEN_URI", nil),
 		Description: "The token uri field in the JSON key file for creating the JSON Web Token.",
-		Sensitive:   false,
-	}
-	r.Schema["scope"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_SCOPE", nil),
-		Description: "Scope to be provided",
 	}
 	r.Schema["gcp_project_id"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_GCP_PROJECT_ID", nil),
+		Description: "Scope to be provided",
+	}
+	r.Schema["client_email"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_CLIENT_EMAIL", nil),
+		Description: "The client email field in the JSON key file for creating the JSON Web Token.",
+	}
+	r.Schema["scope"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_SCOPE", nil),
 		Description: "Scope to be provided",
 	}
 	return r

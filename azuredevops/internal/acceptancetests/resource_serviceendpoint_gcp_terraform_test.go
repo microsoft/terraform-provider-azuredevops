@@ -143,14 +143,14 @@ func hclSvcEndpointGcpTerraformResource(projectName string, serviceEndpointName 
 
 func hclSvcEndpointGcpTerraformResourceUpdate(projectName string, serviceEndpointName string, description string, tokenUri string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
-		project_id             = azuredevops_project.project.id
-	        private_key      = "secretkey"
-		token_uri = "%s"
-		service_endpoint_name  = "%s"
-		description            = "%s"
-		gcp_project_id = "project_id"
-	}`, tokenUri, serviceEndpointName, description)
+resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
+  project_id            = azuredevops_project.project.id
+  private_key           = "secretkey"
+  token_uri             = "%s"
+  service_endpoint_name = "%s"
+  description           = "%s"
+  gcp_project_id        = "project_id"
+}`, tokenUri, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -158,17 +158,17 @@ func hclSvcEndpointGcpTerraformResourceUpdate(projectName string, serviceEndpoin
 
 func hclSvcEndpointGcpTerraformResourceComplete(projectName string, serviceEndpointName string, description string, clientEmail string, scope string, tokenUri string, projectId string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
-		project_id             = azuredevops_project.project.id
-	        private_key      = "secretkey"
-		token_uri = "%s"
-		service_endpoint_name  = "%s"
-		description            = "%s"
-		client_email = "%s"
-		scope = "%s"
-		gcp_project_id = "%s"
+resource "azuredevops_serviceendpoint_gcp_terraform" "test" {
+  project_id            = azuredevops_project.project.id
+  private_key           = "secretkey"
+  token_uri             = "%s"
+  service_endpoint_name = "%s"
+  description           = "%s"
+  client_email          = "%s"
+  scope                 = "%s"
+  gcp_project_id        = "%s"
 
-	}`, tokenUri, serviceEndpointName, description, clientEmail, scope, projectId)
+}`, tokenUri, serviceEndpointName, description, clientEmail, scope, projectId)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -178,13 +178,13 @@ func hclSvcEndpointGcpTerraformResourceRequiresImport(projectName string, servic
 	template := hclSvcEndpointGcpTerraformResource(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 	%s
-	resource "azuredevops_serviceendpoint_gcp_terraform" "import" {
-	project_id             = azuredevops_serviceendpoint_gcp_terraform.test.project_id
-	private_key      = "secretkey"
-	service_endpoint_name  = azuredevops_serviceendpoint_gcp_terraform.test.service_endpoint_name
-	description            = azuredevops_serviceendpoint_gcp_terraform.test.description
-	gcp_project_id            = azuredevops_serviceendpoint_gcp_terraform.test.gcp_project_id
-        token_uri = azuredevops_serviceendpoint_gcp_terraform.test.token_uri
-	}
+resource "azuredevops_serviceendpoint_gcp_terraform" "import" {
+  project_id            = azuredevops_serviceendpoint_gcp_terraform.test.project_id
+  private_key           = "secretkey"
+  service_endpoint_name = azuredevops_serviceendpoint_gcp_terraform.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_gcp_terraform.test.description
+  gcp_project_id        = azuredevops_serviceendpoint_gcp_terraform.test.gcp_project_id
+  token_uri             = azuredevops_serviceendpoint_gcp_terraform.test.token_uri
+}
 	`, template)
 }
