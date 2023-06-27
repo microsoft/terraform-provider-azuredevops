@@ -27,6 +27,8 @@ func ResourceResourceAuthorization() *schema.Resource {
 		Update: resourceResourceAuthorizationUpdate,
 		Delete: resourceResourceAuthorizationDelete,
 
+		DeprecationMessage: "This resource will be deprecated and removed in the future. Please use `azuredevops_pipeline_authorization` instead.",
+
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
