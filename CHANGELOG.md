@@ -1,3 +1,24 @@
+## 0.6.0
+
+FEATURES:
+* **New Resource** `azuredevops_check_approval` [#728](https://github.com/microsoft/terraform-provider-azuredevops/pull/728)
+* **New Resource** `azuredevops_serviceendpoint_gcp_terraform` [#742](https://github.com/microsoft/terraform-provider-azuredevops/pull/742)
+* **New Resource** `azuredevops_pipeline_authorization` - Alternative to `azuredevops_resource_authorization` [#787](https://github.com/microsoft/terraform-provider-azuredevops/pull/787)
+* **New Data Resource** `azuredevops_serviceendpoint_npm` [#795](https://github.com/microsoft/terraform-provider-azuredevops/pull/795)
+* **New Data Resource** `azuredevops_serviceendpoint_sonarcloud` [#796](https://github.com/microsoft/terraform-provider-azuredevops/pull/796)
+
+IMPROVEMENTS:
+* `azuredevops_workitem` - Add support for `area_path` and `iteration_path` [#750](https://github.com/microsoft/terraform-provider-azuredevops/pull/750)
+* `azuredevops_check_approval` - Set `timeout` default value [#760](https://github.com/microsoft/terraform-provider-azuredevops/pull/760)
+* `azuredevops_git_repository` - Uppercase the name of `readme.md` file [#761](https://github.com/microsoft/terraform-provider-azuredevops/pull/761)
+* `azuredevops_project_pipeline_settings` - Add support for `enforce_job_scope_for_release`[#777](https://github.com/microsoft/terraform-provider-azuredevops/pull/777)
+* Upgrade API from v6 to v7. [#774](https://github.com/microsoft/terraform-provider-azuredevops/pull/774)
+* Upgrade legacy API from v5 to v7. [#785](https://github.com/microsoft/terraform-provider-azuredevops/pull/785)
+
+BUG FIX:
+* `azuredevops_branch_policy_min_reviewers` - Fix `on_push_reset_approved_votes` cannot set to `true` [#792](https://github.com/microsoft/terraform-provider-azuredevops/pull/792)
+* `azuredevops_project` - Fix state inconsistent after apply [#793](https://github.com/microsoft/terraform-provider-azuredevops/pull/793)
+
 ## 0.5.0
 
 FEATURES:
