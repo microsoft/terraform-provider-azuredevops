@@ -50,6 +50,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_approval":                         approvalsandchecks.ResourceCheckApproval(),
 			"azuredevops_check_branch_control":                   approvalsandchecks.ResourceCheckBranchControl(),
 			"azuredevops_check_business_hours":                   approvalsandchecks.ResourceCheckBusinessHours(),
+			"azuredevops_check_template":                         approvalsandchecks.ResourceCheckTemplate(),
 			"azuredevops_serviceendpoint_argocd":                 serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_jfrog_artifactory_v2":   serviceendpoint.ResourceServiceEndpointJFrogArtifactoryV2(),
