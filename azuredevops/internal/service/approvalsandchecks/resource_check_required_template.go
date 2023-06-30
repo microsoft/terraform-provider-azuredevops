@@ -11,8 +11,8 @@ import (
 var validRepositoryTypes = []string{"git", "github", "bitbucket"}
 
 // ResourceCheckTemplate schema and implementation for required template check resources
-func ResourceCheckTemplate() *schema.Resource {
-	r := genBaseCheckResource(flattenCheckTemplate, expandCheckTemplate)
+func ResourceCheckRequiredTemplate() *schema.Resource {
+	r := genBaseCheckResource(flattenCheckRequiredTemplate, expandCheckRequiredTemplate)
 
 	r.Schema["required_template"] = &schema.Schema{
 		Type:     schema.TypeSet,
@@ -47,7 +47,7 @@ func ResourceCheckTemplate() *schema.Resource {
 	return r
 }
 
-func flattenCheckTemplate(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
+func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
 	err := doBaseFlattening(d, check, projectID)
 	if err != nil {
 		return err
@@ -65,13 +65,13 @@ func flattenCheckTemplate(d *schema.ResourceData, check *pipelineschecksextras.C
 
 	var reqTemplSet []map[string]interface{}
 	if extendsCheckMap, found := check.Settings.(map[string]interface{})["extendsChecks"]; found {
-		extendsChecks := extendsCheckMap.([]interface{})
+		extendsChecks := extendsCheckMap.([]map[string]interface{})
 		for i := range extendsChecks {
 			reqTempl := map[string]interface{}{
-				"repository_type": extendsChecks[i].(map[string]interface{})["repositoryType"],
-				"repository_name": extendsChecks[i].(map[string]interface{})["repositoryName"],
-				"repository_ref":  extendsChecks[i].(map[string]interface{})["repositoryRef"],
-				"template_path":   extendsChecks[i].(map[string]interface{})["templatePath"],
+				"repository_type": extendsChecks[i]["repositoryType"],
+				"repository_name": extendsChecks[i]["repositoryName"],
+				"repository_ref":  extendsChecks[i]["repositoryRef"],
+				"template_path":   extendsChecks[i]["templatePath"],
 			}
 			reqTemplSet = append(reqTemplSet, reqTempl)
 		}
@@ -83,7 +83,7 @@ func flattenCheckTemplate(d *schema.ResourceData, check *pipelineschecksextras.C
 	return nil
 }
 
-func expandCheckTemplate(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
+func expandCheckRequiredTemplate(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	var extendsChecks []map[string]interface{}
 	if v, ok := d.GetOk("required_template"); ok {
 		reqTemplList := v.(*schema.Set).List()
