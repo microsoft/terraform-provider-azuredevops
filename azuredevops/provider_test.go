@@ -26,6 +26,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_check_approval",
 		"azuredevops_check_branch_control",
 		"azuredevops_check_business_hours",
+		"azuredevops_check_required_template",
 		"azuredevops_serviceendpoint_gcp_terraform",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
