@@ -28,23 +28,6 @@ var requiredTemplateTestEndpointResource = pipelineschecksextras.Resource{
 	Type: &requiredTemplateTestEndpointType,
 }
 
-// "settings": {
-//     "extendsChecks": [
-//         {
-//             "repositoryType": "git",
-//             "repositoryName": "proj/repo",
-//             "repositoryRef": "refs/heads/master",
-//             "templatePath": "templ/path.yaml"
-//         },
-//         {
-//             "repositoryType": "git",
-//             "repositoryName": "proj/repo",
-//             "repositoryRef": "refs/heads/master",
-//             "templatePath": "templ/other-path.yaml"
-//         }
-//     ]
-// },
-
 var requiredTemplates = []interface{}{
 	map[string]interface{}{
 		"repositoryType": "git",
