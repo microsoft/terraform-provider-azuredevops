@@ -45,8 +45,8 @@ var requiredTemplateTestEndpointResource = pipelineschecksextras.Resource{
 //     ]
 // },
 
-var requiredTemplates = []map[string]interface{}{
-	{
+var requiredTemplates = []interface{}{
+	map[string]interface{}{
 		"repositoryType": "git",
 		"repositoryName": "proj/repo",
 		"repositoryRef":  "refs/heads/master",

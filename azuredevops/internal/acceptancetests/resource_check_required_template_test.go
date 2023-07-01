@@ -1,5 +1,5 @@
-//go:build (all || resource_check_branch_control) && !exclude_approvalsandchecks
-// +build all resource_check_branch_control
+//go:build (all || resource_check_required_template) && !exclude_approvalsandchecks
+// +build all resource_check_required_template
 // +build !exclude_approvalsandchecks
 
 package acceptancetests
@@ -11,8 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
-
-var checkName = "Extend a required template"
 
 func TestAccCheckRequiredTemplate_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
@@ -30,11 +28,10 @@ func TestAccCheckRequiredTemplate_basic(t *testing.T) {
 			{
 				Config: hclRequiredTemplateCheckResourceBasic(projectName, repositoryName, repositoryRef, templatePath),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckPipelineCheckExistsWithName(tfCheckNode, checkName),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					// TODO: check nested properties
-					// resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
-					// resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_name", repositoryName),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRef),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePath),
 				),
 			},
 		},
@@ -42,7 +39,6 @@ func TestAccCheckRequiredTemplate_basic(t *testing.T) {
 }
 
 func TestAccCheckRequiredTemplate_complete(t *testing.T) {
-	// TODO: rewrite function to required template check
 	projectName := testutils.GenerateResourceName()
 	repositoryType := "github"
 	repositoryName := "proj/test-repo"
@@ -59,13 +55,11 @@ func TestAccCheckRequiredTemplate_complete(t *testing.T) {
 			{
 				Config: hclRequiredTemplateCheckResourceComplete(projectName, repositoryType, repositoryName, repositoryRef, templatePath),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckPipelineCheckExistsWithName(tfCheckNode, checkName),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					// TODO: check nested properties
-					// resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
-					// resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
-					// resource.TestCheckResourceAttr(tfCheckNode, "verify_branch_protection", "true"),
-					// resource.TestCheckResourceAttr(tfCheckNode, "ignore_unknown_protection_status", "false"),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_type", repositoryType),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_name", repositoryName),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRef),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePath),
 				),
 			},
 		},
@@ -93,21 +87,20 @@ func TestAccCheckRequiredTemplate_update(t *testing.T) {
 			{
 				Config: hclRequiredTemplateCheckResourceBasic(projectName, repositoryNameFirst, repositoryRefFirst, templatePathFirst),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckPipelineCheckExistsWithName(tfCheckNode, checkName),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					// TODO: how to check nested properties?
-					// resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", ),
-					// resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkNameFirst),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_name", repositoryNameFirst),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRefFirst),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePathFirst),
 				),
 			},
 			{
 				Config: hclRequiredTemplateCheckResourceUpdate(projectName, repositoryTypeSecond, repositoryNameSecond, repositoryRefSecond, templatePathSecond),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckPipelineCheckExistsWithName(tfCheckNode, checkName),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					// TODO: how to check nested properties?
-					// resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", ),
-					// resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkNameFirst),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_type", repositoryTypeSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_name", repositoryNameSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRefSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePathSecond),
 				),
 			},
 		},
@@ -116,7 +109,7 @@ func TestAccCheckRequiredTemplate_update(t *testing.T) {
 
 func hclRequiredTemplateCheckResourceBasic(projectName, repositoryName, repositoryRef, templatePath string) string {
 	checkResource := fmt.Sprintf(`
-resource "azuredevops_check_branch_control" "test" {
+resource "azuredevops_check_required_template" "test" {
   project_id           = azuredevops_project.project.id
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
@@ -133,7 +126,7 @@ resource "azuredevops_check_branch_control" "test" {
 
 func hclRequiredTemplateCheckResourceComplete(projectName, repository_type, repositoryName, repositoryRef, templatePath string) string {
 	checkResource := fmt.Sprintf(`
-resource "azuredevops_check_branch_control" "test" {
+resource "azuredevops_check_required_template" "test" {
   project_id                       = azuredevops_project.project.id
   target_resource_id               = azuredevops_serviceendpoint_generic.test.id
   target_resource_type             = "endpoint"
@@ -151,7 +144,7 @@ resource "azuredevops_check_branch_control" "test" {
 
 func hclRequiredTemplateCheckResourceUpdate(projectName, repository_type, repositoryName, repositoryRef, templatePath string) string {
 	checkResource := fmt.Sprintf(`
-resource "azuredevops_check_branch_control" "test" {
+resource "azuredevops_check_required_template" "test" {
   project_id                       = azuredevops_project.project.id
   target_resource_id               = azuredevops_serviceendpoint_generic.test.id
   target_resource_type             = "endpoint"

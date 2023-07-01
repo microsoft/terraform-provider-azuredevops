@@ -10,7 +10,7 @@ import (
 
 var validRepositoryTypes = []string{"git", "github", "bitbucket"}
 
-// ResourceCheckTemplate schema and implementation for required template check resources
+// ResourceCheckRequiredTemplate schema and implementation for required template check resources
 func ResourceCheckRequiredTemplate() *schema.Resource {
 	r := genBaseCheckResource(flattenCheckRequiredTemplate, expandCheckRequiredTemplate)
 
@@ -65,13 +65,14 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 
 	var reqTemplSet []map[string]interface{}
 	if extendsCheckMap, found := check.Settings.(map[string]interface{})["extendsChecks"]; found {
-		extendsChecks := extendsCheckMap.([]map[string]interface{})
-		for i := range extendsChecks {
+		extendsChecks := extendsCheckMap.([]interface{})
+		for _, ec := range extendsChecks {
+			ecMap := ec.(map[string]interface{})
 			reqTempl := map[string]interface{}{
-				"repository_type": extendsChecks[i]["repositoryType"],
-				"repository_name": extendsChecks[i]["repositoryName"],
-				"repository_ref":  extendsChecks[i]["repositoryRef"],
-				"template_path":   extendsChecks[i]["templatePath"],
+				"repository_type": ecMap["repositoryType"],
+				"repository_name": ecMap["repositoryName"],
+				"repository_ref":  ecMap["repositoryRef"],
+				"template_path":   ecMap["templatePath"],
 			}
 			reqTemplSet = append(reqTemplSet, reqTempl)
 		}
@@ -84,16 +85,16 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 }
 
 func expandCheckRequiredTemplate(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
-	var extendsChecks []map[string]interface{}
+	var extendsChecks []interface{}
 	if v, ok := d.GetOk("required_template"); ok {
 		reqTemplList := v.(*schema.Set).List()
 		for _, reqTempl := range reqTemplList {
 			reqTemplMap := reqTempl.(map[string]interface{})
 			extendsChecks = append(extendsChecks, map[string]interface{}{
-				"repositoryType": reqTemplMap["repository_type"].(string),
-				"repositoryName": reqTemplMap["repository_name"].(string),
-				"repositoryRef":  reqTemplMap["repository_ref"].(string),
-				"templatePath":   reqTemplMap["template_path"].(string),
+				"repositoryType": reqTemplMap["repository_type"],
+				"repositoryName": reqTemplMap["repository_name"],
+				"repositoryRef":  reqTemplMap["repository_ref"],
+				"templatePath":   reqTemplMap["template_path"],
 			})
 		}
 	}
