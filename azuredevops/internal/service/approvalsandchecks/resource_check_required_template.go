@@ -63,9 +63,9 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 		return fmt.Errorf("Settings nil")
 	}
 
-	var reqTemplSet []map[string]interface{}
-	if extendsCheckMap, found := check.Settings.(map[string]interface{})["extendsChecks"]; found {
-		extendsChecks := extendsCheckMap.([]interface{})
+	var reqTemplList []map[string]interface{}
+	if extendsChecksConfig, found := check.Settings.(map[string]interface{})["extendsChecks"]; found {
+		extendsChecks := extendsChecksConfig.([]interface{})
 		for _, ec := range extendsChecks {
 			ecMap := ec.(map[string]interface{})
 			reqTempl := map[string]interface{}{
@@ -74,12 +74,12 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 				"repository_ref":  ecMap["repositoryRef"],
 				"template_path":   ecMap["templatePath"],
 			}
-			reqTemplSet = append(reqTemplSet, reqTempl)
+			reqTemplList = append(reqTemplList, reqTempl)
 		}
 	} else {
 		return fmt.Errorf("extendsChecks not found")
 	}
-	d.Set("required_template", reqTemplSet)
+	d.Set("required_template", reqTemplList)
 
 	return nil
 }
