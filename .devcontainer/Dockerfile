@@ -28,7 +28,7 @@ RUN apt-get update \
     && cd ~ \
     && rm -rf /tmp/docker-downloads \
     # Install goreleaser
-    && go install github.com/goreleaser/goreleaser@latest \
+    && go install github.com/goreleaser/goreleaser@v1.18.2 \
     #
     # Clean up
     && apt-get autoremove -y \
