@@ -100,9 +100,17 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 	d.Set("resource_id", resp.Resource.Id)
 	d.Set("type", resp.Resource.Type)
+
 	if resp.Pipelines != nil && len(*resp.Pipelines) > 0 {
-		pipeAuth := (*resp.Pipelines)[0]
-		d.Set("pipeline_id", pipeAuth.Id)
+		var exist = false
+		for _, pipe := range *resp.Pipelines {
+			if *pipe.Id == d.Get("pipeline_id").(int) {
+				exist = true
+			}
+		}
+		if !exist {
+			d.Set("pipeline_id", nil)
+		}
 	}
 
 	d.SetId(*resp.Resource.Id)

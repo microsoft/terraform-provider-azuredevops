@@ -9,8 +9,10 @@ description: |-
 
 Manage pipeline access permissions to resources.
 
-~> **Note** This resource is a replacement for `azuredevops_resource_authorization`.  Pipeline authorizations managed by `azuredevops_resource_authorization` can also
-be managed by this resource 
+~> **Note** This resource is a replacement for `azuredevops_resource_authorization`.  Pipeline authorizations managed by `azuredevops_resource_authorization` can also be managed by this resource.
+
+~> **Note** If both "All Pipeline Authorization" and "Custom Pipeline Authorization" are configured, "All Pipeline Authorization" has higher priority.
+
 
 ## Example Usage 
 
@@ -98,7 +100,7 @@ The following arguments are supported:
 - `type` - (Required) The type of the resource to authorize. Valid values: `endpoint`, `queue`, `variablegroup`, `environment`. Changing this forces a new resource to be created
 
 ---
-- `pipeline_id` - (Optional) The ID of the pipeline. Changing this forces a new resource to be created
+- `pipeline_id` - (Optional) The ID of the pipeline. If not configured, all pipelines will be authorized. Changing this forces a new resource to be created.
 
 
 ## Attributes Reference
