@@ -8,7 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
-var validRepositoryTypes = []string{"git", "github", "bitbucket"}
+var validRepositoryTypes = []string{"azuregit", "github", "bitbucket"}
 
 // ResourceCheckRequiredTemplate schema and implementation for required template check resources
 func ResourceCheckRequiredTemplate() *schema.Resource {
@@ -22,7 +22,7 @@ func ResourceCheckRequiredTemplate() *schema.Resource {
 				"repository_type": {
 					Type:         schema.TypeString,
 					Optional:     true,
-					Default:      "git",
+					Default:      "azuregit",
 					ValidateFunc: validation.StringInSlice(validRepositoryTypes, false),
 				},
 				"repository_name": {
@@ -37,7 +37,7 @@ func ResourceCheckRequiredTemplate() *schema.Resource {
 				},
 				"template_path": {
 					Type:         schema.TypeString,
-					Optional:     true,
+					Required:     true,
 					ValidateFunc: validation.StringIsNotEmpty,
 				},
 			},
@@ -68,8 +68,14 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 		extendsChecks := extendsChecksConfig.([]interface{})
 		for _, ec := range extendsChecks {
 			ecMap := ec.(map[string]interface{})
+			var repositoryType string
+			if ecMap["repositoryType"].(string) == "git" {
+				repositoryType = "azuregit"
+			} else {
+				repositoryType = ecMap["repositoryType"].(string)
+			}
 			reqTempl := map[string]interface{}{
-				"repository_type": ecMap["repositoryType"],
+				"repository_type": repositoryType,
 				"repository_name": ecMap["repositoryName"],
 				"repository_ref":  ecMap["repositoryRef"],
 				"template_path":   ecMap["templatePath"],
@@ -89,9 +95,15 @@ func expandCheckRequiredTemplate(d *schema.ResourceData) (*pipelineschecksextras
 	if v, ok := d.GetOk("required_template"); ok {
 		reqTemplList := v.(*schema.Set).List()
 		for _, reqTempl := range reqTemplList {
+			var repositoryType string
 			reqTemplMap := reqTempl.(map[string]interface{})
+			if reqTemplMap["repository_type"].(string) == "azuregit" {
+				repositoryType = "git"
+			} else {
+				repositoryType = reqTemplMap["repository_type"].(string)
+			}
 			extendsChecks = append(extendsChecks, map[string]interface{}{
-				"repositoryType": reqTemplMap["repository_type"],
+				"repositoryType": repositoryType,
 				"repositoryName": reqTemplMap["repository_name"],
 				"repositoryRef":  reqTemplMap["repository_ref"],
 				"templatePath":   reqTemplMap["template_path"],

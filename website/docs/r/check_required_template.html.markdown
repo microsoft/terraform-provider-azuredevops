@@ -33,7 +33,7 @@ resource "azuredevops_check_required_template" "example" {
   target_resource_type = "endpoint"
 
   required_template {
-    repository_type = "git"
+    repository_type = "azuregit"
     repository_name = "project/repository"
     repository_ref  = "refs/heads/main"
     template_path   = "template/path.yml"
@@ -86,7 +86,7 @@ The following arguments are supported:
  
 A `required_template` block supports the following:
 
-- `repository_type` - (Optional) The type of the repository storing the template. Valid values: `git`, `github`, `bitbucket`. Defaults to `git`.
+- `repository_type` - (Optional) The type of the repository storing the template. Valid values: `azuregit`, `github`, `bitbucket`. Defaults to `azuregit`.
 - `repository_name` - (Required) The name of the repository storing the template.
 - `repository_ref` - (Required) The branch in which the template will be referenced.
 - `template_path` - (Required) The path to the template yaml.
