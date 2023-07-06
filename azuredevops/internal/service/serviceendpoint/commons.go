@@ -103,7 +103,7 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   &projectID,
+					Id: &projectID,
 				},
 				Name:        name,
 				Description: converter.String(d.Get("description").(string)),

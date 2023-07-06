@@ -249,12 +249,12 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 }
 
 // validates that an managed identity service endpoint can be created and updated
-func TestAccServiceEndpointAzureRm_ManagedIdentity_CreateAndUpdate(t *testing.T) {
+func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *testing.T) {
 	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
-	serviceEndpointType := "ManagedIdentity"
+	serviceEndpointType := "ManagedServiceIdentity"
 
 	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
 	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
