@@ -49,7 +49,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 				},
 				"serviceprincipalkey": {
 					Type:             schema.TypeString,
-					Required:         true,
+					Optional:         true,
 					Description:      "The service principal secret which should be used.",
 					Sensitive:        true,
 					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
@@ -67,6 +67,15 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
 	}
 
+	r.Schema["azurerm_service_endpoint_type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Required:     true,
+		ForceNew:     true,
+		Description:  "The azurerm Service Endpoint type, this can be 'WorkloadIdentityFederation', 'ManagedIdentity' or 'ServicePrincipal'.",
+		Default:      "ServicePrincipal",
+		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedIdentity", "ServicePrincipal"}, false),
+	}
+
 	r.SchemaVersion = 1
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
@@ -81,6 +90,8 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
+
+	serviceEndPointType := d.Get("azurerm_service_endpoint_type").(string)
 
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
@@ -105,30 +116,111 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	if _, ok := d.GetOk("azurerm_subscription_id"); ok {
 		scope = fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
 		scopeLevel = "Subscription"
-		if _, ok := d.GetOk("resource_group"); ok {
-			scope += fmt.Sprintf("/resourcegroups/%s", d.Get("resource_group"))
-			scopeLevel = "ResourceGroup"
+		if serviceEndPointType == "ServicePrincipal" || serviceEndPointType == "WorkloadIdentityFederation" {
+			if _, ok := d.GetOk("resource_group"); ok {
+				scope += fmt.Sprintf("/resourcegroups/%s", d.Get("resource_group"))
+				scopeLevel = "ResourceGroup"
+			}
 		}
 	}
 
-	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{
-			"authenticationType":  "spnKey",
-			"serviceprincipalid":  "",
-			"serviceprincipalkey": "",
-			"tenantid":            d.Get("azurerm_spn_tenantid").(string),
-		},
-		Scheme: converter.String("ServicePrincipal"),
+	if serviceEndPointType == "ServicePrincipal" || serviceEndPointType == "WorkloadIdentityFederation" {
+		if scopeLevel == "ResourceGroup" {
+			serviceEndPointType += "Auto"
+		} else {
+			serviceEndPointType += "Manual"
+		}
 	}
+
+	var credentials map[string]interface{}
+
+	if _, ok := d.GetOk("credentials"); ok {
+		credentials = d.Get("credentials").([]interface{})[0].(map[string]interface{})
+	}
+
+	switch serviceEndPointType {
+	case "ServicePrincipalAuto":
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  "",
+				"serviceprincipalkey": "",
+				"tenantid":            d.Get("azurerm_spn_tenantid").(string),
+			},
+			Scheme: converter.String("ServicePrincipal"),
+		}
+
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": "Automatic",
+			"environment":  environment,
+		}
+
+	case "ServicePrincipalManual":
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"authenticationType":  "spnKey",
+				"serviceprincipalid":  credentials["serviceprincipalid"].(string),
+				"serviceprincipalkey": credentials["serviceprincipalkey"].(string),
+				"tenantid":            d.Get("azurerm_spn_tenantid").(string),
+			},
+			Scheme: converter.String("ServicePrincipal"),
+		}
+
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": "Manual",
+			"environment":  environment,
+		}
+
+	case "ManagedIdentity":
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid": d.Get("azurerm_spn_tenantid").(string),
+			},
+			Scheme: converter.String("ManagedServiceIdentity"),
+		}
+
+		serviceEndpoint.Data = &map[string]string{
+			"environment": environment,
+		}
+
+	case "WorkloadIdentityFederationAuto":
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"serviceprincipalid": "",
+				"tenantid":           d.Get("azurerm_spn_tenantid").(string),
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		}
+
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": "Automatic",
+			"environment":  environment,
+		}
+
+	case "WorkloadIdentityFederationManual":
+		servicePrincipalId := credentials["serviceprincipalid"].(string)
+		if servicePrincipalId == "" {
+			return nil, nil, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
+		}
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"serviceprincipalid": servicePrincipalId,
+				"tenantid":           d.Get("azurerm_spn_tenantid").(string),
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		}
+
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": "Manual",
+			"environment":  environment,
+		}
+	}
+
 	var endpointUrl string
 	if environment == "AzureCloud" {
 		endpointUrl = "https://management.azure.com/"
 	} else if environment == "AzureChinaCloud" {
 		endpointUrl = "https://management.chinacloudapi.cn/"
-	}
-	serviceEndpoint.Data = &map[string]string{
-		"creationMode": "Automatic",
-		"environment":  environment,
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
@@ -145,13 +237,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		(*serviceEndpoint.Data)["scopeLevel"] = "ManagementGroup"
 		(*serviceEndpoint.Data)["managementGroupId"] = d.Get("azurerm_management_group_id").(string)
 		(*serviceEndpoint.Data)["managementGroupName"] = d.Get("azurerm_management_group_name").(string)
-	}
-
-	if _, ok := d.GetOk("credentials"); ok {
-		credentials := d.Get("credentials").([]interface{})[0].(map[string]interface{})
-		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"] = credentials["serviceprincipalid"].(string)
-		(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = credentials["serviceprincipalkey"].(string)
-		(*serviceEndpoint.Data)["creationMode"] = "Manual"
 	}
 
 	serviceEndpoint.Type = converter.String("azurerm")
@@ -172,6 +257,17 @@ func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint
 func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
+
+	serviceEndPointType := *serviceEndpoint.Authorization.Scheme
+
+	switch serviceEndPointType {
+	case "ServicePrincipal":
+		d.Set("azurerm_service_endpoint_type", "ServicePrincipal")
+	case "ManagedServiceIdentity":
+		d.Set("azurerm_service_endpoint_type", "ManagedIdentity")
+	case "WorkloadIdentityFederation":
+		d.Set("azurerm_service_endpoint_type", "WorkloadIdentityFederation")
+	}
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
