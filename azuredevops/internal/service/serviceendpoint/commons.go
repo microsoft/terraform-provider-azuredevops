@@ -91,8 +91,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 	if err == nil {
 		serviceEndpointID = &parsedID
 	}
+
 	projectID := uuid.MustParse(d.Get("project_id").(string))
 	name := converter.String(d.Get("service_endpoint_name").(string))
+
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
 		Id:          serviceEndpointID,
 		Name:        name,
@@ -102,7 +104,6 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
 					Id:   &projectID,
-					Name: name,
 				},
 				Name:        name,
 				Description: converter.String(d.Get("description").(string)),
