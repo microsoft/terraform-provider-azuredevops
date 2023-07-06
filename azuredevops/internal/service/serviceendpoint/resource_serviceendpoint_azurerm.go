@@ -165,7 +165,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"creationMode": "Automatic",
 				"environment":  environment,
 			}
-		} 
+		}
 		if serviceEndpointCreationMode == Manual {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
@@ -209,7 +209,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"creationMode": "Automatic",
 				"environment":  environment,
 			}
-		} 
+		}
 		if serviceEndpointCreationMode == Manual {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
 			if servicePrincipalId == "" {
