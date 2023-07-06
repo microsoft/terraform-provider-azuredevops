@@ -167,7 +167,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"environment":  environment,
 			}
 		} else {
-
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
 					"authenticationType":  "spnKey",
@@ -210,7 +209,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"creationMode": "Automatic",
 				"environment":  environment,
 			}
-
 		} else {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
 			if servicePrincipalId == "" {
