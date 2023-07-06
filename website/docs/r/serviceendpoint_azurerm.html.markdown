@@ -160,7 +160,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 ```
 
-### Workload Managed Identity AzureRM Service Endpoint
+### Managed Identity AzureRM Service Endpoint
 
 ```hcl
 resource "azuredevops_project" "example" {
