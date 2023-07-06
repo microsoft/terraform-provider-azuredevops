@@ -156,8 +156,6 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	serviceprincipalidFirst := uuid.New().String()
 	serviceprincipalidSecond := uuid.New().String()
-	serviceprincipalkeyFirst := uuid.New().String()
-	serviceprincipalkeySecond := uuid.New().String()
 	serviceEndpointType := "WorkloadIdentityFederation"
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
@@ -168,7 +166,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceEndpointType),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -180,7 +178,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
 				),
 			}, {
-				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceprincipalkeySecond, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceEndpointType),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),

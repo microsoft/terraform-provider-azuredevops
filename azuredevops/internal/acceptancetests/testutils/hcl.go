@@ -468,6 +468,25 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
+// HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureRMNoKeyResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceEndpointType string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+  }
+  azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name = "Microsoft Azure DEMO"
+	azurerm_service_endpoint_type = "%s"
+}`, serviceEndpointName, serviceprincipalid, serviceEndpointType)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
 // HclServiceEndpointAzureRMResourceMG HCL describing an AzDO service endpoint
 func HclServiceEndpointAzureRMResourceWithMG(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
 	serviceEndpointResource := fmt.Sprintf(`
