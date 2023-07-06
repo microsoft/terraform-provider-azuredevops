@@ -124,18 +124,20 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		}
 	}
 
-	if serviceEndPointType == "ServicePrincipal" || serviceEndPointType == "WorkloadIdentityFederation" {
-		if scopeLevel == "ResourceGroup" {
-			serviceEndPointType += "Auto"
-		} else {
-			serviceEndPointType += "Manual"
-		}
-	}
-
 	var credentials map[string]interface{}
 
 	if _, ok := d.GetOk("credentials"); ok {
 		credentials = d.Get("credentials").([]interface{})[0].(map[string]interface{})
+	}
+
+	hasCredentials := credentials != nil && len(credentials) > 0
+
+	if serviceEndPointType == "ServicePrincipal" || serviceEndPointType == "WorkloadIdentityFederation" {
+		if hasCredentials {
+			serviceEndPointType += "Manual"
+		} else {
+			serviceEndPointType += "Auto"
+		}
 	}
 
 	switch serviceEndPointType {
@@ -244,13 +246,19 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
+func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointType string) interface{} {
 	// secret value won't return by service and should not be overwritten
-	return []map[string]interface{}{{
-		"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-		"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-		hashKey:               hashValue,
-	}}
+	if serviceEndPointType ==  "WorkloadIdentityFederation" {
+		return []map[string]interface{}{{
+			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
+		}}
+	} else {
+		return []map[string]interface{}{{
+			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
+			hashKey:               hashValue,
+		}}
+	}
 }
 
 // Convert AzDO data structure to internal Terraform data structure
@@ -271,7 +279,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
+		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash, serviceEndPointType)
 		d.Set("credentials", credentials)
 	}
 

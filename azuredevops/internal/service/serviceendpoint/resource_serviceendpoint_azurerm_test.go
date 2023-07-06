@@ -128,6 +128,125 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			},
 		},
 	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			},
+			Scheme: converter.String("ManagedServiceIdentity"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid":  "bba07645-051c-44b4-b806-c34d33f3dcd2", //fake value
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode": "Manual",
+		},
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid":  "", 
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode": "Automatic",
+		},
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid":  "", 
+				"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode": "Automatic",
+		},
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
