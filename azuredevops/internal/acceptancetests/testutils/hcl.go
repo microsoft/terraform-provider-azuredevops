@@ -481,6 +481,7 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   azurerm_spn_tenantid          = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
   azurerm_management_group_id   = "Microsoft_Azure_Demo_MG"
   azurerm_management_group_name = "Microsoft Azure Demo MG"
+	azurerm_service_endpoint_type = "ServicePrincipal"
 }
 `, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
 
@@ -489,16 +490,16 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 }
 
 // HclServiceEndpointAzureRMAutomaticResourceWithProject HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName string, serviceEndpointName string, serviceEndpointType string) string {
+func HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName string, serviceEndpointName string, serviceEndpointType string, subscriptionId string, subscriptionName string, tenantId string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-  azurerm_subscription_name = "Microsoft Azure DEMO"
+	azurerm_spn_tenantid      = "%s"
+  azurerm_subscription_id   = "%s"
+  azurerm_subscription_name = "%s"
 	azurerm_service_endpoint_type = "%s"
-}`, serviceEndpointName, serviceEndpointType)
+}`, serviceEndpointName, tenantId, subscriptionId, subscriptionName, serviceEndpointType)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)

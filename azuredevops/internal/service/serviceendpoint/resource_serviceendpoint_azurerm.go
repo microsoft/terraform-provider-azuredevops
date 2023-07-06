@@ -69,7 +69,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 
 	r.Schema["azurerm_service_endpoint_type"] = &schema.Schema{
 		Type:         schema.TypeString,
-		Required:     true,
+		Optional:     true,
 		ForceNew:     true,
 		Description:  "The azurerm Service Endpoint type, this can be 'WorkloadIdentityFederation', 'ManagedIdentity' or 'ServicePrincipal'.",
 		Default:      "ServicePrincipal",
@@ -251,6 +251,7 @@ func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint
 	if serviceEndPointType == "WorkloadIdentityFederation" {
 		return []map[string]interface{}{{
 			"serviceprincipalid": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
 		}}
 	} else {
 		return []map[string]interface{}{{
