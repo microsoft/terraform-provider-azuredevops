@@ -34,6 +34,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttr(tfNode, "azurerm_service_endpoint_type", serviceEndpointType),
 				),
 			},
 		},
@@ -61,6 +62,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttr(tfNode, "azurerm_service_endpoint_type", serviceEndpointType),
 				),
 			},
 		},
