@@ -15,8 +15,9 @@ func ResourceCheckRequiredTemplate() *schema.Resource {
 	r := genBaseCheckResource(flattenCheckRequiredTemplate, expandCheckRequiredTemplate)
 
 	r.Schema["required_template"] = &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Required: true,
+		MinItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"repository_type": {
@@ -93,7 +94,7 @@ func flattenCheckRequiredTemplate(d *schema.ResourceData, check *pipelineschecks
 func expandCheckRequiredTemplate(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	var extendsChecks []interface{}
 	if v, ok := d.GetOk("required_template"); ok {
-		reqTemplList := v.(*schema.Set).List()
+		reqTemplList := v.([]interface{})
 		for _, reqTempl := range reqTemplList {
 			var repositoryType string
 			reqTemplMap := reqTempl.(map[string]interface{})
