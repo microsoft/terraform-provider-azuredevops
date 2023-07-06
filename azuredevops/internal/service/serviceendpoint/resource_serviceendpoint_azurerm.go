@@ -250,7 +250,7 @@ func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint
 	// secret value won't return by service and should not be overwritten
 	if serviceEndPointType == "WorkloadIdentityFederation" {
 		return []map[string]interface{}{{
-			"serviceprincipalid": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
 			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
 		}}
 	} else {

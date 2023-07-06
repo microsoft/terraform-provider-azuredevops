@@ -5,8 +5,8 @@
 package acceptancetests
 
 import (
-	"testing"
 	"os"
+	"testing"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -103,9 +103,9 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 	serviceEndpointName := testutils.GenerateResourceName()
 	serviceEndpointType := "ServicePrincipal"
 
-	tenantId      := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  subscriptionId   := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-  subscriptionName := "Microsoft Azure DEMO"
+	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+	subscriptionName := "Microsoft Azure DEMO"
 
 	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") != "" {
 		subscriptionId = os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
@@ -204,9 +204,9 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	serviceEndpointType := "WorkloadIdentityFederation"
 
-	tenantId      := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  subscriptionId   := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-  subscriptionName := "Microsoft Azure DEMO"
+	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+	subscriptionName := "Microsoft Azure DEMO"
 
 	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") != "" {
 		subscriptionId = os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
@@ -256,9 +256,9 @@ func TestAccServiceEndpointAzureRm_ManagedIdentity_CreateAndUpdate(t *testing.T)
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	serviceEndpointType := "ManagedIdentity"
 
-	tenantId      := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  subscriptionId   := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-  subscriptionName := "Microsoft Azure DEMO"
+	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+	subscriptionName := "Microsoft Azure DEMO"
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
