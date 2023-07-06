@@ -94,8 +94,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	serviceEndPointType := AzureRmEndpointType(d.Get("azurerm_service_endpoint_type").(string))
 
 	if serviceEndPointType == WorkloadIdentityFederation {
-		projectName := "doesntmatter"
-		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = &projectName
+		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
 	}
 
 	// Validate one of either subscriptionId or managementGroupId is set
