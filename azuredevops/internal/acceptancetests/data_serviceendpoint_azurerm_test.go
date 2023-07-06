@@ -18,8 +18,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
 	projectName := testutils.GenerateResourceName()
+	serviceEndpointType := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointIDData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointType),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(),
 	)
 
@@ -44,8 +45,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 	projectName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
+	serviceEndpointType := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointType),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName),
 	)
 
