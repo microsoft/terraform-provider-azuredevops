@@ -166,7 +166,8 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"creationMode": "Automatic",
 				"environment":  environment,
 			}
-		} else {
+		} 
+		if serviceEndpointCreationMode == Manual {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
 					"authenticationType":  "spnKey",
@@ -209,7 +210,8 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				"creationMode": "Automatic",
 				"environment":  environment,
 			}
-		} else {
+		} 
+		if serviceEndpointCreationMode == Manual {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
 			if servicePrincipalId == "" {
 				return nil, nil, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
