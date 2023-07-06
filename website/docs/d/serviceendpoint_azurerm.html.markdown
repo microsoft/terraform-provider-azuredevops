@@ -70,3 +70,4 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
 * `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
 * `description` - Specifies the description of the Service Endpoint.
+* `azurerm_service_endpoint_type` - Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedIdentity` or `ServicePrincipal`.
