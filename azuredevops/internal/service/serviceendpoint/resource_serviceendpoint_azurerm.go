@@ -248,9 +248,9 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointType string) interface{} {
 	// secret value won't return by service and should not be overwritten
-	if serviceEndPointType ==  "WorkloadIdentityFederation" {
+	if serviceEndPointType == "WorkloadIdentityFederation" {
 		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalid": (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
 		}}
 	} else {
 		return []map[string]interface{}{{

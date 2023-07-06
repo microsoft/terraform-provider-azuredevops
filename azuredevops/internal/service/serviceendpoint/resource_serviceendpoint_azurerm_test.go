@@ -131,7 +131,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid": "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
 			},
 			Scheme: converter.String("ManagedServiceIdentity"),
 		},
@@ -159,8 +159,8 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-				"serviceprincipalid":  "bba07645-051c-44b4-b806-c34d33f3dcd2", //fake value
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "bba07645-051c-44b4-b806-c34d33f3dcd2", //fake value
 			},
 			Scheme: converter.String("WorkloadIdentityFederation"),
 		},
@@ -169,7 +169,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"scopeLevel":       "Subscription",
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
-			"creationMode": "Manual",
+			"creationMode":     "Manual",
 		},
 		Id:    &azurermTestServiceEndpointAzureRMID,
 		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
@@ -189,8 +189,8 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-				"serviceprincipalid":  "", 
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "",
 			},
 			Scheme: converter.String("WorkloadIdentityFederation"),
 		},
@@ -199,7 +199,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"scopeLevel":       "Subscription",
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
-			"creationMode": "Automatic",
+			"creationMode":     "Automatic",
 		},
 		Id:    &azurermTestServiceEndpointAzureRMID,
 		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
@@ -219,9 +219,9 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-				"serviceprincipalid":  "", 
-				"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "",
+				"scope":              "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
 			},
 			Scheme: converter.String("WorkloadIdentityFederation"),
 		},
@@ -230,7 +230,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"scopeLevel":       "Subscription",
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
-			"creationMode": "Automatic",
+			"creationMode":     "Automatic",
 		},
 		Id:    &azurermTestServiceEndpointAzureRMID,
 		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
