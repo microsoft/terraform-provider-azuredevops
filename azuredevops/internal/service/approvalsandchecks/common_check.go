@@ -23,6 +23,7 @@ type flatFunc func(d *schema.ResourceData, check *pipelineschecksextras.CheckCon
 type expandFunc func(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error)
 
 type approvalAndCheckTypes struct {
+	ExtendsCheck     *pipelineschecksextras.CheckType
 	Approval         *pipelineschecksextras.CheckType
 	BranchProtection *pipelineschecksextras.CheckType
 	BusinessHours    *pipelineschecksextras.CheckType
@@ -30,6 +31,9 @@ type approvalAndCheckTypes struct {
 }
 
 var approvalAndCheckType = approvalAndCheckTypes{
+	ExtendsCheck: &pipelineschecksextras.CheckType{
+		Id: converter.UUID("4020e66e-b0f3-47e1-bc88-48f3cc59b5f3"),
+	},
 	Approval: &pipelineschecksextras.CheckType{
 		Id:   converter.UUID("8c6f20a7-a545-4486-9777-f762fafe0d4d"),
 		Name: converter.ToPtr("Approval"),
