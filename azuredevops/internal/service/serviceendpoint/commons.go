@@ -94,9 +94,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 	projectID := uuid.MustParse(d.Get("project_id").(string))
 	name := converter.String(d.Get("service_endpoint_name").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
-		Id:    serviceEndpointID,
-		Name:  name,
-		Owner: converter.String("library"),
+		Id:          serviceEndpointID,
+		Name:        name,
+		Owner:       converter.String("library"),
+		Description: converter.String(d.Get("description").(string)),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -116,7 +117,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	d.SetId(serviceEndpoint.Id.String())
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
 	d.Set("project_id", projectID.String())
-	d.Set("description", (*serviceEndpoint.ServiceEndpointProjectReferences)[0].Description)
+	d.Set("description", serviceEndpoint.Description)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 		d.Set("authorization", &map[string]interface{}{
