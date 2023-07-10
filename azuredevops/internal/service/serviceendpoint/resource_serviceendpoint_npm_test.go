@@ -30,11 +30,12 @@ var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &npmTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"),
-	Type:  converter.String("externalnpmregistry"),
-	Url:   converter.String("https://registry.npmjs.org"),
+	Id:          &npmTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("externalnpmregistry"),
+	Url:         converter.String("https://registry.npmjs.org"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

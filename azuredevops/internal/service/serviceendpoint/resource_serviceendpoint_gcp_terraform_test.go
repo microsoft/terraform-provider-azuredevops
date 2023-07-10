@@ -36,11 +36,12 @@ var gcpForTerraformTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"project": "GCP_TEST_project_id",
 	},
-	Id:    &gcpForTerraformTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("GoogleCloudServiceEndpoint"),
-	Url:   converter.String("https://www.googleapis.com/"),
+	Id:          &gcpForTerraformTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("GoogleCloudServiceEndpoint"),
+	Url:         converter.String("https://www.googleapis.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

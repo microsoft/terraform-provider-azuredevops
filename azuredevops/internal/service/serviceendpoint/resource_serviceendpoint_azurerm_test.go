@@ -41,11 +41,12 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -77,11 +78,12 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -110,11 +112,12 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
