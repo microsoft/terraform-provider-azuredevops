@@ -50,11 +50,12 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		"azureSpnPermissions":      "[{\\\"roleAssignmentId\\\":\\\"00000000 - 0000-0000-0000-000000000000\\\",\\\"resourceProvider\\\":\\\"Microsoft.RoleAssignment\\\",\\\"provisioned\\\":true}]",
 		"azureSpnRoleAssignmentId": "00000000-0000-0000-0000-000000000000",
 	},
-	Id:    &azureCRTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("dockerregistry"),
-	Url:   converter.String("https://testacr.azurecr.io"),
+	Id:          &azureCRTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("dockerregistry"),
+	Url:         converter.String("https://testacr.azurecr.io"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

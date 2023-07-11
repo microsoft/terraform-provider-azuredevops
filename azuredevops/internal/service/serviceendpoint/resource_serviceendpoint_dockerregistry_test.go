@@ -36,11 +36,12 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 	Data: &map[string]string{
 		"registrytype": "Others",
 	},
-	Id:    &dockerRegistryTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("dockerregistry"),
-	Url:   converter.String("https://hub.docker.com/"),
+	Id:          &dockerRegistryTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("dockerregistry"),
+	Url:         converter.String("https://hub.docker.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

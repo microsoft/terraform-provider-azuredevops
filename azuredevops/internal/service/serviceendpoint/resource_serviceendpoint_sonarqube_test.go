@@ -30,11 +30,12 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &sonarQubeTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("sonarqube"),
-	Url:   converter.String("https://www.sonarqube.com/"),
+	Id:          &sonarQubeTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("sonarqube"),
+	Url:         converter.String("https://www.sonarqube.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

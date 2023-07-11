@@ -35,11 +35,12 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &awsTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("aws"),
-	Url:   converter.String("https://aws.amazon.com/"),
+	Id:          &awsTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("aws"),
+	Url:         converter.String("https://aws.amazon.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
