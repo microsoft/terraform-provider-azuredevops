@@ -173,7 +173,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 		}
-		
+
 		serviceEndpoint.Data = &map[string]string{
 			"creationMode": string(serviceEndpointCreationMode),
 			"environment":  environment,
