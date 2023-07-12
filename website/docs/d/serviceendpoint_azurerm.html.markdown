@@ -70,4 +70,5 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
 * `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
 * `description` - Specifies the description of the Service Endpoint.
-* `azurerm_service_endpoint_type` - Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`.
+* `service_endpoint_authentication_scheme` - Specifies the authentication scheme of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. 
+~> **NOTE:** The `WorkloadIdentityFederation` authentication scheme is currently in private preview. Your organisation must be part of the preview and the feature toggle must be turned on to use it.

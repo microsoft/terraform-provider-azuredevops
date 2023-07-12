@@ -32,7 +32,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = "Example AzureRM"
   description                   = "Managed by Terraform"
-  azurerm_service_endpoint_type = "ServicePrincipal"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -58,7 +58,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = "Example AzureRM"
   description                   = "Managed by Terraform"
-  azurerm_service_endpoint_type = "ServicePrincipal"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -82,7 +82,7 @@ resource "azuredevops_project" "example" {
 resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = "Example AzureRM"
-  azurerm_service_endpoint_type = "ServicePrincipal"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
   azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name     = "Example Subscription Name"
@@ -128,7 +128,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = local.service_connection_name
   description                   = "Managed by Terraform"
-  azurerm_service_endpoint_type = "WorkloadIdentityFederation"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
   credentials {
     serviceprincipalid  = azurerm_user_assigned_identity.example.client_id
   }
@@ -153,7 +153,7 @@ resource "azuredevops_project" "example" {
 resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = "Example AzureRM"
-  azurerm_service_endpoint_type = "WorkloadIdentityFederation"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
   azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name     = "Example Subscription Name"
@@ -173,7 +173,7 @@ resource "azuredevops_project" "example" {
 resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                    = azuredevops_project.example.id
   service_endpoint_name         = "Example AzureRM"
-  azurerm_service_endpoint_type = "ManagedServiceIdentity"
+  service_endpoint_authentication_scheme = "ManagedServiceIdentity"
   azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name     = "Example Subscription Name"
@@ -187,7 +187,7 @@ The following arguments are supported:
 - `project_id` - (Required) The ID of the project.
 - `service_endpoint_name` - (Required) The Service Endpoint Name.
 - `azurerm_spn_tenantid` - (Required) The Tenant ID if the service principal.
-- `azurerm_service_endpoint_type` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
+- `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
 - `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
 - `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
 - `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
@@ -205,7 +205,7 @@ The following arguments are supported:
 A `credentials` block supports the following:
 
 - `serviceprincipalid` - (Required) The service principal application Id
-- `serviceprincipalkey` - (Optional) The service principal secret. This not required if `azurerm_service_endpoint_type` is set to `WorkloadIdentityFederation`.
+- `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
 
 ## Attributes Reference
 

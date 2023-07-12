@@ -67,11 +67,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
 	}
 
-	r.Schema["azurerm_service_endpoint_type"] = &schema.Schema{
+	r.Schema["service_endpoint_authentication_scheme"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		ForceNew:     true,
-		Description:  "The azurerm Service Endpoint type, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
+		Description:  "The AzureRM Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
 		Default:      "ServicePrincipal",
 		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
 	}
@@ -91,9 +91,9 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
-	serviceEndPointType := AzureRmEndpointType(d.Get("azurerm_service_endpoint_type").(string))
+	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
-	if serviceEndPointType == WorkloadIdentityFederation {
+	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
 		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
 	}
 
@@ -117,7 +117,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	var scope string
 	var scopeLevel string
 
-	serviceEndPointTypeHasCreationMode := serviceEndPointType == ServicePrincipal || serviceEndPointType == WorkloadIdentityFederation
+	serviceEndPointTypeHasCreationMode := serviceEndPointAuthenticationScheme == ServicePrincipal || serviceEndPointAuthenticationScheme == WorkloadIdentityFederation
 
 	if _, ok := d.GetOk("azurerm_subscription_id"); ok {
 		scope = fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
@@ -148,7 +148,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		}
 	}
 
-	switch serviceEndPointType {
+	switch serviceEndPointAuthenticationScheme {
 	case ServicePrincipal:
 		if serviceEndpointCreationMode == Automatic {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -158,7 +158,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 					"serviceprincipalkey": "",
 					"tenantid":            d.Get("azurerm_spn_tenantid").(string),
 				},
-				Scheme: converter.String(string(serviceEndPointType)),
+				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 
 			serviceEndpoint.Data = &map[string]string{
@@ -174,7 +174,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 					"serviceprincipalkey": credentials["serviceprincipalkey"].(string),
 					"tenantid":            d.Get("azurerm_spn_tenantid").(string),
 				},
-				Scheme: converter.String(string(serviceEndPointType)),
+				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 
 			serviceEndpoint.Data = &map[string]string{
@@ -188,7 +188,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 			Parameters: &map[string]string{
 				"tenantid": d.Get("azurerm_spn_tenantid").(string),
 			},
-			Scheme: converter.String(string(serviceEndPointType)),
+			Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 		}
 
 		serviceEndpoint.Data = &map[string]string{
@@ -202,7 +202,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 					"serviceprincipalid": "",
 					"tenantid":           d.Get("azurerm_spn_tenantid").(string),
 				},
-				Scheme: converter.String(string(serviceEndPointType)),
+				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 
 			serviceEndpoint.Data = &map[string]string{
@@ -220,7 +220,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 					"serviceprincipalid": servicePrincipalId,
 					"tenantid":           d.Get("azurerm_spn_tenantid").(string),
 				},
-				Scheme: converter.String(string(serviceEndPointType)),
+				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 
 			serviceEndpoint.Data = &map[string]string{
@@ -258,7 +258,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointType AzureRmEndpointType) interface{} {
+func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointType AzureRmEndpointAuthenticationScheme) interface{} {
 	// secret value won't return by service and should not be overwritten
 	if serviceEndPointType == WorkloadIdentityFederation {
 		return []map[string]interface{}{{
@@ -279,8 +279,8 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
-	serviceEndPointType := AzureRmEndpointType(*serviceEndpoint.Authorization.Scheme)
-	d.Set("azurerm_service_endpoint_type", string(serviceEndPointType))
+	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
+	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
@@ -340,12 +340,12 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 	return nil
 }
 
-type AzureRmEndpointType string
+type AzureRmEndpointAuthenticationScheme string
 
 const (
-	ServicePrincipal           AzureRmEndpointType = "ServicePrincipal"
-	ManagedServiceIdentity     AzureRmEndpointType = "ManagedServiceIdentity"
-	WorkloadIdentityFederation AzureRmEndpointType = "WorkloadIdentityFederation"
+	ServicePrincipal           AzureRmEndpointAuthenticationScheme = "ServicePrincipal"
+	ManagedServiceIdentity     AzureRmEndpointAuthenticationScheme = "ManagedServiceIdentity"
+	WorkloadIdentityFederation AzureRmEndpointAuthenticationScheme = "WorkloadIdentityFederation"
 )
 
 type AzureRmEndpointCreationMode string

@@ -16,7 +16,6 @@ import (
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
@@ -24,7 +23,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 	serviceprincipalidSecond := uuid.New().String()
 	serviceprincipalkeyFirst := uuid.New().String()
 	serviceprincipalkeySecond := uuid.New().String()
-	serviceEndpointType := "ServicePrincipal"
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
@@ -34,7 +33,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointAuthenticationScheme),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -47,7 +46,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
 				),
 			}, {
-				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceprincipalkeySecond, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceprincipalkeySecond, serviceEndpointAuthenticationScheme),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -65,7 +64,6 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 }
 
 func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
@@ -97,11 +95,9 @@ func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
 }
 
 func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate: test resource limit")
-
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-	serviceEndpointType := "ServicePrincipal"
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 
 	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
 	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
@@ -121,7 +117,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -133,7 +129,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointName, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -150,13 +146,12 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 
 // validates that a manual workload federation service endpoint can be created and updated
 func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	serviceprincipalidFirst := uuid.New().String()
 	serviceprincipalidSecond := uuid.New().String()
-	serviceEndpointType := "WorkloadIdentityFederation"
+	serviceEndpointAuthenticationScheme := "WorkloadIdentityFederation"
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
@@ -166,7 +161,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceEndpointAuthenticationScheme),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -175,10 +170,10 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			}, {
-				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceEndpointType),
+				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceEndpointAuthenticationScheme),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -187,7 +182,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},
@@ -196,11 +191,10 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 
 // validates that an automatic workload federation service endpoint can be created and updated
 func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
-	serviceEndpointType := "WorkloadIdentityFederation"
+	serviceEndpointAuthenticationScheme := "WorkloadIdentityFederation"
 
 	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
 	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
@@ -220,7 +214,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameFirst, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameFirst, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -228,10 +222,10 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			}, {
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -239,7 +233,7 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},
@@ -248,11 +242,10 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 
 // validates that an managed identity service endpoint can be created and updated
 func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *testing.T) {
-	//t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
-	serviceEndpointType := "ManagedServiceIdentity"
+	serviceEndpointAuthenticationScheme := "ManagedServiceIdentity"
 
 	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
 	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
@@ -266,7 +259,7 @@ func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *tes
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameFirst, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameFirst, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -274,10 +267,10 @@ func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *tes
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			}, {
-				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond, serviceEndpointType, subscriptionId, subscriptionName, tenantId),
+				Config: testutils.HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName, serviceEndpointNameSecond, serviceEndpointAuthenticationScheme, subscriptionId, subscriptionName, tenantId),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -285,7 +278,7 @@ func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *tes
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},

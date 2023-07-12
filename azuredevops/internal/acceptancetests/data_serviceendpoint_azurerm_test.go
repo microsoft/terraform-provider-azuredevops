@@ -18,9 +18,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
 	projectName := testutils.GenerateResourceName()
-	serviceEndpointType := "ServicePrincipal"
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointIDData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointType),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(),
 	)
 
@@ -34,7 +34,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
-					resource.TestCheckResourceAttr(tfNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},
@@ -46,9 +46,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 	projectName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
-	serviceEndpointType := "ServicePrincipal"
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointType),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName),
 	)
 
@@ -62,7 +62,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
-					resource.TestCheckResourceAttr(tfNode, "azurerm_service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},
