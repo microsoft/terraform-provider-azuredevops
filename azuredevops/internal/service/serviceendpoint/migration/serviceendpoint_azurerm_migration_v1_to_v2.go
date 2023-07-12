@@ -90,10 +90,10 @@ func ServiceEndpointAzureRmSchemaV1ToV2() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"service_endpoint_authentication_scheme" : {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
+			"service_endpoint_authentication_scheme": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
