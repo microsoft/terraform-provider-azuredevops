@@ -76,12 +76,17 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
 	}
 
-	r.SchemaVersion = 1
+	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
 			Type:    migration.ServiceEndpointAzureRmSchemaV0ToV1().CoreConfigSchema().ImpliedType(),
 			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV0ToV1(),
 			Version: 0,
+		},
+		{
+			Type:    migration.ServiceEndpointAzureRmSchemaV1ToV2().CoreConfigSchema().ImpliedType(),
+			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV1ToV2(),
+			Version: 1,
 		},
 	}
 	return r

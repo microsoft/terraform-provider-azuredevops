@@ -188,6 +188,9 @@ The following arguments are supported:
 - `service_endpoint_name` - (Required) The Service Endpoint Name.
 - `azurerm_spn_tenantid` - (Required) The Tenant ID if the service principal.
 - `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
+
+~> **NOTE:** The `WorkloadIdentityFederation` authentication scheme is currently in private preview. Your organisation must be part of the preview and the feature toggle must be turned on to use it. More details can be found [here](https://aka.ms/azdo-rm-workload-identity).
+
 - `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
 - `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
 - `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
