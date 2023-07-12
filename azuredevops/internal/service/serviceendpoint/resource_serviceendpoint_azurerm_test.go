@@ -146,6 +146,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:  converter.String("azurerm"),
 		Url:   converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -176,6 +177,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:  converter.String("azurerm"),
 		Url:   converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -207,6 +209,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:  converter.String("azurerm"),
 		Url:   converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -239,6 +242,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
 		Type:  converter.String("azurerm"),
 		Url:   converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
