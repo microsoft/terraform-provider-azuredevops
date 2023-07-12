@@ -93,6 +93,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
+	// NOTE: This is a temporary workaround for a bug in the Azure DevOps API. This will be removed once the API is fixed.
 	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
 		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
 	}
@@ -117,12 +118,12 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	var scope string
 	var scopeLevel string
 
-	serviceEndPointTypeHasCreationMode := serviceEndPointAuthenticationScheme == ServicePrincipal || serviceEndPointAuthenticationScheme == WorkloadIdentityFederation
+	serviceEndPointAuthenticationSchemeHasCreationMode := serviceEndPointAuthenticationScheme == ServicePrincipal || serviceEndPointAuthenticationScheme == WorkloadIdentityFederation
 
 	if _, ok := d.GetOk("azurerm_subscription_id"); ok {
 		scope = fmt.Sprintf("/subscriptions/%s", d.Get("azurerm_subscription_id"))
 		scopeLevel = "Subscription"
-		if serviceEndPointTypeHasCreationMode {
+		if serviceEndPointAuthenticationSchemeHasCreationMode {
 			if _, ok := d.GetOk("resource_group"); ok {
 				scope += fmt.Sprintf("/resourcegroups/%s", d.Get("resource_group"))
 				scopeLevel = "ResourceGroup"
@@ -140,7 +141,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	var serviceEndpointCreationMode AzureRmEndpointCreationMode
 
-	if serviceEndPointTypeHasCreationMode {
+	if serviceEndPointAuthenticationSchemeHasCreationMode {
 		if hasCredentials {
 			serviceEndpointCreationMode = Manual
 		} else {
@@ -160,11 +161,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				},
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
-
-			serviceEndpoint.Data = &map[string]string{
-				"creationMode": "Automatic",
-				"environment":  environment,
-			}
 		}
 		if serviceEndpointCreationMode == Manual {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -176,11 +172,11 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				},
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
-
-			serviceEndpoint.Data = &map[string]string{
-				"creationMode": "Manual",
-				"environment":  environment,
-			}
+		}
+		
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": string(serviceEndpointCreationMode),
+			"environment":  environment,
 		}
 
 	case ManagedServiceIdentity:
@@ -204,11 +200,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				},
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
-
-			serviceEndpoint.Data = &map[string]string{
-				"creationMode": "Automatic",
-				"environment":  environment,
-			}
 		}
 		if serviceEndpointCreationMode == Manual {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
@@ -222,11 +213,11 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				},
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
+		}
 
-			serviceEndpoint.Data = &map[string]string{
-				"creationMode": "Manual",
-				"environment":  environment,
-			}
+		serviceEndpoint.Data = &map[string]string{
+			"creationMode": string(serviceEndpointCreationMode),
+			"environment":  environment,
 		}
 	}
 
