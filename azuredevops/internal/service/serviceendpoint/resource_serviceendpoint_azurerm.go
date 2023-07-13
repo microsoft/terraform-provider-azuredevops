@@ -277,6 +277,9 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 
 	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
+	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
+		d.Set("environment", v)
+	}
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
