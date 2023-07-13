@@ -351,14 +351,3 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 		return nil
 	}
 }
-
-func expandPatterns(patterns *schema.Set) *[]string {
-	patternsList := patterns.List()
-	patternsArray := make([]string, len(patternsList))
-
-	for i, variableGroup := range patternsList {
-		patternsArray[i] = variableGroup.(string)
-	}
-
-	return &patternsArray
-}

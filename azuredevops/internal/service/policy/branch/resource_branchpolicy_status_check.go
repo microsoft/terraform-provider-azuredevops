@@ -54,7 +54,7 @@ func ResourceBranchPolicyStatusCheck() *schema.Resource {
 		Default: applicability.Default,
 	}
 	settingsSchema["filename_patterns"] = &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Optional: true,
 		Elem: &schema.Schema{
 			Type:         schema.TypeString,
@@ -117,7 +117,14 @@ func statusCheckExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Po
 	policySettings["authorId"] = settings["author_id"].(string)
 	policySettings["invalidateOnSourceUpdate"] = settings["invalidate_on_update"].(bool)
 	policySettings["defaultDisplayName"] = settings["display_name"].(string)
-	policySettings["filenamePatterns"] = expandPatterns(settings[filenamePatterns].(*schema.Set))
+
+	patterns := settings[filenamePatterns].([]interface{})
+	patternsArray := make([]string, len(patterns))
+	for i, variableGroup := range patterns {
+		patternsArray[i] = variableGroup.(string)
+	}
+
+	policySettings["filenamePatterns"] = patternsArray
 
 	if v, ok := settings["applicability"].(string); ok {
 		if v == applicability.Conditional {
