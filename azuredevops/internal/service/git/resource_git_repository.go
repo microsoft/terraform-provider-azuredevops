@@ -215,7 +215,6 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			if err != nil {
 				return fmt.Errorf(" updating repository `default_branch`: %+v", err)
 			}
-
 		}
 	}
 
