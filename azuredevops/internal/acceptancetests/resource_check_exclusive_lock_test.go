@@ -42,7 +42,6 @@ func hclCheckExclusiveLockResourceBasic(projectName string, checkName string, ti
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_exclusive_lock" "test" {
   project_id           = azuredevops_project.project.id
-  display_name         = "%s"
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
   timeout              = %d
