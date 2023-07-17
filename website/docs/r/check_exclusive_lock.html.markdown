@@ -75,7 +75,7 @@ The following arguments are supported:
  
 ---
 
-* `timeout` - (Optional) The timeout in minutes for the exclusive lock.  Defaults to `43200`.
+* `timeout` - (Optional) The timeout in minutes for the exclusive lock. Defaults to `43200`.
 
 ## Attributes Reference
 
