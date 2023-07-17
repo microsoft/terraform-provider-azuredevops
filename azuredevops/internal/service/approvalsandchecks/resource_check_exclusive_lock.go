@@ -1,8 +1,6 @@
 package approvalsandchecks
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
@@ -25,10 +23,6 @@ func flattenExclusiveLock(d *schema.ResourceData, check *pipelineschecksextras.C
 	err := doBaseFlattening(d, check, projectID)
 	if err != nil {
 		return err
-	}
-
-	if check.Settings == nil {
-		return fmt.Errorf("settings nil")
 	}
 
 	check.Type = approvalAndCheckType.ExclusiveLock

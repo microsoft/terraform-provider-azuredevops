@@ -131,10 +131,6 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 	d.Set("target_resource_id", check.Resource.Id)
 	d.Set("target_resource_type", check.Resource.Type)
 
-	if check.Settings == nil {
-		return fmt.Errorf("Settings nil")
-	}
-
 	return nil
 }
 
