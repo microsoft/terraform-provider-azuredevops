@@ -54,10 +54,6 @@ resource "azuredevops_environment" "example" {
   name       = "Example Environment"
 }
 
-resource "azuredevops_group" "example" {
-  display_name = "some-azdo-group"
-}
-
 resource "azuredevops_check_exclusive_lock" "example" {
   project_id           = azuredevops_project.example.id
   target_resource_id   = azuredevops_environment.example.id
