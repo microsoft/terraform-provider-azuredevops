@@ -15,6 +15,7 @@ import (
 func TestAccCheckExclusiveLock_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	timeout := 43200
+	newTimeout := 50000
 
 	resourceType := "azuredevops_check_exclusive_lock"
 	tfCheckNode := resourceType + ".test"
@@ -30,6 +31,15 @@ func TestAccCheckExclusiveLock_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_id"),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_type"),
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", fmt.Sprintf("%d", timeout)),
+				),
+			},
+			{
+				Config: hclCheckExclusiveLockResourceBasic(projectName, newTimeout),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_id"),
+					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_type"),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", fmt.Sprintf("%d", newTimeout)),
 				),
 			},
 		},
