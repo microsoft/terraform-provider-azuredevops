@@ -14,7 +14,6 @@ import (
 
 func TestAccCheckExclusiveLock_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	checkName := testutils.GenerateResourceName()
 	timeout := 43200
 
 	resourceType := "azuredevops_check_exclusive_lock"
@@ -25,9 +24,8 @@ func TestAccCheckExclusiveLock_basic(t *testing.T) {
 		CheckDestroy: testutils.CheckPipelineCheckDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclCheckExclusiveLockResourceBasic(projectName, checkName, timeout),
+				Config: hclCheckExclusiveLockResourceBasic(projectName, timeout),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckPipelineCheckExistsWithName(tfCheckNode, checkName),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_id"),
 					resource.TestCheckResourceAttrSet(tfCheckNode, "target_resource_type"),
@@ -38,14 +36,14 @@ func TestAccCheckExclusiveLock_basic(t *testing.T) {
 	})
 }
 
-func hclCheckExclusiveLockResourceBasic(projectName string, checkName string, timeout int) string {
+func hclCheckExclusiveLockResourceBasic(projectName string, timeout int) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_exclusive_lock" "test" {
   project_id           = azuredevops_project.project.id
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
   timeout              = %d
-}`, checkName, timeout)
+}`, timeout)
 
 	genericServiceEndpointResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
 	return fmt.Sprintf("%s\n%s", genericServiceEndpointResource, checkResource)
