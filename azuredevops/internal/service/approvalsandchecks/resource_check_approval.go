@@ -40,9 +40,10 @@ func ResourceCheckApproval() *schema.Resource {
 	}
 
 	r.Schema["timeout"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Optional: true,
-		Default:  43200,
+		Type:         schema.TypeInt,
+		Optional:     true,
+		Default:      43200,
+		ValidateFunc: validation.IntBetween(1, 43200),
 	}
 
 	return r
