@@ -15,7 +15,7 @@ import (
 func TestAccCheckExclusiveLock_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	timeout := 43200
-	newTimeout := 50000
+	newTimeout := 21600
 
 	resourceType := "azuredevops_check_exclusive_lock"
 	tfCheckNode := resourceType + ".test"
