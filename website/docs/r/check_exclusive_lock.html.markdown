@@ -29,10 +29,6 @@ resource "azuredevops_serviceendpoint_generic" "example" {
   description           = "Managed by Terraform"
 }
 
-data "azuredevops_users" "example" {
-  principal_name = "someone@somewhere.com"
-}
-
 resource "azuredevops_check_exclusive_lock" "example" {
   project_id           = azuredevops_project.example.id
   target_resource_id   = azuredevops_serviceendpoint_generic.example.id
