@@ -47,6 +47,7 @@ var branchControlCheckTest = pipelineschecksextras.CheckConfiguration{
 	Id:       &branchControlCheckID,
 	Type:     approvalAndCheckType.BranchProtection,
 	Settings: branchControlCheckSettings,
+	Timeout:  converter.ToPtr(50000),
 	Resource: &endpointResource,
 }
 

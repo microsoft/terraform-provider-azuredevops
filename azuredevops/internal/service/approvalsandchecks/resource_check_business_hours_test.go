@@ -40,6 +40,7 @@ var CheckBusinessHoursTest = pipelineschecksextras.CheckConfiguration{
 	Id:       &CheckBusinessHoursID,
 	Type:     approvalAndCheckType.BusinessHours,
 	Settings: CheckBusinessHoursSettings,
+	Timeout:  converter.ToPtr(50000),
 	Resource: &endpointResource,
 }
 

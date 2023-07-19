@@ -31,6 +31,7 @@ func TestAccCheckBranchControl_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "50000"),
 				),
 			},
 		},
@@ -56,6 +57,7 @@ func TestAccCheckBranchControl_complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "50000"),
 					resource.TestCheckResourceAttr(tfCheckNode, "verify_branch_protection", "true"),
 					resource.TestCheckResourceAttr(tfCheckNode, "ignore_unknown_protection_status", "false"),
 				),
@@ -141,7 +143,7 @@ resource "azuredevops_check_branch_control" "test" {
   allowed_branches                 = "%s"
   verify_branch_protection         = true
   ignore_unknown_protection_status = false
-
+  timeout                          = 50000
 }`, checkName, branches)
 
 	genericcheckResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")

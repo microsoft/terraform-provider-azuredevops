@@ -47,6 +47,13 @@ func ResourceCheckBranchControl() *schema.Resource {
 		ValidateFunc: validation.StringIsNotEmpty,
 	}
 
+	r.Schema["timeout"] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		Default:      1440,
+		ValidateFunc: validation.IntBetween(1, 2147483647),
+	}
+
 	return r
 }
 
@@ -117,6 +124,10 @@ func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipel
 		return fmt.Errorf("inputs not found")
 	}
 
+	if branchControlCheck.Timeout != nil {
+		d.Set("timeout", *branchControlCheck.Timeout)
+	}
+
 	return nil
 }
 
@@ -132,5 +143,5 @@ func expandBranchControlCheck(d *schema.ResourceData) (*pipelineschecksextras.Ch
 	settings["definitionRef"] = evaluateBranchProtectionDef
 	settings["displayName"] = d.Get("display_name").(string)
 
-	return doBaseExpansion(d, approvalAndCheckType.BranchProtection, settings, nil)
+	return doBaseExpansion(d, approvalAndCheckType.BranchProtection, settings, converter.ToPtr(d.Get("timeout").(int)))
 }
