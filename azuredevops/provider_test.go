@@ -71,6 +71,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_group",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_elastic_pool",
 		"azuredevops_project_permissions",
 		"azuredevops_git_permissions",
 		"azuredevops_workitemquery_permissions",

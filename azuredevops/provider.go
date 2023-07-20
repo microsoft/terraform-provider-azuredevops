@@ -85,6 +85,7 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_group_membership":                       graph.ResourceGroupMembership(),
 			"azuredevops_agent_pool":                             taskagent.ResourceAgentPool(),
+			"azuredevops_elastic_pool":                           taskagent.ResourceAgentPoolVMSS(),
 			"azuredevops_agent_queue":                            taskagent.ResourceAgentQueue(),
 			"azuredevops_group":                                  graph.ResourceGroup(),
 			"azuredevops_project_permissions":                    permissions.ResourceProjectPermissions(),
