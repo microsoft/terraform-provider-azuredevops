@@ -1,3 +1,22 @@
+## 0.7.0
+
+FEATURES:
+* **New Resource** `azuredevops_elastic_pool  ` [#835](https://github.com/microsoft/terraform-provider-azuredevops/pull/835)
+* **New Resource** `azuredevops_check_exclusive_lock` [#832](https://github.com/microsoft/terraform-provider-azuredevops/pull/832)
+* **New Resource** `azuredevops_check_required_template` [#806](https://github.com/microsoft/terraform-provider-azuredevops/pull/806)
+
+IMPROVEMENTS:
+* `azuredevops_project` - Get description from service connection not project [#824](https://github.com/microsoft/terraform-provider-azuredevops/pull/824)
+* `azuredevops_check_business_hours` - Resolved description for business hours check. [#831](https://github.com/microsoft/terraform-provider-azuredevops/pull/831)
+* `azuredevops_serviceendpoint_azurerm` - Support workload identity. [#818](https://github.com/microsoft/terraform-provider-azuredevops/pull/818)
+* **Data Resource** `azuredevops_serviceendpoint_azurerm` - Add support for managed identity and federated workload. [#818](https://github.com/microsoft/terraform-provider-azuredevops/pull/818)
+
+BUG FIX:
+* `azuredevops_pipeline_authorization` - Fix resource recreate with `pipeline_id` not configured [#809](https://github.com/microsoft/terraform-provider-azuredevops/pull/809)
+* `azuredevops_serviceendpoint_azurerm` - Fix imported resource force recreate bug [#827](https://github.com/microsoft/terraform-provider-azuredevops/pull/827)
+* `azuredevops_branch_policy_status_check` - Fixed `filename_patterns` order [#828](https://github.com/microsoft/terraform-provider-azuredevops/pull/828)
+* `azuredevops_git_repository` - Set `default_branch` for imported repository [#829](https://github.com/microsoft/terraform-provider-azuredevops/pull/829)
+
 ## 0.6.0
 
 FEATURES:
