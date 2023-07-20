@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
@@ -46,6 +47,7 @@ type AggregatedClient struct {
 	PipelinePermissionsClient     pipelinepermissions.Client
 	PipelinesChecksClientExtras   pipelineschecksextras.Client
 	PolicyClient                  policy.Client
+	ElasticClient                 elastic.Client
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
@@ -85,6 +87,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	}
 
 	operationsClient := operations.NewClient(ctx, connection)
+
+	elasticClient := elastic.NewClient(ctx, connection)
 
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
@@ -165,6 +169,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
+		ElasticClient:                 elasticClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
 		OperationsClient:              operationsClient,
