@@ -28,6 +28,7 @@ type approvalAndCheckTypes struct {
 	BranchProtection *pipelineschecksextras.CheckType
 	BusinessHours    *pipelineschecksextras.CheckType
 	TaskCheck        *pipelineschecksextras.CheckType
+	ExclusiveLock    *pipelineschecksextras.CheckType
 }
 
 var approvalAndCheckType = approvalAndCheckTypes{
@@ -46,6 +47,9 @@ var approvalAndCheckType = approvalAndCheckTypes{
 	},
 	BusinessHours: &pipelineschecksextras.CheckType{
 		Id: converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7"),
+	},
+	ExclusiveLock: &pipelineschecksextras.CheckType{
+		Id: converter.UUID("2ef31ad6-baa0-403a-8b45-2cbc9b4e5563"),
 	},
 }
 
@@ -126,10 +130,6 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 
 	d.Set("target_resource_id", check.Resource.Id)
 	d.Set("target_resource_type", check.Resource.Type)
-
-	if check.Settings == nil {
-		return fmt.Errorf("Settings nil")
-	}
 
 	return nil
 }
