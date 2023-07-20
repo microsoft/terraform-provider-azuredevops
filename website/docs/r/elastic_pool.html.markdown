@@ -35,12 +35,12 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 
 resource "azuredevops_elastic_pool" "example" {
-  name = "Example Elastic Pool"
+  name                   = "Example Elastic Pool"
   service_endpoint_id    = azuredevops_serviceendpoint_azurerm.example.id
   service_endpoint_scope = azuredevops_project.example.id
   desired_idle           = 2
   max_capacity           = 3
-  azure_resource_id =  "/subscriptions/<Subscription Id>/resourceGroups/<Resource Name>/providers/Microsoft.Compute/virtualMachineScaleSets/<VMSS Name>"
+  azure_resource_id      = "/subscriptions/<Subscription Id>/resourceGroups/<Resource Name>/providers/Microsoft.Compute/virtualMachineScaleSets/<VMSS Name>"
 }
 ```
 

@@ -176,15 +176,16 @@ func hclElasticPoolBasic(name, spnId, spnSecret, tenantId, subId, subName, vmssI
 	template := hclElasticPoolTemplate(name, spnId, spnSecret, tenantId, subId, subName)
 	return fmt.Sprintf(`
 
+
 %[1]s
 
 resource "azuredevops_elastic_pool" "test" {
-  name = "%[2]s"
+  name                   = "%[2]s"
   service_endpoint_id    = azuredevops_serviceendpoint_azurerm.test.id
   service_endpoint_scope = azuredevops_project.test.id
   desired_idle           = 3
   max_capacity           = 3
-  azure_resource_id =  "%[3]s"
+  azure_resource_id      = "%[3]s"
 }`, template, name, vmssId)
 }
 
