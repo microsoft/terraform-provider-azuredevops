@@ -44,13 +44,15 @@ func ResourceAgentPoolVMSS() *schema.Resource {
 			},
 
 			"service_endpoint_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 
 			"service_endpoint_scope": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 
 			"desired_idle": {
