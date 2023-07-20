@@ -1,6 +1,7 @@
 ## 0.7.0
 
 FEATURES:
+* **New Resource** `azuredevops_elastic_pool  ` [#835](https://github.com/microsoft/terraform-provider-azuredevops/pull/835)
 * **New Resource** `azuredevops_check_exclusive_lock` [#832](https://github.com/microsoft/terraform-provider-azuredevops/pull/832)
 * **New Resource** `azuredevops_check_required_template` [#806](https://github.com/microsoft/terraform-provider-azuredevops/pull/806)
 
