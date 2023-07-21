@@ -18,7 +18,6 @@ func DataAgentPool() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
-				ForceNew:     false,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
