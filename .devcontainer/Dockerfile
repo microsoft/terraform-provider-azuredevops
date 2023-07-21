@@ -1,6 +1,6 @@
-ARG GO_VERSION=1.18
+ARG GO_VERSION=1.19
 
-FROM golang:${GO_VERSION}-stretch
+FROM golang:${GO_VERSION}-bullseye
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -28,7 +28,7 @@ RUN apt-get update \
     && cd ~ \
     && rm -rf /tmp/docker-downloads \
     # Install goreleaser
-    && go install github.com/goreleaser/goreleaser@latest \
+    && go install github.com/goreleaser/goreleaser@v1.18.2 \
     #
     # Clean up
     && apt-get autoremove -y \

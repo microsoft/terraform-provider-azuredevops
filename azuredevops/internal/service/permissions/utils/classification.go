@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 

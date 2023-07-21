@@ -32,6 +32,7 @@ import (
 func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_resource_authorization",
+		"azuredevops_pipeline_authorization",
 		"azuredevops_build_definition",
 		"azuredevops_build_definition_permissions",
 		"azuredevops_branch_policy_build_validation",
@@ -45,8 +46,12 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
+		"azuredevops_check_approval",
+		"azuredevops_check_exclusive_lock",
 		"azuredevops_check_branch_control",
 		"azuredevops_check_business_hours",
+		"azuredevops_check_required_template",
+		"azuredevops_serviceendpoint_gcp_terraform",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
 		"azuredevops_serviceendpoint_dockerregistry",
@@ -90,6 +95,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_group",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_elastic_pool",
 		"azuredevops_project_permissions",
 		"azuredevops_git_permissions",
 		"azuredevops_workitemquery_permissions",
@@ -138,6 +144,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_variable_group",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_github",
+		"azuredevops_serviceendpoint_npm",
+		"azuredevops_serviceendpoint_sonarcloud",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap

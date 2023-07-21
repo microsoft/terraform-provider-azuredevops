@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -203,6 +203,19 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		if importErr != nil {
 			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
 		}
+
+		// update default_branch if configured
+		err := waitForBranch(clients, repo.Name, projectID)
+		if err != nil {
+			return err
+		}
+		if v := d.Get("default_branch").(string); v != "" {
+			createdRepo.DefaultBranch = converter.String(v)
+			_, err = updateGitRepository(clients, createdRepo, projectID)
+			if err != nil {
+				return fmt.Errorf(" updating repository `default_branch`: %+v", err)
+			}
+		}
 	}
 
 	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
@@ -300,7 +313,7 @@ func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepo
 						git.Change{
 							ChangeType: &git.VersionControlChangeTypeValues.Add,
 							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
+								Path: converter.String("/README.md"),
 							},
 							NewContent: &git.ItemContent{
 								ContentType: &git.ItemContentTypeValues.RawText,
