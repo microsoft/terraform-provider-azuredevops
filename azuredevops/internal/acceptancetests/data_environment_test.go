@@ -42,15 +42,16 @@ resource "azuredevops_project" "test" {
 }
 
 resource "azuredevops_environment" "test" {
-	project_id = azuredevops_project.test.id
-	name       = "%[1]s"
-	description = "Managed by Terraform"
+  project_id  = azuredevops_project.test.id
+  name        = "%[1]s"
+  description = "Managed by Terraform"
 }
 
 data "azuredevops_environment" "test" {
-  project_id= azuredevops_project.test.id
+  project_id     = azuredevops_project.test.id
   environment_id = azuredevops_environment.test.id
 }
+
 
 `, name)
 }
