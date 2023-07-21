@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -94,9 +94,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 	projectID := uuid.MustParse(d.Get("project_id").(string))
 	name := converter.String(d.Get("service_endpoint_name").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
-		Id:    serviceEndpointID,
-		Name:  name,
-		Owner: converter.String("library"),
+		Id:          serviceEndpointID,
+		Name:        name,
+		Owner:       converter.String("library"),
+		Description: converter.String(d.Get("description").(string)),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -116,7 +117,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	d.SetId(serviceEndpoint.Id.String())
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
 	d.Set("project_id", projectID.String())
-	d.Set("description", (*serviceEndpoint.ServiceEndpointProjectReferences)[0].Description)
+	d.Set("description", serviceEndpoint.Description)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 		d.Set("authorization", &map[string]interface{}{
@@ -128,12 +129,16 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 // makeProtectedSchema create protected schema
 func makeProtectedSchema(r *schema.Resource, keyName, envVarName, description string) {
 	r.Schema[keyName] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc(envVarName, nil),
-		Description: description,
-		Sensitive:   true,
+		Type:             schema.TypeString,
+		Required:         true,
+		DefaultFunc:      schema.EnvDefaultFunc(envVarName, nil),
+		Description:      description,
+		Sensitive:        true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
+
+	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(keyName)
+	r.Schema[secretHashKey] = secretHashSchema
 }
 
 // makeUnprotectedSchema create unprotected schema

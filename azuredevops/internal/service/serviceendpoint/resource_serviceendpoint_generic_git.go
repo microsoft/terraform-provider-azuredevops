@@ -6,8 +6,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointGenericGit schema and implementation for generic git service endpoint resource
@@ -26,11 +27,12 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 		Optional:    true,
 	}
 	r.Schema["password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The password or token key to use for the generic git service connection.",
-		Sensitive:   true,
-		Optional:    true,
+		Type:             schema.TypeString,
+		DefaultFunc:      schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD", nil),
+		Description:      "The password or token key to use for the generic git service connection.",
+		Sensitive:        true,
+		Optional:         true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
 	r.Schema["enable_pipelines_access"] = &schema.Schema{
 		Type:        schema.TypeBool,
@@ -38,6 +40,8 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 		Description: "A value indicating whether or not to attempt accessing this git server from Azure Pipelines.",
 		Optional:    true,
 	}
+	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("password")
+	r.Schema[secretHashKey] = secretHashSchema
 	return r
 }
 
@@ -65,4 +69,6 @@ func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *s
 		d.Set("enable_pipelines_access", v)
 	}
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	tfhelper.HelpFlattenSecret(d, "password")
+	d.Set("password", (*serviceEndpoint.Authorization.Parameters)["password"])
 }

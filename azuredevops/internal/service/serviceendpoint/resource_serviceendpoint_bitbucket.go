@@ -3,9 +3,10 @@ package serviceendpoint
 import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
@@ -33,4 +34,5 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	tfhelper.HelpFlattenSecret(d, "password")
 }

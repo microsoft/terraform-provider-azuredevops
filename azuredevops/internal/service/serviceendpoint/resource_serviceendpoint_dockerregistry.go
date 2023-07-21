@@ -4,8 +4,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointDockerRegistry schema and implementation for docker registry service endpoint resource
@@ -24,12 +25,15 @@ func ResourceServiceEndpointDockerRegistry() *schema.Resource {
 		Description: "The DockerRegistry username which should be used.",
 	}
 	r.Schema["docker_password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The DockerRegistry password which should be used.",
-		Sensitive:   true,
+		Type:             schema.TypeString,
+		Optional:         true,
+		DefaultFunc:      schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD", nil),
+		Description:      "The DockerRegistry password which should be used.",
+		Sensitive:        true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
 	}
+	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("docker_password")
+	r.Schema[secretHashKey] = secretHashSchema
 	r.Schema["docker_email"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -75,5 +79,7 @@ func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoin
 	d.Set("docker_registry", (*serviceEndpoint.Authorization.Parameters)["registry"])
 	d.Set("docker_email", (*serviceEndpoint.Authorization.Parameters)["email"])
 	d.Set("docker_username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	tfhelper.HelpFlattenSecret(d, "docker_password")
+	d.Set("docker_password", (*serviceEndpoint.Authorization.Parameters)["password"])
 	d.Set("registry_type", (*serviceEndpoint.Data)["registrytype"])
 }

@@ -4,8 +4,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceServiceEndpointAzureDevOps() *schema.Resource {
@@ -48,5 +49,6 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("org_url", serviceEndpoint.Url)
+	tfhelper.HelpFlattenSecret(d, "password")
 	d.Set("release_api_url", (*serviceEndpoint.Data)["releaseUrl"])
 }

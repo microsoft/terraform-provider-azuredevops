@@ -6,8 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
 // CheckServiceEndpointExistsWithName verifies that a service endpoint of a particular type exists in the state,
@@ -56,7 +57,7 @@ func CheckPipelineCheckDestroyed(resourceType string) resource.TestCheckFunc {
 }
 
 // given a resource from the state, return a check (and error)
-func getCheckFromState(resource *terraform.ResourceState) (*pipelineschecks.CheckConfiguration, error) {
+func getCheckFromState(resource *terraform.ResourceState) (*pipelineschecksextras.CheckConfiguration, error) {
 	branchControlCheckID, err := strconv.Atoi(resource.Primary.ID)
 	if err != nil {
 		return nil, err
@@ -64,8 +65,9 @@ func getCheckFromState(resource *terraform.ResourceState) (*pipelineschecks.Chec
 
 	projectID := resource.Primary.Attributes["project_id"]
 	clients := GetProvider().Meta().(*client.AggregatedClient)
-	return clients.V5PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecks.GetCheckConfigurationArgs{
+	return clients.PipelinesChecksClientExtras.GetCheckConfiguration(clients.Ctx, pipelineschecksextras.GetCheckConfigurationArgs{
 		Project: &projectID,
 		Id:      &branchControlCheckID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	})
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -27,19 +27,20 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"username":        "AWS_TEST_username",
-			"password":        "",
-			"sessionToken":    "",
+			"password":        "AWS_TEST_password",
+			"sessionToken":    "AWS_TEST_sessionToken",
 			"assumeRoleArn":   "AWS_TEST_assumeRoleArn",
 			"roleSessionName": "ARS_TEST_roleSessionName",
 			"externalId":      "AWS_TEST_externalId",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &awsTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("aws"),
-	Url:   converter.String("https://aws.amazon.com/"),
+	Id:          &awsTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("aws"),
+	Url:         converter.String("https://aws.amazon.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

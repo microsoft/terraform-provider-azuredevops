@@ -6,8 +6,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceServiceEndpointSSH() *schema.Resource {
@@ -33,18 +34,25 @@ func ResourceServiceEndpointSSH() *schema.Resource {
 	}
 
 	r.Schema["password"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotEmpty,
+		Type:             schema.TypeString,
+		Optional:         true,
+		Sensitive:        true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		ValidateFunc:     validation.StringIsNotEmpty,
 	}
 
 	r.Schema["private_key"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotEmpty,
+		Type:             schema.TypeString,
+		Optional:         true,
+		Sensitive:        true,
+		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		ValidateFunc:     validation.StringIsNotEmpty,
 	}
+
+	privateKeyHashKey, privateKeyHashSchema := tfhelper.GenerateSecreteMemoSchema("private_key")
+	r.Schema[privateKeyHashKey] = privateKeyHashSchema
+	pwdHashKey, pwdHashSchema := tfhelper.GenerateSecreteMemoSchema("password")
+	r.Schema[pwdHashKey] = pwdHashSchema
 	return r
 }
 
@@ -82,4 +90,6 @@ func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *servicee
 		d.Set("port", port)
 	}
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	tfhelper.HelpFlattenSecret(d, "private_key")
+	tfhelper.HelpFlattenSecret(d, "password")
 }
