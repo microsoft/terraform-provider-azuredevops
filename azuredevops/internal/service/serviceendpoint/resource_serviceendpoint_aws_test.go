@@ -27,8 +27,8 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"username":        "AWS_TEST_username",
-			"password":        "AWS_TEST_password",
-			"sessionToken":    "AWS_TEST_sessionToken",
+			"password":        "",
+			"sessionToken":    "",
 			"assumeRoleArn":   "AWS_TEST_assumeRoleArn",
 			"roleSessionName": "ARS_TEST_roleSessionName",
 			"externalId":      "AWS_TEST_externalId",

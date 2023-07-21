@@ -33,8 +33,8 @@ resource "azuredevops_project" "project" {
 
 ## Authentication
 
-Authentication may be accomplished using an [Azure AD service principal](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity) if your organization is connected to Azure AD,
-or by a [personal access token](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
+Authentication may be accomplished using an [Azure AD service principal](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity) if your organization is connected to Azure AD, or by a [personal access token](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
+
 The OIDC service principal authentication methods allow for secure passwordless authentication from [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials) & [GitHub Actions](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect).
 
 * [Authenticating to a Service Principal with a Terraform Cloud Workload Identity Token](guides/authenticating_service_principal_using_hcp_token.html)
