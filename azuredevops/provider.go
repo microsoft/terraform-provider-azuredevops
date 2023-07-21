@@ -519,7 +519,6 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 
 	// Client Secret from a file on disk
 	if sp_client_secret_path, ok := d.GetOk("sp_client_secret_path"); ok {
-
 		fileBytes, err := ioutil.ReadFile(sp_client_secret_path.(string))
 		if err != nil {
 			return "", err
@@ -528,6 +527,10 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if cred == nil {
+		return "", errors.New(fmt.Sprintf("No valid credentials found."))
 	}
 
 	token, err := cred.GetToken(context.Background(), tokenOptions)
