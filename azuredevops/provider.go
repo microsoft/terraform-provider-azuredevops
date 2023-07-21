@@ -552,8 +552,8 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			return nil, diag.FromErr(err)
 		}
 
-		azdo_client, err := client.GetAzdoClient(token, d.Get("org_service_url").(string), terraformVersion)
+		client, err := client.GetAzdoClient(token, d.Get("org_service_url").(string), terraformVersion)
 
-		return azdo_client, diag.FromErr(err)
+		return client, diag.FromErr(err)
 	}
 }
