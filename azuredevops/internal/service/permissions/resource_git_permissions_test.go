@@ -30,8 +30,8 @@ var gitTokenRepository = fmt.Sprintf("%s/%s", gitTokenProject, gitRepositoryID)
 var gitTokenBranchAll = fmt.Sprintf("%s/refs/heads", gitTokenRepository)
 var gitBranchNameValid = "master"
 var gitTokenBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
-var gitSubBranchNameValid = "release/1.0.0"
-var gitTokenSubBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitSubBranchNameValid))
+var gitSubBranchNameValid = "1.0.0"
+var gitTokenSubBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid)+"/"+encodeBranchName(gitSubBranchNameValid))
 var gitBranchNameInValid = "@@invalid@@"
 
 func TestGitPermissions_CreateGitToken(t *testing.T) {
@@ -86,13 +86,13 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, gitTokenBranch, token)
 
-	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, gitSubBranchNameValid)
+	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, gitBranchNameValid+"/"+gitSubBranchNameValid)
 	token, err = createGitToken(d, clients)
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
 	assert.Equal(t, gitTokenSubBranch, token)
 
-	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, "refs/heads/"+gitSubBranchNameValid)
+	d = getGitPermissionsResource(t, gitProjectID, gitRepositoryID, "refs/heads/"+gitBranchNameValid+"/"+gitSubBranchNameValid)
 	token, err = createGitToken(d, clients)
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)

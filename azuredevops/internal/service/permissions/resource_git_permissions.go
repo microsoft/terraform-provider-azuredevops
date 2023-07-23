@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -122,11 +123,18 @@ func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (s
 
 		re := regexp.MustCompile(`(/?refs/heads/)?(.*)+`)
 		branchPath := re.FindStringSubmatch(branchName.(string))
-		branchName, err := converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
-		if err != nil {
-			return "", err
+
+		paths := strings.Split(branchPath[len(branchPath)-1], "/")
+		encodedPaths := make([]string, len(paths))
+		for i, subBranchPath := range paths {
+			encoded, err := converter.EncodeUtf16HexString(subBranchPath)
+			if err != nil {
+				return "", err
+			}
+			encodedPaths[i] = encoded
 		}
-		aclToken += "/refs/heads/" + branchName
+
+		aclToken += "/refs/heads/" + strings.Join(encodedPaths, "/")
 	}
 	return aclToken, nil
 }
