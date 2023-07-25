@@ -110,6 +110,7 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pools":                taskagent.DataAgentPools(),
 			"azuredevops_agent_queue":                taskagent.DataAgentQueue(),
 			"azuredevops_client_config":              service.DataClientConfig(),
+			"azuredevops_environment":                taskagent.DataEnvironment(),
 			"azuredevops_group":                      graph.DataGroup(),
 			"azuredevops_project":                    core.DataProject(),
 			"azuredevops_projects":                   core.DataProjects(),
