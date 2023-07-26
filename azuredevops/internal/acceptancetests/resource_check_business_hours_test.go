@@ -78,7 +78,7 @@ func TestAccCheckBusinessHours_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "friday", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "saturday", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "sunday", "false"),
-					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "50000"),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 				),
 			},
 		},
