@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -78,7 +78,6 @@ func ResourceProject() *schema.Resource {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
 				DiffSuppressFunc: suppress.CaseDifference,
 				Default:          "Agile",
 			},
@@ -222,22 +221,32 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	var project *core.TeamProject
 	var err error
 
-	//keep retrying until timeout to handle service inconsistent response
-	//lint:ignore SA1019
-	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError { //nolint:staticcheck
-		project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
-			ProjectId:           &identifier,
-			IncludeCapabilities: converter.Bool(true),
-			IncludeHistory:      converter.Bool(false),
-		})
-		if err != nil {
-			if utils.ResponseWasNotFound(err) {
-				return resource.NonRetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                20 * time.Second,
+		Pending:                   []string{"pending"},
+		Target:                    []string{"success"},
+		Refresh: func() (result interface{}, state string, err error) {
+			project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+				ProjectId:           &identifier,
+				IncludeCapabilities: converter.Bool(true),
+				IncludeHistory:      converter.Bool(false),
+			})
+			if err != nil {
+				if utils.ResponseWasNotFound(err) {
+					log.Printf("[INFO] Project not found. ID/Name: %s . Error: %+v", identifier, err)
+				}
+				return project, "pending", err
 			}
-			return resource.RetryableError(err)
-		}
-		return nil
-	})
+			return project, "success", nil
+		},
+		Timeout: projectRetryTimeoutDuration * time.Minute,
+	}
+
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return project, fmt.Errorf(" waiting for project ready. %v ", err)
+	}
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
@@ -416,10 +425,20 @@ func deleteProject(clients *client.AggregatedClient, id string, timeoutSeconds t
 
 // Convert internal Terraform data structure to an AzDO data structure
 func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, forCreate bool) (*core.TeamProject, error) {
-	workItemTemplate := d.Get("work_item_template").(string)
-	processTemplateID, err := lookupProcessTemplateID(clients, workItemTemplate)
-	if err != nil {
-		return nil, err
+	var processTemplateID string
+	var err error
+	workItemTemplate := strings.TrimSpace(d.Get("work_item_template").(string))
+	if len(workItemTemplate) > 0 {
+		processTemplateID, err = lookupProcessTemplateID(clients, workItemTemplate)
+		if err != nil {
+			return nil, err
+		}
+	} else { // use the organization default template if an empty string is set
+		processTemplateUUID, err := getDefaultProcessTemplateID(clients)
+		if err != nil {
+			return nil, err
+		}
+		processTemplateID = processTemplateUUID.String()
 	}
 
 	// an "error" is OK here as it is expected in the case that the ID is not set in the resource data
@@ -455,11 +474,19 @@ func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, for
 }
 
 func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
+	var err error
+	processTemplateName := ""
 	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
-	processTemplateName, err := lookupProcessTemplateName(clients, processTemplateID)
-
-	if err != nil {
-		return err
+	if len(processTemplateID) > 0 {
+		processTemplateName, err = lookupProcessTemplateName(clients, processTemplateID)
+		if err != nil {
+			return err
+		}
+	} else { // fallback to the organization default process
+		processTemplateName, err = getDefaultProcessTemplateName(clients)
+		if err != nil {
+			return err
+		}
 	}
 
 	var currentFeatureStates *map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue
@@ -483,6 +510,36 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 	d.Set("features", currentFeatureStates)
 
 	return nil
+}
+
+func getDefaultProcessTemplateID(clients *client.AggregatedClient) (*uuid.UUID, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range *processes {
+		if *p.IsDefault == true {
+			return p.Id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No default process template found")
+}
+
+func getDefaultProcessTemplateName(clients *client.AggregatedClient) (string, error) {
+	processes, err := clients.CoreClient.GetProcesses(clients.Ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, p := range *processes {
+		if *p.IsDefault == true {
+			return *p.Name, nil
+		}
+	}
+
+	return "", fmt.Errorf("No default process template found")
 }
 
 // given a process template name, get the process template ID

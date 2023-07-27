@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -41,11 +41,12 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -77,11 +78,12 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -110,15 +112,142 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
 					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid": "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			},
+			Scheme: converter.String("ManagedServiceIdentity"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: azurermTestServiceEndpointAzureRMProjectID,
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "bba07645-051c-44b4-b806-c34d33f3dcd2", //fake value
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode":     "Manual",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id:   azurermTestServiceEndpointAzureRMProjectID,
+					Name: converter.String("doesntmatter"),
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "",
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode":     "Automatic",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id:   azurermTestServiceEndpointAzureRMProjectID,
+					Name: converter.String("doesntmatter"),
+				},
+				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+			},
+		},
+	},
+	{
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid": "",
+				"scope":              "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+			},
+			Scheme: converter.String("WorkloadIdentityFederation"),
+		},
+		Data: &map[string]string{
+			"environment":      "AzureCloud",
+			"scopeLevel":       "Subscription",
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionName": "SUBSCRIPTION_TEST",
+			"creationMode":     "Automatic",
+		},
+		Id:          &azurermTestServiceEndpointAzureRMID,
+		Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:        converter.String("azurerm"),
+		Url:         converter.String("https://management.azure.com/"),
+		Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+			{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id:   azurermTestServiceEndpointAzureRMProjectID,
+					Name: converter.String("doesntmatter"),
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),

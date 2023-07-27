@@ -18,8 +18,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
 	projectName := testutils.GenerateResourceName()
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointIDData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointID(),
 	)
 
@@ -32,7 +33,8 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 				Config: createServiceEndpointAzureRMWithServiceEndpointIDData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},
@@ -44,8 +46,9 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 	projectName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
-		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey),
+		testutils.HclServiceEndpointAzureRMResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme),
 		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName),
 	)
 
@@ -58,7 +61,8 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 				Config: createServiceEndpointAzureRMWithServiceEndpointNameData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
 				),
 			},
 		},

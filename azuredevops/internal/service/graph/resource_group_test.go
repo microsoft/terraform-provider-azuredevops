@@ -14,20 +14,20 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/require"
 )
 
-//var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
-//var origin = "TEST_ORIGIN"
+// var descriptor = "vssgp.Uy0xLTktMTU1MTM3NDI0NS01OTMwNjE4OTktMTUzMjM2ODQ0OC0yNjEwNDc0OTEzLTIwMTI3MjY3MjgtMS00MTA1Mjg5ODQ0LTUxNzgwOTc0My0yNDc0MDIwNDA4LTI5NDAwMzQ4NTk"
+// var origin = "TEST_ORIGIN"
 var originID = "5d466068-fe00-47c8-80d7-bb268165820c"
 var displayName = "TEST_GROUP"
 
 //var description = "TEST_DESCRIPTION"
 
-//var orgurl = "https://dev.azure.com/_test_organization"
+// var orgurl = "https://dev.azure.com/_test_organization"
 var email = "test_group@test.local"
 
 //var subjectKind = "group"
@@ -274,11 +274,12 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 		Ctx:         context.Background(),
 	}
 
-	expectedCreateGroupArgs := graph.CreateGroupArgs{}
+	//expectedCreateGroupArgs := graph.CreateGroupArgs{}
+	expectedCreateGroupArgs := graph.CreateGroupVstsArgs{}
 
 	graphClient.
 		EXPECT().
-		CreateGroup(clients.Ctx, expectedCreateGroupArgs).
+		CreateGroupVsts(clients.Ctx, expectedCreateGroupArgs).
 		Return(nil, errors.New("CreateGroup() INVALID CALL")).
 		Times(0)
 

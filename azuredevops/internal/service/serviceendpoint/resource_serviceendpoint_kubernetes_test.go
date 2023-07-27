@@ -18,7 +18,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 )
 
 const errMsgCreateServiceEndpoint = "CreateServiceEndpoint() Failed"
@@ -37,6 +37,7 @@ var kubernetesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Owner:         converter.String("library"), // Supported values are "library", "agentcloud"
 	Type:          converter.String("kubernetes"),
 	Url:           converter.String("https://kubernetes.apiserver.com/"),
+	Description:   converter.String("description"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{

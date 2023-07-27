@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -24,6 +24,7 @@ import (
  */
 
 // Policy type IDs. These are global and can be listed using the following endpoint:
+//
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
 	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
@@ -349,15 +350,4 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 
 		return nil
 	}
-}
-
-func expandPatterns(patterns *schema.Set) *[]string {
-	patternsList := patterns.List()
-	patternsArray := make([]string, len(patternsList))
-
-	for i, variableGroup := range patternsList {
-		patternsArray[i] = variableGroup.(string)
-	}
-
-	return &patternsArray
 }

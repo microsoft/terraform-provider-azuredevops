@@ -12,12 +12,13 @@ import (
 )
 
 // Verifies that the following sequence of events occurs without error:
+//
 //	(1) TF apply creates project
 //	(2) TF state values are set
 //	(3) project can be queried by ID and has expected name
-//  (4) TF apply update project with changing name
-//  (5) project can be queried by ID and has expected name
-// 	(6) TF destroy deletes project
+//	(4) TF apply update project with changing name
+//	(5) project can be queried by ID and has expected name
+//	(6) TF destroy deletes project
 //	(7) project can no longer be queried by ID
 func TestAccProject_CreateAndUpdate(t *testing.T) {
 	projectNameFirst := testutils.GenerateResourceName()

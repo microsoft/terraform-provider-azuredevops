@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v3"
@@ -88,11 +88,14 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 			"kube_config": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", nil),
 				Description: "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.",
 			},
 			"cluster_context": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Context of your cluster",
 			},
 			"accept_untrusted_certs": {
@@ -103,10 +106,11 @@ func makeSchemaKubeconfig(r *schema.Resource) {
 			},
 		},
 	}
-	makeProtectedSchema(resourceElemSchema, "kube_config", "AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.")
 	r.Schema[resourceBlockKubeconfig] = &schema.Schema{
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Optional:    true,
+		MinItems:    1,
+		MaxItems:    1,
 		Description: "'Kubeconfig'-type of configuration",
 		Elem:        resourceElemSchema,
 	}
@@ -198,7 +202,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
-		configurationRaw := d.Get(resourceBlockKubeconfig).(*schema.Set).List()
+		configurationRaw := d.Get(resourceBlockKubeconfig).([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		clusterContextInput := configuration["cluster_context"].(string)
@@ -210,7 +214,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 				errResult := fmt.Errorf("kube_config contains an invalid YAML: %s", err)
 				return nil, nil, errResult
 			}
-			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[interface{}]interface{})
+			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[string]interface{})
 			clusterContextInput = clusterContextInputList["name"].(string)
 		}
 
@@ -282,16 +286,14 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set(resourceBlockAzSubscription, configItemList)
 	case "Kubeconfig":
 		var kubeconfig map[string]interface{}
-		kubeconfigSet := d.Get("kubeconfig").(*schema.Set).List()
+		kubeconfigSet := d.Get("kubeconfig").([]interface{})
 
 		configuration := kubeconfigSet[0].(map[string]interface{})
-		newHashKubeconfig, hashKeyKubeconfig := tfhelper.HelpFlattenSecretNested(d, resourceBlockKubeconfig, configuration, "kube_config")
 		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
 		kubeconfig = map[string]interface{}{
 			"kube_config":            configuration["kube_config"].(string),
 			"cluster_context":        (*serviceEndpoint.Authorization.Parameters)["clusterContext"],
 			"accept_untrusted_certs": acceptUntrustedCerts,
-			hashKeyKubeconfig:        newHashKubeconfig,
 		}
 
 		kubeconfigList := make([]map[string]interface{}, 1)

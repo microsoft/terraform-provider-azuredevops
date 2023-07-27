@@ -13,7 +13,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -52,18 +52,21 @@ var dataTestAgentPools = []taskagent.TaskAgentPool{
 		Name:          converter.String("AgentPool"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 		AutoProvision: converter.Bool(false),
+		AutoUpdate:    converter.Bool(false),
 	},
 	{
 		Id:            converter.Int(65092),
 		Name:          converter.String("AgentPool_AutoProvisioned"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Automation,
 		AutoProvision: converter.Bool(true),
+		AutoUpdate:    converter.Bool(true),
 	},
 	{
 		Id:            converter.Int(650792),
 		Name:          converter.String("AgentPool_Deployment"),
 		PoolType:      &taskagent.TaskAgentPoolTypeValues.Deployment,
 		AutoProvision: converter.Bool(false),
+		AutoUpdate:    converter.Bool(false),
 	},
 }
 

@@ -12,10 +12,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -133,7 +132,7 @@ type azDOGraphCreateGroupArgs struct {
 	GroupDescriptors *[]string
 }
 
-func azDOGraphCreateGroup(ctx context.Context, client v5graph.Client, args azDOGraphCreateGroupArgs) (*v5graph.GraphGroup, error) {
+func azDOGraphCreateGroup(ctx context.Context, client graph.Client, args azDOGraphCreateGroupArgs) (*graph.GraphGroup, error) {
 	if args.CreationContext == nil {
 		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.CreationContext"}
 	}
@@ -146,9 +145,9 @@ func azDOGraphCreateGroup(ctx context.Context, client v5graph.Client, args azDOG
 		queryParams.Add("groupDescriptors", listAsString)
 	}
 
-	if _, ok := args.CreationContext.(*v5graph.GraphGroupMailAddressCreationContext); !ok {
-		if _, ok := args.CreationContext.(*v5graph.GraphGroupOriginIdCreationContext); !ok {
-			if _, ok := args.CreationContext.(*v5graph.GraphGroupVstsCreationContext); !ok {
+	if _, ok := args.CreationContext.(*graph.GraphGroupMailAddressCreationContext); !ok {
+		if _, ok := args.CreationContext.(*graph.GraphGroupOriginIdCreationContext); !ok {
+			if _, ok := args.CreationContext.(*graph.GraphGroupVstsCreationContext); !ok {
 				return nil, fmt.Errorf("Unsupported group creation context")
 			}
 		}
@@ -159,12 +158,12 @@ func azDOGraphCreateGroup(ctx context.Context, client v5graph.Client, args azDOG
 		return nil, marshalErr
 	}
 	locationID, _ := uuid.Parse("ebbe6af8-0b91-4c13-8cf1-777c14858188")
-	if clientImpl, ok := client.(*v5graph.ClientImpl); ok {
+	if clientImpl, ok := client.(*graph.ClientImpl); ok {
 		resp, err := clientImpl.Client.Send(ctx, http.MethodPost, locationID, "5.1-preview.1", nil, queryParams, bytes.NewReader(body), "application/json", "application/json", nil)
 		if err != nil {
 			return nil, err
 		}
-		var responseValue v5graph.GraphGroup
+		var responseValue graph.GraphGroup
 		err = clientImpl.Client.UnmarshalBody(resp, &responseValue)
 		return &responseValue, err
 	}
@@ -180,7 +179,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 	val, b := d.GetOk("scope")
 	if b {
 		uuid, _ := uuid.Parse(val.(string))
-		desc, err := clients.V5GraphClient.GetDescriptor(clients.Ctx, v5graph.GetDescriptorArgs{
+		desc, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
 			StorageKey: &uuid,
 		})
 		if err != nil {
@@ -196,7 +195,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 		if _, b = d.GetOk("display_name"); b {
 			return fmt.Errorf("Unable to create group with invalid parameters: display_name")
 		}
-		cga.CreationContext = &v5graph.GraphGroupOriginIdCreationContext{
+		cga.CreationContext = &graph.GraphGroupOriginIdCreationContext{
 			OriginId: converter.String(val.(string)),
 		}
 	} else {
@@ -205,13 +204,13 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 			if _, b = d.GetOk("display_name"); b {
 				return fmt.Errorf("Unable to create group with invalid parameters: display_name")
 			}
-			cga.CreationContext = &v5graph.GraphGroupMailAddressCreationContext{
+			cga.CreationContext = &graph.GraphGroupMailAddressCreationContext{
 				MailAddress: converter.String(val.(string)),
 			}
 		} else {
 			val, b = d.GetOk("display_name")
 			if b {
-				cga.CreationContext = &v5graph.GraphGroupVstsCreationContext{
+				cga.CreationContext = &graph.GraphGroupVstsCreationContext{
 					DisplayName: converter.String(val.(string)),
 					Description: converter.String(d.Get("description").(string)),
 				}
@@ -220,7 +219,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 	}
-	group, err := azDOGraphCreateGroup(clients.Ctx, clients.V5GraphClient, cga)
+	group, err := azDOGraphCreateGroup(clients.Ctx, clients.GraphClient, cga)
 	if err != nil {
 		return err
 	}
@@ -246,10 +245,10 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	// using: GET https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
 	// d.Get("descriptor").(string) => {groupDescriptor}
-	getGroupArgs := v5graph.GetGroupArgs{
+	getGroupArgs := graph.GetGroupArgs{
 		GroupDescriptor: converter.String(d.Id()),
 	}
-	group, err := clients.V5GraphClient.GetGroup(clients.Ctx, getGroupArgs)
+	group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -343,7 +342,7 @@ func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func flattenGroup(d *schema.ResourceData, group *v5graph.GraphGroup, members *[]v5graph.GraphMembership) error {
+func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) error {
 	if group.Descriptor != nil {
 		d.Set("descriptor", *group.Descriptor)
 		d.SetId(*group.Descriptor)
@@ -391,19 +390,19 @@ func flattenGroup(d *schema.ResourceData, group *v5graph.GraphGroup, members *[]
 	return nil
 }
 
-func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) (*[]v5graph.GraphMembership, error) {
-	actualMembers, err := clients.V5GraphClient.ListMemberships(clients.Ctx, v5graph.ListMembershipsArgs{
+func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) (*[]graph.GraphMembership, error) {
+	actualMembers, err := clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &groupDescriptor,
-		Direction:         &v5graph.GraphTraversalDirectionValues.Down,
+		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error reading group memberships during read: %+v", err)
 	}
 
-	members := make([]v5graph.GraphMembership, len(*actualMembers))
+	members := make([]graph.GraphMembership, len(*actualMembers))
 	for i, membership := range *actualMembers {
-		members[i] = v5graph.GraphMembership{
+		members[i] = graph.GraphMembership{
 			ContainerDescriptor: &groupDescriptor,
 			MemberDescriptor:    membership.MemberDescriptor,
 		}

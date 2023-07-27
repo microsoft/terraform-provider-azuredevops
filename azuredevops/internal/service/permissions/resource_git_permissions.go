@@ -3,6 +3,7 @@ package permissions
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -119,12 +120,21 @@ func createGitToken(d *schema.ResourceData, clients *client.AggregatedClient) (s
 		if !repoOk {
 			return "", fmt.Errorf("Unable to create ACL token for branch %s, because no repository is specified", branchName)
 		}
-		branchPath := strings.Split(branchName.(string), "/")
-		branchName, err := converter.EncodeUtf16HexString(branchPath[len(branchPath)-1])
-		if err != nil {
-			return "", err
+
+		re := regexp.MustCompile(`(/?refs/heads/)?(.*)+`)
+		branchPath := re.FindStringSubmatch(branchName.(string))
+
+		paths := strings.Split(branchPath[len(branchPath)-1], "/")
+		encodedPaths := make([]string, len(paths))
+		for i, subBranchPath := range paths {
+			encoded, err := converter.EncodeUtf16HexString(subBranchPath)
+			if err != nil {
+				return "", err
+			}
+			encodedPaths[i] = encoded
 		}
-		aclToken += "/refs/heads/" + branchName
+
+		aclToken += "/refs/heads/" + strings.Join(encodedPaths, "/")
 	}
 	return aclToken, nil
 }

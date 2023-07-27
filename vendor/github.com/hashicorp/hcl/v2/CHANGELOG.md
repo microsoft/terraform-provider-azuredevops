@@ -1,13 +1,43 @@
 # HCL Changelog
 
-## v2.11.1 (Dec 1, 2021)
+## v2.14.0 (September 1, 2022)
+
+### Enhancements
+
+* ext/typeexpr: Added support for optional object attributes to `TypeConstraint`. Attributes can be wrapped in the special `optional(…)` modifier, allowing the attribute to be omitted while still meeting the type constraint. For more information, [cty's documentation on conversion between object types](https://github.com/zclconf/go-cty/blob/main/docs/convert.md#conversion-between-object-types). ([#549](https://github.com/hashicorp/hcl/pull/549))
+* ext/typeexpr: New function: `TypeConstraintWithDefaults`. In this mode, the `optional(…)` modifier accepts a second argument which can be used as the default value for omitted object attributes. The function returns both a `cty.Type` and associated `Defaults`, the latter of which has an `Apply` method to apply defaults to a given value. ([#549](https://github.com/hashicorp/hcl/pull/549))
+
+## v2.13.0 (June 22, 2022)
+
+### Enhancements
+
+* hcl: `hcl.Diagnostic` now has an additional field `Extra` which is intended for carrying arbitrary supporting data ("extra information") related to the diagnostic message, intended to allow diagnostic renderers to optionally tailor the presentation of messages for particular situations. ([#539](https://github.com/hashicorp/hcl/pull/539))
+* hclsyntax: When an error occurs during a function call, the returned diagnostics will include _extra information_ (as described in the previous point) about which function was being called and, if the message is about an error returned by the function itself, that raw `error` value without any post-processing. ([#539](https://github.com/hashicorp/hcl/pull/539))
+
+### Bugs Fixed
+
+* hclwrite: Fixed a potential data race for any situation where `hclwrite.Format` runs concurrently with itself. ([#534](https://github.com/hashicorp/hcl/pull/534))
+
+## v2.12.0 (April 22, 2022)
+
+### Enhancements
+
+* hclsyntax: Evaluation of conditional expressions will now produce more precise error messages about inconsistencies between the types of the true and false result expressions, particularly in cases where both are of the same structural type kind but differ in their nested elements. ([#530](https://github.com/hashicorp/hcl/pull/530))
+* hclsyntax: The lexer will no longer allocate a small object on the heap for each token. Instead, in that situation it will allocate only when needed to return a diagnostic message with source location information. ([#490](https://github.com/hashicorp/hcl/pull/490))
+* hclwrite: New functions `TokensForTuple`, `TokensForObject`, and `TokensForFunctionCall` allow for more easily constructing the three constructs which are supported for static analysis and which HCL-based languages typically use in contexts where an expression is used only for its syntax, and not evaluated to produce a real value. For example, these new functions together are sufficient to construct all valid type constraint expressions from [the Type Expressions Extension](./ext/typeexpr/), which is the basis of variable type constraints in the Terraform language at the time of writing. ([#502](https://github.com/hashicorp/hcl/pull/502))
+* json: New functions `IsJSONExpression` and `IsJSONBody` to determine if a given expression or body was created by the JSON syntax parser. In normal situations it's better not to worry about what syntax a particular expression/body originated in, but this can be useful in some trickier cases where an application needs to shim for backwards-compatibility or for static analysis that needs to have special handling of the JSON syntax's embedded expression/template conventions. ([#524](https://github.com/hashicorp/hcl/pull/524))
+
+### Bugs Fixed
+
+* gohcl: Fix docs about supported types for blocks. ([#507](https://github.com/hashicorp/hcl/pull/507))
+
+## v2.11.1 (December 1, 2021)
 
 ### Bugs Fixed
 
 * hclsyntax: The type for an upgraded unknown value with a splat expression cannot be known ([#495](https://github.com/hashicorp/hcl/pull/495))
 
-
-## v2.11.0 (Dec 1, 2021)
+## v2.11.0 (December 1, 2021)
 
 ### Enhancements
 

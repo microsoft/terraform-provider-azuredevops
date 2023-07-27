@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -16,6 +16,7 @@ import (
 )
 
 // Policy type IDs. These are global and can be listed using the following endpoint:
+//
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
 	AuthorEmailPattern = uuid.MustParse("77ed4bd3-b063-4689-934a-175e4d0a78d7")

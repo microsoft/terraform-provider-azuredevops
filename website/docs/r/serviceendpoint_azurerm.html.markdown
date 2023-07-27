@@ -17,7 +17,7 @@ For detailed steps to create a service principal with Azure cli see the [documen
 
 ## Example Usage
 
-### Manual AzureRM Service Endpoint (Subscription Scoped)
+### Service Principal Manual AzureRM Service Endpoint (Subscription Scoped)
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -29,9 +29,10 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Example AzureRM"
-  description           = "Managed by Terraform"
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = "Example AzureRM"
+  description                   = "Managed by Terraform"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -42,7 +43,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 ```
 
-### Manual AzureRM Service Endpoint (ManagementGroup Scoped)
+### Service Principal Manual AzureRM Service Endpoint (ManagementGroup Scoped)
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -54,9 +55,10 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Example AzureRM"
-  description           = "Managed by Terraform"
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = "Example AzureRM"
+  description                   = "Managed by Terraform"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
     serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -67,7 +69,7 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 ```
 
-### Automatic AzureRM Service Endpoint
+### Service Principal Automatic AzureRM Service Endpoint
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -78,11 +80,103 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                = azuredevops_project.example.id
-  service_endpoint_name     = "Example AzureRM"
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = "Example AzureRM"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
+  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name     = "Example Subscription Name"
+}
+```
+
+### Workload Identity Federation Manual AzureRM Service Endpoint (Subscription Scoped)
+
+```hcl
+locals {
+  service_connection_name = "example-federated-sc"
+}
+
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azurerm_resource_group" "identity" {
+  name     = "identity"
+  location = "UK South"
+}
+
+resource "azurerm_user_assigned_identity" "example" {
+  location            = var.location
+  name                = "example-identity"
+  resource_group_name = "azurerm_resource_group.identity.name"
+}
+
+resource "azurerm_federated_identity_credential" "example" {
+  name                = "example-federated-credential"
+  resource_group_name = azurerm_resource_group.identity.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = "https://app.vstoken.visualstudio.com"
+  parent_id           = azurerm_user_assigned_identity.example.id
+  subject             = "sc://${var.azure_devops_organisation}/${azuredevops_project.example.name}/${local.service_connection_name}"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = local.service_connection_name
+  description                   = "Managed by Terraform"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
+  credentials {
+    serviceprincipalid  = azurerm_user_assigned_identity.example.client_id
+  }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Example Subscription Name"
+}
+
+#NOTE: The federated credential subject is formed from the Azure DevOps Organisation, Project and the Service Connection name.
+```
+
+### Workload Identity Federation Automatic AzureRM Service Endpoint
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = "Example AzureRM"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
+  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name     = "Example Subscription Name"
+}
+```
+
+### Managed Identity AzureRM Service Endpoint
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                    = azuredevops_project.example.id
+  service_endpoint_name         = "Example AzureRM"
+  service_endpoint_authentication_scheme = "ManagedServiceIdentity"
+  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name     = "Example Subscription Name"
 }
 ```
 
@@ -91,12 +185,17 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 The following arguments are supported:
 
 - `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `azurerm_spn_tenantid` - (Required) The tenant id if the service principal.
-- `azurerm_management_group_id` - (Optional) The management group Id of the Azure targets.
-- `azurerm_management_group_name` - (Optional) The management group Name of the targets.
-- `azurerm_subscription_id` - (Optional) The subscription Id of the Azure targets.
-- `azurerm_subscription_name` - (Optional) The subscription Name of the targets.
+- `service_endpoint_name` - (Required) The Service Endpoint Name.
+- `azurerm_spn_tenantid` - (Required) The Tenant ID if the service principal.
+- `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
+
+~> **NOTE:** The `WorkloadIdentityFederation` authentication scheme is currently in private preview. Your organisation must be part of the preview and the feature toggle must be turned on to use it. More details can be found [here](https://aka.ms/azdo-rm-workload-identity).
+
+- `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
+- `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
+- `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
+- `azurerm_subscription_name` - (Optional) The Subscription Name of the targets.
+- `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`. Changing this forces a new resource to be created.
 
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 
@@ -109,7 +208,7 @@ The following arguments are supported:
 A `credentials` block supports the following:
 
 - `serviceprincipalid` - (Required) The service principal application Id
-- `serviceprincipalkey` - (Required) The service principal secret.
+- `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
 
 ## Attributes Reference
 

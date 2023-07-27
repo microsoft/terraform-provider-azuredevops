@@ -13,16 +13,18 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
 
-var testRepoProjectID = uuid.New()
-var testRepoID = uuid.New()
+var (
+	testRepoProjectID = uuid.New()
+	testRepoID        = uuid.New()
+)
 
 // This definition matches the overall structure of what a configured git repository would
 // look like. Note that the ID and Name attributes match -- this is the service-side behavior
@@ -101,6 +103,7 @@ func configureCleanInitialization(d *schema.ResourceData) {
 }
 
 // verifies that a round-trip flatten/expand sequence will not result in data loss of non-computed properties.
+//
 //	Note: there is no need to expand computed properties, so they won't be tested here.
 func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	projectID := uuid.New()
@@ -196,7 +199,7 @@ func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
 						git.Change{
 							ChangeType: &git.VersionControlChangeTypeValues.Add,
 							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
+								Path: converter.String("/README.md"),
 							},
 							NewContent: &git.ItemContent{
 								ContentType: &git.ItemContentTypeValues.RawText,

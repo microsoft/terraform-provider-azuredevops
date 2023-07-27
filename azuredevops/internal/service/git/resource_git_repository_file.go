@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -106,9 +106,14 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
 		return err
 	}
+	version := shortBranchName(branch)
 	repoItem, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
 		RepositoryId: &repoId,
 		Path:         &file,
+		VersionDescriptor: &git.GitVersionDescriptor{
+			Version:     &version,
+			VersionType: &git.GitVersionTypeValues.Branch,
+		},
 	})
 	if err != nil && !utils.ResponseWasNotFound(err) {
 		return fmt.Errorf("Repository branch not found, repositoryID: %s, branch: %s. Error:  %+v", repoId, branch, err)
@@ -148,7 +153,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Create repositroy file failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
+		return fmt.Errorf("Create repository file failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", repoId, file))
@@ -179,7 +184,7 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
-			return err
+			return nil
 		}
 		return fmt.Errorf("Query repository item failed, repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}

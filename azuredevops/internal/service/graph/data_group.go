@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
@@ -44,6 +44,7 @@ func DataGroup() *schema.Resource {
 }
 
 // Performs a lookup of a project group. This involves the following actions:
+//
 //	(1) Identify AzDO graph descriptor for the project in which the group exists
 //	(2) Query for all AzDO groups that exist within the project. This leverages the AzDO graph descriptor for the project.
 //		This involves querying a paginated API, so multiple API calls may be needed for this step.

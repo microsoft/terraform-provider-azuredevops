@@ -1,5 +1,96 @@
-## 0.2.3 Unreleased
+## 0.7.0
 
+FEATURES:
+* **New Resource** `azuredevops_elastic_pool  ` [#835](https://github.com/microsoft/terraform-provider-azuredevops/pull/835)
+* **New Resource** `azuredevops_check_exclusive_lock` [#832](https://github.com/microsoft/terraform-provider-azuredevops/pull/832)
+* **New Resource** `azuredevops_check_required_template` [#806](https://github.com/microsoft/terraform-provider-azuredevops/pull/806)
+
+IMPROVEMENTS:
+* `azuredevops_project` - Get description from service connection not project [#824](https://github.com/microsoft/terraform-provider-azuredevops/pull/824)
+* `azuredevops_check_business_hours` - Resolved description for business hours check. [#831](https://github.com/microsoft/terraform-provider-azuredevops/pull/831)
+* `azuredevops_serviceendpoint_azurerm` - Support workload identity. [#818](https://github.com/microsoft/terraform-provider-azuredevops/pull/818)
+* **Data Resource** `azuredevops_serviceendpoint_azurerm` - Add support for managed identity and federated workload. [#818](https://github.com/microsoft/terraform-provider-azuredevops/pull/818)
+
+BUG FIX:
+* `azuredevops_pipeline_authorization` - Fix resource recreate with `pipeline_id` not configured [#809](https://github.com/microsoft/terraform-provider-azuredevops/pull/809)
+* `azuredevops_serviceendpoint_azurerm` - Fix imported resource force recreate bug [#827](https://github.com/microsoft/terraform-provider-azuredevops/pull/827)
+* `azuredevops_branch_policy_status_check` - Fixed `filename_patterns` order [#828](https://github.com/microsoft/terraform-provider-azuredevops/pull/828)
+* `azuredevops_git_repository` - Set `default_branch` for imported repository [#829](https://github.com/microsoft/terraform-provider-azuredevops/pull/829)
+
+## 0.6.0
+
+FEATURES:
+* **New Resource** `azuredevops_check_approval` [#728](https://github.com/microsoft/terraform-provider-azuredevops/pull/728)
+* **New Resource** `azuredevops_serviceendpoint_gcp_terraform` [#742](https://github.com/microsoft/terraform-provider-azuredevops/pull/742)
+* **New Resource** `azuredevops_pipeline_authorization` - Alternative to `azuredevops_resource_authorization` [#787](https://github.com/microsoft/terraform-provider-azuredevops/pull/787)
+* **New Data Resource** `azuredevops_serviceendpoint_npm` [#795](https://github.com/microsoft/terraform-provider-azuredevops/pull/795)
+* **New Data Resource** `azuredevops_serviceendpoint_sonarcloud` [#796](https://github.com/microsoft/terraform-provider-azuredevops/pull/796)
+
+IMPROVEMENTS:
+* `azuredevops_workitem` - Add support for `area_path` and `iteration_path` [#750](https://github.com/microsoft/terraform-provider-azuredevops/pull/750)
+* `azuredevops_check_approval` - Set `timeout` default value [#760](https://github.com/microsoft/terraform-provider-azuredevops/pull/760)
+* `azuredevops_git_repository` - Uppercase the name of `readme.md` file [#761](https://github.com/microsoft/terraform-provider-azuredevops/pull/761)
+* `azuredevops_project_pipeline_settings` - Add support for `enforce_job_scope_for_release`[#777](https://github.com/microsoft/terraform-provider-azuredevops/pull/777)
+* Upgrade API from v6 to v7. [#774](https://github.com/microsoft/terraform-provider-azuredevops/pull/774)
+* Upgrade legacy API from v5 to v7. [#785](https://github.com/microsoft/terraform-provider-azuredevops/pull/785)
+
+BUG FIX:
+* `azuredevops_branch_policy_min_reviewers` - Fix `on_push_reset_approved_votes` cannot set to `true` [#792](https://github.com/microsoft/terraform-provider-azuredevops/pull/792)
+* `azuredevops_project` - Fix state inconsistent after apply [#793](https://github.com/microsoft/terraform-provider-azuredevops/pull/793)
+
+## 0.5.0
+
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_jfrog_distribution_v2` [#705](https://github.com/microsoft/terraform-provider-azuredevops/pull/705)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_artifactory_v2` [#705](https://github.com/microsoft/terraform-provider-azuredevops/pull/705)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_platform_v2` [#705](https://github.com/microsoft/terraform-provider-azuredevops/pull/705)
+* **New Resource** `azuredevops_serviceendpoint_jfrog_xray_v2` [#705](https://github.com/microsoft/terraform-provider-azuredevops/pull/705)
+
+IMPROVEMENTS: 
+* `azuredevops_serviceendpoint_azurerm` - Add support for resource state migration created prior to v0.4.0. [#754](https://github.com/microsoft/terraform-provider-azuredevops/pull/754)
+* `azuredevops_variable_group` - Enhance create state handler. [#756](https://github.com/microsoft/terraform-provider-azuredevops/pull/756)
+* **Data Resource** `azuredevops_team` - Support export `descriptor`. [#753](https://github.com/microsoft/terraform-provider-azuredevops/pull/753)
+
+## 0.4.0
+
+FEATURES:
+* **New Resource** `azuredevops_workitem` [#659](https://github.com/microsoft/terraform-provider-azuredevops/pull/659)
+* **New Resource** `azuredevops_serviceendpoint_externaltfs` [#676](https://github.com/microsoft/terraform-provider-azuredevops/pull/676)
+* **New Resource** `azuredevops_check_branch_control` [#706](https://github.com/microsoft/terraform-provider-azuredevops/pull/706)
+* **New Resource** `azuredevops_check_business_hours` [#706](https://github.com/microsoft/terraform-provider-azuredevops/pull/706)
+* **New Resource** `azuredevops_git_repository_branch` [#713](https://github.com/microsoft/terraform-provider-azuredevops/pull/713)
+
+BUG FIX:
+* `azuredevops_git_repository_file` - Create new file if deleted. [#680](https://github.com/microsoft/terraform-provider-azuredevops/pull/680)
+* `azuredevops_serviceendpoint_npm` - Fix `access_token` not updated after change. [#708](https://github.com/microsoft/terraform-provider-azuredevops/pull/708)
+* `azuredevops_serviceendpoint_artifactory` - Fix unit test. [#725](https://github.com/microsoft/terraform-provider-azuredevops/pull/725)
+* `azuredevops_build_folder` - Fix `path` cannot be updated. [#730](https://github.com/microsoft/terraform-provider-azuredevops/pull/730)
+
+IMPROVEMENTS:
+* `azuredevops_build_folder_permissions` - Check if the folder exists. [#714](https://github.com/microsoft/terraform-provider-azuredevops/pull/714)
+* `azuredevops_branch_policy_auto_reviewers` - Support config minimum number of reviewers. [#672](https://github.com/microsoft/terraform-provider-azuredevops/pull/672)
+* `azuredevops_agent_pool` - Enhance create/update handler. [#716](https://github.com/microsoft/terraform-provider-azuredevops/pull/716)
+* `azuredevops_serviceendpoint_azurerm` - Support for `environment` property. [#699](https://github.com/microsoft/terraform-provider-azuredevops/pull/699)
+* `azuredevops_agent_pool` - Support for `auto_update` property. [#690](https://github.com/microsoft/terraform-provider-azuredevops/pull/690)
+* **Date Resource** `azuredevops_agent_pool` - Support for `auto_update` property. [#690](https://github.com/microsoft/terraform-provider-azuredevops/pull/690)
+
+## 0.3.0
+
+FEATURES:
+* **New Resource** `azuredevops_serviceendpoint_sonarcloud` [#658](https://github.com/microsoft/terraform-provider-azuredevops/pull/658)
+* **New Data Resource** `azuredevops_serviceendpoint_azurerm` [#623](https://github.com/microsoft/terraform-provider-azuredevops/pull/623)
+* **New Data Resource** `azuredevops_serviceendpoint_github` [#627](https://github.com/microsoft/terraform-provider-azuredevops/pull/627)
+
+BUG FIX:
+* `azuredevops_project` - Fall back to organization default template if template ID not found. [#626](https://github.com/microsoft/terraform-provider-azuredevops/pull/626)
+* `azuredevops_serviceendpoint_kubernetes` - Fix plugin crash when the `cluster_context` attribute was not specified. [#638](https://github.com/microsoft/terraform-provider-azuredevops/pull/638)
+* `azuredevops_build_definition_permissions` - Recreate the resource if relate build definition not found. [#644](https://github.com/microsoft/terraform-provider-azuredevops/pull/644)
+* `azuredevops_serviceendpoint_artifactory` - Fix token lost when update other properties. [#656](https://github.com/microsoft/terraform-provider-azuredevops/pull/656)
+
+IMPROVEMENTS:
+* `azuredevops_variable_group` - Support custom Key Vault secrets search depth. [#654](https://github.com/microsoft/terraform-provider-azuredevops/pull/654)
+* `azuredevops_team` - Support export team `descriptor`. [#648](https://github.com/microsoft/terraform-provider-azuredevops/pull/648)
+* Upgrade Terraform Plugin SDK to `v2.23.0` - [#587](https://github.com/microsoft/terraform-provider-azuredevops/issues/587)
 
 ## 0.2.2
 

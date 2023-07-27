@@ -46,7 +46,7 @@ resource "azuredevops_build_definition" "example" {
   path       = "\\ExampleFolder"
 
   ci_trigger {
-    use_yaml = true
+    use_yaml = false
   }
 
   schedules {
@@ -111,7 +111,7 @@ resource "azuredevops_build_definition" "example" {
   path       = "\\ExampleFolder"
 
   ci_trigger {
-    use_yaml = true
+    use_yaml = false
   }
 
   repository {

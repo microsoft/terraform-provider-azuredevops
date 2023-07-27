@@ -14,68 +14,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// TestAccBranchPolicyMinReviewers_CreateAndUpdate - acceptance test for min reviewers branch policy attributes
-func TestAccBranchPolicyMinReviewers_CreateAndUpdate(t *testing.T) {
-	minReviewerTfNode := "azuredevops_branch_policy_min_reviewers.p"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
-		Steps: []resource.TestStep{
-			{
-				Config: getMinReviewersHcl(true, true, 1, false, "\"refs/heads/release\"", "Exact"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_approved_votes", "true"),
-				),
-			}, {
-				Config: getMinReviewersHcl(false, false, 2, true, "\"refs/heads/release\"", "Exact"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(minReviewerTfNode, "id"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "blocking", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "enabled", "false"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.submitter_can_vote", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.allow_completion_with_rejects_or_waits", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.last_pusher_cannot_approve", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_last_iteration_require_vote", "true"),
-					resource.TestCheckResourceAttr(minReviewerTfNode, "settings.0.on_push_reset_all_votes", "true"),
-				),
-			}, {
-				ResourceName:      minReviewerTfNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(minReviewerTfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func getMinReviewersHcl(enabled bool, blocking bool, reviewers int, flag bool, repositoryRef string, matchType string) string {
-	votes := "all"
-	if !flag {
-		votes = "approved"
-	}
-	settings := fmt.Sprintf(
-		`
-		reviewer_count     = %[1]d
-		submitter_can_vote = %[2]t
-		allow_completion_with_rejects_or_waits =%[2]t
-		last_pusher_cannot_approve = %[2]t
-		on_last_iteration_require_vote = %[2]t
-		on_push_reset_%[3]s_votes = true
-		`, reviewers, flag, votes)
-
-	return getBranchPolicyHcl("azuredevops_branch_policy_min_reviewers", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType)
-}
-
 func TestAccBranchPolicyAutoReviewers_CreateAndUpdate(t *testing.T) {
 	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
 
@@ -120,6 +58,58 @@ func getAutoReviewersHcl(enabled bool, blocking bool, submitterCanVote bool, mes
 	return strings.Join(
 		[]string{
 			userEntitlement,
+			getBranchPolicyHcl("azuredevops_branch_policy_auto_reviewers", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType),
+		},
+		"\n",
+	)
+}
+
+func TestAccBranchPolicyAutoReviewers_CreateAndUpdate_MinimumApproverCount(t *testing.T) {
+	autoReviewerTfNode := "azuredevops_branch_policy_auto_reviewers.p"
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: getAutoReviewersGroupHcl(true, true, true, "auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md"), "\"refs/heads/master\"", "Exact", 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "settings.0.submitter_can_vote", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "settings.0.minimum_number_of_reviewers", "1"),
+				),
+			}, {
+				Config: getAutoReviewersGroupHcl(true, true, true, "new auto reviewer", fmt.Sprintf("\"%s\",\"%s\"", "*/API*.cs", "README.md"), "\"refs/heads/master\"", "Exact", 2),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "enabled", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "blocking", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "settings.0.submitter_can_vote", "true"),
+					resource.TestCheckResourceAttr(autoReviewerTfNode, "settings.0.minimum_number_of_reviewers", "2"),
+				),
+			}, {
+				ResourceName:      autoReviewerTfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(autoReviewerTfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func getAutoReviewersGroupHcl(enabled bool, blocking bool, submitterCanVote bool, message string, pathFilters string, repositoryRef string, matchType string, numberOfApprovers int) string {
+	settings := fmt.Sprintf(
+		`
+		auto_reviewer_ids           = [azuredevops_group.group.origin_id]
+		submitter_can_vote          = %t
+		message                     = "%s"
+		path_filters                = [%s]
+		minimum_number_of_reviewers = %d
+		`, submitterCanVote, message, pathFilters, numberOfApprovers,
+	)
+	group := testutils.HclGroupResource("group", "", "test-group")
+
+	return strings.Join(
+		[]string{
+			group,
 			getBranchPolicyHcl("azuredevops_branch_policy_auto_reviewers", enabled, blocking, settings, "azuredevops_git_repository.repository.id", repositoryRef, matchType),
 		},
 		"\n",

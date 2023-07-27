@@ -18,7 +18,7 @@ resource "azuredevops_project" "example" {
 
 resource "azuredevops_git_repository" "example" {
   project_id = azuredevops_project.example.id
-  name       = "Example Repositroy"
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }

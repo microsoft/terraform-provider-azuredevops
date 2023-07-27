@@ -53,7 +53,6 @@ func TestAccServiceEndpointNpm_complete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "access_token_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
@@ -89,7 +88,6 @@ func TestAccServiceEndpointNpm_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "access_token_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
