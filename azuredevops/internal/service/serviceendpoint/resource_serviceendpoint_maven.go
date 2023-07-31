@@ -58,7 +58,6 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 				Description: "The Maven user name.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Sensitive:   true,
 			},
 			"password": {
 				Description: "The Maven password.",

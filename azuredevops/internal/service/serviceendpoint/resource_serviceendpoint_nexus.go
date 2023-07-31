@@ -37,7 +37,6 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 		Description: "The Nexus user name.",
 		Type:        schema.TypeString,
 		Required:    true,
-		Sensitive:   true,
 	}
 	r.Schema["password"] = &schema.Schema{
 		Description: "The Nexus password.",
