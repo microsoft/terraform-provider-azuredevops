@@ -29,10 +29,11 @@ func TestAccServiceEndpointNexus_complete_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 				),
 			},
 		},
@@ -65,10 +66,11 @@ func TestAccServiceEndpointNexus_update_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 				),
 			},
 		},
@@ -105,10 +107,8 @@ func hclSvcEndpointNexusResourceBasicUsernamePassword(projectName string, servic
 resource "azuredevops_serviceendpoint_nexus" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
+	username			   = "u"
+	password			   = "redacted"
 	url			   		   = "http://url.com/1"
 	description 		   = "%s"
 }`, serviceEndpointName, description)
@@ -123,10 +123,8 @@ resource "azuredevops_serviceendpoint_nexus" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
+	username			   = "u"
+	password			   = "redacted"
 	url			   		   = "https://url.com/1"
 }`, serviceEndpointName, description)
 
@@ -140,10 +138,8 @@ resource "azuredevops_serviceendpoint_nexus" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_basic {
-		username			   = "u2"
-		password			   = "redacted2"
-	}
+	username			   = "u2"
+	password			   = "redacted2"
 	url			   		   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
@@ -160,10 +156,8 @@ resource "azuredevops_serviceendpoint_nexus" "import" {
   service_endpoint_name = azuredevops_serviceendpoint_nexus.test.service_endpoint_name
   description            = azuredevops_serviceendpoint_nexus.test.description
   url          	= azuredevops_serviceendpoint_nexus.test.url
-  authentication_basic {
-	username			   = "u"
-	password			   = "redacted"
-  }
+  username			   = "u"
+  password			   = "redacted"
 }
 `, template)
 }

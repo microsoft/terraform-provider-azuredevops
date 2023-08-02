@@ -28,7 +28,6 @@ func TestAccServiceEndpointJenkins_basic_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 				),
 			},
@@ -53,10 +52,11 @@ func TestAccServiceEndpointJenkins_complete_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 				),
 			},
 		},
@@ -89,10 +89,11 @@ func TestAccServiceEndpointJenkins_update_usernamepassword(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://url.com/2"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
 				),
 			},
 		},
@@ -129,10 +130,8 @@ func hclSvcEndpointJenkinsResourceBasicUsernamePassword(projectName string, serv
 resource "azuredevops_serviceendpoint_jenkins" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
+	username			   = "u"
+	password			   = "redacted"
 	url			   		   = "http://url.com/1"
 	description 		   = "%s"
 	accept_untrusted_certs  = false
@@ -148,10 +147,8 @@ resource "azuredevops_serviceendpoint_jenkins" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
+	username			   = "u"
+	password			   = "redacted"
 	url			   		   = "https://url.com/1"
 	accept_untrusted_certs  = false
 }`, serviceEndpointName, description)
@@ -166,10 +163,8 @@ resource "azuredevops_serviceendpoint_jenkins" "test" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 	description            = "%s"
-	authentication_basic {
-		username			   = "u2"
-		password			   = "redacted2"
-	}
+	username			   = "u2"
+	password			   = "redacted2"
 	url			   		   = "https://url.com/2"
 	accept_untrusted_certs  = false
 }`, serviceEndpointName, description)
@@ -188,10 +183,8 @@ resource "azuredevops_serviceendpoint_jenkins" "import" {
   description            = azuredevops_serviceendpoint_jenkins.test.description
   url          	= azuredevops_serviceendpoint_jenkins.test.url
   accept_untrusted_certs  = false
-  authentication_basic {
-	username			   = "u"
-	password			   = "redacted"
-  }
+  username			   = "u"
+  password			   = "redacted"
 }
 `, template)
 }
