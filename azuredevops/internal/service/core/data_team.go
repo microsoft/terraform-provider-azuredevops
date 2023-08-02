@@ -51,6 +51,10 @@ func DataTeam() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"top": {
+				Type:         schema.TypeInt,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 		},
 	}
 }

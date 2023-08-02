@@ -32,6 +32,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The Project ID.
 - `name` - (Required) The name of the Team.
+- `top` - (Optional) The maximum number of teams to return.
 
 ## Attributes Reference
 
