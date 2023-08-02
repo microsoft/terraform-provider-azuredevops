@@ -8,7 +8,7 @@ description: |-
 # azuredevops_serviceendpoint_nexus
 
 Manages a Nexus IQ service endpoint within Azure DevOps, which can be used as a resource in YAML pipelines to connect to a Nexus IQ instance.
-Nexus IQ is not supported by default, to manage a nexus service connection resource, it is necessary to install the nexus extension in Azure DevOps.
+Nexus IQ is not supported by default, to manage a nexus service connection resource, it is necessary to install the [Nexus Extension](https://marketplace.visualstudio.com/items?itemName=SonatypeIntegrations.nexus-iq-azure-extension) in Azure DevOps.
 
 ## Example Usage
 
@@ -27,10 +27,8 @@ resource "azuredevops_serviceendpoint_nexus" "example" {
   description           = "Service Endpoint for 'Nexus IQ' (Managed by Terraform)"
   url                   = "https://example.com"
 
-  authentication_basic {
-    username              = "username"
-    password              = "password"
-  }
+  username              = "username"
+  password              = "password"
 }
 ```
 
@@ -57,5 +55,5 @@ In addition to the Arguments listed above - the following Attributes are exporte
 Service Connection Nexus can be imported using the `projectId/id` or or `projectName/id`, e.g.
 
 ```shell
-terraform import azuredevops_serviceendpoint_nexus.example 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_nexus.example projectName/00000000-0000-0000-0000-000000000000
 ```
