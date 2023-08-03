@@ -58,6 +58,12 @@ func DataTeams() *schema.Resource {
 							Computed: true,
 							Set:      schema.HashString,
 						},
+						"top": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      100,
+							ValidateFunc: validation.IntAtLeast(1),
+						},
 					},
 				},
 			},
@@ -87,11 +93,9 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	var top int
-	topData, topOk := d.GetOk("top")
-	if topOk {
-		top = topData.(int)
-	} else {
-		top = 2147483647
+	dataTop, okTop := d.GetOk("top")
+	if okTop {
+		top = dataTop.(int)
 	}
 
 	result := make([]interface{}, 0)
@@ -99,8 +103,8 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(projectID),
 			Mine:           converter.Bool(false),
-			ExpandIdentity: converter.Bool(false),
 			Top:            converter.Int(top),
+			ExpandIdentity: converter.Bool(false),
 		})
 
 		if err != nil {

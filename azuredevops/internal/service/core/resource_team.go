@@ -345,8 +345,8 @@ func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, pr
 	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 		ProjectId:      converter.String(projectID),
 		Mine:           converter.Bool(false),
-		ExpandIdentity: converter.Bool(false),
 		Top:            converter.Int(top),
+		ExpandIdentity: converter.Bool(false),
 	})
 
 	if err != nil {

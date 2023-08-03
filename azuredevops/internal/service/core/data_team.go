@@ -53,6 +53,8 @@ func DataTeam() *schema.Resource {
 			},
 			"top": {
 				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 		},
@@ -69,8 +71,6 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	data, ok := d.GetOk("top")
 	if ok {
 		top = data.(int)
-	} else {
-		top = 2147483647
 	}
 
 	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName, top)

@@ -40,7 +40,6 @@ func TestDataTeams_Read_DoesNotSwallowError(t *testing.T) {
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
-			Top:            converter.Int(2147483647),
 		}).
 		Return(nil, fmt.Errorf("@@GetTeams@@failed@@")).
 		Times(1)
@@ -117,7 +116,6 @@ func TestDataTeams_Read_EnsureAllByProject(t *testing.T) {
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
-			Top:            converter.Int(2147483647),
 		}).
 		Return(&[]core.WebApiTeam{
 			{
@@ -246,7 +244,6 @@ func TestDataTeams_Read_EnsureAll(t *testing.T) {
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
-			Top:            converter.Int(2147483647),
 		}).
 		Return(&[]core.WebApiTeam{
 			{
