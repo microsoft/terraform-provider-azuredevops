@@ -95,7 +95,7 @@ func TestAccServiceEndpointNexus_RequiresImportErrorStepUsernamePassword(t *test
 				),
 			},
 			{
-				Config:      hclSvcEndpointNexusResourceBasicUsernamePassword(projectName, serviceEndpointName, t.Name()),
+				Config:      hclSvcEndpointNexusResourceRequiresImportUsernamePassword(projectName, serviceEndpointName, t.Name()),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
