@@ -69,5 +69,4 @@ func expandServiceEndpointNexus(d *schema.ResourceData) (*serviceendpoint.Servic
 func flattenServiceEndpointNexus(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("url", *serviceEndpoint.Url)
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 }

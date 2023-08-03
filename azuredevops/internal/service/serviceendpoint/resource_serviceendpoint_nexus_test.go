@@ -26,7 +26,7 @@ var nexusTestServiceEndpointProjectIDpassword = &nexusRandomServiceEndpointProje
 var nexusTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"username": "NEXUS_TEST_username",
+			"username": "",
 			"password": "",
 		},
 		Scheme: converter.String("UsernamePassword"),
