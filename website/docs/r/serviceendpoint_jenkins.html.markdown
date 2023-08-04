@@ -27,10 +27,9 @@ resource "azuredevops_serviceendpoint_jenkins" "example" {
   url                   = "https://example.com"
   accept_untrusted_certs  = false
 
-  authentication_basic {
-    username              = "username"
-    password              = "password"
-  }
+  username              = "username"
+  password              = "password"
+  
 }
 ```
 
