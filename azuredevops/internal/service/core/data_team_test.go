@@ -42,6 +42,7 @@ func TestDataTeam_Read_DoesNotSwallowError(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(&[]core.WebApiTeam{}, errors.New("@@GetTeams@@failed@@")).
@@ -84,6 +85,7 @@ func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(&[]core.WebApiTeam{
