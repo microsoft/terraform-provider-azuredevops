@@ -21,6 +21,12 @@ func DataTeams() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 			},
+			"top": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 			"teams": {
 				Computed: true,
 				Type:     schema.TypeList,
@@ -58,12 +64,6 @@ func DataTeams() *schema.Resource {
 							Computed: true,
 							Set:      schema.HashString,
 						},
-						"top": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Default:      100,
-							ValidateFunc: validation.IntAtLeast(1),
-						},
 					},
 				},
 			},
@@ -92,11 +92,7 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			ToSlice(&projectIDList)
 	}
 
-	var top int
-	dataTop, okTop := d.GetOk("top")
-	if okTop {
-		top = dataTop.(int)
-	}
+	top := d.Get("top").(int)
 
 	result := make([]interface{}, 0)
 	for _, projectID := range projectIDList {

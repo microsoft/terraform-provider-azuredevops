@@ -47,6 +47,7 @@ func TestDataTeams_Read_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, DataTeams().Schema, nil)
 	resourceData.Set("project_id", testProjectID.String())
+	resourceData.Set("project_id", testProjectID.String())
 	err := dataTeamsRead(resourceData, clients)
 
 	require.NotNil(t, err)
