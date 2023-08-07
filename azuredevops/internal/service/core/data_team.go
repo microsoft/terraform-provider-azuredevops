@@ -51,6 +51,12 @@ func DataTeam() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"top": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 		},
 	}
 }
@@ -61,7 +67,9 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	teamName := d.Get("name").(string)
 
-	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName)
+	top := d.Get("top").(int)
+
+	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName, top)
 	if err != nil {
 		return err
 	}

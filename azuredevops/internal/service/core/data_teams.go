@@ -21,6 +21,12 @@ func DataTeams() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 			},
+			"top": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 			"teams": {
 				Computed: true,
 				Type:     schema.TypeList,
@@ -86,11 +92,14 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			ToSlice(&projectIDList)
 	}
 
+	top := d.Get("top").(int)
+
 	result := make([]interface{}, 0)
 	for _, projectID := range projectIDList {
 		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(projectID),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(top),
 			ExpandIdentity: converter.Bool(false),
 		})
 
