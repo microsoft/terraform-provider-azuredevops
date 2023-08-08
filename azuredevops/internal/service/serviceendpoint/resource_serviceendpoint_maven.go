@@ -145,10 +145,7 @@ func flattenServiceEndpointMaven(d *schema.ResourceData, serviceEndpoint *servic
 			auth["token"] = ""
 			d.Set("authentication_token", []interface{}{auth})
 		}
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
 	}
-
 	d.Set("url", *serviceEndpoint.Url)
 	d.Set("repository_id", (*serviceEndpoint.Data)["RepositoryId"])
 }
