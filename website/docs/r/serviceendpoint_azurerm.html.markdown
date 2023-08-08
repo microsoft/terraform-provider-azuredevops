@@ -29,9 +29,9 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
@@ -55,9 +55,9 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
@@ -80,18 +80,31 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "ServicePrincipal"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
 ### Workload Identity Federation Manual AzureRM Service Endpoint (Subscription Scoped)
 
 ```hcl
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=3.0.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+
 locals {
   service_connection_name = "example-federated-sc"
 }
@@ -110,7 +123,7 @@ resource "azurerm_resource_group" "identity" {
 }
 
 resource "azurerm_user_assigned_identity" "example" {
-  location            = var.location
+  location            = azurerm_resource_group.identity.location
   name                = "example-identity"
   resource_group_name = "azurerm_resource_group.identity.name"
 }
@@ -121,23 +134,22 @@ resource "azurerm_federated_identity_credential" "example" {
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://app.vstoken.visualstudio.com"
   parent_id           = azurerm_user_assigned_identity.example.id
-  subject             = "sc://${var.azure_devops_organisation}/${azuredevops_project.example.name}/${local.service_connection_name}"
+  subject             = "sc://organizationName/projectName/${local.service_connection_name}"
+  #NOTE: The federated credential subject is formed from the Azure DevOps Organisation, Project and the Service Connection name.
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = local.service_connection_name
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = local.service_connection_name
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
   credentials {
-    serviceprincipalid  = azurerm_user_assigned_identity.example.client_id
+    serviceprincipalid = azurerm_user_assigned_identity.example.client_id
   }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Example Subscription Name"
 }
-
-#NOTE: The federated credential subject is formed from the Azure DevOps Organisation, Project and the Service Connection name.
 ```
 
 ### Workload Identity Federation Automatic AzureRM Service Endpoint
@@ -151,12 +163,12 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
@@ -171,12 +183,12 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "ManagedServiceIdentity"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
