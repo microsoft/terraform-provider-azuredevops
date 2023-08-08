@@ -192,7 +192,7 @@ The following arguments are supported:
 
 `forks` block supports the following:
 
-- `enabled` - (Required) Build pull requests form forms of this repository.
+- `enabled` - (Required) Build pull requests from forks of this repository.
 - `share_secrets` - (Required) Make secrets available to builds of forks.
 
 `pull_request_trigger` `override` block supports the following:
