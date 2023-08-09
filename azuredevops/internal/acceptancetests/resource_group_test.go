@@ -13,12 +13,11 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
-	t.Skip("Skipping test TestAccGroupResource_CreateAndUpdate: transient failures cause inconsistent results: https://github.com/microsoft/terraform-provider-azuredevops/issues/174")
-
 	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()
 
@@ -28,15 +27,15 @@ func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGroupResource("mygroup", projectName, groupName),
+				Config: hclGroupBasic(projectName, groupName),
 				Check: resource.ComposeTestCheckFunc(
-					checkGroupExists("mygroup", groupName),
-					resource.TestCheckResourceAttrSet("azuredevops_group.mygroup", "scope"),
-					resource.TestCheckResourceAttr("azuredevops_group.mygroup", "display_name", groupName),
+					checkGroupExists(groupName),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
 				),
 			},
 			{
-				ResourceName:      "azuredevops_group.mygroup",
+				ResourceName:      "azuredevops_group.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -44,15 +43,15 @@ func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func checkGroupExists(resourceName, expectedName string) resource.TestCheckFunc {
+func checkGroupExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		varGroup, ok := s.RootModule().Resources[fmt.Sprintf("azuredevops_group.%s", resourceName)]
+		varGroup, ok := s.RootModule().Resources["azuredevops_group.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a group resource with name %s in the TF state", resourceName)
+			return fmt.Errorf(" Did not find a group resource in the TF state")
 		}
 
 		getGroupArgs := graph.GetGroupArgs{
-			GroupDescriptor: converter.String(varGroup.Primary.Attributes["display_name"]),
+			GroupDescriptor: converter.String(varGroup.Primary.Attributes["descriptor"]),
 		}
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
@@ -79,19 +78,38 @@ func checkGroupDestroyed(s *terraform.State) error {
 			continue
 		}
 
+		// The group will be returned even if it has been deleted from the account or has had all its memberships deleted.
 		id := resource.Primary.ID
-
-		getGroupArgs := graph.GetGroupArgs{
+		err := clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
 			GroupDescriptor: converter.String(id),
-		}
-		group, err := clients.GraphClient.GetGroup(clients.Ctx, getGroupArgs)
+		})
 		if err != nil {
-			return err
+			if utils.ResponseWasNotFound(err) {
+				return nil
+			}
+			return fmt.Errorf(" Group with ID %s should not exist in scope %s", id, resource.Primary.Attributes["scope"])
 		}
-		if group.Descriptor != nil {
-			return fmt.Errorf("Group with ID %s should not exist in scope %s", id, resource.Primary.Attributes["scope"])
-		}
+
 	}
 
 	return nil
+}
+
+func hclGroupBasic(projectName, groupName string) string {
+
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.test.id
+  display_name = "%[2]s"
+}
+`, projectName, groupName)
+
 }
