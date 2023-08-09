@@ -17,6 +17,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -274,28 +275,38 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 		Ctx:         context.Background(),
 	}
 
-	//expectedCreateGroupArgs := graph.CreateGroupArgs{}
-	expectedCreateGroupArgs := graph.CreateGroupVstsArgs{}
-
-	graphClient.
-		EXPECT().
-		CreateGroupVsts(clients.Ctx, expectedCreateGroupArgs).
-		Return(nil, errors.New("CreateGroup() INVALID CALL")).
-		Times(0)
-
 	var resourceData *schema.ResourceData
 	var err error
 
 	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
-	resourceData.Set("mail", email)
 	resourceData.Set("origin_id", originID)
+	graphClient.
+		EXPECT().
+		CreateGroupVsts(clients.Ctx, graph.CreateGroupOriginIdArgs{
+			CreationContext: &graph.GraphGroupOriginIdCreationContext{
+				OriginId: converter.String("ORIGIN_ID"),
+			},
+			ScopeDescriptor: converter.String(""),
+		}).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(0)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
 
 	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
 	resourceData.Set("display_name", displayName)
-	resourceData.Set("origin_id", originID)
+	graphClient.
+		EXPECT().
+		CreateGroupVsts(clients.Ctx, graph.CreateGroupVstsArgs{
+			CreationContext: &graph.GraphGroupVstsCreationContext{
+				DisplayName: &displayName,
+				Descriptor:  converter.String(""),
+			},
+			ScopeDescriptor: converter.String(""),
+		}).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(0)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
@@ -303,6 +314,16 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
 	resourceData.Set("display_name", displayName)
 	resourceData.Set("mail", originID)
+	graphClient.
+		EXPECT().
+		CreateGroupVsts(clients.Ctx, graph.CreateGroupMailAddressArgs{
+			CreationContext: &graph.GraphGroupMailAddressCreationContext{
+				MailAddress: converter.String("test@test.com"),
+			},
+			ScopeDescriptor: converter.String(""),
+		}).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(0)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
