@@ -14,10 +14,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -282,14 +280,9 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 	resourceData.Set("origin_id", originID)
 	graphClient.
 		EXPECT().
-		CreateGroupVsts(clients.Ctx, graph.CreateGroupOriginIdArgs{
-			CreationContext: &graph.GraphGroupOriginIdCreationContext{
-				OriginId: converter.String("ORIGIN_ID"),
-			},
-			ScopeDescriptor: converter.String(""),
-		}).
+		CreateGroupOriginId(clients.Ctx, gomock.Any()).
 		Return(nil, errors.New("CreateGroup() INVALID CALL")).
-		Times(0)
+		Times(1)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
@@ -298,32 +291,19 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 	resourceData.Set("display_name", displayName)
 	graphClient.
 		EXPECT().
-		CreateGroupVsts(clients.Ctx, graph.CreateGroupVstsArgs{
-			CreationContext: &graph.GraphGroupVstsCreationContext{
-				DisplayName: &displayName,
-				Descriptor:  converter.String(""),
-			},
-			ScopeDescriptor: converter.String(""),
-		}).
+		CreateGroupVsts(clients.Ctx, gomock.Any()).
 		Return(nil, errors.New("CreateGroup() INVALID CALL")).
-		Times(0)
-
+		Times(1)
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
 
 	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
-	resourceData.Set("display_name", displayName)
-	resourceData.Set("mail", originID)
+	resourceData.Set("mail", email)
 	graphClient.
 		EXPECT().
-		CreateGroupVsts(clients.Ctx, graph.CreateGroupMailAddressArgs{
-			CreationContext: &graph.GraphGroupMailAddressCreationContext{
-				MailAddress: converter.String("test@test.com"),
-			},
-			ScopeDescriptor: converter.String(""),
-		}).
+		CreateGroupMailAddress(clients.Ctx, gomock.Any()).
 		Return(nil, errors.New("CreateGroup() INVALID CALL")).
-		Times(0)
+		Times(1)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)
