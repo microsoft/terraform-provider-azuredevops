@@ -7,9 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 const (
@@ -28,8 +27,6 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 		Description: "Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.",
 	}
 
-	secretHashKeyClientCertificate, secretHashSchemaClientCertificate := tfhelper.GenerateSecreteMemoSchema("client_certificate")
-	secretHashKeyClientCertificatePassword, secretHashSchemaClientCertificatePassword := tfhelper.GenerateSecreteMemoSchema("client_certificate_password")
 	r.Schema[resourceBlockServiceFabricCertificate] = &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
@@ -40,29 +37,24 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 				"server_certificate_thumbprint":  servicefabricServerCertificateThumbprintSchema(resourceBlockServiceFabricCertificate),
 				"server_certificate_common_name": servicefabricServerCertificateCommonNameSchema(resourceBlockServiceFabricCertificate),
 				"client_certificate": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      "Base64 encoding of the cluster's client certificate file.",
-					Sensitive:        true,
-					ValidateFunc:     validation.StringIsNotEmpty,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:         schema.TypeString,
+					Required:     true,
+					Description:  "Base64 encoding of the cluster's client certificate file.",
+					Sensitive:    true,
+					ValidateFunc: validation.StringIsNotEmpty,
 				},
 				"client_certificate_password": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					Description:      "Password for the certificate.",
-					Sensitive:        true,
-					ValidateFunc:     validation.StringIsNotEmpty,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Password for the certificate.",
+					Sensitive:    true,
+					ValidateFunc: validation.StringIsNotEmpty,
 				},
-				secretHashKeyClientCertificate:         secretHashSchemaClientCertificate,
-				secretHashKeyClientCertificatePassword: secretHashSchemaClientCertificatePassword,
 			},
 		},
 		ConflictsWith: []string{resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricNone},
 	}
 
-	secretHashKeyPassword, secretHashSchemaPassword := tfhelper.GenerateSecreteMemoSchema("password")
 	r.Schema[resourceBlockServiceFabricAzureActiveDirectory] = &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
@@ -79,14 +71,12 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 					Description:  "Specify an Azure Active Directory account.",
 				},
 				"password": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      "Password for the Azure Active Directory account.",
-					Sensitive:        true,
-					ValidateFunc:     validation.StringIsNotEmpty,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:         schema.TypeString,
+					Required:     true,
+					Description:  "Password for the Azure Active Directory account.",
+					Sensitive:    true,
+					ValidateFunc: validation.StringIsNotEmpty,
 				},
-				secretHashKeyPassword: secretHashSchemaPassword,
 			},
 		},
 		ConflictsWith: []string{resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone},
@@ -211,20 +201,30 @@ func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map
 	return parameters
 }
 
-func flattenServiceFabricCertificate(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyClientCertificate string, hashValueClientCertificate string, hashKeyClientCertificatePassword string, hashValueClientCertificatePassword string) interface{} {
+func flattenServiceFabricCertificate(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
-	result[0]["client_certificate"] = (*serviceEndpoint.Authorization.Parameters)["certificate"]
-	result[0]["client_certificate_password"] = (*serviceEndpoint.Authorization.Parameters)["certificatepassword"]
-	result[0][hashKeyClientCertificate] = hashValueClientCertificate
-	result[0][hashKeyClientCertificatePassword] = hashValueClientCertificatePassword
+	if certificate, ok := d.GetOk(resourceBlockServiceFabricCertificate); ok {
+		configuration := certificate.([]interface{})[0].(map[string]interface{})
+		if v, ok := configuration["client_certificate"]; ok {
+			result[0]["client_certificate"] = v.(string)
+		}
+		if v, ok := configuration["client_certificate_password"]; ok {
+			result[0]["client_certificate_password"] = v.(string)
+		}
+	}
+
 	return result
 }
 
-func flattenServiceFabricAzureActiveDirectory(serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKeyPassword string, hashValuePassword string) interface{} {
+func flattenServiceFabricAzureActiveDirectory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
 	result[0]["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
-	result[0]["password"] = (*serviceEndpoint.Authorization.Parameters)["password"]
-	result[0][hashKeyPassword] = hashValuePassword
+	if azureActiveDirectory, ok := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory); ok {
+		configuration := azureActiveDirectory.([]interface{})[0].(map[string]interface{})
+		if v, ok := configuration["password"]; ok {
+			result[0]["password"] = v.(string)
+		}
+	}
 	return result
 }
 
@@ -260,13 +260,10 @@ func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint
 
 	switch *serviceEndpoint.Authorization.Scheme {
 	case "Certificate":
-		newHashClientCertificate, hashKeyClientCertificate := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceFabricCertificate, d.Get("certificate.0").(map[string]interface{}), "client_certificate")
-		newHashClientCertificatePassword, hashKeyClientCertificatePassword := tfhelper.HelpFlattenSecretNested(d, "certificate", d.Get("certificate.0").(map[string]interface{}), "client_certificate_password")
-		certificate := flattenServiceFabricCertificate(serviceEndpoint, hashKeyClientCertificate, newHashClientCertificate, hashKeyClientCertificatePassword, newHashClientCertificatePassword)
+		certificate := flattenServiceFabricCertificate(d, serviceEndpoint)
 		d.Set(resourceBlockServiceFabricCertificate, certificate)
 	case "UsernamePassword":
-		newHashPassword, hashKeyPassword := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceFabricAzureActiveDirectory, d.Get("azure_active_directory.0").(map[string]interface{}), "password")
-		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(serviceEndpoint, hashKeyPassword, newHashPassword)
+		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(d, serviceEndpoint)
 		d.Set(resourceBlockServiceFabricAzureActiveDirectory, azureActiveDirectory)
 	case "None":
 		none := flattenServiceFabricNone(serviceEndpoint)

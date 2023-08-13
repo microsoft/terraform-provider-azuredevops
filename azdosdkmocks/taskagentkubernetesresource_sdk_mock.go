@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
+	taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	taskagentkubernetesresource "github.com/microsoft/terraform-provider-azuredevops/azdosdk/taskagentkubernetesresource"
 )
 

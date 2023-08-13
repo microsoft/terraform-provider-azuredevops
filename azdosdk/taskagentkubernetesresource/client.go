@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 )
 
 // Client contains a re-implementation of broken taskagent SDK implementations

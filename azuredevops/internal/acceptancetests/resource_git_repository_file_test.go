@@ -8,14 +8,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
-
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -78,7 +77,7 @@ func TestAccGitRepoFile_Create_IncorrectBranch(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testutils.HclGitRepoFileResource(projectName, gitRepoName, "Clean", "foobar", "foo", "bar"),
-				ExpectError: regexp.MustCompile(`errors during apply: Branch "foobar" does not exist`),
+				ExpectError: regexp.MustCompile(`Branch "foobar" does not exist`),
 			},
 		},
 	})

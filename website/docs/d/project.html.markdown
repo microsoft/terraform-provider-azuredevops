@@ -32,12 +32,13 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-`name` - The name of the referenced project
-`description` - The description of the referenced project
-`visibility` - The visibility of the referenced project
-`version_control` - The version control of the referenced project
-`work_item_template` - The work item template for the referenced project
-`process_template_id` - The process template ID for the referenced project
+`id` - The ID of the project
+`name` - The name of the project
+`description` - The description of the project
+`visibility` - The visibility of the project
+`version_control` - The version control of the project
+`work_item_template` - The work item template for the project
+`process_template_id` - The process template ID for the project
 
 ## Relevant Links
 

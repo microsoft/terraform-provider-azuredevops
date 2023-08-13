@@ -11,8 +11,8 @@ jobs:
       maxParallel: 1 # any more and we get throttled by AzDO!
       accTest: true
       goVersions:
-        - value: '1.16.2'
-          ymlSafeName: '1_16_2'
+        - value: '1.18.1'
+          ymlSafeName: '1_18_1'
 
       vmImages:
         - value: 'ubuntu-20.04'

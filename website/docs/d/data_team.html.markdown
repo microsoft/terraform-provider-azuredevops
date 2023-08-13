@@ -32,12 +32,14 @@ The following arguments are supported:
 
 - `project_id` - (Required) The Project ID.
 - `name` - (Required) The name of the Team.
+- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id - Team identifier
+- `id` - Team identifier
+- `descriptor` - The descriptor of the Team.
 - `description` - Team description.
 - `administrators` - List of subject descriptors for `administrators` of the team.
 - `members` - List of subject descriptors for `members` of the team.

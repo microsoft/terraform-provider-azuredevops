@@ -22,7 +22,7 @@ tools:
 	go install github.com/client9/misspell/cmd/misspell@latest
 	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
 	go install github.com/bflad/tfproviderdocs@latest
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.44.2
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.45.2
 
 build: fmtcheck check-vendor-vs-mod
 	go install
@@ -45,7 +45,7 @@ test: fmtcheck
     		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=60s -parallel=4
 
 testacc: fmtcheck
-	@echo "==> Sourcing .env file if avaliable"
+	@echo "==> Sourcing .env file if available"
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
 	TF_ACC=1 go test -tags "$(TESTTAGS)" $(TEST) -v $(TESTARGS) -timeout 120m
 

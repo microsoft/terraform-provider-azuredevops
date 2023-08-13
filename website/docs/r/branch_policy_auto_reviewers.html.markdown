@@ -65,13 +65,17 @@ The following arguments are supported:
 - `path_filters` - (Optional) Filter path(s) on which the policy is applied. Supports absolute paths, wildcards and multiple paths. Example: /WebApp/Models/Data.cs, /WebApp/* or *.cs,/WebApp/Models/Data.cs;ClientApp/Models/Data.cs.
 - `submitter_can_vote` - (Optional) Controls whether or not the submitter's vote counts. Defaults to `false`.
 - `message` - (Optional) Activity feed message, Message will appear in the activity feed of pull requests with automatically added reviewers.
+- `minimum_number_of_reviewers` - (Optional) Minimum number of required reviewers. Defaults to `1`.
+
+-> **Note** Has to be greater than `0`. Can only be greater than `1` when attribute `auto_reviewer_ids` contains exactly one group! Only has an effect when attribute `blocking` is set to `true`.
+
 - `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined at least once.
 
-  `scope` block supports the following:
+A `settings` `scope` block supports the following:
 
-  - `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository.
-  - `repository_ref` - (Optional) The ref pattern to use for the match. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
-  - `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default) or `Prefix`.
+- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type` is `DefaultBranch`, this should not be defined.
+- `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
+- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
 
 ## Attributes Reference
 

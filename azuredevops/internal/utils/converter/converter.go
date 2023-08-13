@@ -10,7 +10,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing"
 )
 
 // String Get a pointer to a string
@@ -31,6 +31,10 @@ func Bool(value bool) *bool {
 // Int Get a pointer to an integer value
 func Int(value int) *int {
 	return &value
+}
+
+func ToPtr[E any](e E) *E {
+	return &e
 }
 
 // ASCIIToIntPtr Convert a string to an Int Pointer

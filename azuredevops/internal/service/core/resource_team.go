@@ -3,15 +3,15 @@ package core
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -65,6 +65,10 @@ func ResourceTeam() *schema.Resource {
 				Computed:   true,
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Set:        schema.HashString,
+			},
+			"descriptor": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -171,6 +175,15 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	flattenTeam(d, team, members, administrators)
+
+	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
+		StorageKey: team.Id,
+	})
+	if err != nil {
+		return fmt.Errorf(" get team descriptor. Error: %+v", err)
+	}
+
+	d.Set("descriptor", descriptor.Value)
 	return nil
 }
 
@@ -325,43 +338,6 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 	}
 
 	return nil
-}
-
-func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
-	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
-		ProjectId:      converter.String(projectID),
-		Mine:           converter.Bool(false),
-		ExpandIdentity: converter.Bool(false),
-	})
-
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	if teamList == nil || len(*teamList) <= 0 {
-		return nil, nil, nil, fmt.Errorf("Project [%s] does not contain any teams", projectID)
-	}
-
-	iTeam := linq.From(*teamList).
-		FirstWith(func(v interface{}) bool {
-			item := v.(core.WebApiTeam)
-			return strings.EqualFold(*item.Name, teamName)
-		})
-	if iTeam == nil {
-		return nil, nil, nil, fmt.Errorf("Unable to find Team with name [%s] in project with ID [%s]", teamName, projectID)
-	}
-
-	team := iTeam.(core.WebApiTeam)
-	members, err := readTeamMembers(clients, &team)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	administrators, err := readTeamAdministrators(d, clients, &team)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return &team, members, administrators, nil
 }
 
 func flattenTeam(d *schema.ResourceData, team *core.WebApiTeam, members *schema.Set, administrators *schema.Set) {

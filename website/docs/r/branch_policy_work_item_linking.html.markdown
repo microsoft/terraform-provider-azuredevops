@@ -18,7 +18,7 @@ resource "azuredevops_project" "example" {
 
 resource "azuredevops_git_repository" "example" {
   project_id = azuredevops_project.example.id
-  name       = "Example Repositroy"
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
@@ -43,6 +43,10 @@ resource "azuredevops_branch_policy_work_item_linking" "example" {
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
+    
+    scope {
+      match_type     = "DefaultBranch"
+    }
   }
 }
 ```
@@ -62,9 +66,9 @@ A `settings` block supports the following:
 
 A `settings` `scope` block supports the following:
 
-- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository.
-- `repository_ref` - (Optional) The ref pattern to use for the match. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
-- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default) or `Prefix`.
+- `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type` is `DefaultBranch`, this should not be defined.
+- `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
+- `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
 
 ## Attributes Reference
 

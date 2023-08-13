@@ -9,24 +9,25 @@ import (
 
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdk/taskagentkubernetesresource"
 
-	v5api "github.com/microsoft/azure-devops-go-api/azuredevops"
-	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	v5taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/release"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -43,19 +44,21 @@ type AggregatedClient struct {
 	BuildClient                       build.Client
 	GitReposClient                    git.Client
 	GraphClient                       graph.Client
-	V5GraphClient                     v5graph.Client
 	OperationsClient                  operations.Client
+	PipelinesChecksClient             pipelineschecks.Client
+	PipelinePermissionsClient         pipelinepermissions.Client
+	PipelinesChecksClientExtras       pipelineschecksextras.Client
 	PolicyClient                      policy.Client
+	ElasticClient                     elastic.Client
 	ReleaseClient                     release.Client
 	ServiceEndpointClient             serviceendpoint.Client
 	TaskAgentClient                   taskagent.Client
-	V5TaskAgentClient                 v5taskagent.Client
-	TaskAgentKubernetesResourceClient taskagentkubernetesresource.Client
 	MemberEntitleManagementClient     memberentitlementmanagement.Client
 	FeatureManagementClient           featuremanagement.Client
 	SecurityClient                    security.Client
 	IdentityClient                    identity.Client
 	WorkItemTrackingClient            workitemtracking.Client
+	TaskAgentKubernetesResourceClient taskagentkubernetesresource.Client
 	Ctx                               context.Context
 }
 
@@ -74,74 +77,43 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 	connection := azuredevops.NewPatConnection(organizationURL, azdoPAT)
 	setUserAgent(connection, tfVersion)
 
-	v5Connection := v5api.NewPatConnection(organizationURL, azdoPAT)
-
-	// client for these APIs (includes CRUD for AzDO projects...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/core/?view=azure-devops-rest-5.1
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): core.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO build pipelines...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/build/?view=azure-devops-rest-5.1
 	buildClient, err := build.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): build.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (monitor async operations...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/operations/operations?view=azure-devops-rest-5.1
 	operationsClient := operations.NewClient(ctx, connection)
 
-	// client for these APIs (includes CRUD for AzDO service endpoints a.k.a. service connections...):
-	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-5.1
+	elasticClient := elastic.NewClient(ctx, connection)
+
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): serviceendpoint.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO variable groups):
 	taskagentClient, err := taskagent.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
-	// client for these APIs (includes CRUD for AzDO variable groups):
-	v5TaskAgentClient, err := v5taskagent.NewClient(ctx, v5Connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
-		return nil, err
-	}
-	// client for creating a Kubernetes resource via the taskagent API
-	taskagentKubernetesResourceClient, err := taskagentkubernetesresource.NewTaskAgentKubernetesResourceClient(ctx, connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): NewTaskAgentKubernetesResourceClient failed.")
-		return nil, err
-	}
 
-	// client for these APIs:
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-5.1
 	gitReposClient, err := git.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): git.NewClient failed.")
 		return nil, err
 	}
 
-	//  https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/?view=azure-devops-rest-5.1
 	graphClient, err := graph.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): graph.NewClient failed.")
-		return nil, err
-	}
-
-	// client for these APIs (includes CRUD for AzDO variable groups):
-	v5GraphClient, err := v5graph.NewClient(ctx, v5Connection)
-	if err != nil {
-		log.Printf("getAzdoClient(): taskagent.NewClient failed.")
 		return nil, err
 	}
 
@@ -151,15 +123,12 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
-	// https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-5.1
 	policyClient, err := policy.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): policy.NewClient failed.")
 		return nil, err
 	}
 
-	// client for these APIs (includes CRUD for AzDO release pipelines...):
-	//	https://docs.microsoft.com/en-us/rest/api/azure/devops/release/?view=azure-devops-rest-5.1
 	releaseClient, err := release.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): release.NewClient failed.")
@@ -181,25 +150,52 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	pipelinesChecksClient, err := pipelineschecks.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): pipelineschecks.NewClient failed.")
+		return nil, err
+	}
+
+	pipelinepermissionsClient, err := pipelinepermissions.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): pipelineschecks.NewClient failed.")
+		return nil, err
+	}
+
+	pipelinesChecksClientExtras, err := pipelineschecksextras.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): pipelineschecksextras.NewClient failed.")
+		return nil, err
+	}
+
+	// client for creating a Kubernetes resource via the taskagent API
+	taskagentKubernetesResourceClient, err := taskagentkubernetesresource.NewTaskAgentKubernetesResourceClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): NewTaskAgentKubernetesResourceClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:                   organizationURL,
 		CoreClient:                        coreClient,
 		BuildClient:                       buildClient,
+		ElasticClient:                     elasticClient,
 		GitReposClient:                    gitReposClient,
 		GraphClient:                       graphClient,
-		V5GraphClient:                     v5GraphClient,
 		OperationsClient:                  operationsClient,
+		PipelinesChecksClient:             pipelinesChecksClient,
+		PipelinePermissionsClient:         pipelinepermissionsClient,
+		PipelinesChecksClientExtras:       pipelinesChecksClientExtras,
 		PolicyClient:                      policyClient,
 		ReleaseClient:                     releaseClient,
 		ServiceEndpointClient:             serviceEndpointClient,
 		TaskAgentClient:                   taskagentClient,
-		V5TaskAgentClient:                 v5TaskAgentClient,
-		TaskAgentKubernetesResourceClient: taskagentKubernetesResourceClient,
 		MemberEntitleManagementClient:     memberentitlementmanagementClient,
 		FeatureManagementClient:           featuremanagementClient,
 		SecurityClient:                    securityClient,
 		IdentityClient:                    identityClient,
 		WorkItemTrackingClient:            workitemtrackingClient,
+		TaskAgentKubernetesResourceClient: taskagentKubernetesResourceClient,
 		Ctx:                               ctx,
 	}
 

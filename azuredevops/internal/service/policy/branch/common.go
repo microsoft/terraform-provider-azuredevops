@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -23,6 +24,7 @@ import (
  */
 
 // Policy type IDs. These are global and can be listed using the following endpoint:
+//
 //	https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/types/list?view=azure-devops-rest-5.1
 var (
 	MinReviewerCount  = uuid.MustParse("fa4e907d-c16b-4a4c-9dfa-4906e5d171dd")
@@ -48,8 +50,9 @@ const (
 
 // The type of repository branch name matching strategy used by the policy
 const (
-	matchTypeExact  string = "Exact"
-	matchTypePrefix string = "Prefix"
+	matchTypeExact         string = "Exact"
+	matchTypePrefix        string = "Prefix"
+	matchTypeDefaultBranch string = "DefaultBranch"
 )
 
 // policyCrudArgs arguments for genBasePolicyResource
@@ -113,7 +116,7 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 										Default:          matchTypeExact,
 										DiffSuppressFunc: suppress.CaseDifference,
 										ValidateFunc: validation.StringInSlice([]string{
-											matchTypeExact, matchTypePrefix,
+											matchTypeExact, matchTypePrefix, matchTypeDefaultBranch,
 										}, true),
 									},
 								},
@@ -188,14 +191,17 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 // baseExpandFunc expands each of the base elements of the schema
 func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	projectID := d.Get(SchemaProjectID).(string)
-
+	policySettings, err := expandSettings(d)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error parsing policy configuration settings: (%+v)", err)
+	}
 	policyConfig := policy.PolicyConfiguration{
 		IsEnabled:  converter.Bool(d.Get(SchemaEnabled).(bool)),
 		IsBlocking: converter.Bool(d.Get(SchemaBlocking).(bool)),
 		Type: &policy.PolicyTypeRef{
 			Id: &typeID,
 		},
-		Settings: expandSettings(d),
+		Settings: policySettings,
 	}
 
 	if d.Id() != "" {
@@ -209,7 +215,7 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 	return &policyConfig, &projectID, nil
 }
 
-func expandSettings(d *schema.ResourceData) map[string]interface{} {
+func expandSettings(d *schema.ResourceData) (map[string]interface{}, error) {
 	settingsList := d.Get(SchemaSettings).([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 	settingsScopes := settings[SchemaScope].([]interface{})
@@ -220,19 +226,34 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 
 		scopeSetting := map[string]interface{}{}
 		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
-			scopeSetting["repositoryId"] = repoID
+			if repoID == "" {
+				scopeSetting["repositoryId"] = nil
+			} else {
+				scopeSetting["repositoryId"] = repoID
+			}
 		}
 		if repoRef, ok := scopeMap[SchemaRepositoryRef]; ok {
-			scopeSetting["refName"] = repoRef
+			if repoRef == "" {
+				scopeSetting["refName"] = nil
+			} else {
+				scopeSetting["refName"] = repoRef
+			}
 		}
 		if matchType, ok := scopeMap[SchemaMatchType]; ok {
-			scopeSetting["matchKind"] = matchType
+			if matchType == "" {
+				scopeSetting["matchKind"] = nil
+			} else {
+				scopeSetting["matchKind"] = matchType
+			}
+		}
+		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
+			return nil, fmt.Errorf(" neither 'repository_id' nor 'repository_ref' can be set when 'match_type=DefaultBranch'")
 		}
 		scopes[index] = scopeSetting
 	}
 	return map[string]interface{}{
 		SchemaScope: scopes,
-	}
+	}, nil
 }
 
 //lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
@@ -329,15 +350,4 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 
 		return nil
 	}
-}
-
-func expandPatterns(patterns *schema.Set) *[]string {
-	patternsList := patterns.List()
-	patternsArray := make([]string, len(patternsList))
-
-	for i, variableGroup := range patternsList {
-		patternsArray[i] = variableGroup.(string)
-	}
-
-	return &patternsArray
 }

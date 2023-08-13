@@ -7,14 +7,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 )
 
 type autoReviewerPolicySettings struct {
-	SubmitterCanVote bool     `json:"creatorVoteCounts"`
-	AutoReviewerIds  []string `json:"requiredReviewerIds"`
-	PathFilters      []string `json:"filenamePatterns"`
-	DisplayMessage   string   `json:"message"`
+	SubmitterCanVote     bool     `json:"creatorVoteCounts"`
+	AutoReviewerIds      []string `json:"requiredReviewerIds"`
+	PathFilters          []string `json:"filenamePatterns"`
+	DisplayMessage       string   `json:"message"`
+	MinimumApproverCount int      `json:"minimumApproverCount"`
 }
 
 const (
@@ -22,6 +23,7 @@ const (
 	pathFilters            = "path_filters"
 	displayMessage         = "message"
 	schemaSubmitterCanVote = "submitter_can_vote"
+	minimumApproverCount   = "minimum_number_of_reviewers"
 )
 
 // ResourceBranchPolicyAutoReviewers schema and implementation for automatic code reviewer policy resource
@@ -59,6 +61,12 @@ func ResourceBranchPolicyAutoReviewers() *schema.Resource {
 		Default:  false,
 		Optional: true,
 	}
+	settingsSchema[minimumApproverCount] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		Default:      1,
+		ValidateFunc: validation.IntAtLeast(1),
+	}
 
 	return resource
 }
@@ -86,6 +94,7 @@ func autoReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Polic
 	settings[autoReviewerIds] = policySettings.AutoReviewerIds
 	settings[pathFilters] = policySettings.PathFilters
 	settings[displayMessage] = policySettings.DisplayMessage
+	settings[minimumApproverCount] = policySettings.MinimumApproverCount
 	_ = d.Set(SchemaSettings, settingsList)
 	return nil
 }
@@ -102,6 +111,7 @@ func autoReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.
 	policySettings := policyConfig.Settings.(map[string]interface{})
 	policySettings["creatorVoteCounts"] = settings[schemaSubmitterCanVote].(bool)
 	policySettings["message"] = settings[displayMessage].(string)
+	policySettings["minimumApproverCount"] = settings[minimumApproverCount].(int)
 
 	if value, ok := settings[autoReviewerIds]; ok {
 		var reviewersID []string

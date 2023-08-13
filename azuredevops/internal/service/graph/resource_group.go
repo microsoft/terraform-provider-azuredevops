@@ -1,21 +1,16 @@
 package graph
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v5graph "github.com/microsoft/azure-devops-go-api/azuredevops/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -38,14 +33,6 @@ func ResourceGroup() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 			},
-
-			// ***
-			// One of
-			//     origin_id => GraphGroupOriginIdCreationContext
-			//     mail => GraphGroupMailAddressCreationContext
-			//     display_name => GraphGroupVstsCreationContext
-			// must be specified
-			// ***
 
 			"origin_id": {
 				Type:          schema.TypeString,
@@ -78,6 +65,18 @@ func ResourceGroup() *schema.Resource {
 				Optional: true,
 			},
 
+			"members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.NoZeroValues,
+				},
+				Computed:   true,
+				Optional:   true,
+				ConfigMode: schema.SchemaConfigModeAttr,
+				Set:        schema.HashString,
+			},
+
 			"url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -107,158 +106,92 @@ func ResourceGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"members": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.NoZeroValues,
-				},
-				Computed:   true,
-				Optional:   true,
-				ConfigMode: schema.SchemaConfigModeAttr,
-				Set:        schema.HashString,
-			},
 		},
 	}
-}
-
-type azDOGraphCreateGroupArgs struct {
-	// (required) The subset of the full graph group used to uniquely find the graph subject in an external provider.
-	CreationContext interface{}
-	// (optional) A descriptor referencing the scope (collection, project) in which the group should be created.
-	// If omitted, will be created in the scope of the enclosing account or organization. Valid only for VSTS groups.
-	ScopeDescriptor *string
-	// (optional) A comma separated list of descriptors referencing groups you want the graph group to join
-	GroupDescriptors *[]string
-}
-
-func azDOGraphCreateGroup(ctx context.Context, client v5graph.Client, args azDOGraphCreateGroupArgs) (*v5graph.GraphGroup, error) {
-	if args.CreationContext == nil {
-		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.CreationContext"}
-	}
-	queryParams := url.Values{}
-	if args.ScopeDescriptor != nil {
-		queryParams.Add("scopeDescriptor", *args.ScopeDescriptor)
-	}
-	if args.GroupDescriptors != nil {
-		listAsString := strings.Join((*args.GroupDescriptors)[:], ",")
-		queryParams.Add("groupDescriptors", listAsString)
-	}
-
-	if _, ok := args.CreationContext.(*v5graph.GraphGroupMailAddressCreationContext); !ok {
-		if _, ok := args.CreationContext.(*v5graph.GraphGroupOriginIdCreationContext); !ok {
-			if _, ok := args.CreationContext.(*v5graph.GraphGroupVstsCreationContext); !ok {
-				return nil, fmt.Errorf("Unsupported group creation context")
-			}
-		}
-	}
-
-	body, marshalErr := json.Marshal(args.CreationContext)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-	locationID, _ := uuid.Parse("ebbe6af8-0b91-4c13-8cf1-777c14858188")
-	if clientImpl, ok := client.(*v5graph.ClientImpl); ok {
-		resp, err := clientImpl.Client.Send(ctx, http.MethodPost, locationID, "5.1-preview.1", nil, queryParams, bytes.NewReader(body), "application/json", "application/json", nil)
-		if err != nil {
-			return nil, err
-		}
-		var responseValue v5graph.GraphGroup
-		err = clientImpl.Client.UnmarshalBody(resp, &responseValue)
-		return &responseValue, err
-	}
-
-	panic("Invalid Azure DevOps Graph client implementation")
 }
 
 func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	// using: POST https://vssps.dev.azure.com/{organization}/_apis/graph/groups?api-version=5.1-preview.1
-	cga := azDOGraphCreateGroupArgs{}
-	val, b := d.GetOk("scope")
-	if b {
-		uuid, _ := uuid.Parse(val.(string))
-		desc, err := clients.V5GraphClient.GetDescriptor(clients.Ctx, v5graph.GetDescriptorArgs{
-			StorageKey: &uuid,
+	var scopeDescriptor *string
+	if val, ok := d.GetOk("scope"); ok {
+		scopeUid, _ := uuid.Parse(val.(string))
+		desc, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
+			StorageKey: &scopeUid,
 		})
 		if err != nil {
 			return err
 		}
-		cga.ScopeDescriptor = desc.Value
-	}
-	val, b = d.GetOk("origin_id")
-	if b {
-		if _, b = d.GetOk("mail"); b {
-			return fmt.Errorf("Unable to create group with invalid parameters: mail")
-		}
-		if _, b = d.GetOk("display_name"); b {
-			return fmt.Errorf("Unable to create group with invalid parameters: display_name")
-		}
-		cga.CreationContext = &v5graph.GraphGroupOriginIdCreationContext{
-			OriginId: converter.String(val.(string)),
-		}
-	} else {
-		val, b = d.GetOk("mail")
-		if b {
-			if _, b = d.GetOk("display_name"); b {
-				return fmt.Errorf("Unable to create group with invalid parameters: display_name")
-			}
-			cga.CreationContext = &v5graph.GraphGroupMailAddressCreationContext{
-				MailAddress: converter.String(val.(string)),
-			}
-		} else {
-			val, b = d.GetOk("display_name")
-			if b {
-				cga.CreationContext = &v5graph.GraphGroupVstsCreationContext{
-					DisplayName: converter.String(val.(string)),
-					Description: converter.String(d.Get("description").(string)),
-				}
-			} else {
-				return fmt.Errorf("INTERNAL ERROR: Unable to determine strategy to create group")
-			}
-		}
-	}
-	group, err := azDOGraphCreateGroup(clients.Ctx, clients.V5GraphClient, cga)
-	if err != nil {
-		return err
-	}
-	if group.Descriptor == nil {
-		return fmt.Errorf("DevOps REST API returned group object without descriptor")
+		scopeDescriptor = desc.Value
 	}
 
-	stateMembers, exists := d.GetOk("members")
-	if exists {
+	var group *graph.GraphGroup
+	var err error
+	if v, ok := d.GetOk("display_name"); ok {
+		param := graph.CreateGroupVstsArgs{
+			CreationContext: &graph.GraphGroupVstsCreationContext{
+				DisplayName: converter.String(v.(string)),
+				Description: converter.String(d.Get("description").(string)),
+			},
+			ScopeDescriptor: scopeDescriptor,
+		}
+		group, err = clients.GraphClient.CreateGroupVsts(clients.Ctx, param)
+		if err != nil {
+			return err
+		}
+	}
+
+	if v, ok := d.GetOk("origin_id"); ok {
+		param := graph.CreateGroupOriginIdArgs{
+			CreationContext: &graph.GraphGroupOriginIdCreationContext{
+				OriginId: converter.String(v.(string)),
+			},
+			ScopeDescriptor: scopeDescriptor,
+		}
+		group, err = clients.GraphClient.CreateGroupOriginId(clients.Ctx, param)
+		if err != nil {
+			return err
+		}
+	}
+
+	if v, ok := d.GetOk("mail"); ok {
+		param := graph.CreateGroupMailAddressArgs{
+			CreationContext: &graph.GraphGroupMailAddressCreationContext{
+				MailAddress: converter.String(v.(string)),
+			},
+			ScopeDescriptor: scopeDescriptor,
+		}
+		group, err = clients.GraphClient.CreateGroupMailAddress(clients.Ctx, param)
+		if err != nil {
+			return err
+		}
+	}
+
+	stateMembers, ok := d.GetOk("members")
+	if ok {
 		members := expandGroupMembers(*group.Descriptor, stateMembers.(*schema.Set))
 		if err := addMembers(clients, members); err != nil {
-			return fmt.Errorf("Error adding group memberships during create: %+v", err)
+			return fmt.Errorf(" adding group memberships during create: %+v", err)
 		}
 	}
 
 	d.SetId(*group.Descriptor)
-
 	return resourceGroupRead(d, m)
 }
 
 func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	// using: GET https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
-	// d.Get("descriptor").(string) => {groupDescriptor}
-	getGroupArgs := v5graph.GetGroupArgs{
-		GroupDescriptor: converter.String(d.Id()),
-	}
-	group, err := clients.V5GraphClient.GetGroup(clients.Ctx, getGroupArgs)
+	group, err := clients.GraphClient.GetGroup(
+		clients.Ctx,
+		graph.GetGroupArgs{GroupDescriptor: converter.String(d.Id())})
+
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
 		return err
-	}
-	if group.Descriptor == nil {
-		return fmt.Errorf("DevOps REST API returned group object without descriptor; group %s", d.Id())
 	}
 
 	members, err := groupReadMembers(*group.Descriptor, clients)
@@ -330,26 +263,38 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	// using: DELETE https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
-	// d.Get("descriptor").(string) => {groupDescriptor}
-	delGroupArgs := graph.DeleteGroupArgs{
-		GroupDescriptor: converter.String(d.Id()),
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Succeed", "Failed"},
+		Refresh: func() (interface{}, string, error) {
+			err := clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
+				GroupDescriptor: converter.String(d.Id()),
+			})
+			if err != nil {
+				if utils.ResponseWasNotFound(err) {
+					return "", "Succeed", nil
+				}
+				return nil, "Failed", err
+			}
+
+			return nil, "Waiting", nil
+		},
+		Timeout:    60 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
-	err := clients.GraphClient.DeleteGroup(clients.Ctx, delGroupArgs)
-	if err != nil {
-		return err
+
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return fmt.Errorf(" waiting for group delete. %v ", err)
 	}
+
 	d.SetId("")
 	return nil
 }
 
-func flattenGroup(d *schema.ResourceData, group *v5graph.GraphGroup, members *[]v5graph.GraphMembership) error {
-	if group.Descriptor != nil {
-		d.Set("descriptor", *group.Descriptor)
-		d.SetId(*group.Descriptor)
-	} else {
-		return fmt.Errorf("Group Object does not contain a descriptor")
-	}
+func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) error {
+	d.SetId(*group.Descriptor)
+	d.Set("descriptor", *group.Descriptor)
+
 	if group.DisplayName != nil {
 		d.Set("display_name", *group.DisplayName)
 	}
@@ -391,19 +336,19 @@ func flattenGroup(d *schema.ResourceData, group *v5graph.GraphGroup, members *[]
 	return nil
 }
 
-func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) (*[]v5graph.GraphMembership, error) {
-	actualMembers, err := clients.V5GraphClient.ListMemberships(clients.Ctx, v5graph.ListMembershipsArgs{
+func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) (*[]graph.GraphMembership, error) {
+	actualMembers, err := clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &groupDescriptor,
-		Direction:         &v5graph.GraphTraversalDirectionValues.Down,
+		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error reading group memberships during read: %+v", err)
+		return nil, fmt.Errorf(" reading group memberships during read: %+v", err)
 	}
 
-	members := make([]v5graph.GraphMembership, len(*actualMembers))
+	members := make([]graph.GraphMembership, len(*actualMembers))
 	for i, membership := range *actualMembers {
-		members[i] = v5graph.GraphMembership{
+		members[i] = graph.GraphMembership{
 			ContainerDescriptor: &groupDescriptor,
 			MemberDescriptor:    membership.MemberDescriptor,
 		}

@@ -37,6 +37,7 @@ output "administrators" {
 The following arguments are supported:
 
 - `project_id` - (Optional) The Project ID. If no project ID all teams of the organization will be returned.
+- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
 
 ## Attributes Reference
 

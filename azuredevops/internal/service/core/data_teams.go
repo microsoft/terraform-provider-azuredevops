@@ -7,7 +7,7 @@ import (
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
@@ -20,6 +20,12 @@ func DataTeams() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
+			},
+			"top": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"teams": {
 				Computed: true,
@@ -86,11 +92,14 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			ToSlice(&projectIDList)
 	}
 
+	top := d.Get("top").(int)
+
 	result := make([]interface{}, 0)
 	for _, projectID := range projectIDList {
 		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(projectID),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(top),
 			ExpandIdentity: converter.Bool(false),
 		})
 

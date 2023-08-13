@@ -1,26 +1,11 @@
 package branch
 
 import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 )
-
-type minReviewerPolicySettings struct {
-	ApprovalCount                     int  `json:"minimumApproverCount" tf:"reviewer_count"`
-	SubmitterCanVote                  bool `json:"creatorVoteCounts" tf:"submitter_can_vote"`
-	AllowCompletionWithRejectsOrWaits bool `json:"allowDownvotes" tf:"allow_completion_with_rejects_or_waits"`
-	OnPushResetApprovedVotes          bool `json:"resetOnSourcePush" tf:"on_push_reset_approved_votes" ConflictsWith:"on_push_reset_all_votes"`
-	OnLastIterationRequireVote        bool `json:"requireVoteOnLastIteration" tf:"on_last_iteration_require_vote"`
-	OnPushResetAllVotes               bool `json:"resetRejectionsOnSourcePush" tf:"on_push_reset_all_votes" ConflictsWith:"on_push_reset_approved_votes"`
-	LastPusherCannotVote              bool `json:"blockLastPusherVote" tf:"last_pusher_cannot_approve"`
-}
 
 // ResourceBranchPolicyMinReviewers schema and implementation for min reviewer policy resource
 func ResourceBranchPolicyMinReviewers() *schema.Resource {
@@ -32,34 +17,49 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 
 	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
 
-	// Dynamically create the schema based on the minReviewerPolicySettings tags
-	metaField := reflect.TypeOf(minReviewerPolicySettings{})
-	// Loop through the fields, adding schema for each one.
-	for i := 0; i < metaField.NumField(); i++ {
-		tfName := metaField.Field(i).Tag.Get("tf")
-		if _, ok := settingsSchema[tfName]; ok {
-			continue // skip those which are already set
-		}
-		if metaField.Field(i).Type == reflect.TypeOf(true) {
-			settingsSchema[tfName] = &schema.Schema{
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
-			}
-		}
-		if metaField.Field(i).Type == reflect.TypeOf(0) {
-			settingsSchema[tfName] = &schema.Schema{
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			}
-		}
-		if conflicts, ok := metaField.Field(i).Tag.Lookup("ConflictsWith"); ok {
-			if _, ok := settingsSchema[conflicts]; ok {
-				settingsSchema[conflicts].ConflictsWith = []string{SchemaSettings + ".0." + tfName}
-				settingsSchema[tfName].ConflictsWith = []string{SchemaSettings + ".0." + conflicts}
-			}
-		}
+	settingsSchema["reviewer_count"] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		ValidateFunc: validation.IntAtLeast(1),
+	}
+
+	settingsSchema["submitter_can_vote"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+	}
+
+	settingsSchema["allow_completion_with_rejects_or_waits"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+	}
+
+	settingsSchema["on_last_iteration_require_vote"] = &schema.Schema{
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Default:       false,
+		ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes"},
+	}
+
+	settingsSchema["on_push_reset_approved_votes"] = &schema.Schema{
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Default:       false,
+		ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
+	}
+
+	settingsSchema["on_push_reset_all_votes"] = &schema.Schema{
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Default:       false,
+		ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
+	}
+
+	settingsSchema["last_pusher_cannot_approve"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
 	}
 	return resource
 }
@@ -70,31 +70,19 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 	if err != nil {
 		return err
 	}
-	policyAsJSON, err := json.Marshal(policyConfig.Settings)
-	if err != nil {
-		return fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
-	}
 
-	policySettings := minReviewerPolicySettings{}
-	err = json.Unmarshal(policyAsJSON, &policySettings)
-	if err != nil {
-		return fmt.Errorf("Unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
-	}
+	policySettings := policyConfig.Settings.(map[string]interface{})
 
 	settingsList := d.Get(SchemaSettings).([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
-	tipe := reflect.TypeOf(policySettings)
-	for i := 0; i < tipe.NumField(); i++ {
-		tfName := tipe.Field(i).Tag.Get("tf")
-		ps := reflect.ValueOf(policySettings)
-		if tipe.Field(i).Type == reflect.TypeOf(true) {
-			settings[tfName] = ps.Field(i).Bool()
-		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			settings[tfName] = ps.Field(i).Int()
-		}
-	}
+	settings["reviewer_count"] = policySettings["minimumApproverCount"]
+	settings["submitter_can_vote"] = policySettings["creatorVoteCounts"]
+	settings["allow_completion_with_rejects_or_waits"] = policySettings["allowDownvotes"]
+	settings["on_push_reset_approved_votes"] = policySettings["resetOnSourcePush"]
+	settings["on_last_iteration_require_vote"] = policySettings["requireVoteOnLastIteration"]
+	settings["on_push_reset_all_votes"] = policySettings["resetRejectionsOnSourcePush"]
+	settings["last_pusher_cannot_approve"] = policySettings["blockLastPusherVote"]
 
 	d.Set(SchemaSettings, settingsList)
 	return nil
@@ -111,21 +99,17 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
+	policySettings["minimumApproverCount"] = settings["reviewer_count"]
+	policySettings["creatorVoteCounts"] = settings["submitter_can_vote"]
+	policySettings["allowDownvotes"] = settings["allow_completion_with_rejects_or_waits"]
+	policySettings["requireVoteOnLastIteration"] = settings["on_last_iteration_require_vote"]
+	policySettings["resetOnSourcePush"] = settings["on_push_reset_approved_votes"]
+	policySettings["blockLastPusherVote"] = settings["last_pusher_cannot_approve"]
 
-	tipe := reflect.TypeOf(minReviewerPolicySettings{})
-	for i := 0; i < tipe.NumField(); i++ {
-		tags := tipe.Field(i).Tag
-		apiName := tags.Get("json")
-		tfName := tags.Get("tf")
-		if _, ok := policySettings[apiName]; ok {
-			continue
-		}
-		if tipe.Field(i).Type == reflect.TypeOf(true) {
-			policySettings[apiName] = settings[tfName].(bool)
-		}
-		if tipe.Field(i).Type == reflect.TypeOf(0) {
-			policySettings[apiName] = settings[tfName].(int)
-		}
+	resetRejectionsOnSourcePush := settings["on_push_reset_all_votes"].(bool)
+	policySettings["resetRejectionsOnSourcePush"] = resetRejectionsOnSourcePush
+	if resetRejectionsOnSourcePush {
+		policySettings["resetOnSourcePush"] = true
 	}
 
 	return policyConfig, projectID, nil
