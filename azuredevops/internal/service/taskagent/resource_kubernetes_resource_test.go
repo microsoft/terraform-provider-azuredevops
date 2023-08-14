@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdk/taskagentkubernetesresource"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/assert"
@@ -58,13 +57,13 @@ func TestKubernetesResource_CreateKubernetesResource(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	taskAgentClient := azdosdkmocks.NewMockTaskagentkubernetesresourceClient(ctrl)
+	taskAgentClient := azdosdkmocks.NewMockTaskagentClient(ctrl)
 	clients := &client.AggregatedClient{
-		TaskAgentKubernetesResourceClient: taskAgentClient,
-		Ctx:                               context.Background(),
+		TaskAgentClient: taskAgentClient,
+		Ctx:             context.Background(),
 	}
 
-	expectedArgs := taskagentkubernetesresource.AddKubernetesResourceArgs{
+	expectedArgs := taskagent.AddKubernetesResourceArgsExistingEndpoint{
 		CreateParameters: &taskagent.KubernetesResourceCreateParametersExistingEndpoint{
 			ClusterName:       testKubernetesResource.ClusterName,
 			Name:              testKubernetesResource.Name,
@@ -78,7 +77,7 @@ func TestKubernetesResource_CreateKubernetesResource(t *testing.T) {
 
 	taskAgentClient.
 		EXPECT().
-		AddKubernetesResource(clients.Ctx, expectedArgs).
+		AddKubernetesResourcExistingEndpoint(clients.Ctx, expectedArgs).
 		Return(&testKubernetesResource, nil).
 		Times(1)
 
@@ -97,13 +96,13 @@ func TestKubernetesResource_CreateKubernetesResourceReturnsErrorOnFailure(t *tes
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	taskAgentClient := azdosdkmocks.NewMockTaskagentkubernetesresourceClient(ctrl)
+	taskAgentClient := azdosdkmocks.NewMockTaskagentClient(ctrl)
 	clients := &client.AggregatedClient{
-		TaskAgentKubernetesResourceClient: taskAgentClient,
-		Ctx:                               context.Background(),
+		TaskAgentClient: taskAgentClient,
+		Ctx:             context.Background(),
 	}
 
-	expectedArgs := taskagentkubernetesresource.AddKubernetesResourceArgs{
+	expectedArgs := taskagent.AddKubernetesResourceArgsExistingEndpoint{
 		CreateParameters: &taskagent.KubernetesResourceCreateParametersExistingEndpoint{
 			ClusterName:       testKubernetesResource.ClusterName,
 			Name:              testKubernetesResource.Name,
@@ -119,7 +118,7 @@ func TestKubernetesResource_CreateKubernetesResourceReturnsErrorOnFailure(t *tes
 
 	taskAgentClient.
 		EXPECT().
-		AddKubernetesResource(clients.Ctx, expectedArgs).
+		AddKubernetesResourcExistingEndpoint(clients.Ctx, expectedArgs).
 		Return(nil, expectedError).
 		Times(1)
 

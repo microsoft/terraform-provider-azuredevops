@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/microsoft/terraform-provider-azuredevops/azdosdk/taskagentkubernetesresource"
-
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -88,7 +86,7 @@ func resourceKubernetesCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	clients := m.(*client.AggregatedClient)
-	createdResource, err := clients.TaskAgentKubernetesResourceClient.AddKubernetesResource(clients.Ctx, taskagentkubernetesresource.AddKubernetesResourceArgs{
+	createdResource, err := clients.TaskAgentClient.AddKubernetesResourcExistingEndpoint(clients.Ctx, taskagent.AddKubernetesResourceArgsExistingEndpoint{
 		CreateParameters: &taskagent.KubernetesResourceCreateParametersExistingEndpoint{
 			ClusterName:       resource.ClusterName,
 			Name:              resource.Name,
