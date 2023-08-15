@@ -250,22 +250,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointAuthenticationScheme AzureRmEndpointAuthenticationScheme) interface{} {
-	// secret value won't return by service and should not be overwritten
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-		}}
-	} else {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-			hashKey:               hashValue,
-		}}
-	}
-}
-
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
@@ -281,7 +265,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		if _, ok := d.GetOk("credentials"); !ok {
 			credentials := make(map[string]interface{})
 			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
-			credentials["serviceprincipalkey"] = ""
+			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
 			d.Set("credentials", []interface{}{credentials})
 		}
 	}
