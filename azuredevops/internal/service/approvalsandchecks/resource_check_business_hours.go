@@ -7,16 +7,17 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
-var evaulateBusinessHoursDefVersion = "0.0.1"
-var evaulateBusinessHoursDefId = "445fde2f-6c39-441c-807f-8a59ff2e075f"
+var evaluateBusinessHoursDefVersion = "0.0.1"
+var evaluateBusinessHoursDefId = "445fde2f-6c39-441c-807f-8a59ff2e075f"
 
 var evaluateBusinessHoursDef = map[string]interface{}{
-	"id":      evaulateBusinessHoursDefId,
+	"id":      evaluateBusinessHoursDefId,
 	"name":    "evaluateBusinessHours",
-	"version": evaulateBusinessHoursDefVersion,
+	"version": evaluateBusinessHoursDefVersion,
 }
 
 var validTimezoneIds = []string{"AUS Central Standard Time", "AUS Eastern Standard Time", "Afghanistan Standard Time", "Alaskan Standard Time", "Aleutian Standard Time", "Altai Standard Time", "Arab Standard Time", "Arabian Standard Time", "Arabic Standard Time", "Argentina Standard Time", "Astrakhan Standard Time", "Atlantic Standard Time", "Aus Central W. Standard Time", "Azerbaijan Standard Time", "Azores Standard Time", "Bahia Standard Time", "Bangladesh Standard Time", "Belarus Standard Time", "Bougainville Standard Time", "Canada Central Standard Time", "Cape Verde Standard Time", "Caucasus Standard Time", "Cen. Australia Standard Time", "Central America Standard Time", "Central Asia Standard Time", "Central Brazilian Standard Time", "Central Europe Standard Time", "Central European Standard Time", "Central Pacific Standard Time", "Central Standard Time (Mexico)", "Central Standard Time", "Chatham Islands Standard Time", "China Standard Time", "Cuba Standard Time", "Dateline Standard Time", "E. Africa Standard Time", "E. Australia Standard Time", "E. Europe Standard Time", "E. South America Standard Time", "Easter Island Standard Time", "Eastern Standard Time (Mexico)", "Eastern Standard Time", "Egypt Standard Time", "Ekaterinburg Standard Time", "FLE Standard Time", "Fiji Standard Time", "GMT Standard Time", "GTB Standard Time", "Georgian Standard Time", "Greenland Standard Time", "Greenwich Standard Time", "Haiti Standard Time", "Hawaiian Standard Time", "India Standard Time", "Iran Standard Time", "Israel Standard Time", "Jordan Standard Time", "Kaliningrad Standard Time", "Kamchatka Standard Time", "Korea Standard Time", "Libya Standard Time", "Line Islands Standard Time", "Lord Howe Standard Time", "Magadan Standard Time", "Magallanes Standard Time", "Marquesas Standard Time", "Mauritius Standard Time", "Mid-Atlantic Standard Time", "Middle East Standard Time", "Montevideo Standard Time", "Morocco Standard Time", "Mountain Standard Time (Mexico)", "Mountain Standard Time", "Myanmar Standard Time", "N. Central Asia Standard Time", "Namibia Standard Time", "Nepal Standard Time", "New Zealand Standard Time", "Newfoundland Standard Time", "Norfolk Standard Time", "North Asia East Standard Time", "North Asia Standard Time", "North Korea Standard Time", "Omsk Standard Time", "Pacific SA Standard Time", "Pacific Standard Time (Mexico)", "Pacific Standard Time", "Pakistan Standard Time", "Paraguay Standard Time", "Qyzylorda Standard Time", "Romance Standard Time", "Russia Time Zone 10", "Russia Time Zone 11", "Russia Time Zone 3", "Russian Standard Time", "SA Eastern Standard Time", "SA Pacific Standard Time", "SA Western Standard Time", "SE Asia Standard Time", "Saint Pierre Standard Time", "Sakhalin Standard Time", "Samoa Standard Time", "Sao Tome Standard Time", "Saratov Standard Time", "Singapore Standard Time", "South Africa Standard Time", "South Sudan Standard Time", "Sri Lanka Standard Time", "Sudan Standard Time", "Syria Standard Time", "Taipei Standard Time", "Tasmania Standard Time", "Tocantins Standard Time", "Tokyo Standard Time", "Tomsk Standard Time", "Tonga Standard Time", "Transbaikal Standard Time", "Turkey Standard Time", "Turks And Caicos Standard Time", "US Eastern Standard Time", "US Mountain Standard Time", "UTC", "UTC+12", "UTC+13", "UTC-02", "UTC-08", "UTC-09", "UTC-11", "Ulaanbaatar Standard Time", "Venezuela Standard Time", "Vladivostok Standard Time", "Volgograd Standard Time", "W. Australia Standard Time", "W. Central Africa Standard Time", "W. Europe Standard Time", "W. Mongolia Standard Time", "West Asia Standard Time", "West Bank Standard Time", "West Pacific Standard Time", "Yakutsk Standard Time", "Yukon Standard Time"}
@@ -87,17 +88,59 @@ func ResourceCheckBusinessHours() *schema.Resource {
 		ValidateFunc: validation.StringMatch(timeRegExp, "Must be a 24 hour time with leading zeros"),
 	}
 
+	r.Schema["display_name"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Default:      "Managed by Terraform",
+		ValidateFunc: validation.StringIsNotEmpty,
+	}
+
+	r.Schema["timeout"] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		Default:      1440,
+		ValidateFunc: validation.IntBetween(1, 2147483647),
+	}
+
 	return r
 }
 
-func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelineschecks.CheckConfiguration, projectID string) error {
-	err := doBaseFlattening(d, businessHoursCheck, projectID, evaulateBusinessHoursDefId, evaluateBranchProtectionDefVersion)
+func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelineschecksextras.CheckConfiguration, projectID string) error {
+	err := doBaseFlattening(d, businessHoursCheck, projectID)
 	if err != nil {
 		return err
 	}
 
+	businessHoursCheck.Type.Id = converter.UUID("fe1de3ee-a436-41b4-bb20-f6eb4cb879a7")
+
 	if businessHoursCheck.Settings == nil {
 		return fmt.Errorf("Settings nil")
+	}
+
+	if displayName, found := businessHoursCheck.Settings.(map[string]interface{})["displayName"]; found {
+		d.Set("display_name", displayName.(string))
+	} else {
+		return fmt.Errorf("displayName setting not found")
+	}
+
+	if definitionRefMap, found := businessHoursCheck.Settings.(map[string]interface{})["definitionRef"]; found {
+		definitionRef := definitionRefMap.(map[string]interface{})
+		if id, found := definitionRef["id"]; found {
+			if !strings.EqualFold(id.(string), evaluateBusinessHoursDefId) {
+				return fmt.Errorf("invalid definitionRef id")
+			}
+		} else {
+			return fmt.Errorf("definitionRef ID not found. Expect ID: %s", evaluateBusinessHoursDefId)
+		}
+		if version, found := definitionRef["version"]; found {
+			if version != evaluateBusinessHoursDefVersion {
+				return fmt.Errorf("unsupported definitionRef version. Expect version: %s", evaluateBusinessHoursDefVersion)
+			}
+		} else {
+			return fmt.Errorf("unsupported definitionRef version")
+		}
+	} else {
+		return fmt.Errorf("definitionRef not found")
 	}
 
 	if inputMap, found := businessHoursCheck.Settings.(map[string]interface{})["inputs"]; found {
@@ -128,10 +171,14 @@ func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelinesc
 		return fmt.Errorf("inputs not found")
 	}
 
+	if businessHoursCheck.Timeout != nil {
+		d.Set("timeout", *businessHoursCheck.Timeout)
+	}
+
 	return nil
 }
 
-func expandBusinessHours(d *schema.ResourceData) (*pipelineschecks.CheckConfiguration, string, error) {
+func expandBusinessHours(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error) {
 	var days []string
 	for _, day := range daysOfBusinessWeek {
 		if d.Get(day.TfName).(bool) {
@@ -146,5 +193,10 @@ func expandBusinessHours(d *schema.ResourceData) (*pipelineschecks.CheckConfigur
 		"timeZone":     d.Get("time_zone").(string),
 	}
 
-	return doBaseExpansion(d, inputs, evaluateBusinessHoursDef)
+	settings := map[string]interface{}{}
+	settings["inputs"] = inputs
+	settings["definitionRef"] = evaluateBusinessHoursDef
+	settings["displayName"] = d.Get("display_name").(string)
+
+	return doBaseExpansion(d, approvalAndCheckType.BusinessHours, settings, converter.ToPtr(d.Get("timeout").(int)))
 }

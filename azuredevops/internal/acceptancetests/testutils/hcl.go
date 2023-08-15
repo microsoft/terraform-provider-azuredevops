@@ -127,7 +127,7 @@ resource "azuredevops_project_features" "project-features" {
 }
 
 // HclProjectFeatures HCL describing an AzDO project including feature setup using azuredevops_git_repositories
-func HclProjectPipelineSettings(projectName string, enforceJobAuthScope bool, enforceReferencedRepoScopedToken bool, enforceSettableVar bool, publishPipelineMetadata bool, statusBadgesArePrivate bool) string {
+func HclProjectPipelineSettings(projectName string, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases bool) string {
 	projectPipelineSettings := fmt.Sprintf(`
 resource "azuredevops_project_pipeline_settings" "this" {
 	project_id = azuredevops_project.project.id
@@ -137,7 +137,8 @@ resource "azuredevops_project_pipeline_settings" "this" {
 	enforce_settable_var = %t
 	publish_pipeline_metadata = %t
 	status_badges_are_private = %t
-}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate)
+	enforce_job_scope_for_release = %t
+}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, projectPipelineSettings)
@@ -448,7 +449,7 @@ data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
+func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string, serviceEndpointAuthenticationScheme string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id            = azuredevops_project.project.id
@@ -457,10 +458,32 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
     serviceprincipalid  = "%s"
     serviceprincipalkey = "%s"
   }
-  azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-  azurerm_subscription_name = "Microsoft Azure DEMO"
-}`, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
+  azurerm_spn_tenantid                   = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id                = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name              = "Microsoft Azure DEMO"
+  service_endpoint_authentication_scheme = "%s"
+}
+`, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+// HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureRMNoKeyResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceEndpointAuthenticationScheme string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+  }
+  azurerm_spn_tenantid                   = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id                = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name              = "Microsoft Azure DEMO"
+  service_endpoint_authentication_scheme = "%s"
+}
+`, serviceEndpointName, serviceprincipalid, serviceEndpointAuthenticationScheme)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -476,9 +499,10 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
     serviceprincipalid  = "%s"
     serviceprincipalkey = "%s"
   }
-  azurerm_spn_tenantid          = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-  azurerm_management_group_id   = "Microsoft_Azure_Demo_MG"
-  azurerm_management_group_name = "Microsoft Azure Demo MG"
+  azurerm_spn_tenantid                   = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_management_group_id            = "Microsoft_Azure_Demo_MG"
+  azurerm_management_group_name          = "Microsoft Azure Demo MG"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
 }
 `, serviceEndpointName, serviceprincipalid, serviceprincipalkey)
 
@@ -487,16 +511,17 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 }
 
 // HclServiceEndpointAzureRMAutomaticResourceWithProject HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName string, serviceEndpointName string) string {
+func HclServiceEndpointAzureRMAutomaticResourceWithProject(projectName string, serviceEndpointName string, serviceEndpointAuthenticationScheme string, subscriptionId string, subscriptionName string, tenantId string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-    azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-    azurerm_subscription_name = "Microsoft Azure DEMO"
-
-}`, serviceEndpointName)
+  project_id                             = azuredevops_project.project.id
+  service_endpoint_name                  = "%s"
+  azurerm_spn_tenantid                   = "%s"
+  azurerm_subscription_id                = "%s"
+  azurerm_subscription_name              = "%s"
+  service_endpoint_authentication_scheme = "%s"
+}
+`, serviceEndpointName, tenantId, subscriptionId, subscriptionName, serviceEndpointAuthenticationScheme)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -616,7 +641,7 @@ resource "azuredevops_variable_group" "vg" {
 
 // HclVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
 func HclVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
-	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection", "e318e66b-ec4b-4dff-9124-41129b9d7150", "d9d210dd-f9f0-4176-afb8-a4df60e1ae72")
+	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection", "e318e66b-ec4b-4dff-9124-41129b9d7150", "d9d210dd-f9f0-4176-afb8-a4df60e1ae72", "ServicePrincipal")
 
 	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, HclVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
 }

@@ -41,6 +41,7 @@ The following arguments are supported:
 - `enforce_settable_var` - (Optional) Limit variables that can be set at queue time.
 - `publish_pipeline_metadata` - (Optional) Publish metadata from pipelines.
 - `status_badges_are_private` - (Optional) Disable anonymous access to badges.
+- `enforce_job_scope_for_release` - (Optional) Limit job authorization scope to current project for release pipelines.
 
 > **NOTE:**  
 > The settings at the organization will override settings specified on the project.

@@ -20,23 +20,25 @@ func TestAccProjectPipelineSettings_Enabled(t *testing.T) {
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclProjectPipelineSettings(projectName, false, false, false, false, false),
+				Config: testutils.HclProjectPipelineSettings(projectName, false, false, false, false, false, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "enforce_job_scope", "false"),
 					resource.TestCheckResourceAttr(tfNode, "enforce_referenced_repo_scoped_token", "false"),
 					resource.TestCheckResourceAttr(tfNode, "enforce_settable_var", "false"),
 					resource.TestCheckResourceAttr(tfNode, "publish_pipeline_metadata", "false"),
 					resource.TestCheckResourceAttr(tfNode, "status_badges_are_private", "false"),
+					resource.TestCheckResourceAttr(tfNode, "enforce_job_scope_for_release", "false"),
 				),
 			},
 			{
-				Config: testutils.HclProjectPipelineSettings(projectName, true, true, true, true, true),
+				Config: testutils.HclProjectPipelineSettings(projectName, true, true, true, true, true, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "enforce_job_scope", "true"),
 					resource.TestCheckResourceAttr(tfNode, "enforce_referenced_repo_scoped_token", "true"),
 					resource.TestCheckResourceAttr(tfNode, "enforce_settable_var", "true"),
 					resource.TestCheckResourceAttr(tfNode, "publish_pipeline_metadata", "true"),
 					resource.TestCheckResourceAttr(tfNode, "status_badges_are_private", "true"),
+					resource.TestCheckResourceAttr(tfNode, "enforce_job_scope_for_release", "true"),
 				),
 			},
 			{

@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -42,6 +42,7 @@ func TestDataTeam_Read_DoesNotSwallowError(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(&[]core.WebApiTeam{}, errors.New("@@GetTeams@@failed@@")).
@@ -84,6 +85,7 @@ func TestDataTeam_Read_FailOnNotFound(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(&[]core.WebApiTeam{

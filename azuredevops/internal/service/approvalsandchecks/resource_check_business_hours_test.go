@@ -12,9 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,10 +36,11 @@ var CheckBusinessHoursSettings = map[string]interface{}{
 	"inputs":        CheckBusinessHoursInputs,
 }
 
-var CheckBusinessHoursTest = pipelineschecks.CheckConfiguration{
+var CheckBusinessHoursTest = pipelineschecksextras.CheckConfiguration{
 	Id:       &CheckBusinessHoursID,
-	Type:     &taskCheckType,
+	Type:     approvalAndCheckType.BusinessHours,
 	Settings: CheckBusinessHoursSettings,
+	Timeout:  converter.ToPtr(50000),
 	Resource: &endpointResource,
 }
 
@@ -63,10 +65,10 @@ func TestCheckBusinessHours_Create_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
-	pipelinesCheckClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesCheckClient, Ctx: context.Background()}
+	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.AddCheckConfigurationArgs{Configuration: &CheckBusinessHoursTest, Project: &CheckBusinessHoursProjectID}
+	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &CheckBusinessHoursTest, Project: &CheckBusinessHoursProjectID}
 	pipelinesCheckClient.
 		EXPECT().
 		AddCheckConfiguration(clients.Ctx, expectedArgs).
@@ -86,12 +88,13 @@ func TestCheckBusinessHours_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
-	pipelinesCheckClient := azdosdkmocks.NewPipelinesChecksClientExtrasV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
+	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.GetCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.GetCheckConfigurationArgs{
 		Id:      CheckBusinessHoursTest.Id,
 		Project: &CheckBusinessHoursProjectID,
+		Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 	}
 
 	pipelinesCheckClient.
@@ -113,10 +116,10 @@ func TestCheckBusinessHours_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
-	pipelinesCheckClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesCheckClient, Ctx: context.Background()}
+	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.DeleteCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.DeleteCheckConfigurationArgs{
 		Id:      CheckBusinessHoursTest.Id,
 		Project: &CheckBusinessHoursProjectID,
 	}
@@ -140,10 +143,10 @@ func TestCheckBusinessHours_Update_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
-	pipelinesCheckClient := azdosdkmocks.NewPipelinesChecksClientV5(ctrl)
-	clients := &client.AggregatedClient{V5PipelinesChecksClient: pipelinesCheckClient, Ctx: context.Background()}
+	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
+	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
 
-	expectedArgs := pipelineschecks.UpdateCheckConfigurationArgs{
+	expectedArgs := pipelineschecksextras.UpdateCheckConfigurationArgs{
 		Project:       &CheckBusinessHoursProjectID,
 		Configuration: &CheckBusinessHoursTest,
 		Id:            &CheckBusinessHoursID,

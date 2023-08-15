@@ -14,7 +14,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/require"
@@ -274,34 +273,37 @@ func TestGroupResource_Create_TestParameterCollisions(t *testing.T) {
 		Ctx:         context.Background(),
 	}
 
-	expectedCreateGroupArgs := graph.CreateGroupArgs{}
-
-	graphClient.
-		EXPECT().
-		CreateGroup(clients.Ctx, expectedCreateGroupArgs).
-		Return(nil, errors.New("CreateGroup() INVALID CALL")).
-		Times(0)
-
 	var resourceData *schema.ResourceData
 	var err error
 
 	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
+	resourceData.Set("origin_id", originID)
+	graphClient.
+		EXPECT().
+		CreateGroupOriginId(clients.Ctx, gomock.Any()).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(1)
+
+	err = resourceGroupCreate(resourceData, clients)
+	require.NotNil(t, err)
+
+	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
+	resourceData.Set("display_name", displayName)
+	graphClient.
+		EXPECT().
+		CreateGroupVsts(clients.Ctx, gomock.Any()).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(1)
+	err = resourceGroupCreate(resourceData, clients)
+	require.NotNil(t, err)
+
+	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
 	resourceData.Set("mail", email)
-	resourceData.Set("origin_id", originID)
-
-	err = resourceGroupCreate(resourceData, clients)
-	require.NotNil(t, err)
-
-	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
-	resourceData.Set("display_name", displayName)
-	resourceData.Set("origin_id", originID)
-
-	err = resourceGroupCreate(resourceData, clients)
-	require.NotNil(t, err)
-
-	resourceData = schema.TestResourceDataRaw(t, ResourceGroup().Schema, nil)
-	resourceData.Set("display_name", displayName)
-	resourceData.Set("mail", originID)
+	graphClient.
+		EXPECT().
+		CreateGroupMailAddress(clients.Ctx, gomock.Any()).
+		Return(nil, errors.New("CreateGroup() INVALID CALL")).
+		Times(1)
 
 	err = resourceGroupCreate(resourceData, clients)
 	require.NotNil(t, err)

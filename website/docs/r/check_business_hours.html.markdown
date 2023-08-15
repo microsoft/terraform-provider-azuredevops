@@ -2,12 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_check_business_hours"
 description: |-
-  Manages a branch control check.
+  Manages a business hours check.
 ---
 
 # azuredevops_check_business_hours
 
-Manages a branch control check on a resource within Azure DevOps.
+Manages a business hours check on a resource within Azure DevOps.
 
 ## Example Usage
 
@@ -37,6 +37,8 @@ resource "azuredevops_check_business_hours" "example" {
   time_zone            = "UTC"
   monday               = true
   tuesday              = true
+
+  timeout = 1440
 }
 ```
 
@@ -178,6 +180,10 @@ The following arguments are supported:
 * `friday` - (Optional) This check will pass on Fridays. Defaults to `false`.
 * `saturday` - (Optional) This check will pass on Saturdays. Defaults to `false`.
 * `sunday` - (Optional) This check will pass on Sundays. Defaults to `false`.
+
+---
+
+* `timeout` - (Optional) The timeout in minutes for the business hours check. Defaults to `1440`.
 
 ## Attributes Reference
 

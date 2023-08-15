@@ -251,7 +251,7 @@ $ tree -L 2
 
 ## 3. Code for Terraform
 
-After you picked an issue and figured out where you will impelment it, you will quickly realize that HashiCorp has take a very opinionated appraoch to building Terraform providers. The following section will outline a few common scenarios for terraform plugin development, and point you towards different pieces of the code that you may need to work with.
+After you picked an issue and figured out where you will implement it, you will quickly realize that HashiCorp has taken a very opinionated approach to building Terraform providers. The following section will outline a few common scenarios for terraform plugin development, and point you towards different pieces of the code that you may need to work with.
 
 If you have not already gone through the guide published by [HashiCorp](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers), now is a good time to do so.
 

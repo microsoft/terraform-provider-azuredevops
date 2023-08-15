@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -36,11 +36,12 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 	Data: &map[string]string{
 		"registrytype": "Others",
 	},
-	Id:    &dockerRegistryTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("dockerregistry"),
-	Url:   converter.String("https://hub.docker.com/"),
+	Id:          &dockerRegistryTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("dockerregistry"),
+	Url:         converter.String("https://hub.docker.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
