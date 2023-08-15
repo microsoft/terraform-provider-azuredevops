@@ -24,7 +24,18 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 		Required: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     rpPersonalAccessTokenField(),
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"personal_access_token": {
+					Type:         schema.TypeString,
+					Required:     true,
+					DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
+					Description:  "The Azure DevOps personal access token which should be used.",
+					Sensitive:    true,
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
+			},
+		},
 	}
 
 	return r
@@ -63,38 +74,13 @@ func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func rpPersonalAccessTokenField() *schema.Resource {
-	fieldName := "personal_access_token"
-	personalAccessToken := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			fieldName: {
-				Type:         schema.TypeString,
-				Required:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
-				Description:  "The Azure DevOps personal access token which should be used.",
-				Sensitive:    true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-			},
-		},
-	}
-	return personalAccessToken
-}
-
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-	authPersonal := rpFlattenAuthPersonal(d, authPersonalSet)
-	if authPersonal != nil {
-		d.Set("auth_personal", authPersonal)
-	}
-}
-
-func rpFlattenAuthPersonal(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			return []interface{}{authPersonal}
+			d.Set("auth_personal", []interface{}{authPersonal})
 		}
 	}
-	return nil
 }
