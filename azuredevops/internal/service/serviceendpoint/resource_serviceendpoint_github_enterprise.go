@@ -10,10 +10,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const (
-	personalAccessTokenGithubEnterprise = "personal_access_token"
-)
-
 // ResourceServiceEndpointGitHubEnterprise schema and implementation for github-enterprise service endpoint resource
 func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHubEnterprise, expandServiceEndpointGitHubEnterprise)
