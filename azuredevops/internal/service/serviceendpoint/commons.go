@@ -286,6 +286,107 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return createdServiceEndpoint, err
 }
 
+func createServiceEndpoint111(d *schema.ResourceData, clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
+		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
+	}
+
+	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.CreateServiceEndpointArgs{
+			Endpoint: endpoint,
+		})
+	if err != nil {
+		return nil, fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	projectID := (*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id
+
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending:                   []string{opState.InProgress},
+		Target:                    []string{opState.Ready, opState.Failed},
+		Refresh:                   getServiceEndpoint(clients, createdServiceEndpoint.Id, projectID),
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+		if delErr := deleteServiceEndpoint(clients, projectID, createdServiceEndpoint.Id, d.Timeout(schema.TimeoutDelete)); delErr != nil {
+			log.Printf("[DEBUG] Failed to delete the failed service endpoint: %v ", delErr)
+		}
+		return nil, fmt.Errorf(" waiting for service endpoint ready. %v ", err)
+	}
+
+	return createdServiceEndpoint, err
+}
+
+func getServiceEndpoint1111(args serviceendpoint.GetServiceEndpointDetailsArgs, clients *client.AggregatedClient) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, args)
+	return serviceEndpoint, err
+}
+
+func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetServiceEndpointDetailsArgs, error) {
+	var serviceEndpointID *uuid.UUID
+	parsedServiceEndpointID, err := uuid.Parse(d.Id())
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing the service endpoint ID from the Terraform resource data: %v", err)
+	}
+	serviceEndpointID = &parsedServiceEndpointID
+	projectID, err := uuid.Parse(d.Get("project_id").(string))
+	if err != nil {
+		return nil, err
+	}
+	return &serviceendpoint.GetServiceEndpointDetailsArgs{
+		EndpointId: serviceEndpointID,
+		Project:    converter.String(projectID.String()),
+	}, nil
+}
+
+func updateServiceEndpoint1111(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.UpdateServiceEndpointArgs{
+			Endpoint:   endpoint,
+			EndpointId: endpoint.Id,
+		})
+
+	return updatedServiceEndpoint, err
+}
+
+func baseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IsUUID,
+		},
+		"service_endpoint_name": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+		},
+		"description": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "Managed by Terraform",
+			ValidateFunc: validation.StringLenBetween(0, 1024),
+		},
+		"authorization": {
+			Type:         schema.TypeMap,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+	}
+}
+
 // Service endpoint delete is an async operation, make sure service endpoint is deleted.
 func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
