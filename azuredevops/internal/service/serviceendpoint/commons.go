@@ -129,16 +129,12 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 // makeProtectedSchema create protected schema
 func makeProtectedSchema(r *schema.Resource, keyName, envVarName, description string) {
 	r.Schema[keyName] = &schema.Schema{
-		Type:             schema.TypeString,
-		Required:         true,
-		DefaultFunc:      schema.EnvDefaultFunc(envVarName, nil),
-		Description:      description,
-		Sensitive:        true,
-		DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc(envVarName, nil),
+		Description: description,
+		Sensitive:   true,
 	}
-
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema(keyName)
-	r.Schema[secretHashKey] = secretHashSchema
 }
 
 // makeUnprotectedSchema create unprotected schema

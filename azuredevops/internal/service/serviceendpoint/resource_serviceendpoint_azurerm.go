@@ -10,7 +10,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint/migration"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
@@ -34,7 +33,6 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	makeUnprotectedOptionalSchema(r, "azurerm_management_group_id", "ARM_MGMT_GROUP_ID", "The Azure managementGroup Id which should be used.", []string{"azurerm_subscription_id", "resource_group"})
 	makeUnprotectedOptionalSchema(r, "azurerm_management_group_name", "ARM_MGMT_GROUP_NAME", "The Azure managementGroup name which should be used.", []string{"azurerm_subscription_id", "resource_group"})
 
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("serviceprincipalkey")
 	r.Schema["credentials"] = &schema.Schema{
 		Type:          schema.TypeList,
 		Optional:      true,
@@ -48,13 +46,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 					Description: "The service principal id which should be used.",
 				},
 				"serviceprincipalkey": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					Description:      "The service principal secret which should be used.",
-					Sensitive:        true,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The service principal secret which should be used.",
+					Sensitive:   true,
 				},
-				secretHashKey: secretHashSchema,
 			},
 		},
 	}
@@ -254,22 +250,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointAuthenticationScheme AzureRmEndpointAuthenticationScheme) interface{} {
-	// secret value won't return by service and should not be overwritten
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-		}}
-	} else {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-			hashKey:               hashValue,
-		}}
-	}
-}
-
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
@@ -282,9 +262,12 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	}
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
-		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash, serviceEndPointType)
-		d.Set("credentials", credentials)
+		if _, ok := d.GetOk("credentials"); !ok {
+			credentials := make(map[string]interface{})
+			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
+			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
+			d.Set("credentials", []interface{}{credentials})
+		}
 	}
 
 	s := strings.SplitN(scope, "/", -1)

@@ -42,7 +42,6 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
 				),
 			}, {
@@ -55,7 +54,6 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidSecond),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeySecond),
 				),
 			},
@@ -86,7 +84,6 @@ func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalid),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkey),
 				),
 			},
@@ -101,7 +98,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 
 	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
 	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-	subscriptionName := "Microsoft Azure DEMO"
+	subscriptionName := "Visual Studio Enterprise"
 
 	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") != "" {
 		subscriptionId = os.Getenv("TEST_ARM_SUBSCRIPTION_ID")

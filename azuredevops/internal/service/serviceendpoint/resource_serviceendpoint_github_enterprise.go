@@ -8,36 +8,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-)
-
-const (
-	personalAccessTokenGithubEnterprise = "personal_access_token"
 )
 
 // ResourceServiceEndpointGitHubEnterprise schema and implementation for github-enterprise service endpoint resource
 func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHubEnterprise, expandServiceEndpointGitHubEnterprise)
-	authPersonal := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			personalAccessTokenGithubEnterprise: {
-				Type:         schema.TypeString,
-				Required:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
-				Description:  "The GitHub personal access token which should be used.",
-				Sensitive:    true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-			},
-		},
-	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithubEnterprise)
-	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:     schema.TypeSet,
+		Required: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     authPersonal,
-		Required: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"personal_access_token": {
+					Type:         schema.TypeString,
+					Required:     true,
+					Sensitive:    true,
+					DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
+					Description:  "The GitHub personal access token which should be used.",
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
+			},
+		},
 	}
 
 	r.Schema["url"] = &schema.Schema{
@@ -64,8 +56,6 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
-			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}
 	}
