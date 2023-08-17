@@ -22,8 +22,6 @@ if [ ! "${FILE_NAME}" ]; then
   exit 1
 fi
 
-#cat "${FILE_NAME}"
-cp "${FILE_NAME}" "${FILE_NAME}.bak"
 gpg --dearmor "${FILE_NAME}"
 mv "${FILE_NAME}.gpg" "${FILE_NAME}"
 #rm "${FILE_NAME}"
