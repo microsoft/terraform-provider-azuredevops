@@ -24,7 +24,6 @@ fi
 
 gpg --dearmor "${FILE_NAME}"
 mv "${FILE_NAME}.gpg" "${FILE_NAME}"
-#rm "${FILE_NAME}"
 
 echo "Print file info"
 ls -al
