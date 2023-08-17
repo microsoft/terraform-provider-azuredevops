@@ -128,16 +128,6 @@ resource "azurerm_user_assigned_identity" "example" {
   resource_group_name = "azurerm_resource_group.identity.name"
 }
 
-resource "azurerm_federated_identity_credential" "example" {
-  name                = "example-federated-credential"
-  resource_group_name = azurerm_resource_group.identity.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = "https://app.vstoken.visualstudio.com"
-  parent_id           = azurerm_user_assigned_identity.example.id
-  subject             = "sc://organizationName/projectName/${local.service_connection_name}"
-  #NOTE: The federated credential subject is formed from the Azure DevOps Organisation, Project and the Service Connection name.
-}
-
 resource "azuredevops_serviceendpoint_azurerm" "example" {
   project_id                             = azuredevops_project.example.id
   service_endpoint_name                  = local.service_connection_name
@@ -149,6 +139,15 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Example Subscription Name"
+}
+
+resource "azurerm_federated_identity_credential" "example" {
+  name                = "example-federated-credential"
+  resource_group_name = azurerm_resource_group.identity.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_issuer
+  parent_id           = azurerm_user_assigned_identity.example.id
+  subject             = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_subject
 }
 ```
 
@@ -229,6 +228,8 @@ The following attributes are exported:
 - `id` - The ID of the service endpoint.
 - `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
+- `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/f66a4bc2-08ad-4ec0-a25e-e769d6b3b294`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+- `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://my-organisation/my-project/my-service-connection-name`.
 
 ## Relevant Links
 
