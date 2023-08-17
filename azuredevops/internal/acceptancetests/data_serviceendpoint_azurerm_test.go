@@ -6,6 +6,10 @@ package acceptancetests
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"path"
+	"regexp"
 	"testing"
 
 	"github.com/google/uuid"
@@ -63,6 +67,43 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRM_with_WorkloadIdentityFederation_DataSource(t *testing.T) {
+	serviceEndpointAzureRMName := testutils.GenerateResourceName()
+	projectName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceEndpointAuthenticationScheme := "WorkloadIdentityFederation"
+
+	azureDevOpsOrgName := "terraform-provider-azuredevops"
+
+	if os.Getenv("AZDO_ORG_SERVICE_URL") != "" {
+		azureDevOpsOrgUrl,_ := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
+		azureDevOpsOrgName = path.Base(azureDevOpsOrgUrl.Path)
+	}
+
+	createServiceEndpointAzureRMWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
+		testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointAzureRMName, serviceprincipalid, serviceEndpointAuthenticationScheme),
+		testutils.HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointAzureRMName),
+	)
+
+	tfNode := "data.azuredevops_serviceendpoint_azurerm.serviceendpointrm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: createServiceEndpointAzureRMWithServiceEndpointNameData,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointAzureRMName),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
+					resource.TestMatchResourceAttr(tfNode, "workload_identity_federation_issuer", regexp.MustCompile("^https://vstoken.dev.azure.com/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")),
+					resource.TestCheckResourceAttr(tfNode, "workload_identity_federation_subject", fmt.Sprintf("sc://%s/%s/%s", azureDevOpsOrgName, projectName, serviceEndpointAzureRMName)),
 				),
 			},
 		},

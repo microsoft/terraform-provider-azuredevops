@@ -72,7 +72,19 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
 	}
 
-	r.SchemaVersion = 2
+	r.Schema["workload_identity_federation_issuer"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The issuer of the workload identity federation service principal.",
+	}
+
+	r.Schema["workload_identity_federation_subject"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The subject of the workload identity federation service principal.",
+	}
+
+	r.SchemaVersion = 3
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
 			Type:    migration.ServiceEndpointAzureRmSchemaV0ToV1().CoreConfigSchema().ImpliedType(),
@@ -83,6 +95,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 			Type:    migration.ServiceEndpointAzureRmSchemaV1ToV2().CoreConfigSchema().ImpliedType(),
 			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV1ToV2(),
 			Version: 1,
+		},
+		{
+			Type:    migration.ServiceEndpointAzureRmSchemaV2ToV3().CoreConfigSchema().ImpliedType(),
+			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV2ToV3(),
+			Version: 2,
 		},
 	}
 	return r
@@ -255,10 +272,16 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
+
 	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
 		d.Set("environment", v)
+	}
+
+	if serviceEndPointType == WorkloadIdentityFederation {
+		d.Set("workload_identity_federation_issuer", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationIssuer"])
+		d.Set("workload_identity_federation_subject", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationSubject"])
 	}
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
