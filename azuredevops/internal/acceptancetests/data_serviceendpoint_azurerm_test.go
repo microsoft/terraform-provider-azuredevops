@@ -82,7 +82,7 @@ func TestAccServiceEndpointAzureRM_with_WorkloadIdentityFederation_DataSource(t 
 	azureDevOpsOrgName := "terraform-provider-azuredevops"
 
 	if os.Getenv("AZDO_ORG_SERVICE_URL") != "" {
-		azureDevOpsOrgUrl,_ := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
+		azureDevOpsOrgUrl, _ := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
 		azureDevOpsOrgName = path.Base(azureDevOpsOrgUrl.Path)
 	}
 

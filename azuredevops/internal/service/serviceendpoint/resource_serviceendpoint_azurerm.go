@@ -272,7 +272,6 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
-
 	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
