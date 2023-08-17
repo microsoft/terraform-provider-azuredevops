@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -304,23 +303,15 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		serviceAccountSet := d.Get("service_account").([]interface{})
 
 		if len(serviceAccountSet) == 0 {
-			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "token")
-			newHashCert, hashKeyCert := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, nil, "ca_cert")
 			serviceAccount = map[string]interface{}{
-				"token":      "",
-				"ca_cert":    "",
-				hashKeyToken: newHashToken,
-				hashKeyCert:  newHashCert,
+				"token":   "",
+				"ca_cert": "",
 			}
 		} else {
 			configuration := serviceAccountSet[0].(map[string]interface{})
-			newHashToken, hashKeyToken := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "token")
-			newHashCert, hashKeyCert := tfhelper.HelpFlattenSecretNested(d, resourceBlockServiceAccount, configuration, "ca_cert")
 			serviceAccount = map[string]interface{}{
-				"token":      configuration["token"].(string),
-				"ca_cert":    configuration["ca_cert"].(string),
-				hashKeyToken: newHashToken,
-				hashKeyCert:  newHashCert,
+				"token":   configuration["token"].(string),
+				"ca_cert": configuration["ca_cert"].(string),
 			}
 		}
 

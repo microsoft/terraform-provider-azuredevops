@@ -27,7 +27,7 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"username": "DH_TEST_username",
-			"password": "DH_TEST_password",
+			"password": "",
 			"email":    "DH_TEST_email",
 			"registry": "https://index.docker.io/v1/",
 		},

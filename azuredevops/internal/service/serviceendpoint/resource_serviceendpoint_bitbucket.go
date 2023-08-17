@@ -11,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
