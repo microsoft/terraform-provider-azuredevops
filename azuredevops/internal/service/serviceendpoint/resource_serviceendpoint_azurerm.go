@@ -111,11 +111,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
-	// NOTE: This is a temporary workaround for a bug in the Azure DevOps API. This will be removed once the API is fixed.
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
-	}
-
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
 	subName := d.Get("azurerm_subscription_name").(string)
