@@ -38,6 +38,7 @@ Deprecate hash properties, all the hash properties have been removed.
   * `azuredevops_serviceendpoint_runpipeline` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
   * `azuredevops_serviceendpoint_sonarqube` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
   * `azuredevops_serviceendpoint_ssh` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+
 ## 0.7.0
 
 FEATURES:
