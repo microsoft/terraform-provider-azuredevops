@@ -84,7 +84,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Description: "The subject of the workload identity federation service principal.",
 	}
 
-	r.SchemaVersion = 3
+	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
 			Type:    migration.ServiceEndpointAzureRmSchemaV0ToV1().CoreConfigSchema().ImpliedType(),
@@ -95,11 +95,6 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 			Type:    migration.ServiceEndpointAzureRmSchemaV1ToV2().CoreConfigSchema().ImpliedType(),
 			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV1ToV2(),
 			Version: 1,
-		},
-		{
-			Type:    migration.ServiceEndpointAzureRmSchemaV2ToV3().CoreConfigSchema().ImpliedType(),
-			Upgrade: migration.ServiceEndpointAzureRmStateUpgradeV2ToV3(),
-			Version: 2,
 		},
 	}
 	return r
