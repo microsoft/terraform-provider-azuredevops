@@ -31,9 +31,26 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	makeUnprotectedSchema(r, "azurecr_spn_tenantid", "ACR_TENANT_ID", "The service principal tenant id which should be used.")
-	makeUnprotectedSchema(r, "azurecr_subscription_id", "ACR_SUBSCRIPTION_ID", "The Azure subscription Id which should be used.")
-	makeUnprotectedSchema(r, "azurecr_subscription_name", "ACR_SUBSCRIPTION_NAME", "The Azure subscription name which should be used.")
+	r.Schema["azurecr_spn_tenantid"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("ACR_TENANT_ID", nil),
+		Description: "The service principal tenant id which should be used.",
+	}
+
+	r.Schema["azurecr_subscription_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_ID", nil),
+		Description: "The Azure subscription Id which should be used.",
+	}
+
+	r.Schema["azurecr_subscription_name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_NAME", nil),
+		Description: "The Azure subscription name which should be used.",
+	}
 
 	r.Schema["resource_group"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -82,7 +99,7 @@ func resourceServiceEndpointAzureCRCreate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}

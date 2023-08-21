@@ -2,9 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -144,8 +144,20 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 			},
 		},
 	}
-	makeProtectedSchema(resourceElemSchema, "ca_cert", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", "Secret cert")
-	makeProtectedSchema(resourceElemSchema, "token", "AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", "Secret token")
+	r.Schema["ca_cert"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Sensitive:   true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", nil),
+		Description: "Secret cert",
+	}
+	r.Schema["token"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Sensitive:   true,
+		DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
+		Description: "Secret token",
+	}
 	r.Schema[resourceBlockServiceAccount] = &schema.Schema{
 		Type:        schema.TypeList,
 		MaxItems:    1,
@@ -198,7 +210,7 @@ func resourceServiceEndpointKubernetesCreate(d *schema.ResourceData, m interface
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}

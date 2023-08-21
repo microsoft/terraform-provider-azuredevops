@@ -72,7 +72,7 @@ func resourceServiceEndpointDockerRegistryCreate(d *schema.ResourceData, m inter
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}

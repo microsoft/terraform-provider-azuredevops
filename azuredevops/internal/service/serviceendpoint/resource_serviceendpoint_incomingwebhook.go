@@ -2,6 +2,8 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -9,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-	"time"
 )
 
 // ResourceServiceEndpointIncomingWebhook schema and implementation for incoming webhook service endpoint resource
@@ -58,7 +59,7 @@ func resourceServiceEndpointIncomingWebhookCreate(d *schema.ResourceData, m inte
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}

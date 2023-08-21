@@ -2,9 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointJenkins schema and implementation for Jenkins service endpoint resource
@@ -79,7 +79,7 @@ func resourceServiceEndpointJenkinsCreate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}

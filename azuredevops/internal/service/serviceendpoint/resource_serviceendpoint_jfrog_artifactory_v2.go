@@ -106,7 +106,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Create(d *schema.ResourceData, m i
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}
