@@ -98,7 +98,6 @@ func resourceServiceEndpointGcpTerraformRead(d *schema.ResourceData, m interface
 
 	flattenServiceEndpointGcp(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	return nil
-
 }
 
 func resourceServiceEndpointGcpTerraformUpdate(d *schema.ResourceData, m interface{}) error {
@@ -116,7 +115,6 @@ func resourceServiceEndpointGcpTerraformUpdate(d *schema.ResourceData, m interfa
 
 	flattenServiceEndpointGcp(d, updatedServiceEndpoint, projectID)
 	return resourceServiceEndpointGcpTerraformRead(d, m)
-
 }
 
 func resourceServiceEndpointGcpTerraformDelete(d *schema.ResourceData, m interface{}) error {
@@ -127,7 +125,6 @@ func resourceServiceEndpointGcpTerraformDelete(d *schema.ResourceData, m interfa
 	}
 
 	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
-
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
