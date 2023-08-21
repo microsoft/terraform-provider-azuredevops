@@ -2,15 +2,16 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
@@ -64,13 +65,13 @@ func resourceServiceEndpointBitbucketCreate(d *schema.ResourceData, m interface{
 }
 
 func resourceServiceEndpointBitbucketRead(d *schema.ResourceData, m interface{}) error {
-
+	clients := m.(*client.AggregatedClient)
 	getArgs, err := serviceEndpointGetArgs(d)
 	if err != nil {
 		return err
 	}
 
-	serviceEndpoint, err := getServiceEndpoint1111(*getArgs, m.(*client.AggregatedClient))
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -90,7 +91,7 @@ func resourceServiceEndpointBitbucketUpdate(d *schema.ResourceData, m interface{
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint1111(clients, serviceEndpoint)
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
 
 	if err != nil {
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)

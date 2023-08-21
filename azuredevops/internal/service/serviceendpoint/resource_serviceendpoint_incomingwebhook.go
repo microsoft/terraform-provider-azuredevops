@@ -1,15 +1,34 @@
 package serviceendpoint
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"time"
 )
 
 // ResourceServiceEndpointIncomingWebhook schema and implementation for incoming webhook service endpoint resource
 func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointIncomingWebhook, expandServiceEndpointIncomingWebhook)
+	r := &schema.Resource{
+		Create: resourceServiceEndpointIncomingWebhookCreate,
+		Read:   resourceServiceEndpointIncomingWebhookRead,
+		Update: resourceServiceEndpointIncomingWebhookUpdate,
+		Delete: resourceServiceEndpointIncomingWebhookDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
+	}
+
 	r.Schema["webhook_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
@@ -30,6 +49,69 @@ func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
 		Description: "Optional http header name on which checksum will be sent.",
 	}
 	return r
+}
+
+func resourceServiceEndpointIncomingWebhookCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointIncomingWebhook(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointIncomingWebhookRead(d, m)
+}
+
+func resourceServiceEndpointIncomingWebhookRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointIncomingWebhook(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	return nil
+}
+
+func resourceServiceEndpointIncomingWebhookUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointIncomingWebhook(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointIncomingWebhook(d, updatedServiceEndpoint, projectID)
+	return resourceServiceEndpointIncomingWebhookRead(d, m)
+}
+
+func resourceServiceEndpointIncomingWebhookDelete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointIncomingWebhook(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure

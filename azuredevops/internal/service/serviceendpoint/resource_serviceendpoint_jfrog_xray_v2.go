@@ -3,7 +3,11 @@ package serviceendpoint
 import (
 	"errors"
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,7 +18,20 @@ import (
 
 // ResourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog Artifactory service endpoint resource
 func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactoryV2, expandServiceEndpointJFrogXRayV2)
+	r := &schema.Resource{
+		Create: resourceServiceEndpointJFrogXRayV2Create,
+		Read:   resourceServiceEndpointJFrogXRayV2Read,
+		Update: resourceServiceEndpointJFrogXRayV2Update,
+		Delete: resourceServiceEndpointJFrogXRayV2Delete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
+	}
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -80,6 +97,69 @@ func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
 	}
 
 	return r
+}
+
+func resourceServiceEndpointJFrogXRayV2Create(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointJFrogXRayV2(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint111(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointJFrogXRayV2Read(d, m)
+}
+
+func resourceServiceEndpointJFrogXRayV2Read(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	return nil
+}
+
+func resourceServiceEndpointJFrogXRayV2Update(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointJFrogXRayV2(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointArtifactoryV2(d, updatedServiceEndpoint, projectID)
+	return resourceServiceEndpointJFrogXRayV2Read(d, m)
+}
+
+func resourceServiceEndpointJFrogXRayV2Delete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointJFrogXRayV2(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure

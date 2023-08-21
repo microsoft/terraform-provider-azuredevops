@@ -318,11 +318,6 @@ func createServiceEndpoint111(d *schema.ResourceData, clients *client.Aggregated
 	return createdServiceEndpoint, err
 }
 
-func getServiceEndpoint1111(args serviceendpoint.GetServiceEndpointDetailsArgs, clients *client.AggregatedClient) (*serviceendpoint.ServiceEndpoint, error) {
-	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, args)
-	return serviceEndpoint, err
-}
-
 func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetServiceEndpointDetailsArgs, error) {
 	var serviceEndpointID *uuid.UUID
 	parsedServiceEndpointID, err := uuid.Parse(d.Id())
@@ -340,7 +335,7 @@ func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetService
 	}, nil
 }
 
-func updateServiceEndpoint1111(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
 	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
@@ -407,23 +402,23 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 	}
 }
 
-func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
-		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
-	}
-
-	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
-		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
-	}
-	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
-		clients.Ctx,
-		serviceendpoint.UpdateServiceEndpointArgs{
-			Endpoint:   endpoint,
-			EndpointId: endpoint.Id,
-		})
-
-	return updatedServiceEndpoint, err
-}
+//func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+//	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
+//		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
+//	}
+//
+//	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
+//		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
+//	}
+//	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
+//		clients.Ctx,
+//		serviceendpoint.UpdateServiceEndpointArgs{
+//			Endpoint:   endpoint,
+//			EndpointId: endpoint.Id,
+//		})
+//
+//	return updatedServiceEndpoint, err
+//}
 
 func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *uuid.UUID, serviceEndpointID *uuid.UUID, timeout time.Duration) error {
 	if err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
