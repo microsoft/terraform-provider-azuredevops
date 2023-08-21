@@ -72,6 +72,18 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
 	}
 
+	r.Schema["workload_identity_federation_issuer"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The issuer of the workload identity federation service principal.",
+	}
+
+	r.Schema["workload_identity_federation_subject"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The subject of the workload identity federation service principal.",
+	}
+
 	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
@@ -93,11 +105,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
-
-	// NOTE: This is a temporary workaround for a bug in the Azure DevOps API. This will be removed once the API is fixed.
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
-	}
 
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
@@ -259,6 +266,11 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
 		d.Set("environment", v)
+	}
+
+	if serviceEndPointType == WorkloadIdentityFederation {
+		d.Set("workload_identity_federation_issuer", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationIssuer"])
+		d.Set("workload_identity_federation_subject", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationSubject"])
 	}
 
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
