@@ -181,8 +181,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -213,8 +212,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -246,8 +244,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
