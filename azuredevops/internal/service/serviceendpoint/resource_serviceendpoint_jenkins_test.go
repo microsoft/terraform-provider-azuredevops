@@ -37,7 +37,7 @@ var jenkinsTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Id:          &jenkinsTestServiceEndpointIDpassword,
 	Name:        converter.String("UNIT_TEST_CONN_NAME"),
 	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:        converter.String("jenkins"),
+	Type:        converter.String("Jenkins"),
 	Url:         converter.String("https://www.jenkins.com"),
 	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
@@ -68,30 +68,27 @@ func TestServiceEndpointJenkins_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDpassword)
 }
 
-// verifies that if an error is produced on create, the error is not swallowed
-func testServiceEndpointJenkins_Create_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointJenkins(resourceData, ep, id)
+	flattenServiceEndpointJenkins(resourceData, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDpassword)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: ep}
+	seJenkins, _, _ := expandServiceEndpointJenkins(resourceData)
 	buildClient.
 		EXPECT().
-		CreateServiceEndpoint(clients.Ctx, expectedArgs).
+		CreateServiceEndpoint(clients.Ctx, serviceendpoint.CreateServiceEndpointArgs{Endpoint: seJenkins}).
 		Return(nil, errors.New("CreateServiceEndpoint() Failed")).
 		Times(1)
 
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
-}
-func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointJenkins_Create_DoesNotSwallowError(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDpassword)
+
 }
 
 // verifies that if an error is produced on read, the error is not swallowed

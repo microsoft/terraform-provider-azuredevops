@@ -4,17 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointMaven schema and implementation for Maven service endpoint resource
 func ResourceServiceEndpointMaven() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointMaven, expandServiceEndpointMaven)
+	r := &schema.Resource{
+		Create: resourceServiceEndpointMavenCreate,
+		Read:   resourceServiceEndpointMavenRead,
+		Update: resourceServiceEndpointMavenUpdate,
+		Delete: resourceServiceEndpointMavenDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
+	}
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -41,39 +58,21 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 		Description:  "This is the ID of the server that matches the id element of the repository/mirror that Maven tries to connect to",
 	}
 
-	at := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"token": {
-				Description: "The Maven access token.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-			},
-		},
-	}
-
-	aup := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"username": {
-				Description: "The Maven user name.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"password": {
-				Description: "The Maven password.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-			},
-		},
-	}
-
 	r.Schema["authentication_token"] = &schema.Schema{
-		Type:         schema.TypeList,
-		Optional:     true,
-		MinItems:     1,
-		MaxItems:     1,
-		Elem:         at,
+		Type:     schema.TypeList,
+		Optional: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"token": {
+					Description: "The Maven access token.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+				},
+			},
+		},
 		ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
 	}
 
@@ -82,10 +81,87 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 		Optional: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     aup,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"username": {
+					Description: "The Maven user name.",
+					Type:        schema.TypeString,
+					Required:    true,
+				},
+				"password": {
+					Description: "The Maven password.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+				},
+			},
+		},
 	}
 
 	return r
+}
+
+func resourceServiceEndpointMavenCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointMaven(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointMavenRead(d, m)
+}
+
+func resourceServiceEndpointMavenRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointMaven(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	return nil
+}
+
+func resourceServiceEndpointMavenUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointMaven(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointMaven(d, updatedServiceEndpoint, projectID)
+	return resourceServiceEndpointMavenRead(d, m)
+}
+
+func resourceServiceEndpointMavenDelete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointMaven(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
