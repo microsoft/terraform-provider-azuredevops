@@ -123,41 +123,22 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 	resourceElemSchema := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"ca_cert": {
-				Type:         schema.TypeString,
-				Sensitive:    true,
-				Optional:     true,
-				Description:  "Service account certificate",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return true
-				},
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", nil),
+				Description: "Secret cert",
 			},
 			"token": {
-				Type:         schema.TypeString,
-				Sensitive:    true,
-				Optional:     true,
-				Description:  "Token",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return true
-				},
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
+				Description: "Secret token",
 			},
 		},
 	}
-	r.Schema["ca_cert"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", nil),
-		Description: "Secret cert",
-	}
-	r.Schema["token"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
-		Description: "Secret token",
-	}
+
 	r.Schema[resourceBlockServiceAccount] = &schema.Schema{
 		Type:        schema.TypeList,
 		MaxItems:    1,
