@@ -142,19 +142,19 @@ func TestAccServiceEndpointNuGet_RequiresImportErrorStep(t *testing.T) {
 func hclSvcEndpointNuGetResourceApiKey(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_nuget" "test" {
-	project_id             = azuredevops_project.test.id
-	service_endpoint_name  = "%[2]s"
-	api_key			   = "apikey"
-	feed_url			   = "https://api.nuget.org/v3/index.json"
-	description        = "%[2]s-description"
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%[2]s"
+  api_key               = "apikey"
+  feed_url              = "https://api.nuget.org/v3/index.json"
+  description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
 
 }
@@ -162,19 +162,19 @@ resource "azuredevops_serviceendpoint_nuget" "test" {
 func hclSvcEndpointNuGetResourcePersonalAccessToken(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_nuget" "test" {
-	project_id             = azuredevops_project.test.id
-	service_endpoint_name  = "%[2]s"
-	personal_access_token  = "pat"
-	feed_url			   = "https://api.nuget.org/v3/index.json"
-	description        = "%[2]s-description"
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%[2]s"
+  personal_access_token = "pat"
+  feed_url              = "https://api.nuget.org/v3/index.json"
+  description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
 
 }
@@ -182,20 +182,20 @@ resource "azuredevops_serviceendpoint_nuget" "test" {
 func hclSvcEndpointNuGetResourceUnamePwd(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-	name       = "%[1]s"
-	description        = "%[1]s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
 resource "azuredevops_serviceendpoint_nuget" "test" {
-	project_id             = azuredevops_project.test.id
-	service_endpoint_name  = "%[2]s"
-	username			   = "uname"
-	password			   = "pwd"
-	feed_url			   = "https://api.nuget.org/v3/index.json"
-	description        = "%[2]s-description"
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%[2]s"
+  username              = "uname"
+  password              = "pwd"
+  feed_url              = "https://api.nuget.org/v3/index.json"
+  description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
 
 }
@@ -205,11 +205,11 @@ func hclSvcEndpointNugGetResourceRequiresImport(projectName string, serviceEndpo
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_nuget" "import" {
-  project_id                = azuredevops_serviceendpoint_nuget.test.project_id
+  project_id            = azuredevops_serviceendpoint_nuget.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_nuget.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_nuget.test.description
-  api_key          = azuredevops_serviceendpoint_nuget.test.api_key
-  feed_url          = azuredevops_serviceendpoint_nuget.test.feed_url
+  description           = azuredevops_serviceendpoint_nuget.test.description
+  api_key               = azuredevops_serviceendpoint_nuget.test.api_key
+  feed_url              = azuredevops_serviceendpoint_nuget.test.feed_url
 }
 `, template)
 }
