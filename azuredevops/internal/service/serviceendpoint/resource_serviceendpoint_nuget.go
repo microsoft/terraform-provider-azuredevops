@@ -183,6 +183,5 @@ func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *servic
 	case "UsernamePassword":
 		d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 		d.Set("password", d.Get("password"))
-		fmt.Printf("")
 	}
 }
