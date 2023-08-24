@@ -70,6 +70,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_github_enterprise":      serviceendpoint.ResourceServiceEndpointGitHubEnterprise(),
 			"azuredevops_serviceendpoint_kubernetes":             serviceendpoint.ResourceServiceEndpointKubernetes(),
 			"azuredevops_serviceendpoint_maven":                  serviceendpoint.ResourceServiceEndpointMaven(),
+			"azuredevops_serviceendpoint_nuget":                  serviceendpoint.ResourceServiceEndpointNuGet(),
 			"azuredevops_serviceendpoint_nexus":                  serviceendpoint.ResourceServiceEndpointNexus(),
 			"azuredevops_serviceendpoint_jenkins":                serviceendpoint.ResourceServiceEndpointJenkins(),
 			"azuredevops_serviceendpoint_octopusdeploy":          serviceendpoint.ResourceServiceEndpointOctopusDeploy(),
