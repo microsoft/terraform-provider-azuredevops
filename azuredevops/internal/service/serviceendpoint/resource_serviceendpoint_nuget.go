@@ -33,13 +33,14 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 	r.Schema["feed_url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
-		ValidateFunc: validation.StringIsNotEmpty,
+		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 	}
 
 	r.Schema["api_key"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Sensitive:     true,
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{"personal_access_token", "username", "password"},
 		AtLeastOneOf:  []string{"api_key", "personal_access_token", "username", "password"},
 	}
@@ -48,12 +49,14 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Sensitive:     true,
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{"api_key", "username", "password"},
 	}
 
 	r.Schema["username"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{"personal_access_token", "api_key"},
 		RequiredWith:  []string{"password"},
 	}
@@ -62,6 +65,7 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Sensitive:     true,
+		ValidateFunc:  validation.StringIsNotEmpty,
 		ConflictsWith: []string{"personal_access_token", "api_key"},
 		RequiredWith:  []string{"username"},
 	}
