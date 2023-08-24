@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -136,6 +137,42 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *uuid.UUI
 		return fmt.Errorf(" Wait for service endpoint to be deleted error. %v ", err)
 	}
 	return nil
+}
+
+func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, serviceEndpointID *string, maxRetries, retryInterval int) error {
+	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
+		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+			DataSourceDetails: &serviceendpoint.DataSourceDetails{
+				DataSourceName: converter.String("TestConnection"),
+			},
+			ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+			ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
+				Data:          endpoint.Data,
+				Authorization: endpoint.Authorization,
+				Url:           endpoint.Url,
+				Type:          endpoint.Type,
+			},
+		},
+		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+		EndpointId: serviceEndpointID,
+	}
+
+	var reqResult *serviceendpoint.ServiceEndpointRequestResult
+	var err error
+	log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: Initiating validation", *endpoint.Name))
+	for i := 0; i < maxRetries; i++ {
+		if reqResult, err = clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs); err != nil {
+			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: error during endpoint validation request", *endpoint.Name))
+			return err
+		} else if strings.EqualFold(*reqResult.StatusCode, "ok") {
+			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: successfully validated connection", *endpoint.Name))
+			return nil
+		}
+		log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: validation failed, retrying...", *endpoint.Name))
+		time.Sleep(time.Duration(retryInterval) * time.Second)
+	}
+
+	return fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage)
 }
 
 func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetServiceEndpointDetailsArgs, error) {

@@ -716,7 +716,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		var kvSecrets KeyVaultSecretResult
 		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
 		if err := json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
-			return nil, "", fmt.Errorf("Failed to parse the Azure Key valut secrets. Service response: %s . %v ", secretJson, err)
+			return nil, "", fmt.Errorf("Failed to parse the Azure Key value secrets. Service response: %s . %v ", secretJson, err)
 		}
 
 		token, err := getSkipToken(kvSecrets.NextLink)
@@ -725,7 +725,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		}
 		return &kvSecrets, token, nil
 	}
-	return nil, "", fmt.Errorf("Failed to get the Azure Key valut.  Erroe: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
+	return nil, "", fmt.Errorf("Failed to get the Azure Key value. Error: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
 }
 
 func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName string, projectID string, serviceEndpointID string, token string) (*serviceendpoint.ServiceEndpointRequestResult, error) {

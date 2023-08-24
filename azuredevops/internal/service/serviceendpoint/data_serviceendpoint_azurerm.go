@@ -23,7 +23,7 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 	if serviceEndpoint != nil {
 		(*serviceEndpoint.Data)["creationMode"] = ""
 		d.Set("service_endpoint_id", serviceEndpoint.Id.String())
-		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID)
+		flattenServiceEndpointAzureRM(d, serviceEndpoint, projectID, false)
 		return nil
 	}
 	return fmt.Errorf("Error looking up service endpoint!")
