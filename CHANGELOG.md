@@ -3,6 +3,7 @@
 FEATURES:
 
 * **New Resource** `azuredevops_serviceendpoint_nuget` [#866](https://github.com/microsoft/terraform-provider-azuredevops/pull/866)
+* **New Data Resource** `azuredevops_serviceendpoint_azurecr` [#867](https://github.com/microsoft/terraform-provider-azuredevops/pull/867)
 
 IMPROVEMENTS:
 
