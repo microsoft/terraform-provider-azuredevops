@@ -1,5 +1,14 @@
 ## 0.9.0 (Unreleased)
 
+FEATURES:
+
+* **New Resource** `azuredevops_serviceendpoint_nuget` [#866](https://github.com/microsoft/terraform-provider-azuredevops/pull/866)
+
+IMPROVEMENTS:
+
+* `azuredevops_serviceendpoint_azurerm ` - Add support for `workload_identity_federation_issuer` and `workload_identity_federation_subject` [#861](https://github.com/microsoft/terraform-provider-azuredevops/pull/861)
+* All service connections - Decouple create/read/update/delete from generic functions [#863](https://github.com/microsoft/terraform-provider-azuredevops/pull/863) 
+
 ## 0.8.0
 
 FEATURES:
