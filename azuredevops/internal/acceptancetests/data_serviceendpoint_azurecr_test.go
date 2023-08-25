@@ -41,8 +41,8 @@ resource "azuredevops_project" "test" {
 }
 
 resource "azuredevops_serviceendpoint_azurecr" "test" {
-  project_id            = azuredevops_project.test.id
-  service_endpoint_name = "%[1]s"
+  project_id                = azuredevops_project.test.id
+  service_endpoint_name     = "%[1]s"
   azurecr_subscription_id   = "%[2]s"
   azurecr_subscription_name = "%[3]s"
   azurecr_spn_tenantid      = "%[4]s"
@@ -51,7 +51,7 @@ resource "azuredevops_serviceendpoint_azurecr" "test" {
 }
 
 data "azuredevops_serviceendpoint_azurecr" "test" {
-  project_id          = azuredevops_project.test.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = azuredevops_serviceendpoint_azurecr.test.service_endpoint_name
 }
 `, name, os.Getenv("TEST_ARM_SUBSCRIPTION_ID"),
