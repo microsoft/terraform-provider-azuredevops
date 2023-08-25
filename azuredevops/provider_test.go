@@ -126,6 +126,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_sonarcloud",
+		"azuredevops_serviceendpoint_azurecr",
 	}
 
 	dataSources := Provider().DataSourcesMap
