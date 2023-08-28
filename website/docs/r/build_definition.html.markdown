@@ -147,8 +147,12 @@ The following arguments are supported:
 - `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
 - `repository` - (Required) A `repository` block as documented below.
 - `ci_trigger` - (Optional) Continuous Integration trigger.
-- `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
+- `pull_request_trigger` - (Optional) Pull Request Integration trigger.
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
+- `skip_first_run` - (Optional) Trigger the pipeline to run after the creation. Defaults to `true`.
+
+~> **Note** The first run(`skip_first_run = false`) will only be triggered on create.
+
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
 
 `variable` block supports the following:

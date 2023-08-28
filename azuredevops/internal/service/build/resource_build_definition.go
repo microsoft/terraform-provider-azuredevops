@@ -3,9 +3,6 @@ package build
 import (
 	"errors"
 	"fmt"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -13,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -369,7 +368,7 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
-	if skip := d.Get("skip_first_run").(bool); !skip {
+	if skpFirstRun := d.Get("skip_first_run").(bool); !skpFirstRun {
 
 		if err != nil {
 			return fmt.Errorf(" get pipeline runs failed: %+v", err)
@@ -392,7 +391,6 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 		}
 
 		if branch != nil && branch.Commit != nil {
-			log.Printf("DDDDD trigger pipeline first run. Get repository (%s)", *branch.Commit.CommitId)
 			_, err := clients.PipelinesClient.RunPipeline(clients.Ctx, pipelines.RunPipelineArgs{
 				Project:    converter.String(projectID),
 				PipelineId: createdBuildDefinition.Id,
