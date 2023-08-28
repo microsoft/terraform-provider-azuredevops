@@ -841,7 +841,7 @@ func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) stri
 	resource "azuredevops_build_definition" "build" {
 		project_id = azuredevops_project.project.id
 		name       = "%s"
-
+		skip_first_run = false
 		repository {
 			repo_type   = "TfsGit"
 			repo_id     = azuredevops_git_repository.repository.id

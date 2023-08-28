@@ -68,8 +68,7 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFirst),
 				),
 			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst,
-					buildDefinitionPathSecond),
+				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, buildDefinitionPathSecond),
 				Check: resource.ComposeTestCheckFunc(
 					checkBuildDefinitionExists(buildDefinitionNameFirst),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
@@ -106,7 +105,6 @@ func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
 				),
 			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:      tfBuildDefNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:       true,

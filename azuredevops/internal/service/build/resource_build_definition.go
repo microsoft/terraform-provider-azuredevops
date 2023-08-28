@@ -3,6 +3,9 @@ package build
 import (
 	"errors"
 	"fmt"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -341,6 +344,11 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"skip_first_run": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
@@ -361,6 +369,49 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
+	if skip := d.Get("skip_first_run").(bool); !skip {
+
+		if err != nil {
+			return fmt.Errorf(" get pipeline runs failed: %+v", err)
+		}
+
+		// trigger the first run
+		repo := d.Get("repository").([]interface{})[0].(map[string]interface{})
+		repoId := repo["repo_id"].(string)
+		branchName := repo["branch_name"].(string)
+
+		if strings.HasPrefix(branchName, "refs/heads/") {
+			branchName = branchName[len("refs/heads/"):]
+		}
+		branch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
+			RepositoryId: &repoId,
+			Name:         &branchName,
+		})
+		if err != nil {
+			return fmt.Errorf(" trigger pipeline first run. Get repository (%s) with ref: (%s). Error: %+v", repoId, branchName, err)
+		}
+
+		if branch != nil && branch.Commit != nil {
+			log.Printf("DDDDD trigger pipeline first run. Get repository (%s)", *branch.Commit.CommitId)
+			_, err := clients.PipelinesClient.RunPipeline(clients.Ctx, pipelines.RunPipelineArgs{
+				Project:    converter.String(projectID),
+				PipelineId: createdBuildDefinition.Id,
+				RunParameters: &pipelines.RunPipelineParameters{
+					Resources: &pipelines.RunResourcesParameters{
+						Repositories: &map[string]pipelines.RepositoryResourceParameters{
+							"self": {
+								RefName: converter.String("refs/heads/" + branchName),
+								Version: branch.Commit.CommitId,
+							},
+						},
+					},
+				},
+			})
+			if err != nil {
+				return fmt.Errorf(" queue pipeline first run failed: %+v", err)
+			}
+		}
+	}
 	flattenBuildDefinition(d, createdBuildDefinition, projectID)
 	return resourceBuildDefinitionRead(d, m)
 }
