@@ -278,26 +278,26 @@ func hclBuildDefinitionVariable(name, varVal, secretVarVal string) string {
 %s
 
 resource "azuredevops_build_definition" "test" {
-		project_id = azuredevops_project.test.id
-		name       = "%[2]s"
-		repository {
-			repo_type   = "TfsGit"
-			repo_id     = azuredevops_git_repository.test.id
-			branch_name = azuredevops_git_repository.test.default_branch
-			yml_path    = "azure-pipelines.yml"
-		}
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
 
-		variable {
-			name  = "FOO_VAR"
-			value = "%[3]s"
-		}
+  variable {
+    name  = "FOO_VAR"
+    value = "%[3]s"
+  }
 
-		variable {
-			name      = "BAR_VAR"
-			secret_value     = "%[4]s"
-			is_secret = true
-		}
-	}`, template, name, varVal, secretVarVal)
+  variable {
+    name         = "BAR_VAR"
+    secret_value = "%[4]s"
+    is_secret    = true
+  }
+}`, template, name, varVal, secretVarVal)
 }
 
 func hclBuildDefinitionSchedules(name string) string {

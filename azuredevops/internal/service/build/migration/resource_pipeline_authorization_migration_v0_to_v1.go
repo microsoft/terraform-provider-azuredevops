@@ -177,7 +177,7 @@ func BuildDefinitionSchemaV0ToV1() *schema.Resource {
 										Optional: true,
 										Default:  1,
 									},
-									"path_filter": &schema.Schema{
+									"path_filter": {
 										Type:     schema.TypeSet,
 										Optional: true,
 										Elem: &schema.Resource{
@@ -358,8 +358,7 @@ func BuildDefinitionSchemaV0ToV1() *schema.Resource {
 							Required: true,
 							MinItems: 1,
 							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validation.StringInSlice([]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}, false),
+								Type: schema.TypeString,
 							},
 						},
 						"schedule_only_with_changes": {
