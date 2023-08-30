@@ -184,9 +184,13 @@ func resourceGroupEntitlementDelete(d *schema.ResourceData, m interface{}) error
 	// most likely the local group was created by this resource
 	origin := d.Get("origin")
 	if origin == "vsts" {
-		clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
+		err = clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
 			GroupDescriptor: converter.String(d.Get("descriptor").(string)),
 		})
+
+		if err != nil {
+			return fmt.Errorf("Deleting Azure DevOps local group: %v", err)
+		}
 	}
 
 	return nil
