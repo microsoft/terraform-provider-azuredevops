@@ -378,7 +378,6 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	if skpFirstRun := d.Get("skip_first_run").(bool); !skpFirstRun {
-
 		if err != nil {
 			return fmt.Errorf(" get pipeline runs failed: %+v", err)
 		}
