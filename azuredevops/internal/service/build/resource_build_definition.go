@@ -359,7 +359,6 @@ func ResourceBuildDefinition() *schema.Resource {
 			},
 		},
 	}
-
 }
 
 func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
@@ -489,7 +488,6 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
-
 	return err
 }
 
