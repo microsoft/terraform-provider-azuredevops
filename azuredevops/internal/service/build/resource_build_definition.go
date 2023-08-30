@@ -14,6 +14,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build/migration"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -349,7 +350,16 @@ func ResourceBuildDefinition() *schema.Resource {
 				Default:  true,
 			},
 		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    migration.BuildDefinitionSchemaV0ToV1().CoreConfigSchema().ImpliedType(),
+				Upgrade: migration.BuildDefinitionStateUpgradeV0ToV1(),
+				Version: 0,
+			},
+		},
 	}
+
 }
 
 func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
