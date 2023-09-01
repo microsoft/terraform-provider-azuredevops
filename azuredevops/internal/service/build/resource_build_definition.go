@@ -417,7 +417,6 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 				}
 			}
 		}
-
 	}
 	flattenBuildDefinition(d, createdBuildDefinition, projectID)
 	return resourceBuildDefinitionRead(d, m)
