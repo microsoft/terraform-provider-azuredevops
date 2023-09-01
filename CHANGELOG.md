@@ -7,7 +7,8 @@ FEATURES:
 
 IMPROVEMENTS:
 
-* `azuredevops_serviceendpoint_azurerm ` - Add support for `workload_identity_federation_issuer` and `workload_identity_federation_subject` [#861](https://github.com/microsoft/terraform-provider-azuredevops/pull/861)
+* `azuredevops_serviceendpoint_azurerm` - Add support for `workload_identity_federation_issuer` and `workload_identity_federation_subject` [#861](https://github.com/microsoft/terraform-provider-azuredevops/pull/861)
+* `azuredevops_build_definition` - Add support for `skip_first_run` [#871](https://github.com/microsoft/terraform-provider-azuredevops/pull/871)
 * All service connections - Decouple create/read/update/delete from generic functions [#863](https://github.com/microsoft/terraform-provider-azuredevops/pull/863)
 * Update document REST API link [#869](https://github.com/microsoft/terraform-provider-azuredevops/pull/869)
 
