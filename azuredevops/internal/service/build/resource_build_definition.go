@@ -378,7 +378,6 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 
 	features := buildDefinitionFeatures(d)
 	if features != nil && len(features) != 0 {
-
 		if v, ok := features["skip_first_run"]; ok {
 			if skipFirstRun := v.(bool); !skipFirstRun {
 				// trigger the first run
