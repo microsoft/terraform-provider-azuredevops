@@ -246,10 +246,15 @@ func resourceGroupEntitlementUpdate(d *schema.ResourceData, m interface{}) error
 
 func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	_, err := uuid.Parse(d.Id())
+	uuidRegexp := regexp.MustCompile("^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$")
+
 	if err != nil {
 		upn := d.Id()
-		
+
 		clients := m.(*client.AggregatedClient)
+		if !uuidRegexp.MatchString(upn) {
+			return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
+		}
 		result, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 			SearchFilter: converter.String("General"),
 			FilterValue:  &upn,
