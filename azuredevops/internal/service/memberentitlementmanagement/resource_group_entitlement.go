@@ -32,8 +32,8 @@ func ResourceGroupEntitlement() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGroupEntitlementCreate,
 		Read:   resourceGroupEntitlementRead,
-		Delete: resourceGroupEntitlementDelete,
 		Update: resourceGroupEntitlementUpdate,
+		Delete: resourceGroupEntitlementDelete,
 		Importer: &schema.ResourceImporter{
 			State: importGroupEntitlement,
 		},
