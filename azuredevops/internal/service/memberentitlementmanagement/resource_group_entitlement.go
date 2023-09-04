@@ -41,7 +41,6 @@ func ResourceGroupEntitlement() *schema.Resource {
 			"principal_name": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 			"display_name": {
 				Type:          schema.TypeString,
@@ -135,7 +134,7 @@ func resourceGroupEntitlementCreate(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf("Creating group entitlement: %v", err)
 	}
 
-	flattenGroupEntitlement(d, addedGroupEntitlement)
+	d.SetId(addedGroupEntitlement.Id.String())
 	return resourceGroupEntitlementRead(d, m)
 }
 
@@ -245,15 +244,11 @@ func resourceGroupEntitlementUpdate(d *schema.ResourceData, m interface{}) error
 	return resourceGroupEntitlementRead(d, m)
 }
 
-var uuidRegexp = regexp.MustCompile("^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$")
-
 func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	_, err := uuid.Parse(d.Id())
 	if err != nil {
 		upn := d.Id()
-		if !uuidRegexp.MatchString(upn) {
-			return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
-		}
+		
 		clients := m.(*client.AggregatedClient)
 		result, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 			SearchFilter: converter.String("General"),
