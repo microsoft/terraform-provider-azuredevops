@@ -145,7 +145,9 @@ func resourceGroupEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error parsing GroupEntitlementID: %s. %v", groupEntitlementID, err)
 	}
-	groupEntitlement, err := readGroupEntitlement(clients, &id)
+	groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
+		GroupId: &id,
+	})
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
@@ -273,12 +275,6 @@ func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Re
 		d.SetId((*result)[0].Id.String())
 	}
 	return []*schema.ResourceData{d}, nil
-}
-
-func readGroupEntitlement(clients *client.AggregatedClient, id *uuid.UUID) (*memberentitlementmanagement.GroupEntitlement, error) {
-	return clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
-		GroupId: id,
-	})
 }
 
 func flattenGroupEntitlement(d *schema.ResourceData, groupEntitlement *memberentitlementmanagement.GroupEntitlement) {
