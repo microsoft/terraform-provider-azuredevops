@@ -2,7 +2,6 @@ package memberentitlementmanagement
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/ahmetb/go-linq"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
@@ -247,33 +245,23 @@ func resourceGroupEntitlementUpdate(d *schema.ResourceData, m interface{}) error
 }
 
 func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	_, err := uuid.Parse(d.Id())
-	uuidRegexp := regexp.MustCompile("^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$")
+	upn := d.Id()
+	id, err := uuid.Parse(upn)
 
 	if err != nil {
-		upn := d.Id()
-
-		clients := m.(*client.AggregatedClient)
-		if !uuidRegexp.MatchString(upn) {
-			return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
-		}
-		result, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
-			SearchFilter: converter.String("General"),
-			FilterValue:  &upn,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		if result == nil || len(*result) <= 0 {
-			return nil, fmt.Errorf("No entitlement found for [%s]", upn)
-		}
-		if len(*result) > 1 {
-			return nil, fmt.Errorf("More than one entitle found for [%s]", upn)
-		}
-
-		d.SetId((*result)[0].Id.String())
+		return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
 	}
+
+	clients := m.(*client.AggregatedClient)
+	result, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
+		GroupId: &id,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error getting the group entitlement with supplied id %s: %s", upn, err)
+	}
+
+	d.SetId((*result).Id.String())
+
 	return []*schema.ResourceData{d}, nil
 }
 

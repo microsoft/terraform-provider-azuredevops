@@ -274,15 +274,23 @@ func TestGroupEntitlement_Import_TestID(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id := uuid.New().String()
+	id := uuid.New()
 	resourceData := schema.TestResourceDataRaw(t, ResourceGroupEntitlement().Schema, nil)
-	resourceData.SetId(id)
+	resourceData.SetId(id.String())
+
+	mockGroupEntitlement := getMockGroupEntitlement(&id, "", "", "", "", "", "")
+	memberEntitlementClient.
+		EXPECT().
+		GetGroupEntitlement(gomock.Any(), memberentitlementmanagement.GetGroupEntitlementArgs{
+			GroupId: mockGroupEntitlement.Id,
+		}).
+		Return(mockGroupEntitlement, nil)
 
 	d, err := importGroupEntitlement(resourceData, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 	assert.Len(t, d, 1)
-	assert.Equal(t, id, d[0].Id())
+	assert.Equal(t, id.String(), d[0].Id())
 }
 
 // TestGroupEntitlement_Import_TestInvalidValue tests if only a valid UPN and UUID can be used to import a resource
