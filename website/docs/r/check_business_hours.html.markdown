@@ -145,7 +145,6 @@ resource "azuredevops_variable_group" "example" {
   variable {
     name         = "key2"
     secret_value = "val2"
-    is_secret    = true
   }
 }
 
