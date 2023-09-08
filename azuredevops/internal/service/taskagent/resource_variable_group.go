@@ -108,20 +108,20 @@ func ResourceVariableGroup() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Default:       "",
-							ConflictsWith: []string{vgKeyVault},
+							ConflictsWith: []string{vgKeyVault, vgIsSecret, secretVgValue},
 						},
 						secretVgValue: {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Sensitive:     true,
 							Default:       "",
-							ConflictsWith: []string{vgKeyVault},
+							ConflictsWith: []string{vgKeyVault, vgValue},
 						},
 						vgIsSecret: {
 							Type:          schema.TypeBool,
 							Optional:      true,
 							Default:       false,
-							ConflictsWith: []string{vgKeyVault},
+							ConflictsWith: []string{vgKeyVault, vgValue},
 						},
 						vgContentType: {
 							Type:     schema.TypeString,
