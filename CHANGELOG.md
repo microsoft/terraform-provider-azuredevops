@@ -1,5 +1,11 @@
 ## 0.10.0 (Unreleased)
 
+## 0.9.1
+
+FEATURES:
+
+* **New Resource** `azuredevops_group_entitlement` [#870](https://github.com/microsoft/terraform-provider-azuredevops/pull/870)
+
 ## 0.9.0
 
 FEATURES:
