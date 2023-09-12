@@ -97,7 +97,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The  ID of the project. Changing this forces a new resource to be created 
 - `resource_id` - (Required) The ID of the resource to authorize. Changing this forces a new resource to be created
-- `type` - (Required) The type of the resource to authorize. Valid values: `endpoint`, `queue`, `variablegroup`, `environment`. Changing this forces a new resource to be created
+- `type` - (Required) The type of the resource to authorize. Valid values: `endpoint`, `queue`, `variablegroup`, `environment`, `repository`. Changing this forces a new resource to be created
 
 ---
 - `pipeline_id` - (Optional) The ID of the pipeline. If not configured, all pipelines will be authorized. Changing this forces a new resource to be created.
