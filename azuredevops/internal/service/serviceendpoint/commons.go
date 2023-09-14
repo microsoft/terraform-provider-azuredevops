@@ -1,6 +1,7 @@
 package serviceendpoint
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -139,7 +140,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *uuid.UUI
 	return nil
 }
 
-func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, serviceEndpointID *string, maxRetries, retryInterval int) error {
+func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, serviceEndpointID *string, retryTimeout time.Duration) error {
 	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
 		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
 			DataSourceDetails: &serviceendpoint.DataSourceDetails{
@@ -157,22 +158,21 @@ func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *service
 		EndpointId: serviceEndpointID,
 	}
 
-	var reqResult *serviceendpoint.ServiceEndpointRequestResult
-	var err error
 	log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: Initiating validation", *endpoint.Name))
-	for i := 0; i < maxRetries; i++ {
-		if reqResult, err = clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs); err != nil {
+	err := resource.RetryContext(clients.Ctx, retryTimeout, func() *resource.RetryError {
+		reqResult, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs)
+		if err != nil {
 			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: error during endpoint validation request", *endpoint.Name))
-			return err
-		} else if strings.EqualFold(*reqResult.StatusCode, "ok") {
-			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: successfully validated connection", *endpoint.Name))
-			return nil
+			return resource.NonRetryableError(err)
 		}
-		log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: validation failed, retrying...", *endpoint.Name))
-		time.Sleep(time.Duration(retryInterval) * time.Second)
-	}
-
-	return fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage)
+		if !strings.EqualFold(*reqResult.StatusCode, "ok") {
+			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: validation failed with StatusCode '%s', retrying...", *endpoint.Name, *reqResult.StatusCode))
+			return resource.RetryableError(errors.New("endpoint validation failed"))
+		}
+		log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: successfully validated connection", *endpoint.Name))
+		return nil
+	})
+	return err
 }
 
 func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetServiceEndpointDetailsArgs, error) {
