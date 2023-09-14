@@ -16,8 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const endpointValidationRetryInterval = 2
-const endpointValidationMaxRetries = 15
+const endpointValidationTimeoutSeconds = 30 * time.Second
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
 func ResourceServiceEndpointAzureRM() *schema.Resource {
@@ -150,17 +149,25 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		},
 	}
 
-	r.Schema["validate"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Description: "Whether or not to validate connection with azure after create or update operations",
+	r.Schema["features"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"validate": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Whether or not to validate connection with azure after create or update operations",
+				},
+			},
+		},
 	}
 	return r
 }
 
 func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, validate, err := expandServiceEndpointAzureRM(d)
+	serviceEndpoint, projectID, err := expandServiceEndpointAzureRM(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -170,8 +177,9 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	if validate {
-		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndPoint.Id.String()), endpointValidationMaxRetries, endpointValidationRetryInterval); err != nil {
+	features := endpointFeatures(d)
+	if features["validate"].(bool) {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndPoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
 			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 				clients.Ctx,
 				serviceendpoint.DeleteServiceEndpointArgs{
@@ -206,24 +214,24 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	validate, ok := d.Get("validate").(bool)
-	if !ok {
-		validate = false
+	if features := endpointFeatures(d); features != nil {
+		d.Set("features", features)
 	}
 
-	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id, validate)
+	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	return nil
 }
 
 func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, validate, err := expandServiceEndpointAzureRM(d)
+	serviceEndpoint, projectID, err := expandServiceEndpointAzureRM(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	if validate {
-		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndpoint.Id.String()), endpointValidationMaxRetries, endpointValidationRetryInterval); err != nil {
+	features := endpointFeatures(d)
+	if features["validate"].(bool) {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndpoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
 			return err
 		}
 	}
@@ -234,13 +242,13 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointAzureRM(d, updatedServiceEndpoint, projectID, validate)
+	flattenServiceEndpointAzureRM(d, updatedServiceEndpoint, projectID)
 	return resourceServiceEndpointAzureRMRead(d, m)
 }
 
 func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, _, err := expandServiceEndpointAzureRM(d)
+	serviceEndpoint, projectId, err := expandServiceEndpointAzureRM(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -249,7 +257,7 @@ func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{})
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, bool, error) {
+func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
@@ -268,7 +276,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	}
 
 	if err := validateScopeLevel(scopeLevelMap); err != nil {
-		return nil, nil, false, err
+		return nil, nil, err
 	}
 
 	var scope string
@@ -360,7 +368,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		if serviceEndpointCreationMode == Manual {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
 			if servicePrincipalId == "" {
-				return nil, nil, false, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
+				return nil, nil, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
 			}
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
@@ -400,15 +408,13 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		(*serviceEndpoint.Data)["managementGroupName"] = d.Get("azurerm_management_group_name").(string)
 	}
 
-	validate := d.Get("validate").(bool)
-
 	serviceEndpoint.Type = converter.String("azurerm")
 	serviceEndpoint.Url = converter.String(endpointUrl)
-	return serviceEndpoint, projectID, validate, nil
+	return serviceEndpoint, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID, validate bool) {
+func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
@@ -448,8 +454,6 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("azurerm_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
 		d.Set("azurerm_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
 	}
-
-	d.Set("validate", validate)
 }
 
 // Validation function to ensure either Subscription or ManagementGroup scopeLevels are set correctly
@@ -483,6 +487,14 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 		return fmt.Errorf("azurerm_management_group_id and azurerm_management_group_name must be provided")
 	}
 
+	return nil
+}
+
+func endpointFeatures(d *schema.ResourceData) map[string]interface{} {
+	features := d.Get("features").([]interface{})
+	if features != nil && len(features) != 0 {
+		return features[0].(map[string]interface{})
+	}
 	return nil
 }
 
