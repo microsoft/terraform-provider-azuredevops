@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -32,7 +33,7 @@ func ResourcePipelineAuthorization() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"endpoint", "queue", "variablegroup", "environment"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"endpoint", "queue", "variablegroup", "environment", "repository"}, false),
 			},
 			"pipeline_id": {
 				Type:         schema.TypeInt,
@@ -46,11 +47,18 @@ func ResourcePipelineAuthorization() *schema.Resource {
 
 func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
+	projectId := d.Get("project_id").(string)
+	resType := d.Get("type").(string)
+	resId := d.Get("resource_id").(string)
+
+	if strings.EqualFold(resType, "repository") {
+		resId = projectId + "." + resId
+	}
 
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
-		Project:      converter.String(d.Get("project_id").(string)),
-		ResourceType: converter.String(d.Get("type").(string)),
-		ResourceId:   converter.String(d.Get("resource_id").(string)),
+		Project:      &projectId,
+		ResourceType: &resType,
+		ResourceId:   &resId,
 	}
 
 	if v, ok := d.GetOk("pipeline_id"); ok {
@@ -81,12 +89,19 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 
 func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
+	projectId := d.Get("project_id").(string)
+	resType := d.Get("type").(string)
+	resId := d.Get("resource_id").(string)
+
+	if strings.EqualFold(resType, "repository") {
+		resId = projectId + "." + resId
+	}
 
 	resp, err := clients.PipelinePermissionsClient.GetPipelinePermissionsForResource(clients.Ctx,
 		pipelinepermissions.GetPipelinePermissionsForResourceArgs{
-			Project:      converter.String(d.Get("project_id").(string)),
-			ResourceType: converter.String(d.Get("type").(string)),
-			ResourceId:   converter.String(d.Get("resource_id").(string)),
+			Project:      &projectId,
+			ResourceType: &resType,
+			ResourceId:   &resId,
 		},
 	)
 	if err != nil {
@@ -98,8 +113,12 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		return nil
 	}
 
-	d.Set("resource_id", resp.Resource.Id)
 	d.Set("type", resp.Resource.Type)
+	d.Set("resource_id", resp.Resource.Id)
+	if strings.EqualFold(*resp.Resource.Type, "repository") {
+		resIds := strings.Split(*resp.Resource.Id, ".")
+		d.Set("resource_id", resIds[1])
+	}
 
 	if resp.Pipelines != nil && len(*resp.Pipelines) > 0 {
 		var exist = false
@@ -119,11 +138,18 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
+	projectId := d.Get("project_id").(string)
+	resType := d.Get("type").(string)
+	resId := d.Get("resource_id").(string)
+
+	if strings.EqualFold(resType, "repository") {
+		resId = projectId + "." + resId
+	}
 
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
-		Project:      converter.String(d.Get("project_id").(string)),
-		ResourceType: converter.String(d.Get("type").(string)),
-		ResourceId:   converter.String(d.Get("resource_id").(string)),
+		Project:      &projectId,
+		ResourceType: &resType,
+		ResourceId:   &resId,
 	}
 
 	if v, ok := d.GetOk("pipeline_id"); ok {
