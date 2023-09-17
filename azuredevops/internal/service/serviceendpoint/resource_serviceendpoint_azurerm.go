@@ -16,7 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const endpointValidationTimeoutSeconds = 45 * time.Second
+const endpointValidationTimeoutSeconds = 60 * time.Second
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
 func ResourceServiceEndpointAzureRM() *schema.Resource {
