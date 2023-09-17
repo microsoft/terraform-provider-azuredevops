@@ -16,7 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const endpointValidationTimeoutSeconds = 30 * time.Second
+const endpointValidationTimeoutSeconds = 60 * time.Second
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
 func ResourceServiceEndpointAzureRM() *schema.Resource {
@@ -152,11 +152,13 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	r.Schema["features"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
+		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"validate": {
 					Type:        schema.TypeBool,
 					Optional:    true,
+					Default:     false,
 					Description: "Whether or not to validate connection with azure after create or update operations",
 				},
 			},
@@ -177,8 +179,7 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	features := endpointFeatures(d)
-	if features["validate"].(bool) {
+	if shouldValidate(endpointFeatures(d)) {
 		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndPoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
 			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 				clients.Ctx,
@@ -214,9 +215,7 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	if features := endpointFeatures(d); features != nil {
-		d.Set("features", features)
-	}
+	d.Set("features", d.Get("features"))
 
 	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	return nil
@@ -229,13 +228,11 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	features := endpointFeatures(d)
-	if features["validate"].(bool) {
+	if shouldValidate(endpointFeatures(d)) {
 		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndpoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
 			return err
 		}
 	}
-
 	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
 
 	if err != nil {
@@ -496,6 +493,14 @@ func endpointFeatures(d *schema.ResourceData) map[string]interface{} {
 		return features[0].(map[string]interface{})
 	}
 	return nil
+}
+
+func shouldValidate(features map[string]interface{}) bool {
+	validate, ok := features["validate"].(bool)
+	if !ok {
+		return false
+	}
+	return validate
 }
 
 type AzureRmEndpointAuthenticationScheme string

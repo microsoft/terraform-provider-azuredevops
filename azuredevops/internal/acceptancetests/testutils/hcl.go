@@ -482,7 +482,9 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   azurerm_subscription_id                = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
   azurerm_subscription_name              = "Microsoft Azure DEMO"
   service_endpoint_authentication_scheme = "%s"
-  validate                               = %v
+  features {
+	validate = %v
+  }
 }
 `, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme, validate)
 

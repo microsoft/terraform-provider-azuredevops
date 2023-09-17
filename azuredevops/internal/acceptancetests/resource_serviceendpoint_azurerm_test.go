@@ -93,7 +93,7 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate_WithValidate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "validate", strconv.FormatBool(validateFirst)),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "features.0.validate", strconv.FormatBool(validateFirst)),
 				),
 			}, {
 				Config:      testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointAuthenticationScheme, validateSecond),

@@ -213,6 +213,7 @@ The following arguments are supported:
 - `description` - (Optional) Service connection description.
 - `credentials` - (Optional) A `credentials` block.
 - `resource_group` - (Optional) The resource group used for scope of automatic service endpoint.
+- `features` - (Optional) A `features` block.
 
 ---
 
@@ -220,6 +221,12 @@ A `credentials` block supports the following:
 
 - `serviceprincipalid` - (Required) The service principal application Id
 - `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+
+---
+
+A `features` block supports the following:
+
+- `validate` - (Optional) Whether or not to validate connection with Azure after create or update operations. Defaults to `false`
 
 ## Attributes Reference
 
