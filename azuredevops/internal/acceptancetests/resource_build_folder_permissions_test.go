@@ -15,41 +15,47 @@ import (
 
 func hclBuildFolderPermissions(projectName string, path string, permissions map[string]string) string {
 	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
+	var requiredResources string
+	var pathArgument string
+	if path != `\\` {
+		pathArgument = `azuredevops_build_folder.test_folder.path`
+		description := "Integration Test Folder"
+		requiredResources = testutils.HclBuildFolder(projectName, path, description)
+	} else {
+		pathArgument = `"\\"`
+		requiredResources = testutils.HclProjectResource(projectName)
+	}
 
 	return fmt.Sprintf(`
-
-data "azuredevops_project" "project" {
-	name = "%s"
-}
+%s
 
 data "azuredevops_group" "tf-project-readers" {
-	project_id = data.azuredevops_project.project.id
+	project_id = azuredevops_project.project.id
 	name       = "Readers"
 }
 
 resource "azuredevops_build_folder_permissions" "permissions" {
-	project_id  = data.azuredevops_project.project.id
+	project_id  = azuredevops_project.project.id
 	principal   = data.azuredevops_group.tf-project-readers.id
-	path        = "%s"
+	path        = %s
 
 	permissions = {
 		%s
 	}
 }
 `,
-		projectName,
-		path,
+		requiredResources,
+		pathArgument,
 		rootPermissions,
 	)
 }
 
 func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
-	// projectName := testutils.GenerateResourceName()
-	projectName := "Example Project"
-	config := hclBuildFolderPermissions(projectName, `\\`, map[string]string{
+	projectName := testutils.GenerateResourceName()
+	permissions := map[string]string{
 		"ViewBuilds":                 "Allow",
 		"EditBuildQuality":           "Allow",
-		"RetainIndefinitely":         "Deny",
+		"RetainIndefinitely":         "Allow",
 		"DeleteBuilds":               "Deny",
 		"ManageBuildQualities":       "Allow",
 		"DestroyBuilds":              "Allow",
@@ -61,26 +67,35 @@ func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
 		"EditBuildDefinition":        "Allow",
 		"DeleteBuildDefinition":      "Deny",
 		"AdministerBuildPermissions": "NotSet",
-	})
+	}
+	configFolder := hclBuildFolderPermissions(projectName, `\test-folder`, permissions)
+	configRootFolder := hclBuildFolderPermissions(projectName, `\\`, permissions)
 	tfNodeRoot := "azuredevops_build_folder_permissions.permissions"
 
+	testFunc := resource.ComposeTestCheckFunc(
+		testutils.CheckProjectExists(projectName),
+		resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
+		resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
+		resource.TestCheckResourceAttrSet(tfNodeRoot, "path"),
+		resource.TestCheckResourceAttr(tfNodeRoot, "permissions.%", "14"),
+		resource.TestCheckResourceAttr(tfNodeRoot, "permissions.ViewBuilds", "allow"),
+		resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuilds", "deny"),
+		resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuildDefinition", "deny"),
+		resource.TestCheckResourceAttr(tfNodeRoot, "permissions.AdministerBuildPermissions", "notset"),
+	)
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckProjectDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
-					resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
-					resource.TestCheckResourceAttrSet(tfNodeRoot, "path"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.%", "14"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.ViewBuilds", "allow"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuilds", "deny"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuildDefinition", "deny"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.AdministerBuildPermissions", "notset"),
-					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.RetainIndefinitely", "deny"),
-				),
+				Config: configFolder,
+				Check:  testFunc,
+			},
+			{
+				Config: configRootFolder,
+				Check:  testFunc,
 			},
 		},
 	})
