@@ -15,37 +15,41 @@ import (
 
 func hclBuildFolderPermissions(projectName string, path string, permissions map[string]string) string {
 	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
-	description := "Integration Test Folder"
 
 	return fmt.Sprintf(`
-%s
+
+data "azuredevops_project" "project" {
+	name = "%s"
+}
 
 data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
+	project_id = data.azuredevops_project.project.id
 	name       = "Readers"
 }
 
 resource "azuredevops_build_folder_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
+	project_id  = data.azuredevops_project.project.id
 	principal   = data.azuredevops_group.tf-project-readers.id
-	path        = azuredevops_build_folder.test_folder.path
+	path        = "%s"
 
 	permissions = {
 		%s
 	}
 }
 `,
-		testutils.HclBuildFolder(projectName, path, description),
+		projectName,
+		path,
 		rootPermissions,
 	)
 }
 
 func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	config := hclBuildFolderPermissions(projectName, `\test-folder`, map[string]string{
+	// projectName := testutils.GenerateResourceName()
+	projectName := "Example Project"
+	config := hclBuildFolderPermissions(projectName, `\\`, map[string]string{
 		"ViewBuilds":                 "Allow",
 		"EditBuildQuality":           "Allow",
-		"RetainIndefinitely":         "Allow",
+		"RetainIndefinitely":         "Deny",
 		"DeleteBuilds":               "Deny",
 		"ManageBuildQualities":       "Allow",
 		"DestroyBuilds":              "Allow",
@@ -61,14 +65,12 @@ func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
 	tfNodeRoot := "azuredevops_build_folder_permissions.permissions"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckProjectDestroyed,
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckProjectExists(projectName),
 					resource.TestCheckResourceAttrSet(tfNodeRoot, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNodeRoot, "principal"),
 					resource.TestCheckResourceAttrSet(tfNodeRoot, "path"),
@@ -77,6 +79,7 @@ func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuilds", "deny"),
 					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.DeleteBuildDefinition", "deny"),
 					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.AdministerBuildPermissions", "notset"),
+					resource.TestCheckResourceAttr(tfNodeRoot, "permissions.RetainIndefinitely", "deny"),
 				),
 			},
 		},
