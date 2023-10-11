@@ -127,7 +127,7 @@ func configureProjectPipelineGeneralSettings(clients *client.AggregatedClient, p
 
 	enforceReferencedRepoScopedToken := rawConfig["enforce_referenced_repo_scoped_token"]
 	if !enforceReferencedRepoScopedToken.IsNull() {
-		settings.NewSettings.EnforceReferencedRepoScopedToken = converter.Bool(enforceJobScope.True())
+		settings.NewSettings.EnforceReferencedRepoScopedToken = converter.Bool(enforceReferencedRepoScopedToken.True())
 	}
 
 	enforceSettableVar := rawConfig["enforce_settable_var"]
