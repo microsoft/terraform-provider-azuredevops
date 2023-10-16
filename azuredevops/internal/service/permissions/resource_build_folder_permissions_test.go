@@ -62,7 +62,7 @@ func TestBuildFolderPermissions_CreateBuildFolderToken(t *testing.T) {
 	token, err = createBuildFolderToken(d, clients)
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, "9083e944-8e9e-405e-960a-c80180aa71e6/\\", token)
+	assert.Equal(t, "9083e944-8e9e-405e-960a-c80180aa71e6", token)
 
 	d = getBuildFolderPermissionsResource(t, "", "")
 	token, err = createBuildFolderToken(d, clients)
