@@ -1,4 +1,21 @@
-## 0.10.0 (Unreleased)
+## 0.11.0 (Unreleased)
+
+
+## 0.10.0
+
+IMPROVEMENTS:
+
+* `azuredevops_pipeline_authorization` - Add support for `repository` authorization  [#883](https://github.com/microsoft/terraform-provider-azuredevops/pull/883) 
+* `azuredevops_elastic_pool` - Support set `time_to_live_minutes` to `0` [#885](https://github.com/microsoft/terraform-provider-azuredevops/pull/885)
+* `azuredevops_serviceendpoint_azurerm` - Support export `service_principal_id` [#902](https://github.com/microsoft/terraform-provider-azuredevops/pull/902)
+* `azuredevops_area_permissions` - Update document [#909](https://github.com/microsoft/terraform-provider-azuredevops/pull/909)
+
+BUG FIX:
+
+* `azuredevops_build_folder_permissions` - Fix root folder permissions for builds not set [#893](https://github.com/microsoft/terraform-provider-azuredevops/pull/893)
+* `azuredevops_project_pipeline_settings` - Fix `enforce_referenced_repo_scoped_token` not set [#898](https://github.com/microsoft/terraform-provider-azuredevops/pull/898)
+  
+
 
 ## 0.9.1
 
