@@ -98,67 +98,131 @@ func ResourceSubscriptionStorageQueue() *schema.Resource {
 				Optional: true,
 				Default:  "5.1-preview.1",
 			},
-			"scope": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
-			},
 		},
 	}
 }
 
 func resourceSubscriptionStorageQueueCreate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	clients := m.(*client.AggregatedClient)
+	subscription, err := expandSubscriptionStorageQueue(d)
+	if err != nil {
+		return err
+	}
+
+	createdSubscription, err := createSubscription(d, clients, subscription)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(createdSubscription.Id.String())
+	return resourceSubscriptionStorageQueueRead(d, m)
 }
 
 func resourceSubscriptionStorageQueueRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	subscriptionId := converter.UUID(d.Id())
+	subscription, err := getSubscription(clients, subscriptionId)
+	if err != nil {
+		return err
+	}
+	flattenSubscriptionStorageQueue(d, subscription)
 	return nil
 }
 
 func resourceSubscriptionStorageQueueUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	clients := m.(*client.AggregatedClient)
+	subscription, err := expandSubscriptionStorageQueue(d)
+	if err != nil {
+		return err
+	}
+
+	newSubscription, err := updateSubscription(clients, subscription)
+	if err != nil {
+		return err
+	}
+
+	flattenSubscriptionStorageQueue(d, newSubscription)
+	return resourceSubscriptionStorageQueueRead(d, m)
 }
 
 func resourceSubscriptionStorageQueueDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	clients := m.(*client.AggregatedClient)
+
+	return clients.ServiceHooksClient.DeleteSubscription(clients.Ctx, servicehooks.DeleteSubscriptionArgs{
+		SubscriptionId: converter.UUID(d.Id()),
+	})
 }
 
 func expandSubscriptionStorageQueue(d *schema.ResourceData) (*servicehooks.Subscription, error) {
-	// Populate the Go structure from the Terraform schema
+	consumerInputs := expandConsumerInputs(d.Get("consumer_inputs").(map[string]interface{}))
+	publisherInputs := expandPublisherInputs(d.Get("publisher_inputs").(map[string]interface{}))
 	return &servicehooks.Subscription{
+		Id:               converter.UUID(d.Id()),
 		ConsumerActionId: converter.String(d.Get("consumer_action_id").(string)),
 		ConsumerId:       converter.String(d.Get("consumer_id").(string)),
-		ConsumerInputs:   d.Get("consumer_inputs").(map[string]interface{}),
+		ConsumerInputs:   consumerInputs,
 		EventType:        converter.String(d.Get("event_type").(string)),
 		PublisherId:      converter.String(d.Get("publisher_id").(string)),
-		PublisherInputs:  d.Get("publisher_inputs").(map[string]interface{}),
+		PublisherInputs:  publisherInputs,
 		ResourceVersion:  converter.String(d.Get("resource_version").(string)),
 	}, nil
 }
 
-func expandConsumerInputs(inputs map[string]interface{}) (*map[string]interface{}, error) {
-	consumerInputs := make(map[string]interface{})
-	consumerInputs["account_name"] = inputs["account_name"]
-	consumerInputs["account_key"] = inputs["account_key"]
-	consumerInputs["queue_name"] = inputs["queue_name"]
-	consumerInputs["visi_timeout"] = inputs["visi_timeout"]
-	consumerInputs["ttl"] = inputs["ttl"]
+func expandConsumerInputs(inputs map[string]interface{}) *map[string]string {
+	consumerInputs := make(map[string]string)
+	consumerInputs["accountName"] = inputs["account_name"].(string)
+	consumerInputs["accountKey"] = inputs["account_key"].(string)
+	consumerInputs["queueName"] = inputs["queue_name"].(string)
+	consumerInputs["visiTimeout"] = inputs["visi_timeout"].(string)
+	consumerInputs["ttl"] = inputs["ttl"].(string)
 
-	return &consumerInputs, nil
+	return &consumerInputs
 }
 
-func flattenSubscriptionStorageQueue(d *schema.ResourceData, subscription *servicehooks.Subscription) error {
-	// Set the fields in the Terraform schema from the Go structure
-	d.Set("consumer_action_id", subscription.ConsumerActionID)
-	d.Set("consumer_id", subscription.ConsumerID)
-	d.Set("consumer_inputs", subscription.ConsumerInputs)
-	d.Set("event_type", subscription.EventType)
-	d.Set("publisher_id", subscription.PublisherID)
-	d.Set("publisher_inputs", subscription.PublisherInputs)
-	d.Set("resource_version", subscription.ResourceVersion)
-	d.Set("scope", subscription.Scope)
+func expandPublisherInputs(inputs map[string]interface{}) *map[string]string {
+	publisherInputs := make(map[string]string)
+	publisherInputs["pipelineId"] = inputs["pipeline_id"].(string)
+	publisherInputs["stageNameId"] = inputs["stage_name_id"].(string)
+	publisherInputs["stageStateId"] = inputs["stage_state_id"].(string)
+	publisherInputs["stageResultId"] = inputs["stage_result_id"].(string)
+	publisherInputs["projectId"] = inputs["project_id"].(string)
 
-	return nil
+	return &publisherInputs
+}
+
+func flattenSubscriptionStorageQueue(d *schema.ResourceData, subscription *servicehooks.Subscription) {
+	d.SetId(subscription.Id.String())
+	consumerInputs := flattenConsumerInputs(subscription.ConsumerInputs)
+	publisherInputs := flattenPublisherInputs(subscription.PublisherInputs)
+	d.Set("consumer_action_id", subscription.ConsumerActionId)
+	d.Set("consumer_id", subscription.ConsumerId)
+	d.Set("consumer_inputs", consumerInputs)
+	d.Set("event_type", subscription.EventType)
+	d.Set("publisher_id", subscription.PublisherId)
+	d.Set("publisher_inputs", publisherInputs)
+	d.Set("resource_version", subscription.ResourceVersion)
+}
+
+func flattenConsumerInputs(inputs *map[string]string) map[string]interface{} {
+	consumerInputs := make(map[string]interface{})
+	consumerInputs["account_name"] = (*inputs)["accountName"]
+	consumerInputs["account_key"] = (*inputs)["accountKey"]
+	consumerInputs["queue_name"] = (*inputs)["queueName"]
+	consumerInputs["visi_timeout"] = (*inputs)["visiTimeout"]
+	consumerInputs["ttl"] = (*inputs)["ttl"]
+
+	return consumerInputs
+}
+
+func flattenPublisherInputs(inputs *map[string]string) map[string]interface{} {
+	publisherInputs := make(map[string]interface{})
+	publisherInputs["pipeline_id"] = (*inputs)["pipelineId"]
+	publisherInputs["stage_name_id"] = (*inputs)["stageNameId"]
+	publisherInputs["stage_state_id"] = (*inputs)["stageStateId"]
+	publisherInputs["stage_result_id"] = (*inputs)["stageResultId"]
+	publisherInputs["project_id"] = (*inputs)["projectId"]
+
+	return publisherInputs
 }
 
 func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
