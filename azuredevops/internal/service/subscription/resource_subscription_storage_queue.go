@@ -1,4 +1,4 @@
-package subscriptions
+package subscription
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func ResourceSubscriptionStorageQueue() *schema.Resource {
 				Required: true,
 			},
 			"consumer_inputs": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -66,7 +66,7 @@ func ResourceSubscriptionStorageQueue() *schema.Resource {
 				Required: true,
 			},
 			"publisher_inputs": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -154,10 +154,15 @@ func resourceSubscriptionStorageQueueDelete(d *schema.ResourceData, m interface{
 }
 
 func expandSubscriptionStorageQueue(d *schema.ResourceData) (*servicehooks.Subscription, error) {
-	consumerInputs := expandConsumerInputs(d.Get("consumer_inputs").(map[string]interface{}))
-	publisherInputs := expandPublisherInputs(d.Get("publisher_inputs").(map[string]interface{}))
+	var subscriptionId *uuid.UUID
+	parsedID, err := uuid.Parse(d.Id())
+	if err == nil {
+		subscriptionId = &parsedID
+	}
+	consumerInputs := expandConsumerInputs(d.Get("consumer_inputs").([]interface{}))
+	publisherInputs := expandPublisherInputs(d.Get("publisher_inputs").([]interface{}))
 	return &servicehooks.Subscription{
-		Id:               converter.UUID(d.Id()),
+		Id:               subscriptionId,
 		ConsumerActionId: converter.String(d.Get("consumer_action_id").(string)),
 		ConsumerId:       converter.String(d.Get("consumer_id").(string)),
 		ConsumerInputs:   consumerInputs,
@@ -168,24 +173,24 @@ func expandSubscriptionStorageQueue(d *schema.ResourceData) (*servicehooks.Subsc
 	}, nil
 }
 
-func expandConsumerInputs(inputs map[string]interface{}) *map[string]string {
+func expandConsumerInputs(inputs []interface{}) *map[string]string {
 	consumerInputs := make(map[string]string)
-	consumerInputs["accountName"] = inputs["account_name"].(string)
-	consumerInputs["accountKey"] = inputs["account_key"].(string)
-	consumerInputs["queueName"] = inputs["queue_name"].(string)
-	consumerInputs["visiTimeout"] = inputs["visi_timeout"].(string)
-	consumerInputs["ttl"] = inputs["ttl"].(string)
+	consumerInputs["accountName"] = inputs[0].(map[string]interface{})["account_name"].(string)
+	consumerInputs["accountKey"] = inputs[0].(map[string]interface{})["account_key"].(string)
+	consumerInputs["queueName"] = inputs[0].(map[string]interface{})["queue_name"].(string)
+	consumerInputs["visiTimeout"] = inputs[0].(map[string]interface{})["visi_timeout"].(string)
+	consumerInputs["ttl"] = inputs[0].(map[string]interface{})["ttl"].(string)
 
 	return &consumerInputs
 }
 
-func expandPublisherInputs(inputs map[string]interface{}) *map[string]string {
+func expandPublisherInputs(inputs []interface{}) *map[string]string {
 	publisherInputs := make(map[string]string)
-	publisherInputs["pipelineId"] = inputs["pipeline_id"].(string)
-	publisherInputs["stageNameId"] = inputs["stage_name_id"].(string)
-	publisherInputs["stageStateId"] = inputs["stage_state_id"].(string)
-	publisherInputs["stageResultId"] = inputs["stage_result_id"].(string)
-	publisherInputs["projectId"] = inputs["project_id"].(string)
+	publisherInputs["pipelineId"] = inputs[0].(map[string]interface{})["pipeline_id"].(string)
+	publisherInputs["stageNameId"] = inputs[0].(map[string]interface{})["stage_name_id"].(string)
+	publisherInputs["stageStateId"] = inputs[0].(map[string]interface{})["stage_state_id"].(string)
+	publisherInputs["stageResultId"] = inputs[0].(map[string]interface{})["stage_result_id"].(string)
+	publisherInputs["projectId"] = inputs[0].(map[string]interface{})["project_id"].(string)
 
 	return &publisherInputs
 }
@@ -203,24 +208,30 @@ func flattenSubscriptionStorageQueue(d *schema.ResourceData, subscription *servi
 	d.Set("resource_version", subscription.ResourceVersion)
 }
 
-func flattenConsumerInputs(inputs *map[string]string) map[string]interface{} {
-	consumerInputs := make(map[string]interface{})
-	consumerInputs["account_name"] = (*inputs)["accountName"]
-	consumerInputs["account_key"] = (*inputs)["accountKey"]
-	consumerInputs["queue_name"] = (*inputs)["queueName"]
-	consumerInputs["visi_timeout"] = (*inputs)["visiTimeout"]
-	consumerInputs["ttl"] = (*inputs)["ttl"]
+func flattenConsumerInputs(inputs *map[string]string) []interface{} {
+	inputsMap := make(map[string]string)
+	inputsMap["account_name"] = (*inputs)["accountName"]
+	inputsMap["account_key"] = (*inputs)["accountKey"]
+	inputsMap["queue_name"] = (*inputs)["queueName"]
+	inputsMap["visi_timeout"] = (*inputs)["visiTimeout"]
+	inputsMap["ttl"] = (*inputs)["ttl"]
+
+	consumerInputs := []interface{}{}
+	consumerInputs = append(consumerInputs, inputsMap)
 
 	return consumerInputs
 }
 
-func flattenPublisherInputs(inputs *map[string]string) map[string]interface{} {
-	publisherInputs := make(map[string]interface{})
-	publisherInputs["pipeline_id"] = (*inputs)["pipelineId"]
-	publisherInputs["stage_name_id"] = (*inputs)["stageNameId"]
-	publisherInputs["stage_state_id"] = (*inputs)["stageStateId"]
-	publisherInputs["stage_result_id"] = (*inputs)["stageResultId"]
-	publisherInputs["project_id"] = (*inputs)["projectId"]
+func flattenPublisherInputs(inputs *map[string]string) []interface{} {
+	inputsMap := make(map[string]string)
+	inputsMap["pipeline_id"] = (*inputs)["pipelineId"]
+	inputsMap["stage_name_id"] = (*inputs)["stageNameId"]
+	inputsMap["stage_state_id"] = (*inputs)["stageStateId"]
+	inputsMap["stage_result_id"] = (*inputs)["stageResultId"]
+	inputsMap["project_id"] = (*inputs)["projectId"]
+
+	publisherInputs := []interface{}{}
+	publisherInputs = append(publisherInputs, inputsMap)
 
 	return publisherInputs
 }

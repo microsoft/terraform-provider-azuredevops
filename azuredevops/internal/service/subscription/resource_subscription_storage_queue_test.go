@@ -2,7 +2,7 @@
 // +build all resource_subscription_storage_queue
 // +build !exclude_subscriptions
 
-package subscriptions
+package subscription
 
 import (
 	"context"
