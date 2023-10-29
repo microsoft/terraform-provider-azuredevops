@@ -1111,3 +1111,26 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
+
+// HclSubscriptionStorageQeueueResource HCL describing an AzDO subscription resource
+func HclSubscriptionStorageQeueueResourceWithPipelinesPublisher(projectName, accountKey, queueName, resultFilter string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_subscription_storage_queue" "test" {
+  project_id   = azuredevops_project.project.id
+  account_name = "teststorageacc"
+  account_key  = "%s"
+  queue_name   = "%s"
+  publisher {
+    name = "pipelines"
+    stage_state_changed {
+      stage_name    = "PRD"
+      state_filter  = "Completed"
+      result_filter = "%s"
+    }
+  }
+}
+`, projectResource, accountKey, queueName, resultFilter)
+}

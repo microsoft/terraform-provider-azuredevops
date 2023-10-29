@@ -25,7 +25,7 @@ var testResourceSubscriptionStorageQueue = []servicehooks.Subscription{
 	{
 		Id:               &subscriptionStorageQueueID,
 		ConsumerActionId: converter.String("enqueue"),
-		ConsumerId:       converter.String("storageQueue"),
+		ConsumerId:       converter.String("azureStorageQueue"),
 		ConsumerInputs: &map[string]string{
 			"accountKey":  "myaccountkey",
 			"accountName": "myaccountname",
@@ -33,8 +33,8 @@ var testResourceSubscriptionStorageQueue = []servicehooks.Subscription{
 			"ttl":         "604800",
 			"visiTimeout": "0",
 		},
-		EventType:   converter.String("build.complete"),
-		PublisherId: converter.String("tfs"),
+		EventType:   converter.String("ms.vss-pipelines.stage-state-changed-event"),
+		PublisherId: converter.String("pipelines"),
 		PublisherInputs: &map[string]string{
 			"pipelineId":    "mypipelineid",
 			"projectId":     "myprojectid",
@@ -42,14 +42,14 @@ var testResourceSubscriptionStorageQueue = []servicehooks.Subscription{
 			"stageStateId":  "mystagestatus",
 			"stageResultId": "mystageresult",
 		},
-		ResourceVersion: converter.String("1"),
+		ResourceVersion: converter.String("5.1-preview.1"),
 	},
 }
 
 func TestResourceSubscriptionStorageQueue_FlattenExpandRoundTrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceSubscriptionStorageQueue().Schema, nil)
 	for _, subscription := range testResourceSubscriptionStorageQueue {
-		flattenSubscriptionStorageQueue(resourceData, &subscription)
+		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 		subscriptionAfterRoundTrip, _ := expandSubscriptionStorageQueue(resourceData)
 
 		require.Equal(t, subscription, *subscriptionAfterRoundTrip)
@@ -63,7 +63,7 @@ func TestResourceSubscriptionStorageQueue_Create_DoesNotSwallowError(t *testing.
 	r := ResourceSubscriptionStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription)
+		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -88,7 +88,7 @@ func TestResourceSubscriptionStorageQueue_Update_DoestNotSwallowError(t *testing
 	r := ResourceSubscriptionStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription)
+		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -116,7 +116,7 @@ func TestResourceSubscriptionStorageQueue_Read_DoestNotSwallowError(t *testing.T
 	r := ResourceSubscriptionStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription)
+		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -141,7 +141,7 @@ func TestResourceSubscriptionStorageQueue_Delete_DoestNotSwallowError(t *testing
 	r := ResourceSubscriptionStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription)
+		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
