@@ -1,4 +1,4 @@
-package subscription
+package servicehook
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ var (
 	consumerId       = "azureStorageQueue"
 )
 
-func ResourceSubscriptionStorageQueue() *schema.Resource {
+func ResourceServicehookStorageQueue() *schema.Resource {
 	resourceSchema := genPublisherSchema()
 	resourceSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -51,18 +51,18 @@ func ResourceSubscriptionStorageQueue() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceSubscriptionStorageQueueCreate,
-		Read:   resourceSubscriptionStorageQueueRead,
-		Update: resourceSubscriptionStorageQueueUpdate,
-		Delete: resourceSubscriptionStorageQueueDelete,
+		Create: resourceServicehookStorageQueueCreate,
+		Read:   resourceServicehookStorageQueueRead,
+		Update: resourceServicehookStorageQueueUpdate,
+		Delete: resourceServicehookStorageQueueDelete,
 
 		Schema: resourceSchema,
 	}
 }
 
-func resourceSubscriptionStorageQueueCreate(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueueCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandSubscriptionStorageQueue(d)
+	subscription, err := expandServicehookStorageQueue(d)
 	if err != nil {
 		return err
 	}
@@ -73,23 +73,23 @@ func resourceSubscriptionStorageQueueCreate(d *schema.ResourceData, m interface{
 	}
 
 	d.SetId(createdSubscription.Id.String())
-	return resourceSubscriptionStorageQueueRead(d, m)
+	return resourceServicehookStorageQueueRead(d, m)
 }
 
-func resourceSubscriptionStorageQueueRead(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueueRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	subscriptionId := converter.UUID(d.Id())
 	subscription, err := getSubscription(clients, subscriptionId)
 	if err != nil {
 		return err
 	}
-	flattenSubscriptionStorageQueue(d, subscription, d.Get("account_key").(string))
+	flattenServicehookStorageQueue(d, subscription, d.Get("account_key").(string))
 	return nil
 }
 
-func resourceSubscriptionStorageQueueUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueueUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandSubscriptionStorageQueue(d)
+	subscription, err := expandServicehookStorageQueue(d)
 	if err != nil {
 		return err
 	}
@@ -99,11 +99,11 @@ func resourceSubscriptionStorageQueueUpdate(d *schema.ResourceData, m interface{
 		return err
 	}
 
-	flattenSubscriptionStorageQueue(d, newSubscription, d.Get("account_key").(string))
-	return resourceSubscriptionStorageQueueRead(d, m)
+	flattenServicehookStorageQueue(d, newSubscription, d.Get("account_key").(string))
+	return resourceServicehookStorageQueueRead(d, m)
 }
 
-func resourceSubscriptionStorageQueueDelete(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueueDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	return clients.ServiceHooksClient.DeleteSubscription(clients.Ctx, servicehooks.DeleteSubscriptionArgs{
@@ -111,7 +111,7 @@ func resourceSubscriptionStorageQueueDelete(d *schema.ResourceData, m interface{
 	})
 }
 
-func expandSubscriptionStorageQueue(d *schema.ResourceData) (*servicehooks.Subscription, error) {
+func expandServicehookStorageQueue(d *schema.ResourceData) (*servicehooks.Subscription, error) {
 	var subscriptionId *uuid.UUID
 	parsedID, err := uuid.Parse(d.Id())
 	if err == nil {
@@ -139,7 +139,7 @@ func expandSubscriptionStorageQueue(d *schema.ResourceData) (*servicehooks.Subsc
 	}, nil
 }
 
-func flattenSubscriptionStorageQueue(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
+func flattenServicehookStorageQueue(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
 	d.SetId(subscription.Id.String())
 	visiTimeout, err := strconv.Atoi((*subscription.ConsumerInputs)["visiTimeout"])
 	if err != nil {

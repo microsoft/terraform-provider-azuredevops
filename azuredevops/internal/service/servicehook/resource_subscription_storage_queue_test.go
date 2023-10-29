@@ -1,8 +1,8 @@
-//go:build (all || resource_subscription_storage_queue) && !exclude_subscriptions
-// +build all resource_subscription_storage_queue
+//go:build (all || resource_servicehook_storage_queue) && !exclude_subscriptions
+// +build all resource_servicehook_storage_queue
 // +build !exclude_subscriptions
 
-package subscription
+package servicehook
 
 import (
 	"context"
@@ -46,24 +46,24 @@ var testResourceSubscriptionStorageQueue = []servicehooks.Subscription{
 	},
 }
 
-func TestResourceSubscriptionStorageQueue_FlattenExpandRoundTrip(t *testing.T) {
-	resourceData := schema.TestResourceDataRaw(t, ResourceSubscriptionStorageQueue().Schema, nil)
+func TestResourceServicehookStorageQueue_FlattenExpandRoundTrip(t *testing.T) {
+	resourceData := schema.TestResourceDataRaw(t, ResourceServicehookStorageQueue().Schema, nil)
 	for _, subscription := range testResourceSubscriptionStorageQueue {
-		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
-		subscriptionAfterRoundTrip, _ := expandSubscriptionStorageQueue(resourceData)
+		flattenServicehookStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
+		subscriptionAfterRoundTrip, _ := expandServicehookStorageQueue(resourceData)
 
 		require.Equal(t, subscription, *subscriptionAfterRoundTrip)
 	}
 }
 
-func TestResourceSubscriptionStorageQueue_Create_DoesNotSwallowError(t *testing.T) {
+func TestResourceServicehookStorageQueue_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceSubscriptionStorageQueue()
+	r := ResourceServicehookStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
+		flattenServicehookStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -81,14 +81,14 @@ func TestResourceSubscriptionStorageQueue_Create_DoesNotSwallowError(t *testing.
 	}
 }
 
-func TestResourceSubscriptionStorageQueue_Update_DoestNotSwallowError(t *testing.T) {
+func TestResourceServicehookStorageQueue_Update_DoestNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceSubscriptionStorageQueue()
+	r := ResourceServicehookStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
+		flattenServicehookStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -109,14 +109,14 @@ func TestResourceSubscriptionStorageQueue_Update_DoestNotSwallowError(t *testing
 	}
 }
 
-func TestResourceSubscriptionStorageQueue_Read_DoestNotSwallowError(t *testing.T) {
+func TestResourceServicehookStorageQueue_Read_DoestNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceSubscriptionStorageQueue()
+	r := ResourceServicehookStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
+		flattenServicehookStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
@@ -134,14 +134,14 @@ func TestResourceSubscriptionStorageQueue_Read_DoestNotSwallowError(t *testing.T
 	}
 }
 
-func TestResourceSubscriptionStorageQueue_Delete_DoestNotSwallowError(t *testing.T) {
+func TestResourceServicehookStorageQueue_Delete_DoestNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	r := ResourceSubscriptionStorageQueue()
+	r := ResourceServicehookStorageQueue()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		flattenSubscriptionStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
+		flattenServicehookStorageQueue(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
