@@ -100,8 +100,9 @@ func genPublisherSchema() map[string]*schema.Schema {
 
 func getEventType(publisher map[string]interface{}) *string {
 	publisherName := publisher["name"].(string)
-	for k := range publisher {
-		if eventType := eventTypeMap[publisherName][k]; eventType != "" {
+	for k, v := range publisher {
+		if eventInputs, ok := v.([]interface{}); ok && len(eventInputs) > 0 {
+			eventType := eventTypeMap[publisherName][k]
 			return &eventType
 		}
 	}
