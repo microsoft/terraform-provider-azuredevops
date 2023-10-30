@@ -183,18 +183,6 @@ func updateSubscription(clients *client.AggregatedClient, subscription *serviceh
 	return updatedSubscription, err
 }
 
-func deleteSubscription(clients *client.AggregatedClient, subscriptionID *uuid.UUID) error {
-	if err := clients.ServiceHooksClient.DeleteSubscription(
-		clients.Ctx,
-		servicehooks.DeleteSubscriptionArgs{
-			SubscriptionId: subscriptionID,
-		}); err != nil {
-		return fmt.Errorf(" Delete subscription error %v", err)
-	}
-
-	return nil
-}
-
 func getSubscription(client *client.AggregatedClient, subscriptionID *uuid.UUID) (*servicehooks.Subscription, error) {
 	return client.ServiceHooksClient.GetSubscription(
 		client.Ctx,
