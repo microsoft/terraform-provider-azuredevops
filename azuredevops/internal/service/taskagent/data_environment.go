@@ -22,12 +22,17 @@ func DataEnvironment() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"environment_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(0),
+				ConflictsWith: []string{
+					"name",
+				},
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -39,22 +44,48 @@ func DataEnvironment() *schema.Resource {
 
 func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
-		EnvironmentId: converter.ToPtr(d.Get("environment_id").(int)),
-		Project:       converter.String(d.Get("project_id").(string)),
-	})
 
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error reading the environment resource: %+v", err)
+	name := d.Get("name").(string)
+	id := d.Get("environment_id").(int)
+
+	if name == "" && id < 0 {
+		return fmt.Errorf("Either environment_id or name must be set ")
 	}
 
-	d.SetId(strconv.Itoa(*environment.Id))
-	d.Set("project_id", environment.Project.Id.String())
-	d.Set("name", *environment.Name)
-	d.Set("description", converter.ToString(environment.Description, ""))
-	return nil
+	if name == "" {
+		environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
+			EnvironmentId: converter.ToPtr(d.Get("environment_id").(int)),
+			Project:       converter.String(d.Get("project_id").(string)),
+		})
+
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error reading the environment resource: %+v", err)
+		}
+
+		d.SetId(strconv.Itoa(*environment.Id))
+		d.Set("project_id", environment.Project.Id.String())
+		d.Set("name", *environment.Name)
+		d.Set("description", converter.ToString(environment.Description, ""))
+		return nil
+	} else {
+		response, err := clients.TaskAgentClient.GetEnvironments(clients.Ctx, taskagent.GetEnvironmentsArgs{
+			Name:    converter.String(d.Get("name").(string)),
+			Project: converter.String(d.Get("project_id").(string)),
+			Top:     converter.Int(1),
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(response.Value) == 0 {
+			return fmt.Errorf("Unable to find environment with name: %s", name)
+		}
+
+		flattenEnvironment(d, &(response.Value)[0])
+		return nil
+	}
 }

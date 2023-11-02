@@ -38,7 +38,9 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
 
-* `environment_id` - (Required) The ID of the Environment.
+* `environment_id` - (Required if `name` not set) The ID of the Environment.
+
+* `name` - (Required if `environment_id` not set) Name of the Environment.
 
 ## Attributes Reference
 
@@ -51,4 +53,3 @@ In addition to the Arguments list above - the following Attributes are exported:
 ## Relevant Links
 
 * [Azure DevOps Service REST API 7.0 - Environments](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/environments?view=azure-devops-rest-7.0)
-
