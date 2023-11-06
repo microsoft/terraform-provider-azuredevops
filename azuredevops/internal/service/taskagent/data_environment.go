@@ -48,7 +48,6 @@ func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	
-	}
 
 	if name == "" {
 		environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
