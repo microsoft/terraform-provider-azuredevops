@@ -47,11 +47,7 @@ func DataEnvironment() *schema.Resource {
 func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	name := d.Get("name").(string)
-	id := d.Get("environment_id").(int)
-
-	if name == "" && id < 0 {
-		return fmt.Errorf("Either environment_id or name must be set ")
+	
 	}
 
 	if name == "" {
