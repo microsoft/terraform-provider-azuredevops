@@ -28,6 +28,7 @@ func DataEnvironment() *schema.Resource {
 				ConflictsWith: []string{
 					"name",
 				},
+				AtLeastOneOf: []string{"environment_id", "name"},
 			},
 			"name": {
 				Type:         schema.TypeString,
