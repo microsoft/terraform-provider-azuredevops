@@ -38,9 +38,11 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
 
-* `environment_id` - (Required if `name` not set) The ID of the Environment.
+* `environment_id` - (Optional) The ID of the Environment.
 
-* `name` - (Required if `environment_id` not set) Name of the Environment.
+* `name` - (Optional) Name of the Environment.
+
+~> **NOTE:** One of either `environment_id` or `name` must be specified.
 
 ## Attributes Reference
 
