@@ -47,14 +47,13 @@ func DataEnvironment() *schema.Resource {
 func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	
-
-	if name == "" {
-		environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
-			EnvironmentId: converter.ToPtr(d.Get("environment_id").(int)),
+	var environment *taskagent.EnvironmentInstance
+	var err error
+	if envId, ok := d.GetOk("environment_id"); ok {
+		environment, err = clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
+			EnvironmentId: converter.ToPtr(envId.(int)),
 			Project:       converter.String(d.Get("project_id").(string)),
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				d.SetId("")
@@ -62,27 +61,24 @@ func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 			}
 			return fmt.Errorf("Error reading the environment resource: %+v", err)
 		}
-
-		d.SetId(strconv.Itoa(*environment.Id))
-		d.Set("project_id", environment.Project.Id.String())
-		d.Set("name", *environment.Name)
-		d.Set("description", converter.ToString(environment.Description, ""))
-		return nil
 	} else {
+		name := d.Get("name").(string)
 		response, err := clients.TaskAgentClient.GetEnvironments(clients.Ctx, taskagent.GetEnvironmentsArgs{
-			Name:    converter.String(d.Get("name").(string)),
+			Name:    converter.String(name),
 			Project: converter.String(d.Get("project_id").(string)),
 			Top:     converter.Int(1),
 		})
 		if err != nil {
 			return err
 		}
-
 		if len(response.Value) == 0 {
-			return fmt.Errorf("Unable to find environment with name: %s", name)
+			return fmt.Errorf(" Unable to find environment with name: %s", name)
 		}
-
-		flattenEnvironment(d, &(response.Value)[0])
-		return nil
+		environment = &response.Value[0]
 	}
+	d.SetId(strconv.Itoa(*environment.Id))
+	d.Set("project_id", environment.Project.Id.String())
+	d.Set("name", *environment.Name)
+	d.Set("description", converter.ToString(environment.Description, ""))
+	return nil
 }
