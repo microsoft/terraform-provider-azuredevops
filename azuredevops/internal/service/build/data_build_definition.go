@@ -275,11 +275,6 @@ func DataBuildDefinition() *schema.Resource {
 			"queue_status": {
 				Type:     schema.TypeString,
 				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					string(build.DefinitionQueueStatusValues.Enabled),
-					string(build.DefinitionQueueStatusValues.Paused),
-					string(build.DefinitionQueueStatusValues.Disabled),
-				}, false),
 			},
 		},
 	}
