@@ -90,8 +90,8 @@ resource "azuredevops_environment" "test" {
 }
 
 data "azuredevops_environment" "test" {
-  project_id     = azuredevops_project.test.id
-  name = azuredevops_environment.test.name
+  project_id = azuredevops_project.test.id
+  name       = azuredevops_environment.test.name
 }
 `, name)
 }
