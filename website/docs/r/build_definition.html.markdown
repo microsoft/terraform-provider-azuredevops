@@ -153,6 +153,7 @@ The following arguments are supported:
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
 - `features`- (Optional) A `features` blocks as documented below.
+- `queue_status`- (Optional) The queue status of the build definition. Valid values: `enabled` or `paused` or `disabled`. Defaults to `enabled`.
 
 ---
 `features` block supports the following:
