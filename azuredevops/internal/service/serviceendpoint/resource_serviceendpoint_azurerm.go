@@ -186,6 +186,11 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		d.SetId("")
+		return nil
+	}
+
 	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	return nil
 }
