@@ -272,6 +272,10 @@ func DataBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"queue_status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }

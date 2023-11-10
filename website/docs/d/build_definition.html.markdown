@@ -60,6 +60,8 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `variable_groups` - A list of variable group IDs.
 
+* `queue_status` - The queue status of the build definition.
+
 ---
 
 A `branch_filter` block exports the following:

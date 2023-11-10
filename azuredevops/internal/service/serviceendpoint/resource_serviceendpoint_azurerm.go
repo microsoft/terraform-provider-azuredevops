@@ -135,6 +135,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Description: "The subject of the workload identity federation service principal.",
 	}
 
+	r.Schema["service_principal_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
 	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
@@ -213,6 +218,11 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 			return nil
 		}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("features", d.Get("features"))
@@ -441,6 +451,10 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	}
 
 	d.Set("azurerm_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantid"])
+
+	if v, ok := (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]; ok {
+		d.Set("service_principal_id", v)
+	}
 
 	if _, ok := (*serviceEndpoint.Data)["managementGroupId"]; ok {
 		d.Set("azurerm_management_group_id", (*serviceEndpoint.Data)["managementGroupId"])
