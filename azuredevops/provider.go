@@ -70,6 +70,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_github_enterprise":      serviceendpoint.ResourceServiceEndpointGitHubEnterprise(),
 			"azuredevops_serviceendpoint_kubernetes":             serviceendpoint.ResourceServiceEndpointKubernetes(),
 			"azuredevops_serviceendpoint_maven":                  serviceendpoint.ResourceServiceEndpointMaven(),
+			"azuredevops_serviceendpoint_nuget":                  serviceendpoint.ResourceServiceEndpointNuGet(),
 			"azuredevops_serviceendpoint_nexus":                  serviceendpoint.ResourceServiceEndpointNexus(),
 			"azuredevops_serviceendpoint_jenkins":                serviceendpoint.ResourceServiceEndpointJenkins(),
 			"azuredevops_serviceendpoint_octopusdeploy":          serviceendpoint.ResourceServiceEndpointOctopusDeploy(),
@@ -86,6 +87,7 @@ func Provider() *schema.Provider {
 			"azuredevops_git_repository_branch":                  git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),
+			"azuredevops_group_entitlement":                      memberentitlementmanagement.ResourceGroupEntitlement(),
 			"azuredevops_group_membership":                       graph.ResourceGroupMembership(),
 			"azuredevops_agent_pool":                             taskagent.ResourceAgentPool(),
 			"azuredevops_elastic_pool":                           taskagent.ResourceAgentPoolVMSS(),
@@ -129,6 +131,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_azurerm":    serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_github":     serviceendpoint.DataServiceEndpointGithub(),
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
+			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
 		},
 		Schema: map[string]*schema.Schema{
