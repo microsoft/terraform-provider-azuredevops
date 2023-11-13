@@ -413,7 +413,6 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 				if err != nil {
 					return fmt.Errorf(" queue pipeline first run failed: %+v", err)
 				}
-
 			}
 		}
 	}
