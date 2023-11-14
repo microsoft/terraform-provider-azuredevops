@@ -167,6 +167,17 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 	repoId, file := splitRepoFilePath(d.Id())
 	branch := d.Get("branch").(string)
 
+	_, err := clients.GitReposClient.GetRepository(ctx, git.GetRepositoryArgs{
+		RepositoryId: &repoId,
+	})
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" Repository not found, repositoryID: %s. Error:  %+v", repoId, err)
+	}
+
 	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
 		return err
 	}
