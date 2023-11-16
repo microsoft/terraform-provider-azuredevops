@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -62,6 +63,65 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeySecond),
 				),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRm_CreateAndUpdate_WithValidate(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointNameFirst := testutils.GenerateResourceName()
+	serviceprincipalidFirst := uuid.New().String()
+	serviceprincipalkeyFirst := uuid.New().String()
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
+	validateFirst := false
+	validateSecond := true
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	tfSvcEpNode := resourceType + ".serviceendpointrm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointAuthenticationScheme, validateFirst),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "features.0.validate", strconv.FormatBool(validateFirst)),
+				),
+			}, {
+				Config:      testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, serviceEndpointAuthenticationScheme, validateSecond),
+				ExpectError: regexp.MustCompile("Failed to obtain the Json Web Token"),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRm_Create_WithValidate(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkey := uuid.New().String()
+	serviceEndpointAuthenticationScheme := "ServicePrincipal"
+	validate := true
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config:      testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme, validate),
+				ExpectError: regexp.MustCompile("Failed to obtain the Json Web Token"),
 			},
 		},
 	})
