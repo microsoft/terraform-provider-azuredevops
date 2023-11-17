@@ -92,7 +92,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 		MinTimeout:                10 * time.Second,
 		Pending:                   []string{"waiting"},
 		Target:                    []string{"succeed", "failed"},
-		Refresh:                   checkPipelineAuthorization(clients, d),
+		Refresh:                   checkPipelineAuthorization(clients, d, pipePermissionParams),
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 	}
 
@@ -194,7 +194,7 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.ResourceData) resource.StateRefreshFunc {
+func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.ResourceData, params pipelinepermissions.UpdatePipelinePermisionsForResourceArgs) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		projectId := d.Get("project_id").(string)
 		resourceType := d.Get("type").(string)
@@ -223,6 +223,11 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 						return resp, "succeed", err
 					}
 				}
+				// reapply for authorization
+				resp, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
+					clients.Ctx,
+					params,
+				)
 				return nil, "waiting", err
 			}
 		} else {
@@ -230,6 +235,11 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 			if resp.AllPipelines != nil && resp.AllPipelines.Authorized != nil && *resp.AllPipelines.Authorized {
 				return resp, "succeed", err
 			}
+			// reapply for authorization
+			resp, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
+				clients.Ctx,
+				params,
+			)
 			return nil, "waiting", err
 		}
 
