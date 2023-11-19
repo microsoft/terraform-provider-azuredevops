@@ -93,10 +93,9 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string, error) {
 	queue := &taskagent.TaskAgentQueue{}
 
-	poolId := converter.Int(d.Get(agentPoolID).(int))
-	if *poolId != 0 {
+	if v, exist := d.GetOk(agentPoolID); exist {
 		queue.Pool = &taskagent.TaskAgentPoolReference{
-			Id: poolId,
+			Id: converter.Int(v.(int)),
 		}
 	}
 
