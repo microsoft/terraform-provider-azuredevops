@@ -120,7 +120,7 @@ func expandPipelinesEventConfig(d *schema.ResourceData) (*map[string]string, *st
 	}
 	eventConfig["projectId"] = d.Get("project_id").(string)
 
-	eventType := string(pipelineEventType(pipelineEvent2apiType[publishedEvent]))
+	eventType := string(pipelineEvent2apiType[publishedEvent])
 	return &eventConfig, &eventType
 }
 
