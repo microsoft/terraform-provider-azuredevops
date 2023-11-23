@@ -12,57 +12,58 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-var (
-	consumerActionId = "enqueue"
-	consumerId       = "azureStorageQueue"
-)
-
-func ResourceServicehookStorageQueue() *schema.Resource {
-	resourceSchema := genPublisherSchema()
+func ResourceServicehookStorageQueuePipelines() *schema.Resource {
+	resourceSchema := genPipelinesPublisherSchema()
 	resourceSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		ForceNew:     true,
 		ValidateFunc: validation.IsUUID,
+		Description:  "The ID of the project",
 	}
 	resourceSchema["account_name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The queue's storage account name",
 	}
 	resourceSchema["account_key"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		Sensitive:    true,
 		ValidateFunc: validation.StringLenBetween(64, 100),
+		Description:  "A valid account key from the queue's storage account",
 	}
 	resourceSchema["queue_name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the queue that will store the events",
 	}
 	resourceSchema["visi_timeout"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Optional: true,
-		Default:  "0",
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Default:     "0",
+		Description: "event visibility timout - how long a message is invisible to other consumers after it's been dequeued",
 	}
 	resourceSchema["ttl"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Optional: true,
-		Default:  "604800",
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Default:     "604800",
+		Description: "event time-to-live - the duration a message can remain in the queue before it's automatically removed",
 	}
 
 	return &schema.Resource{
-		Create: resourceServicehookStorageQueueCreate,
-		Read:   resourceServicehookStorageQueueRead,
-		Update: resourceServicehookStorageQueueUpdate,
-		Delete: resourceServicehookStorageQueueDelete,
+		Create: resourceServicehookStorageQueuePipelinesCreate,
+		Read:   resourceServicehookStorageQueuePipelinesRead,
+		Update: resourceServicehookStorageQueuePipelinesUpdate,
+		Delete: resourceServicehookStorageQueuePipelinesDelete,
 
 		Schema: resourceSchema,
 	}
 }
 
-func resourceServicehookStorageQueueCreate(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueuePipelinesCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandServicehookStorageQueue(d)
+	subscription, err := expandServicehookStorageQueuePipelines(d)
 	if err != nil {
 		return err
 	}
@@ -73,23 +74,23 @@ func resourceServicehookStorageQueueCreate(d *schema.ResourceData, m interface{}
 	}
 
 	d.SetId(createdSubscription.Id.String())
-	return resourceServicehookStorageQueueRead(d, m)
+	return resourceServicehookStorageQueuePipelinesRead(d, m)
 }
 
-func resourceServicehookStorageQueueRead(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueuePipelinesRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	subscriptionId := converter.UUID(d.Id())
 	subscription, err := getSubscription(clients, subscriptionId)
 	if err != nil {
 		return err
 	}
-	flattenServicehookStorageQueue(d, subscription, d.Get("account_key").(string))
+	flattenServicehookStorageQueuePipelines(d, subscription, d.Get("account_key").(string))
 	return nil
 }
 
-func resourceServicehookStorageQueueUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueuePipelinesUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandServicehookStorageQueue(d)
+	subscription, err := expandServicehookStorageQueuePipelines(d)
 	if err != nil {
 		return err
 	}
@@ -99,11 +100,11 @@ func resourceServicehookStorageQueueUpdate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	flattenServicehookStorageQueue(d, newSubscription, d.Get("account_key").(string))
-	return resourceServicehookStorageQueueRead(d, m)
+	flattenServicehookStorageQueuePipelines(d, newSubscription, d.Get("account_key").(string))
+	return resourceServicehookStorageQueuePipelinesRead(d, m)
 }
 
-func resourceServicehookStorageQueueDelete(d *schema.ResourceData, m interface{}) error {
+func resourceServicehookStorageQueuePipelinesDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	return clients.ServiceHooksClient.DeleteSubscription(clients.Ctx, servicehooks.DeleteSubscriptionArgs{
@@ -111,7 +112,7 @@ func resourceServicehookStorageQueueDelete(d *schema.ResourceData, m interface{}
 	})
 }
 
-func expandServicehookStorageQueue(d *schema.ResourceData) (*servicehooks.Subscription, error) {
+func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehooks.Subscription, error) {
 	var subscriptionId *uuid.UUID
 	parsedID, err := uuid.Parse(d.Id())
 	if err == nil {
@@ -119,12 +120,11 @@ func expandServicehookStorageQueue(d *schema.ResourceData) (*servicehooks.Subscr
 	}
 	visiTimeout := strconv.Itoa(d.Get("visi_timeout").(int))
 	ttl := strconv.Itoa(d.Get("ttl").(int))
-	publisherInputs := expandPublisherInputs(d.Get("project_id").(string), d.Get("publisher").([]interface{}))
-	resourceVersion := publisherResourceVersionMap[d.Get("publisher.0.name").(string)]
+	publisherInputs, eventType := expandPipelinesEventConfig(d)
 	return &servicehooks.Subscription{
 		Id:               subscriptionId,
-		ConsumerActionId: &consumerActionId,
-		ConsumerId:       &consumerId,
+		ConsumerActionId: converter.String("enqueue"),
+		ConsumerId:       converter.String("azureStorageQueue"),
 		ConsumerInputs: &map[string]string{
 			"accountName": d.Get("account_name").(string),
 			"accountKey":  d.Get("account_key").(string),
@@ -132,14 +132,14 @@ func expandServicehookStorageQueue(d *schema.ResourceData) (*servicehooks.Subscr
 			"visiTimeout": visiTimeout,
 			"ttl":         ttl,
 		},
-		EventType:       getEventType(d.Get("publisher").([]interface{})[0].(map[string]interface{})),
-		PublisherId:     converter.String(d.Get("publisher.0.name").(string)),
+		EventType:       eventType,
+		PublisherId:     converter.String("pipelines"),
 		PublisherInputs: publisherInputs,
-		ResourceVersion: &resourceVersion,
+		ResourceVersion: converter.String("5.1-preview.1"),
 	}, nil
 }
 
-func flattenServicehookStorageQueue(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
+func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
 	d.SetId(subscription.Id.String())
 	visiTimeout, err := strconv.Atoi((*subscription.ConsumerInputs)["visiTimeout"])
 	if err != nil {
@@ -149,14 +149,17 @@ func flattenServicehookStorageQueue(d *schema.ResourceData, subscription *servic
 	if err != nil {
 		ttl = 604800
 	}
-	publisher := flattenPublisherInputs(*subscription.PublisherId, *subscription.PublisherInputs)
+
+	publishedEvent := apiType2pipelineEvent[pipelineEventType(*subscription.EventType)]
+	eventConfig := flattenPipelinesEventConfig(publishedEvent, (*subscription).PublisherInputs)
 	d.Set("project_id", (*subscription.PublisherInputs)["projectId"])
 	d.Set("account_name", (*subscription.ConsumerInputs)["accountName"])
 	d.Set("account_key", accountKey)
 	d.Set("queue_name", (*subscription.ConsumerInputs)["queueName"])
 	d.Set("visi_timeout", visiTimeout)
 	d.Set("ttl", ttl)
-	d.Set("publisher", publisher)
+	d.Set("published_event", publishedEvent)
+	d.Set("event_config", eventConfig)
 }
 
 func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {

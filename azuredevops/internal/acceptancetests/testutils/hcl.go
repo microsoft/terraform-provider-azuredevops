@@ -1112,25 +1112,37 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
 
-// HclSubscriptionStorageQeueueResource HCL describing an AzDO subscription resource
-func HclServicehookStorageQeueueResourceWithPipelinesPublisher(projectName, accountKey, queueName, resultFilter string) string {
+// HclServicehookStorageQeueuePipelinesResource HCL describing an AzDO subscription resource
+func HclServicehookStorageQeueuePipelinesResource(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf(`
 %s
 
-resource "azuredevops_servicehook_storage_queue" "test" {
+resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
   project_id   = azuredevops_project.project.id
   account_name = "teststorageacc"
   account_key  = "%s"
   queue_name   = "%s"
-  publisher {
-    name = "pipelines"
-    stage_state_changed {
-      stage_name    = "PRD"
-      state_filter  = "Completed"
-      result_filter = "%s"
-    }
+  published_event = "%s"
+  event_config {
+	  run_state_filter  = "%s"
+	  run_result_filter = "%s"
   }
 }
-`, projectResource, accountKey, queueName, resultFilter)
+`, projectResource, accountKey, queueName, publishedEvent, stateFilter, resultFilter)
+}
+
+func HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
+  project_id   = azuredevops_project.project.id
+  account_name = "teststorageacc"
+  account_key  = "%s"
+  queue_name   = "%s"
+  published_event = "%s"
+}
+`, projectResource, accountKey, queueName, publishedEvent)
 }

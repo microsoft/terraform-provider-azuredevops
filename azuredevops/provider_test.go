@@ -87,7 +87,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_team_administrators",
 		"azuredevops_serviceendpoint_permissions",
 		"azuredevops_servicehook_permissions",
-		"azuredevops_servicehook_storage_queue",
+		"azuredevops_servicehook_storage_queue_pipelines",
 		"azuredevops_tagging_permissions",
 		"azuredevops_environment",
 		"azuredevops_build_folder",
