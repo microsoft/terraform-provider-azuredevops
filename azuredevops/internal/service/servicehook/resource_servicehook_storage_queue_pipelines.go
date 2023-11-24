@@ -52,10 +52,11 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceServicehookStorageQueuePipelinesCreate,
-		Read:   resourceServicehookStorageQueuePipelinesRead,
-		Update: resourceServicehookStorageQueuePipelinesUpdate,
-		Delete: resourceServicehookStorageQueuePipelinesDelete,
+		Create:        resourceServicehookStorageQueuePipelinesCreate,
+		Read:          resourceServicehookStorageQueuePipelinesRead,
+		Update:        resourceServicehookStorageQueuePipelinesUpdate,
+		Delete:        resourceServicehookStorageQueuePipelinesDelete,
+		CustomizeDiff: validateEventConfigDiff,
 
 		Schema: resourceSchema,
 	}
@@ -151,7 +152,11 @@ func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscriptio
 	}
 
 	publishedEvent := apiType2pipelineEvent[pipelineEventType(*subscription.EventType)]
+	convertedEventType := convertFromApiType2ResourceBlock(*subscription.EventType)
 	eventConfig := flattenPipelinesEventConfig(publishedEvent, (*subscription).PublisherInputs)
+	if eventConfig != nil {
+		d.Set(convertedEventType, eventConfig)
+	}
 	d.Set("project_id", (*subscription.PublisherInputs)["projectId"])
 	d.Set("account_name", (*subscription.ConsumerInputs)["accountName"])
 	d.Set("account_key", accountKey)
@@ -159,7 +164,6 @@ func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscriptio
 	d.Set("visi_timeout", visiTimeout)
 	d.Set("ttl", ttl)
 	d.Set("published_event", publishedEvent)
-	d.Set("event_config", eventConfig)
 }
 
 func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {

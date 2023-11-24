@@ -41,18 +41,32 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
   queue_name   = azurerm_storage_queue.example.name
   visi_timeout = 30
   published_event = "RunStateChanged"
-  event_config {
-    state_filter = "Completed"
-    result_filter = "Succeeded"
+  run_state_changed_event {
+    run_state_filter = "Completed"
+    run_result_filter = "Succeeded"
   }
 }
 ```
+
+Ommiting the event configuration block will occur in all events triggering the associated action.
+
+```hcl
+resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
+  project_id   = azuredevops_project.example.id
+  account_name = azurerm_storage_account.example.name
+  account_key  = azurerm_storage_account.example.primary_access_key 
+  queue_name   = azurerm_storage_queue.example.name
+  visi_timeout = 30
+  published_event = "RunStateChanged"
+}
+```
+
 
 ## Arguments Reference
 
 The following arguments are supported:
 
-* `account_key` - (Required) A valid account key from the queue's storage account.
+* `account_key` - (Required)  A valid account key from the queue's storage account.
 
 * `account_name` - (Required) The queue's storage account name.
 
@@ -64,23 +78,35 @@ The following arguments are supported:
 
 ---
 
-* `event_config` - (Optional) A `event_config` block as defined below.
+* `run_state_changed_event` - (Optional) A `run_state_changed_event` block as defined below.Conflicts with `stage_state_changed_event`
 
-* `ttl` - (Optional) TODO.
+* `stage_state_changed_event` - (Optional) A `stage_state_changed_event` block as defined below.Conflicts with `run_state_changed_event`
 
-* `visi_timeout` - (Optional) TODO.
+* `ttl` - (Optional) event time-to-live - the duration a message can remain in the queue before it's automatically removed.
+
+* `visi_timeout` - (Optional) event visibility timout - how long a message is invisible to other consumers after it's been dequeued.
 
 ---
 
-A `event_config` block supports the following:
+A `run_state_changed_event` block supports the following:
 
-* `pipeline_id` - (Optional) The ID of the TODO.
+* `pipeline_id` - (Optional) The pipeline ID that will generate an event. If not specified, all pipelines in the project will trigger the event.
 
-* `result_filter` - (Optional) TODO.
+* `run_result_filter` - (Optional) Which run result should generate an event. Only valid if published_event is `RunStateChanged`. If not specified, all results will trigger the event.
 
-* `stage_name` - (Optional) TODO.
+* `run_state_filter` - (Optional) Which run state should generate an event. Only valid if published_event is `RunStateChanged`. If not specified, all states will trigger the event.
 
-* `state_filter` - (Optional) TODO.
+---
+
+A `stage_state_changed_event` block supports the following:
+
+* `pipeline_id` - (Optional) The pipeline ID that will generate an event.
+
+* `stage_name` - (Optional) Which stage should generate an event. Only valid if published_event is `StageStateChanged`. If not specified, all stages will trigger the event.
+
+* `stage_result_filter` - (Optional) Which stage result should generate an event. Only valid if published_event is `StageStateChanged`. If not specified, all results will trigger the event.
+
+* `stage_state_filter` - (Optional) Which stage state should generate an event. Only valid if published_event is `StageStateChanged`. If not specified, all states will trigger the event.
 
 ## Attributes Reference
 
