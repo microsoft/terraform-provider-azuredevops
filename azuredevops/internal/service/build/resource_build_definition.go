@@ -356,6 +356,16 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"queue_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "enabled",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(build.DefinitionQueueStatusValues.Enabled),
+					string(build.DefinitionQueueStatusValues.Paused),
+					string(build.DefinitionQueueStatusValues.Disabled),
+				}, false),
+			},
 		},
 	}
 }
@@ -527,6 +537,8 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	}
 
 	d.Set("revision", revision)
+
+	d.Set("queue_status", *buildDefinition.QueueStatus)
 }
 
 func createBuildDefinition(clients *client.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
@@ -1055,6 +1067,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
 	}
 
+	queueStatus := build.DefinitionQueueStatus(d.Get("queue_status").(string))
+
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
@@ -1075,7 +1089,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		Process: &build.YamlProcess{
 			YamlFilename: converter.String(repository["yml_path"].(string)),
 		},
-		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+		QueueStatus:    &queueStatus,
 		Type:           &build.DefinitionTypeValues.Build,
 		Quality:        &build.DefinitionQualityValues.Definition,
 		VariableGroups: expandVariableGroups(d),

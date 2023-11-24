@@ -22,12 +22,19 @@ func DataEnvironment() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"environment_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(0),
+				ConflictsWith: []string{
+					"name",
+				},
+				AtLeastOneOf: []string{"environment_id", "name"},
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -39,19 +46,36 @@ func DataEnvironment() *schema.Resource {
 
 func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
-		EnvironmentId: converter.ToPtr(d.Get("environment_id").(int)),
-		Project:       converter.String(d.Get("project_id").(string)),
-	})
 
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
+	var environment *taskagent.EnvironmentInstance
+	var err error
+	if envId, ok := d.GetOk("environment_id"); ok {
+		environment, err = clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
+			EnvironmentId: converter.ToPtr(envId.(int)),
+			Project:       converter.String(d.Get("project_id").(string)),
+		})
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error reading the environment resource: %+v", err)
 		}
-		return fmt.Errorf("Error reading the environment resource: %+v", err)
+	} else {
+		name := d.Get("name").(string)
+		response, err := clients.TaskAgentClient.GetEnvironments(clients.Ctx, taskagent.GetEnvironmentsArgs{
+			Name:    converter.String(name),
+			Project: converter.String(d.Get("project_id").(string)),
+			Top:     converter.Int(1),
+		})
+		if err != nil {
+			return err
+		}
+		if len(response.Value) == 0 {
+			return fmt.Errorf(" Unable to find environment with name: %s", name)
+		}
+		environment = &response.Value[0]
 	}
-
 	d.SetId(strconv.Itoa(*environment.Id))
 	d.Set("project_id", environment.Project.Id.String())
 	d.Set("name", *environment.Name)
