@@ -1,12 +1,14 @@
 package build
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
@@ -67,11 +69,11 @@ func ResourceBuildDefinition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create:   resourceBuildDefinitionCreate,
-		Read:     resourceBuildDefinitionRead,
-		Update:   resourceBuildDefinitionUpdate,
-		Delete:   resourceBuildDefinitionDelete,
-		Importer: tfhelper.ImportProjectQualifiedResource(),
+		CreateContext: resourceBuildDefinitionCreate,
+		ReadContext:   resourceBuildDefinitionRead,
+		UpdateContext: resourceBuildDefinitionUpdate,
+		DeleteContext: resourceBuildDefinitionDelete,
+		Importer:      tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -369,22 +371,23 @@ func ResourceBuildDefinition() *schema.Resource {
 	}
 }
 
-func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	err := validateServiceConnectionIDExistsIfNeeded(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return fmt.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
 	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
 	if err != nil {
-		return fmt.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
+	var diags diag.Diagnostics
 	features := buildDefinitionFeatures(d)
 	if features != nil && len(features) != 0 {
 		if v, ok := features["skip_first_run"]; ok {
@@ -410,22 +413,34 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 						},
 					},
 				})
+
 				if err != nil {
-					return fmt.Errorf(" queue pipeline first run failed: %+v", err)
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "First run of build definition failed, nothing to trigger",
+						Detail:   "Try initializing the repository with a valid build definition file",
+					})
 				}
 			}
 		}
 	}
 	d.SetId(strconv.Itoa(*createdBuildDefinition.Id))
-	return resourceBuildDefinitionRead(d, m)
+
+	readDiag := resourceBuildDefinitionRead(ctx, d, m)
+
+	if readDiag != nil {
+		return readDiag
+	} else {
+		return append(diags, readDiag...)
+	}
 }
 
-func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
@@ -438,22 +453,22 @@ func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	flattenBuildDefinition(d, buildDefinition, projectID)
 	return nil
 }
 
-func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	err := validateServiceConnectionIDExistsIfNeeded(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
@@ -463,14 +478,14 @@ func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error 
 	})
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
-	return resourceBuildDefinitionRead(d, m)
+	return resourceBuildDefinitionRead(ctx, d, m)
 }
 
-func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if strings.EqualFold(d.Id(), "") {
 		return nil
 	}
@@ -478,14 +493,14 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = clients.BuildClient.DeleteDefinition(m.(*client.AggregatedClient).Ctx, build.DeleteDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
-	return err
+	return diag.FromErr(err)
 }
 
 func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
