@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	agentQueueName                   = "name"
 	agentPoolID                      = "agent_pool_id"
 	projectID                        = "project_id"
 	invalidQueueIDErrorMessageFormat = "Queue ID was unexpectedly not a valid integer: %+v"
@@ -29,10 +30,21 @@ func ResourceAgentQueue() *schema.Resource {
 		Delete:   resourceAgentQueueDelete,
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
+			agentQueueName: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				AtLeastOneOf:  []string{agentPoolID, agentQueueName},
+				ConflictsWith: []string{agentPoolID},
+			},
 			agentPoolID: {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				AtLeastOneOf:  []string{agentPoolID, agentQueueName},
+				ConflictsWith: []string{agentQueueName},
 			},
 			projectID: {
 				Type:             schema.TypeString,
@@ -52,14 +64,18 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error expanding the agent queue resource from state: %+v", err)
 	}
 
-	referencedPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{
-		PoolId: queue.Pool.Id,
-	})
-	if err != nil {
-		return fmt.Errorf("Error looking up referenced agent pool: %+v", err)
+	if queue.Pool != nil {
+		referencedPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{
+			PoolId: queue.Pool.Id,
+		})
+		if err != nil {
+			return fmt.Errorf("Error looking up referenced agent pool: %+v", err)
+		}
+		queue.Name = referencedPool.Name
+	} else {
+		queue.Name = converter.String(d.Get(agentQueueName).(string))
 	}
 
-	queue.Name = referencedPool.Name
 	createdQueue, err := clients.TaskAgentClient.AddAgentQueue(clients.Ctx, taskagent.AddAgentQueueArgs{
 		Queue:              queue,
 		Project:            &projectID,
@@ -75,10 +91,12 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string, error) {
-	queue := &taskagent.TaskAgentQueue{
-		Pool: &taskagent.TaskAgentPoolReference{
-			Id: converter.Int(d.Get(agentPoolID).(int)),
-		},
+	queue := &taskagent.TaskAgentQueue{}
+
+	if v, exist := d.GetOk(agentPoolID); exist {
+		queue.Pool = &taskagent.TaskAgentPoolReference{
+			Id: converter.Int(v.(int)),
+		}
 	}
 
 	if d.Id() != "" {
