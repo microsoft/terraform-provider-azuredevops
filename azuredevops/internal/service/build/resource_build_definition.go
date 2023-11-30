@@ -418,7 +418,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 					diags = append(diags, diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "First run of build definition failed, nothing to trigger",
-						Detail:   "Try initializing the repository with a valid build definition file",
+						Detail:   fmt.Sprintf("Recieved error: %s\n Try initializing the repository with a valid build definition file", err),
 					})
 				}
 			}
