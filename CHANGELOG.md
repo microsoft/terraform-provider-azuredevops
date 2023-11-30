@@ -1,3 +1,81 @@
+## 0.11.0 (Unreleased)
+
+
+## 0.10.0
+
+IMPROVEMENTS:
+
+* `azuredevops_pipeline_authorization` - Add support for `repository` authorization  [#883](https://github.com/microsoft/terraform-provider-azuredevops/pull/883) 
+* `azuredevops_elastic_pool` - Support set `time_to_live_minutes` to `0` [#885](https://github.com/microsoft/terraform-provider-azuredevops/pull/885)
+* `azuredevops_serviceendpoint_azurerm` - Support export `service_principal_id` [#902](https://github.com/microsoft/terraform-provider-azuredevops/pull/902)
+* `azuredevops_area_permissions` - Update document [#909](https://github.com/microsoft/terraform-provider-azuredevops/pull/909)
+
+BUG FIX:
+
+* `azuredevops_build_folder_permissions` - Fix root folder permissions for builds not set [#893](https://github.com/microsoft/terraform-provider-azuredevops/pull/893)
+* `azuredevops_project_pipeline_settings` - Fix `enforce_referenced_repo_scoped_token` not set [#898](https://github.com/microsoft/terraform-provider-azuredevops/pull/898)
+  
+
+
+## 0.9.1
+
+FEATURES:
+
+* **New Resource** `azuredevops_group_entitlement` [#870](https://github.com/microsoft/terraform-provider-azuredevops/pull/870)
+
+## 0.9.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_serviceendpoint_nuget` [#866](https://github.com/microsoft/terraform-provider-azuredevops/pull/866)
+* **New Data Resource** `azuredevops_serviceendpoint_azurecr` [#867](https://github.com/microsoft/terraform-provider-azuredevops/pull/867)
+
+IMPROVEMENTS:
+
+* `azuredevops_serviceendpoint_azurerm` - Add support for `workload_identity_federation_issuer` and `workload_identity_federation_subject` [#861](https://github.com/microsoft/terraform-provider-azuredevops/pull/861)
+* `azuredevops_build_definition` - Add support for `skip_first_run` [#871](https://github.com/microsoft/terraform-provider-azuredevops/pull/871)
+* All service connections - Decouple create/read/update/delete from generic functions [#863](https://github.com/microsoft/terraform-provider-azuredevops/pull/863)
+* Update API link [#869](https://github.com/microsoft/terraform-provider-azuredevops/pull/869)
+
+## 0.8.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_serviceendpoint_maven` [#617](https://github.com/microsoft/terraform-provider-azuredevops/pull/617)
+* **New Resource** `azuredevops_serviceendpoint_jenkins` [#617](https://github.com/microsoft/terraform-provider-azuredevops/pull/617)
+* **New Resource** `azuredevops_serviceendpoint_nexus` [#617](https://github.com/microsoft/terraform-provider-azuredevops/pull/617)
+* **New Data Resource** `azuredevops_environment` [#838](https://github.com/microsoft/terraform-provider-azuredevops/pull/838)
+
+IMPROVEMENTS:
+
+* `azuredevops_check_branch_control` - Add support for `timeout` [#834](https://github.com/microsoft/terraform-provider-azuredevops/pull/834)
+* `azuredevops_check_business_hours` - Add support for `timeout` [#834](https://github.com/microsoft/terraform-provider-azuredevops/pull/834)
+* `azuredevops_group ` - Upgrade the API from v5 to v7  [#854](https://github.com/microsoft/terraform-provider-azuredevops/pull/854)
+* **Data Resource** `azuredevops_team` - Add support for `top`, custom the number of teams returned [#778](https://github.com/microsoft/terraform-provider-azuredevops/pull/778)
+* **Data Resource** `azuredevops_teams` - Add support for `top`, custom the number of teams returned [#778](https://github.com/microsoft/terraform-provider-azuredevops/pull/778)
+
+BUG FIX:
+
+* `azuredevops_git_permissions` - Fix branch name tokenization [#842](https://github.com/microsoft/terraform-provider-azuredevops/pull/842)
+
+BREAKING CHANGE:
+
+Deprecate hash properties, all the hash properties have been removed.
+  * `azuredevops_serviceendpoint_aws` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_azuredevops` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_azurerm` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_bitbucket` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_dockerregistry` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_generic` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_generic_git` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_github` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_github_enterprise` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_incomingwebhook` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_kubernetes` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_runpipeline` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_sonarqube` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+  * `azuredevops_serviceendpoint_ssh` [#856](https://github.com/microsoft/terraform-provider-azuredevops/pull/856)
+
 ## 0.7.0
 
 FEATURES:

@@ -3,20 +3,42 @@ package serviceendpoint
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint/migration"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
 func ResourceServiceEndpointAzureRM() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureRM, expandServiceEndpointAzureRM)
-	makeUnprotectedSchema(r, "azurerm_spn_tenantid", "ARM_TENANT_ID", "The service principal tenant id which should be used.")
+	r := &schema.Resource{
+		Create: resourceServiceEndpointAzureRMCreate,
+		Read:   resourceServiceEndpointAzureRMRead,
+		Update: resourceServiceEndpointAzureRMUpdate,
+		Delete: resourceServiceEndpointAzureRMDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
+	}
+
+	r.Schema["azurerm_spn_tenantid"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		DefaultFunc: schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+		Description: "The service principal tenant id which should be used.",
+	}
 
 	r.Schema["resource_group"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -27,14 +49,39 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	}
 
 	// Subscription scopeLevel
-	makeUnprotectedOptionalSchema(r, "azurerm_subscription_id", "ARM_SUBSCRIPTION_ID", "The Azure subscription Id which should be used.", []string{"azurerm_management_group_id"})
-	makeUnprotectedOptionalSchema(r, "azurerm_subscription_name", "ARM_SUBSCRIPTION_NAME", "The Azure subscription name which should be used.", []string{"azurerm_management_group_id"})
+	r.Schema["azurerm_subscription_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		DefaultFunc:   schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+		Description:   "The Azure subscription Id which should be used.",
+		ConflictsWith: []string{"azurerm_management_group_id"},
+	}
+
+	r.Schema["azurerm_subscription_name"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		DefaultFunc:   schema.EnvDefaultFunc("ARM_SUBSCRIPTION_NAME", nil),
+		Description:   "The Azure subscription name which should be used.",
+		ConflictsWith: []string{"azurerm_management_group_id"},
+	}
 
 	// ManagementGroup scopeLevel
-	makeUnprotectedOptionalSchema(r, "azurerm_management_group_id", "ARM_MGMT_GROUP_ID", "The Azure managementGroup Id which should be used.", []string{"azurerm_subscription_id", "resource_group"})
-	makeUnprotectedOptionalSchema(r, "azurerm_management_group_name", "ARM_MGMT_GROUP_NAME", "The Azure managementGroup name which should be used.", []string{"azurerm_subscription_id", "resource_group"})
+	r.Schema["azurerm_management_group_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_ID", nil),
+		Description:   "The Azure managementGroup Id which should be used.",
+		ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
+	}
 
-	secretHashKey, secretHashSchema := tfhelper.GenerateSecreteMemoSchema("serviceprincipalkey")
+	r.Schema["azurerm_management_group_name"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_NAME", nil),
+		Description:   "The Azure managementGroup name which should be used.",
+		ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
+	}
+
 	r.Schema["credentials"] = &schema.Schema{
 		Type:          schema.TypeList,
 		Optional:      true,
@@ -48,13 +95,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 					Description: "The service principal id which should be used.",
 				},
 				"serviceprincipalkey": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					Description:      "The service principal secret which should be used.",
-					Sensitive:        true,
-					DiffSuppressFunc: tfhelper.DiffFuncSuppressSecretChanged,
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The service principal secret which should be used.",
+					Sensitive:   true,
 				},
-				secretHashKey: secretHashSchema,
 			},
 		},
 	}
@@ -76,6 +121,23 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
 	}
 
+	r.Schema["workload_identity_federation_issuer"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The issuer of the workload identity federation service principal.",
+	}
+
+	r.Schema["workload_identity_federation_subject"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The subject of the workload identity federation service principal.",
+	}
+
+	r.Schema["service_principal_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
 	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
 		{
@@ -92,16 +154,74 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	return r
 }
 
+func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointAzureRM(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointAzureRMRead(d, m)
+}
+
+func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	return nil
+}
+
+func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointAzureRM(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointAzureRM(d, updatedServiceEndpoint, projectID)
+	return resourceServiceEndpointAzureRMRead(d, m)
+}
+
+func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointAzureRM(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+}
+
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
-
-	// NOTE: This is a temporary workaround for a bug in the Azure DevOps API. This will be removed once the API is fixed.
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Name = converter.String("doesntmatter")
-	}
 
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
@@ -254,22 +374,6 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string, serviceEndPointAuthenticationScheme AzureRmEndpointAuthenticationScheme) interface{} {
-	// secret value won't return by service and should not be overwritten
-	if serviceEndPointAuthenticationScheme == WorkloadIdentityFederation {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-		}}
-	} else {
-		return []map[string]interface{}{{
-			"serviceprincipalid":  (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey": d.Get("credentials.0.serviceprincipalkey").(string),
-			hashKey:               hashValue,
-		}}
-	}
-}
-
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
@@ -281,10 +385,18 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("environment", v)
 	}
 
+	if serviceEndPointType == WorkloadIdentityFederation {
+		d.Set("workload_identity_federation_issuer", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationIssuer"])
+		d.Set("workload_identity_federation_subject", (*serviceEndpoint.Authorization.Parameters)["workloadIdentityFederationSubject"])
+	}
+
 	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
-		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash, serviceEndPointType)
-		d.Set("credentials", credentials)
+		if _, ok := d.GetOk("credentials"); !ok {
+			credentials := make(map[string]interface{})
+			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
+			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
+			d.Set("credentials", []interface{}{credentials})
+		}
 	}
 
 	s := strings.SplitN(scope, "/", -1)
@@ -293,6 +405,10 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	}
 
 	d.Set("azurerm_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantid"])
+
+	if v, ok := (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]; ok {
+		d.Set("service_principal_id", v)
+	}
 
 	if _, ok := (*serviceEndpoint.Data)["managementGroupId"]; ok {
 		d.Set("azurerm_management_group_id", (*serviceEndpoint.Data)["managementGroupId"])

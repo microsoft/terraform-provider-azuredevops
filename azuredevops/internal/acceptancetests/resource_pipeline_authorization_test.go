@@ -202,6 +202,44 @@ func TestAccPipelineAuthorization_pipeline_endpoint(t *testing.T) {
 	})
 }
 
+func TestAccPipelineAuthorization_allPipeline_repository(t *testing.T) {
+	node := "azuredevops_pipeline_authorization.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, nil)
+		},
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclAllPipelineAuthRepository(testutils.GenerateResourceName()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "project_id"),
+					resource.TestCheckResourceAttrSet(node, "resource_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPipelineAuthorization_pipeline_repository(t *testing.T) {
+	node := "azuredevops_pipeline_authorization.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, nil)
+		},
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclPipelineAuthRepository(testutils.GenerateResourceName()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "project_id"),
+					resource.TestCheckResourceAttrSet(node, "resource_id"),
+				),
+			},
+		},
+	})
+}
+
 func hclAllPipelineAuthQueue(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -597,6 +635,64 @@ resource "azuredevops_pipeline_authorization" "test" {
   resource_id = azuredevops_serviceendpoint_github.test.id
   type        = "endpoint"
   pipeline_id = azuredevops_build_definition.test.id
+}
+`, name)
+}
+
+func hclAllPipelineAuthRepository(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+
+resource "azuredevops_pipeline_authorization" "test" {
+  project_id  = azuredevops_project.test.id
+  resource_id = data.azuredevops_git_repository.test.id
+  type        = "repository"
+}
+`, name)
+}
+
+func hclPipelineAuthRepository(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+
+resource "azuredevops_build_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+
+  repository {
+    repo_type = "TfsGit"
+    repo_id   = data.azuredevops_git_repository.test.id
+    yml_path  = "azure-pipelines.yml"
+  }
+}
+
+resource "azuredevops_pipeline_authorization" "test" {
+  project_id  = azuredevops_project.test.id
+  resource_id = data.azuredevops_git_repository.test.id
+  pipeline_id = azuredevops_build_definition.test.id
+  type        = "repository"
 }
 `, name)
 }

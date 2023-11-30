@@ -5,7 +5,11 @@
 package acceptancetests
 
 import (
+	"fmt"
+	"net/url"
 	"os"
+	"path"
+	"regexp"
 	"testing"
 
 	"github.com/google/uuid"
@@ -41,8 +45,8 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_principal_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
 				),
 			}, {
@@ -53,9 +57,9 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_principal_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidSecond),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeySecond),
 				),
 			},
@@ -86,7 +90,6 @@ func TestAccServiceEndpointAzureRm_MgmtGrpCreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_management_group_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalid),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkey),
 				),
 			},
@@ -99,20 +102,20 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 	serviceEndpointName := testutils.GenerateResourceName()
 	serviceEndpointAuthenticationScheme := "ServicePrincipal"
 
-	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-	subscriptionName := "Microsoft Azure DEMO"
-
-	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") != "" {
-		subscriptionId = os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
-		subscriptionName = os.Getenv("TEST_ARM_SUBSCRIPTION_NAME")
-		tenantId = os.Getenv("TEST_ARM_TENANT_ID")
-	}
+	subscriptionId := os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
+	subscriptionName := os.Getenv("TEST_ARM_SUBSCRIPTION_NAME")
+	tenantId := os.Getenv("TEST_ARM_TENANT_ID")
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{
+				"TEST_ARM_SUBSCRIPTION_ID",
+				"TEST_ARM_SUBSCRIPTION_NAME",
+				"TEST_ARM_TENANT_ID",
+			})
+		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
@@ -124,6 +127,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_principal_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
 				),
@@ -136,6 +140,7 @@ func TestAccServiceEndpointAzureRm_AutomaticCreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_principal_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckNoResourceAttr(tfSvcEpNode, "credentials.0"),
 				),
@@ -152,6 +157,13 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 	serviceprincipalidFirst := uuid.New().String()
 	serviceprincipalidSecond := uuid.New().String()
 	serviceEndpointAuthenticationScheme := "WorkloadIdentityFederation"
+
+	azureDevOpsOrgName := "terraform-provider-azuredevops"
+
+	if os.Getenv("AZDO_ORG_SERVICE_URL") != "" {
+		azureDevOpsOrgUrl, _ := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
+		azureDevOpsOrgName = path.Base(azureDevOpsOrgUrl.Path)
+	}
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
@@ -171,6 +183,8 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
+					resource.TestMatchResourceAttr(tfSvcEpNode, "workload_identity_federation_issuer", regexp.MustCompile("^https://vstoken.dev.azure.com/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "workload_identity_federation_subject", fmt.Sprintf("sc://%s/%s/%s", azureDevOpsOrgName, projectName, serviceEndpointNameFirst)),
 				),
 			}, {
 				Config: testutils.HclServiceEndpointAzureRMNoKeyResource(projectName, serviceEndpointNameSecond, serviceprincipalidSecond, serviceEndpointAuthenticationScheme),
@@ -183,6 +197,8 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_authentication_scheme", serviceEndpointAuthenticationScheme),
+					resource.TestMatchResourceAttr(tfSvcEpNode, "workload_identity_federation_issuer", regexp.MustCompile("^https://vstoken.dev.azure.com/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "workload_identity_federation_subject", fmt.Sprintf("sc://%s/%s/%s", azureDevOpsOrgName, projectName, serviceEndpointNameSecond)),
 				),
 			},
 		},
@@ -196,20 +212,20 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Automatic_CreateAndUpdate(
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	serviceEndpointAuthenticationScheme := "WorkloadIdentityFederation"
 
-	tenantId := "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-	subscriptionId := "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-	subscriptionName := "Microsoft Azure DEMO"
-
-	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") != "" {
-		subscriptionId = os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
-		subscriptionName = os.Getenv("TEST_ARM_SUBSCRIPTION_NAME")
-		tenantId = os.Getenv("TEST_ARM_TENANT_ID")
-	}
+	subscriptionId := os.Getenv("TEST_ARM_SUBSCRIPTION_ID")
+	subscriptionName := os.Getenv("TEST_ARM_SUBSCRIPTION_NAME")
+	tenantId := os.Getenv("TEST_ARM_TENANT_ID")
 
 	resourceType := "azuredevops_serviceendpoint_azurerm"
 	tfSvcEpNode := resourceType + ".serviceendpointrm"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{
+				"TEST_ARM_SUBSCRIPTION_ID",
+				"TEST_ARM_SUBSCRIPTION_NAME",
+				"TEST_ARM_TENANT_ID",
+			})
+		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{

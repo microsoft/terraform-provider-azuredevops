@@ -12,6 +12,7 @@ Manages permissions for a Build Folder
 ~> **Note** Permissions can be assigned to group principals and not to single user principals.
 
 ## Example Usage
+### Set specific folder permissions
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -56,6 +57,31 @@ resource "azuredevops_build_folder_permissions" "example" {
   }
 }
 ```
+### Set root folder permissions
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_group" "example-readers" {
+  project_id = azuredevops_project.example.id
+  name       = "Readers"
+}
+
+resource "azuredevops_build_folder_permissions" "example" {
+  project_id = azuredevops_project.example.id
+  path       = "\\"
+  principal  = data.azuredevops_group.example-readers.id
+
+  permissions = {
+    "RetainIndefinitely": "Allow"
+  }
+}
+```
 
 ## Argument Reference
 
@@ -87,7 +113,7 @@ The following arguments are supported:
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 6.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-6.0)
+* [Azure DevOps Service REST API 7.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-7.0)
 
 ## Import
 

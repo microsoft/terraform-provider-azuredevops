@@ -29,7 +29,7 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			Parameters: &map[string]string{
 				"authenticationType":  "spnKey",
 				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
-				"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2", //fake value
+				"serviceprincipalkey": "",                                     //fake value
 				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
 			},
 			Scheme: converter.String("ServicePrincipal"),
@@ -181,8 +181,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -213,8 +212,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -246,8 +244,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),

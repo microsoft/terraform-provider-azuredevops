@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -341,6 +343,19 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"features": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"skip_first_run": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -361,7 +376,49 @@ func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
-	flattenBuildDefinition(d, createdBuildDefinition, projectID)
+	features := buildDefinitionFeatures(d)
+	if features != nil && len(features) != 0 {
+		if v, ok := features["skip_first_run"]; ok {
+			if skipFirstRun := v.(bool); !skipFirstRun {
+				// trigger the first run
+				repo := d.Get("repository").([]interface{})[0].(map[string]interface{})
+				repoId := repo["repo_id"].(string)
+				branchName := repo["branch_name"].(string)
+
+				if strings.HasPrefix(branchName, "refs/heads/") {
+					branchName = branchName[len("refs/heads/"):]
+				}
+				branch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
+					RepositoryId: &repoId,
+					Name:         &branchName,
+				})
+				if err != nil {
+					return fmt.Errorf(" trigger pipeline first run. Get repository (%s) with ref: (%s). Error: %+v", repoId, branchName, err)
+				}
+
+				if branch != nil && branch.Commit != nil {
+					_, err := clients.PipelinesClient.RunPipeline(clients.Ctx, pipelines.RunPipelineArgs{
+						Project:    converter.String(projectID),
+						PipelineId: createdBuildDefinition.Id,
+						RunParameters: &pipelines.RunPipelineParameters{
+							Resources: &pipelines.RunResourcesParameters{
+								Repositories: &map[string]pipelines.RepositoryResourceParameters{
+									"self": {
+										RefName: converter.String("refs/heads/" + branchName),
+										Version: branch.Commit.CommitId,
+									},
+								},
+							},
+						},
+					})
+					if err != nil {
+						return fmt.Errorf(" queue pipeline first run failed: %+v", err)
+					}
+				}
+			}
+		}
+	}
+	d.SetId(strconv.Itoa(*createdBuildDefinition.Id))
 	return resourceBuildDefinitionRead(d, m)
 }
 
@@ -430,7 +487,6 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
-
 	return err
 }
 
@@ -1063,4 +1119,12 @@ func buildVariableGroup(id int) *build.VariableGroup {
 	return &build.VariableGroup{
 		Id: &id,
 	}
+}
+
+func buildDefinitionFeatures(d *schema.ResourceData) map[string]interface{} {
+	features := d.Get("features").([]interface{})
+	if features != nil && len(features) != 0 {
+		return features[0].(map[string]interface{})
+	}
+	return nil
 }
