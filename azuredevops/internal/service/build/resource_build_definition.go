@@ -387,7 +387,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
-	var diags diag.Diagnostics
+	var diags diag.Diagnostics = nil
 	features := buildDefinitionFeatures(d)
 	if features != nil && len(features) != 0 {
 		if v, ok := features["skip_first_run"]; ok {
@@ -418,7 +418,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 					diags = append(diags, diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "First run of build definition failed, nothing to trigger",
-						Detail:   fmt.Sprintf("Recieved error: %s\n Try initializing the repository with a valid build definition file", err),
+						Detail:   fmt.Sprintf("Received error: %s\n Try initializing the repository with a valid build definition file", err),
 					})
 				}
 			}
@@ -431,7 +431,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 	if readDiag != nil {
 		return readDiag
 	} else {
-		return append(diags, readDiag...)
+		return diags
 	}
 }
 
