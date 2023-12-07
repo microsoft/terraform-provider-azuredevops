@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,6 +48,19 @@ func DataUsers() *schema.Resource {
 				Optional:      true,
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 				ConflictsWith: []string{"principal_name"},
+			},
+			"features": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"concurrent_workers": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntAtLeast(1),
+						},
+					},
+				},
 			},
 			"users": {
 				Type:     schema.TypeSet,
@@ -135,16 +149,16 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 		users = append(users, fusers...)
 	}
 
-	for _, user := range users {
-		usr := user.(map[string]interface{})
-
-		storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
-			SubjectDescriptor: converter.String(usr["descriptor"].(string)),
-		})
-		if err != nil {
-			return err
+	features := d.Get("features").(*schema.Set)
+	numWorkers := 1
+	if features.Len() > 0 {
+		if v, ok := features.List()[0].(map[string]interface{})["concurrent_workers"]; ok {
+			numWorkers = v.(int)
 		}
-		usr["id"] = storageKey.Value.String()
+	}
+	err := addStorageKeyAsId(clients, users, numWorkers)
+	if err != nil {
+		return err
 	}
 
 	var descriptors []string
@@ -231,4 +245,49 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	}
 
 	return *response.GraphUsers, continuationToken, nil
+}
+
+func addStorageKeyAsId(clients *client.AggregatedClient, users []interface{}, numWorkers int) error {
+	userQueue := make(chan map[string]interface{}, len(users))
+	errChan := make(chan error)
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for user := range userQueue {
+				storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+					SubjectDescriptor: converter.String(user["descriptor"].(string)),
+				})
+				if err != nil {
+					errChan <- err
+					return
+				}
+				user["id"] = storageKey.Value.String()
+			}
+		}()
+	}
+
+	for _, user := range users {
+		userQueue <- user.(map[string]interface{})
+	}
+	close(userQueue)
+
+	// Wait for workers to finish and check for errors
+	done := make(chan bool)
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case err := <-errChan:
+		return err
+	case <-done:
+		// No errors, continue
+	}
+
+	return nil
 }
