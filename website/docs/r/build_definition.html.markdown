@@ -160,7 +160,7 @@ The following arguments are supported:
 
   - `skip_first_run` (Optional) Trigger the pipeline to run after the creation. Defaults to `true`.
   
-  ~> **Note** The first run(`skip_first_run = false`) will only be triggered on create.
+  ~> **Note** The first run(`skip_first_run = false`) will only be triggered on create. If the first run fails, the build definition will still be marked as successfully created. A warning message indicating the inability to run pipeline will be displayed.
 
 ---
 `variable` block supports the following:

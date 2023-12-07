@@ -219,8 +219,6 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	}
 
 	var project *core.TeamProject
-	var err error
-
 	stateConf := &resource.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     5 * time.Second,
@@ -245,15 +243,12 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return project, fmt.Errorf(" waiting for project ready. %v ", err)
-	}
-
-	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil, err
 		}
 		return nil, fmt.Errorf(" Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
 	}
+
 	return project, nil
 }
 
