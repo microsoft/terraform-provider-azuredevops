@@ -55,60 +55,60 @@ The following arguments are supported in the `provider` block:
   token. The account corresponding to the token will need "owner" privileges for this
   organization. It can also be sourced from the `AZDO_PERSONAL_ACCESS_TOKEN` environment variable.
 
-- `sp_client_id` - The client id used when authenticating to a service principal. It
-can also be sourced from the `AZDO_SP_CLIENT_ID` environment variable.
+- `client_id` - The client id used when authenticating to a service principal. It
+can also be sourced from the `ARM_CLIENT_ID` environment variable.
 
-- `sp_tenant_id` - The tenant id used when authenticating to a service principal.
-It can also be sourced from the `AZDO_SP_TENANT_ID` environment variable.
+- `tenant_id` - The tenant id used when authenticating to a service principal.
+It can also be sourced from the `ARM_TENANT_ID` environment variable.
 
-- `sp_client_id_plan` - The client id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during a plan operation in Terraform Cloud. `sp_client_id` may be used if
+- `client_id_plan` - The client id used when authenticating to a service principal using the Terraform
+Cloud workload identity token during a plan operation in Terraform Cloud. `client_id` may be used if
 the id is the same for plan & apply.
-It can also be sourced from the `AZDO_SP_CLIENT_ID_PLAN` environment variable.
+It can also be sourced from the `ARM_CLIENT_ID_PLAN` environment variable.
 
-- `sp_client_id_apply` - The client id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during an apply operation in Terraform Cloud. `sp_client_id` may be used if
+- `client_id_apply` - The client id used when authenticating to a service principal using the Terraform
+Cloud workload identity token during an apply operation in Terraform Cloud. `client_id` may be used if
 the id is the same for plan & apply.
-It can also be sourced from the `AZDO_SP_CLIENT_ID_APPLY` environment variable.
+It can also be sourced from the `ARM_CLIENT_ID_APPLY` environment variable.
 
-- `sp_tenant_id_plan` - The tenant id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during a plan operation in Terraform Cloud. `sp_tenant_id` may be used if
+- `tenant_id_plan` - The tenant id used when authenticating to a service principal using the Terraform
+Cloud workload identity token during a plan operation in Terraform Cloud. `tenant_id` may be used if
 the id is the same for plan & apply.
-It can also be sourced from the `AZDO_SP_TENANT_ID_PLAN` environment variable.
+It can also be sourced from the `ARM_TENANT_ID_PLAN` environment variable.
 
-- `sp_tenant_id_apply` - The tenant id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during an apply operation in Terraform Cloud. `sp_tenant_id` may be used if
+- `tenant_id_apply` - The tenant id used when authenticating to a service principal using the Terraform
+Cloud workload identity token during an apply operation in Terraform Cloud. `tenant_id` may be used if
 the id is the same for plan & apply.
-It can also be sourced from the `AZDO_SP_TENANT_ID_APPLY` environment variable.
+It can also be sourced from the `ARM_TENANT_ID_APPLY` environment variable.
 
-- `sp_client_secret` - The client secret used to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_CLIENT_SECRET` environment variable.
+- `client_secret` - The client secret used to authenticate to a service principal.
+It can also be sourced from the `ARM_CLIENT_SECRET` environment variable.
 
-- `sp_client_secret_path` - The path to a file containing a client secret to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_CLIENT_SECRET_PATH` environment variable.
+- `client_secret_path` - The path to a file containing a client secret to authenticate to a service principal.
+It can also be sourced from the `ARM_CLIENT_SECRET_PATH` environment variable.
 
-- `sp_oidc_token` - An OIDC token to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_OIDC_TOKEN` environment variable.
+- `oidc_token` - An OIDC token to authenticate to a service principal.
+It can also be sourced from the `ARM_OIDC_TOKEN` environment variable.
 
-- `sp_oidc_token_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
+- `oidc_token_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
 It can also be sourced from the `AZDO_SP_TOKEN_PATH` environment variable.
 
-- `sp_oidc_github_actions` - Boolean, set to true to use a GitHub Actions OIDC token to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_OIDC_GITHUB_ACTIONS` environment variable.
+- `oidc_github_actions` - Boolean, set to true to use a GitHub Actions OIDC token to authenticate to a service principal.
+It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS` environment variable.
 
-- `sp_oidc_github_actions_audience` - Custom audience for the GitHub Actions OIDC token.
-It can also be sourced from the `AZDO_SP_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable.
+- `oidc_github_actions_audience` - Custom audience for the GitHub Actions OIDC token.
+It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable.
 
-- `sp_oidc_hcp` - Boolean, set to true to use the Terraform Cloud OIDC workload identity token to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_OIDC_HCP` environment variable.
+- `oidc_hcp` - Boolean, set to true to use the Terraform Cloud OIDC workload identity token to authenticate to a service principal.
+It can also be sourced from the `ARM_OIDC_HCP` environment variable.
 
-- `sp_client_certificate_path` - The path to a file containing a certificate to authenticate to a service
+- `client_certificate_path` - The path to a file containing a certificate to authenticate to a service
 principal, typically a .pfx file.
-It can also be sourced from the `AZDO_SP_CLIENT_CERTIFICATE_PATH` environment variable.
+It can also be sourced from the `ARM_CLIENT_CERTIFICATE_PATH` environment variable.
 
-- `sp_client_certificate` - A base64 encoded certificate to authentiate to a service principal.
-It can also be sourced from the `AZDO_SP_CLIENT_CERTIFICATE` environment variable.
+- `client_certificate` - A base64 encoded certificate to authentiate to a service principal.
+It can also be sourced from the `ARM_CLIENT_CERTIFICATE` environment variable.
 
-- `sp_client_certificate_password` - This is the password associated with a certificate provided
-by `sp_client_certificate_path` or `sp_client_certificate`. It can also be sourced
-from the `AZDO_SP_CLIENT_CERTIFICATE_PASSWORD` environment variable.
+- `client_certificate_password` - This is the password associated with a certificate provided
+by `client_certificate_path` or `client_certificate`. It can also be sourced
+from the `ARM_CLIENT_CERTIFICATE_PASSWORD` environment variable.

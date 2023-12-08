@@ -46,7 +46,7 @@ type HCPWorkloadToken struct {
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
-	servicePrincipalAuthFields := []string{"sp_oidc_token", "sp_oidc_token_path", "sp_oidc_github_actions", "sp_oidc_hcp", "sp_client_certificate_path", "sp_client_certificate", "sp_client_secret", "sp_client_secret_path"}
+	servicePrincipalAuthFields := []string{"oidc_token", "oidc_token_path", "oidc_github_actions", "oidc_hcp", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
 	allAuthFields := append([]string{"personal_access_token"}, servicePrincipalAuthFields...)
 
 	p := &schema.Provider{
@@ -167,133 +167,133 @@ func Provider() *schema.Provider {
 				Description: "The personal access token which should be used.",
 				Sensitive:   true,
 			},
-			"sp_client_id": {
+			"client_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_ID", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
 				Description:  "The service principal client id which should be used.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_id", "tenant_id"},
 			},
-			"sp_tenant_id": {
+			"tenant_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_TENANT_ID", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
 				Description:  "The service principal tenant id which should be used.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_id", "tenant_id"},
 			},
-			"sp_client_id_plan": {
+			"client_id_plan": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_ID_PLAN", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_PLAN", nil),
 				Description:  "The service principal client id which should be used during a plan operation in Terraform Cloud.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id_plan", "sp_tenant_id_plan", "sp_client_id_apply", "sp_tenant_id_apply"},
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
 			},
-			"sp_tenant_id_plan": {
+			"tenant_id_plan": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_TENANT_ID_PLAN", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_PLAN", nil),
 				Description:  "The service principal tenant id which should be used during a plan operation in Terraform Cloud.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id_plan", "sp_tenant_id_plan", "sp_client_id_apply", "sp_tenant_id_apply"},
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
 			},
-			"sp_client_id_apply": {
+			"client_id_apply": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_ID_APPLY", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_APPLY", nil),
 				Description:  "The service principal client id which should be used during an apply operation in Terraform Cloud.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id_plan", "sp_tenant_id_plan", "sp_client_id_apply", "sp_tenant_id_apply"},
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
 			},
-			"sp_tenant_id_apply": {
+			"tenant_id_apply": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_TENANT_ID_APPLY", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_APPLY", nil),
 				Description:  "The service principal tenant id which should be used during an apply operation in Terraform Cloud..",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"sp_client_id_plan", "sp_tenant_id_plan", "sp_client_id_apply", "sp_tenant_id_apply"},
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
 			},
-			"sp_oidc_token": {
+			"oidc_token": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Sensitive:    true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_OIDC_TOKEN", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN", nil),
 				Description:  "OIDC token to authenticate as a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_oidc_token", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"oidc_token", "client_id", "tenant_id"},
 			},
-			"sp_oidc_token_path": {
+			"oidc_token_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_OIDC_TOKEN_PATH", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN_PATH", nil),
 				Description:  "OIDC token from file to authenticate as a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_oidc_token_path", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"oidc_token_path", "client_id", "tenant_id"},
 			},
-			"sp_oidc_github_actions": {
+			"oidc_github_actions": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_OIDC_GITHUB_ACTIONS", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS", nil),
 				Description:  "Use the GitHub Actions OIDC token to authenticate to a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_oidc_github_actions", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"oidc_github_actions", "client_id", "tenant_id"},
 			},
-			"sp_oidc_github_actions_audience": {
+			"oidc_github_actions_audience": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_OIDC_GITHUB_ACTIONS_AUDIENCE", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", nil),
 				Description:  "Set the audience for the github actions ODIC token.",
-				RequiredWith: []string{"sp_oidc_github_actions_audience", "sp_oidc_github_actions"},
+				RequiredWith: []string{"oidc_github_actions_audience", "oidc_github_actions"},
 			},
-			"sp_oidc_hcp": {
+			"oidc_hcp": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_OIDC_HCP", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_HCP", nil),
 				Description:  "Use dynamic provider credentials in HCP to authenticate as a service principal.",
 				ExactlyOneOf: allAuthFields,
 			},
-			"sp_client_certificate_path": {
+			"client_certificate_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_CERTIFICATE_PATH", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE_PATH", nil),
 				Description:  "Path to a certificate to use to authenticate to the service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_client_certificate_path", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_certificate_path", "client_id", "tenant_id"},
 			},
-			"sp_client_certificate": {
+			"client_certificate": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Sensitive:    true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_CERTIFICATE", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE", nil),
 				Description:  "Base64 encoded certificate to use to authenticate to the service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_client_certificate", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_certificate", "client_id", "tenant_id"},
 			},
-			"sp_client_certificate_password": {
+			"client_certificate_password": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("AZDO_SP_CLIENT_CERTIFICATE_PASSWORD", nil),
+				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE_PASSWORD", nil),
 				Description: "Password for a client certificate password.",
 			},
-			"sp_client_secret": {
+			"client_secret": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Sensitive:    true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_SECRET", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
 				Description:  "Client secret for authenticating to  a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_client_secret", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_secret", "client_id", "tenant_id"},
 			},
-			"sp_client_secret_path": {
+			"client_secret_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_SP_CLIENT_SECRET_PATH", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET_PATH", nil),
 				Description:  "Path to a file containing a client secret for authenticating to  a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"sp_client_secret_path", "sp_client_id", "sp_tenant_id"},
+				RequiredWith: []string{"client_secret_path", "client_id", "tenant_id"},
 			},
 		},
 	}
@@ -309,7 +309,7 @@ func getGitHubOIDCToken(d *schema.ResourceData) (string, error) {
 	client := &http.Client{}
 	audience := "api://AzureADTokenExchange"
 
-	if userAudience, ok := d.GetOk("sp_oidc_github_actions_audience"); ok {
+	if userAudience, ok := d.GetOk("oidc_github_actions_audience"); ok {
 		audience = userAudience.(string)
 	}
 
@@ -374,8 +374,8 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 		return personal_access_token.(string), nil
 	}
 
-	tenantId := d.Get("sp_tenant_id").(string)
-	clientId := d.Get("sp_client_id").(string)
+	tenantId := d.Get("tenant_id").(string)
+	clientId := d.Get("client_id").(string)
 	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
 	tokenOptions := policy.TokenRequestOptions{
 		Scopes: []string{AzureDevOpsAppDefaultScope},
@@ -385,16 +385,16 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	var err error
 
 	// OIDC Token
-	if sp_oidc_token, ok := d.GetOk("sp_oidc_token"); ok {
-		cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantId, clientId, func(context.Context) (string, error) { return sp_oidc_token.(string), nil }, nil)
+	if oidc_token, ok := d.GetOk("oidc_token"); ok {
+		cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantId, clientId, func(context.Context) (string, error) { return oidc_token.(string), nil }, nil)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// OIDC Token From File
-	if sp_oidc_token_path, ok := d.GetOk("sp_oidc_token_path"); ok {
-		fileBytes, err := ioutil.ReadFile(sp_oidc_token_path.(string))
+	if oidc_token_path, ok := d.GetOk("oidc_token_path"); ok {
+		fileBytes, err := ioutil.ReadFile(oidc_token_path.(string))
 		if err != nil {
 			return "", err
 		}
@@ -405,7 +405,7 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// OIDC Token in a GitHub Action Workflow
-	if sp_oidc_github_actions, ok := d.GetOk("sp_oidc_github_actions"); ok && sp_oidc_github_actions.(bool) {
+	if oidc_github_actions, ok := d.GetOk("oidc_github_actions"); ok && oidc_github_actions.(bool) {
 		gitHubToken, err := getGitHubOIDCToken(d)
 		if err != nil {
 			return "", err
@@ -417,14 +417,14 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// OIDC Token in a HashiCorp Vault run
-	if sp_oidc_hcp, ok := d.GetOk("sp_oidc_hcp"); ok && sp_oidc_hcp.(bool) {
+	if oidc_hcp, ok := d.GetOk("oidc_hcp"); ok && oidc_hcp.(bool) {
 		workloadIdentityToken := os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
 
 		// Check if plan & apply phases use different service principals
-		if clientIdPlan, ok := d.GetOk("sp_client_id_plan"); ok {
-			clientIdApply := d.Get("sp_client_id_apply").(string)
-			tenantIdPlan := d.Get("sp_tenant_id_plan").(string)
-			tenantIdApply := d.Get("sp_tenant_id_apply").(string)
+		if clientIdPlan, ok := d.GetOk("client_id_plan"); ok {
+			clientIdApply := d.Get("client_id_apply").(string)
+			tenantIdPlan := d.Get("tenant_id_plan").(string)
+			tenantIdApply := d.Get("tenant_id_apply").(string)
 
 			workloadIdentityTokenUnmarshalled := HCPWorkloadToken{}
 			jwtParts := strings.Split(workloadIdentityToken, ".")
@@ -454,7 +454,7 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 				return "", errors.New(fmt.Sprintf("Unrecognized workspace run phase: %s", workloadIdentityTokenUnmarshalled.RunPhase))
 			}
 		} else if clientId == "" {
-			return "", errors.New(fmt.Sprintf("Either sp_client_id or sp_client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication."))
+			return "", errors.New(fmt.Sprintf("Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication."))
 		}
 
 		cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantId, clientId, func(context.Context) (string, error) { return workloadIdentityToken, nil }, nil)
@@ -464,14 +464,14 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// Certificate from a file on disk
-	if sp_client_certificate_path, ok := d.GetOk("sp_client_certificate_path"); ok {
-		fileBytes, err := ioutil.ReadFile(sp_client_certificate_path.(string))
+	if client_certificate_path, ok := d.GetOk("client_certificate_path"); ok {
+		fileBytes, err := ioutil.ReadFile(client_certificate_path.(string))
 		if err != nil {
 			return "", err
 		}
 
 		certPassword := ([]byte)(nil)
-		if password, ok := d.GetOk("sp_client_certificate_password"); ok {
+		if password, ok := d.GetOk("client_certificate_password"); ok {
 			certPassword = []byte(password.(string))
 		}
 
@@ -487,13 +487,13 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// Certificate from a base64 encoded string
-	if sp_client_certificate, ok := d.GetOk("sp_client_certificate"); ok {
-		cert_bytes, err := base64.StdEncoding.DecodeString(sp_client_certificate.(string))
+	if client_certificate, ok := d.GetOk("client_certificate"); ok {
+		cert_bytes, err := base64.StdEncoding.DecodeString(client_certificate.(string))
 		if err != nil {
 			return "", err
 		}
 		certPassword := ([]byte)(nil)
-		if password, ok := d.GetOk("sp_client_certificate_password"); ok {
+		if password, ok := d.GetOk("client_certificate_password"); ok {
 			certPassword = []byte(password.(string))
 		}
 		certs, key, err := azidentity.ParseCertificates(cert_bytes, certPassword)
@@ -507,16 +507,16 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// Client Secret
-	if sp_client_secret, ok := d.GetOk("sp_client_secret"); ok {
-		cred, err = azIdentityFuncs.NewClientSecretCredential(tenantId, clientId, sp_client_secret.(string), nil)
+	if client_secret, ok := d.GetOk("client_secret"); ok {
+		cred, err = azIdentityFuncs.NewClientSecretCredential(tenantId, clientId, client_secret.(string), nil)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// Client Secret from a file on disk
-	if sp_client_secret_path, ok := d.GetOk("sp_client_secret_path"); ok {
-		fileBytes, err := ioutil.ReadFile(sp_client_secret_path.(string))
+	if client_secret_path, ok := d.GetOk("client_secret_path"); ok {
+		fileBytes, err := ioutil.ReadFile(client_secret_path.(string))
 		if err != nil {
 			return "", err
 		}

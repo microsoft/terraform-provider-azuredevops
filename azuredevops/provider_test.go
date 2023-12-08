@@ -165,22 +165,23 @@ func TestProvider_SchemaIsValid(t *testing.T) {
 	tests := []testParams{
 		{"org_service_url", false, "AZDO_ORG_SERVICE_URL", false},
 		{"personal_access_token", false, "AZDO_PERSONAL_ACCESS_TOKEN", true},
-		{"sp_client_id", false, "AZDO_SP_CLIENT_ID", false},
-		{"sp_tenant_id", false, "AZDO_SP_TENANT_ID", false},
-		{"sp_client_id_plan", false, "AZDO_SP_CLIENT_ID_PLAN", false},
-		{"sp_tenant_id_plan", false, "AZDO_SP_TENANT_ID_PLAN", false},
-		{"sp_client_id_apply", false, "AZDO_SP_CLIENT_ID_APPLY", false},
-		{"sp_tenant_id_apply", false, "AZDO_SP_TENANT_ID_APPLY", false},
-		{"sp_client_secret", false, "AZDO_SP_CLIENT_SECRET", true},
-		{"sp_client_secret_path", false, "AZDO__SP_CLIENT_SECRET_PATH", false},
-		{"sp_oidc_token", false, "AZDO_SP_OIDC_TOKEN", true},
-		{"sp_oidc_token_path", false, "AZDO_SP_OIDC_TOKEN_PATH", false},
-		{"sp_oidc_github_actions", false, "AZDO_SP_OIDC_GITHUB_ACTIONS", false},
-		{"sp_oidc_github_actions_audience", false, "AZDO_SP_OIDC_GITHUB_ACTIONS_AUDIENCE", false},
-		{"sp_oidc_hcp", false, "AZDO_SP_OIDC_HCP", false},
-		{"sp_client_certificate_path", false, "AZDO_SP_CLIENT_CERTIFICATE_PATH", false},
-		{"sp_client_certificate", false, "AZDO_SP_CLIENT_CERTIFICATE", true},
-		{"sp_client_certificate_password", false, "AZDO_SP_CLIENT_CERTIFICATE_PASSWORD", true},
+
+		{"client_id", false, "ARM_CLIENT_ID", false},
+		{"tenant_id", false, "ARM_TENANT_ID", false},
+		{"client_id_plan", false, "ARM_CLIENT_ID_PLAN", false},
+		{"tenant_id_plan", false, "ARM_TENANT_ID_PLAN", false},
+		{"client_id_apply", false, "ARM_CLIENT_ID_APPLY", false},
+		{"tenant_id_apply", false, "ARM_TENANT_ID_APPLY", false},
+		{"client_secret", false, "ARM_CLIENT_SECRET", true},
+		{"client_secret_path", false, "ARM__SP_CLIENT_SECRET_PATH", false},
+		{"oidc_token", false, "ARM_OIDC_TOKEN", true},
+		{"oidc_token_path", false, "ARM_OIDC_TOKEN_PATH", false},
+		{"oidc_github_actions", false, "ARM_OIDC_GITHUB_ACTIONS", false},
+		{"oidc_github_actions_audience", false, "ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", false},
+		{"oidc_hcp", false, "ARM_OIDC_HCP", false},
+		{"client_certificate_path", false, "ARM_CLIENT_CERTIFICATE_PATH", false},
+		{"client_certificate", false, "ARM_CLIENT_CERTIFICATE", true},
+		{"client_certificate_password", false, "ARM_CLIENT_CERTIFICATE_PASSWORD", true},
 	}
 
 	schema := azuredevops.Provider().Schema
@@ -238,9 +239,9 @@ func TestAuthOIDCToken(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_token", oidcToken)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_token", oidcToken)
 
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
@@ -268,9 +269,9 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_token_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_token_path", tempFile)
 
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
@@ -294,9 +295,9 @@ func TestAuthClientSecret(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_secret", clientSecret)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_secret", clientSecret)
 
 	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
@@ -322,9 +323,9 @@ func TestAuthClientSecretFile(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_secret_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_secret_path", tempFile)
 
 	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
@@ -347,9 +348,9 @@ func TestAuthTrfm(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_hcp", true)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_hcp", true)
 
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
@@ -375,11 +376,11 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	trfm_fake_token_apply := fmt.Sprintf("header.%s.signature", base64.StdEncoding.EncodeToString([]byte("{\"terraform_run_phase\":\"apply\"}")))
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	accessToken := "thepassword"
-	resourceData.Set("sp_client_id_apply", clientId_apply)
-	resourceData.Set("sp_tenant_id_apply", tenantId_apply)
-	resourceData.Set("sp_client_id_plan", clientId_plan)
-	resourceData.Set("sp_tenant_id_plan", tenantId_plan)
-	resourceData.Set("sp_oidc_hcp", true)
+	resourceData.Set("client_id_apply", clientId_apply)
+	resourceData.Set("tenant_id_apply", tenantId_apply)
+	resourceData.Set("client_id_plan", clientId_plan)
+	resourceData.Set("tenant_id_plan", tenantId_plan)
+	resourceData.Set("oidc_hcp", true)
 
 	// Apply phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
@@ -447,9 +448,9 @@ func TestAuthClientCert(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_certificate", base64.StdEncoding.EncodeToString(cert))
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_certificate", base64.StdEncoding.EncodeToString(cert))
 
 	theseCerts, theseKey, err := azidentity.ParseCertificates(cert, nil)
 	assert.Nil(t, err)
@@ -477,9 +478,9 @@ func TestAuthClientCertFile(t *testing.T) {
 	err := os.WriteFile(tempFile, []byte(cert), 0644)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_certificate_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_certificate_path", tempFile)
 
 	theseCerts, theseKey, err := azidentity.ParseCertificates(cert, nil)
 	assert.Nil(t, err)
@@ -518,12 +519,12 @@ func TestGHActionsNoAudience(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	accessToken := "thepassword"
 	ghToken := "gh_oidc_token"
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_github_actions", true)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_github_actions", true)
 
 	for _, testCase := range testCases {
-		resourceData.Set("sp_oidc_github_actions_audience", testCase.testAudience)
+		resourceData.Set("oidc_github_actions_audience", testCase.testAudience)
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "GET", r.Method)
 			assert.Equal(t, testCase.expectedAudience, r.URL.Query().Get("audience"))

@@ -20,7 +20,7 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 ## Provider Configuration
 
-The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `AZDO_SP_TENANT_ID` and `AZDO_SP_CLIENT_ID` environment variables, or in the provider configuration block with the `sp_tenant_id` and `sp_client_id` attributes. Then the provider is configured to use the workflows identity by either setting the `AZDO_SP_OIDC_GITHUB_ACTIONS` environment variable to `true`, or the `sp_oidc_github_actions` provider attribute. The audience of the token may be customized by setting the `AZDO_SP_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable, or the `sp_oidc_github_actions_audience` provider attribute. The configured audience must match on the app registration and the Terraform provider configuration, the default values are normally acceptable.
+The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes. Then the provider is configured to use the workflows identity by either setting the `ARM_OIDC_GITHUB_ACTIONS` environment variable to `true`, or the `oidc_github_actions` provider attribute. The audience of the token may be customized by setting the `ARM_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable, or the `oidc_github_actions_audience` provider attribute. The configured audience must match on the app registration and the Terraform provider configuration, the default values are normally acceptable.
 
 The workflow, or specific terraform step in the workflow, must have the `id-token` permission which can be granted with:
 ```yaml
@@ -43,10 +43,10 @@ terraform {
 provider "azuredevops" {
   org_service_url                 = "https://dev.azure.com/my-org"
 
-  sp_client_id                    = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id                    = "00000000-0000-0000-0000-000000000001"
-  sp_oidc_github_actions          = true
-  sp_oidc_github_actions_audience = "my-special-audience"
+  client_id                    = "00000000-0000-0000-0000-000000000001"
+  tenant_id                    = "00000000-0000-0000-0000-000000000001"
+  oidc_github_actions          = true
+  oidc_github_actions_audience = "my-special-audience"
 }
 
 resource "azuredevops_project" "project" {

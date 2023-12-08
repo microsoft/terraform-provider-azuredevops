@@ -22,9 +22,9 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 ## Provider Configuration
 
-The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `AZDO_SP_TENANT_ID` and `AZDO_SP_CLIENT_ID` environment variables, or in the provider configuration block with the `sp_tenant_id` and `sp_client_id` attributes. Then the provider is configured to use the Terraform Cloud identity by either setting the `AZDO_SP_OIDC_HCP` environment variable to `true`, or the `sp_oidc_hcp` provider attribute.
+The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes. Then the provider is configured to use the Terraform Cloud identity by either setting the `ARM_OIDC_HCP` environment variable to `true`, or the `oidc_hcp` provider attribute.
 
-Separate service principals may used for the plan & apply phases by using the `AZDO_SP_TENANT_ID_PLAN`, `AZDO_SP_CLIENT_ID_PLAN`, `AZDO_SP_TENANT_ID_APPLY`, and `AZDO_SP_CLIENT_ID_APPLY` environment variables, or their respective provider attributes: `sp_tenant_id_plan`, `sp_client_id_plan`, `sp_tenant_id_apply`, and `sp_client_id_apply`.
+Separate service principals may used for the plan & apply phases by using the `ARM_TENANT_ID_PLAN`, `ARM_CLIENT_ID_PLAN`, `ARM_TENANT_ID_APPLY`, and `ARM_CLIENT_ID_APPLY` environment variables, or their respective provider attributes: `tenant_id_plan`, `client_id_plan`, `tenant_id_apply`, and `client_id_apply`.
 
 ### Configure the provider to authenticate with the Terraform Cloud workload idenity token
 
@@ -41,9 +41,9 @@ terraform {
 provider "azuredevops" {
   org_service_url                 = "https://dev.azure.com/my-org"
 
-  sp_client_id = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id = "00000000-0000-0000-0000-000000000001"
-  sp_oidc_hcp  = true
+  client_id = "00000000-0000-0000-0000-000000000001"
+  tenant_id = "00000000-0000-0000-0000-000000000001"
+  oidc_hcp  = true
 }
 
 resource "azuredevops_project" "project" {
@@ -67,11 +67,11 @@ terraform {
 provider "azuredevops" {
   org_service_url                 = "https://dev.azure.com/my-org"
 
-  sp_client_id_plan  = "00000000-0000-0000-0000-000000000001"
-  sp_client_id_apply = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id_plan  = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id_apply = "00000000-0000-0000-0000-000000000001"
-  sp_oidc_hcp  = true
+  client_id_plan  = "00000000-0000-0000-0000-000000000001"
+  client_id_apply = "00000000-0000-0000-0000-000000000001"
+  tenant_id_plan  = "00000000-0000-0000-0000-000000000001"
+  tenant_id_apply = "00000000-0000-0000-0000-000000000001"
+  oidc_hcp  = true
 }
 
 resource "azuredevops_project" "project" {
