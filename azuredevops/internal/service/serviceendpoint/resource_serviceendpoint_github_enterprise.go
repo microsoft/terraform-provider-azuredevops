@@ -1,43 +1,53 @@
 package serviceendpoint
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const (
-	personalAccessTokenGithubEnterprise = "personal_access_token"
-)
-
 // ResourceServiceEndpointGitHubEnterprise schema and implementation for github-enterprise service endpoint resource
 func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHubEnterprise, expandServiceEndpointGitHubEnterprise)
-	authPersonal := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			personalAccessTokenGithubEnterprise: {
-				Type:         schema.TypeString,
-				Required:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
-				Description:  "The GitHub personal access token which should be used.",
-				Sensitive:    true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-			},
+	r := &schema.Resource{
+		Create: resourceServiceEndpointGitHubEnterpriseCreate,
+		Read:   resourceServiceEndpointGitHubEnterpriseRead,
+		Update: resourceServiceEndpointGitHubEnterpriseUpdate,
+		Delete: resourceServiceEndpointGitHubEnterpriseDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
 		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
 	}
-	patHashKey, patHashSchema := tfhelper.GenerateSecreteMemoSchema(personalAccessTokenGithubEnterprise)
-	authPersonal.Schema[patHashKey] = patHashSchema
 	r.Schema["auth_personal"] = &schema.Schema{
 		Type:     schema.TypeSet,
+		Required: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     authPersonal,
-		Required: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"personal_access_token": {
+					Type:         schema.TypeString,
+					Required:     true,
+					Sensitive:    true,
+					DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
+					Description:  "The GitHub personal access token which should be used.",
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
+			},
+		},
 	}
 
 	r.Schema["url"] = &schema.Schema{
@@ -46,6 +56,69 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 		Required:     true,
 	}
 	return r
+}
+
+func resourceServiceEndpointGitHubEnterpriseCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointGitHubEnterprise(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointGitHubEnterpriseRead(d, m)
+}
+
+func resourceServiceEndpointGitHubEnterpriseRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointGitHubEnterprise(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	return nil
+}
+
+func resourceServiceEndpointGitHubEnterpriseUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointGitHubEnterprise(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointGitHubEnterprise(d, updatedServiceEndpoint, projectID)
+	return resourceServiceEndpointGitHubEnterpriseRead(d, m)
+}
+
+func resourceServiceEndpointGitHubEnterpriseDelete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointGitHubEnterprise(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
 func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
@@ -64,8 +137,6 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
-			newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "auth_personal", authPersonal, personalAccessTokenGithub)
-			authPersonal[hashKey] = newHash
 			return []interface{}{authPersonal}
 		}
 	}

@@ -142,15 +142,27 @@ resource "azuredevops_build_definition" "example" {
 The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
+- `repository` - (Required) A `repository` block as documented below.
+
+---
 - `name` - (Optional) The name of the build definition.
 - `path` - (Optional) The folder path of the build definition.
 - `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
-- `repository` - (Required) A `repository` block as documented below.
 - `ci_trigger` - (Optional) Continuous Integration trigger.
-- `pull_request_trigger` - (Optional) Pull Request Integration Integration trigger.
+- `pull_request_trigger` - (Optional) Pull Request Integration trigger.
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
+- `features`- (Optional) A `features` blocks as documented below.
+- `queue_status`- (Optional) The queue status of the build definition. Valid values: `enabled` or `paused` or `disabled`. Defaults to `enabled`.
 
+---
+`features` block supports the following:
+
+  - `skip_first_run` (Optional) Trigger the pipeline to run after the creation. Defaults to `true`.
+  
+  ~> **Note** The first run(`skip_first_run = false`) will only be triggered on create. If the first run fails, the build definition will still be marked as successfully created. A warning message indicating the inability to run pipeline will be displayed.
+
+---
 `variable` block supports the following:
 
 - `name` - (Required) The name of the variable.
@@ -159,6 +171,7 @@ The following arguments are supported:
 - `is_secret` - (Optional) True if the variable is a secret. Defaults to `false`.
 - `allow_override` - (Optional) True if the variable can be overridden. Defaults to `true`.
 
+---
 `repository` block supports the following:
 
 - `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
@@ -169,11 +182,13 @@ The following arguments are supported:
 - `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
 - `report_build_status` - (Optional) Report build status. Default is true.
 
+---
 `ci_trigger` block supports the following:
 
 - `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
 - `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
 
+---
 `ci_trigger` `override` block supports the following:
 
 - `batch` - (Optional) If you set batch to true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built. Defaults to `true`.
@@ -183,6 +198,7 @@ The following arguments are supported:
 - `polling_interval` - (Optional) How often the external repository is polled. Defaults to `0`.
 - `polling_job_id` - (Computed) This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
 
+---
 `pull_request_trigger` block supports the following:
 
 - `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
@@ -190,27 +206,32 @@ The following arguments are supported:
 - `forks` - (Required) Set permissions for Forked repositories.
 - `override` - (Optional) Override the azure-pipeline file and use this configuration for all builds.
 
+---
 `forks` block supports the following:
 
-- `enabled` - (Required) Build pull requests form forms of this repository.
+- `enabled` - (Required) Build pull requests from forks of this repository.
 - `share_secrets` - (Required) Make secrets available to builds of forks.
 
+---
 `pull_request_trigger` `override` block supports the following:
 
 - `auto_cancel` - (Optional) . Defaults to `true`.
 - `branch_filter` - (Optional) The branches to include and exclude from the trigger.
 - `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
 
-- `branch_filter` block supports the following:
+---
+`branch_filter` block supports the following:
 
 - `include` - (Optional) List of branch patterns to include.
 - `exclude` - (Optional) List of branch patterns to exclude.
 
-- `path_filter` block supports the following:
+---
+`path_filter` block supports the following:
 
 - `include` - (Optional) List of path patterns to include.
 - `exclude` - (Optional) List of path patterns to exclude.
 
+---
 `schedules` block supports the following:
 
 -> **Note:** Schedule pipeline will not use any schedules defined in the YAML file. To use schedules from the YAML file, delete all scheduled triggers.
@@ -392,7 +413,7 @@ The value of `\\ExampleFolder\\` would be invalid.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-7.0)
 
 ## Import
 

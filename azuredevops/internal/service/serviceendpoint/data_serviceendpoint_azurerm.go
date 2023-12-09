@@ -8,7 +8,7 @@ import (
 
 func DataServiceEndpointAzureRM() *schema.Resource {
 	r := dataSourceGenBaseServiceEndpointResource(dataSourceServiceEndpointAzureRMRead)
-	schemaKeys := []string{"azurerm_management_group_id", "azurerm_management_group_name", "azurerm_subscription_id", "azurerm_subscription_name", "resource_group", "azurerm_spn_tenantid", "service_endpoint_authentication_scheme"}
+	schemaKeys := []string{"azurerm_management_group_id", "azurerm_management_group_name", "azurerm_subscription_id", "azurerm_subscription_name", "resource_group", "azurerm_spn_tenantid", "service_endpoint_authentication_scheme", "environment", "workload_identity_federation_issuer", "workload_identity_federation_subject"}
 	for _, k := range schemaKeys {
 		dataSourceMakeUnprotectedComputedSchema(r, k)
 	}

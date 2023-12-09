@@ -238,6 +238,26 @@ resource "azuredevops_user_entitlement" "user" {
 }`, principalName)
 }
 
+// HclGroupEntitlementResource HCL describing an AzDO GroupEntitlement
+func HclGroupEntitlementResource(displayName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_group_entitlement" "group" {
+	display_name = "%s"
+	account_license_type = "express"
+}`, displayName)
+}
+
+// HclGroupEntitlementResource HCL describing an AzDO GroupEntitlement linked
+// with Azure AD
+func HclGroupEntitlementResourceAAD(originId string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_group_entitlement" "group_aad" {
+	origin_id = "%s"
+	origin = "aad"
+	account_license_type = "express"
+}`, originId)
+}
+
 // HclServiceEndpointGitHubResource HCL describing an AzDO service endpoint
 func HclServiceEndpointGitHubResource(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
@@ -464,6 +484,29 @@ resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   service_endpoint_authentication_scheme = "%s"
 }
 `, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func HclServiceEndpointAzureRMResourceWithValidate(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string, serviceEndpointAuthenticationScheme string, validate bool) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+    serviceprincipalkey = "%s"
+  }
+  azurerm_spn_tenantid                   = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id                = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name              = "Microsoft Azure DEMO"
+  service_endpoint_authentication_scheme = "%s"
+  features {
+	validate = %v
+  }
+}
+`, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceEndpointAuthenticationScheme, validate)
 
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -841,7 +884,6 @@ func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) stri
 	resource "azuredevops_build_definition" "build" {
 		project_id = azuredevops_project.project.id
 		name       = "%s"
-
 		repository {
 			repo_type   = "TfsGit"
 			repo_id     = azuredevops_git_repository.repository.id

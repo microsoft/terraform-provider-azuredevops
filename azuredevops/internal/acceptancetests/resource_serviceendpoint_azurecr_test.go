@@ -14,7 +14,6 @@ import (
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointAzureCR_CreateAndUpdate(t *testing.T) {
-	t.Skip("Skipping test TestAccServiceEndpointAzureCR_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
@@ -22,7 +21,9 @@ func TestAccServiceEndpointAzureCR_CreateAndUpdate(t *testing.T) {
 	resourceType := "azuredevops_serviceendpoint_azurecr"
 	tfSvcEpNode := resourceType + ".serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{"TEST_ARM_SUBSCRIPTION_ID", "TEST_ARM_SUBSCRIPTION_NAME", "TEST_ARM_TENANT_ID"})
+		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{

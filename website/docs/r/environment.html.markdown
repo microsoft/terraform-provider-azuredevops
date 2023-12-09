@@ -46,7 +46,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 6.0 - Environments](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/environments?view=azure-devops-rest-6.0)
+* [Azure DevOps Service REST API 7.0 - Environments](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/environments?view=azure-devops-rest-7.0)
 
 
 ## Import

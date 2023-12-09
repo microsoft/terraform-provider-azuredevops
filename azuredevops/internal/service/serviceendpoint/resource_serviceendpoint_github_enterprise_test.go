@@ -170,7 +170,7 @@ func TestServiceEndpointGitHubEnterprise_Update_DoesNotSwallowError(t *testing.T
 func configureGhesAuthPersonal(d *schema.ResourceData) {
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
-			personalAccessTokenGithubEnterprise: "UNIT_TEST_ACCESS_TOKEN",
+			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
 		},
 	})
 }

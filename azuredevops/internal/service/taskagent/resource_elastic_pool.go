@@ -82,7 +82,7 @@ func ResourceAgentPoolVMSS() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      30,
-				ValidateFunc: validation.IntAtLeast(1),
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 
 			"auto_provision": {

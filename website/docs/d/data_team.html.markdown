@@ -32,6 +32,7 @@ The following arguments are supported:
 
 - `project_id` - (Required) The Project ID.
 - `name` - (Required) The name of the Team.
+- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
 
 ## Attributes Reference
 
@@ -45,7 +46,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-7.0)
 
 ## PAT Permissions Required
 

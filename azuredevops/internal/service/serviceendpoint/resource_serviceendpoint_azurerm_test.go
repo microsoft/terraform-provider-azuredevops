@@ -29,7 +29,7 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			Parameters: &map[string]string{
 				"authenticationType":  "spnKey",
 				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
-				"serviceprincipalkey": "d96d8515-20b2-4413-8879-27c5d040cbc2", //fake value
+				"serviceprincipalkey": "",                                     //fake value
 				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
 			},
 			Scheme: converter.String("ServicePrincipal"),
@@ -181,8 +181,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -213,8 +212,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -246,8 +244,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
-					Id:   azurermTestServiceEndpointAzureRMProjectID,
-					Name: converter.String("doesntmatter"),
+					Id: azurermTestServiceEndpointAzureRMProjectID,
 				},
 				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
 				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
@@ -292,6 +289,60 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 		err := r.Create(resourceData, clients)
 		require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 
+	}
+}
+
+func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointAzureRM()
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+
+		features := initializeFeaturesWithValidate(true)
+		resourceData.Set("features", features)
+
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+		createArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource}
+
+		buildClient.
+			EXPECT().
+			CreateServiceEndpoint(clients.Ctx, createArgs).
+			Return(&resource, nil).
+			Times(1)
+
+		returnedServiceEndpoint := resource
+		returnedServiceEndpoint.IsReady = converter.Bool(true)
+		buildClient.
+			EXPECT().
+			GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
+				Project:    converter.String(azurermRandomServiceEndpointAzureRMProjectID.String()),
+				EndpointId: resource.Id,
+			},
+			).
+			Return(&returnedServiceEndpoint, nil).
+			Times(1)
+
+		reqArgs := genExecuteServiceEndpointArgs(&resource)
+		buildClient.
+			EXPECT().
+			ExecuteServiceEndpointRequest(clients.Ctx, *reqArgs).
+			Return(nil, errors.New("ExecuteServiceEndpointRequest() Failed")).
+			Times(1)
+
+		buildClient.
+			EXPECT().
+			DeleteServiceEndpoint(clients.Ctx, serviceendpoint.DeleteServiceEndpointArgs{
+				ProjectIds: &[]string{azurermTestServiceEndpointAzureRMProjectID.String()}, EndpointId: resource.Id}).
+			Return(nil).
+			Times(1)
+
+		err := r.Create(resourceData, clients)
+		require.Contains(t, err.Error(), "ExecuteServiceEndpointRequest() Failed")
 	}
 }
 
@@ -384,6 +435,33 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 	}
 }
 
+func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointAzureRM()
+	for _, resource := range azurermTestServiceEndpointsAzureRM {
+		resourceData := getResourceData(t, resource)
+		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+
+		features := initializeFeaturesWithValidate(true)
+		resourceData.Set("features", features)
+
+		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+		reqArgs := genExecuteServiceEndpointArgs(&resource)
+		buildClient.
+			EXPECT().
+			ExecuteServiceEndpointRequest(clients.Ctx, *reqArgs).
+			Return(nil, errors.New("ExecuteServiceEndpointRequest() Failed")).
+			Times(1)
+
+		err := r.Update(resourceData, clients)
+		require.Contains(t, err.Error(), "ExecuteServiceEndpointRequest() Failed")
+	}
+}
+
 // This is a little different than most. The steps done, along with the motivation behind each, are as follows:
 //	(1) The service endpoint is configured. The `serviceprincipalkey` is set to `""`, which matches
 //		the Azure DevOps API behavior. The service will intentionally hide the value of
@@ -419,4 +497,31 @@ func getResourceData(t *testing.T, resource serviceendpoint.ServiceEndpoint) *sc
 		}})
 	}
 	return resourceData
+}
+
+func genExecuteServiceEndpointArgs(endpoint *serviceendpoint.ServiceEndpoint) *serviceendpoint.ExecuteServiceEndpointRequestArgs {
+	return &serviceendpoint.ExecuteServiceEndpointRequestArgs{
+		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+			DataSourceDetails: &serviceendpoint.DataSourceDetails{
+				DataSourceName: converter.String("TestConnection"),
+			},
+			ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+			ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
+				Data:          endpoint.Data,
+				Authorization: endpoint.Authorization,
+				Url:           endpoint.Url,
+				Type:          endpoint.Type,
+			},
+		},
+		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+		EndpointId: converter.String(endpoint.Id.String()),
+	}
+}
+
+func initializeFeaturesWithValidate(validate bool) []map[string]interface{} {
+	var features []map[string]interface{}
+	feature := make(map[string]interface{})
+	feature["validate"] = validate
+	features = append(features, feature)
+	return features
 }

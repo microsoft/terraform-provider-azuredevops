@@ -33,6 +33,8 @@ resource "azuredevops_check_branch_control" "example" {
   target_resource_id   = azuredevops_serviceendpoint_generic.example.id
   target_resource_type = "endpoint"
   allowed_branches     = "refs/heads/main, refs/heads/features/*"
+
+  timeout = 1440
 }
 ```
 
@@ -151,6 +153,10 @@ The following arguments are supported:
 * `allowed_branches` - (Optional) The branches allowed to use the resource. Specify a comma separated list of allowed branches in `refs/heads/branch_name` format. To allow deployments from all branches, specify ` * ` . `refs/heads/features/* , refs/heads/releases/*` restricts deployments to all branches under features/ or releases/ . Defaults to `*`.
 * `verify_branch_protection` - (Optional) Validate the branches being deployed are protected. Defaults to `false`.
 * `ignore_unknown_protection_status` - (Optional) Allow deployment from branches for which protection status could not be obtained. Only relevant when verify_branch_protection is `true`. Defaults to `false`.
+
+---
+
+* `timeout` - (Optional) The timeout in minutes for the branch control check. Defaults to `1440`.
 
 ## Attributes Reference
 

@@ -42,7 +42,7 @@ lint:
 test: fmtcheck
 	go test -tags "all" -i $(UNITTEST) || exit 1
 	echo $(UNITTEST) | \
-    		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=60s -parallel=4
+    		xargs -t -n4 go test -tags "all" $(TESTARGS) -timeout=120s -parallel=4
 
 testacc: fmtcheck
 	@echo "==> Sourcing .env file if available"

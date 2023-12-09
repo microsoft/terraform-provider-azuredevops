@@ -60,6 +60,9 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
+		"azuredevops_serviceendpoint_jenkins",
+		"azuredevops_serviceendpoint_maven",
+		"azuredevops_serviceendpoint_nexus",
 		"azuredevops_serviceendpoint_servicefabric",
 		"azuredevops_serviceendpoint_argocd",
 		"azuredevops_serviceendpoint_aws",
@@ -77,6 +80,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_jfrog_platform_v2",
 		"azuredevops_serviceendpoint_jfrog_xray_v2",
 		"azuredevops_serviceendpoint_externaltfs",
+		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_variable_group",
 		"azuredevops_repository_policy_author_email_pattern",
 		"azuredevops_repository_policy_case_enforcement",
@@ -89,6 +93,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_git_repository_branch",
 		"azuredevops_git_repository_file",
 		"azuredevops_user_entitlement",
+		"azuredevops_group_entitlement",
 		"azuredevops_group_membership",
 		"azuredevops_group",
 		"azuredevops_agent_pool",
@@ -134,6 +139,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_agent_pools",
 		"azuredevops_agent_queue",
 		"azuredevops_area",
+		"azuredevops_environment",
 		"azuredevops_iteration",
 		"azuredevops_team",
 		"azuredevops_teams",
@@ -143,6 +149,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_sonarcloud",
+		"azuredevops_serviceendpoint_azurecr",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap

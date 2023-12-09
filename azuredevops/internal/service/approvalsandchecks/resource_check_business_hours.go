@@ -95,6 +95,13 @@ func ResourceCheckBusinessHours() *schema.Resource {
 		ValidateFunc: validation.StringIsNotEmpty,
 	}
 
+	r.Schema["timeout"] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		Default:      1440,
+		ValidateFunc: validation.IntBetween(1, 2147483647),
+	}
+
 	return r
 }
 
@@ -164,6 +171,10 @@ func flattenBusinessHours(d *schema.ResourceData, businessHoursCheck *pipelinesc
 		return fmt.Errorf("inputs not found")
 	}
 
+	if businessHoursCheck.Timeout != nil {
+		d.Set("timeout", *businessHoursCheck.Timeout)
+	}
+
 	return nil
 }
 
@@ -187,5 +198,5 @@ func expandBusinessHours(d *schema.ResourceData) (*pipelineschecksextras.CheckCo
 	settings["definitionRef"] = evaluateBusinessHoursDef
 	settings["displayName"] = d.Get("display_name").(string)
 
-	return doBaseExpansion(d, approvalAndCheckType.BusinessHours, settings, nil)
+	return doBaseExpansion(d, approvalAndCheckType.BusinessHours, settings, converter.ToPtr(d.Get("timeout").(int)))
 }

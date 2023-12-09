@@ -1,15 +1,18 @@
 package build
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -66,11 +69,11 @@ func ResourceBuildDefinition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create:   resourceBuildDefinitionCreate,
-		Read:     resourceBuildDefinitionRead,
-		Update:   resourceBuildDefinitionUpdate,
-		Delete:   resourceBuildDefinitionDelete,
-		Importer: tfhelper.ImportProjectQualifiedResource(),
+		CreateContext: resourceBuildDefinitionCreate,
+		ReadContext:   resourceBuildDefinitionRead,
+		UpdateContext: resourceBuildDefinitionUpdate,
+		DeleteContext: resourceBuildDefinitionDelete,
+		Importer:      tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -341,36 +344,103 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"features": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"skip_first_run": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+					},
+				},
+			},
+			"queue_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "enabled",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(build.DefinitionQueueStatusValues.Enabled),
+					string(build.DefinitionQueueStatusValues.Paused),
+					string(build.DefinitionQueueStatusValues.Disabled),
+				}, false),
+			},
 		},
 	}
 }
 
-func resourceBuildDefinitionCreate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	err := validateServiceConnectionIDExistsIfNeeded(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return fmt.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
 	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
 	if err != nil {
-		return fmt.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
-	flattenBuildDefinition(d, createdBuildDefinition, projectID)
-	return resourceBuildDefinitionRead(d, m)
+	var diags diag.Diagnostics = nil
+	features := buildDefinitionFeatures(d)
+	if features != nil && len(features) != 0 {
+		if v, ok := features["skip_first_run"]; ok {
+			if skipFirstRun := v.(bool); !skipFirstRun {
+				// trigger the first run
+				repo := d.Get("repository").([]interface{})[0].(map[string]interface{})
+				branchName := repo["branch_name"].(string)
+
+				if strings.HasPrefix(branchName, "refs/heads/") {
+					branchName = branchName[len("refs/heads/"):]
+				}
+
+				_, err := clients.PipelinesClient.RunPipeline(clients.Ctx, pipelines.RunPipelineArgs{
+					Project:    converter.String(projectID),
+					PipelineId: createdBuildDefinition.Id,
+					RunParameters: &pipelines.RunPipelineParameters{
+						Resources: &pipelines.RunResourcesParameters{
+							Repositories: &map[string]pipelines.RepositoryResourceParameters{
+								"self": {
+									RefName: converter.String("refs/heads/" + branchName),
+								},
+							},
+						},
+					},
+				})
+
+				if err != nil {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "First run of build definition failed, nothing to trigger",
+						Detail:   fmt.Sprintf("Received error: %s\n Try initializing the repository with a valid build definition file", err),
+					})
+				}
+			}
+		}
+	}
+	d.SetId(strconv.Itoa(*createdBuildDefinition.Id))
+
+	readDiag := resourceBuildDefinitionRead(ctx, d, m)
+
+	if readDiag != nil {
+		return readDiag
+	} else {
+		return diags
+	}
 }
 
-func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
@@ -383,22 +453,22 @@ func resourceBuildDefinitionRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	flattenBuildDefinition(d, buildDefinition, projectID)
 	return nil
 }
 
-func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	err := validateServiceConnectionIDExistsIfNeeded(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	buildDefinition, projectID, err := expandBuildDefinition(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
@@ -408,14 +478,14 @@ func resourceBuildDefinitionUpdate(d *schema.ResourceData, m interface{}) error 
 	})
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
-	return resourceBuildDefinitionRead(d, m)
+	return resourceBuildDefinitionRead(ctx, d, m)
 }
 
-func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error {
+func resourceBuildDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if strings.EqualFold(d.Id(), "") {
 		return nil
 	}
@@ -423,15 +493,14 @@ func resourceBuildDefinitionDelete(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = clients.BuildClient.DeleteDefinition(m.(*client.AggregatedClient).Ctx, build.DeleteDefinitionArgs{
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
-
-	return err
+	return diag.FromErr(err)
 }
 
 func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
@@ -471,6 +540,8 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	}
 
 	d.Set("revision", revision)
+
+	d.Set("queue_status", *buildDefinition.QueueStatus)
 }
 
 func createBuildDefinition(clients *client.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
@@ -999,6 +1070,8 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		return nil, "", fmt.Errorf("Error expanding varibles: %+v", err)
 	}
 
+	queueStatus := build.DefinitionQueueStatus(d.Get("queue_status").(string))
+
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
 		Name:     converter.String(d.Get("name").(string)),
@@ -1019,7 +1092,7 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		Process: &build.YamlProcess{
 			YamlFilename: converter.String(repository["yml_path"].(string)),
 		},
-		QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
+		QueueStatus:    &queueStatus,
 		Type:           &build.DefinitionTypeValues.Build,
 		Quality:        &build.DefinitionQualityValues.Definition,
 		VariableGroups: expandVariableGroups(d),
@@ -1063,4 +1136,12 @@ func buildVariableGroup(id int) *build.VariableGroup {
 	return &build.VariableGroup{
 		Id: &id,
 	}
+}
+
+func buildDefinitionFeatures(d *schema.ResourceData) map[string]interface{} {
+	features := d.Get("features").([]interface{})
+	if features != nil && len(features) != 0 {
+		return features[0].(map[string]interface{})
+	}
+	return nil
 }

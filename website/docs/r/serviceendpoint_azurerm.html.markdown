@@ -29,9 +29,9 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
@@ -55,9 +55,9 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "ServicePrincipal"
   credentials {
     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
@@ -80,18 +80,31 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "ServicePrincipal"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
 ### Workload Identity Federation Manual AzureRM Service Endpoint (Subscription Scoped)
 
 ```hcl
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=3.0.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+
 locals {
   service_connection_name = "example-federated-sc"
 }
@@ -110,34 +123,32 @@ resource "azurerm_resource_group" "identity" {
 }
 
 resource "azurerm_user_assigned_identity" "example" {
-  location            = var.location
+  location            = azurerm_resource_group.identity.location
   name                = "example-identity"
   resource_group_name = "azurerm_resource_group.identity.name"
 }
 
-resource "azurerm_federated_identity_credential" "example" {
-  name                = "example-federated-credential"
-  resource_group_name = azurerm_resource_group.identity.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = "https://app.vstoken.visualstudio.com"
-  parent_id           = azurerm_user_assigned_identity.example.id
-  subject             = "sc://${var.azure_devops_organisation}/${azuredevops_project.example.name}/${local.service_connection_name}"
-}
-
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = local.service_connection_name
-  description                   = "Managed by Terraform"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = local.service_connection_name
+  description                            = "Managed by Terraform"
   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
   credentials {
-    serviceprincipalid  = azurerm_user_assigned_identity.example.client_id
+    serviceprincipalid = azurerm_user_assigned_identity.example.client_id
   }
   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
   azurerm_subscription_name = "Example Subscription Name"
 }
 
-#NOTE: The federated credential subject is formed from the Azure DevOps Organisation, Project and the Service Connection name.
+resource "azurerm_federated_identity_credential" "example" {
+  name                = "example-federated-credential"
+  resource_group_name = azurerm_resource_group.identity.name
+  parent_id           = azurerm_user_assigned_identity.example.id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_issuer
+  subject             = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_subject
+}
 ```
 
 ### Workload Identity Federation Automatic AzureRM Service Endpoint
@@ -151,12 +162,12 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
@@ -171,12 +182,12 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "example" {
-  project_id                    = azuredevops_project.example.id
-  service_endpoint_name         = "Example AzureRM"
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
   service_endpoint_authentication_scheme = "ManagedServiceIdentity"
-  azurerm_spn_tenantid          = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id       = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name     = "Example Subscription Name"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Example Subscription Name"
 }
 ```
 
@@ -202,6 +213,7 @@ The following arguments are supported:
 - `description` - (Optional) Service connection description.
 - `credentials` - (Optional) A `credentials` block.
 - `resource_group` - (Optional) The resource group used for scope of automatic service endpoint.
+- `features` - (Optional) A `features` block.
 
 ---
 
@@ -210,6 +222,12 @@ A `credentials` block supports the following:
 - `serviceprincipalid` - (Required) The service principal application Id
 - `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
 
+---
+
+A `features` block supports the following:
+
+- `validate` - (Optional) Whether or not to validate connection with Azure after create or update operations. Defaults to `false`
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -217,10 +235,13 @@ The following attributes are exported:
 - `id` - The ID of the service endpoint.
 - `project_id` - The ID of the project.
 - `service_endpoint_name` - The Service Endpoint name.
+- `service_principal_id` - The Application(Client) ID of the Service Principal.
+- `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/00000000-0000-0000-0000-000000000000`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+- `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://<organisation>/<project>/<service-connection-name>`.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Service End points](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Service End points](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
 
 ## Import
 
