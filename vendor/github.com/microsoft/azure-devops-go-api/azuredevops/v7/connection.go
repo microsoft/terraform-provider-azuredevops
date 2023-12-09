@@ -19,9 +19,9 @@ func NewPatConnection(organizationUrl string, personalAccessToken string) *Conne
 	authorizationString := CreateBasicAuthHeaderValue("", personalAccessToken)
 	organizationUrl = normalizeUrl(organizationUrl)
 	return &Connection{
-		AuthorizationString:     func() (string, error) {
-		                               return authorizationString, nil
-							     },
+		AuthorizationString: func() (string, error) {
+			return authorizationString, nil
+		},
 		BaseUrl:                 organizationUrl,
 		SuppressFedAuthRedirect: true,
 	}

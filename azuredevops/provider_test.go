@@ -180,9 +180,9 @@ func TestProvider_SchemaIsValid(t *testing.T) {
 		{"client_id_apply", false, "ARM_CLIENT_ID_APPLY", false},
 		{"tenant_id_apply", false, "ARM_TENANT_ID_APPLY", false},
 		{"client_secret", false, "ARM_CLIENT_SECRET", true},
-		{"client_secret_path", false, "ARM__SP_CLIENT_SECRET_PATH", false},
+		{"client_secret_path", false, "ARM_CLIENT_SECRET_PATH", false},
 		{"oidc_token", false, "ARM_OIDC_TOKEN", true},
-		{"oidc_token_path", false, "ARM_OIDC_TOKEN_PATH", false},
+		{"oidc_token_file_path", false, "ARM_oidc_token_file_path", false},
 		{"oidc_github_actions", false, "ARM_OIDC_GITHUB_ACTIONS", false},
 		{"oidc_github_actions_audience", false, "ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", false},
 		{"oidc_hcp", false, "ARM_OIDC_HCP", false},
@@ -278,7 +278,7 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	resourceData.Set("client_id", clientId)
 	resourceData.Set("tenant_id", tenantId)
-	resourceData.Set("oidc_token_path", tempFile)
+	resourceData.Set("oidc_token_file_path", tempFile)
 
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {

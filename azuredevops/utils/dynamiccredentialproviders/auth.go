@@ -29,14 +29,10 @@ type HCPWorkloadToken struct {
 }
 
 func getGitHubOIDCToken(d *schema.ResourceData) (string, error) {
-	requestUrl := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_URL")
-	requestToken := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+	requestUrl := d.Get("oidc_request_url").(string)
+	requestToken := d.Get("oidc_request_token").(string)
 	client := &http.Client{}
-	audience := "api://AzureADTokenExchange"
-
-	if userAudience, ok := d.GetOk("oidc_github_actions_audience"); ok {
-		audience = userAudience.(string)
-	}
+	audience := d.Get("oidc_github_actions_audience").(string)
 
 	parsedUrl, err := url.Parse(requestUrl)
 	if err != nil {
@@ -73,27 +69,28 @@ type TokenGetter interface {
 	GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error)
 }
 
-type AzIdentityFuncs interface {
+type IdentityFuncsI interface {
 	NewClientAssertionCredential(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (TokenGetter, error)
 	NewClientCertificateCredential(tenantID string, clientID string, certs []*x509.Certificate, key crypto.PrivateKey, options *azidentity.ClientCertificateCredentialOptions) (TokenGetter, error)
 	NewClientSecretCredential(tenantID string, clientID string, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (TokenGetter, error)
+	NewOIDCCredential(tenantID string, clientID string, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (TokenGetter, error)
 }
 
-type AzIdentityFuncsReal struct{}
+type AzIdentityFuncsImpl struct{}
 
-func (a AzIdentityFuncsReal) NewClientAssertionCredential(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (TokenGetter, error) {
+func (a AzIdentityFuncsImpl) NewClientAssertionCredential(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (TokenGetter, error) {
 	return azidentity.NewClientAssertionCredential(tenantID, clientID, getAssertion, options)
 }
 
-func (a AzIdentityFuncsReal) NewClientCertificateCredential(tenantID string, clientID string, certs []*x509.Certificate, key crypto.PrivateKey, options *azidentity.ClientCertificateCredentialOptions) (TokenGetter, error) {
+func (a AzIdentityFuncsImpl) NewClientCertificateCredential(tenantID string, clientID string, certs []*x509.Certificate, key crypto.PrivateKey, options *azidentity.ClientCertificateCredentialOptions) (TokenGetter, error) {
 	return azidentity.NewClientCertificateCredential(tenantID, clientID, certs, key, options)
 }
 
-func (a AzIdentityFuncsReal) NewClientSecretCredential(tenantID string, clientID string, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (TokenGetter, error) {
+func (a AzIdentityFuncsImpl) NewClientSecretCredential(tenantID string, clientID string, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (TokenGetter, error) {
 	return azidentity.NewClientSecretCredential(tenantID, clientID, clientSecret, options)
 }
 
-func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs AzIdentityFuncs) (func() (string, error), error) {
+func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs IdentityFuncsI) (func() (string, error), error) {
 	tenantId := d.Get("tenant_id").(string)
 	clientId := d.Get("client_id").(string)
 	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
@@ -113,8 +110,8 @@ func GetAuthToken(ctx context.Context, d *schema.ResourceData, azIdentityFuncs A
 	}
 
 	// OIDC Token From File
-	if oidc_token_path, ok := d.GetOk("oidc_token_path"); ok {
-		fileBytes, err := os.ReadFile(oidc_token_path.(string))
+	if oidc_token_file_path, ok := d.GetOk("oidc_token_file_path"); ok {
+		fileBytes, err := os.ReadFile(oidc_token_file_path.(string))
 		if err != nil {
 			return nil, err
 		}

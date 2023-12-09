@@ -38,7 +38,6 @@ Authentication may be accomplished using an [Azure AD service principal](https:/
 The OIDC service principal authentication methods allow for secure passwordless authentication from [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials) & [GitHub Actions](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect).
 
 * [Authenticating to a Service Principal with a Terraform Cloud Workload Identity Token](guides/authenticating_service_principal_using_hcp_token.html)
-* [Authenticating to a Service Principal with a GitHub Actions OIDC Token](guides/authenticating_service_principal_using_github_oidc.html)
 * [Authenticating to a Service Principal with a Client Certificate](guides/authenticating_service_principal_using_a_client_certificate.html)
 * [Authenticating to a Service Principal with a Client Secret](guides/authenticating_service_principal_using_a_client_secret.html)
 * [Authenticating to a Service Principal with an OIDC Token](guides/authenticating_service_principal_using_an_oidc_token.html)
@@ -90,8 +89,8 @@ It can also be sourced from the `ARM_CLIENT_SECRET_PATH` environment variable.
 - `oidc_token` - An OIDC token to authenticate to a service principal.
 It can also be sourced from the `ARM_OIDC_TOKEN` environment variable.
 
-- `oidc_token_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
-It can also be sourced from the `AZDO_SP_TOKEN_PATH` environment variable.
+- `oidc_token_file_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
+It can also be sourced from the `AZDO_TOKEN_PATH` environment variable.
 
 - `oidc_github_actions` - Boolean, set to true to use a GitHub Actions OIDC token to authenticate to a service principal.
 It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS` environment variable.

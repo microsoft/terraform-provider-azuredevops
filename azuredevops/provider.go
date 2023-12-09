@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"context"
+	"encoding/base64"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +26,7 @@ import (
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
-	servicePrincipalAuthFields := []string{"oidc_token", "oidc_token_path", "oidc_github_actions", "oidc_hcp", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
+	servicePrincipalAuthFields := []string{"oidc_token", "oidc_token_file_path", "oidc_github_actions", "oidc_hcp", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
 	allAuthFields := append([]string{"personal_access_token"}, servicePrincipalAuthFields...)
 
 	p := &schema.Provider{
@@ -201,6 +202,18 @@ func Provider() *schema.Provider {
 				ValidateFunc: validation.IsUUID,
 				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
 			},
+			"oidc_request_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN"}, ""),
+				Description: "The bearer token for the request to the OIDC provider. For use When authenticating as a Service Principal using OpenID Connect.",
+			},
+			"oidc_request_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL"}, ""),
+				Description: "The URL for the OIDC provider from which to request an ID token. For use When authenticating as a Service Principal using OpenID Connect.",
+			},
 			"oidc_token": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -210,13 +223,13 @@ func Provider() *schema.Provider {
 				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"oidc_token", "client_id", "tenant_id"},
 			},
-			"oidc_token_path": {
+			"oidc_token_file_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN_PATH", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_oidc_token_file_path", nil),
 				Description:  "OIDC token from file to authenticate as a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"oidc_token_path", "client_id", "tenant_id"},
+				RequiredWith: []string{"oidc_token_file_path", "client_id", "tenant_id"},
 			},
 			"oidc_github_actions": {
 				Type:         schema.TypeBool,
@@ -229,7 +242,7 @@ func Provider() *schema.Provider {
 			"oidc_github_actions_audience": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", "api://AzureADTokenExchange"),
 				Description:  "Set the audience for the github actions ODIC token.",
 				RequiredWith: []string{"oidc_github_actions_audience", "oidc_github_actions"},
 			},
@@ -300,20 +313,22 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 
 		var azdoClient *client.AggregatedClient
 		var err error
+		var tokenFunction func() (string, error)
 		// Personal Access Token
 		if personal_access_token, ok := d.GetOk("personal_access_token"); ok {
-			tokenFunction := func() (string, error) {
-				return personal_access_token.(string), nil
+			tokenFunction = func() (string, error) {
+				auth := "_:" + personal_access_token.(string)
+				return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth)), nil
 			}
-			azdoClient, err = client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
 		} else {
-			tokenFunction, err := dynamiccredentialproviders.GetAuthToken(ctx, d, dynamiccredentialproviders.AzIdentityFuncsReal{})
+			// Service Principal
+			tokenFunction, err = dynamiccredentialproviders.GetAuthToken(ctx, d, dynamiccredentialproviders.AzIdentityFuncsImpl{})
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
-			azdoClient, err = client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
 		}
 
+		azdoClient, err = client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
 		return azdoClient, diag.FromErr(err)
 	}
 }

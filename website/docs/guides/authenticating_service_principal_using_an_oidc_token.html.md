@@ -22,7 +22,18 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes.
 
-The token may be provided as a base64 encoded string, or by a file on the filesystem with the `ARM_OIDC_TOKEN` or `ARM_OIDC_TOKEN_PATH` environment variables, or in the provider configuration block with the `oidc_token` or `sp_client_oidc_token_path` attributes.
+The token may be provided as a base64 encoded string, or by a file on the filesystem with the `ARM_OIDC_TOKEN` or `ARM_OIDC_TOKEN_FILE_PATH` environment variables, or in the provider configuration block with the `oidc_token` or `oidc_token_file_path` attributes.
+
+When running Terraform in GitHub Actions, the provider will detect the `ACTIONS_ID_TOKEN_REQUEST_URL` and `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables set by the GitHub Actions runtime. You can also specify the `ARM_OIDC_REQUEST_TOKEN` and `ARM_OIDC_REQUEST_URL` environment variables.
+
+For GitHub Actions workflows, you'll need to ensure the workflow has `write` permissions for the `id-token`.
+
+```yaml
+permissions:
+  id-token: write
+```
+
+For more information about OIDC in GitHub Actions, see [official documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-cloud-providers).
 
 ### Providing the token through the file system
 
@@ -41,7 +52,7 @@ provider "azuredevops" {
 
   client_id              = "00000000-0000-0000-0000-000000000001"
   tenant_id              = "00000000-0000-0000-0000-000000000001"
-  sp_client_oidc_token_path = "C:\\my_oidc_token.txt"
+  oidc_token_file_path   = "C:\\my_oidc_token.txt"
 }
 
 resource "azuredevops_project" "project" {
