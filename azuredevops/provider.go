@@ -26,7 +26,7 @@ import (
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
-	servicePrincipalAuthFields := []string{"oidc_token", "oidc_token_file_path", "oidc_github_actions", "oidc_hcp", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
+	servicePrincipalAuthFields := []string{"use_msi", "use_oidc", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
 	allAuthFields := append([]string{"personal_access_token"}, servicePrincipalAuthFields...)
 
 	p := &schema.Provider{
@@ -226,32 +226,32 @@ func Provider() *schema.Provider {
 			"oidc_token_file_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_oidc_token_file_path", nil),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN_FILE_PATH", nil),
 				Description:  "OIDC token from file to authenticate as a service principal.",
 				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"oidc_token_file_path", "client_id", "tenant_id"},
 			},
-			"oidc_github_actions": {
+			"use_oidc": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS", nil),
-				Description:  "Use the GitHub Actions OIDC token to authenticate to a service principal.",
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_OIDC", false),
+				Description:  "Use an OIDC token to authenticate to a service principal.",
 				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"oidc_github_actions", "client_id", "tenant_id"},
+				RequiredWith: []string{"use_oidc", "client_id", "tenant_id"},
 			},
-			"oidc_github_actions_audience": {
+			"oidc_audience": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_GITHUB_ACTIONS_AUDIENCE", "api://AzureADTokenExchange"),
-				Description:  "Set the audience for the github actions ODIC token.",
-				RequiredWith: []string{"oidc_github_actions_audience", "oidc_github_actions"},
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", "api://AzureADTokenExchange"),
+				Description:  "Set the audience when requesting OIDC tokens.",
+				RequiredWith: []string{"oidc_audience", "use_oidc", "client_id", "tenant_id"},
 			},
-			"oidc_hcp": {
-				Type:         schema.TypeBool,
+			"oidc_tfc_tag": {
+				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_HCP", nil),
-				Description:  "Use dynamic provider credentials in HCP to authenticate as a service principal.",
-				ExactlyOneOf: allAuthFields,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", ""),
+				Description:  "Terraform Cloud dynamic credential provider tag.",
+				RequiredWith: []string{"oidc_tfc_tag", "use_oidc", "client_id", "tenant_id"},
 			},
 			"client_certificate_path": {
 				Type:         schema.TypeString,
@@ -294,6 +294,14 @@ func Provider() *schema.Provider {
 				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"client_secret_path", "client_id", "tenant_id"},
 			},
+			"use_msi": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_MSI", false),
+				Description:  "Use an Azure Managed Service Identity.",
+				ExactlyOneOf: allAuthFields,
+				RequiredWith: []string{"use_msi"},
+			},
 		},
 	}
 
@@ -322,7 +330,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			}
 		} else {
 			// Service Principal
-			tokenFunction, err = dynamiccredentialproviders.GetAuthToken(ctx, d, dynamiccredentialproviders.AzIdentityFuncsImpl{})
+			tokenFunction, err = dynamiccredentialproviders.GetAuthTokenProvider(ctx, d, dynamiccredentialproviders.AzIdentityFuncsImpl{})
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
