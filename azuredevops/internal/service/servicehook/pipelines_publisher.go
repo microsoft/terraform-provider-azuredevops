@@ -1,51 +1,30 @@
 package servicehook
 
 import (
-	"context"
-	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 )
 
-type pipelineEvent string
+var (
+	apiType2ResourceBlock = map[string]string{
+		"ms.vss-pipelines.run-state-changed-event":   "run_state_changed_event",
+		"ms.vss-pipelines.stage-state-changed-event": "stage_state_changed_event",
+	}
 
-const (
-	stageStateChanged pipelineEvent = "StageStateChanged"
-	runStateChanged   pipelineEvent = "RunStateChanged"
+	resourceBlock2ApiType = map[string]string{
+		"run_state_changed_event":   "ms.vss-pipelines.run-state-changed-event",
+		"stage_state_changed_event": "ms.vss-pipelines.stage-state-changed-event",
+	}
 )
-
-type pipelineEventType string
-
-const (
-	stageStateChangedEventType pipelineEventType = "ms.vss-pipelines.stage-state-changed-event"
-	runStateChangedEventType   pipelineEventType = "ms.vss-pipelines.run-state-changed-event"
-)
-
-var pipelineEvent2apiType = map[pipelineEvent]pipelineEventType{
-	stageStateChanged: stageStateChangedEventType,
-	runStateChanged:   runStateChangedEventType,
-}
-
-var apiType2pipelineEvent = map[pipelineEventType]pipelineEvent{
-	stageStateChangedEventType: stageStateChanged,
-	runStateChangedEventType:   runStateChanged,
-}
 
 func genPipelinesPublisherSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"published_event": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"StageStateChanged", "RunStateChanged"}, false),
-			Description:  "The trigger event",
-		},
 		"stage_state_changed_event": {
 			Type:          schema.TypeList,
 			Optional:      true,
 			MaxItems:      1,
-			Default:       nil,
+			AtLeastOneOf:  []string{"stage_state_changed_event", "run_state_changed_event"},
 			ConflictsWith: []string{"run_state_changed_event"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -78,7 +57,6 @@ func genPipelinesPublisherSchema() map[string]*schema.Schema {
 			Type:          schema.TypeList,
 			Optional:      true,
 			MaxItems:      1,
-			Default:       nil,
 			ConflictsWith: []string{"stage_state_changed_event"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -105,71 +83,49 @@ func genPipelinesPublisherSchema() map[string]*schema.Schema {
 	}
 }
 
-func validateEventConfigDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	publishedEvent := pipelineEvent(d.Get("published_event").(string))
-	expectedResourceBlock := convertFromApiType2ResourceBlock(string(pipelineEvent2apiType[publishedEvent]))
-	// iterate through all arguments to find a block
-	changedKeys := d.GetChangedKeysPrefix("")
-	for _, key := range changedKeys {
-		if strings.Contains(key, "changed_event") && !strings.HasPrefix(key, expectedResourceBlock) {
-			if _, ok := d.GetOk(key); ok {
-				return fmt.Errorf("Only '%s' block is supported if published_event is '%s'", expectedResourceBlock, publishedEvent)
-			}
+func expandPipelinesEventConfig(d *schema.ResourceData) (map[string]string, string) {
+	eventConfig := make(map[string]string)
+	var eventType string
+	if inputsList, ok := d.GetOkExists("stage_state_changed_event"); ok && len(inputsList.([]interface{})) > 0 {
+		eventType = "stage_state_changed_event"
+		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
+			eventConfig["pipelineId"] = inputs[0].(map[string]interface{})["pipeline_id"].(string)
+			eventConfig["stageNameId"] = inputs[0].(map[string]interface{})["stage_name"].(string)
+			eventConfig["stageStateId"] = inputs[0].(map[string]interface{})["stage_state_filter"].(string)
+			eventConfig["stageResultId"] = inputs[0].(map[string]interface{})["stage_result_filter"].(string)
 		}
 	}
-
-	return nil
-}
-
-func expandPipelinesEventConfig(d *schema.ResourceData) (*map[string]string, *string) {
-	publishedEvent := pipelineEvent(d.Get("published_event").(string))
-	eventType := string(pipelineEvent2apiType[publishedEvent])
-	convertedEventType := convertFromApiType2ResourceBlock(eventType)
-
-	eventConfig := make(map[string]string)
-	if _, ok := d.GetOk(convertedEventType); ok {
-		inputs, ok := d.Get(convertedEventType).([]interface{})[0].(map[string]interface{})
-		if ok {
-			eventConfig["pipelineId"] = inputs["pipeline_id"].(string)
-			switch publishedEvent {
-			case stageStateChanged:
-				eventConfig["stageNameId"] = inputs["stage_name"].(string)
-				eventConfig["stageStateId"] = inputs["stage_state_filter"].(string)
-				eventConfig["stageResultId"] = inputs["stage_result_filter"].(string)
-			case runStateChanged:
-				eventConfig["runStateId"] = inputs["run_state_filter"].(string)
-				eventConfig["runResultId"] = inputs["run_result_filter"].(string)
-			}
+	if inputsList, ok := d.GetOkExists("run_state_changed_event"); ok && len(inputsList.([]interface{})) > 0 {
+		eventType = "run_state_changed_event"
+		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
+			eventConfig["pipelineId"] = inputs[0].(map[string]interface{})["pipeline_id"].(string)
+			eventConfig["runStateId"] = inputs[0].(map[string]interface{})["run_state_filter"].(string)
+			eventConfig["runResultId"] = inputs[0].(map[string]interface{})["run_result_filter"].(string)
 		}
 	}
 	eventConfig["projectId"] = d.Get("project_id").(string)
-
-	return &eventConfig, &eventType
+	return eventConfig, resourceBlock2ApiType[eventType]
 }
 
-func flattenPipelinesEventConfig(publishedEvent pipelineEvent, event *map[string]string) []interface{} {
-	if isNilEventConfig(*event) {
-		return nil
+func flattenPipelinesEventConfig(subscription *servicehooks.Subscription) (string, []interface{}) {
+	eventType := apiType2ResourceBlock[*subscription.EventType]
+	if isNilEventConfig(*subscription.PublisherInputs) {
+		return eventType, []interface{}{nil}
 	}
+	event := *subscription.PublisherInputs
 	eventConfig := make(map[string]interface{})
-	eventConfig["pipeline_id"] = (*event)["pipelineId"]
-	switch publishedEvent {
-	case stageStateChanged:
-		eventConfig["stage_name"] = (*event)["stageNameId"]
-		eventConfig["stage_state_filter"] = (*event)["stageStateId"]
-		eventConfig["stage_result_filter"] = (*event)["stageResultId"]
-	case runStateChanged:
-		eventConfig["run_state_filter"] = (*event)["runStateId"]
-		eventConfig["run_result_filter"] = (*event)["runResultId"]
+	eventConfig["pipeline_id"] = event["pipelineId"]
+	switch eventType {
+	case "stage_state_changed_event":
+		eventConfig["stage_name"] = event["stageNameId"]
+		eventConfig["stage_state_filter"] = event["stageStateId"]
+		eventConfig["stage_result_filter"] = event["stageResultId"]
+	case "run_state_changed_event":
+		eventConfig["run_state_filter"] = event["runStateId"]
+		eventConfig["run_result_filter"] = event["runResultId"]
 	}
 
-	return []interface{}{eventConfig}
-}
-
-func convertFromApiType2ResourceBlock(eventType string) string {
-	eventTypeSplited := strings.Split(eventType, ".")
-	eventTypeSplited[len(eventTypeSplited)-1] = strings.Replace(eventTypeSplited[len(eventTypeSplited)-1], "-", "_", -1)
-	return eventTypeSplited[len(eventTypeSplited)-1]
+	return eventType, []interface{}{eventConfig}
 }
 
 func isNilEventConfig(eventConfig map[string]string) bool {

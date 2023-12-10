@@ -1136,7 +1136,7 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 }
 
 // HclServicehookStorageQeueuePipelinesResource HCL describing an AzDO subscription resource
-func HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent string) string {
+func HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf(`
 %s
@@ -1146,16 +1146,15 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
   account_name = "teststorageacc"
   account_key  = "%s"
   queue_name   = "%s"
-  published_event = "%s"
   stage_state_changed_event {
 	stage_state_filter = "%s"
 	stage_result_filter = "%s"
   }
 }
-`, projectResource, accountKey, queueName, publishedEvent, stateFilter, resultFilter)
+`, projectResource, accountKey, queueName, stateFilter, resultFilter)
 }
 
-func HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent string) string {
+func HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType string) string {
 	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf(`
 %s
@@ -1165,7 +1164,7 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
   account_name = "teststorageacc"
   account_key  = "%s"
   queue_name   = "%s"
-  published_event = "%s"
+  %s {}
 }
-`, projectResource, accountKey, queueName, publishedEvent)
+`, projectResource, accountKey, queueName, eventType)
 }

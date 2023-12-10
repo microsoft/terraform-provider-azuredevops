@@ -40,7 +40,6 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
   account_key  = azurerm_storage_account.example.primary_access_key 
   queue_name   = azurerm_storage_queue.example.name
   visi_timeout = 30
-  published_event = "RunStateChanged"
   run_state_changed_event {
     run_state_filter = "Completed"
     run_result_filter = "Succeeded"
@@ -48,7 +47,7 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
 }
 ```
 
-Ommiting the event configuration block will occur in all events triggering the associated action.
+An empty configuration block will occur in all events triggering the associated action.
 
 ```hcl
 resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
@@ -57,7 +56,7 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
   account_key  = azurerm_storage_account.example.primary_access_key 
   queue_name   = azurerm_storage_queue.example.name
   visi_timeout = 30
-  published_event = "RunStateChanged"
+  run_state_changed_event {}
 }
 ```
 
@@ -72,15 +71,15 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the associated project. Changing this forces a new Service Hook Storage Queue Pipelines to be created.
 
-* `published_event` - (Required) The trigger event. Possible options are `RunStateChanged`, and `StageStateChanged`.
-
 * `queue_name` - (Required) The name of the queue that will store the events.
 
 ---
 
-* `run_state_changed_event` - (Optional) A `run_state_changed_event` block as defined below.Conflicts with `stage_state_changed_event`
+* `run_state_changed_event` - (Optional) A `run_state_changed_event` block as defined below. Conflicts with `stage_state_changed_event`
 
-* `stage_state_changed_event` - (Optional) A `stage_state_changed_event` block as defined below.Conflicts with `run_state_changed_event`
+* `stage_state_changed_event` - (Optional) A `stage_state_changed_event` block as defined below. Conflicts with `run_state_changed_event`
+
+-> **Note** At least one of `run_state_changed_event` and `stage_state_changed_event` has to be set.
 
 * `ttl` - (Optional) event time-to-live - the duration a message can remain in the queue before it's automatically removed.
 

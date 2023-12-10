@@ -52,11 +52,10 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create:        resourceServicehookStorageQueuePipelinesCreate,
-		Read:          resourceServicehookStorageQueuePipelinesRead,
-		Update:        resourceServicehookStorageQueuePipelinesUpdate,
-		Delete:        resourceServicehookStorageQueuePipelinesDelete,
-		CustomizeDiff: validateEventConfigDiff,
+		Create: resourceServicehookStorageQueuePipelinesCreate,
+		Read:   resourceServicehookStorageQueuePipelinesRead,
+		Update: resourceServicehookStorageQueuePipelinesUpdate,
+		Delete: resourceServicehookStorageQueuePipelinesDelete,
 
 		Schema: resourceSchema,
 	}
@@ -133,9 +132,9 @@ func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehoo
 			"visiTimeout": visiTimeout,
 			"ttl":         ttl,
 		},
-		EventType:       eventType,
+		EventType:       &eventType,
 		PublisherId:     converter.String("pipelines"),
-		PublisherInputs: publisherInputs,
+		PublisherInputs: &publisherInputs,
 		ResourceVersion: converter.String("5.1-preview.1"),
 	}, nil
 }
@@ -151,19 +150,14 @@ func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscriptio
 		ttl = 604800
 	}
 
-	publishedEvent := apiType2pipelineEvent[pipelineEventType(*subscription.EventType)]
-	convertedEventType := convertFromApiType2ResourceBlock(*subscription.EventType)
-	eventConfig := flattenPipelinesEventConfig(publishedEvent, (*subscription).PublisherInputs)
-	if eventConfig != nil {
-		d.Set(convertedEventType, eventConfig)
-	}
+	eventType, eventConfig := flattenPipelinesEventConfig(subscription)
+	d.Set(eventType, eventConfig)
 	d.Set("project_id", (*subscription.PublisherInputs)["projectId"])
 	d.Set("account_name", (*subscription.ConsumerInputs)["accountName"])
 	d.Set("account_key", accountKey)
 	d.Set("queue_name", (*subscription.ConsumerInputs)["queueName"])
 	d.Set("visi_timeout", visiTimeout)
 	d.Set("ttl", ttl)
-	d.Set("published_event", publishedEvent)
 }
 
 func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {

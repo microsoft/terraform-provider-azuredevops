@@ -17,7 +17,6 @@ import (
 func TestAccServicehookStorageQueuePipelines_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	queueName := "testqueue"
-	publishedEvent := "StageStateChanged"
 	stateFilter := "Completed"
 	resultFilter := "Succeeded"
 	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -30,7 +29,7 @@ func TestAccServicehookStorageQueuePipelines_basic(t *testing.T) {
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
@@ -45,7 +44,6 @@ func TestAccServicehookStorageQueuePipelines_basic(t *testing.T) {
 
 func TestAccServicehookStorageQueuePipelines_Update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	publishedEvent := "StageStateChanged"
 	queueName1 := "testqueue"
 	stateFilter1 := "Completed"
 	resultFilter1 := "Succeeded"
@@ -64,7 +62,7 @@ func TestAccServicehookStorageQueuePipelines_Update(t *testing.T) {
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey1, queueName1, stateFilter1, resultFilter1, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey1, queueName1, stateFilter1, resultFilter1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName1),
@@ -74,7 +72,7 @@ func TestAccServicehookStorageQueuePipelines_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey2, queueName2, stateFilter2, resultFilter2, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey2, queueName2, stateFilter2, resultFilter2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName2),
@@ -87,28 +85,7 @@ func TestAccServicehookStorageQueuePipelines_Update(t *testing.T) {
 	})
 }
 
-func TestAccServicehookStorageQueuePipelines_InvalidEventConfig(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	queueName := "testqueue"
-	publishedEvent := "RunStateChanged"
-	stateFilter := "Completed"
-	resultFilter := "Succeeded"
-	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config:      testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent),
-				ExpectError: regexp.MustCompile("Only 'run_state_changed_event' block is supported if published_event is 'RunStateChanged'"),
-			},
-		},
-	})
-}
-
-func TestAccServicehookStorageQueue_accountKeyError(t *testing.T) {
+func TestAccServicehookStorageQueuePipelines_accountKeyError(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -117,7 +94,7 @@ func TestAccServicehookStorageQueue_accountKeyError(t *testing.T) {
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config:      testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, "accountkey", "testqueue", "Canceled", "Canceled", "RunStateChanged"),
+				Config:      testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, "accountkey", "testqueue", "Canceled", "Canceled"),
 				ExpectError: regexp.MustCompile("expected length of account_key to be in the range \\(64 - 100\\)"),
 			},
 		},
@@ -127,8 +104,8 @@ func TestAccServicehookStorageQueue_accountKeyError(t *testing.T) {
 func TestAccServicehookStorageQueuePipelines_NoEventConfig_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	queueName := "testqueue"
-	publishedEvent1 := "RunStateChanged"
-	publishedEvent2 := "StageStateChanged"
+	eventType1 := "run_state_changed_event"
+	eventType2 := "stage_state_changed_event"
 	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 	resourceType := "azuredevops_servicehook_storage_queue_pipelines"
@@ -139,19 +116,15 @@ func TestAccServicehookStorageQueuePipelines_NoEventConfig_CreateAndUpdate(t *te
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent1),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent1),
 				),
 			},
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent2),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
-					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent2),
 				),
 			},
 		},
@@ -161,7 +134,7 @@ func TestAccServicehookStorageQueuePipelines_NoEventConfig_CreateAndUpdate(t *te
 func TestAccServicehookStorageQueuePipelines_AddEventConfig(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	queueName := "testqueue"
-	publishedEvent := "StageStateChanged"
+	eventType := "stage_state_changed_event"
 	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	stateFilter := "Completed"
 	resultFilter := "Succeeded"
@@ -174,20 +147,18 @@ func TestAccServicehookStorageQueuePipelines_AddEventConfig(t *testing.T) {
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent),
 					resource.TestCheckNoResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter"),
 				),
 			},
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter", resultFilter),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_state_filter", stateFilter),
 				),
@@ -199,8 +170,7 @@ func TestAccServicehookStorageQueuePipelines_AddEventConfig(t *testing.T) {
 func TestAccServicehookStorageQueuePipelines_RemoveEventConfigAndChangeEvent(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	queueName := "testqueue"
-	publishedEvent1 := "StageStateChanged"
-	publishedEvent2 := "RunStateChanged"
+	eventType2 := "run_state_changed_event"
 	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	stateFilter := "Completed"
 	resultFilter := "Succeeded"
@@ -213,21 +183,19 @@ func TestAccServicehookStorageQueuePipelines_RemoveEventConfigAndChangeEvent(t *
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent1),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent1),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter", resultFilter),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_state_filter", stateFilter),
 				),
 			},
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent2),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent2),
 					resource.TestCheckNoResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter"),
 					resource.TestCheckNoResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_state_filter"),
 				),
@@ -239,7 +207,7 @@ func TestAccServicehookStorageQueuePipelines_RemoveEventConfigAndChangeEvent(t *
 func TestAccServicehookStorageQueuePipelines_RemoveEventConfig(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	queueName := "testqueue"
-	publishedEvent := "StageStateChanged"
+	eventType := "stage_state_changed_event"
 	accountKey := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	stateFilter := "Completed"
 	resultFilter := "Succeeded"
@@ -252,21 +220,19 @@ func TestAccServicehookStorageQueuePipelines_RemoveEventConfig(t *testing.T) {
 		CheckDestroy: CheckServicehookStorageQueuePipelinesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter", resultFilter),
 					resource.TestCheckResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_state_filter", stateFilter),
 				),
 			},
 			{
-				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, publishedEvent),
+				Config: testutils.HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "queue_name", queueName),
-					resource.TestCheckResourceAttr(tfCheckNode, "published_event", publishedEvent),
 					resource.TestCheckNoResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_result_filter"),
 					resource.TestCheckNoResourceAttr(tfCheckNode, "stage_state_changed_event.0.stage_state_filter"),
 				),
