@@ -86,3 +86,58 @@ resource "azuredevops_project" "project" {
   description        = "Test Project Description"
 }
 ```
+
+
+### Configure the provider to authenticate with the Terraform Cloud workload idenity token
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url                 = "https://dev.azure.com/my-org"
+
+  client_id = "00000000-0000-0000-0000-000000000001"
+  tenant_id = "00000000-0000-0000-0000-000000000001"
+  oidc_hcp  = true
+}
+
+resource "azuredevops_project" "project" {
+  name        = "Test Project"
+  description = "Test Project Description"
+}
+```
+
+### Configure the provider to authenticate with the Terraform Cloud workload idenity token with different plan & apply service principals
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url                 = "https://dev.azure.com/my-org"
+
+  client_id_plan  = "00000000-0000-0000-0000-000000000001"
+  client_id_apply = "00000000-0000-0000-0000-000000000001"
+  tenant_id_plan  = "00000000-0000-0000-0000-000000000001"
+  tenant_id_apply = "00000000-0000-0000-0000-000000000001"
+  oidc_hcp  = true
+}
+
+resource "azuredevops_project" "project" {
+  name        = "Test Project"
+  description = "Test Project Description"
+}
+```

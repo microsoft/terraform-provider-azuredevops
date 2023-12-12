@@ -54,8 +54,9 @@ The following arguments are supported in the `provider` block:
   token. The account corresponding to the token will need "owner" privileges for this
   organization. It can also be sourced from the `AZDO_PERSONAL_ACCESS_TOKEN` environment variable.
 
-- `client_id` - The client id used when authenticating to a service principal. It
-can also be sourced from the `ARM_CLIENT_ID` environment variable.
+- `client_id` - The client id used when authenticating to a service principal or the principal id when
+authenticating with a user specified managed service identity. It can also be sourced from
+the `ARM_CLIENT_ID` environment variable.
 
 - `tenant_id` - The tenant id used when authenticating to a service principal.
 It can also be sourced from the `ARM_TENANT_ID` environment variable.
@@ -86,6 +87,17 @@ It can also be sourced from the `ARM_CLIENT_SECRET` environment variable.
 - `client_secret_path` - The path to a file containing a client secret to authenticate to a service principal.
 It can also be sourced from the `ARM_CLIENT_SECRET_PATH` environment variable.
 
+- `oidc_audience` - Specifies the oidc audience to request when using an `oidc_request_url`, most commonly with GitHub Actions.
+It can also be sourced from the `ARM_OIDC_AUDIENCE` environment variable.
+
+- `oidc_request_token` - The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.
+It can also be sourced from the `ARM_OIDC_REQUEST_TOKEN` or `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables.
+
+- `oidc_request_url` - The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.
+It can also be sourced from the `ARM_OIDC_REQUEST_URL` or `ACTIONS_ID_TOKEN_REQUEST_URL` environment variables.
+
+- `oidc_tfc_tag` - Terraform Cloud dynamic credential provider tag. It can also be sourced from the `ARM_OIDC_TFC_TAG` environment variable.
+
 - `oidc_token` - An OIDC token to authenticate to a service principal.
 It can also be sourced from the `ARM_OIDC_TOKEN` environment variable.
 
@@ -100,6 +112,10 @@ It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS_AUDIENCE` environment v
 
 - `oidc_hcp` - Boolean, set to true to use the Terraform Cloud OIDC workload identity token to authenticate to a service principal.
 It can also be sourced from the `ARM_OIDC_HCP` environment variable.
+
+- `use_oidc` - Boolean, enables OIDC auth methods. It can also be sourced from the `ARM_USE_OIDC` environment variable.
+
+- `use_msi` - Boolean, enables authentication with a Managed Service Identity in Azure. It can also be sourced from the `ARM_USE_MSI` environment variable.
 
 - `client_certificate_path` - The path to a file containing a certificate to authenticate to a service
 principal, typically a .pfx file.

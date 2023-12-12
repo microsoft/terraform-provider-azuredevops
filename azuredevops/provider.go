@@ -21,7 +21,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/dynamiccredentialproviders"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -158,9 +157,8 @@ func Provider() *schema.Provider {
 				Type:         schema.TypeString,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
-				Description:  "The service principal client id which should be used.",
+				Description:  "The service principal client or managed service principal id which should be used.",
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"client_id", "tenant_id"},
 			},
 			"tenant_id": {
 				Type:         schema.TypeString,
@@ -205,14 +203,16 @@ func Provider() *schema.Provider {
 			"oidc_request_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN"}, ""),
-				Description: "The bearer token for the request to the OIDC provider. For use When authenticating as a Service Principal using OpenID Connect.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN"}, nil),
+				Description: "The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.",
+				RequiredWith: []string{"oidc_request_token", "client_id", "tenant_id", "use_oidc"},
 			},
 			"oidc_request_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL"}, ""),
-				Description: "The URL for the OIDC provider from which to request an ID token. For use When authenticating as a Service Principal using OpenID Connect.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL"}, nil),
+				Description: "The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.",
+				RequiredWith: []string{"oidc_request_url", "client_id", "tenant_id", "use_oidc"},
 			},
 			"oidc_token": {
 				Type:         schema.TypeString,
@@ -220,21 +220,19 @@ func Provider() *schema.Provider {
 				Sensitive:    true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN", nil),
 				Description:  "OIDC token to authenticate as a service principal.",
-				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"oidc_token", "client_id", "tenant_id"},
+				RequiredWith: []string{"oidc_token", "client_id", "tenant_id", "use_oidc"},
 			},
 			"oidc_token_file_path": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN_FILE_PATH", nil),
 				Description:  "OIDC token from file to authenticate as a service principal.",
-				ExactlyOneOf: allAuthFields,
-				RequiredWith: []string{"oidc_token_file_path", "client_id", "tenant_id"},
+				RequiredWith: []string{"oidc_token_file_path", "client_id", "tenant_id", "use_oidc"},
 			},
 			"use_oidc": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_OIDC", false),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_OIDC", nil),
 				Description:  "Use an OIDC token to authenticate to a service principal.",
 				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"use_oidc", "client_id", "tenant_id"},
@@ -242,14 +240,14 @@ func Provider() *schema.Provider {
 			"oidc_audience": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", "api://AzureADTokenExchange"),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", nil),
 				Description:  "Set the audience when requesting OIDC tokens.",
 				RequiredWith: []string{"oidc_audience", "use_oidc", "client_id", "tenant_id"},
 			},
 			"oidc_tfc_tag": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", ""),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", nil),
 				Description:  "Terraform Cloud dynamic credential provider tag.",
 				RequiredWith: []string{"oidc_tfc_tag", "use_oidc", "client_id", "tenant_id"},
 			},
@@ -258,7 +256,6 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE_PATH", nil),
 				Description:  "Path to a certificate to use to authenticate to the service principal.",
-				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"client_certificate_path", "client_id", "tenant_id"},
 			},
 			"client_certificate": {
@@ -267,7 +264,6 @@ func Provider() *schema.Provider {
 				Sensitive:    true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE", nil),
 				Description:  "Base64 encoded certificate to use to authenticate to the service principal.",
-				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"client_certificate", "client_id", "tenant_id"},
 			},
 			"client_certificate_password": {
@@ -297,7 +293,7 @@ func Provider() *schema.Provider {
 			"use_msi": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_MSI", false),
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_MSI", nil),
 				Description:  "Use an Azure Managed Service Identity.",
 				ExactlyOneOf: allAuthFields,
 				RequiredWith: []string{"use_msi"},
@@ -330,7 +326,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			}
 		} else {
 			// Service Principal
-			tokenFunction, err = dynamiccredentialproviders.GetAuthTokenProvider(ctx, d, dynamiccredentialproviders.AzIdentityFuncsImpl{})
+			tokenFunction, err = GetAuthTokenProvider(ctx, d, AzIdentityFuncsImpl{})
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

@@ -1,4 +1,4 @@
-package dynamiccredentialproviders
+package azuredevops
 
 import (
 	"context"
@@ -138,9 +138,18 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 				return nil, err
 			}
 		} else if oidc_request_url, ok := d.GetOk("oidc_request_url"); ok && oidc_request_url.(string) != "" {
+			audience := "api://AzureADTokenExchange";
+			if oidc_audience, ok := d.GetOk("oidc_audience"); ok && oidc_audience.(string) != "" {
+				audience = oidc_audience.(string)
+			}
+
+			if _, ok = d.GetOk("oidc_request_token"); !ok {
+				return nil, errors.New("No oidc_request_token token found.")
+			}
+
 			// OIDC Token from a REST request, ex: Github Action Workflow
 			cred = &OIDCCredentialProvder{
-				audience:     d.Get("oidc_audience").(string),
+				audience:     audience,
 				requestUrl:   oidc_request_url.(string),
 				requestToken: d.Get("oidc_request_token").(string),
 				tenantID:     tenantID,
@@ -268,7 +277,12 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 
 	// Azure Managed Service Identity
 	if use_msi, ok := d.GetOk("use_msi"); ok && use_msi.(bool) {
-		cred, err = azIdentityFuncs.NewManagedIdentityCredential(nil)
+		options := &azidentity.ManagedIdentityCredentialOptions{}
+		if client_id, ok := d.GetOk("client_id"); ok {
+			options.ID = azidentity.ClientID(client_id.(string))
+		}
+
+		cred, err = azIdentityFuncs.NewManagedIdentityCredential(options)
 		if err != nil {
 			return nil, err
 		}
