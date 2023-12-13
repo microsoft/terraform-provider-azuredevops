@@ -1135,24 +1135,36 @@ func HclEnvironmentResource(projectName string, environmentName string) string {
 	return fmt.Sprintf("%s\n%s", projectResource, azureEnvironmentResource)
 }
 
-func getEnvironmentResourceKubernetes(resourceName string) string {
+// HclServicehookStorageQeueuePipelinesResource HCL describing an AzDO subscription resource
+func HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, accountKey, queueName, stateFilter, resultFilter string) string {
+	projectResource := HclProjectResource(projectName)
 	return fmt.Sprintf(`
-resource "azuredevops_environment_resource_kubernetes" "kubernetes" {
-	project_id          = azuredevops_project.project.id
-	environment_id      = azuredevops_environment.environment.id
-	service_endpoint_id = azuredevops_serviceendpoint_kubernetes.serviceendpoint.id
-	
-	name         = "%s"
-	namespace    = "default"
-	cluster_name = "example-aks"
-	tags         = ["tag1", "tag2"]
-}`, resourceName)
+%s
+
+resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
+  project_id   = azuredevops_project.project.id
+  account_name = "teststorageacc"
+  account_key  = "%s"
+  queue_name   = "%s"
+  stage_state_changed_event {
+	stage_state_filter = "%s"
+	stage_result_filter = "%s"
+  }
+}
+`, projectResource, accountKey, queueName, stateFilter, resultFilter)
 }
 
-// HclEnvironmentResourceKubernetesResource HCL describing an AzDO environment kubernetes resource
-func HclEnvironmentResourceKubernetesResource(projectName string, environmentName string, serviceEndpointName string, resourceName string) string {
-	serviceEndpointResource := HclServiceEndpointKubernetesResource(projectName, serviceEndpointName, "ServiceAccount")
-	azureEnvironmentResource := getEnvironmentResource(environmentName)
-	environmentKubernetesResource := getEnvironmentResourceKubernetes(resourceName)
-	return fmt.Sprintf("%s\n%s\n%s", serviceEndpointResource, azureEnvironmentResource, environmentKubernetesResource)
+func HclServicehookStorageQeueuePipelinesResourceWithoutEventConfig(projectName, accountKey, queueName, eventType string) string {
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
+  project_id   = azuredevops_project.project.id
+  account_name = "teststorageacc"
+  account_key  = "%s"
+  queue_name   = "%s"
+  %s {}
+}
+`, projectResource, accountKey, queueName, eventType)
 }

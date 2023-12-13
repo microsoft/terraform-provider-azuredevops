@@ -24,6 +24,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
@@ -58,6 +59,7 @@ type AggregatedClient struct {
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
 	WorkItemTrackingClient        workitemtracking.Client
+	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
 }
 
@@ -169,6 +171,8 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		return nil, err
 	}
 
+	serviceHooksClient := servicehooks.NewClient(ctx, connection)
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -190,6 +194,7 @@ func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*A
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
+		ServiceHooksClient:            serviceHooksClient,
 		Ctx:                           ctx,
 	}
 

@@ -348,13 +348,13 @@ func TestBuildDefinition_ValidatesServiceConnection_Bitbucket(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
-	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "bitbucket repositories need a referenced service connection ID")
+	diags := resourceBuildDefinitionCreate(context.Background(), resourceData, clients)
+	require.NotNil(t, diags)
+	require.Contains(t, diags[len(diags)-1].Summary, "bitbucket repositories need a referenced service connection ID")
 
-	err = resourceBuildDefinitionUpdate(resourceData, clients)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "bitbucket repositories need a referenced service connection ID")
+	diags = resourceBuildDefinitionUpdate(context.Background(), resourceData, clients)
+	require.NotNil(t, diags)
+	require.Contains(t, diags[len(diags)-1].Summary, "bitbucket repositories need a referenced service connection ID")
 }
 
 // verifies that a service connection is required for GitHub Enterprise repos
@@ -369,13 +369,13 @@ func TestBuildDefinition_ValidatesServiceConnection_GitHubEnterprise(t *testing.
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
-	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "GitHub Enterprise repositories need a referenced service connection ID")
+	diags := resourceBuildDefinitionCreate(context.Background(), resourceData, clients)
+	require.NotNil(t, diags)
+	require.Contains(t, diags[len(diags)-1].Summary, "GitHub Enterprise repositories need a referenced service connection ID")
 
-	err = resourceBuildDefinitionUpdate(resourceData, clients)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "GitHub Enterprise repositories need a referenced service connection ID")
+	diags = resourceBuildDefinitionUpdate(context.Background(), resourceData, clients)
+	require.NotNil(t, diags)
+	require.Contains(t, diags[len(diags)-1].Summary, "GitHub Enterprise repositories need a referenced service connection ID")
 }
 
 // verifies that create a build definition with Bitbucket and CI triggers
@@ -396,8 +396,8 @@ func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
 		CreateDefinition(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("CreateDefinition() Failed")).
 		Times(1)
-	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.Contains(t, err.Error(), "CreateDefinition() Failed")
+	diags := resourceBuildDefinitionCreate(context.Background(), resourceData, clients)
+	require.Contains(t, diags[len(diags)-1].Summary, "CreateDefinition() Failed")
 }
 
 // verifies that create a build definition with GitHub Enterprise and CI triggers
@@ -418,8 +418,8 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 		CreateDefinition(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("CreateDefinition() Failed")).
 		Times(1)
-	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.Contains(t, err.Error(), "CreateDefinition() Failed")
+	diags := resourceBuildDefinitionCreate(context.Background(), resourceData, clients)
+	require.Contains(t, diags[len(diags)-1].Summary, "CreateDefinition() Failed")
 }
 
 // verifies that the flatten/expand round trip yields the same build definition
@@ -462,8 +462,8 @@ func TestBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("CreateDefinition() Failed")).
 		Times(1)
 
-	err := resourceBuildDefinitionCreate(resourceData, clients)
-	require.Contains(t, err.Error(), "CreateDefinition() Failed")
+	diags := resourceBuildDefinitionCreate(context.Background(), resourceData, clients)
+	require.Contains(t, diags[len(diags)-1].Summary, "CreateDefinition() Failed")
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
@@ -484,8 +484,8 @@ func TestBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("GetDefinition() Failed")).
 		Times(1)
 
-	err := resourceBuildDefinitionRead(resourceData, clients)
-	require.Equal(t, "GetDefinition() Failed", err.Error())
+	diags := resourceBuildDefinitionRead(context.Background(), resourceData, clients)
+	require.Equal(t, "GetDefinition() Failed", diags[len(diags)-1].Summary)
 }
 
 // verifies that if an error is produced on a delete, it is not swallowed
@@ -506,8 +506,8 @@ func TestBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 		Return(errors.New("DeleteDefinition() Failed")).
 		Times(1)
 
-	err := resourceBuildDefinitionDelete(resourceData, clients)
-	require.Equal(t, "DeleteDefinition() Failed", err.Error())
+	diags := resourceBuildDefinitionDelete(context.Background(), resourceData, clients)
+	require.Equal(t, "DeleteDefinition() Failed", diags[len(diags)-1].Summary)
 }
 
 // verifies that if an error is produced on an update, it is not swallowed
@@ -533,8 +533,8 @@ func TestBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("UpdateDefinition() Failed")).
 		Times(1)
 
-	err := resourceBuildDefinitionUpdate(resourceData, clients)
-	require.Equal(t, "UpdateDefinition() Failed", err.Error())
+	diags := resourceBuildDefinitionUpdate(context.Background(), resourceData, clients)
+	require.Equal(t, "UpdateDefinition() Failed", diags[len(diags)-1].Summary)
 }
 
 func TestExpandVariables_CatchesDuplicateVariables(t *testing.T) {
