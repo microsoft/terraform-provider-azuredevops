@@ -52,6 +52,7 @@ func DataUsers() *schema.Resource {
 			"features": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"concurrent_workers": {
@@ -275,7 +276,6 @@ func addStorageKeyAsId(clients *client.AggregatedClient, users []interface{}, nu
 	}
 	close(userQueue)
 
-	// Wait for workers to finish and check for errors
 	done := make(chan bool)
 	go func() {
 		wg.Wait()
@@ -286,7 +286,6 @@ func addStorageKeyAsId(clients *client.AggregatedClient, users []interface{}, nu
 	case err := <-errChan:
 		return err
 	case <-done:
-		// No errors, continue
 	}
 
 	return nil
