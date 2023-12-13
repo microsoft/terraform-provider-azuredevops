@@ -81,9 +81,9 @@ The following arguments are supported:
 
 -> **Note** At least one of `run_state_changed_event` and `stage_state_changed_event` has to be set.
 
-* `ttl` - (Optional) event time-to-live - the duration a message can remain in the queue before it's automatically removed.
+* `ttl` - (Optional) event time-to-live - the duration a message can remain in the queue before it's automatically removed. Defaults to `604800`.
 
-* `visi_timeout` - (Optional) event visibility timout - how long a message is invisible to other consumers after it's been dequeued.
+* `visi_timeout` - (Optional) event visibility timout - how long a message is invisible to other consumers after it's been dequeued. Defaults to `0`.
 
 ---
 

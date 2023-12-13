@@ -57,6 +57,9 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 		Update: resourceServicehookStorageQueuePipelinesUpdate,
 		Delete: resourceServicehookStorageQueuePipelinesDelete,
 
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: resourceSchema,
 	}
 }
