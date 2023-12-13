@@ -17,6 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 )
@@ -108,6 +109,7 @@ func Provider() *schema.Provider {
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
+			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":           build.DataBuildDefinition(),

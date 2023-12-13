@@ -186,6 +186,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/notification
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines
@@ -197,6 +198,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/release
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/security
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/system
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
