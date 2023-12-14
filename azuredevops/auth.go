@@ -53,16 +53,17 @@ func (a AzIdentityFuncsImpl) NewClientSecretCredential(tenantID string, clientID
 	return azidentity.NewClientSecretCredential(tenantID, clientID, clientSecret, options)
 }
 
-func (a AzIdentityFuncsImpl) NewManagedIdentityCredential( options *azidentity.ManagedIdentityCredentialOptions) (TokenGetter, error) {
+func (a AzIdentityFuncsImpl) NewManagedIdentityCredential(options *azidentity.ManagedIdentityCredentialOptions) (TokenGetter, error) {
 	return azidentity.NewManagedIdentityCredential(options)
 }
 
 type OIDCCredentialProvder struct {
-	audience     string
-	clientID     string
-	requestToken string
-	requestUrl   string
-	tenantID     string
+	audience        string
+	clientID        string
+	requestToken    string
+	requestUrl      string
+	tenantID        string
+	azIdentityFuncs IdentityFuncsI
 }
 
 func (o *OIDCCredentialProvder) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
@@ -102,7 +103,7 @@ func (o *OIDCCredentialProvder) GetToken(ctx context.Context, opts policy.TokenR
 	}
 
 	// Request the access token from Azure AD using the OIDC token
-	creds, err := azidentity.NewClientSecretCredential(o.tenantID, o.clientID, oidc_response.Value, nil)
+	creds, err := o.azIdentityFuncs.NewClientSecretCredential(o.tenantID, o.clientID, oidc_response.Value, nil)
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
@@ -110,6 +111,16 @@ func (o *OIDCCredentialProvder) GetToken(ctx context.Context, opts policy.TokenR
 }
 
 func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentityFuncs IdentityFuncsI) (func() (string, error), error) {
+	// Personal Access Token
+	if personal_access_token, ok := d.GetOk("personal_access_token"); ok {
+		tokenFunction := func() (string, error) {
+			auth := "_:" + personal_access_token.(string)
+			return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth)), nil
+		}
+		return tokenFunction, nil
+	}
+
+	// Azure Authentication Schemes
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
 	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
@@ -123,7 +134,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 	if use_oidc, ok := d.GetOk("use_oidc"); ok && use_oidc.(bool) {
 		if oidc_token, ok := d.GetOk("oidc_token"); ok {
 			// Provided OIDC Token
-			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, func(context.Context) (string, error) { return oidc_token.(string), nil }, nil)
+			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, oidc_token.(string), nil)
 			if err != nil {
 				return nil, err
 			}
@@ -133,12 +144,12 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 			if err != nil {
 				return nil, err
 			}
-			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, func(context.Context) (string, error) { return strings.TrimSpace(string(fileBytes)), nil }, nil)
+			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, strings.TrimSpace(string(fileBytes)), nil)
 			if err != nil {
 				return nil, err
 			}
 		} else if oidc_request_url, ok := d.GetOk("oidc_request_url"); ok && oidc_request_url.(string) != "" {
-			audience := "api://AzureADTokenExchange";
+			audience := "api://AzureADTokenExchange"
 			if oidc_audience, ok := d.GetOk("oidc_audience"); ok && oidc_audience.(string) != "" {
 				audience = oidc_audience.(string)
 			}
@@ -149,11 +160,12 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 
 			// OIDC Token from a REST request, ex: Github Action Workflow
 			cred = &OIDCCredentialProvder{
-				audience:     audience,
-				requestUrl:   oidc_request_url.(string),
-				requestToken: d.Get("oidc_request_token").(string),
-				tenantID:     tenantID,
-				clientID:     clientID,
+				audience:        audience,
+				requestUrl:      oidc_request_url.(string),
+				requestToken:    d.Get("oidc_request_token").(string),
+				tenantID:        tenantID,
+				clientID:        clientID,
+				azIdentityFuncs: azIdentityFuncs,
 			}
 		} else {
 			// OIDC Token from Terraform Cloud
@@ -205,7 +217,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 				return nil, errors.New(fmt.Sprintf("Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication."))
 			}
 
-			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, func(context.Context) (string, error) { return workloadIdentityToken, nil }, nil)
+			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, workloadIdentityToken, nil)
 			if err != nil {
 				return nil, err
 			}

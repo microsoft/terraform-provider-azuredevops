@@ -2,7 +2,6 @@ package azuredevops
 
 import (
 	"context"
-	"encoding/base64"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -315,24 +314,12 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			terraformVersion = "0.11+compatible"
 		}
 
-		var azdoClient *client.AggregatedClient
-		var err error
-		var tokenFunction func() (string, error)
-		// Personal Access Token
-		if personal_access_token, ok := d.GetOk("personal_access_token"); ok {
-			tokenFunction = func() (string, error) {
-				auth := "_:" + personal_access_token.(string)
-				return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth)), nil
-			}
-		} else {
-			// Service Principal
-			tokenFunction, err = GetAuthTokenProvider(ctx, d, AzIdentityFuncsImpl{})
-			if err != nil {
-				return nil, diag.FromErr(err)
-			}
+		tokenFunction, err := GetAuthTokenProvider(ctx, d, AzIdentityFuncsImpl{})
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
 
-		azdoClient, err = client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
+		azdoClient, err := client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
 		return azdoClient, diag.FromErr(err)
 	}
 }
