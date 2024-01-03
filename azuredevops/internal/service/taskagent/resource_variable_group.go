@@ -437,7 +437,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		if len(invalidVariables) > 0 {
-			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault or the secret has been disbled: ( %s ) ",
 				strings.Join(invalidVariables, ","),
 				kvName)
 		} else {
@@ -691,7 +691,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 				if len(secretNames) == 0 {
 					break
 				}
-				if _, ok := secretNames[name]; ok {
+				if _, ok := secretNames[name]; ok && *secret.Enabled {
 					kvSecrets[name] = secret
 					delete(secretNames, name)
 				}
