@@ -428,6 +428,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		variableGroup.ProviderData = taskagent.AzureKeyVaultVariableGroupProviderData{
 			ServiceEndpointId: &serviceEndpointUUID,
 			Vault:             &kvName,
+			LastRefreshedOn:   &azuredevops.Time{Time: time.Now()},
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
@@ -677,6 +678,10 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 					ContentType: secret.ContentType,
 					IsSecret:    converter.Bool(true),
 					Enabled:     secret.Enabled,
+				}
+
+				if secret.ContentType == nil {
+					kvVariable.ContentType = converter.String("")
 				}
 				if secret.Expire != nil {
 					kvVariable.Expires = &azuredevops.Time{
