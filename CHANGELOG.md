@@ -1,4 +1,27 @@
-## 0.11.0 (Unreleased)
+## 0.12.0 (Unreleased)
+
+## 0.11.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_servicehook_storage_queue_pipelines` [#914](https://github.com/microsoft/terraform-provider-azuredevops/pull/914)
+
+IMPROVEMENTS:
+
+* `azuredevops_serviceendpoint_azurerm` - Add support for `featuure` to verify the service connection. [#865](https://github.com/microsoft/terraform-provider-azuredevops/pull/865)
+* `azuredevops_build_definition` - Add support for `queue_status`. [#916](https://github.com/microsoft/terraform-provider-azuredevops/pull/916)
+* `azuredevops_pipeline_authorization` - Enhance authorization status check. [#929](https://github.com/microsoft/terraform-provider-azuredevops/pull/929)
+* `azuredevops_agent_queue` - Add support for `name`. [#906](https://github.com/microsoft/terraform-provider-azuredevops/pull/906)
+* `azuredevops_users` - Improve read operation performance. [#939](https://github.com/microsoft/terraform-provider-azuredevops/pull/939)
+* **Data Resource** `azuredevops_environment` - Add support for fetch environment by name. [#917](https://github.com/microsoft/terraform-provider-azuredevops/pull/917)
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_azurerm` - Fix resource deleted but state not removed.  [#921](https://github.com/microsoft/terraform-provider-azuredevops/pull/921)
+* `azuredevops_git_repository_file` - Fix apply for non-project resources fails.  [#925](https://github.com/microsoft/terraform-provider-azuredevops/pull/925)
+* `azuredevops_build_definition` - Fix `skip_first_run` to work for all repo types. [#928](https://github.com/microsoft/terraform-provider-azuredevops/pull/928)
+* `azuredevops_git_repository` - Fix `default_branch` not set when `init_type=Clean` or `init_type=Fork`. [#946](https://github.com/microsoft/terraform-provider-azuredevops/pull/946)
+* `azuredevops_variable_group` - Exclude disabled secrets. [#947](https://github.com/microsoft/terraform-provider-azuredevops/pull/947)
 
 
 ## 0.10.0
