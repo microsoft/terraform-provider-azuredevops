@@ -90,6 +90,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_servicehook_storage_queue_pipelines",
 		"azuredevops_tagging_permissions",
 		"azuredevops_environment",
+		"azuredevops_environment_resource_kubernetes",
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
 		"azuredevops_workitem",
