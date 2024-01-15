@@ -1184,7 +1184,7 @@ resource "azuredevops_environment_resource_kubernetes" "kubernetes" {
 }
 
 // HclEnvironmentResourceKubernetesResource HCL describing an AzDO environment kubernetes resource
-func HclEnvironmentResourceKubernetesResource(projectName string, environmentName string, serviceEndpointName string, resourceName string) string {
+func HclEnvironmentResourceKubernetes(projectName string, environmentName string, serviceEndpointName string, resourceName string) string {
 	serviceEndpointResource := HclServiceEndpointKubernetesResource(projectName, serviceEndpointName, "ServiceAccount")
 	azureEnvironmentResource := getEnvironmentResource(environmentName)
 	environmentKubernetesResource := getEnvironmentResourceKubernetes(resourceName)

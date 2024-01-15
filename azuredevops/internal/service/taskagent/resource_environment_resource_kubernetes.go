@@ -26,11 +26,11 @@ const (
 )
 
 // ResourceKubernetesResource schema and implementation for kubernetes resource
-func ResourceKubernetesResource() *schema.Resource {
+func ResourceEnvironmentKubernetes() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKubernetesCreate,
-		Read:   resourceKubernetesRead,
-		Delete: resourceKubernetesDelete,
+		Create: resourceEnvironmentKubernetesCreate,
+		Read:   resourceEnvironmentKubernetesRead,
+		Delete: resourceEnvironmentKubernetesDelete,
 		Schema: map[string]*schema.Schema{
 			kubeResProjectId: {
 				Type:         schema.TypeString,
@@ -79,8 +79,8 @@ func ResourceKubernetesResource() *schema.Resource {
 	}
 }
 
-func resourceKubernetesCreate(d *schema.ResourceData, m interface{}) error {
-	project, resource, err := expandKubernetesResource(d)
+func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) error {
+	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
 		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
 	}
@@ -101,12 +101,12 @@ func resourceKubernetesCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error creating Kubernetes resource in Azure DevOps: %+v", err)
 	}
 
-	flattenKubernetesResource(d, project, createdResource)
-	return nil
+	d.SetId(strconv.Itoa(*createdResource.Id))
+	return resourceEnvironmentKubernetesRead(d, m)
 }
 
-func resourceKubernetesRead(d *schema.ResourceData, m interface{}) error {
-	project, resource, err := expandKubernetesResource(d)
+func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) error {
+	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
 		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
 	}
@@ -125,12 +125,12 @@ func resourceKubernetesRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error reading the Kubernetes resource: %+v", err)
 	}
 
-	flattenKubernetesResource(d, project, fetchedResource)
+	flattenEnvironmentKubernetesResource(d, project, fetchedResource)
 	return nil
 }
 
-func resourceKubernetesDelete(d *schema.ResourceData, m interface{}) error {
-	project, resource, err := expandKubernetesResource(d)
+func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) error {
+	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
 		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
 	}
@@ -149,7 +149,7 @@ func resourceKubernetesDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func expandKubernetesResource(d *schema.ResourceData) (*taskagent.ProjectReference, *taskagent.KubernetesResource, error) {
+func expandEnvironmentKubernetesResource(d *schema.ResourceData) (*taskagent.ProjectReference, *taskagent.KubernetesResource, error) {
 	projectId, err := uuid.Parse(d.Get(kubeResProjectId).(string))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to parse project ID to UUID: %s, %+v", d.Get(kubeResProjectId), err)
@@ -186,7 +186,7 @@ func expandKubernetesResource(d *schema.ResourceData) (*taskagent.ProjectReferen
 	return project, resource, nil
 }
 
-func flattenKubernetesResource(d *schema.ResourceData, project *taskagent.ProjectReference, resource *taskagent.KubernetesResource) {
+func flattenEnvironmentKubernetesResource(d *schema.ResourceData, project *taskagent.ProjectReference, resource *taskagent.KubernetesResource) {
 	d.SetId(strconv.Itoa(*resource.Id))
 	d.Set(kubeResClusterName, converter.ToString(resource.ClusterName, ""))
 	d.Set(kubeResName, *resource.Name)
