@@ -25,7 +25,7 @@ func DataIdentityGroup() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
-			"descriptor": {
+			"id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -37,7 +37,8 @@ func dataIdentitySourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	groupName, projectID := d.Get("name").(string), d.Get("project_id").(string)
 
-	projectGroups, err := getIdentityGroupsWithProjectDescriptor(clients, projectID)
+	// Get groups in specified project id
+	projectGroups, err := getIdentityGroupsWithprojectID(clients, projectID)
 	if err != nil {
 		errMsg := "Error finding groups"
 		if projectID != "" {
@@ -46,6 +47,8 @@ func dataIdentitySourceGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
+	// select specific group by name/provider name.
+	// Use projectGroups (groups listed in project) and groupName (name provided by data source invoke).
 	targetGroup := selectIdentityGroup(projectGroups, groupName)
 	if targetGroup == nil {
 		errMsg := fmt.Sprintf("Could not find group with name %s", groupName)
@@ -55,22 +58,14 @@ func dataIdentitySourceGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(errMsg)
 	}
 
-	d.SetId(*targetGroup.Descriptor)
-	d.Set("descriptor", targetGroup.Descriptor)
+	// Set id and descriptor for group data resource based on targetGroup output.
+	targetGroupstring := targetGroup.Id.String()
+	d.SetId(targetGroupstring)
+	d.Set("descriptor", targetGroup.Id)
 	return nil
 }
 
-func getIdentityGroupsWithProjectDescriptor(clients *client.AggregatedClient, projectDescriptor string) (*[]identity.Identity, error) {
-	response, err := clients.IdentityClient.ListGroups(clients.Ctx, identity.ListGroupsArgs{
-		ScopeIds: &projectDescriptor,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
+// Select Group that match name to Provider Display Name
 func selectIdentityGroup(groups *[]identity.Identity, groupName string) *identity.Identity {
 	for _, group := range *groups {
 		if strings.EqualFold(*group.ProviderDisplayName, groupName) {

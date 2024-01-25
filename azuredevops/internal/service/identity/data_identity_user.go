@@ -68,9 +68,25 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchfil
 		SearchFilter: &searchfilter, // Filter to get users
 		FilterValue:  &filtervalue,  // Search String for user
 	})
+	results := make([]interface{}, len(*response))
+
+	for i, user := range *response {
+		s := make(map[string]interface{})
+
+		if user.Id != nil {
+			s["descriptor"] = *user.Id
+		} else {
+			return nil, fmt.Errorf("users Object does not contain a descriptor")
+		}
+		if user.ProviderDisplayName != nil {
+			s["display_name"] = *user.ProviderDisplayName
+		}
+		results[i] = s
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	return response, nil
 }
 
