@@ -56,15 +56,15 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
-	// With project groups flatten results
-	// fgroups, err := flattenIdentityGroups(groups)
-	// if err != nil {
-	// 	return fmt.Errorf("Error flatten groups. Error: %w", err)
-	// }
+	//With project groups flatten results
+	fgroups, err := flattenIdentityGroups(groups)
+	if err != nil {
+		return fmt.Errorf("Error flatten groups. Error: %w", err)
+	}
 
 	// Set id and group list for groups data resource
 	d.SetId("groups-" + uuid.New().String())
-	d.Set("groups", groups)
+	d.Set("groups", fgroups)
 	return nil
 }
 

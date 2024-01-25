@@ -13,7 +13,7 @@ import (
 // DataGroup schema and implementation for group data source
 func DataIdentityGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIdentitySourceGroupRead,
+		Read: dataSourceIdentityGroupRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -33,7 +33,7 @@ func DataIdentityGroup() *schema.Resource {
 	}
 }
 
-func dataIdentitySourceGroupRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	groupName, projectID := d.Get("name").(string), d.Get("project_id").(string)
 
