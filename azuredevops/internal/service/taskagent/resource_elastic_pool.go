@@ -126,7 +126,6 @@ func resourceAzureAgentPoolVMSSCreate(d *schema.ResourceData, m interface{}) err
 			return fmt.Errorf(" parse Project Id: %s. Error: %+v", v, err)
 		}
 		args.ProjectId = &projectId
-
 	}
 
 	seId := d.Get("service_endpoint_id").(string)
