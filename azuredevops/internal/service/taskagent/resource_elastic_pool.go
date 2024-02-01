@@ -96,6 +96,11 @@ func ResourceAgentPoolVMSS() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+
+			"project_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -113,6 +118,15 @@ func resourceAzureAgentPoolVMSSCreate(d *schema.ResourceData, m interface{}) err
 			RecycleAfterEachUse: converter.ToPtr(d.Get("recycle_after_each_use").(bool)),
 		},
 		PoolName: converter.String(d.Get("name").(string)),
+	}
+
+	if v, ok := d.GetOk("project_id"); ok {
+		projectId, err := uuid.Parse(v.(string))
+		if err != nil {
+			return fmt.Errorf(" parse Project Id: %s. Error: %+v", v, err)
+		}
+		args.ProjectId = &projectId
+
 	}
 
 	seId := d.Get("service_endpoint_id").(string)
@@ -196,6 +210,7 @@ func resourceAzureAgentPoolVMSSRead(d *schema.ResourceData, m interface{}) error
 	d.Set("recycle_after_each_use", elasticPool.RecycleAfterEachUse)
 	d.Set("agent_interactive_ui", elasticPool.AgentInteractiveUI)
 	d.Set("time_to_live_minutes", elasticPool.TimeToLiveMinutes)
+	d.Set("project_id", d.Get("project_id").(string))
 
 	d.Set("auto_provision", agentPool.AutoProvision)
 	d.Set("auto_update", agentPool.AutoUpdate)
