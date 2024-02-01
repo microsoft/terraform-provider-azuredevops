@@ -22,7 +22,7 @@ tools:
 	go install github.com/client9/misspell/cmd/misspell@latest
 	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
 	go install github.com/bflad/tfproviderdocs@latest
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.45.2
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.55.2
 
 build: fmtcheck check-vendor-vs-mod
 	go install
