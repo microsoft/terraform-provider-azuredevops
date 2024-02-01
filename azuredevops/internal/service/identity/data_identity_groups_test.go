@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -58,7 +58,7 @@ func TestIdentityGroupsDataSource_DoesNotSwallowProjectDescriptorLookupError_Not
 		})
 
 	err := dataSourceIdentityGroupsRead(resourceData, clients)
-	require.Contains(t, err.Error(), "was not found")
+	require.Contains(t, err.Error(), "Error finding groups")
 }
 
 // verifies that the group lookup functionality has proper error handling
@@ -74,11 +74,11 @@ func TestIdentityGroupsDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 	clients := &client.AggregatedClient{IdentityClient: identityClient, Ctx: context.Background()}
 
 	expectedProjectDescriptorLookupArgs := identity.ListGroupsArgs{ScopeIds: &projectIDstring}
-	projectDescriptor := converter.String("descriptor")
-	projectDescriptorResponse := identity.Identity{Descriptor: projectDescriptor}
+	projectDescriptor := converter.String("Id")
+	projectDescriptorResponse := []identity.Identity{{Descriptor: projectDescriptor}}
 	identityClient.
 		EXPECT().
-		GetDescriptorById(clients.Ctx, expectedProjectDescriptorLookupArgs).
+		ListGroups(clients.Ctx, expectedProjectDescriptorLookupArgs).
 		Return(&projectDescriptorResponse, nil)
 
 	expectedListGroupArgs := identity.ListGroupsArgs{ScopeIds: projectDescriptor}
@@ -87,10 +87,14 @@ func TestIdentityGroupsDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 		ListGroups(clients.Ctx, expectedListGroupArgs).
 		Return(nil, errors.New("ListGroups() Failed"))
 
+	t.Logf("value of ProjectID: %v", projectID)
+	t.Logf("value of ProjectID: %v", projectDescriptor)
 	err := dataSourceIdentityGroupsRead(resourceData, clients)
+	t.Log("after executing")
 	require.Contains(t, err.Error(), "ListGroups() Failed")
 }
 
+// Expecting prijectID as string, if not null set project_id to provided string
 func createIdentityGroupsDataSource(t *testing.T, projectID string) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, DataIdentityGroups().Schema, nil)
 	if projectID != "" {

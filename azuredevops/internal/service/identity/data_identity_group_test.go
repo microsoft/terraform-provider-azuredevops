@@ -73,7 +73,7 @@ func TestIdentityGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_NotF
 		})
 
 	err := dataSourceIdentityGroupRead(resourceData, clients)
-	require.Contains(t, err.Error(), "was not found")
+	require.Contains(t, err.Error(), "Error finding groups")
 }
 
 // verifies that the group lookup functionality has proper error handling
@@ -90,7 +90,7 @@ func TestIdentityGroupDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 
 	expectedProjectDescriptorLookupArgs := identity.ListGroupsArgs{ScopeIds: &projectIDstring}
 	projectDescriptor := converter.String("descriptor")
-	projectDescriptorResponse := identity.Identity{Descriptor: projectDescriptor}
+	projectDescriptorResponse := []identity.Identity{{Descriptor: projectDescriptor}}
 	identityClient.
 		EXPECT().
 		ListGroups(clients.Ctx, expectedProjectDescriptorLookupArgs).
@@ -106,16 +106,16 @@ func TestIdentityGroupDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 	require.Contains(t, err.Error(), "ListGroups() Failed")
 }
 
-func createGroupsWithDescriptors(groups ...groupMeta) *[]identity.Identity {
-	var identitys []identity.Identity
+func createIdentityGroupsWithDescriptors(groups ...groupMeta) *[]identity.Identity {
+	var Identity []identity.Identity
 	for _, group := range groups {
-		identitys = append(identitys, identity.Identity{
+		Identity = append(Identity, identity.Identity{
 			Descriptor:          converter.String(group.descriptor),
 			ProviderDisplayName: converter.String(group.name),
 		})
 	}
 
-	return &identitys
+	return &Identity
 }
 
 func createResourceData(t *testing.T, projectID string, groupName string) *schema.ResourceData {
