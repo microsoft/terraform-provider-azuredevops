@@ -8,7 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 )
 
-var validRepositoryTypes = []string{"azuregit", "github", "bitbucket"}
+var validRepositoryTypes = []string{"azuregit", "github", "githubenterprise", "bitbucket"}
 
 // ResourceCheckRequiredTemplate schema and implementation for required template check resources
 func ResourceCheckRequiredTemplate() *schema.Resource {
