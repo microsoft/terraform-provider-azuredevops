@@ -132,9 +132,11 @@ func flattenServiceEndpointOctopusDeploy(d *schema.ResourceData, serviceEndpoint
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("url", *serviceEndpoint.Url)
 
-	ignoreSslErrors, err := strconv.ParseBool((*serviceEndpoint.Data)["ignoreSslErrors"])
-	if err != nil {
-		panic(fmt.Errorf(" Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v", *serviceEndpoint.Name, projectID, err))
+	if v, ok := (*serviceEndpoint.Data)["ignoreSslErrors"]; ok && v != "" {
+		ignoreSslErrors, err := strconv.ParseBool(v)
+		if err != nil {
+			panic(fmt.Errorf(" Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v", *serviceEndpoint.Name, projectID, err))
+		}
+		d.Set("ignore_ssl_error", ignoreSslErrors)
 	}
-	d.Set("ignore_ssl_error", ignoreSslErrors)
 }
