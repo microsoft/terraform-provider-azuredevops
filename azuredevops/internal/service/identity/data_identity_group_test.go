@@ -103,6 +103,7 @@ func TestIdentityGroupDataSource_DoesNotSwallowListGroupError(t *testing.T) {
 		Return(nil, errors.New("ListGroups() Failed"))
 
 	err := dataSourceIdentityGroupRead(resourceData, clients)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "ListGroups() Failed")
 }
 

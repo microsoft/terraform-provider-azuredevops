@@ -59,7 +59,7 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 	//With project groups flatten results
 	fgroups, err := flattenIdentityGroups(groups)
 	if err != nil {
-		return fmt.Errorf("Error flatten groups. Error: %w", err)
+		return fmt.Errorf("Error flatten groups. Error: %v", err)
 	}
 
 	// Set id and group list for groups data resource
@@ -82,7 +82,7 @@ func getIdentityGroupsWithprojectID(clients *client.AggregatedClient, projectID 
 // flatten function
 func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 	if groups == nil {
-		return []interface{}{}, nil
+		return nil, fmt.Errorf("Input Groups Paramater is nil")
 	}
 
 	results := make([]interface{}, len(*groups))
