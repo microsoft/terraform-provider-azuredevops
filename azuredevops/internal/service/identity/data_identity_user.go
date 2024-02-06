@@ -36,25 +36,24 @@ func DataIdentityUser() *schema.Resource {
 
 func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	userName, searchFilter := d.Get("name").(string), d.Get("search_filter").(string)
+	userName, search_filter := d.Get("name").(string), d.Get("search_filter").(string)
 
-	//https://ado.url.com/_apis/identities?searchFilter=General&filterValue=my_user&api-version=7.0
+	//https://ado.url.com/_apis/identities?search_filter=General&filterValue=my_user&api-version=7.0
 	// Query ADO for list of identity users with filter
-	FilterUsers, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
+	FilterUsers, err := getIdentityUsersWithFilterValue(clients, search_filter, userName)
 	if err != nil {
 		errMsg := "Error finding user"
-		if searchFilter != "" {
-			errMsg = fmt.Sprintf("%s with filter %s", errMsg, searchFilter)
+		if search_filter != "" {
+			errMsg = fmt.Sprintf("%s with filter %s", errMsg, search_filter)
 		}
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
-
 	// with FilterUsers resultes match and filter for the desired user.
 	targetUser := selectIdentityUser(FilterUsers, userName)
 	if targetUser == nil {
 		errMsg := fmt.Sprintf("Could not find user with name %s", userName)
-		if searchFilter != "" {
-			errMsg = fmt.Sprintf("%s with filter %s", errMsg, searchFilter)
+		if search_filter != "" {
+			errMsg = fmt.Sprintf("%s with filter %s", errMsg, search_filter)
 		}
 		return fmt.Errorf(errMsg)
 	}
@@ -73,7 +72,7 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchfil
 	})
 	results := make([]interface{}, len(*response))
 
-	// for each user that has been provided by response, flatten to only displayName and Descriptor/id.
+	// for each user that has been provided by response, flatten to only displayName, Descriptor/id and search_filter
 	for i, user := range *response {
 		s := make(map[string]interface{})
 
@@ -83,7 +82,10 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchfil
 			return nil, fmt.Errorf("users Object does not contain a descriptor")
 		}
 		if user.ProviderDisplayName != nil {
-			s["display_name"] = *user.ProviderDisplayName
+			s["name"] = *user.ProviderDisplayName
+		}
+		if &filtervalue != nil {
+			s["search_filter"] = filtervalue
 		}
 		results[i] = s
 	}
