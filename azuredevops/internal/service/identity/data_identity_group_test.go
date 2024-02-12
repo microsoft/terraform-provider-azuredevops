@@ -66,18 +66,6 @@ func TestIdentityGroupDataSource_ProjectDescriptorLookupErrorNotFound(t *testing
 	require.Contains(t, err.Error(), "Error finding groups")
 }
 
-func createIdentityGroups(groups ...groupMeta) *[]identity.Identity {
-	var identities []identity.Identity
-	for _, group := range groups {
-		identities = append(identities, identity.Identity{
-			Descriptor:          converter.String(group.descriptor),
-			ProviderDisplayName: converter.String(group.name),
-		})
-	}
-
-	return &identities
-}
-
 func createIdentityGroupDataSource(t *testing.T, projectID string, groupName string) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, DataIdentityGroup().Schema, nil)
 	resourceData.Set("name", groupName)
