@@ -49,22 +49,13 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
-	flattenUsers, err := flattenIdentityGroups(filterUsers)
+	flattenUsers, err := FlattenIdentityUsers(filterUsers)
 	if err != nil {
 		return fmt.Errorf("Error flatten users. Error: %v", err)
 	}
 
-	identityUsers := make([]identity.Identity, len(flattenUsers))
-	for i, user := range flattenUsers {
-		identityUser, ok := user.(identity.Identity)
-		if !ok {
-			return fmt.Errorf("Failed to convert user to identity.Identity")
-		}
-		identityUsers[i] = identityUser
-	}
-
 	// Filter for the desired user in the FilterUsers results
-	targetUser := selectIdentityUser(&identityUsers, userName)
+	targetUser := selectIdentityUser(flattenUsers, userName)
 	if targetUser == nil {
 		errMsg := fmt.Sprintf("Could not find user with name %s", userName)
 		if searchFilter != "" {
@@ -92,25 +83,22 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 	return response, nil
 }
 
-func FlattenIdentityUsers(users *[]identity.Identity) ([]interface{}, error) {
+func FlattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, error) {
 	if users == nil {
-		return nil, fmt.Errorf("Input Users Paramater is nil")
+		return nil, fmt.Errorf("Input Users Parameter is nil")
 	}
-	results := make([]interface{}, len(*users))
+	results := make([]identity.Identity, len(*users))
 	for i, user := range *users {
-		userMap := make(map[string]interface{})
-
 		if user.Id != nil {
-			userMap["descriptor"] = *user.Id
+			results[i].Id = user.Id
 		} else {
-			return nil, fmt.Errorf("User Object does not contain a id")
+			return nil, fmt.Errorf("User Object does not contain an Id")
 		}
 		if user.ProviderDisplayName != nil {
-			userMap["name"] = *user.ProviderDisplayName
+			results[i].ProviderDisplayName = user.ProviderDisplayName
 		}
-		results[i] = userMap
 	}
-	return results, nil
+	return &results, nil
 }
 
 func selectIdentityUser(users *[]identity.Identity, userName string) *identity.Identity {
