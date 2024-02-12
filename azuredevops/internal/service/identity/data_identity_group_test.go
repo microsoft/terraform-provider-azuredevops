@@ -16,14 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type groupMeta struct {
-	name       string
-	descriptor string
-	domain     string
-	origin     string
-	originId   string
-}
-
 func TestIdentityGroupDataSource_ProjectDescriptorLookupError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
