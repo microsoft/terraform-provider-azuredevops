@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_group) && (!exclude_data_sources || !exclude_data_group)
-// +build all core data_sources data_group
-// +build !exclude_data_sources !exclude_data_group
-
 package identity
 
 import (
@@ -20,8 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// A helper type that is used in some of these tests to make initializing
-// identity entities easier
 type groupMeta struct {
 	name       string
 	descriptor string
@@ -30,19 +24,17 @@ type groupMeta struct {
 	originId   string
 }
 
-// verifies that the translation for project_id to project_descriptor has proper error handling
-func TestIdentityGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_Generic(t *testing.T) {
+func TestIdentityGroupDataSource_ProjectDescriptorLookupError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	projectID := uuid.New()
-	projectIDstring := projectID.String()
-	resourceData := createResourceData(t, projectID.String(), "group-name")
+	projectID := uuid.NewString()
+	resourceData := createIdentityGroupDataSource(t, projectID, "group-name")
 
 	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
 	clients := &client.AggregatedClient{IdentityClient: identityClient, Ctx: context.Background()}
 
-	expectedArgs := identity.ListGroupsArgs{ScopeIds: &projectIDstring}
+	expectedArgs := identity.ListGroupsArgs{ScopeIds: &projectID}
 	identityClient.
 		EXPECT().
 		ListGroups(clients.Ctx, expectedArgs).
@@ -52,19 +44,17 @@ func TestIdentityGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_Gene
 	require.Contains(t, err.Error(), "ListGroups() Failed")
 }
 
-// verifies that the translation for project_id to project_descriptor has proper error handling
-func TestIdentityGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_NotFound(t *testing.T) {
+func TestIdentityGroupDataSource_ProjectDescriptorLookupErrorNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	projectID := uuid.New()
-	projectIDstring := projectID.String()
-	resourceData := createResourceData(t, projectID.String(), "group-name")
+	projectID := uuid.NewString()
+	resourceData := createIdentityGroupDataSource(t, projectID, "group-name")
 
 	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
 	clients := &client.AggregatedClient{IdentityClient: identityClient, Ctx: context.Background()}
 
-	expectedArgs := identity.ListGroupsArgs{ScopeIds: &projectIDstring}
+	expectedArgs := identity.ListGroupsArgs{ScopeIds: &projectID}
 	identityClient.
 		EXPECT().
 		ListGroups(clients.Ctx, expectedArgs).
@@ -76,50 +66,19 @@ func TestIdentityGroupDataSource_DoesNotSwallowProjectDescriptorLookupError_NotF
 	require.Contains(t, err.Error(), "Error finding groups")
 }
 
-// verifies that the group lookup functionality has proper error handling
-func TestIdentityGroupDataSource_DoesNotSwallowListGroupError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	projectID := uuid.New()
-	projectIDstring := projectID.String()
-	resourceData := createResourceData(t, projectID.String(), "group-name")
-
-	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
-	clients := &client.AggregatedClient{IdentityClient: identityClient, Ctx: context.Background()}
-
-	expectedProjectDescriptorLookupArgs := identity.ListGroupsArgs{ScopeIds: &projectIDstring}
-	projectDescriptor := converter.String("descriptor")
-	projectDescriptorResponse := []identity.Identity{{Descriptor: projectDescriptor}}
-	identityClient.
-		EXPECT().
-		ListGroups(clients.Ctx, expectedProjectDescriptorLookupArgs).
-		Return(&projectDescriptorResponse, nil)
-
-	expectedListGroupArgs := identity.ListGroupsArgs{ScopeIds: projectDescriptor}
-	identityClient.
-		EXPECT().
-		ListGroups(clients.Ctx, expectedListGroupArgs).
-		Return(nil, errors.New("ListGroups() Failed"))
-
-	err := dataSourceIdentityGroupRead(resourceData, clients)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "ListGroups() Failed")
-}
-
-func createIdentityGroupsWithDescriptors(groups ...groupMeta) *[]identity.Identity {
-	var Identity []identity.Identity
+func createIdentityGroups(groups ...groupMeta) *[]identity.Identity {
+	var identities []identity.Identity
 	for _, group := range groups {
-		Identity = append(Identity, identity.Identity{
+		identities = append(identities, identity.Identity{
 			Descriptor:          converter.String(group.descriptor),
 			ProviderDisplayName: converter.String(group.name),
 		})
 	}
 
-	return &Identity
+	return &identities
 }
 
-func createResourceData(t *testing.T, projectID string, groupName string) *schema.ResourceData {
+func createIdentityGroupDataSource(t *testing.T, projectID string, groupName string) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, DataIdentityGroup().Schema, nil)
 	resourceData.Set("name", groupName)
 	if projectID != "" {

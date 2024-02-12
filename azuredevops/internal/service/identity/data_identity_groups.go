@@ -31,7 +31,7 @@ func DataIdentityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"display_name": {
+						"name": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -47,7 +47,7 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 
 	// Get groups in specified project id
-	groups, err := getIdentityGroupsWithprojectID(clients, projectID)
+	groups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
 		errMsg := "Error finding groups"
 		if projectID != "" {
@@ -56,52 +56,54 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
-	//With project groups flatten results
-	fgroups, err := flattenIdentityGroups(groups)
+	// With project groups flatten results
+	flattenedGroups, err := flattenIdentityGroups(&groups)
 	if err != nil {
-		return fmt.Errorf("Error flatten groups. Error: %v", err)
+		return fmt.Errorf("Error flattening groups. Error: %w", err)
 	}
 
 	// Set id and group list for groups data resource
 	d.SetId("groups-" + uuid.New().String())
-	d.Set("groups", fgroups)
+	d.Set("groups", flattenedGroups)
 	return nil
 }
 
 // Get Groups with Scope of Project ID
-func getIdentityGroupsWithprojectID(clients *client.AggregatedClient, projectID string) (*[]identity.Identity, error) {
+// Get Groups with Scope of Project ID
+func getIdentityGroupsWithProjectID(clients *client.AggregatedClient, projectID string) ([]identity.Identity, error) {
 	response, err := clients.IdentityClient.ListGroups(clients.Ctx, identity.ListGroupsArgs{
 		ScopeIds: &projectID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error getting groups: %v", err)
 	}
-	return response, nil
+	return *response, nil
 }
 
 // flatten function
 func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 	if groups == nil {
-		return nil, fmt.Errorf("Input Groups Paramater is nil")
+		return nil, fmt.Errorf("Input Groups Parameter is nil")
 	}
-
 	results := make([]interface{}, len(*groups))
 	for i, group := range *groups {
-		s := make(map[string]interface{})
+		groupMap := make(map[string]interface{})
 
 		if group.Descriptor != nil {
-			s["id"] = *group.Descriptor
+			groupMap["id"] = *group.Descriptor
 		} else {
-			return nil, fmt.Errorf("Group Object does not contain a id")
+			return nil, fmt.Errorf("Group Object does not contain an id")
 		}
 		if group.ProviderDisplayName != nil {
-			s["display_name"] = *group.ProviderDisplayName
+			groupMap["name"] = *group.ProviderDisplayName
 		}
-		results[i] = s
+		results[i] = groupMap
 	}
 	return results, nil
 }
 
 func getIdentityGroupHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
+	group := v.(map[string]interface{})
+	groupID := group["id"].(string)
+	return tfhelper.HashString(groupID)
 }

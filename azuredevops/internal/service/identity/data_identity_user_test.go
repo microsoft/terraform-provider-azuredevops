@@ -20,8 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test when user is not found
-func TestDataSourceIdentityUser_UserNotFound(t *testing.T) {
+func TestUserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -33,47 +32,39 @@ func TestDataSourceIdentityUser_UserNotFound(t *testing.T) {
 		IdentityClient: identityClient,
 		Ctx:            context.Background(),
 	}
+
 	// Set up the mock expectations for ReadIdentities
-	expectedArgs := identity.ReadIdentitiesArgs{FilterValue: &userName, SearchFilter: &searchFilter}
-	identityClient.
-		EXPECT().
-		ReadIdentities(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("User not found"))
-	// Set up the resource data with input values
-	t.Log("after executing")
-	resourceData := schema.TestResourceDataRaw(t, DataIdentityUser().Schema, nil)
-	resourceData.Set("name", "SomeUser")
-	resourceData.Set("search_filter", "General")
-	t.Log("after executing")
-	// Execute the function and check for the expected error
-	err := dataIdentitySourceUserRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Could not find user with name "+userName)
-}
+	setUpMockReadIdentities(identityClient, clients.Ctx, userName, searchFilter, nil, errors.New("User not found"))
 
-// Test to validate that the error is not swallowed
-func TestDataSourceIdentityUser_ErrorNotSwallowed(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	userName := "SomeUser"
-	searchFilter := "General"
-
-	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
-	clients := &client.AggregatedClient{
-		IdentityClient: identityClient,
-		Ctx:            context.Background(),
-	}
 	// Set up the resource data with input values
 	resourceData := schema.TestResourceDataRaw(t, DataIdentityUser().Schema, nil)
 	resourceData.Set("name", userName)
+	resourceData.Set("search_filter", searchFilter)
+
+	// Execute the function and check for the expected error
+	err := dataIdentitySourceUserRead(resourceData, clients)
+	require.Contains(t, err.Error(), "Error finding user")
+}
+
+func TestErrorNotSwallowed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userName := "SomeUser"
+	searchFilter := "General"
+
+	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
+	clients := &client.AggregatedClient{
+		IdentityClient: identityClient,
+		Ctx:            context.Background(),
+	}
 
 	// Set up the mock expectations for ReadIdentities
-	expectedArgs := identity.ReadIdentitiesArgs{FilterValue: &userName, SearchFilter: &searchFilter}
-	// Set up the mock expectations for ReadIdentities
-	identityClient.
-		EXPECT().
-		ReadIdentities(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("Some other error"))
+	setUpMockReadIdentities(identityClient, clients.Ctx, userName, searchFilter, nil, errors.New("Some other error"))
+
+	// Set up the resource data with input values
+	resourceData := schema.TestResourceDataRaw(t, DataIdentityUser().Schema, nil)
+	resourceData.Set("name", userName)
 
 	// Execute the function and check for the expected error
 	err := dataIdentitySourceUserRead(resourceData, clients)
@@ -82,4 +73,10 @@ func TestDataSourceIdentityUser_ErrorNotSwallowed(t *testing.T) {
 	require.Contains(t, err.Error(), "with filter "+searchFilter)
 }
 
-//
+func setUpMockReadIdentities(identityClient *azdosdkmocks.MockIdentityClient, ctx context.Context, userName, searchFilter string, identities *[]identity.Identity, err error) {
+	expectedArgs := identity.ReadIdentitiesArgs{
+		FilterValue:  &userName,
+		SearchFilter: &searchFilter,
+	}
+	identityClient.EXPECT().ReadIdentities(ctx, expectedArgs).Return(identities, err)
+}

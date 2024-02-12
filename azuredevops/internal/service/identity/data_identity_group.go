@@ -10,7 +10,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// DataGroup schema and implementation for group data source
+// DataIdentityGroup returns the schema and implementation for the group data source
 func DataIdentityGroup() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIdentityGroupRead,
@@ -35,10 +35,11 @@ func DataIdentityGroup() *schema.Resource {
 
 func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	groupName, projectID := d.Get("name").(string), d.Get("project_id").(string)
+	groupName := d.Get("name").(string)
+	projectID := d.Get("project_id").(string)
 
-	// Get groups in specified project id
-	projectGroups, err := getIdentityGroupsWithprojectID(clients, projectID)
+	// Get groups in specified project ID
+	projectGroups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
 		errMsg := "Error finding groups"
 		if projectID != "" {
@@ -47,9 +48,8 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
-	// select specific group by name/provider name.
-	// Use projectGroups (groups listed in project) and groupName (name provided by data source invoke).
-	targetGroup := selectIdentityGroup(projectGroups, groupName)
+	// Select specific group by name/provider name.
+	targetGroup := selectIdentityGroup(&projectGroups, groupName)
 	if targetGroup == nil {
 		errMsg := fmt.Sprintf("Could not find group with name %s", groupName)
 		if projectID != "" {
@@ -58,9 +58,9 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(errMsg)
 	}
 
-	// Set id and descriptor for group data resource based on targetGroup output.
-	targetGroupstring := targetGroup.Id.String()
-	d.SetId(targetGroupstring)
+	// Set ID and descriptor for group data resource based on targetGroup output.
+	targetGroupID := targetGroup.Id.String()
+	d.SetId(targetGroupID)
 	d.Set("descriptor", targetGroup.Id)
 	return nil
 }
