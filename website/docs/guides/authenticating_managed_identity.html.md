@@ -22,21 +22,21 @@ Terraform can be configured to use managed identity for authentication in one of
 
 ### Configuring with environment variables
 
-The `use_msi` must be set to `true` to use a managed identity. By default, Terraform will use the system assigned identity for authentication. To use a user assigned identity instead, you will need to specify the `ARM_CLIENT_ID` environment variable (equivalent to provider block argument [`client_id`](https://registry.terraform.io/providers/azure/azapi/latest/docs#client_id)) to the [client id](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity#client_id) of the identity.
+The `use_msi` must be set to `true` to use a managed identity. By default, Terraform will use the system assigned identity for authentication. To use a user assigned identity instead, you will need to specify the `ARM_CLIENT_ID` environment variable (equivalent to provider block argument `client_id`) to the [client id](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity#client_id) of the identity.
 
 A provider block is _technically_ optional when using environment variables. Even so, we recommend defining provider blocks so that you can pin or constrain the version of the provider being used, and configure other optional settings:
 
 ```hcl
 terraform {
   required_providers {
-    azapi = {
-      source  = "azure/azapi"
-      version = "=0.1.0"
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = ">=0.1.0"
     }
   }
 }
 
-provider "azapi" {
+provider "azuredevops" {
 }
 ```
 
@@ -47,14 +47,14 @@ It's also possible to configure a managed identity within the provider block:
 ```hcl
 terraform {
   required_providers {
-    azapi = {
-      source  = "azure/azapi"
-      version = "=0.1.0"
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = ">=0.1.0"
     }
   }
 }
 
-provider "azapi" {
+provider "azuredevops" {
   use_msi = true
 }
 ```

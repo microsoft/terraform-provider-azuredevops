@@ -20,6 +20,8 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 ## Provider Configuration
 
+The `use_oidc` must be set to `true` to use OIDC token.
+
 The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes.
 
 The token may be provided as a base64 encoded string, or by a file on the filesystem with the `ARM_OIDC_TOKEN` or `ARM_OIDC_TOKEN_FILE_PATH` environment variables, or in the provider configuration block with the `oidc_token` or `oidc_token_file_path` attributes.
@@ -41,18 +43,18 @@ For more information about OIDC in GitHub Actions, see [official documentation](
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url       = "https://dev.azure.com/my-org"
-
-  client_id              = "00000000-0000-0000-0000-000000000001"
-  tenant_id              = "00000000-0000-0000-0000-000000000001"
-  oidc_token_file_path   = "C:\\my_oidc_token.txt"
+  org_service_url = "https://dev.azure.com/my-org"
+  client_id            = "00000000-0000-0000-0000-000000000001"
+  tenant_id            = "00000000-0000-0000-0000-000000000001"
+  oidc_token_file_path = "C:\\my_oidc_token.txt"
+  use_oidc             = true
 }
 
 resource "azuredevops_project" "project" {
@@ -67,45 +69,18 @@ resource "azuredevops_project" "project" {
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url                = "https://dev.azure.com/my-org"
-
+  org_service_url = "https://dev.azure.com/my-org"
   client_id  = "00000000-0000-0000-0000-000000000001"
   tenant_id  = "00000000-0000-0000-0000-000000000001"
   oidc_token = "top-secret-base64-encoded-oidc-token-string"
-}
-
-resource "azuredevops_project" "project" {
-  name               = "Test Project"
-  description        = "Test Project Description"
-}
-```
-
-
-### Configure the provider to authenticate with the Terraform Cloud workload idenity token
-
-```hcl
-terraform {
-  required_providers {
-    azuredevops = {
-      source = "microsoft/azuredevops"
-      version = ">=0.1.0"
-    }
-  }
-}
-
-provider "azuredevops" {
-  org_service_url                 = "https://dev.azure.com/my-org"
-
-  client_id = "00000000-0000-0000-0000-000000000001"
-  tenant_id = "00000000-0000-0000-0000-000000000001"
-  oidc_hcp  = true
+  use_oidc   = true
 }
 
 resource "azuredevops_project" "project" {
@@ -114,26 +89,51 @@ resource "azuredevops_project" "project" {
 }
 ```
 
-### Configure the provider to authenticate with the Terraform Cloud workload idenity token with different plan & apply service principals
+
+### Configure the provider to authenticate with the Terraform Cloud workload identity token
 
 ```hcl
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url                 = "https://dev.azure.com/my-org"
+  org_service_url = "https://dev.azure.com/my-org"
+  client_id = "00000000-0000-0000-0000-000000000001"
+  tenant_id = "00000000-0000-0000-0000-000000000001"
+  use_oidc  = true
+}
 
+resource "azuredevops_project" "project" {
+  name        = "Test Project"
+  description = "Test Project Description"
+}
+```
+
+### Configure the provider to authenticate with the Terraform Cloud workload identity token with different plan & apply service principals
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = ">=0.1.0"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url = "https://dev.azure.com/my-org"
   client_id_plan  = "00000000-0000-0000-0000-000000000001"
   client_id_apply = "00000000-0000-0000-0000-000000000001"
   tenant_id_plan  = "00000000-0000-0000-0000-000000000001"
   tenant_id_apply = "00000000-0000-0000-0000-000000000001"
-  oidc_hcp  = true
+  use_oidc        = true
 }
 
 resource "azuredevops_project" "project" {

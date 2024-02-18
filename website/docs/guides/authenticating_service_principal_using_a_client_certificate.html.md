@@ -30,15 +30,14 @@ A certificate password may be specified with the `ARM_CLIENT_CERTIFICATE_PASSWOR
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url                = "https://dev.azure.com/my-org"
-
+  org_service_url = "https://dev.azure.com/my-org"
   client_id                   = "00000000-0000-0000-0000-000000000001"
   tenant_id                   = "00000000-0000-0000-0000-000000000001"
   client_certificate_path     = "C:\\cert.pfx"
@@ -46,8 +45,8 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  name               = "Test Project"
-  description        = "Test Project Description"
+  name        = "Test Project"
+  description = "Test Project Description"
 }
 ```
 
@@ -57,15 +56,14 @@ resource "azuredevops_project" "project" {
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url                = "https://dev.azure.com/my-org"
-
+  org_service_url = "https://dev.azure.com/my-org"
   client_id                   = "00000000-0000-0000-0000-000000000001"
   tenant_id                   = "00000000-0000-0000-0000-000000000001"
   client_certificate          = "MII....lots.and.lots.of.ascii.characters"
@@ -73,7 +71,7 @@ provider "azuredevops" {
 }
 
 resource "azuredevops_project" "project" {
-  name               = "Test Project"
-  description        = "Test Project Description"
+  name        = "Test Project"
+  description = "Test Project Description"
 }
 ```

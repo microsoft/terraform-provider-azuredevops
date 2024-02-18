@@ -37,7 +37,7 @@ Authentication may be accomplished using an [Azure AD service principal](https:/
 
 The OIDC service principal authentication methods allow for secure passwordless authentication from [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials) & [GitHub Actions](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect).
 
-* [Authenticating to a Service Principal with a Terraform Cloud Workload Identity Token](guides/authenticating_service_principal_using_hcp_token.html)
+* [Authenticating to a Service Principal with Manage Identity](guides/authenticating_managed_identity.html)
 * [Authenticating to a Service Principal with a Client Certificate](guides/authenticating_service_principal_using_a_client_certificate.html)
 * [Authenticating to a Service Principal with a Client Secret](guides/authenticating_service_principal_using_a_client_secret.html)
 * [Authenticating to a Service Principal with an OIDC Token](guides/authenticating_service_principal_using_an_oidc_token.html)
@@ -109,9 +109,6 @@ It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS` environment variable.
 
 - `oidc_github_actions_audience` - Custom audience for the GitHub Actions OIDC token.
 It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable.
-
-- `oidc_hcp` - Boolean, set to true to use the Terraform Cloud OIDC workload identity token to authenticate to a service principal.
-It can also be sourced from the `ARM_OIDC_HCP` environment variable.
 
 - `use_oidc` - Boolean, enables OIDC auth methods. It can also be sourced from the `ARM_USE_OIDC` environment variable.
 
