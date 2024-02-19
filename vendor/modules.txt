@@ -243,6 +243,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/notification
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines
@@ -254,6 +255,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/release
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/security
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/system
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
@@ -309,8 +311,8 @@ github.com/zclconf/go-cty/cty/function/stdlib
 github.com/zclconf/go-cty/cty/gocty
 github.com/zclconf/go-cty/cty/json
 github.com/zclconf/go-cty/cty/set
-# golang.org/x/crypto v0.14.0
-## explicit; go 1.17
+# golang.org/x/crypto v0.17.0
+## explicit; go 1.18
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
 golang.org/x/crypto/chacha20
@@ -337,13 +339,13 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.13.0
-## explicit; go 1.17
+# golang.org/x/sys v0.15.0
+## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.13.0
-## explicit; go 1.17
+# golang.org/x/text v0.14.0
+## explicit; go 1.18
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
