@@ -19,19 +19,7 @@ func NewPatConnection(organizationUrl string, personalAccessToken string) *Conne
 	authorizationString := CreateBasicAuthHeaderValue("", personalAccessToken)
 	organizationUrl = normalizeUrl(organizationUrl)
 	return &Connection{
-		AuthorizationString: func() (string, error) {
-			return authorizationString, nil
-		},
-		BaseUrl:                 organizationUrl,
-		SuppressFedAuthRedirect: true,
-	}
-}
-
-// Creates a new Azure DevOps connection instance using a function that returns an authorization header string.
-func NewDynamicAuthorizationConnection(organizationUrl string, authProvider func() (string, error)) *Connection {
-	organizationUrl = normalizeUrl(organizationUrl)
-	return &Connection{
-		AuthorizationString:     authProvider,
+		AuthorizationString:     authorizationString,
 		BaseUrl:                 organizationUrl,
 		SuppressFedAuthRedirect: true,
 	}
@@ -46,7 +34,7 @@ func NewAnonymousConnection(organizationUrl string) *Connection {
 }
 
 type Connection struct {
-	AuthorizationString     func() (string, error)
+	AuthorizationString     string
 	BaseUrl                 string
 	UserAgent               string
 	SuppressFedAuthRedirect bool

@@ -84,7 +84,7 @@ func NewClientWithOptions(connection *Connection, baseUrl string, options ...Cli
 type Client struct {
 	baseUrl                 string
 	client                  *http.Client
-	authorization           func() (string, error)
+	authorization           string
 	suppressFedAuthRedirect bool
 	forceMsaPassThrough     bool
 	userAgent               string
@@ -169,12 +169,8 @@ func (client *Client) CreateRequestMessage(ctx context.Context,
 		req = req.WithContext(ctx)
 	}
 
-	if client.authorization != nil {
-		authorizationHeader, err := client.authorization()
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Add(headerKeyAuthorization, authorizationHeader)
+	if client.authorization != "" {
+		req.Header.Add(headerKeyAuthorization, client.authorization)
 	}
 	accept := acceptMediaType
 	if apiVersion != "" {
