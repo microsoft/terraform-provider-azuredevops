@@ -7,7 +7,7 @@ description: |-
 
 # Azure DevOps Provider: Authenticating using the Personal Access Token
 
-Azure DevOps provider support personal access token for authenticating to Azure DevOps.
+Azure DevOps provider supports personal access tokens for authenticating to Azure DevOps.
 
 ~> **Note**
 **Personal Access Token**:   
@@ -44,15 +44,15 @@ Configuration file requires `azuredevops` provider section. Then use any resourc
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 resource "azuredevops_project" "project" {
-  name       = "Test Project"
-  description        = "Test Project Description"
+  name        = "Test Project"
+  description = "Test Project Description"
 }
 ```
 

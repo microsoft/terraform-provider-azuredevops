@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
@@ -20,10 +21,14 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
 func Provider() *schema.Provider {
+	servicePrincipalAuthFields := []string{"use_msi", "use_oidc", "client_certificate_path", "client_certificate", "client_secret", "client_secret_path"}
+	allAuthFields := append([]string{"personal_access_token"}, servicePrincipalAuthFields...)
+
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_resource_authorization":                 build.ResourceResourceAuthorization(),
@@ -151,6 +156,151 @@ func Provider() *schema.Provider {
 				Description: "The personal access token which should be used.",
 				Sensitive:   true,
 			},
+			"client_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+				Description:  "The service principal client or managed service principal id which should be used.",
+				ValidateFunc: validation.IsUUID,
+			},
+			"tenant_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+				Description:  "The service principal tenant id which should be used.",
+				ValidateFunc: validation.IsUUID,
+				RequiredWith: []string{"client_id", "tenant_id"},
+			},
+			"client_id_plan": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_PLAN", nil),
+				Description:  "The service principal client id which should be used during a plan operation in Terraform Cloud.",
+				ValidateFunc: validation.IsUUID,
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
+			},
+			"tenant_id_plan": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_PLAN", nil),
+				Description:  "The service principal tenant id which should be used during a plan operation in Terraform Cloud.",
+				ValidateFunc: validation.IsUUID,
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
+			},
+			"client_id_apply": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_APPLY", nil),
+				Description:  "The service principal client id which should be used during an apply operation in Terraform Cloud.",
+				ValidateFunc: validation.IsUUID,
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
+			},
+			"tenant_id_apply": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_APPLY", nil),
+				Description:  "The service principal tenant id which should be used during an apply operation in Terraform Cloud..",
+				ValidateFunc: validation.IsUUID,
+				RequiredWith: []string{"client_id_plan", "tenant_id_plan", "client_id_apply", "tenant_id_apply"},
+			},
+			"oidc_request_token": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN"}, nil),
+				Description:  "The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.",
+				RequiredWith: []string{"oidc_request_token", "client_id", "tenant_id", "use_oidc"},
+			},
+			"oidc_request_url": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL"}, nil),
+				Description:  "The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.",
+				RequiredWith: []string{"oidc_request_url", "client_id", "tenant_id", "use_oidc"},
+			},
+			"oidc_token": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN", nil),
+				Description:  "OIDC token to authenticate as a service principal.",
+				RequiredWith: []string{"oidc_token", "client_id", "tenant_id", "use_oidc"},
+			},
+			"oidc_token_file_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TOKEN_FILE_PATH", nil),
+				Description:  "OIDC token from file to authenticate as a service principal.",
+				RequiredWith: []string{"oidc_token_file_path", "client_id", "tenant_id", "use_oidc"},
+			},
+			"use_oidc": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_OIDC", nil),
+				Description:  "Use an OIDC token to authenticate to a service principal.",
+				ExactlyOneOf: allAuthFields,
+				RequiredWith: []string{"use_oidc", "client_id", "tenant_id"},
+			},
+			"oidc_audience": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", nil),
+				Description:  "Set the audience when requesting OIDC tokens.",
+				RequiredWith: []string{"oidc_audience", "use_oidc", "client_id", "tenant_id"},
+			},
+			"oidc_tfc_tag": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", nil),
+				Description:  "Terraform Cloud dynamic credential provider tag.",
+				RequiredWith: []string{"oidc_tfc_tag", "use_oidc", "client_id", "tenant_id"},
+			},
+			"client_certificate_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE_PATH", nil),
+				Description:  "Path to a certificate to use to authenticate to the service principal.",
+				RequiredWith: []string{"client_certificate_path", "client_id", "tenant_id"},
+			},
+			"client_certificate": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE", nil),
+				Description:  "Base64 encoded certificate to use to authenticate to the service principal.",
+				RequiredWith: []string{"client_certificate", "client_id", "tenant_id"},
+			},
+			"client_certificate_password": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_CERTIFICATE_PASSWORD", nil),
+				Description: "Password for a client certificate password.",
+			},
+			"client_secret": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+				Description:  "Client secret for authenticating to  a service principal.",
+				ExactlyOneOf: allAuthFields,
+				RequiredWith: []string{"client_secret", "client_id", "tenant_id"},
+			},
+			"client_secret_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET_PATH", nil),
+				Description:  "Path to a file containing a client secret for authenticating to  a service principal.",
+				ExactlyOneOf: allAuthFields,
+				RequiredWith: []string{"client_secret_path", "client_id", "tenant_id"},
+			},
+			"use_msi": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("ARM_USE_MSI", nil),
+				Description:  "Use an Azure Managed Service Identity.",
+				ExactlyOneOf: allAuthFields,
+				RequiredWith: []string{"use_msi"},
+			},
 		},
 	}
 
@@ -168,8 +318,12 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			terraformVersion = "0.11+compatible"
 		}
 
-		client, err := client.GetAzdoClient(d.Get("personal_access_token").(string), d.Get("org_service_url").(string), terraformVersion)
+		tokenFunction, err := sdk.GetAuthTokenProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
 
-		return client, diag.FromErr(err)
+		azdoClient, err := client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
+		return azdoClient, diag.FromErr(err)
 	}
 }

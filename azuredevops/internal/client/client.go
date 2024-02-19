@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -64,18 +65,17 @@ type AggregatedClient struct {
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
-func GetAzdoClient(azdoPAT string, organizationURL string, tfVersion string) (*AggregatedClient, error) {
+func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL string, tfVersion string) (*AggregatedClient, error) {
 	ctx := context.Background()
-
-	if strings.EqualFold(azdoPAT, "") {
-		return nil, fmt.Errorf("the personal access token is required")
-	}
 
 	if strings.EqualFold(organizationURL, "") {
 		return nil, fmt.Errorf("the url of the Azure DevOps is required")
 	}
 
-	connection := azuredevops.NewPatConnection(organizationURL, azdoPAT)
+	connection, err := sdk.NewDynamicAuthorizationConnection(organizationURL, azdoTokenProvider)
+	if err != nil {
+		return nil, err
+	}
 	setUserAgent(connection, tfVersion)
 
 	coreClient, err := core.NewClient(ctx, connection)
