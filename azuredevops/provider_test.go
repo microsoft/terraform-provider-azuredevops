@@ -428,6 +428,9 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 
 func generateCert() []byte {
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatalf("Failed to generate certificate private key: %v", err)
+	}
 
 	template := x509.Certificate{
 		SerialNumber: new(big.Int).SetUint64(20),
@@ -492,7 +495,7 @@ func TestAuthClientCertFile(t *testing.T) {
 	cert := generateCert()
 	accessToken := "thepassword"
 	tempFile := t.TempDir() + "/clientCerts.pem"
-	err := os.WriteFile(tempFile, []byte(cert), 0644)
+	err := os.WriteFile(tempFile, cert, 0644)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	resourceData.Set("client_id", clientId)
