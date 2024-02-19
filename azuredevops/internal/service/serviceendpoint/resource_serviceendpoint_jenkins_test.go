@@ -55,7 +55,7 @@ var jenkinsTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 func testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJenkins().Schema, nil)
-		flattenServiceEndpointJenkins(resourceData, ep, id)
+		flattenServiceEndpointJenkins(resourceData, ep, id.String())
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJenkins(resourceData)
 
@@ -74,7 +74,7 @@ func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T)
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointJenkins(resourceData, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDpassword)
+	flattenServiceEndpointJenkins(resourceData, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDpassword.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -98,7 +98,7 @@ func testServiceEndpointJenkins_Read_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointJenkins(resourceData, ep, id)
+	flattenServiceEndpointJenkins(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -127,7 +127,7 @@ func testServiceEndpointJenkins_Delete_DoesNotSwallowError(t *testing.T, ep *ser
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointJenkins(resourceData, ep, id)
+	flattenServiceEndpointJenkins(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -158,7 +158,7 @@ func testServiceEndpointJenkins_Update_DoesNotSwallowError(t *testing.T, ep *ser
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointJenkins(resourceData, ep, id)
+	flattenServiceEndpointJenkins(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

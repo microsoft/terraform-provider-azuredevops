@@ -97,7 +97,7 @@ func resourceServiceEndpointDockerRegistryRead(d *schema.ResourceData, m interfa
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointDockerRegistry(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointDockerRegistry(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -114,7 +114,7 @@ func resourceServiceEndpointDockerRegistryUpdate(d *schema.ResourceData, m inter
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointDockerRegistry(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointDockerRegistry(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointDockerRegistryRead(d, m)
 }
 
@@ -149,7 +149,7 @@ func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoi
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("docker_registry", (*serviceEndpoint.Authorization.Parameters)["registry"])
 	d.Set("docker_email", (*serviceEndpoint.Authorization.Parameters)["email"])

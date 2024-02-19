@@ -133,7 +133,7 @@ func resourceServiceEndpointMavenRead(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointMaven(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointMaven(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -150,7 +150,7 @@ func resourceServiceEndpointMavenUpdate(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointMaven(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointMaven(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointMavenRead(d, m)
 }
 
@@ -205,7 +205,7 @@ func expandServiceEndpointMaven(d *schema.ResourceData) (*serviceendpoint.Servic
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointMaven(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointMaven(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {

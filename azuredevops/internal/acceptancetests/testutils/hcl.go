@@ -274,26 +274,23 @@ resource "azuredevops_serviceendpoint_github" "serviceendpoint" {
 
 // HclServiceEndpointGitHubDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
 func HclServiceEndpointGitHubDataSourceWithServiceEndpointID() string {
-	serviceEndpointDataSource := fmt.Sprintf(`
+	return `
 data "azuredevops_serviceendpoint_github" "serviceendpoint" {
   project_id = azuredevops_project.project.id
   service_endpoint_id         = azuredevops_serviceendpoint_github.serviceendpoint.id
 }
-`)
-	return fmt.Sprintf("%s", serviceEndpointDataSource)
+`
 }
 
 // HclServiceEndpointGitHubDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
 func HclServiceEndpointGitHubDataSourceWithServiceEndpointName(serviceEndpointName string) string {
-	serviceEndpointDataSource := fmt.Sprintf(`
+	return fmt.Sprintf(`
 data "azuredevops_serviceendpoint_github" "serviceendpoint" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   depends_on            = [azuredevops_serviceendpoint_github.serviceendpoint]
 }
 `, serviceEndpointName)
-
-	return fmt.Sprintf("%s", serviceEndpointDataSource)
 }
 
 func HclServiceEndpointGitHubEnterpriseResource(projectName string, serviceEndpointName string) string {
@@ -446,26 +443,23 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
 
 // HclServiceEndpointAzureRMDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
 func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
-	serviceEndpointDataSource := fmt.Sprintf(`
+	return `
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id = azuredevops_project.project.id
   service_endpoint_id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
 }
-`)
-	return fmt.Sprintf("%s", serviceEndpointDataSource)
+`
 }
 
 // HclServiceEndpointAzureRMDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
 func HclServiceEndpointAzureRMDataSourceWithServiceEndpointName(serviceEndpointName string) string {
-	serviceEndpointDataSource := fmt.Sprintf(`
+	return fmt.Sprintf(`
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   depends_on            = [azuredevops_serviceendpoint_azurerm.serviceendpointrm]
 }
 `, serviceEndpointName)
-
-	return fmt.Sprintf("%s", serviceEndpointDataSource)
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint

@@ -318,7 +318,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
 		Pending:                   []string{"inProgress"},
-		Target:                    []string{"succeeded"},
+		Target:                    []string{"succeeded", "failed"},
 		Refresh: func() (result interface{}, state string, err error) {
 			createdVG, err = clients.TaskAgentClient.GetVariableGroup(
 				clients.Ctx,
@@ -327,6 +327,9 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 					Project: project,
 				},
 			)
+			if err != nil {
+				return createdVG, "failed", fmt.Errorf(" fail to get Variable Group. %v ", err)
+			}
 			if createdVG != nil && createdVG.Variables != nil && (len(*variableGroupParams.Variables) == len(*createdVG.Variables)) {
 				return createdVG, "succeeded", nil
 			}

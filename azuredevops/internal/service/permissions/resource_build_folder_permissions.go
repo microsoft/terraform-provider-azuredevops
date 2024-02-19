@@ -121,7 +121,7 @@ func createBuildFolderToken(d *schema.ResourceData, clients *client.AggregatedCl
 
 		aclToken = fmt.Sprintf("%s/%s", projectID.(string), transformedPath)
 	} else {
-		aclToken = fmt.Sprintf("%s", projectID.(string))
+		aclToken = projectID.(string)
 	}
 
 	return aclToken, nil

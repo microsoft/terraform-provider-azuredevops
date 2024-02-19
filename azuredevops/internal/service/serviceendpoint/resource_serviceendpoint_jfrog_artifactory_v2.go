@@ -131,7 +131,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Read(d *schema.ResourceData, m int
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -148,7 +148,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Update(d *schema.ResourceData, m i
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointArtifactory(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointArtifactory(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointJFrogArtifactoryV2Read(d, m)
 }
 
@@ -165,7 +165,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Delete(d *schema.ResourceData, m i
 // Convert AzDO data structure to internal Terraform data structure
 // Note that 'username', 'password', and 'apitoken' service connection fields
 // are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArtifactoryV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointArtifactoryV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {

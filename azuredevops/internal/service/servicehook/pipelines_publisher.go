@@ -86,7 +86,7 @@ func genPipelinesPublisherSchema() map[string]*schema.Schema {
 func expandPipelinesEventConfig(d *schema.ResourceData) (map[string]string, string) {
 	eventConfig := make(map[string]string)
 	var eventType string
-	if inputsList, ok := d.GetOkExists("stage_state_changed_event"); ok && len(inputsList.([]interface{})) > 0 {
+	if inputsList := d.Get("stage_state_changed_event"); len(inputsList.([]interface{})) > 0 {
 		eventType = "stage_state_changed_event"
 		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
 			eventConfig["pipelineId"] = inputs[0].(map[string]interface{})["pipeline_id"].(string)
@@ -95,7 +95,7 @@ func expandPipelinesEventConfig(d *schema.ResourceData) (map[string]string, stri
 			eventConfig["stageResultId"] = inputs[0].(map[string]interface{})["stage_result_filter"].(string)
 		}
 	}
-	if inputsList, ok := d.GetOkExists("run_state_changed_event"); ok && len(inputsList.([]interface{})) > 0 {
+	if inputsList := d.Get("run_state_changed_event"); len(inputsList.([]interface{})) > 0 {
 		eventType = "run_state_changed_event"
 		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
 			eventConfig["pipelineId"] = inputs[0].(map[string]interface{})["pipeline_id"].(string)

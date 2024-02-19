@@ -16,7 +16,7 @@ func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface
 		return err
 	}
 	if serviceEndpoint != nil {
-		doBaseFlattening(d, serviceEndpoint, projectID)
+		doBaseFlattening(d, serviceEndpoint, projectID.String())
 
 		return nil
 	}

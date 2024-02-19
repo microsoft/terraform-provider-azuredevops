@@ -131,7 +131,7 @@ func resourceServiceEndpointJFrogPlatformV2Read(d *schema.ResourceData, m interf
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -148,7 +148,7 @@ func resourceServiceEndpointJFrogPlatformV2Update(d *schema.ResourceData, m inte
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointArtifactoryV2(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointJFrogPlatformV2Read(d, m)
 }
 

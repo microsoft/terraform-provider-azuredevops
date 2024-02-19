@@ -91,7 +91,7 @@ func resourceServiceEndpointRunPipelineRead(d *schema.ResourceData, m interface{
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointRunPipeline(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointRunPipeline(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -108,7 +108,7 @@ func resourceServiceEndpointRunPipelineUpdate(d *schema.ResourceData, m interfac
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointRunPipeline(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointRunPipeline(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointRunPipelineRead(d, m)
 }
 
@@ -156,7 +156,7 @@ func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 	if len(authPersonalSet) == 1 {

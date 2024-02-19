@@ -98,7 +98,7 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointSSH(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointSSH(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -115,7 +115,7 @@ func resourceServiceEndpointSSHUpdate(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointSSH(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointSSH(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointSSHRead(d, m)
 }
 
@@ -155,7 +155,7 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {

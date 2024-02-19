@@ -514,7 +514,7 @@ func getDefaultProcessTemplateID(clients *client.AggregatedClient) (*uuid.UUID, 
 	}
 
 	for _, p := range *processes {
-		if *p.IsDefault == true {
+		if *p.IsDefault {
 			return p.Id, nil
 		}
 	}
@@ -529,7 +529,7 @@ func getDefaultProcessTemplateName(clients *client.AggregatedClient) (string, er
 	}
 
 	for _, p := range *processes {
-		if *p.IsDefault == true {
+		if *p.IsDefault {
 			return *p.Name, nil
 		}
 	}

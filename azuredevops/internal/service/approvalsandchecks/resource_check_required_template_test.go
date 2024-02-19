@@ -79,7 +79,7 @@ func TestCheckRequiredTemplate_Create_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("AddCheckConfiguration() Failed")).
 		Times(1)
 
-	err := r.Create(resourceData, clients)
+	err := r.Create(resourceData, clients) //nolint:staticcheck
 	require.Contains(t, err.Error(), "AddCheckConfiguration() Failed")
 	require.Nil(t, flattenErr)
 }
@@ -108,7 +108,7 @@ func TestCheckRequiredTemplate_Read_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("GetServiceEndpoint() Failed")).
 		Times(1)
 
-	err := r.Read(resourceData, clients)
+	err := r.Read(resourceData, clients) //nolint:staticcheck
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 	require.Nil(t, flattenErr)
 }
@@ -136,7 +136,7 @@ func TestCheckRequiredTemplate_Delete_DoesNotSwallowError(t *testing.T) {
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
 		Times(1)
 
-	err := r.Delete(resourceData, clients)
+	err := r.Delete(resourceData, clients) //nolint:staticcheck
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 	require.Nil(t, flattenErr)
 }
@@ -165,7 +165,7 @@ func TestCheckRequiredTemplate_Update_DoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
 		Times(1)
 
-	err := r.Update(resourceData, clients)
+	err := r.Update(resourceData, clients) //nolint:staticcheck
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 	require.Nil(t, flattenErr)
 }

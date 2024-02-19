@@ -90,7 +90,7 @@ func resourceServiceEndpointGitHubEnterpriseRead(d *schema.ResourceData, m inter
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointGitHubEnterprise(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointGitHubEnterprise(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -107,7 +107,7 @@ func resourceServiceEndpointGitHubEnterpriseUpdate(d *schema.ResourceData, m int
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointGitHubEnterprise(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointGitHubEnterprise(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointGitHubEnterpriseRead(d, m)
 }
 
@@ -121,7 +121,7 @@ func resourceServiceEndpointGitHubEnterpriseDelete(d *schema.ResourceData, m int
 	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
-func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {

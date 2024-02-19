@@ -79,7 +79,7 @@ func resourceServiceEndpointBitbucketRead(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointBitBucket(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointBitBucket(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -96,7 +96,7 @@ func resourceServiceEndpointBitbucketUpdate(d *schema.ResourceData, m interface{
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointBitBucket(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointBitBucket(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointBitbucketRead(d, m)
 }
 
@@ -124,7 +124,7 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
 }

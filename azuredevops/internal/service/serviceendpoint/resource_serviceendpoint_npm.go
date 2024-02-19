@@ -80,7 +80,7 @@ func resourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointNpm(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointNpm(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -97,7 +97,7 @@ func resourceServiceEndpointNpmUpdate(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointNpm(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointNpm(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointNpmRead(d, m)
 }
 
@@ -126,7 +126,7 @@ func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceendpoint.ServiceE
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointNpm(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointNpm(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	d.Set("url", *serviceEndpoint.Url)

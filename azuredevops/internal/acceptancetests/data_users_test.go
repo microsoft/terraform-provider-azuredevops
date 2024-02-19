@@ -74,11 +74,10 @@ data "azuredevops_users" "test" {
 }
 
 func dataUser_all_svc() string {
-	return fmt.Sprintf(
-		`
+	return `
 data "azuredevops_users" "test" {
 	subject_types = ["svc"]
-}`)
+}`
 }
 
 func dataUser_basic(uname string) string {

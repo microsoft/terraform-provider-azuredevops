@@ -81,7 +81,7 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogPlatformV2().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id)
+		flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogPlatformV2(resourceData)
 		require.Nil(t, err)
@@ -105,7 +105,7 @@ func testServiceEndpointplatformV2_Create_DoesNotSwallowError(t *testing.T, ep *
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -134,7 +134,7 @@ func testServiceEndpointplatformV2_Read_DoesNotSwallowError(t *testing.T, ep *se
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -166,7 +166,7 @@ func testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t *testing.T, ep *
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -200,7 +200,7 @@ func testServiceEndpointplatformV2_Update_DoesNotSwallowError(t *testing.T, ep *
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

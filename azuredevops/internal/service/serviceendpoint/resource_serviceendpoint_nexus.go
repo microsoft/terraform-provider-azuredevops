@@ -97,7 +97,7 @@ func resourceServiceEndpointNexusRead(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointNexus(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointNexus(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -114,7 +114,7 @@ func resourceServiceEndpointNexusUpdate(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointNexus(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointNexus(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointNexusRead(d, m)
 }
 
@@ -146,7 +146,7 @@ func expandServiceEndpointNexus(d *schema.ResourceData) (*serviceendpoint.Servic
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointNexus(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointNexus(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("url", *serviceEndpoint.Url)
 }

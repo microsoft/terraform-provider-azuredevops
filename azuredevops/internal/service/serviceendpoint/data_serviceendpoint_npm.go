@@ -23,7 +23,7 @@ func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 	if serviceEndpoint != nil {
-		doBaseFlattening(d, serviceEndpoint, projectID)
+		doBaseFlattening(d, serviceEndpoint, projectID.String())
 		d.Set("url", serviceEndpoint.Url)
 
 		return nil

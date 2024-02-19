@@ -216,7 +216,7 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointKubernetes(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointKubernetes(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -233,7 +233,7 @@ func resourceServiceEndpointKubernetesUpdate(d *schema.ResourceData, m interface
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointKubernetes(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointKubernetes(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointKubernetesRead(d, m)
 }
 
@@ -324,10 +324,10 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set(resourceAttrAuthType, (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType])
-	d.Set(resourceAttrAPIURL, (*serviceEndpoint.Url))
+	d.Set(resourceAttrAPIURL, *serviceEndpoint.Url)
 
 	switch (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType] {
 	case "AzureSubscription":
