@@ -231,7 +231,7 @@ func TestAuthPAT(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Basic " + base64.StdEncoding.EncodeToString([]byte("_:" + testToken)), token)
+	assert.Equal(t, "Basic "+base64.StdEncoding.EncodeToString([]byte("_:"+testToken)), token)
 }
 
 type simpleTokenGetter struct {
@@ -268,7 +268,7 @@ func TestAuthOIDCToken(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthOIDCTokenFile(t *testing.T) {
@@ -298,7 +298,7 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientSecret(t *testing.T) {
@@ -323,7 +323,7 @@ func TestAuthClientSecret(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientSecretFile(t *testing.T) {
@@ -352,7 +352,7 @@ func TestAuthClientSecretFile(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthTrfm(t *testing.T) {
@@ -378,7 +378,7 @@ func TestAuthTrfm(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthTrfmPlanApply(t *testing.T) {
@@ -409,7 +409,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 
 	// Plan phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
@@ -422,7 +422,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	assert.Nil(t, err)
 	token, err = resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func generateCert() []byte {
@@ -480,7 +480,7 @@ func TestAuthClientCert(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientCertFile(t *testing.T) {
@@ -512,7 +512,7 @@ func TestAuthClientCertFile(t *testing.T) {
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
-	assert.Equal(t, "Bearer " + accessToken, token)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestGHActionsNoAudience(t *testing.T) {
@@ -566,6 +566,6 @@ func TestGHActionsNoAudience(t *testing.T) {
 		assert.Nil(t, err)
 		token, err := resp()
 		assert.Nil(t, err)
-		assert.Equal(t, "Bearer " + accessToken, token)
+		assert.Equal(t, "Bearer "+accessToken, token)
 	}
 }
