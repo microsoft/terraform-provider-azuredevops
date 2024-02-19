@@ -24,6 +24,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	mock_azuredevops "github.com/microsoft/terraform-provider-azuredevops/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -227,7 +228,7 @@ func TestAuthPAT(t *testing.T) {
 	testToken := "thepassword"
 	resourceData.Set("personal_access_token", testToken)
 
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -264,7 +265,7 @@ func TestAuthOIDCToken(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -294,7 +295,7 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -319,7 +320,7 @@ func TestAuthClientSecret(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -348,7 +349,7 @@ func TestAuthClientSecretFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -374,7 +375,7 @@ func TestAuthTrfm(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -405,7 +406,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -418,7 +419,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err = azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err = sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err = resp()
 	assert.Nil(t, err)
@@ -476,7 +477,7 @@ func TestAuthClientCert(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -508,7 +509,7 @@ func TestAuthClientCertFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
 	token, err := resp()
 	assert.Nil(t, err)
@@ -562,7 +563,7 @@ func TestGHActionsNoAudience(t *testing.T) {
 				getter := simpleTokenGetter{token: accessToken}
 				return &getter, nil
 			}).Times(1)
-		resp, err := azuredevops.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+		resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 		assert.Nil(t, err)
 		token, err := resp()
 		assert.Nil(t, err)

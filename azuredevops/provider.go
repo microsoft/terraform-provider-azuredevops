@@ -21,6 +21,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -317,7 +318,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			terraformVersion = "0.11+compatible"
 		}
 
-		tokenFunction, err := GetAuthTokenProvider(ctx, d, AzIdentityFuncsImpl{})
+		tokenFunction, err := sdk.GetAuthTokenProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}

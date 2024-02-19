@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -71,7 +72,10 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		return nil, fmt.Errorf("the url of the Azure DevOps is required")
 	}
 
-	connection := azuredevops.NewDynamicAuthorizationConnection(organizationURL, azdoTokenProvider)
+	connection, err := sdk.NewDynamicAuthorizationConnection(organizationURL, azdoTokenProvider)
+	if err != nil {
+		return nil, err
+	}
 	setUserAgent(connection, tfVersion)
 
 	coreClient, err := core.NewClient(ctx, connection)

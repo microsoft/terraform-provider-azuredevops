@@ -1,4 +1,4 @@
-package azuredevops
+package sdk
 
 import (
 	"context"
