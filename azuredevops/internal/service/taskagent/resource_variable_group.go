@@ -428,6 +428,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		variableGroup.ProviderData = taskagent.AzureKeyVaultVariableGroupProviderData{
 			ServiceEndpointId: &serviceEndpointUUID,
 			Vault:             &kvName,
+			LastRefreshedOn:   &azuredevops.Time{Time: time.Now()},
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
@@ -437,7 +438,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		if len(invalidVariables) > 0 {
-			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault: ( %s ) ",
+			return nil, nil, fmt.Errorf("Invalid Key Vault secret: ( %s ) , can not find in Azure Key Vault or the secret has been disbled: ( %s ) ",
 				strings.Join(invalidVariables, ","),
 				kvName)
 		} else {
@@ -678,6 +679,10 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 					IsSecret:    converter.Bool(true),
 					Enabled:     secret.Enabled,
 				}
+
+				if secret.ContentType == nil {
+					kvVariable.ContentType = converter.String("")
+				}
 				if secret.Expire != nil {
 					kvVariable.Expires = &azuredevops.Time{
 						Time: time.Unix(*secret.Expire, 0),
@@ -691,7 +696,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 				if len(secretNames) == 0 {
 					break
 				}
-				if _, ok := secretNames[name]; ok {
+				if _, ok := secretNames[name]; ok && *secret.Enabled {
 					kvSecrets[name] = secret
 					delete(secretNames, name)
 				}

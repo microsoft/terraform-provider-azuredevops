@@ -71,6 +71,8 @@ The following arguments are supported:
 
 - `auto_update` - (Optional) Specifies whether or not agents within the pool should be automatically updated. Defaults to `true`.
 
+- `project_id` - (Optional) The ID of the project where a new Elastic Pool will be created.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
