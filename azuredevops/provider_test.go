@@ -495,7 +495,7 @@ func TestAuthClientCertFile(t *testing.T) {
 	cert := generateCert()
 	accessToken := "thepassword"
 	tempFile := t.TempDir() + "/clientCerts.pem"
-	err := os.WriteFile(tempFile, cert, 0644)
+	os.WriteFile(tempFile, cert, 0644)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	resourceData.Set("client_id", clientId)
