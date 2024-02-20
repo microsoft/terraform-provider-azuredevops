@@ -198,6 +198,12 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
 		d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
 		d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
+
+		if scope, ok := (*serviceEndpoint.Authorization.Parameters)["scope"]; ok {
+			s := strings.SplitN(scope, "/", -1)
+			d.Set("resource_group", s[4])
+			d.Set("azurecr_name", s[8])
+		}
 	}
 
 	if serviceEndpoint.Data != nil {
@@ -207,11 +213,5 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
 		d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
 		d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
-	}
-
-	if scope, ok := (*serviceEndpoint.Authorization.Parameters)["scope"]; ok {
-		s := strings.SplitN(scope, "/", -1)
-		d.Set("resource_group", s[4])
-		d.Set("azurecr_name", s[8])
 	}
 }
