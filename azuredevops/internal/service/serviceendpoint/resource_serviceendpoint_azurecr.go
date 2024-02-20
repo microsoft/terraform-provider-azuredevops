@@ -194,18 +194,24 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
-	d.Set("azurecr_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
-	d.Set("azurecr_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
 
-	d.Set("app_object_id", (*serviceEndpoint.Data)["appObjectId"])
-	d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
-	d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
-	d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
-	d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
+	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+		d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
+		d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
+	}
 
-	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
-	s := strings.SplitN(scope, "/", -1)
-	d.Set("resource_group", s[4])
-	d.Set("azurecr_name", s[8])
+	if serviceEndpoint.Data != nil {
+		d.Set("azurecr_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
+		d.Set("azurecr_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+		d.Set("app_object_id", (*serviceEndpoint.Data)["appObjectId"])
+		d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
+		d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
+		d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
+	}
+
+	if scope, ok := (*serviceEndpoint.Authorization.Parameters)["scope"]; ok {
+		s := strings.SplitN(scope, "/", -1)
+		d.Set("resource_group", s[4])
+		d.Set("azurecr_name", s[8])
+	}
 }
