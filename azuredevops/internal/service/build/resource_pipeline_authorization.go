@@ -23,6 +23,11 @@ func ResourcePipelineAuthorization() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"pipeline_project_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 			"resource_id": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -48,6 +53,11 @@ func ResourcePipelineAuthorization() *schema.Resource {
 func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectId := d.Get("project_id").(string)
+	pipelineProjectId := projectId
+	if d.Get("pipeline_project_id").(string) != "" {
+		pipelineProjectId = d.Get("pipeline_project_id").(string)
+	}
+
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
 
@@ -56,7 +66,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	}
 
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
-		Project:      &projectId,
+		Project:      &pipelineProjectId,
 		ResourceType: &resType,
 		ResourceId:   &resId,
 	}
@@ -90,6 +100,11 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectId := d.Get("project_id").(string)
+	pipelineProjectId := projectId
+	if d.Get("pipeline_project_id").(string) != "" {
+		pipelineProjectId = d.Get("pipeline_project_id").(string)
+	}
+
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
 
@@ -99,7 +114,7 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 	resp, err := clients.PipelinePermissionsClient.GetPipelinePermissionsForResource(clients.Ctx,
 		pipelinepermissions.GetPipelinePermissionsForResourceArgs{
-			Project:      &projectId,
+			Project:      &pipelineProjectId,
 			ResourceType: &resType,
 			ResourceId:   &resId,
 		},
@@ -139,6 +154,11 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectId := d.Get("project_id").(string)
+	pipelineProjectId := projectId
+	if d.Get("pipeline_project_id").(string) != "" {
+		pipelineProjectId = d.Get("pipeline_project_id").(string)
+	}
+
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
 
@@ -147,7 +167,7 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 	}
 
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
-		Project:      &projectId,
+		Project:      &pipelineProjectId,
 		ResourceType: &resType,
 		ResourceId:   &resId,
 	}

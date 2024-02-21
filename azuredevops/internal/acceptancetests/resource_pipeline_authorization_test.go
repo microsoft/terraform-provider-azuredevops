@@ -240,6 +240,26 @@ func TestAccPipelineAuthorization_pipeline_repository(t *testing.T) {
 	})
 }
 
+func TestAccPipelineAuthorization_pipeline_cross_project_repository(t *testing.T) {
+	node := "azuredevops_pipeline_authorization.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, nil)
+		},
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclPipelineAuthCrossProjectRepository(testutils.GenerateResourceName()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "project_id"),
+					resource.TestCheckResourceAttrSet(node, "pipeline_project_id"),
+					resource.TestCheckResourceAttrSet(node, "resource_id"),
+				),
+			},
+		},
+	})
+}
+
 func hclAllPipelineAuthQueue(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -693,6 +713,56 @@ resource "azuredevops_pipeline_authorization" "test" {
   resource_id = data.azuredevops_git_repository.test.id
   pipeline_id = azuredevops_build_definition.test.id
   type        = "repository"
+}
+`, name)
+}
+
+func hclPipelineAuthCrossProjectRepository(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_project" "remote_repo" {
+  name               = "%[1]s2"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "remote_repo" {
+  project_id = azuredevops_project.remote_repo.id
+  name       = azuredevops_project.remote_repo.name
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+
+resource "azuredevops_build_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+
+  repository {
+    repo_type = "TfsGit"
+    repo_id   = data.azuredevops_git_repository.test.id
+    yml_path  = "azure-pipelines.yml"
+  }
+}
+
+resource "azuredevops_pipeline_authorization" "test" {
+  project_id  = azuredevops_project.remote_repo.id
+  resource_id = data.azuredevops_git_repository.remote_repo.id
+  type        = "repository"
+
+  pipeline_id = azuredevops_build_definition.test.id
+  pipeline_project_id = azuredevops_project.test.id
 }
 `, name)
 }
