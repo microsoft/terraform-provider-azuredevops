@@ -36,6 +36,8 @@ type CheckConfiguration struct {
 	Settings interface{} `json:"settings,omitempty"`
 	// Timeout in minutes for the check.
 	Timeout *int `json:"timeout,omitempty"`
+	// Version of check configuration
+	Version *int `json:"version,omitempty"`
 }
 
 type CheckConfigurationRef struct {

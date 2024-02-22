@@ -150,6 +150,7 @@ func TestAccCheckBusinessHours_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "friday", friday_second),
 					resource.TestCheckResourceAttr(tfCheckNode, "saturday", saturday_second),
 					resource.TestCheckResourceAttr(tfCheckNode, "sunday", sunday_second),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},

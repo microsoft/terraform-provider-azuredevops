@@ -89,6 +89,7 @@ func TestAccCheckApproval_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "approvers.#", "2"),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},

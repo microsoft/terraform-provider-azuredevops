@@ -42,6 +42,7 @@ var CheckBusinessHoursTest = pipelineschecksextras.CheckConfiguration{
 	Settings: CheckBusinessHoursSettings,
 	Timeout:  converter.ToPtr(50000),
 	Resource: &endpointResource,
+	Version:  converter.Int(0),
 }
 
 // verifies that the flatten/expand round trip yields the same business hours check

@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_check_approval"
 description: |-
-  Manages a Approval Check.
+  Manages an Approval Check.
 ---
 
 # azuredevops_check_approval
@@ -84,7 +84,7 @@ The following arguments are supported:
 * `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`. Changing this forces a new Approval Check to be created.
 
 * `approvers` - (Required) Specifies a list of approver IDs.
- 
+
 ---
 
 * `instructions` - (Optional) The instructions for the approvers.
@@ -93,13 +93,14 @@ The following arguments are supported:
 
 * `requester_can_approve` - (Optional) Can the requestor approve? Defaults to `false`.
 
-* `timeout` - (Optional) The timeout in minutes for the approval.  Defaults to `43200`. 
+* `timeout` - (Optional) The timeout in minutes for the approval.  Defaults to `43200`.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
-* `id` - The ID of the Approval Check.
+* `id` - The ID of the check.
+* `version` - The version of the check.
 
 ## Timeouts
 

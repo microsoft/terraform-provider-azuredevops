@@ -97,6 +97,7 @@ func TestAccCheckBranchControl_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branchesSecond),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkNameSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},

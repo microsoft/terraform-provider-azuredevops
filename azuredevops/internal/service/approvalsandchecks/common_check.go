@@ -86,6 +86,10 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(targetResourceTypes, false),
 			},
+			"version": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -101,6 +105,7 @@ func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecksextras.Ch
 			Id:   converter.String(d.Get("target_resource_id").(string)),
 			Type: converter.String(d.Get("target_resource_type").(string)),
 		},
+		Version: converter.Int(d.Get("version").(int)),
 	}
 
 	if timeout != nil {
@@ -130,6 +135,7 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 
 	d.Set("target_resource_id", check.Resource.Id)
 	d.Set("target_resource_type", check.Resource.Type)
+	d.Set("version", check.Version)
 
 	return nil
 }

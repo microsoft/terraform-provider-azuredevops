@@ -101,6 +101,7 @@ func TestAccCheckRequiredTemplate_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_name", repositoryNameSecond),
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRefSecond),
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePathSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},
