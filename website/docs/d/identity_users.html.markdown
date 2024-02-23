@@ -17,21 +17,34 @@ data "azuredevops_identity_user" "contoso-user" {
   name = "contoso-user"
 }
 
-# Use userPrincipalName instead of principal name.
+# Use MailAddress instead of principal name.
 data "azuredevops_user" "contoso-user-upn" {
   name = "contoso-user@contoso.onmicrosoft.com"
+  search_filter = "MailAddress"
 }
 
-# Load all users know inside an organization
-data "azuredevops_user" "example-all-users" {
+
+# Use MailAddress instead of principal name.
+data "azuredevops_user" "contoso-user-upn" {
+  name = "contoso-user@contoso.onmicrosoft.com"
+  search_filter = "MailAddress"
 }
+
+# Use DisplayName instead of principal name.
+data "azuredevops_user" "contoso-user-upn" {
+  name = "Contoso User"
+  search_filter = "DisplayName"
+}
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `name` - (Optional) The PrincipalName of this identity member from the source provider.
+- `name` - (required) The PrincipalName of this identity member from the source provider.
+- `search_filter` - (Optional) Default is General, but other options are AccountName, DisplayName, and MailAddress.
+
 
 ## Attributes Reference
 
