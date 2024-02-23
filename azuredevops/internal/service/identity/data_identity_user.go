@@ -27,8 +27,8 @@ func DataIdentityUser() *schema.Resource {
 			"search_filter": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Default:      "General",
+				ValidateFunc: validation.StringInSlice([]string{"AccountName", "DisplayName", "MailAddress", "General"}, false),
 			},
 		},
 	}
