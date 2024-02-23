@@ -83,7 +83,7 @@ The following arguments are supported:
 * `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`. Changing this forces a new Required Template Check to be created.
 
 * `required_template` - (Required) One or more `required_template` blocks documented below.
- 
+
 A `required_template` block supports the following:
 
 - `repository_type` - (Optional) The type of the repository storing the template. Valid values: `azuregit`, `github`, `githubenterprise`, `bitbucket`. Defaults to `azuregit`.
@@ -95,7 +95,8 @@ A `required_template` block supports the following:
 
 In addition to the Arguments listed above - the following attribute are exported:
 
-* `id` - The ID of the Required Template Check.
+* `id` - The ID of the check.
+* `version` - The version of the check.
 
 ## Import
 

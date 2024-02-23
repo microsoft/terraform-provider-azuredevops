@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_check_exclusive_lock"
 description: |-
-  Manages a Exclusive Lock Check.
+  Manages an Exclusive Lock Check.
 ---
 
 # azuredevops_check_exclusive_lock
@@ -68,7 +68,7 @@ The following arguments are supported:
 * `target_resource_id` - (Required) The ID of the resource being protected by the check. Changing this forces a new Exclusive Lock to be created.
 
 * `target_resource_type` - (Required) The type of resource being protected by the check. Valid values: `endpoint`, `environment`, `queue`, `repository`, `securefile`, `variablegroup`. Changing this forces a new Exclusive Lock to be created.
- 
+
 ---
 
 * `timeout` - (Optional) The timeout in minutes for the exclusive lock. Defaults to `43200`.
@@ -77,7 +77,8 @@ The following arguments are supported:
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
-* `id` - The ID of the Exclusive Lock.
+* `id` - The ID of the check.
+* `version` - The version of the check.
 
 ## Timeouts
 

@@ -33,6 +33,7 @@ var CheckExclusiveLockTest = pipelineschecksextras.CheckConfiguration{
 	Settings: CheckExclusiveLockSettings,
 	Timeout:  converter.ToPtr(20000),
 	Resource: &endpointResource,
+	Version:  converter.Int(0),
 }
 
 // verifies that the flatten/expand round trip yields the same exclusive lock check

@@ -48,6 +48,7 @@ var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
 	Settings: ApprovalCheckSettings,
 	Timeout:  converter.ToPtr(20000),
 	Resource: &endpointResourceApproval,
+	Version:  converter.Int(0),
 }
 
 // verifies that the flatten/expand round trip yields the same branch control

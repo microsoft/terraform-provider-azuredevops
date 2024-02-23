@@ -189,7 +189,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the check.
+* `id` - The ID of the check.
+* `version` - The version of the check.
 
 ## Relevant Links
 

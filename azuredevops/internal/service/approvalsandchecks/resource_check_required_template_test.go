@@ -45,6 +45,7 @@ var requiredTemplateCheckTest = pipelineschecksextras.CheckConfiguration{
 	Type:     approvalAndCheckType.ExtendsCheck,
 	Settings: requiredTemplateCheckSettings,
 	Resource: &requiredTemplateTestEndpointResource,
+	Version:  converter.Int(0),
 }
 
 // verifies that the flatten/expand round trip yields the same required template
