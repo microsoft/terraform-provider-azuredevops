@@ -19,7 +19,7 @@ func DataIdentityGroups() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
 			},
 			"groups": {
 				Type:     schema.TypeSet,
@@ -33,7 +33,7 @@ func DataIdentityGroups() *schema.Resource {
 						},
 						"name": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -49,11 +49,7 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 	// Get groups in specified project id
 	groups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
-		errMsg := "Error finding groups"
-		if projectID != "" {
-			errMsg = fmt.Sprintf("%s for project with ID %s", errMsg, projectID)
-		}
-		return fmt.Errorf("%s. Error: %v", errMsg, err)
+		return fmt.Errorf(" failed to get groups for project with ID %s. Error: %v", projectID, err)
 	}
 
 	// With project groups flatten results
@@ -83,14 +79,14 @@ func getIdentityGroupsWithProjectID(clients *client.AggregatedClient, projectID 
 // flatten function
 func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 	if groups == nil {
-		return nil, fmt.Errorf("Input Groups Parameter is nil")
+		return []interface{}{}, nil
 	}
 	results := make([]interface{}, len(*groups))
 	for i, group := range *groups {
 		groupMap := make(map[string]interface{})
 
-		if group.Descriptor != nil {
-			groupMap["id"] = *group.Descriptor
+		if group.Id != nil {
+			groupMap["id"] = *group.Id
 		} else {
 			return nil, fmt.Errorf("Group Object does not contain an id")
 		}

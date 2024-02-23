@@ -42,11 +42,7 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Query ADO for list of identity users with filter
 	filterUsers, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
 	if err != nil {
-		errMsg := "Error finding user"
-		if searchFilter != "" {
-			errMsg = fmt.Sprintf("%s with filter %s", errMsg, searchFilter)
-		}
-		return fmt.Errorf("%s. Error: %v", errMsg, err)
+		return fmt.Errorf(" finding user with filter %s. Error: %v", searchFilter, err)
 	}
 
 	flattenUsers, err := FlattenIdentityUsers(filterUsers)
@@ -57,11 +53,7 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Filter for the desired user in the FilterUsers results
 	targetUser := selectIdentityUser(flattenUsers, userName)
 	if targetUser == nil {
-		errMsg := fmt.Sprintf("Could not find user with name %s", userName)
-		if searchFilter != "" {
-			errMsg = fmt.Sprintf("%s with filter %s", errMsg, searchFilter)
-		}
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf(" Could not find user with name %s with filter %s", userName, searchFilter)
 	}
 
 	// Set id and user list for users data resource
