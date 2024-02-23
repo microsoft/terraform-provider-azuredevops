@@ -17,7 +17,7 @@ func DataIdentityUser() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"descriptor": {
