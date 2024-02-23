@@ -63,7 +63,7 @@ func TestIdentityGroupDataSource_ProjectDescriptorLookupErrorNotFound(t *testing
 		})
 
 	err := dataSourceIdentityGroupRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Error finding groups")
+	require.Contains(t, err.Error(), "Error getting groups")
 }
 
 func createIdentityGroups(groups ...groupMeta) *[]identity.Identity {

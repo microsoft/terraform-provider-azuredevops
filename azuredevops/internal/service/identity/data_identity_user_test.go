@@ -43,7 +43,7 @@ func TestUserNotFound(t *testing.T) {
 
 	// Execute the function and check for the expected error
 	err := dataIdentitySourceUserRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Error finding user")
+	require.Contains(t, err.Error(), "finding user with filter")
 }
 
 func TestErrorNotSwallowed(t *testing.T) {
@@ -69,7 +69,7 @@ func TestErrorNotSwallowed(t *testing.T) {
 	// Execute the function and check for the expected error
 	err := dataIdentitySourceUserRead(resourceData, clients)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "Error finding user")
+	require.Contains(t, err.Error(), "finding user with filter")
 	require.Contains(t, err.Error(), "with filter "+searchFilter)
 }
 
