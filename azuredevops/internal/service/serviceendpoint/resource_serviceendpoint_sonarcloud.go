@@ -73,7 +73,7 @@ func resourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointSonarCloud(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointSonarCloud(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -90,7 +90,7 @@ func resourceServiceEndpointSonarCloudUpdate(d *schema.ResourceData, m interface
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointSonarCloud(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointSonarCloud(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointSonarCloudRead(d, m)
 }
 
@@ -119,6 +119,6 @@ func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.S
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointSonarCloud(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 }

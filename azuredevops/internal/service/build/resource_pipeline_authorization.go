@@ -229,7 +229,7 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 					}
 				}
 				// reapply for authorization
-				resp, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
+				_, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
 					clients.Ctx,
 					params,
 				)
@@ -241,7 +241,7 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 				return resp, "succeed", err
 			}
 			// reapply for authorization
-			resp, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
+			_, err = clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
 				clients.Ctx,
 				params,
 			)

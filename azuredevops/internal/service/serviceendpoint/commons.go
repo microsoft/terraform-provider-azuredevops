@@ -157,18 +157,18 @@ func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *service
 		EndpointId: serviceEndpointID,
 	}
 
-	log.Printf(fmt.Sprintf(":: %s :: Initiating validation", *endpoint.Name))
+	log.Printf(":: %s :: Initiating validation", *endpoint.Name)
 	err := resource.RetryContext(clients.Ctx, retryTimeout, func() *resource.RetryError {
 		reqResult, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs)
 		if err != nil {
-			log.Printf(fmt.Sprintf(":: %s :: error during endpoint validation request", *endpoint.Name))
+			log.Printf(":: %s :: error during endpoint validation request", *endpoint.Name)
 			return resource.NonRetryableError(err)
 		}
 		if !strings.EqualFold(*reqResult.StatusCode, "ok") {
-			log.Printf(fmt.Sprintf(":: %s :: validation failed with StatusCode '%s', retrying...", *endpoint.Name, *reqResult.StatusCode))
+			log.Printf(":: %s :: validation failed with StatusCode '%s', retrying...", *endpoint.Name, *reqResult.StatusCode)
 			return resource.RetryableError(fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage))
 		}
-		log.Printf(fmt.Sprintf(":: %s :: successfully validated connection", *endpoint.Name))
+		log.Printf(":: %s :: successfully validated connection", *endpoint.Name)
 		return nil
 	})
 	return err
@@ -272,10 +272,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 }
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	d.SetId(serviceEndpoint.Id.String())
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
-	d.Set("project_id", projectID.String())
+	d.Set("project_id", projectID)
 	d.Set("description", serviceEndpoint.Description)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
@@ -287,7 +287,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 // data resources
 
-func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource {
+func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
 	return &schema.Resource{
 		Read: dataSourceReadFunc,
 		Schema: map[string]*schema.Schema{
@@ -375,7 +375,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 	}
 
 	if serviceEndpointName, ok := d.GetOk("service_endpoint_name"); ok {
-		serviceEndpoint, err := dataSourceGetServiceEndpointByNameAndProject(clients, serviceEndpointName.(string), projectID)
+		serviceEndpoint, err := dataSourceGetServiceEndpointByNameAndProject(clients, serviceEndpointName.(string), projectID.String())
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				d.SetId("")
@@ -389,13 +389,13 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 	return nil, projectID, nil
 }
 
-func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClient, serviceEndpointName string, projectID *uuid.UUID) (*serviceendpoint.ServiceEndpoint, error) {
+func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClient, serviceEndpointName string, projectID string) (*serviceendpoint.ServiceEndpoint, error) {
 	serviceEndpointNameList := &[]string{serviceEndpointName}
 
 	serviceEndpoints, err := clients.ServiceEndpointClient.GetServiceEndpointsByNames(
 		clients.Ctx,
 		serviceendpoint.GetServiceEndpointsByNamesArgs{
-			Project:       converter.String(projectID.String()),
+			Project:       &projectID,
 			EndpointNames: serviceEndpointNameList,
 		},
 	)

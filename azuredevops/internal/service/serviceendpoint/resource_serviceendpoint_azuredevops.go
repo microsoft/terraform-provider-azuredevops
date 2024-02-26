@@ -89,7 +89,7 @@ func resourceServiceEndpointAzureDevOpsRead(d *schema.ResourceData, m interface{
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointAzureDevOps(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointAzureDevOps(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -106,7 +106,7 @@ func resourceServiceEndpointAzureDevOpsUpdate(d *schema.ResourceData, m interfac
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointAzureDevOps(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointAzureDevOps(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointAzureDevOpsRead(d, m)
 }
 
@@ -136,7 +136,7 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("org_url", serviceEndpoint.Url)
 	d.Set("release_api_url", (*serviceEndpoint.Data)["releaseUrl"])

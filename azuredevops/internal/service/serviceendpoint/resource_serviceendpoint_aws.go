@@ -103,7 +103,7 @@ func resourceServiceEndpointAwsRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointAws(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointAws(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -120,7 +120,7 @@ func resourceServiceEndpointAwsUpdate(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointBitBucket(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointAws(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointAwsRead(d, m)
 }
 
@@ -154,7 +154,7 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	d.Set("access_key_id", (*serviceEndpoint.Authorization.Parameters)["username"])

@@ -96,7 +96,7 @@ func resourceServiceEndpointGcpTerraformRead(d *schema.ResourceData, m interface
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointGcp(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointGcp(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -113,7 +113,7 @@ func resourceServiceEndpointGcpTerraformUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointGcp(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointGcp(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointGcpTerraformRead(d, m)
 }
 
@@ -148,7 +148,7 @@ func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceE
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	d.Set("private_key", d.Get("private_key").(string))

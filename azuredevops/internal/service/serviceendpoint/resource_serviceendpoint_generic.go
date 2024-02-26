@@ -84,7 +84,7 @@ func resourceServiceEndpointGenericRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointGeneric(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointGeneric(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -101,7 +101,7 @@ func resourceServiceEndpointGenericUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointGeneric(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointGeneric(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointGenericRead(d, m)
 }
 
@@ -129,7 +129,7 @@ func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.Serv
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("server_url", *serviceEndpoint.Url)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])

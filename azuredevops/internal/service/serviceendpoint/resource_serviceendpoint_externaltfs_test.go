@@ -55,7 +55,7 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointExternalTFS(resourceData)
@@ -75,7 +75,7 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -101,7 +101,7 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -130,7 +130,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -163,7 +163,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

@@ -389,16 +389,14 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 
 	var diags diag.Diagnostics = nil
 	features := buildDefinitionFeatures(d)
-	if features != nil && len(features) != 0 {
+	if len(features) != 0 {
 		if v, ok := features["skip_first_run"]; ok {
 			if skipFirstRun := v.(bool); !skipFirstRun {
 				// trigger the first run
 				repo := d.Get("repository").([]interface{})[0].(map[string]interface{})
 				branchName := repo["branch_name"].(string)
 
-				if strings.HasPrefix(branchName, "refs/heads/") {
-					branchName = branchName[len("refs/heads/"):]
-				}
+				branchName = strings.TrimPrefix(branchName, "refs/heads/")
 
 				_, err := clients.PipelinesClient.RunPipeline(clients.Ctx, pipelines.RunPipelineArgs{
 					Project:    converter.String(projectID),
@@ -1140,7 +1138,7 @@ func buildVariableGroup(id int) *build.VariableGroup {
 
 func buildDefinitionFeatures(d *schema.ResourceData) map[string]interface{} {
 	features := d.Get("features").([]interface{})
-	if features != nil && len(features) != 0 {
+	if len(features) != 0 {
 		return features[0].(map[string]interface{})
 	}
 	return nil

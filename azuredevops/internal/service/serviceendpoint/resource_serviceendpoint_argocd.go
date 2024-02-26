@@ -127,7 +127,7 @@ func resourceServiceEndpointArgoCDRead(d *schema.ResourceData, m interface{}) er
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArgoCD(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointArgoCD(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) error {
@@ -143,7 +143,7 @@ func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) 
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointArgoCD(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointArgoCD(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointArgoCDRead(d, m)
 }
 func resourceServiceEndpointArgoCDDelete(d *schema.ResourceData, m interface{}) error {
@@ -195,7 +195,7 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 // Convert AzDO data structure to internal Terraform data structure
 // Note that 'username', 'password', and 'apitoken' service connection fields
 // are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {

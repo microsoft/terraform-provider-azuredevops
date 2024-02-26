@@ -104,7 +104,7 @@ func resourceServiceEndpointJenkinsRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointJenkins(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointJenkins(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -121,7 +121,7 @@ func resourceServiceEndpointJenkinsUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointJenkins(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointJenkins(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointJenkinsRead(d, m)
 }
 
@@ -158,7 +158,7 @@ func expandServiceEndpointJenkins(d *schema.ResourceData) (*serviceendpoint.Serv
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointJenkins(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("url", *serviceEndpoint.Url)
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])

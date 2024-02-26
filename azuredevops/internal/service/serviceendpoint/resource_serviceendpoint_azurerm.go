@@ -227,7 +227,7 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 
 	d.Set("features", d.Get("features"))
 
-	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointAzureRM(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -249,7 +249,7 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointAzureRM(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointAzureRM(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointAzureRMRead(d, m)
 }
 
@@ -308,7 +308,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		credentials = d.Get("credentials").([]interface{})[0].(map[string]interface{})
 	}
 
-	hasCredentials := credentials != nil && len(credentials) > 0
+	hasCredentials := len(credentials) > 0
 
 	var serviceEndpointCreationMode AzureRmEndpointCreationMode
 
@@ -421,7 +421,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
@@ -503,7 +503,7 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 
 func endpointFeatures(d *schema.ResourceData) map[string]interface{} {
 	features := d.Get("features").([]interface{})
-	if features != nil && len(features) != 0 {
+	if len(features) != 0 {
 		return features[0].(map[string]interface{})
 	}
 	return nil

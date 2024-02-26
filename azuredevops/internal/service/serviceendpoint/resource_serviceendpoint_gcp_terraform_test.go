@@ -56,7 +56,7 @@ var gcpForTerraformTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointGcp_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGcp().Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID.String())
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGcp(resourceData)
 
@@ -72,7 +72,7 @@ func TestServiceEndpointGcp_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -95,7 +95,7 @@ func TestServiceEndpointGcp_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -121,7 +121,7 @@ func TestServiceEndpointGcp_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -149,7 +149,7 @@ func TestServiceEndpointGcp_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointGcp()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID)
+	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint, gcpForTerraformTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

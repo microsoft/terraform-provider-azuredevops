@@ -81,7 +81,7 @@ func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
-		flattenServiceEndpointArgoCD(resourceData, ep, id)
+		flattenServiceEndpointArgoCD(resourceData, ep, id.String())
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArgoCD(resourceData)
 		require.Nil(t, err)
@@ -105,7 +105,7 @@ func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, ep, id)
+	flattenServiceEndpointArgoCD(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -134,7 +134,7 @@ func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *servic
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, ep, id)
+	flattenServiceEndpointArgoCD(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -166,7 +166,7 @@ func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, ep, id)
+	flattenServiceEndpointArgoCD(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -200,7 +200,7 @@ func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArgoCD(resourceData, ep, id)
+	flattenServiceEndpointArgoCD(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

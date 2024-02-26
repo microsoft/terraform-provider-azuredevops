@@ -52,7 +52,7 @@ var nexusTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 func testServiceEndpointNexus_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointNexus().Schema, nil)
-		flattenServiceEndpointNexus(resourceData, ep, id)
+		flattenServiceEndpointNexus(resourceData, ep, id.String())
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointNexus(resourceData)
 
@@ -72,7 +72,7 @@ func testServiceEndpointNexus_Create_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointNexus()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNexus(resourceData, ep, id)
+	flattenServiceEndpointNexus(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -98,7 +98,7 @@ func testServiceEndpointNexus_Read_DoesNotSwallowError(t *testing.T, ep *service
 
 	r := ResourceServiceEndpointNexus()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNexus(resourceData, ep, id)
+	flattenServiceEndpointNexus(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -127,7 +127,7 @@ func testServiceEndpointNexus_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointNexus()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNexus(resourceData, ep, id)
+	flattenServiceEndpointNexus(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -158,7 +158,7 @@ func testServiceEndpointNexus_Update_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointNexus()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNexus(resourceData, ep, id)
+	flattenServiceEndpointNexus(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

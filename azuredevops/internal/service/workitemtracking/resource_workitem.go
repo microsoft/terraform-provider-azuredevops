@@ -192,7 +192,7 @@ func resourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 
 func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
-	for customFieldName, customFieldValue := range *&custom_fields {
+	for customFieldName, customFieldValue := range custom_fields {
 		operations = append(operations, webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Add,
 			From:  nil,

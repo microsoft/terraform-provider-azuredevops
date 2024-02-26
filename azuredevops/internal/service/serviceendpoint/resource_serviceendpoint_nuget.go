@@ -104,7 +104,7 @@ func resourceServiceEndpointNuGetRead(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointNuGet(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointNuGet(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -121,7 +121,7 @@ func resourceServiceEndpointNuGetUpdate(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointNuGet(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointNuGet(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointNuGetRead(d, m)
 }
 
@@ -171,7 +171,7 @@ func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.Servic
 	return serviceEndpoint, projectID, nil
 }
 
-func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("feed_url", *serviceEndpoint.Url)
 

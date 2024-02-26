@@ -84,7 +84,7 @@ func resourceServiceEndpointIncomingWebhookRead(d *schema.ResourceData, m interf
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointIncomingWebhook(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointIncomingWebhook(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -101,7 +101,7 @@ func resourceServiceEndpointIncomingWebhookUpdate(d *schema.ResourceData, m inte
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointIncomingWebhook(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointIncomingWebhook(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointIncomingWebhookRead(d, m)
 }
 
@@ -132,7 +132,7 @@ func expandServiceEndpointIncomingWebhook(d *schema.ResourceData) (*serviceendpo
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	d.Set("webhook_name", (*serviceEndpoint.Authorization.Parameters)["webhookname"])
 	d.Set("http_header", (*serviceEndpoint.Authorization.Parameters)["header"])

@@ -157,7 +157,7 @@ func resourceServiceEndpointServiceFabricRead(d *schema.ResourceData, m interfac
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointServiceFabric(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointServiceFabric(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -174,7 +174,7 @@ func resourceServiceEndpointServiceFabricUpdate(d *schema.ResourceData, m interf
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointServiceFabric(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointServiceFabric(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointServiceFabricRead(d, m)
 }
 
@@ -335,7 +335,7 @@ func flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint 
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	switch *serviceEndpoint.Authorization.Scheme {

@@ -124,7 +124,7 @@ func resourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointAzureCR(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	flattenServiceEndpointAzureCR(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
 
@@ -141,7 +141,7 @@ func resourceServiceEndpointAzureCRUpdate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointAzureCR(d, updatedServiceEndpoint, projectID)
+	flattenServiceEndpointAzureCR(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointAzureCRRead(d, m)
 }
 
@@ -192,7 +192,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
