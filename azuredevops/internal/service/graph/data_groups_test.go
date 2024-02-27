@@ -122,12 +122,28 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 		ListGroups(clients.Ctx, firstListGroupCallArgs).
 		Return(firstListGroupCallResponse, nil)
 
+	firstCall = append(firstCall, graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil))
+
 	secondListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor, ContinuationToken: &continuationToken}
 	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()})
 	secondCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, secondListGroupCallArgs).
 		Return(secondListGroupCallResponse, nil)
+
+	secondCall = append(secondCall, graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil))
 
 	gomock.InOrder(firstCall, secondCall)
 
