@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
@@ -28,6 +29,10 @@ func DataGroups() *schema.Resource {
 				Set:      getGroupHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"descriptor": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -109,6 +114,18 @@ func dataSourceGroupsRead(d *schema.ResourceData, m interface{}) error {
 	fgroups, err := flattenGroups(groups)
 	if err != nil {
 		return fmt.Errorf("Error flatten groups. Error: %w", err)
+	}
+
+	for _, group := range fgroups {
+		grp := group.(map[string]interface{})
+
+		storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+			SubjectDescriptor: converter.String(grp["descriptor"].(string)),
+		})
+		if err != nil {
+			return err
+		}
+		grp["id"] = storageKey.Value.String()
 	}
 
 	d.SetId("groups-" + uuid.New().String())

@@ -38,6 +38,7 @@ The following attributes are exported:
 
 - `groups` - A set of existing groups in your Azure DevOps Organization or project with details about every single group which includes:
 
+  - `id` - The group ID.
   - `description` - A short phrase to help human readers disambiguate groups with similar names
   - `descriptor` - The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
   - `display_name` - This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
