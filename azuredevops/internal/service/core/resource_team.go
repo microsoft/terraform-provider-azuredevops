@@ -494,6 +494,8 @@ func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedCl
 
 	adminDescriptorList := []string{}
 	if acl != nil && acl.AcesDictionary != nil {
+		// For backwards compatibility, we check only the ManageMembership bit, but a proper admin actually requires all bits filled (ace.Allow=31). When creating a new admin,
+		// all bits are set, so this is not a problem.
 		bit := *(*actionDefinitions)["ManageMembership"].Bit
 		for _, ace := range *acl.AcesDictionary {
 			if *ace.Allow&bit > 0 {
@@ -563,7 +565,11 @@ func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.Ag
 				PrincipalPermission: securityhelper.PrincipalPermission{
 					SubjectDescriptor: item.(string),
 					Permissions: map[securityhelper.ActionName]securityhelper.PermissionType{
+						"Read":             permission,
+						"Write":            permission,
+						"Delete":           permission,
 						"ManageMembership": permission,
+						"CreateScope":      permission,
 					},
 				},
 			}
