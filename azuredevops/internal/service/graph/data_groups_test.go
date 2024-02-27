@@ -139,7 +139,7 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 		Return(&graph.GraphStorageKeyResult{
 			Links: "",
 			Value: &id,
-		}, nil))
+		}, nil).Times(2))
 
 	gomock.InOrder(calls...)
 
