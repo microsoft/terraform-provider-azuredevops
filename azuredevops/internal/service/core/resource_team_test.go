@@ -151,7 +151,7 @@ func TestTeam_Create_EnsureTeamDeletedOnAddAdministratorsError(t *testing.T) {
 		}).
 		Return(&[]security.AccessControlList{}, nil).
 		Times(1)
-	
+
 	coreClient.
 		EXPECT().
 		DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
