@@ -23,6 +23,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/securityroles"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
@@ -62,6 +63,7 @@ type AggregatedClient struct {
 	WorkItemTrackingClient        workitemtracking.Client
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
+	SecurityRolesClient           securityroles.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -173,6 +175,8 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 
 	serviceHooksClient := servicehooks.NewClient(ctx, connection)
 
+	securityRolesClient := securityroles.NewClient(ctx, connection)
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -195,6 +199,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		IdentityClient:                identityClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
 		ServiceHooksClient:            serviceHooksClient,
+		SecurityRolesClient:           securityRolesClient,
 		Ctx:                           ctx,
 	}
 
