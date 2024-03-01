@@ -10,8 +10,8 @@ package securityroles
 
 import (
 	"bytes"
-	"encoding/json"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -66,7 +66,7 @@ func (client *ClientImpl) ListSecurityRoleDefinitions(ctx context.Context, args 
 // Arguments for the ListSecurityRoleAssignmentsArgs function
 type ListSecurityRoleAssignmentsArgs struct {
 	// (required) Scope identifier.
-	Scope *string
+	Scope      *string
 	ResourceId *string
 }
 
@@ -99,7 +99,7 @@ func (client *ClientImpl) ListSecurityRoleAssignments(ctx context.Context, args 
 // Arguments for the GetSecurityRoleAssignmentArgs function
 type GetSecurityRoleAssignmentArgs struct {
 	// (required) Scope identifier.
-	Scope *string
+	Scope      *string
 	ResourceId *string
 	IdentityId *uuid.UUID
 }
@@ -130,10 +130,10 @@ func (client *ClientImpl) GetSecurityRoleAssignment(ctx context.Context, args *G
 // Arguments for the GetSecurityRoleAssignmentArgs function
 type SetSecurityRoleAssignmentArgs struct {
 	// (required) Scope identifier.
-	Scope *string
+	Scope      *string
 	ResourceId *string
 	IdentityId *uuid.UUID
-	RoleName *string
+	RoleName   *string
 }
 
 func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *SetSecurityRoleAssignmentArgs) error {
@@ -149,10 +149,9 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 
 	bodyParams := []SetRoleAssignmentPayload{}
 	bodyParams = append(bodyParams, SetRoleAssignmentPayload{
-		UserID: args.IdentityId,
+		UserID:   args.IdentityId,
 		RoleName: args.RoleName,
 	})
-
 
 	body, marshalErr := json.Marshal(bodyParams)
 	if marshalErr != nil {
@@ -169,8 +168,8 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 }
 
 type SetRoleAssignmentPayload struct {
-	UserID *uuid.UUID `json:"userId"`
-	RoleName *string `json:"roleName"`
+	UserID   *uuid.UUID `json:"userId"`
+	RoleName *string    `json:"roleName"`
 }
 
 type SecurityRoleIdentity struct {
@@ -182,16 +181,16 @@ type SecurityRoleIdentity struct {
 type SecurityRoleDefinition struct {
 	DisplayName      *string `json:"displayName"`
 	Name             *string `json:"name"`
-	AllowPermissions *int `json:"allowPermissions"`
-	DenyPermissions  *int `json:"denyPermissions"`
+	AllowPermissions *int    `json:"allowPermissions"`
+	DenyPermissions  *int    `json:"denyPermissions"`
 	Identifier       *string `json:"identifier"`
 	Description      *string `json:"description"`
 	Scope            *string `json:"scope"`
 }
 
 type SecurityRoleAssignment struct {
-	Identity          *SecurityRoleIdentity `json:"identity"`
+	Identity          *SecurityRoleIdentity   `json:"identity"`
 	Role              *SecurityRoleDefinition `json:"role"`
-	Access            *string `json:"access"`
-	AccessDisplayName *string `json:"accessDisplayName"`
+	Access            *string                 `json:"access"`
+	AccessDisplayName *string                 `json:"accessDisplayName"`
 }
