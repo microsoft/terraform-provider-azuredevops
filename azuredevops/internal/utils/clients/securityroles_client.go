@@ -20,6 +20,7 @@ import (
 )
 
 type Client interface {
+	DeleteSecurityRoleAssignment(ctx context.Context, args *DeleteSecurityRoleAssignmentArgs) error
 	ListSecurityRoleDefinitions(ctx context.Context, args *ListSecurityRoleDefinitionsArgs) (*[]SecurityRoleDefinition, error)
 	ListSecurityRoleAssignments(ctx context.Context, args *ListSecurityRoleAssignmentsArgs) (*[]SecurityRoleAssignment, error)
 	GetSecurityRoleAssignment(ctx context.Context, args *GetSecurityRoleAssignmentArgs) (*SecurityRoleAssignment, error)
@@ -39,7 +40,6 @@ func NewClient(ctx context.Context, connection *azuredevops.Connection) Client {
 
 // Arguments for the ListSecurityRoleDefinitions function
 type ListSecurityRoleDefinitionsArgs struct {
-	// (required) Scope identifier.
 	Scope *string
 }
 
@@ -65,7 +65,6 @@ func (client *ClientImpl) ListSecurityRoleDefinitions(ctx context.Context, args 
 
 // Arguments for the ListSecurityRoleAssignmentsArgs function
 type ListSecurityRoleAssignmentsArgs struct {
-	// (required) Scope identifier.
 	Scope      *string
 	ResourceId *string
 }
@@ -98,7 +97,6 @@ func (client *ClientImpl) ListSecurityRoleAssignments(ctx context.Context, args 
 
 // Arguments for the GetSecurityRoleAssignmentArgs function
 type GetSecurityRoleAssignmentArgs struct {
-	// (required) Scope identifier.
 	Scope      *string
 	ResourceId *string
 	IdentityId *uuid.UUID
@@ -127,9 +125,8 @@ func (client *ClientImpl) GetSecurityRoleAssignment(ctx context.Context, args *G
 	return &responseValue, err
 }
 
-// Arguments for the GetSecurityRoleAssignmentArgs function
+// Arguments for the SetSecurityRoleAssignment function
 type SetSecurityRoleAssignmentArgs struct {
-	// (required) Scope identifier.
 	Scope      *string
 	ResourceId *string
 	IdentityId *uuid.UUID
@@ -160,6 +157,40 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 
 	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
 	_, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the SetSecurityRoleAssignment function
+type DeleteSecurityRoleAssignmentArgs struct {
+	Scope      *string
+	ResourceId *string
+	IdentityId *uuid.UUID
+}
+
+func (client *ClientImpl) DeleteSecurityRoleAssignment(ctx context.Context, args *DeleteSecurityRoleAssignmentArgs) error {
+	if args == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.ScopeId"}
+	}
+	routeValues := make(map[string]string)
+	resId := args.ResourceId
+
+	routeValues["scopeId"] = *args.Scope
+	routeValues["resource"] = "roleassignments"
+	routeValues["resourceId"] = *resId
+
+	bodyParams := []string{args.IdentityId.String()}
+
+	body, marshalErr := json.Marshal(bodyParams)
+	if marshalErr != nil {
+		return marshalErr
+	}
+
+	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
+	_, err := client.Client.Send(ctx, http.MethodPatch, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
 	if err != nil {
 		return err
 	}

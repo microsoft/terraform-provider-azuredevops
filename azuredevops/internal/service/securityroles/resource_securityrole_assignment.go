@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/clients"
+	securityroles "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/clients"
 )
 
 func ResourceSecurityRoleAssignment() *schema.Resource {
@@ -112,7 +112,24 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceSecurityRoleAssignmentDelete(d *schema.ResourceData, m interface{}) error {
-	// clients := m.(*client.AggregatedClient)
+	clients := m.(*client.AggregatedClient)
+	scope := d.Get("scope").(string)
+	resourceId := d.Get("resource_id").(string)
+
+	identityId, err := uuid.Parse(d.Get("identity_id").(string))
+	if err != nil {
+		return err
+	}
+
+	err = clients.SecurityRolesClient.DeleteSecurityRoleAssignment(clients.Ctx, &securityroles.DeleteSecurityRoleAssignmentArgs{
+		Scope:      &scope,
+		ResourceId: &resourceId,
+		IdentityId: &identityId,
+	})
+
+	if err != nil {
+		return err
+	}
 
 	d.SetId("")
 	return nil
