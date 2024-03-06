@@ -1,4 +1,35 @@
-## 0.12.0 (Unreleased)
+## 1.1.0 (Unreleased)
+
+## 1.0.0 
+
+
+FEATURES:
+
+* **New Resource** `azuredevops_environment_resource_kubernetes` [#935](https://github.com/microsoft/terraform-provider-azuredevops/pull/935)
+* **New Resource** `azuredevops_library_permissions` [#740](https://github.com/microsoft/terraform-provider-azuredevops/pull/740)
+* **New Resource** `azuredevops_variable_group_permissions` [#740](https://github.com/microsoft/terraform-provider-azuredevops/pull/740)
+* Add support for Service Principal, Identity, OIDC etc. authorization [#747](https://github.com/microsoft/terraform-provider-azuredevops/pull/747)
+
+IMPROVEMENTS:
+
+* `azuredevops_check_required_template` - Add support for `githubenterprise` repository type. [#962](https://github.com/microsoft/terraform-provider-azuredevops/pull/962)
+* `azuredevops_elastic_pool` - Add support for `project_id`. [#966](https://github.com/microsoft/terraform-provider-azuredevops/pull/966)
+* `azuredevops_pipeline_authorization` - Update document. [#960](https://github.com/microsoft/terraform-provider-azuredevops/pull/960)
+* **Data Resource**`azuredevops_groups ` - Add support for group `id`. [#980](https://github.com/microsoft/terraform-provider-azuredevops/pull/980)
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_azurecr` - Fix potential nil exception.  [#972](https://github.com/microsoft/terraform-provider-azuredevops/pull/972)
+* `azuredevops_serviceendpoint_azurerm` - Fix import error.  [#967](https://github.com/microsoft/terraform-provider-azuredevops/pull/967)
+* `azuredevops_variable_group` - Exclude Key Vault disabled secrets.  [#947](https://github.com/microsoft/terraform-provider-azuredevops/pull/947)
+* `azuredevops_git_repository` - Fix default branch not set when `init_type=Clean` or `init_type=Fork`.  [#946](https://github.com/microsoft/terraform-provider-azuredevops/pull/946)
+* `azuredevops_check_approval` - Add missing `version` property.  [#977](https://github.com/microsoft/terraform-provider-azuredevops/pull/977)
+* `azuredevops_check_branch_control` - Add missing `version` property.  [#977](https://github.com/microsoft/terraform-provider-azuredevops/pull/977)
+* `azuredevops_check_business_hours` - Add missing `version` property.  [#977](https://github.com/microsoft/terraform-provider-azuredevops/pull/977)
+* `azuredevops_check_exclusive_lock` - Add missing `version` property.  [#977](https://github.com/microsoft/terraform-provider-azuredevops/pull/977)
+* `azuredevops_check_required_template` - Add missing `version` property.  [#977](https://github.com/microsoft/terraform-provider-azuredevops/pull/977)
+* `azuredevops_pipeline_authorization` - Fix pipeline authorization not set.  [#986](https://github.com/microsoft/terraform-provider-azuredevops/pull/986)
+
 
 ## 0.11.0
 
