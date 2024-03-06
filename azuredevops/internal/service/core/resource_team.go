@@ -496,7 +496,6 @@ func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedCl
 	if acl != nil && acl.AcesDictionary != nil {
 		bit := *(*actionDefinitions)["Read"].Bit | *(*actionDefinitions)["Write"].Bit | *(*actionDefinitions)["Delete"].Bit | *(*actionDefinitions)["ManageMembership"].Bit | *(*actionDefinitions)["CreateScope"].Bit
 		for _, ace := range *acl.AcesDictionary {
-
 			if *ace.Allow&bit == bit {
 				adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
 			}
