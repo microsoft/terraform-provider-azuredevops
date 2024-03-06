@@ -131,7 +131,7 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		return fmt.Errorf("%+v", err)
 	}
 
-	if resp == nil {
+	if resp == nil || (resp.AllPipelines == nil && len(*resp.Pipelines) == 0) {
 		d.SetId("")
 		return nil
 	}
