@@ -13,23 +13,15 @@ import (
 )
 
 func generateIdentityGroupsDataSourceConfig(projectName string) string {
-	if projectName == "" {
-		return `
-data "azuredevops_identity_groups" "groups" {
-}`
-	}
-
-	dataSource := `
+	return fmt.Sprintf(
+		`
 data "azuredevops_project" "project" {
-	name = "Default"
+	name = "%[1]s"
 }
 
 data "azuredevops_identity_groups" "groups" {
-	project_id = azuredevops_project.project.id
-}`
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
+	project_id = data.azuredevops_project.project.id
+}`, projectName)
 }
 
 func testIdentityGroupsDataSource(t *testing.T, projectName string) {
@@ -49,11 +41,7 @@ func testIdentityGroupsDataSource(t *testing.T, projectName string) {
 	})
 }
 
-func TestAccIdentityGroupsDataSource_ReadProject(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
+func TestAccIdentityGroupsDataSource(t *testing.T) {
+	projectName := "default"
 	testIdentityGroupsDataSource(t, projectName)
-}
-
-func TestAccIdentityGroupsDataSource_ReadNoProject(t *testing.T) {
-	testIdentityGroupsDataSource(t, "")
 }

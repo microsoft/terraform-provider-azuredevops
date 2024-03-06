@@ -12,8 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccIdentityGroupDataSource(t *testing.T) {
-	groupName := "Contributors"
+func testIdentityGroupDataSource(t *testing.T, groupName string) {
 	tfNode := "data.azuredevops_identity_group.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
@@ -23,7 +22,7 @@ func TestAccIdentityGroupDataSource(t *testing.T) {
 				Config: createIdentityGroupConfig(groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttr(tfNode, "name", "Contributors"),
+					resource.TestCheckResourceAttr(tfNode, "name", groupName),
 				),
 			},
 		},
@@ -34,11 +33,16 @@ func createIdentityGroupConfig(groupName string) string {
 	return fmt.Sprintf(
 		`
 data "azuredevops_project" "project" {
-	name = "Default"
+	name = "default"
 }
 
 data "azuredevops_identity_group" "test" {
 	name       = "%[1]s"
 	project_id = data.azuredevops_project.project.id
 }`, groupName)
+}
+
+func TestAccIdentityGroupDataSource(t *testing.T) {
+	groupName := "Contributors"
+	testIdentityGroupDataSource(t, groupName)
 }
