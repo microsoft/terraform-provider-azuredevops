@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -58,10 +57,6 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
 
-	if strings.EqualFold(resType, "repository") {
-		resId = projectId + "." + resId
-	}
-
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
 		Project:      &projectId,
 		ResourceType: &resType,
@@ -116,10 +111,6 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
 
-	if strings.EqualFold(resType, "repository") {
-		resId = projectId + "." + resId
-	}
-
 	resp, err := clients.PipelinePermissionsClient.GetPipelinePermissionsForResource(clients.Ctx,
 		pipelinepermissions.GetPipelinePermissionsForResourceArgs{
 			Project:      &projectId,
@@ -138,10 +129,6 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 
 	d.Set("type", resp.Resource.Type)
 	d.Set("resource_id", resp.Resource.Id)
-	if strings.EqualFold(*resp.Resource.Type, "repository") {
-		resIds := strings.Split(*resp.Resource.Id, ".")
-		d.Set("resource_id", resIds[1])
-	}
 
 	if resp.Pipelines != nil && len(*resp.Pipelines) > 0 {
 		var exist = false
@@ -164,10 +151,6 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 	projectId := d.Get("project_id").(string)
 	resType := d.Get("type").(string)
 	resId := d.Get("resource_id").(string)
-
-	if strings.EqualFold(resType, "repository") {
-		resId = projectId + "." + resId
-	}
 
 	pipePermissionParams := pipelinepermissions.UpdatePipelinePermisionsForResourceArgs{
 		Project:      &projectId,
@@ -204,10 +187,6 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 		projectId := d.Get("project_id").(string)
 		resourceType := d.Get("type").(string)
 		resourceId := d.Get("resource_id").(string)
-
-		if strings.EqualFold(resourceType, "repository") {
-			resourceId = projectId + "." + resourceId
-		}
 
 		resp, err := clients.PipelinePermissionsClient.GetPipelinePermissionsForResource(clients.Ctx,
 			pipelinepermissions.GetPipelinePermissionsForResourceArgs{

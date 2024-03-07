@@ -240,6 +240,44 @@ func TestAccPipelineAuthorization_pipeline_repository(t *testing.T) {
 	})
 }
 
+func TestAccPipelineAuthorization_allPipeline_repository_crossProject(t *testing.T) {
+	node := "azuredevops_pipeline_authorization.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, nil)
+		},
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclAllPipelineAuthRepositoryCrossProject(testutils.GenerateResourceName(), testutils.GenerateResourceName()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "project_id"),
+					resource.TestCheckResourceAttrSet(node, "resource_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPipelineAuthorization_pipeline_repository_crossProject(t *testing.T) {
+	node := "azuredevops_pipeline_authorization.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, nil)
+		},
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclPipelineAuthRepositoryCrossPeojct(testutils.GenerateResourceName(), testutils.GenerateResourceName()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "project_id"),
+					resource.TestCheckResourceAttrSet(node, "resource_id"),
+				),
+			},
+		},
+	})
+}
+
 func hclAllPipelineAuthQueue(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -456,6 +494,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthEnvironment(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -524,6 +563,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthVariableGroup(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -569,6 +609,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclAllPipelineAuthEndpoint(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -595,6 +636,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthEndpoint(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -656,7 +698,7 @@ data "azuredevops_git_repository" "test" {
 
 resource "azuredevops_pipeline_authorization" "test" {
   project_id  = azuredevops_project.test.id
-  resource_id = data.azuredevops_git_repository.test.id
+  resource_id = "${azuredevops_project.test.id}.${data.azuredevops_git_repository.test.id}"
   type        = "repository"
 }
 `, name)
@@ -690,9 +732,88 @@ resource "azuredevops_build_definition" "test" {
 
 resource "azuredevops_pipeline_authorization" "test" {
   project_id  = azuredevops_project.test.id
-  resource_id = data.azuredevops_git_repository.test.id
+  resource_id = "${azuredevops_project.test.id}.${data.azuredevops_git_repository.test.id}"
   pipeline_id = azuredevops_build_definition.test.id
   type        = "repository"
 }
 `, name)
+}
+
+func hclAllPipelineAuthRepositoryCrossProject(name, name2 string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_project" "test2" {
+  name               = "%[2]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+
+resource "azuredevops_pipeline_authorization" "test" {
+  project_id  = azuredevops_project.test2.id
+  resource_id = "${azuredevops_project.test.id}.${data.azuredevops_git_repository.test.id}"
+  type        = "repository"
+}
+`, name, name2)
+}
+
+func hclPipelineAuthRepositoryCrossPeojct(name, name2 string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_project" "test2" {
+  name               = "%[2]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+
+data "azuredevops_git_repository" "test2" {
+  project_id = azuredevops_project.test2.id
+  name       = "%[2]s"
+}
+
+resource "azuredevops_build_definition" "test" {
+  project_id = azuredevops_project.test2.id
+  name       = "%[1]s"
+
+  repository {
+    repo_type = "TfsGit"
+    repo_id   = data.azuredevops_git_repository.test2.id
+    yml_path  = "azure-pipelines.yml"
+  }
+}
+
+resource "azuredevops_pipeline_authorization" "test" {
+  project_id  = azuredevops_project.test2.id
+  resource_id = "${azuredevops_project.test.id}.${data.azuredevops_git_repository.test.id}"
+  pipeline_id = azuredevops_build_definition.test.id
+  type        = "repository"
+}
+`, name, name2)
 }

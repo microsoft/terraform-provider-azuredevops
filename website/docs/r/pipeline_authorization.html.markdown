@@ -91,6 +91,54 @@ resource "azuredevops_pipeline_authorization" "example" {
 }
 ```
 
+### Cross project authorization for specific pipeline
+
+```hcl
+resource "azuredevops_project" "example1" {
+  name               = "example1"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_project" "example2" {
+  name               = "example2"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+data "azuredevops_git_repository" "example1" {
+  project_id = azuredevops_project.example1.id
+  name       = "example1"
+}
+
+data "azuredevops_git_repository" "example2" {
+  project_id = azuredevops_project.example2.id
+  name       = "example2"
+}
+
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example2.id
+  name       = "example2"
+
+  repository {
+    repo_type = "TfsGit"
+    repo_id   = data.azuredevops_git_repository.example2.id
+    yml_path  = "azure-pipelines.yml"
+  }
+}
+
+resource "azuredevops_pipeline_authorization" "example" {
+  project_id  = azuredevops_project.example2.id
+  resource_id = "${azuredevops_project.example1.id}.${data.azuredevops_git_repository.example1.id}"
+  pipeline_id = azuredevops_build_definition.example.id
+  type        = "repository"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
