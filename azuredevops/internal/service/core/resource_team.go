@@ -494,9 +494,9 @@ func readTeamAdministrators(d *schema.ResourceData, clients *client.AggregatedCl
 
 	adminDescriptorList := []string{}
 	if acl != nil && acl.AcesDictionary != nil {
-		bit := *(*actionDefinitions)["ManageMembership"].Bit
+		bit := *(*actionDefinitions)["Read"].Bit | *(*actionDefinitions)["Write"].Bit | *(*actionDefinitions)["Delete"].Bit | *(*actionDefinitions)["ManageMembership"].Bit | *(*actionDefinitions)["CreateScope"].Bit
 		for _, ace := range *acl.AcesDictionary {
-			if *ace.Allow&bit > 0 {
+			if *ace.Allow&bit == bit {
 				adminDescriptorList = append(adminDescriptorList, *ace.Descriptor)
 			}
 		}
@@ -563,7 +563,11 @@ func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.Ag
 				PrincipalPermission: securityhelper.PrincipalPermission{
 					SubjectDescriptor: item.(string),
 					Permissions: map[securityhelper.ActionName]securityhelper.PermissionType{
+						"Read":             permission,
+						"Write":            permission,
+						"Delete":           permission,
 						"ManageMembership": permission,
+						"CreateScope":      permission,
 					},
 				},
 			}

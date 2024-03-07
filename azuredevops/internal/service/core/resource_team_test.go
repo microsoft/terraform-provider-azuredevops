@@ -152,12 +152,6 @@ func TestTeam_Create_EnsureTeamDeletedOnAddAdministratorsError(t *testing.T) {
 		Return(&[]security.AccessControlList{}, nil).
 		Times(1)
 
-	securityClient.
-		EXPECT().
-		SetAccessControlEntries(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf("@@SetAccessControlEntries@@failed@@")).
-		Times(1)
-
 	coreClient.
 		EXPECT().
 		DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
