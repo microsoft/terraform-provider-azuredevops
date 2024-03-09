@@ -267,14 +267,6 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 		}
 	}
 
-	// Client Secret
-	if client_secret, ok := d.GetOk("client_secret"); ok {
-		cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, client_secret.(string), nil)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// Client Secret from a file on disk
 	if client_secret_path, ok := d.GetOk("client_secret_path"); ok {
 		fileBytes, err := os.ReadFile(client_secret_path.(string))
@@ -282,6 +274,14 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 			return nil, err
 		}
 		cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, strings.TrimSpace(string(fileBytes)), nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Client Secret
+	if client_secret, ok := d.GetOk("client_secret"); ok {
+		cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, client_secret.(string), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -301,7 +301,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 	}
 
 	if cred == nil {
-		return nil, fmt.Errorf(" No valid credentials found.")
+		return nil, fmt.Errorf("No valid credentials found.")
 	}
 
 	provider := newAzTokenProvider(cred, context.Background(), tokenOptions)
