@@ -27,9 +27,9 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
-	securityroles "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/clients"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
