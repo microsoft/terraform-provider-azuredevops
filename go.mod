@@ -1,4 +1,4 @@
-module github.com/davidcorrigan714/terraform-provider-azuredevops
+module github.com/microsoft/terraform-provider-azuredevops
 
 go 1.19
 
