@@ -103,7 +103,7 @@ func (o *OIDCCredentialProvder) GetToken(ctx context.Context, opts policy.TokenR
 	}
 
 	// Request the access token from Azure AD using the OIDC token
-	creds, err := o.azIdentityFuncs.NewClientSecretCredential(o.tenantID, o.clientID, oidc_response.Value, nil)
+	creds, err := o.azIdentityFuncs.NewClientAssertionCredential(o.tenantID, o.clientID, AssertionProviderFromString(oidc_response.Value), nil)
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
