@@ -134,7 +134,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 	if use_oidc, ok := d.GetOk("use_oidc"); ok && use_oidc.(bool) {
 		if oidc_token, ok := d.GetOk("oidc_token"); ok {
 			// Provided OIDC Token
-			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, oidc_token.(string), nil)
+			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, AssertionProviderFromString(oidc_token.(string)), nil)
 			if err != nil {
 				return nil, err
 			}
@@ -144,7 +144,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 			if err != nil {
 				return nil, err
 			}
-			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, strings.TrimSpace(string(fileBytes)), nil)
+			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, AssertionProviderFromString(strings.TrimSpace(string(fileBytes))), nil)
 			if err != nil {
 				return nil, err
 			}
@@ -217,7 +217,7 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 				return nil, fmt.Errorf(" Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication.")
 			}
 
-			cred, err = azIdentityFuncs.NewClientSecretCredential(tenantID, clientID, workloadIdentityToken, nil)
+			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, AssertionProviderFromString(workloadIdentityToken), nil)
 			if err != nil {
 				return nil, err
 			}
@@ -321,6 +321,12 @@ func newAzTokenProvider(cred TokenGetter, ctx context.Context, opts policy.Token
 		ctx:         ctx,
 		opts:        opts,
 		cachedToken: nil,
+	}
+}
+
+func AssertionProviderFromString(assertion string) func(context.Context) (string, error) {
+	return func(context.Context) (string, error) {
+		return assertion, nil
 	}
 }
 
