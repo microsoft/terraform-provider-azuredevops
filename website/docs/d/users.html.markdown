@@ -21,6 +21,13 @@ data "azuredevops_users" "example" {
 data "azuredevops_users" "example-all-users" {
 }
 
+# Load all users know inside an organization with concurrent processing
+data "azuredevops_users" "example-all-users" {
+  features {
+    concurrent_workers = 10
+  }
+}
+
 # Load all users know inside an organization originating from a specific source (origin)
 data "azuredevops_users" "example-all-from-origin" {
   origin = "aad"
@@ -46,6 +53,7 @@ The following arguments are supported:
 - `subject_types` - (Optional) A list of user subject subtypes to reduce the retrieved results, e.g. `msa`, `aad`, `svc` (service identity), `imp` (imported identity), etc. The supported subject types are listed below.
 - `origin` - (Optional) The type of source provider for the `origin_id` parameter (ex:AD, AAD, MSA) The supported origins are listed below.
 - `origin_id` - (Optional) The unique identifier from the system of origin.
+- `features` - (Optional) A `features` block as defined below.
 
 DataSource without specifying any arguments will return all users inside an organization.
 
@@ -84,6 +92,15 @@ VisualStudioTeamServices = "vsts" # DevOps
 GitHubDirectory          = "ghb"  # GitHub
 ```
 
+---
+
+A `features` block supports the following:
+
+- `concurrent_workers` - (Optional) Number of workers to process user data concurrently.
+
+-> **Note** Setting `concurrent_workers` to a value greater than 1 can greatly decrease the time it takes to read the data source.
+
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -100,4 +117,4 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Graph Users API](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/users?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Graph Users API](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/users?view=azure-devops-rest-7.0)

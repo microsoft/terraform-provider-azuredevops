@@ -24,6 +24,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	mock_azuredevops "github.com/microsoft/terraform-provider-azuredevops/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,6 +33,7 @@ import (
 func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_resource_authorization",
+		"azuredevops_pipeline_authorization",
 		"azuredevops_build_definition",
 		"azuredevops_build_definition_permissions",
 		"azuredevops_branch_policy_build_validation",
@@ -41,12 +43,15 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_comment_resolution",
 		"azuredevops_branch_policy_merge_types",
 		"azuredevops_branch_policy_status_check",
-		"azuredevops_library_permissions",
 		"azuredevops_project",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
+		"azuredevops_check_approval",
+		"azuredevops_check_exclusive_lock",
 		"azuredevops_check_branch_control",
 		"azuredevops_check_business_hours",
+		"azuredevops_check_required_template",
+		"azuredevops_serviceendpoint_gcp_terraform",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
 		"azuredevops_serviceendpoint_dockerregistry",
@@ -56,6 +61,9 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_bitbucket",
 		"azuredevops_serviceendpoint_kubernetes",
+		"azuredevops_serviceendpoint_jenkins",
+		"azuredevops_serviceendpoint_maven",
+		"azuredevops_serviceendpoint_nexus",
 		"azuredevops_serviceendpoint_servicefabric",
 		"azuredevops_serviceendpoint_argocd",
 		"azuredevops_serviceendpoint_aws",
@@ -64,7 +72,6 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_serviceendpoint_ssh",
 		"azuredevops_serviceendpoint_npm",
-		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_serviceendpoint_generic",
 		"azuredevops_serviceendpoint_generic_git",
 		"azuredevops_serviceendpoint_octopusdeploy",
@@ -74,6 +81,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_jfrog_platform_v2",
 		"azuredevops_serviceendpoint_jfrog_xray_v2",
 		"azuredevops_serviceendpoint_externaltfs",
+		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_variable_group",
 		"azuredevops_repository_policy_author_email_pattern",
 		"azuredevops_repository_policy_case_enforcement",
@@ -86,10 +94,12 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_git_repository_branch",
 		"azuredevops_git_repository_file",
 		"azuredevops_user_entitlement",
+		"azuredevops_group_entitlement",
 		"azuredevops_group_membership",
 		"azuredevops_group",
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_elastic_pool",
 		"azuredevops_project_permissions",
 		"azuredevops_git_permissions",
 		"azuredevops_workitemquery_permissions",
@@ -100,9 +110,12 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_team_administrators",
 		"azuredevops_serviceendpoint_permissions",
 		"azuredevops_servicehook_permissions",
-		"azuredevops_variable_group_permissions",
+		"azuredevops_servicehook_storage_queue_pipelines",
 		"azuredevops_tagging_permissions",
+		"azuredevops_variable_group_permissions",
+		"azuredevops_library_permissions",
 		"azuredevops_environment",
+		"azuredevops_environment_resource_kubernetes",
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
 		"azuredevops_workitem",
@@ -131,6 +144,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_agent_pools",
 		"azuredevops_agent_queue",
 		"azuredevops_area",
+		"azuredevops_environment",
 		"azuredevops_iteration",
 		"azuredevops_team",
 		"azuredevops_teams",
@@ -138,6 +152,9 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_variable_group",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_github",
+		"azuredevops_serviceendpoint_npm",
+		"azuredevops_serviceendpoint_sonarcloud",
+		"azuredevops_serviceendpoint_azurecr",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap
@@ -160,22 +177,26 @@ func TestProvider_SchemaIsValid(t *testing.T) {
 	tests := []testParams{
 		{"org_service_url", false, "AZDO_ORG_SERVICE_URL", false},
 		{"personal_access_token", false, "AZDO_PERSONAL_ACCESS_TOKEN", true},
-		{"sp_client_id", false, "AZDO_SP_CLIENT_ID", false},
-		{"sp_tenant_id", false, "AZDO_SP_TENANT_ID", false},
-		{"sp_client_id_plan", false, "AZDO_SP_CLIENT_ID_PLAN", false},
-		{"sp_tenant_id_plan", false, "AZDO_SP_TENANT_ID_PLAN", false},
-		{"sp_client_id_apply", false, "AZDO_SP_CLIENT_ID_APPLY", false},
-		{"sp_tenant_id_apply", false, "AZDO_SP_TENANT_ID_APPLY", false},
-		{"sp_client_secret", false, "AZDO_SP_CLIENT_SECRET", true},
-		{"sp_client_secret_path", false, "AZDO__SP_CLIENT_SECRET_PATH", false},
-		{"sp_oidc_token", false, "AZDO_SP_OIDC_TOKEN", true},
-		{"sp_oidc_token_path", false, "AZDO_SP_OIDC_TOKEN_PATH", false},
-		{"sp_oidc_github_actions", false, "AZDO_SP_OIDC_GITHUB_ACTIONS", false},
-		{"sp_oidc_github_actions_audience", false, "AZDO_SP_OIDC_GITHUB_ACTIONS_AUDIENCE", false},
-		{"sp_oidc_hcp", false, "AZDO_SP_OIDC_HCP", false},
-		{"sp_client_certificate_path", false, "AZDO_SP_CLIENT_CERTIFICATE_PATH", false},
-		{"sp_client_certificate", false, "AZDO_SP_CLIENT_CERTIFICATE", true},
-		{"sp_client_certificate_password", false, "AZDO_SP_CLIENT_CERTIFICATE_PASSWORD", true},
+
+		{"client_id", false, "ARM_CLIENT_ID", false},
+		{"tenant_id", false, "ARM_TENANT_ID", false},
+		{"client_id_plan", false, "ARM_CLIENT_ID_PLAN", false},
+		{"tenant_id_plan", false, "ARM_TENANT_ID_PLAN", false},
+		{"client_id_apply", false, "ARM_CLIENT_ID_APPLY", false},
+		{"tenant_id_apply", false, "ARM_TENANT_ID_APPLY", false},
+		{"oidc_request_token", false, "ARM_OIDC_REQUEST_TOKEN", false},
+		{"oidc_request_url", false, "ARM_OIDC_REQUEST_URL", false},
+		{"oidc_token", false, "ARM_OIDC_TOKEN", true},
+		{"oidc_token_file_path", false, "ARM_oidc_token_file_path", false},
+		{"use_oidc", false, "ARM_USE_OIDC", false},
+		{"oidc_audience", false, "ARM_OIDC_AUDIENCE", false},
+		{"oidc_tfc_tag", false, "ARM_OIDC_TFC_TAG", false},
+		{"client_certificate_path", false, "ARM_CLIENT_CERTIFICATE_PATH", false},
+		{"client_certificate", false, "ARM_CLIENT_CERTIFICATE", true},
+		{"client_certificate_password", false, "ARM_CLIENT_CERTIFICATE_PASSWORD", true},
+		{"client_secret", false, "ARM_CLIENT_SECRET", true},
+		{"client_secret_path", false, "ARM_CLIENT_SECRET_PATH", false},
+		{"use_msi", false, "ARM_USE_MSI", false},
 	}
 
 	schema := azuredevops.Provider().Schema
@@ -203,14 +224,17 @@ func TestProvider_SchemaIsValid(t *testing.T) {
 
 func TestAuthPAT(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("personal_access_token", "test123")
+	testToken := "thepassword"
+	resourceData.Set("personal_access_token", testToken)
 
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, "test123", resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Basic "+base64.StdEncoding.EncodeToString([]byte("_:"+testToken)), token)
 }
 
 type simpleTokenGetter struct {
@@ -226,33 +250,33 @@ func (s simpleTokenGetter) GetToken(ctx context.Context, opts policy.TokenReques
 
 func TestAuthOIDCToken(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	oidcToken := "buffalo123"
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_token", oidcToken)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_token", oidcToken)
+	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
-		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-			assertion, err := getAssertion(context.Background())
-			assert.Nil(t, err)
-			assert.Equal(t, oidcToken, assertion)
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, oidcToken, nil).DoAndReturn(
+		func(tenantID, clientID string, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthOIDCTokenFile(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	oidcToken := "buffalo123"
@@ -263,50 +287,51 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_token_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("oidc_token_file_path", tempFile)
+	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
-		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-			assertion, err := getAssertion(context.Background())
-			assert.Nil(t, err)
-			assert.Equal(t, oidcToken, assertion)
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, oidcToken, nil).DoAndReturn(
+		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientSecret(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	clientSecret := "buffalo123"
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_secret", clientSecret)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_secret", clientSecret)
 
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, clientSecret, nil).DoAndReturn(
 		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
-			assert.Equal(t, clientSecret, secret)
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientSecretFile(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	clientSecret := "buffalo123"
@@ -317,24 +342,25 @@ func TestAuthClientSecretFile(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_secret_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_secret_path", tempFile)
 
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, clientSecret, nil).DoAndReturn(
 		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
-			assert.Equal(t, clientSecret, secret)
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthTrfm(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	fakeTokenValue := "tokenvalue"
@@ -342,26 +368,25 @@ func TestAuthTrfm(t *testing.T) {
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_hcp", true)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
-		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-			assertion, err := getAssertion(context.Background())
-			assert.Nil(t, err)
-			assert.Equal(t, fakeTokenValue, assertion)
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, fakeTokenValue, nil).DoAndReturn(
+		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthTrfmPlanApply(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId_apply := "00000000-0000-0000-0000-000000000003"
 	tenantId_apply := "00000000-0000-0000-0000-000000000004"
 	clientId_plan := "00000000-0000-0000-0000-000000000005"
@@ -370,43 +395,44 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	trfm_fake_token_apply := fmt.Sprintf("header.%s.signature", base64.StdEncoding.EncodeToString([]byte("{\"terraform_run_phase\":\"apply\"}")))
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	accessToken := "thepassword"
-	resourceData.Set("sp_client_id_apply", clientId_apply)
-	resourceData.Set("sp_tenant_id_apply", tenantId_apply)
-	resourceData.Set("sp_client_id_plan", clientId_plan)
-	resourceData.Set("sp_tenant_id_plan", tenantId_plan)
-	resourceData.Set("sp_oidc_hcp", true)
+	resourceData.Set("client_id_apply", clientId_apply)
+	resourceData.Set("tenant_id_apply", tenantId_apply)
+	resourceData.Set("client_id_plan", clientId_plan)
+	resourceData.Set("tenant_id_plan", tenantId_plan)
+	resourceData.Set("use_oidc", true)
 
 	// Apply phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
-	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_apply, clientId_apply, gomock.Any(), nil).DoAndReturn(
-		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-			assertion, err := getAssertion(context.Background())
-			assert.Nil(t, err)
-			assert.Equal(t, trfm_fake_token_apply, assertion)
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId_apply, clientId_apply, trfm_fake_token_apply, nil).DoAndReturn(
+		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 
 	// Plan phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
-	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_plan, clientId_plan, gomock.Any(), nil).DoAndReturn(
-		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-			assertion, err := getAssertion(context.Background())
-			assert.Nil(t, err)
-			assert.Equal(t, trfm_fake_token_plan, assertion)
+	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId_plan, clientId_plan, trfm_fake_token_plan, nil).DoAndReturn(
+		func(tenantID, clientID string, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err = azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err = sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err = resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func generateCert() []byte {
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatalf("Failed to generate certificate private key: %v", err)
+	}
 
 	template := x509.Certificate{
 		SerialNumber: new(big.Int).SetUint64(20),
@@ -435,16 +461,16 @@ func generateCert() []byte {
 
 func TestAuthClientCert(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	cert := generateCert()
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_certificate", base64.StdEncoding.EncodeToString(cert))
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_certificate", base64.StdEncoding.EncodeToString(cert))
 
 	theseCerts, theseKey, err := azidentity.ParseCertificates(cert, nil)
 	assert.Nil(t, err)
@@ -456,25 +482,28 @@ func TestAuthClientCert(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestAuthClientCertFile(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	cert := generateCert()
 	accessToken := "thepassword"
 	tempFile := t.TempDir() + "/clientCerts.pem"
-	err := os.WriteFile(tempFile, []byte(cert), 0644)
+	err := os.WriteFile(tempFile, cert, 0644)
+	assert.Nil(t, err)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_client_certificate_path", tempFile)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("client_certificate_path", tempFile)
 
 	theseCerts, theseKey, err := azidentity.ParseCertificates(cert, nil)
 	assert.Nil(t, err)
@@ -486,9 +515,11 @@ func TestAuthClientCertFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	assert.Equal(t, accessToken, resp)
+	token, err := resp()
+	assert.Nil(t, err)
+	assert.Equal(t, "Bearer "+accessToken, token)
 }
 
 func TestGHActionsNoAudience(t *testing.T) {
@@ -507,41 +538,41 @@ func TestGHActionsNoAudience(t *testing.T) {
 	}
 
 	ctrl := gomock.NewController(t)
-	mockIdentityClient := mock_azuredevops.NewMockAzIdentityFuncs(ctrl)
+	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000003"
 	tenantId := "00000000-0000-0000-0000-000000000004"
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
+	ghFakeOIDCaccessToken := "the_gh_oidc_identity_token"
 	accessToken := "thepassword"
 	ghToken := "gh_oidc_token"
-	resourceData.Set("sp_client_id", clientId)
-	resourceData.Set("sp_tenant_id", tenantId)
-	resourceData.Set("sp_oidc_github_actions", true)
+	resourceData.Set("client_id", clientId)
+	resourceData.Set("tenant_id", tenantId)
+	resourceData.Set("use_oidc", true)
 
 	for _, testCase := range testCases {
-		resourceData.Set("sp_oidc_github_actions_audience", testCase.testAudience)
+		resourceData.Set("oidc_audience", testCase.testAudience)
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "GET", r.Method)
 			assert.Equal(t, testCase.expectedAudience, r.URL.Query().Get("audience"))
 			assert.Equal(t, int64(0), r.ContentLength)
 			assert.Equal(t, "Bearer "+ghToken, r.Header.Get("Authorization"))
 			w.Header().Add("content-type", "application/json")
-			fmt.Fprintln(w, "{\"value\":\""+accessToken+"\"}")
+			fmt.Fprintln(w, "{\"value\":\""+ghFakeOIDCaccessToken+"\"}")
 		}))
 		defer ts.Close()
 
-		os.Setenv("ACTIONS_ID_TOKEN_REQUEST_URL", ts.URL)
-		os.Setenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN", ghToken)
+		resourceData.Set("oidc_request_url", ts.URL)
+		resourceData.Set("oidc_request_token", ghToken)
 
-		mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
-			func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-				assertion, err := getAssertion(context.Background())
-				assert.Nil(t, err)
-				assert.Equal(t, accessToken, assertion)
+		mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, ghFakeOIDCaccessToken, nil).DoAndReturn(
+			func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
 				getter := simpleTokenGetter{token: accessToken}
 				return &getter, nil
 			}).Times(1)
-		resp, err := azuredevops.GetAuthToken(context.Background(), resourceData, mockIdentityClient)
+		resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
 		assert.Nil(t, err)
-		assert.Equal(t, accessToken, resp)
+		token, err := resp()
+		assert.Nil(t, err)
+		assert.Equal(t, "Bearer "+accessToken, token)
 	}
 }

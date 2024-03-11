@@ -37,6 +37,7 @@ output "administrators" {
 The following arguments are supported:
 
 - `project_id` - (Optional) The Project ID. If no project ID all teams of the organization will be returned.
+- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
 
 ## Attributes Reference
 
@@ -53,7 +54,7 @@ The following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Teams - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/get?view=azure-devops-rest-7.0)
 
 ## PAT Permissions Required
 

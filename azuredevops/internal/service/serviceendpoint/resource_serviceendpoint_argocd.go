@@ -4,17 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 // ResourceServiceEndpointArgoCD schema and implementation for ArgoCD service endpoint resource
 func ResourceServiceEndpointArgoCD() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArgoCD, expandServiceEndpointArgoCD)
+	r := &schema.Resource{
+		Create: resourceServiceEndpointArgoCDCreate,
+		Read:   resourceServiceEndpointArgoCDRead,
+		Update: resourceServiceEndpointArgoCDUpdate,
+		Delete: resourceServiceEndpointArgoCDDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
+		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Schema:   baseSchema(),
+	}
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -34,41 +51,21 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 		Description: "Url for the ArgoCD Server",
 	}
 
-	at := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"token": {
-				Description: "The ArgoCD access token.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-			},
-		},
-	}
-
-	aup := &schema.Resource{
-		// Normally we don’t mark username as sensitive data, but author of the ArgoCD extension have declared this property as sensitive
-		Schema: map[string]*schema.Schema{
-			"username": {
-				Description: "The ArgoCD user name.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-			},
-			"password": {
-				Description: "The ArgoCD password.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-			},
-		},
-	}
-
 	r.Schema["authentication_token"] = &schema.Schema{
-		Type:         schema.TypeList,
-		Optional:     true,
-		MinItems:     1,
-		MaxItems:     1,
-		Elem:         at,
+		Type:     schema.TypeList,
+		Optional: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"token": {
+					Description: "The ArgoCD access token.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+				},
+			},
+		},
 		ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
 	}
 
@@ -77,10 +74,86 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 		Optional: true,
 		MinItems: 1,
 		MaxItems: 1,
-		Elem:     aup,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"username": {
+					Description: "The ArgoCD user name.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+				},
+				"password": {
+					Description: "The ArgoCD password.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+				},
+			},
+		},
 	}
 
 	return r
+}
+
+func resourceServiceEndpointArgoCDCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, _, err := expandServiceEndpointArgoCD(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serviceEndPoint.Id.String())
+	return resourceServiceEndpointArgoCDRead(d, m)
+}
+
+func resourceServiceEndpointArgoCDRead(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
+
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+
+	flattenServiceEndpointArgoCD(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	return nil
+}
+func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectID, err := expandServiceEndpointArgoCD(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+
+	if err != nil {
+		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+	flattenServiceEndpointArgoCD(d, updatedServiceEndpoint, projectID.String())
+	return resourceServiceEndpointArgoCDRead(d, m)
+}
+func resourceServiceEndpointArgoCDDelete(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, projectId, err := expandServiceEndpointArgoCD(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
+
+	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
@@ -122,7 +195,7 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 // Convert AzDO data structure to internal Terraform data structure
 // Note that 'username', 'password', and 'apitoken' service connection fields
 // are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
+func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {

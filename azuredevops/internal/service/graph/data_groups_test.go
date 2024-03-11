@@ -12,8 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -117,6 +117,9 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	continuationToken := "continuation-token"
 	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()})
+
+	var calls []*gomock.Call
+
 	firstCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, firstListGroupCallArgs).
@@ -129,7 +132,16 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 		ListGroups(clients.Ctx, secondListGroupCallArgs).
 		Return(secondListGroupCallResponse, nil)
 
-	gomock.InOrder(firstCall, secondCall)
+	calls = append(calls, firstCall, secondCall)
+	calls = append(calls, graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).Times(2))
+
+	gomock.InOrder(calls...)
 
 	err := dataSourceGroupsRead(resourceData, clients)
 	require.Nil(t, err)

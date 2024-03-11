@@ -78,6 +78,7 @@ func TestAccCheckBusinessHours_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "friday", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "saturday", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "sunday", "false"),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 				),
 			},
 		},
@@ -149,6 +150,7 @@ func TestAccCheckBusinessHours_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "friday", friday_second),
 					resource.TestCheckResourceAttr(tfCheckNode, "saturday", saturday_second),
 					resource.TestCheckResourceAttr(tfCheckNode, "sunday", sunday_second),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},
@@ -215,6 +217,7 @@ resource "azuredevops_check_business_hours" "test" {
   friday               = "%s"
   saturday             = "%s"
   sunday               = "%s"
+  timeout              = 50000
 }`, checkName, start_time, end_time, time_zone, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
 	)
 

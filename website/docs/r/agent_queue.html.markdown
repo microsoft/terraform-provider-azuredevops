@@ -15,6 +15,8 @@ the `azuredevops_resource_authorization` resource can be used to grant authoriza
 
 ## Example Usage
 
+### Creating a Queue from an organization-level pool
+
 ```hcl
 resource "azuredevops_project" "example" {
   name = "Example Project"
@@ -38,12 +40,30 @@ resource "azuredevops_resource_authorization" "example" {
 }
 ```
 
+### Creating a Queue at the project level (Organization-level permissions not required)
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+resource "azuredevops_agent_queue" "example" {
+  name          = "example-queue"
+  project_id    = data.azuredevops_project.example.id
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
+- `name` - (Optional) The name of the agent queue. Defaults to the ID of the agent pool. Conflicts with `agent_pool_id`.
 - `project_id` - (Required) The ID of the project in which to create the resource.
-- `agent_pool_id` - (Required) The ID of the organization agent pool.
+- `agent_pool_id` - (Optional) The ID of the organization agent pool. Conflicts with `name`.
+
+~> **NOTE:**
+    One of `name` or `agent_pool_id` must be specified, but not both.
+    When `agent_pool_id` is specified, the agent queue name will be derived from the agent pool name.
 
 ## Attributes Reference
 
@@ -53,7 +73,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Agent Queues](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/queues?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Agent Queues](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/queues?view=azure-devops-rest-7.0)
 
 ## Import
 

@@ -50,11 +50,11 @@ The following attributes are exported:
 
 - `projects` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
 
-  - `project_id` - Project identifier.
-  - `name` - Project name.
+  - `project_id` - The ID of the Project.
+  - `name` - The name of the Project.
   - `project_url` - Url to the full version of the object.
   - `state` - Project state.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Projects - Get](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects/get?view=azure-devops-rest-7.0)

@@ -50,7 +50,7 @@ The following arguments are supported:
 
 ## Import
 
-Repository files can be imported using a combination of the `repositroy ID` and `file`, e.g.
+Repository files can be imported using a combination of the `repository ID` and `file`, e.g.
 
 ```sh
 terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000-000000000000/.gitignore
@@ -64,4 +64,4 @@ terraform import azuredevops_git_repository_file.example 00000000-0000-0000-0000
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.0 - Git API](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-7.0)

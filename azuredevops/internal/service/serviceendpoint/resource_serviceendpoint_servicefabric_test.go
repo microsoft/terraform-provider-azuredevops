@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -33,11 +33,12 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Certificate"),
 	},
-	Id:    &serviceFabricTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_NAME"),
-	Owner: converter.String("library"),
-	Type:  converter.String("servicefabric"),
-	Url:   converter.String("tcp://servicefabric.com"),
+	Id:          &serviceFabricTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_NAME"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("servicefabric"),
+	Url:         converter.String("tcp://servicefabric.com"),
+	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -53,7 +54,7 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointServiceFabric_FlattenExpand_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointServiceFabric().Schema, nil)
 	configureAuthServiceFabricCertificate(resourceData)
-	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID)
+	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID.String())
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointServiceFabric(resourceData)
 
@@ -70,7 +71,7 @@ func TestServiceEndpointServiceFabric_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureAuthServiceFabricCertificate(resourceData)
-	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID)
+	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -94,7 +95,7 @@ func TestServiceEndpointServiceFabric_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureAuthServiceFabricCertificate(resourceData)
-	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID)
+	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -121,7 +122,7 @@ func TestServiceEndpointServiceFabric_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureAuthServiceFabricCertificate(resourceData)
-	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID)
+	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -150,7 +151,7 @@ func TestServiceEndpointServiceFabric_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureAuthServiceFabricCertificate(resourceData)
-	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID)
+	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint, serviceFabricTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

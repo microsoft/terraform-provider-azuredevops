@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -183,39 +183,50 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	// repository in state and will taint the resource if further errors are encountered during initialization
 	d.SetId(createdRepo.Id.String())
 
-	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) &&
-		strings.EqualFold(initialization.sourceType, "Git") {
-		importRequest := git.GitImportRequest{
-			Parameters: &git.GitImportRequestParameters{
-				GitSource: &git.GitImportGitSource{
-					Url: &initialization.sourceURL,
+	if initialization != nil {
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) && strings.EqualFold(initialization.sourceType, "Git") {
+			importRequest := git.GitImportRequest{
+				Parameters: &git.GitImportRequestParameters{
+					GitSource: &git.GitImportGitSource{
+						Url: &initialization.sourceURL,
+					},
 				},
-			},
-			Repository: createdRepo,
+				Repository: createdRepo,
+			}
+
+			if initialization.serviceConnectionID != "" {
+				importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
+				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
+			}
+
+			_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
+			if importErr != nil {
+				return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
+			}
 		}
 
-		if initialization.serviceConnectionID != "" {
-			importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
-			importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
-		}
-
-		_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
-		if importErr != nil {
-			return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) ||
+			strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Fork)) {
+			err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
+			if err != nil {
+				return fmt.Errorf(" initializing repository in Azure DevOps: %+v ", err)
+			}
 		}
 	}
 
-	if initialization != nil && strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
-		err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
-		if err != nil {
-			return fmt.Errorf("Error initializing repository in Azure DevOps: %+v", err)
-		}
-	}
-
-	if initialization != nil && !(strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) && parentRepoRef == nil) {
+	if !strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) || parentRepoRef != nil {
 		err := waitForBranch(clients, repo.Name, projectID)
 		if err != nil {
 			return err
+		}
+	}
+
+	// update default_branch
+	if v := d.Get("default_branch").(string); v != "" {
+		createdRepo.DefaultBranch = converter.String(v)
+		_, err = updateGitRepository(clients, createdRepo, projectID)
+		if err != nil {
+			return fmt.Errorf(" updating repository `default_branch`: %+v", err)
 		}
 	}
 
@@ -300,7 +311,7 @@ func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepo
 						git.Change{
 							ChangeType: &git.VersionControlChangeTypeValues.Add,
 							Item: git.GitItem{
-								Path: converter.String("/readme.md"),
+								Path: converter.String("/README.md"),
 							},
 							NewContent: &git.ItemContent{
 								ContentType: &git.ItemContentTypeValues.RawText,

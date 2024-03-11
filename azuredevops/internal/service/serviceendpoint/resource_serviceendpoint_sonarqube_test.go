@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -30,11 +30,12 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &sonarQubeTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("sonarqube"),
-	Url:   converter.String("https://www.sonarqube.com/"),
+	Id:          &sonarQubeTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("sonarqube"),
+	Url:         converter.String("https://www.sonarqube.com/"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -49,7 +50,7 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointSonarQube_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointSonarQube().Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID.String())
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointSonarQube(resourceData)
 
@@ -65,7 +66,7 @@ func TestServiceEndpointSonarQube_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -88,7 +89,7 @@ func TestServiceEndpointSonarQube_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -114,7 +115,7 @@ func TestServiceEndpointSonarQube_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -142,7 +143,7 @@ func TestServiceEndpointSonarQube_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

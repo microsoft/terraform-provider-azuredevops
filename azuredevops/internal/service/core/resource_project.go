@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -219,31 +219,36 @@ func projectRead(clients *client.AggregatedClient, projectID string, projectName
 	}
 
 	var project *core.TeamProject
-	var err error
-
-	//keep retrying until timeout to handle service inconsistent response
-	//lint:ignore SA1019
-	err = resource.Retry(projectRetryTimeoutDuration*time.Minute, func() *resource.RetryError { //nolint:staticcheck
-		project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
-			ProjectId:           &identifier,
-			IncludeCapabilities: converter.Bool(true),
-			IncludeHistory:      converter.Bool(false),
-		})
-		if err != nil {
-			if utils.ResponseWasNotFound(err) {
-				return resource.NonRetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                20 * time.Second,
+		Pending:                   []string{"pending"},
+		Target:                    []string{"success"},
+		Refresh: func() (result interface{}, state string, err error) {
+			project, err = clients.CoreClient.GetProject(clients.Ctx, core.GetProjectArgs{
+				ProjectId:           &identifier,
+				IncludeCapabilities: converter.Bool(true),
+				IncludeHistory:      converter.Bool(false),
+			})
+			if err != nil {
+				if utils.ResponseWasNotFound(err) {
+					log.Printf("[INFO] Project not found. ID/Name: %s . Error: %+v", identifier, err)
+				}
+				return project, "pending", err
 			}
-			return resource.RetryableError(err)
-		}
-		return nil
-	})
+			return project, "success", nil
+		},
+		Timeout: projectRetryTimeoutDuration * time.Minute,
+	}
 
-	if err != nil {
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil, err
 		}
 		return nil, fmt.Errorf(" Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
 	}
+
 	return project, nil
 }
 
@@ -509,7 +514,7 @@ func getDefaultProcessTemplateID(clients *client.AggregatedClient) (*uuid.UUID, 
 	}
 
 	for _, p := range *processes {
-		if *p.IsDefault == true {
+		if *p.IsDefault {
 			return p.Id, nil
 		}
 	}
@@ -524,7 +529,7 @@ func getDefaultProcessTemplateName(clients *client.AggregatedClient) (string, er
 	}
 
 	for _, p := range *processes {
-		if *p.IsDefault == true {
+		if *p.IsDefault {
 			return *p.Name, nil
 		}
 	}

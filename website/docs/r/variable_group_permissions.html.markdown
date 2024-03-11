@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_variable_group_permissions"
 description: |-
-  Manages permissions for a AzureDevOps Variable Group
+  Manages permissions for aa Azure DevOps Variable Group
 ---
 
 # azuredevops_variable_group_permissions

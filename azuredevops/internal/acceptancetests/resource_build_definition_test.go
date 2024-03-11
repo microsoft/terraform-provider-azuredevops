@@ -6,139 +6,93 @@ package acceptancetests
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
-// underlying terraform state.
-func TestAccBuildDefinition_Create_Update_Import(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	gitRepoName := testutils.GenerateResourceName()
-	buildDefinitionPathEmpty := `\`
-	buildDefinitionNameFirst := testutils.GenerateResourceName()
-	buildDefinitionNameSecond := testutils.GenerateResourceName()
-	buildDefinitionNameThird := testutils.GenerateResourceName()
+func TestAccBuildDefinition_Basic(t *testing.T) {
+	name := testutils.GenerateResourceName()
 
-	buildDefinitionPathFirst := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	buildDefinitionPathSecond := `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	buildDefinitionPathThird := `\` + buildDefinitionNameFirst + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	buildDefinitionPathFourth := `\` + buildDefinitionNameSecond + `\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	tfBuildDefNode := "azuredevops_build_definition.build"
+	tfBuildDefNode := "azuredevops_build_definition.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, buildDefinitionPathEmpty),
+				Config: hclBuildDefinitionPath(name, `\\`),
 				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameFirst),
+					checkBuildDefinitionExists(name),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", name),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", `\`),
 				),
 			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameSecond, buildDefinitionPathEmpty),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameSecond),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameSecond),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
-				),
-			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, buildDefinitionPathFirst),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFirst),
-				),
-			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst,
-					buildDefinitionPathSecond),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathSecond),
-				),
-			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, buildDefinitionPathThird),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathThird),
-				),
-			}, {
-				Config: testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, buildDefinitionPathFourth),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameFirst),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameFirst),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathFourth),
-				),
-			}, {
-				Config: testutils.HclBuildDefinitionResourceTfsGit(projectName, gitRepoName, buildDefinitionNameThird, buildDefinitionPathEmpty),
-				Check: resource.ComposeTestCheckFunc(
-					checkBuildDefinitionExists(buildDefinitionNameThird),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
-					resource.TestCheckResourceAttrSet(tfBuildDefNode, "repository.0.repo_id"),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "name", buildDefinitionNameThird),
-					resource.TestCheckResourceAttr(tfBuildDefNode, "path", buildDefinitionPathEmpty),
-				),
-			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
-				ResourceName:      tfBuildDefNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            tfBuildDefNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"skip_first_run"},
 			},
 		},
 	})
 }
 
-// Verifies a build for Bitbucket can happen. Note: the update/import logic is tested in other tests
-func TestAccBuildDefinitionBitbucket_Create(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
+func TestAccBuildDefinition_PathUpdate(t *testing.T) {
+	name := testutils.GenerateResourceName()
+
+	pathFirst := `\\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	pathSecond := `\\` + name + `\\` + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	tfBuildDefNode := "azuredevops_build_definition.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkBuildDefinitionDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config:      testutils.HclBuildDefinitionResourceBitbucket(projectName, "build-def-name", "\\", ""),
-				ExpectError: regexp.MustCompile("bitbucket repositories need a referenced service connection ID"),
+				Config: hclBuildDefinitionPath(name, pathFirst),
+				Check: resource.ComposeTestCheckFunc(
+					checkBuildDefinitionExists(name),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", name),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", strings.ReplaceAll(pathFirst, `\\`, `\`)),
+				),
+			},
+			{
+				Config: hclBuildDefinitionPath(name, pathSecond),
+				Check: resource.ComposeTestCheckFunc(
+					checkBuildDefinitionExists(name),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "revision"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "name", name),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "path", strings.ReplaceAll(pathSecond, `\\`, `\`)),
+				),
 			}, {
-				Config: testutils.HclBuildDefinitionResourceBitbucket(projectName, "build-def-name", "\\", "some-service-connection"),
-				Check:  checkBuildDefinitionExists("build-def-name"),
+				ResourceName:            tfBuildDefNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"skip_first_run"},
 			},
 		},
 	})
 }
 
 // Verifies a build for with variables can create and update, including secret variables
-func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
+func TestAccBuildDefinition_WithVariables(t *testing.T) {
 	name := testutils.GenerateResourceName()
-	tfNode := "azuredevops_build_definition.build"
+	tfNode := "azuredevops_build_definition.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -146,10 +100,10 @@ func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkBuildDefinitionDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclBuildDefinitionWithVariables("foo1", "bar1", name),
+				Config: hclBuildDefinitionVariable("foo1", "bar1", name),
 				Check:  checkForVariableValues(tfNode, "foo1", "bar1"),
 			}, {
-				Config: testutils.HclBuildDefinitionWithVariables("foo2", "bar2", name),
+				Config: hclBuildDefinitionVariable("foo2", "bar2", name),
 				Check:  checkForVariableValues(tfNode, "foo2", "bar2"),
 			},
 		},
@@ -158,7 +112,7 @@ func TestAccBuildDefinition_WithVariables_CreateAndUpdate(t *testing.T) {
 
 func TestAccBuildDefinition_Schedules(t *testing.T) {
 	name := testutils.GenerateResourceName()
-	tfNode := "azuredevops_build_definition.build"
+	tfNode := "azuredevops_build_definition.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
@@ -212,11 +166,9 @@ func checkForVariableValues(tfNode string, expectedVals ...string) resource.Test
 	}
 }
 
-// Given the name of an AzDO build definition, this will return a function that will check whether
-// or not the definition (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkBuildDefinitionExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		buildDef, ok := s.RootModule().Resources["azuredevops_build_definition.build"]
+		buildDef, ok := s.RootModule().Resources["azuredevops_build_definition.test"]
 		if !ok {
 			return fmt.Errorf("Did not find a build definition in the TF state")
 		}
@@ -266,8 +218,9 @@ func getBuildDefinitionFromResource(resource *terraform.ResourceState) (*build.B
 	})
 }
 
-func hclBuildDefinitionSchedules(name string) string {
+func hclBuildDefinitionTemplate(name string) string {
 	return fmt.Sprintf(`
+
 resource "azuredevops_project" "test" {
   name               = "%[1]s"
   description        = "%[1]s-description"
@@ -282,11 +235,79 @@ resource "azuredevops_git_repository" "test" {
   initialization {
     init_type = "Clean"
   }
+}`, name)
 }
 
-resource "azuredevops_build_definition" "build" {
+func hclBuildDefinitionPath(name, path string) string {
+	template := hclBuildDefinitionTemplate(name)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_build_definition" "test" {
   project_id = azuredevops_project.test.id
-  name       = "%[1]s"
+  name       = "%[2]s"
+  path       = "%[3]s"
+
+  ci_trigger {
+    override {
+      batch = true
+      branch_filter {
+        include = ["master"]
+      }
+      path_filter {
+        include = ["*/**.ts"]
+      }
+      max_concurrent_builds_per_branch = 2
+      polling_interval                 = 0
+    }
+  }
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
+}
+`, template, name, path)
+}
+
+func hclBuildDefinitionVariable(name, varVal, secretVarVal string) string {
+	template := hclBuildDefinitionTemplate(name)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_build_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
+
+  variable {
+    name  = "FOO_VAR"
+    value = "%[3]s"
+  }
+
+  variable {
+    name         = "BAR_VAR"
+    secret_value = "%[4]s"
+    is_secret    = true
+  }
+}`, template, name, varVal, secretVarVal)
+}
+
+func hclBuildDefinitionSchedules(name string) string {
+	template := hclBuildDefinitionTemplate(name)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_build_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
   path       = "\\ExampleFolder"
 
   ci_trigger {
@@ -322,5 +343,5 @@ resource "azuredevops_build_definition" "build" {
     yml_path    = "azure-pipelines.yml"
   }
 }
-`, name)
+`, template, name)
 }

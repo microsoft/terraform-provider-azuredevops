@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -64,20 +64,36 @@ func ResourceWorkItem() *schema.Resource {
 					ValidateFunc: validation.StringIsNotWhiteSpace,
 				},
 			},
+			"area_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"iteration_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
 		},
 	}
 }
 
 var systemFieldMapping = map[string]string{
-	"System.State":        "state",
-	"System.Title":        "title",
-	"System.WorkItemType": "type",
+	"System.State":         "state",
+	"System.Title":         "title",
+	"System.WorkItemType":  "type",
+	"System.AreaPath":      "area_path",
+	"System.IterationPath": "iteration_path",
 }
 
 var fieldMapping = map[string]string{
-	"state": "System.State",
-	"title": "System.Title",
-	"type":  "System.WorkItemType",
+	"state":          "System.State",
+	"title":          "System.Title",
+	"type":           "System.WorkItemType",
+	"area_path":      "System.AreaPath",
+	"iteration_path": "System.IterationPath",
 }
 
 func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
@@ -176,7 +192,7 @@ func resourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 
 func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
-	for customFieldName, customFieldValue := range *&custom_fields {
+	for customFieldName, customFieldValue := range custom_fields {
 		operations = append(operations, webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Add,
 			From:  nil,

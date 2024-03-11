@@ -13,10 +13,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
@@ -150,12 +150,6 @@ func TestTeam_Create_EnsureTeamDeletedOnAddAdministratorsError(t *testing.T) {
 			IncludeExtendedInfo: converter.Bool(true),
 		}).
 		Return(&[]security.AccessControlList{}, nil).
-		Times(1)
-
-	securityClient.
-		EXPECT().
-		SetAccessControlEntries(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf("@@SetAccessControlEntries@@failed@@")).
 		Times(1)
 
 	coreClient.

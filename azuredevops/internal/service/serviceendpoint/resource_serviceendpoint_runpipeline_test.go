@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -34,11 +34,12 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Data: &map[string]string{
 		"releaseUrl": "https://vsrm.dev.azure.com/example",
 	},
-	Id:    &rpTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_NAME"),
-	Owner: converter.String("library"),
-	Type:  converter.String("azdoapi"),
-	Url:   converter.String("https://dev.azure.com/example"),
+	Id:          &rpTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_NAME"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("azdoapi"),
+	Url:         converter.String("https://dev.azure.com/example"),
+	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -54,7 +55,7 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRunPipeline().Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID.String())
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
 
@@ -71,7 +72,7 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -94,7 +95,7 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -120,7 +121,7 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -149,7 +150,7 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

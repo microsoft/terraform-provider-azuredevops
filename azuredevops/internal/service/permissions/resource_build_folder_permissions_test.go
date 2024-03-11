@@ -14,7 +14,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -62,7 +62,7 @@ func TestBuildFolderPermissions_CreateBuildFolderToken(t *testing.T) {
 	token, err = createBuildFolderToken(d, clients)
 	assert.NotEmpty(t, token)
 	assert.Nil(t, err)
-	assert.Equal(t, "9083e944-8e9e-405e-960a-c80180aa71e6/\\", token)
+	assert.Equal(t, "9083e944-8e9e-405e-960a-c80180aa71e6", token)
 
 	d = getBuildFolderPermissionsResource(t, "", "")
 	token, err = createBuildFolderToken(d, clients)

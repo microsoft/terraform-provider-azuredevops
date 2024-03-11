@@ -12,8 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
@@ -39,12 +39,14 @@ func TestDataTeams_Read_DoesNotSwallowError(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(nil, fmt.Errorf("@@GetTeams@@failed@@")).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataTeams().Schema, nil)
+	resourceData.Set("project_id", testProjectID.String())
 	resourceData.Set("project_id", testProjectID.String())
 	err := dataTeamsRead(resourceData, clients)
 
@@ -115,6 +117,7 @@ func TestDataTeams_Read_EnsureAllByProject(t *testing.T) {
 		GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
+			Top:            converter.Int(100),
 			ExpandIdentity: converter.Bool(false),
 		}).
 		Return(&[]core.WebApiTeam{
@@ -244,6 +247,7 @@ func TestDataTeams_Read_EnsureAll(t *testing.T) {
 			ProjectId:      converter.String(testProjectID.String()),
 			Mine:           converter.Bool(false),
 			ExpandIdentity: converter.Bool(false),
+			Top:            converter.Int(100),
 		}).
 		Return(&[]core.WebApiTeam{
 			{

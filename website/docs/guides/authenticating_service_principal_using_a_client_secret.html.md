@@ -20,9 +20,9 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 ## Provider Configuration
 
-The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `AZDO_SP_TENANT_ID` and `AZDO_SP_CLIENT_ID` environment variables, or in the provider configuration block with the `sp_tenant_id` and `sp_client_id` attributes.
+The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes.
 
-The client secret may be provided as a string, or by a file on the filesystem with the `AZDO_SP_CLIENT_SECRET` or `AZDO_SP_CLIENT_SECRET_PATH` environment variables, or in the provider configuration block with the `sp_client_secret` or `sp_client_secret_path` attributes.
+The client secret may be provided as a string, or by a file on the filesystem with the `ARM_CLIENT_SECRET` or `ARM_CLIENT_SECRET_PATH` environment variables, or in the provider configuration block with the `client_secret` or `client_secret_path` attributes.
 
 ### Providing the secret through the file system
 
@@ -30,23 +30,22 @@ The client secret may be provided as a string, or by a file on the filesystem wi
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url       = "https://dev.azure.com/my-org"
-
-  sp_client_id          = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id          = "00000000-0000-0000-0000-000000000001"
-  sp_client_secret_path = "C:\\my_secret.txt"
+  org_service_url = "https://dev.azure.com/my-org"
+  client_id          = "00000000-0000-0000-0000-000000000001"
+  tenant_id          = "00000000-0000-0000-0000-000000000001"
+  client_secret_path = "C:\\my_secret.txt"
 }
 
 resource "azuredevops_project" "project" {
-  name               = "Test Project"
-  description        = "Test Project Description"
+  name        = "Test Project"
+  description = "Test Project Description"
 }
 ```
 
@@ -56,22 +55,21 @@ resource "azuredevops_project" "project" {
 terraform {
   required_providers {
     azuredevops = {
-      source = "microsoft/azuredevops"
+      source  = "microsoft/azuredevops"
       version = ">=0.1.0"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url                = "https://dev.azure.com/my-org"
-
-  sp_client_id     = "00000000-0000-0000-0000-000000000001"
-  sp_tenant_id     = "00000000-0000-0000-0000-000000000001"
-  sp_client_secret = "top-secret-password-string"
+  org_service_url = "https://dev.azure.com/my-org"
+  client_id     = "00000000-0000-0000-0000-000000000001"
+  tenant_id     = "00000000-0000-0000-0000-000000000001"
+  client_secret = "top-secret-password-string"
 }
 
 resource "azuredevops_project" "project" {
-  name               = "Test Project"
-  description        = "Test Project Description"
+  name        = "Test Project"
+  description = "Test Project Description"
 }
 ```

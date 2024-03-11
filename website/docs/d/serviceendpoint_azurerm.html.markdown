@@ -70,3 +70,7 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
 * `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
 * `description` - Specifies the description of the Service Endpoint.
+* `environment` - The Cloud Environment. Possible values are `AzureCloud` and `AzureChinaCloud`.
+* `service_endpoint_authentication_scheme` - Specifies the authentication scheme of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. 
+* `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/f66a4bc2-08ad-4ec0-a25e-e769d6b3b294`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+* `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://my-organisation/my-project/my-service-connection-name`.

@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccBranchControlCheck_basic(t *testing.T) {
+func TestAccCheckBranchControl_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkName := testutils.GenerateResourceName()
 	branches := "refs/heads/main"
@@ -31,13 +31,14 @@ func TestAccBranchControlCheck_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccBranchControlCheck_complete(t *testing.T) {
+func TestAccCheckBranchControl_complete(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkName := testutils.GenerateResourceName()
 	branches := "refs/heads/main"
@@ -56,6 +57,7 @@ func TestAccBranchControlCheck_complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branches),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkName),
+					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 					resource.TestCheckResourceAttr(tfCheckNode, "verify_branch_protection", "true"),
 					resource.TestCheckResourceAttr(tfCheckNode, "ignore_unknown_protection_status", "false"),
 				),
@@ -64,7 +66,7 @@ func TestAccBranchControlCheck_complete(t *testing.T) {
 	})
 }
 
-func TestAccBranchControlCheck_update(t *testing.T) {
+func TestAccCheckBranchControl_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	checkNameFirst := testutils.GenerateResourceName()
 	branchesFirst := "refs/heads/main"
@@ -95,6 +97,7 @@ func TestAccBranchControlCheck_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
 					resource.TestCheckResourceAttr(tfCheckNode, "allowed_branches", branchesSecond),
 					resource.TestCheckResourceAttr(tfCheckNode, "display_name", checkNameSecond),
+					resource.TestCheckResourceAttr(tfCheckNode, "version", "2"),
 				),
 			},
 		},
@@ -141,7 +144,7 @@ resource "azuredevops_check_branch_control" "test" {
   allowed_branches                 = "%s"
   verify_branch_protection         = true
   ignore_unknown_protection_status = false
-
+  timeout                          = 50000
 }`, checkName, branches)
 
 	genericcheckResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")

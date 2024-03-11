@@ -72,7 +72,7 @@ github.com/golang-jwt/jwt/v4
 # github.com/golang/mock v1.6.0
 ## explicit; go 1.11
 github.com/golang/mock/gomock
-# github.com/golang/protobuf v1.5.2
+# github.com/golang/protobuf v1.5.3
 ## explicit; go 1.9
 github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
@@ -223,44 +223,44 @@ github.com/mattn/go-isatty
 # github.com/microsoft/azure-devops-go-api/azuredevops v1.0.0-b5
 ## explicit; go 1.12
 github.com/microsoft/azure-devops-go-api/azuredevops
-github.com/microsoft/azure-devops-go-api/azuredevops/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/pipelineschecks
-github.com/microsoft/azure-devops-go-api/azuredevops/profile
 github.com/microsoft/azure-devops-go-api/azuredevops/system
-github.com/microsoft/azure-devops-go-api/azuredevops/taskagent
 github.com/microsoft/azure-devops-go-api/azuredevops/webapi
-# github.com/microsoft/azure-devops-go-api/azuredevops/v6 v6.0.0-20211202191553-0974d0145be8
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.1.0
 ## explicit; go 1.12
-github.com/microsoft/azure-devops-go-api/azuredevops/v6
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/accounts
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/build
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/commerce
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/core
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/delegatedauthorization
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/distributedtaskcommon
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/featuremanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/forminput
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/git
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/graph
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/identity
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensing
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/licensingrule
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/memberentitlementmanagement
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/operations
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/policy
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/profile
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/release
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/security
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/system
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/taskagent
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/test
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/webapi
-github.com/microsoft/azure-devops-go-api/azuredevops/v6/workitemtracking
+github.com/microsoft/azure-devops-go-api/azuredevops/v7
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/build
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/commerce
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/core
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/delegatedauthorization
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/distributedtaskcommon
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/forminput
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/git
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensingrule
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/notification
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinesapproval
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinestaskcheck
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/release
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/security
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/system
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure
@@ -311,15 +311,13 @@ github.com/zclconf/go-cty/cty/function/stdlib
 github.com/zclconf/go-cty/cty/gocty
 github.com/zclconf/go-cty/cty/json
 github.com/zclconf/go-cty/cty/set
-# golang.org/x/crypto v0.6.0
-## explicit; go 1.17
-golang.org/x/crypto/bcrypt
+# golang.org/x/crypto v0.17.0
+## explicit; go 1.18
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
-golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/openpgp
@@ -332,7 +330,7 @@ golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.7.0
+# golang.org/x/net v0.17.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -341,19 +339,18 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.5.0
-## explicit; go 1.17
+# golang.org/x/sys v0.15.0
+## explicit; go 1.18
 golang.org/x/sys/cpu
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.7.0
-## explicit; go 1.17
+# golang.org/x/text v0.14.0
+## explicit; go 1.18
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/appengine v1.6.6
+# google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine
 google.golang.org/appengine/datastore
@@ -366,11 +363,11 @@ google.golang.org/appengine/internal/datastore
 google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
-# google.golang.org/genproto v0.0.0-20200711021454-869866162049
-## explicit; go 1.11
+# google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1
+## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.48.0
-## explicit; go 1.14
+# google.golang.org/grpc v1.56.3
+## explicit; go 1.17
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -423,7 +420,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.28.1
+# google.golang.org/protobuf v1.30.0
 ## explicit; go 1.11
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext

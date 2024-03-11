@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -31,11 +31,12 @@ var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},
-	Id:    &artifactoryV2TestServiceEndpointIDpassword,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
-	Url:   converter.String("https://www.artifactory.com"),
+	Id:          &artifactoryV2TestServiceEndpointIDpassword,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("jfrogArtifactoryService"),
+	Url:         converter.String("https://www.artifactory.com"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -58,11 +59,12 @@ var artifactoryV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &artifactoryV2TestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_CONN_NAME"),
-	Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-	Type:  converter.String("jfrogArtifactoryService"),
-	Url:   converter.String("https://www.artifactory.com"),
+	Id:          &artifactoryV2TestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_CONN_NAME"),
+	Owner:       converter.String("library"), // Supported values are "library", "agentcloud"
+	Type:        converter.String("jfrogArtifactoryService"),
+	Url:         converter.String("https://www.artifactory.com"),
+	Description: converter.String("UNIT_TEST_CONN_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -79,7 +81,7 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogArtifactoryV2().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id)
+		flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogArtifactoryV2(resourceData)
 		require.Nil(t, err)
@@ -103,7 +105,7 @@ func testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -132,7 +134,7 @@ func testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -164,7 +166,7 @@ func testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -198,7 +200,7 @@ func testServiceEndpointArtifactoryV2_Update_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

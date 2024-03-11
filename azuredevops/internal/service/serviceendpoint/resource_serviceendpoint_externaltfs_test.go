@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/serviceendpoint"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -32,11 +32,12 @@ var externalTfsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 		},
 		Scheme: converter.String("Token"),
 	},
-	Id:    &externalTfsTestServiceEndpointID,
-	Name:  converter.String("UNIT_TEST_NAME"),
-	Owner: converter.String("library"),
-	Type:  converter.String("externaltfs"),
-	Url:   converter.String("https://dev.azure.com/myorganization"),
+	Id:          &externalTfsTestServiceEndpointID,
+	Name:        converter.String("UNIT_TEST_NAME"),
+	Owner:       converter.String("library"),
+	Type:        converter.String("externaltfs"),
+	Url:         converter.String("https://dev.azure.com/myorganization"),
+	Description: converter.String("UNIT_TEST_DESCRIPTION"),
 	ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 		{
 			ProjectReference: &serviceendpoint.ProjectReference{
@@ -54,7 +55,7 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointExternalTFS(resourceData)
@@ -74,7 +75,7 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -100,7 +101,7 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -129,7 +130,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -162,7 +163,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID,
+		externalTfsTestServiceEndpointProjectID.String(),
 	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
