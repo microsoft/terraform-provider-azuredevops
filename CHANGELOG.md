@@ -1,4 +1,8 @@
-## 1.1.0 (Unreleased)
+## 1.0.1
+
+FEATURES:
+
+* Fix AzureAD authorization and OIDC validationOIDC validation [#993](https://github.com/microsoft/terraform-provider-azuredevops/pull/993)
 
 ## 1.0.0 
 
