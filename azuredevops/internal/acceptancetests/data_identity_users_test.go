@@ -34,6 +34,6 @@ func testIdentityUsersDataSource(t *testing.T, userName string) {
 }
 
 func TestAccIdentityUsersDataSource(t *testing.T) {
-	userName := "dummy_user"
+	userName := "dummy user"
 	testIdentityUsersDataSource(t, userName)
 }

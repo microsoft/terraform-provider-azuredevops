@@ -43,6 +43,6 @@ data "azuredevops_identity_group" "test" {
 }
 
 func TestAccIdentityGroupDataSource(t *testing.T) {
-	groupName := "Contributors"
+	groupName := "[default]\\\\Contributors"
 	testIdentityGroupDataSource(t, groupName)
 }

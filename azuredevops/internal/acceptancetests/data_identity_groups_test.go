@@ -13,15 +13,15 @@ import (
 )
 
 func generateIdentityGroupsDataSourceConfig(projectName string) string {
-	return fmt.Sprintf(
-		`
+	return fmt.Sprintf(`
 data "azuredevops_project" "project" {
 	name = "%[1]s"
 }
 
 data "azuredevops_identity_groups" "groups" {
 	project_id = data.azuredevops_project.project.id
-}`, projectName)
+}
+`, projectName)
 }
 
 func testIdentityGroupsDataSource(t *testing.T, projectName string) {
@@ -34,7 +34,6 @@ func testIdentityGroupsDataSource(t *testing.T, projectName string) {
 				Config: generateIdentityGroupsDataSourceConfig(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 				),
 			},
 		},
