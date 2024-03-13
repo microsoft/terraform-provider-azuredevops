@@ -265,7 +265,6 @@ func TestAuthOIDCToken(t *testing.T) {
 		func(tenantID, clientID string,
 			getAssertion func(context.Context) (string, error),
 			options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
-
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
