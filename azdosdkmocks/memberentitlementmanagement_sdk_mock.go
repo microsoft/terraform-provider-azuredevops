@@ -6,35 +6,36 @@ package azdosdkmocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	memberentitlementmanagement "github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
-	reflect "reflect"
 )
 
-// MockMemberentitlementmanagementClient is a mock of Client interface
+// MockMemberentitlementmanagementClient is a mock of Client interface.
 type MockMemberentitlementmanagementClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMemberentitlementmanagementClientMockRecorder
 }
 
-// MockMemberentitlementmanagementClientMockRecorder is the mock recorder for MockMemberentitlementmanagementClient
+// MockMemberentitlementmanagementClientMockRecorder is the mock recorder for MockMemberentitlementmanagementClient.
 type MockMemberentitlementmanagementClientMockRecorder struct {
 	mock *MockMemberentitlementmanagementClient
 }
 
-// NewMockMemberentitlementmanagementClient creates a new mock instance
+// NewMockMemberentitlementmanagementClient creates a new mock instance.
 func NewMockMemberentitlementmanagementClient(ctrl *gomock.Controller) *MockMemberentitlementmanagementClient {
 	mock := &MockMemberentitlementmanagementClient{ctrl: ctrl}
 	mock.recorder = &MockMemberentitlementmanagementClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMemberentitlementmanagementClient) EXPECT() *MockMemberentitlementmanagementClientMockRecorder {
 	return m.recorder
 }
 
-// AddGroupEntitlement mocks base method
+// AddGroupEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) AddGroupEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.AddGroupEntitlementArgs) (*memberentitlementmanagement.GroupEntitlementOperationReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddGroupEntitlement", arg0, arg1)
@@ -43,13 +44,13 @@ func (m *MockMemberentitlementmanagementClient) AddGroupEntitlement(arg0 context
 	return ret0, ret1
 }
 
-// AddGroupEntitlement indicates an expected call of AddGroupEntitlement
+// AddGroupEntitlement indicates an expected call of AddGroupEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) AddGroupEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGroupEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).AddGroupEntitlement), arg0, arg1)
 }
 
-// AddMemberToGroup mocks base method
+// AddMemberToGroup mocks base method.
 func (m *MockMemberentitlementmanagementClient) AddMemberToGroup(arg0 context.Context, arg1 memberentitlementmanagement.AddMemberToGroupArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMemberToGroup", arg0, arg1)
@@ -57,13 +58,13 @@ func (m *MockMemberentitlementmanagementClient) AddMemberToGroup(arg0 context.Co
 	return ret0
 }
 
-// AddMemberToGroup indicates an expected call of AddMemberToGroup
+// AddMemberToGroup indicates an expected call of AddMemberToGroup.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) AddMemberToGroup(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberToGroup", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).AddMemberToGroup), arg0, arg1)
 }
 
-// AddServicePrincipalEntitlement mocks base method
+// AddServicePrincipalEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) AddServicePrincipalEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.AddServicePrincipalEntitlementArgs) (*memberentitlementmanagement.ServicePrincipalEntitlementsPostResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddServicePrincipalEntitlement", arg0, arg1)
@@ -72,13 +73,13 @@ func (m *MockMemberentitlementmanagementClient) AddServicePrincipalEntitlement(a
 	return ret0, ret1
 }
 
-// AddServicePrincipalEntitlement indicates an expected call of AddServicePrincipalEntitlement
+// AddServicePrincipalEntitlement indicates an expected call of AddServicePrincipalEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) AddServicePrincipalEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddServicePrincipalEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).AddServicePrincipalEntitlement), arg0, arg1)
 }
 
-// AddUserEntitlement mocks base method
+// AddUserEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) AddUserEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.AddUserEntitlementArgs) (*memberentitlementmanagement.UserEntitlementsPostResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddUserEntitlement", arg0, arg1)
@@ -87,13 +88,13 @@ func (m *MockMemberentitlementmanagementClient) AddUserEntitlement(arg0 context.
 	return ret0, ret1
 }
 
-// AddUserEntitlement indicates an expected call of AddUserEntitlement
+// AddUserEntitlement indicates an expected call of AddUserEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) AddUserEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).AddUserEntitlement), arg0, arg1)
 }
 
-// DeleteGroupEntitlement mocks base method
+// DeleteGroupEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) DeleteGroupEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.DeleteGroupEntitlementArgs) (*memberentitlementmanagement.GroupEntitlementOperationReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteGroupEntitlement", arg0, arg1)
@@ -102,13 +103,13 @@ func (m *MockMemberentitlementmanagementClient) DeleteGroupEntitlement(arg0 cont
 	return ret0, ret1
 }
 
-// DeleteGroupEntitlement indicates an expected call of DeleteGroupEntitlement
+// DeleteGroupEntitlement indicates an expected call of DeleteGroupEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) DeleteGroupEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).DeleteGroupEntitlement), arg0, arg1)
 }
 
-// DeleteServicePrincipalEntitlement mocks base method
+// DeleteServicePrincipalEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) DeleteServicePrincipalEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.DeleteServicePrincipalEntitlementArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteServicePrincipalEntitlement", arg0, arg1)
@@ -116,13 +117,13 @@ func (m *MockMemberentitlementmanagementClient) DeleteServicePrincipalEntitlemen
 	return ret0
 }
 
-// DeleteServicePrincipalEntitlement indicates an expected call of DeleteServicePrincipalEntitlement
+// DeleteServicePrincipalEntitlement indicates an expected call of DeleteServicePrincipalEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) DeleteServicePrincipalEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServicePrincipalEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).DeleteServicePrincipalEntitlement), arg0, arg1)
 }
 
-// DeleteUserEntitlement mocks base method
+// DeleteUserEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) DeleteUserEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.DeleteUserEntitlementArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUserEntitlement", arg0, arg1)
@@ -130,13 +131,13 @@ func (m *MockMemberentitlementmanagementClient) DeleteUserEntitlement(arg0 conte
 	return ret0
 }
 
-// DeleteUserEntitlement indicates an expected call of DeleteUserEntitlement
+// DeleteUserEntitlement indicates an expected call of DeleteUserEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) DeleteUserEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).DeleteUserEntitlement), arg0, arg1)
 }
 
-// GetGroupEntitlement mocks base method
+// GetGroupEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetGroupEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.GetGroupEntitlementArgs) (*memberentitlementmanagement.GroupEntitlement, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGroupEntitlement", arg0, arg1)
@@ -145,13 +146,13 @@ func (m *MockMemberentitlementmanagementClient) GetGroupEntitlement(arg0 context
 	return ret0, ret1
 }
 
-// GetGroupEntitlement indicates an expected call of GetGroupEntitlement
+// GetGroupEntitlement indicates an expected call of GetGroupEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetGroupEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetGroupEntitlement), arg0, arg1)
 }
 
-// GetGroupEntitlements mocks base method
+// GetGroupEntitlements mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetGroupEntitlements(arg0 context.Context, arg1 memberentitlementmanagement.GetGroupEntitlementsArgs) (*[]memberentitlementmanagement.GroupEntitlement, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGroupEntitlements", arg0, arg1)
@@ -160,13 +161,13 @@ func (m *MockMemberentitlementmanagementClient) GetGroupEntitlements(arg0 contex
 	return ret0, ret1
 }
 
-// GetGroupEntitlements indicates an expected call of GetGroupEntitlements
+// GetGroupEntitlements indicates an expected call of GetGroupEntitlements.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetGroupEntitlements(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupEntitlements", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetGroupEntitlements), arg0, arg1)
 }
 
-// GetGroupMembers mocks base method
+// GetGroupMembers mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetGroupMembers(arg0 context.Context, arg1 memberentitlementmanagement.GetGroupMembersArgs) (*memberentitlementmanagement.PagedGraphMemberList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGroupMembers", arg0, arg1)
@@ -175,13 +176,13 @@ func (m *MockMemberentitlementmanagementClient) GetGroupMembers(arg0 context.Con
 	return ret0, ret1
 }
 
-// GetGroupMembers indicates an expected call of GetGroupMembers
+// GetGroupMembers indicates an expected call of GetGroupMembers.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetGroupMembers(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupMembers", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetGroupMembers), arg0, arg1)
 }
 
-// GetServicePrincipalEntitlement mocks base method
+// GetServicePrincipalEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetServicePrincipalEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.GetServicePrincipalEntitlementArgs) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServicePrincipalEntitlement", arg0, arg1)
@@ -190,13 +191,13 @@ func (m *MockMemberentitlementmanagementClient) GetServicePrincipalEntitlement(a
 	return ret0, ret1
 }
 
-// GetServicePrincipalEntitlement indicates an expected call of GetServicePrincipalEntitlement
+// GetServicePrincipalEntitlement indicates an expected call of GetServicePrincipalEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetServicePrincipalEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicePrincipalEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetServicePrincipalEntitlement), arg0, arg1)
 }
 
-// GetUserEntitlement mocks base method
+// GetUserEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetUserEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.GetUserEntitlementArgs) (*memberentitlementmanagement.UserEntitlement, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserEntitlement", arg0, arg1)
@@ -205,13 +206,13 @@ func (m *MockMemberentitlementmanagementClient) GetUserEntitlement(arg0 context.
 	return ret0, ret1
 }
 
-// GetUserEntitlement indicates an expected call of GetUserEntitlement
+// GetUserEntitlement indicates an expected call of GetUserEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetUserEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetUserEntitlement), arg0, arg1)
 }
 
-// GetUsersSummary mocks base method
+// GetUsersSummary mocks base method.
 func (m *MockMemberentitlementmanagementClient) GetUsersSummary(arg0 context.Context, arg1 memberentitlementmanagement.GetUsersSummaryArgs) (*memberentitlementmanagement.UsersSummary, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUsersSummary", arg0, arg1)
@@ -220,13 +221,13 @@ func (m *MockMemberentitlementmanagementClient) GetUsersSummary(arg0 context.Con
 	return ret0, ret1
 }
 
-// GetUsersSummary indicates an expected call of GetUsersSummary
+// GetUsersSummary indicates an expected call of GetUsersSummary.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) GetUsersSummary(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersSummary", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).GetUsersSummary), arg0, arg1)
 }
 
-// RemoveMemberFromGroup mocks base method
+// RemoveMemberFromGroup mocks base method.
 func (m *MockMemberentitlementmanagementClient) RemoveMemberFromGroup(arg0 context.Context, arg1 memberentitlementmanagement.RemoveMemberFromGroupArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMemberFromGroup", arg0, arg1)
@@ -234,13 +235,13 @@ func (m *MockMemberentitlementmanagementClient) RemoveMemberFromGroup(arg0 conte
 	return ret0
 }
 
-// RemoveMemberFromGroup indicates an expected call of RemoveMemberFromGroup
+// RemoveMemberFromGroup indicates an expected call of RemoveMemberFromGroup.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) RemoveMemberFromGroup(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMemberFromGroup", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).RemoveMemberFromGroup), arg0, arg1)
 }
 
-// SearchMemberEntitlements mocks base method
+// SearchMemberEntitlements mocks base method.
 func (m *MockMemberentitlementmanagementClient) SearchMemberEntitlements(arg0 context.Context, arg1 memberentitlementmanagement.SearchMemberEntitlementsArgs) (*[]memberentitlementmanagement.MemberEntitlement2, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SearchMemberEntitlements", arg0, arg1)
@@ -249,13 +250,13 @@ func (m *MockMemberentitlementmanagementClient) SearchMemberEntitlements(arg0 co
 	return ret0, ret1
 }
 
-// SearchMemberEntitlements indicates an expected call of SearchMemberEntitlements
+// SearchMemberEntitlements indicates an expected call of SearchMemberEntitlements.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) SearchMemberEntitlements(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMemberEntitlements", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).SearchMemberEntitlements), arg0, arg1)
 }
 
-// SearchUserEntitlements mocks base method
+// SearchUserEntitlements mocks base method.
 func (m *MockMemberentitlementmanagementClient) SearchUserEntitlements(arg0 context.Context, arg1 memberentitlementmanagement.SearchUserEntitlementsArgs) (*memberentitlementmanagement.PagedGraphMemberList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SearchUserEntitlements", arg0, arg1)
@@ -264,13 +265,13 @@ func (m *MockMemberentitlementmanagementClient) SearchUserEntitlements(arg0 cont
 	return ret0, ret1
 }
 
-// SearchUserEntitlements indicates an expected call of SearchUserEntitlements
+// SearchUserEntitlements indicates an expected call of SearchUserEntitlements.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) SearchUserEntitlements(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserEntitlements", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).SearchUserEntitlements), arg0, arg1)
 }
 
-// UpdateGroupEntitlement mocks base method
+// UpdateGroupEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) UpdateGroupEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.UpdateGroupEntitlementArgs) (*memberentitlementmanagement.GroupEntitlementOperationReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateGroupEntitlement", arg0, arg1)
@@ -279,13 +280,13 @@ func (m *MockMemberentitlementmanagementClient) UpdateGroupEntitlement(arg0 cont
 	return ret0, ret1
 }
 
-// UpdateGroupEntitlement indicates an expected call of UpdateGroupEntitlement
+// UpdateGroupEntitlement indicates an expected call of UpdateGroupEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) UpdateGroupEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGroupEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).UpdateGroupEntitlement), arg0, arg1)
 }
 
-// UpdateServicePrincipalEntitlement mocks base method
+// UpdateServicePrincipalEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) UpdateServicePrincipalEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.UpdateServicePrincipalEntitlementArgs) (*memberentitlementmanagement.ServicePrincipalEntitlementsPatchResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateServicePrincipalEntitlement", arg0, arg1)
@@ -294,13 +295,13 @@ func (m *MockMemberentitlementmanagementClient) UpdateServicePrincipalEntitlemen
 	return ret0, ret1
 }
 
-// UpdateServicePrincipalEntitlement indicates an expected call of UpdateServicePrincipalEntitlement
+// UpdateServicePrincipalEntitlement indicates an expected call of UpdateServicePrincipalEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) UpdateServicePrincipalEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServicePrincipalEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).UpdateServicePrincipalEntitlement), arg0, arg1)
 }
 
-// UpdateServicePrincipalEntitlements mocks base method
+// UpdateServicePrincipalEntitlements mocks base method.
 func (m *MockMemberentitlementmanagementClient) UpdateServicePrincipalEntitlements(arg0 context.Context, arg1 memberentitlementmanagement.UpdateServicePrincipalEntitlementsArgs) (*memberentitlementmanagement.ServicePrincipalEntitlementOperationReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateServicePrincipalEntitlements", arg0, arg1)
@@ -309,13 +310,13 @@ func (m *MockMemberentitlementmanagementClient) UpdateServicePrincipalEntitlemen
 	return ret0, ret1
 }
 
-// UpdateServicePrincipalEntitlements indicates an expected call of UpdateServicePrincipalEntitlements
+// UpdateServicePrincipalEntitlements indicates an expected call of UpdateServicePrincipalEntitlements.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) UpdateServicePrincipalEntitlements(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServicePrincipalEntitlements", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).UpdateServicePrincipalEntitlements), arg0, arg1)
 }
 
-// UpdateUserEntitlement mocks base method
+// UpdateUserEntitlement mocks base method.
 func (m *MockMemberentitlementmanagementClient) UpdateUserEntitlement(arg0 context.Context, arg1 memberentitlementmanagement.UpdateUserEntitlementArgs) (*memberentitlementmanagement.UserEntitlementsPatchResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserEntitlement", arg0, arg1)
@@ -324,13 +325,13 @@ func (m *MockMemberentitlementmanagementClient) UpdateUserEntitlement(arg0 conte
 	return ret0, ret1
 }
 
-// UpdateUserEntitlement indicates an expected call of UpdateUserEntitlement
+// UpdateUserEntitlement indicates an expected call of UpdateUserEntitlement.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) UpdateUserEntitlement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserEntitlement", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).UpdateUserEntitlement), arg0, arg1)
 }
 
-// UpdateUserEntitlements mocks base method
+// UpdateUserEntitlements mocks base method.
 func (m *MockMemberentitlementmanagementClient) UpdateUserEntitlements(arg0 context.Context, arg1 memberentitlementmanagement.UpdateUserEntitlementsArgs) (*memberentitlementmanagement.UserEntitlementOperationReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserEntitlements", arg0, arg1)
@@ -339,7 +340,7 @@ func (m *MockMemberentitlementmanagementClient) UpdateUserEntitlements(arg0 cont
 	return ret0, ret1
 }
 
-// UpdateUserEntitlements indicates an expected call of UpdateUserEntitlements
+// UpdateUserEntitlements indicates an expected call of UpdateUserEntitlements.
 func (mr *MockMemberentitlementmanagementClientMockRecorder) UpdateUserEntitlements(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserEntitlements", reflect.TypeOf((*MockMemberentitlementmanagementClient)(nil).UpdateUserEntitlements), arg0, arg1)

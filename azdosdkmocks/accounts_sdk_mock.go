@@ -6,35 +6,36 @@ package azdosdkmocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	accounts "github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts"
-	reflect "reflect"
 )
 
-// MockAccountsClient is a mock of Client interface
+// MockAccountsClient is a mock of Client interface.
 type MockAccountsClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccountsClientMockRecorder
 }
 
-// MockAccountsClientMockRecorder is the mock recorder for MockAccountsClient
+// MockAccountsClientMockRecorder is the mock recorder for MockAccountsClient.
 type MockAccountsClientMockRecorder struct {
 	mock *MockAccountsClient
 }
 
-// NewMockAccountsClient creates a new mock instance
+// NewMockAccountsClient creates a new mock instance.
 func NewMockAccountsClient(ctrl *gomock.Controller) *MockAccountsClient {
 	mock := &MockAccountsClient{ctrl: ctrl}
 	mock.recorder = &MockAccountsClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAccountsClient) EXPECT() *MockAccountsClientMockRecorder {
 	return m.recorder
 }
 
-// GetAccounts mocks base method
+// GetAccounts mocks base method.
 func (m *MockAccountsClient) GetAccounts(arg0 context.Context, arg1 accounts.GetAccountsArgs) (*[]accounts.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccounts", arg0, arg1)
@@ -43,7 +44,7 @@ func (m *MockAccountsClient) GetAccounts(arg0 context.Context, arg1 accounts.Get
 	return ret0, ret1
 }
 
-// GetAccounts indicates an expected call of GetAccounts
+// GetAccounts indicates an expected call of GetAccounts.
 func (mr *MockAccountsClientMockRecorder) GetAccounts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccounts", reflect.TypeOf((*MockAccountsClient)(nil).GetAccounts), arg0, arg1)

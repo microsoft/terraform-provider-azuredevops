@@ -6,35 +6,36 @@ package azdosdkmocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	pipelines "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
-	reflect "reflect"
 )
 
-// MockPipelinesClient is a mock of Client interface
+// MockPipelinesClient is a mock of Client interface.
 type MockPipelinesClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelinesClientMockRecorder
 }
 
-// MockPipelinesClientMockRecorder is the mock recorder for MockPipelinesClient
+// MockPipelinesClientMockRecorder is the mock recorder for MockPipelinesClient.
 type MockPipelinesClientMockRecorder struct {
 	mock *MockPipelinesClient
 }
 
-// NewMockPipelinesClient creates a new mock instance
+// NewMockPipelinesClient creates a new mock instance.
 func NewMockPipelinesClient(ctrl *gomock.Controller) *MockPipelinesClient {
 	mock := &MockPipelinesClient{ctrl: ctrl}
 	mock.recorder = &MockPipelinesClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPipelinesClient) EXPECT() *MockPipelinesClientMockRecorder {
 	return m.recorder
 }
 
-// CreatePipeline mocks base method
+// CreatePipeline mocks base method.
 func (m *MockPipelinesClient) CreatePipeline(arg0 context.Context, arg1 pipelines.CreatePipelineArgs) (*pipelines.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePipeline", arg0, arg1)
@@ -43,13 +44,13 @@ func (m *MockPipelinesClient) CreatePipeline(arg0 context.Context, arg1 pipeline
 	return ret0, ret1
 }
 
-// CreatePipeline indicates an expected call of CreatePipeline
+// CreatePipeline indicates an expected call of CreatePipeline.
 func (mr *MockPipelinesClientMockRecorder) CreatePipeline(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipeline", reflect.TypeOf((*MockPipelinesClient)(nil).CreatePipeline), arg0, arg1)
 }
 
-// GetArtifact mocks base method
+// GetArtifact mocks base method.
 func (m *MockPipelinesClient) GetArtifact(arg0 context.Context, arg1 pipelines.GetArtifactArgs) (*pipelines.Artifact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetArtifact", arg0, arg1)
@@ -58,13 +59,13 @@ func (m *MockPipelinesClient) GetArtifact(arg0 context.Context, arg1 pipelines.G
 	return ret0, ret1
 }
 
-// GetArtifact indicates an expected call of GetArtifact
+// GetArtifact indicates an expected call of GetArtifact.
 func (mr *MockPipelinesClientMockRecorder) GetArtifact(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifact", reflect.TypeOf((*MockPipelinesClient)(nil).GetArtifact), arg0, arg1)
 }
 
-// GetLog mocks base method
+// GetLog mocks base method.
 func (m *MockPipelinesClient) GetLog(arg0 context.Context, arg1 pipelines.GetLogArgs) (*pipelines.Log, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLog", arg0, arg1)
@@ -73,13 +74,13 @@ func (m *MockPipelinesClient) GetLog(arg0 context.Context, arg1 pipelines.GetLog
 	return ret0, ret1
 }
 
-// GetLog indicates an expected call of GetLog
+// GetLog indicates an expected call of GetLog.
 func (mr *MockPipelinesClientMockRecorder) GetLog(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockPipelinesClient)(nil).GetLog), arg0, arg1)
 }
 
-// GetPipeline mocks base method
+// GetPipeline mocks base method.
 func (m *MockPipelinesClient) GetPipeline(arg0 context.Context, arg1 pipelines.GetPipelineArgs) (*pipelines.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPipeline", arg0, arg1)
@@ -88,13 +89,13 @@ func (m *MockPipelinesClient) GetPipeline(arg0 context.Context, arg1 pipelines.G
 	return ret0, ret1
 }
 
-// GetPipeline indicates an expected call of GetPipeline
+// GetPipeline indicates an expected call of GetPipeline.
 func (mr *MockPipelinesClientMockRecorder) GetPipeline(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipeline", reflect.TypeOf((*MockPipelinesClient)(nil).GetPipeline), arg0, arg1)
 }
 
-// GetRun mocks base method
+// GetRun mocks base method.
 func (m *MockPipelinesClient) GetRun(arg0 context.Context, arg1 pipelines.GetRunArgs) (*pipelines.Run, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRun", arg0, arg1)
@@ -103,13 +104,13 @@ func (m *MockPipelinesClient) GetRun(arg0 context.Context, arg1 pipelines.GetRun
 	return ret0, ret1
 }
 
-// GetRun indicates an expected call of GetRun
+// GetRun indicates an expected call of GetRun.
 func (mr *MockPipelinesClientMockRecorder) GetRun(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRun", reflect.TypeOf((*MockPipelinesClient)(nil).GetRun), arg0, arg1)
 }
 
-// ListLogs mocks base method
+// ListLogs mocks base method.
 func (m *MockPipelinesClient) ListLogs(arg0 context.Context, arg1 pipelines.ListLogsArgs) (*pipelines.LogCollection, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListLogs", arg0, arg1)
@@ -118,13 +119,13 @@ func (m *MockPipelinesClient) ListLogs(arg0 context.Context, arg1 pipelines.List
 	return ret0, ret1
 }
 
-// ListLogs indicates an expected call of ListLogs
+// ListLogs indicates an expected call of ListLogs.
 func (mr *MockPipelinesClientMockRecorder) ListLogs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLogs", reflect.TypeOf((*MockPipelinesClient)(nil).ListLogs), arg0, arg1)
 }
 
-// ListPipelines mocks base method
+// ListPipelines mocks base method.
 func (m *MockPipelinesClient) ListPipelines(arg0 context.Context, arg1 pipelines.ListPipelinesArgs) (*[]pipelines.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPipelines", arg0, arg1)
@@ -133,13 +134,13 @@ func (m *MockPipelinesClient) ListPipelines(arg0 context.Context, arg1 pipelines
 	return ret0, ret1
 }
 
-// ListPipelines indicates an expected call of ListPipelines
+// ListPipelines indicates an expected call of ListPipelines.
 func (mr *MockPipelinesClientMockRecorder) ListPipelines(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelines", reflect.TypeOf((*MockPipelinesClient)(nil).ListPipelines), arg0, arg1)
 }
 
-// ListRuns mocks base method
+// ListRuns mocks base method.
 func (m *MockPipelinesClient) ListRuns(arg0 context.Context, arg1 pipelines.ListRunsArgs) (*[]pipelines.Run, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListRuns", arg0, arg1)
@@ -148,13 +149,13 @@ func (m *MockPipelinesClient) ListRuns(arg0 context.Context, arg1 pipelines.List
 	return ret0, ret1
 }
 
-// ListRuns indicates an expected call of ListRuns
+// ListRuns indicates an expected call of ListRuns.
 func (mr *MockPipelinesClientMockRecorder) ListRuns(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRuns", reflect.TypeOf((*MockPipelinesClient)(nil).ListRuns), arg0, arg1)
 }
 
-// Preview mocks base method
+// Preview mocks base method.
 func (m *MockPipelinesClient) Preview(arg0 context.Context, arg1 pipelines.PreviewArgs) (*pipelines.PreviewRun, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Preview", arg0, arg1)
@@ -163,13 +164,13 @@ func (m *MockPipelinesClient) Preview(arg0 context.Context, arg1 pipelines.Previ
 	return ret0, ret1
 }
 
-// Preview indicates an expected call of Preview
+// Preview indicates an expected call of Preview.
 func (mr *MockPipelinesClientMockRecorder) Preview(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Preview", reflect.TypeOf((*MockPipelinesClient)(nil).Preview), arg0, arg1)
 }
 
-// RunPipeline mocks base method
+// RunPipeline mocks base method.
 func (m *MockPipelinesClient) RunPipeline(arg0 context.Context, arg1 pipelines.RunPipelineArgs) (*pipelines.Run, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RunPipeline", arg0, arg1)
@@ -178,7 +179,7 @@ func (m *MockPipelinesClient) RunPipeline(arg0 context.Context, arg1 pipelines.R
 	return ret0, ret1
 }
 
-// RunPipeline indicates an expected call of RunPipeline
+// RunPipeline indicates an expected call of RunPipeline.
 func (mr *MockPipelinesClientMockRecorder) RunPipeline(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunPipeline", reflect.TypeOf((*MockPipelinesClient)(nil).RunPipeline), arg0, arg1)

@@ -6,35 +6,36 @@ package azdosdkmocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks"
-	reflect "reflect"
 )
 
-// MockPipelineschecksClient is a mock of Client interface
+// MockPipelineschecksClient is a mock of Client interface.
 type MockPipelineschecksClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelineschecksClientMockRecorder
 }
 
-// MockPipelineschecksClientMockRecorder is the mock recorder for MockPipelineschecksClient
+// MockPipelineschecksClientMockRecorder is the mock recorder for MockPipelineschecksClient.
 type MockPipelineschecksClientMockRecorder struct {
 	mock *MockPipelineschecksClient
 }
 
-// NewMockPipelineschecksClient creates a new mock instance
+// NewMockPipelineschecksClient creates a new mock instance.
 func NewMockPipelineschecksClient(ctrl *gomock.Controller) *MockPipelineschecksClient {
 	mock := &MockPipelineschecksClient{ctrl: ctrl}
 	mock.recorder = &MockPipelineschecksClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPipelineschecksClient) EXPECT() *MockPipelineschecksClientMockRecorder {
 	return m.recorder
 }
 
-// AddCheckConfiguration mocks base method
+// AddCheckConfiguration mocks base method.
 func (m *MockPipelineschecksClient) AddCheckConfiguration(arg0 context.Context, arg1 pipelineschecks.AddCheckConfigurationArgs) (*pipelineschecks.CheckConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddCheckConfiguration", arg0, arg1)
@@ -43,13 +44,13 @@ func (m *MockPipelineschecksClient) AddCheckConfiguration(arg0 context.Context, 
 	return ret0, ret1
 }
 
-// AddCheckConfiguration indicates an expected call of AddCheckConfiguration
+// AddCheckConfiguration indicates an expected call of AddCheckConfiguration.
 func (mr *MockPipelineschecksClientMockRecorder) AddCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).AddCheckConfiguration), arg0, arg1)
 }
 
-// DeleteCheckConfiguration mocks base method
+// DeleteCheckConfiguration mocks base method.
 func (m *MockPipelineschecksClient) DeleteCheckConfiguration(arg0 context.Context, arg1 pipelineschecks.DeleteCheckConfigurationArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCheckConfiguration", arg0, arg1)
@@ -57,13 +58,13 @@ func (m *MockPipelineschecksClient) DeleteCheckConfiguration(arg0 context.Contex
 	return ret0
 }
 
-// DeleteCheckConfiguration indicates an expected call of DeleteCheckConfiguration
+// DeleteCheckConfiguration indicates an expected call of DeleteCheckConfiguration.
 func (mr *MockPipelineschecksClientMockRecorder) DeleteCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).DeleteCheckConfiguration), arg0, arg1)
 }
 
-// EvaluateCheckSuite mocks base method
+// EvaluateCheckSuite mocks base method.
 func (m *MockPipelineschecksClient) EvaluateCheckSuite(arg0 context.Context, arg1 pipelineschecks.EvaluateCheckSuiteArgs) (*pipelineschecks.CheckSuite, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EvaluateCheckSuite", arg0, arg1)
@@ -72,13 +73,13 @@ func (m *MockPipelineschecksClient) EvaluateCheckSuite(arg0 context.Context, arg
 	return ret0, ret1
 }
 
-// EvaluateCheckSuite indicates an expected call of EvaluateCheckSuite
+// EvaluateCheckSuite indicates an expected call of EvaluateCheckSuite.
 func (mr *MockPipelineschecksClientMockRecorder) EvaluateCheckSuite(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EvaluateCheckSuite", reflect.TypeOf((*MockPipelineschecksClient)(nil).EvaluateCheckSuite), arg0, arg1)
 }
 
-// GetCheckConfiguration mocks base method
+// GetCheckConfiguration mocks base method.
 func (m *MockPipelineschecksClient) GetCheckConfiguration(arg0 context.Context, arg1 pipelineschecks.GetCheckConfigurationArgs) (*pipelineschecks.CheckConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCheckConfiguration", arg0, arg1)
@@ -87,13 +88,13 @@ func (m *MockPipelineschecksClient) GetCheckConfiguration(arg0 context.Context, 
 	return ret0, ret1
 }
 
-// GetCheckConfiguration indicates an expected call of GetCheckConfiguration
+// GetCheckConfiguration indicates an expected call of GetCheckConfiguration.
 func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckConfiguration), arg0, arg1)
 }
 
-// GetCheckConfigurationsOnResource mocks base method
+// GetCheckConfigurationsOnResource mocks base method.
 func (m *MockPipelineschecksClient) GetCheckConfigurationsOnResource(arg0 context.Context, arg1 pipelineschecks.GetCheckConfigurationsOnResourceArgs) (*[]pipelineschecks.CheckConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCheckConfigurationsOnResource", arg0, arg1)
@@ -102,13 +103,13 @@ func (m *MockPipelineschecksClient) GetCheckConfigurationsOnResource(arg0 contex
 	return ret0, ret1
 }
 
-// GetCheckConfigurationsOnResource indicates an expected call of GetCheckConfigurationsOnResource
+// GetCheckConfigurationsOnResource indicates an expected call of GetCheckConfigurationsOnResource.
 func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfigurationsOnResource(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckConfigurationsOnResource", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckConfigurationsOnResource), arg0, arg1)
 }
 
-// GetCheckSuite mocks base method
+// GetCheckSuite mocks base method.
 func (m *MockPipelineschecksClient) GetCheckSuite(arg0 context.Context, arg1 pipelineschecks.GetCheckSuiteArgs) (*pipelineschecks.CheckSuite, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCheckSuite", arg0, arg1)
@@ -117,13 +118,13 @@ func (m *MockPipelineschecksClient) GetCheckSuite(arg0 context.Context, arg1 pip
 	return ret0, ret1
 }
 
-// GetCheckSuite indicates an expected call of GetCheckSuite
+// GetCheckSuite indicates an expected call of GetCheckSuite.
 func (mr *MockPipelineschecksClientMockRecorder) GetCheckSuite(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckSuite", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckSuite), arg0, arg1)
 }
 
-// QueryCheckConfigurationsOnResources mocks base method
+// QueryCheckConfigurationsOnResources mocks base method.
 func (m *MockPipelineschecksClient) QueryCheckConfigurationsOnResources(arg0 context.Context, arg1 pipelineschecks.QueryCheckConfigurationsOnResourcesArgs) (*[]pipelineschecks.CheckConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueryCheckConfigurationsOnResources", arg0, arg1)
@@ -132,13 +133,13 @@ func (m *MockPipelineschecksClient) QueryCheckConfigurationsOnResources(arg0 con
 	return ret0, ret1
 }
 
-// QueryCheckConfigurationsOnResources indicates an expected call of QueryCheckConfigurationsOnResources
+// QueryCheckConfigurationsOnResources indicates an expected call of QueryCheckConfigurationsOnResources.
 func (mr *MockPipelineschecksClientMockRecorder) QueryCheckConfigurationsOnResources(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryCheckConfigurationsOnResources", reflect.TypeOf((*MockPipelineschecksClient)(nil).QueryCheckConfigurationsOnResources), arg0, arg1)
 }
 
-// UpdateCheckConfiguration mocks base method
+// UpdateCheckConfiguration mocks base method.
 func (m *MockPipelineschecksClient) UpdateCheckConfiguration(arg0 context.Context, arg1 pipelineschecks.UpdateCheckConfigurationArgs) (*pipelineschecks.CheckConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateCheckConfiguration", arg0, arg1)
@@ -147,7 +148,7 @@ func (m *MockPipelineschecksClient) UpdateCheckConfiguration(arg0 context.Contex
 	return ret0, ret1
 }
 
-// UpdateCheckConfiguration indicates an expected call of UpdateCheckConfiguration
+// UpdateCheckConfiguration indicates an expected call of UpdateCheckConfiguration.
 func (mr *MockPipelineschecksClientMockRecorder) UpdateCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).UpdateCheckConfiguration), arg0, arg1)

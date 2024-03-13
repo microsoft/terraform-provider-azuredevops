@@ -6,36 +6,37 @@ package azdosdkmocks
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	release "github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 	io "io"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	release "github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 )
 
-// MockReleaseClient is a mock of Client interface
+// MockReleaseClient is a mock of Client interface.
 type MockReleaseClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockReleaseClientMockRecorder
 }
 
-// MockReleaseClientMockRecorder is the mock recorder for MockReleaseClient
+// MockReleaseClientMockRecorder is the mock recorder for MockReleaseClient.
 type MockReleaseClientMockRecorder struct {
 	mock *MockReleaseClient
 }
 
-// NewMockReleaseClient creates a new mock instance
+// NewMockReleaseClient creates a new mock instance.
 func NewMockReleaseClient(ctrl *gomock.Controller) *MockReleaseClient {
 	mock := &MockReleaseClient{ctrl: ctrl}
 	mock.recorder = &MockReleaseClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockReleaseClient) EXPECT() *MockReleaseClientMockRecorder {
 	return m.recorder
 }
 
-// CreateFolder mocks base method
+// CreateFolder mocks base method.
 func (m *MockReleaseClient) CreateFolder(arg0 context.Context, arg1 release.CreateFolderArgs) (*release.Folder, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateFolder", arg0, arg1)
@@ -44,13 +45,13 @@ func (m *MockReleaseClient) CreateFolder(arg0 context.Context, arg1 release.Crea
 	return ret0, ret1
 }
 
-// CreateFolder indicates an expected call of CreateFolder
+// CreateFolder indicates an expected call of CreateFolder.
 func (mr *MockReleaseClientMockRecorder) CreateFolder(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFolder", reflect.TypeOf((*MockReleaseClient)(nil).CreateFolder), arg0, arg1)
 }
 
-// CreateRelease mocks base method
+// CreateRelease mocks base method.
 func (m *MockReleaseClient) CreateRelease(arg0 context.Context, arg1 release.CreateReleaseArgs) (*release.Release, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRelease", arg0, arg1)
@@ -59,13 +60,13 @@ func (m *MockReleaseClient) CreateRelease(arg0 context.Context, arg1 release.Cre
 	return ret0, ret1
 }
 
-// CreateRelease indicates an expected call of CreateRelease
+// CreateRelease indicates an expected call of CreateRelease.
 func (mr *MockReleaseClientMockRecorder) CreateRelease(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRelease", reflect.TypeOf((*MockReleaseClient)(nil).CreateRelease), arg0, arg1)
 }
 
-// CreateReleaseDefinition mocks base method
+// CreateReleaseDefinition mocks base method.
 func (m *MockReleaseClient) CreateReleaseDefinition(arg0 context.Context, arg1 release.CreateReleaseDefinitionArgs) (*release.ReleaseDefinition, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateReleaseDefinition", arg0, arg1)
@@ -74,13 +75,13 @@ func (m *MockReleaseClient) CreateReleaseDefinition(arg0 context.Context, arg1 r
 	return ret0, ret1
 }
 
-// CreateReleaseDefinition indicates an expected call of CreateReleaseDefinition
+// CreateReleaseDefinition indicates an expected call of CreateReleaseDefinition.
 func (mr *MockReleaseClientMockRecorder) CreateReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).CreateReleaseDefinition), arg0, arg1)
 }
 
-// DeleteFolder mocks base method
+// DeleteFolder mocks base method.
 func (m *MockReleaseClient) DeleteFolder(arg0 context.Context, arg1 release.DeleteFolderArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteFolder", arg0, arg1)
@@ -88,13 +89,13 @@ func (m *MockReleaseClient) DeleteFolder(arg0 context.Context, arg1 release.Dele
 	return ret0
 }
 
-// DeleteFolder indicates an expected call of DeleteFolder
+// DeleteFolder indicates an expected call of DeleteFolder.
 func (mr *MockReleaseClientMockRecorder) DeleteFolder(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFolder", reflect.TypeOf((*MockReleaseClient)(nil).DeleteFolder), arg0, arg1)
 }
 
-// DeleteReleaseDefinition mocks base method
+// DeleteReleaseDefinition mocks base method.
 func (m *MockReleaseClient) DeleteReleaseDefinition(arg0 context.Context, arg1 release.DeleteReleaseDefinitionArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteReleaseDefinition", arg0, arg1)
@@ -102,13 +103,13 @@ func (m *MockReleaseClient) DeleteReleaseDefinition(arg0 context.Context, arg1 r
 	return ret0
 }
 
-// DeleteReleaseDefinition indicates an expected call of DeleteReleaseDefinition
+// DeleteReleaseDefinition indicates an expected call of DeleteReleaseDefinition.
 func (mr *MockReleaseClientMockRecorder) DeleteReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).DeleteReleaseDefinition), arg0, arg1)
 }
 
-// GetApprovals mocks base method
+// GetApprovals mocks base method.
 func (m *MockReleaseClient) GetApprovals(arg0 context.Context, arg1 release.GetApprovalsArgs) (*release.GetApprovalsResponseValue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetApprovals", arg0, arg1)
@@ -117,13 +118,13 @@ func (m *MockReleaseClient) GetApprovals(arg0 context.Context, arg1 release.GetA
 	return ret0, ret1
 }
 
-// GetApprovals indicates an expected call of GetApprovals
+// GetApprovals indicates an expected call of GetApprovals.
 func (mr *MockReleaseClientMockRecorder) GetApprovals(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApprovals", reflect.TypeOf((*MockReleaseClient)(nil).GetApprovals), arg0, arg1)
 }
 
-// GetDefinitionRevision mocks base method
+// GetDefinitionRevision mocks base method.
 func (m *MockReleaseClient) GetDefinitionRevision(arg0 context.Context, arg1 release.GetDefinitionRevisionArgs) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefinitionRevision", arg0, arg1)
@@ -132,13 +133,13 @@ func (m *MockReleaseClient) GetDefinitionRevision(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// GetDefinitionRevision indicates an expected call of GetDefinitionRevision
+// GetDefinitionRevision indicates an expected call of GetDefinitionRevision.
 func (mr *MockReleaseClientMockRecorder) GetDefinitionRevision(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionRevision", reflect.TypeOf((*MockReleaseClient)(nil).GetDefinitionRevision), arg0, arg1)
 }
 
-// GetDeployments mocks base method
+// GetDeployments mocks base method.
 func (m *MockReleaseClient) GetDeployments(arg0 context.Context, arg1 release.GetDeploymentsArgs) (*release.GetDeploymentsResponseValue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployments", arg0, arg1)
@@ -147,13 +148,13 @@ func (m *MockReleaseClient) GetDeployments(arg0 context.Context, arg1 release.Ge
 	return ret0, ret1
 }
 
-// GetDeployments indicates an expected call of GetDeployments
+// GetDeployments indicates an expected call of GetDeployments.
 func (mr *MockReleaseClientMockRecorder) GetDeployments(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployments", reflect.TypeOf((*MockReleaseClient)(nil).GetDeployments), arg0, arg1)
 }
 
-// GetFolders mocks base method
+// GetFolders mocks base method.
 func (m *MockReleaseClient) GetFolders(arg0 context.Context, arg1 release.GetFoldersArgs) (*[]release.Folder, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFolders", arg0, arg1)
@@ -162,13 +163,13 @@ func (m *MockReleaseClient) GetFolders(arg0 context.Context, arg1 release.GetFol
 	return ret0, ret1
 }
 
-// GetFolders indicates an expected call of GetFolders
+// GetFolders indicates an expected call of GetFolders.
 func (mr *MockReleaseClientMockRecorder) GetFolders(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFolders", reflect.TypeOf((*MockReleaseClient)(nil).GetFolders), arg0, arg1)
 }
 
-// GetLogs mocks base method
+// GetLogs mocks base method.
 func (m *MockReleaseClient) GetLogs(arg0 context.Context, arg1 release.GetLogsArgs) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLogs", arg0, arg1)
@@ -177,13 +178,13 @@ func (m *MockReleaseClient) GetLogs(arg0 context.Context, arg1 release.GetLogsAr
 	return ret0, ret1
 }
 
-// GetLogs indicates an expected call of GetLogs
+// GetLogs indicates an expected call of GetLogs.
 func (mr *MockReleaseClientMockRecorder) GetLogs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogs", reflect.TypeOf((*MockReleaseClient)(nil).GetLogs), arg0, arg1)
 }
 
-// GetManualIntervention mocks base method
+// GetManualIntervention mocks base method.
 func (m *MockReleaseClient) GetManualIntervention(arg0 context.Context, arg1 release.GetManualInterventionArgs) (*release.ManualIntervention, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetManualIntervention", arg0, arg1)
@@ -192,13 +193,13 @@ func (m *MockReleaseClient) GetManualIntervention(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// GetManualIntervention indicates an expected call of GetManualIntervention
+// GetManualIntervention indicates an expected call of GetManualIntervention.
 func (mr *MockReleaseClientMockRecorder) GetManualIntervention(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManualIntervention", reflect.TypeOf((*MockReleaseClient)(nil).GetManualIntervention), arg0, arg1)
 }
 
-// GetManualInterventions mocks base method
+// GetManualInterventions mocks base method.
 func (m *MockReleaseClient) GetManualInterventions(arg0 context.Context, arg1 release.GetManualInterventionsArgs) (*[]release.ManualIntervention, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetManualInterventions", arg0, arg1)
@@ -207,13 +208,13 @@ func (m *MockReleaseClient) GetManualInterventions(arg0 context.Context, arg1 re
 	return ret0, ret1
 }
 
-// GetManualInterventions indicates an expected call of GetManualInterventions
+// GetManualInterventions indicates an expected call of GetManualInterventions.
 func (mr *MockReleaseClientMockRecorder) GetManualInterventions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManualInterventions", reflect.TypeOf((*MockReleaseClient)(nil).GetManualInterventions), arg0, arg1)
 }
 
-// GetRelease mocks base method
+// GetRelease mocks base method.
 func (m *MockReleaseClient) GetRelease(arg0 context.Context, arg1 release.GetReleaseArgs) (*release.Release, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRelease", arg0, arg1)
@@ -222,13 +223,13 @@ func (m *MockReleaseClient) GetRelease(arg0 context.Context, arg1 release.GetRel
 	return ret0, ret1
 }
 
-// GetRelease indicates an expected call of GetRelease
+// GetRelease indicates an expected call of GetRelease.
 func (mr *MockReleaseClientMockRecorder) GetRelease(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelease", reflect.TypeOf((*MockReleaseClient)(nil).GetRelease), arg0, arg1)
 }
 
-// GetReleaseDefinition mocks base method
+// GetReleaseDefinition mocks base method.
 func (m *MockReleaseClient) GetReleaseDefinition(arg0 context.Context, arg1 release.GetReleaseDefinitionArgs) (*release.ReleaseDefinition, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseDefinition", arg0, arg1)
@@ -237,13 +238,13 @@ func (m *MockReleaseClient) GetReleaseDefinition(arg0 context.Context, arg1 rele
 	return ret0, ret1
 }
 
-// GetReleaseDefinition indicates an expected call of GetReleaseDefinition
+// GetReleaseDefinition indicates an expected call of GetReleaseDefinition.
 func (mr *MockReleaseClientMockRecorder) GetReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinition), arg0, arg1)
 }
 
-// GetReleaseDefinitionHistory mocks base method
+// GetReleaseDefinitionHistory mocks base method.
 func (m *MockReleaseClient) GetReleaseDefinitionHistory(arg0 context.Context, arg1 release.GetReleaseDefinitionHistoryArgs) (*[]release.ReleaseDefinitionRevision, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseDefinitionHistory", arg0, arg1)
@@ -252,13 +253,13 @@ func (m *MockReleaseClient) GetReleaseDefinitionHistory(arg0 context.Context, ar
 	return ret0, ret1
 }
 
-// GetReleaseDefinitionHistory indicates an expected call of GetReleaseDefinitionHistory
+// GetReleaseDefinitionHistory indicates an expected call of GetReleaseDefinitionHistory.
 func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitionHistory(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinitionHistory", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinitionHistory), arg0, arg1)
 }
 
-// GetReleaseDefinitions mocks base method
+// GetReleaseDefinitions mocks base method.
 func (m *MockReleaseClient) GetReleaseDefinitions(arg0 context.Context, arg1 release.GetReleaseDefinitionsArgs) (*release.GetReleaseDefinitionsResponseValue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseDefinitions", arg0, arg1)
@@ -267,13 +268,13 @@ func (m *MockReleaseClient) GetReleaseDefinitions(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// GetReleaseDefinitions indicates an expected call of GetReleaseDefinitions
+// GetReleaseDefinitions indicates an expected call of GetReleaseDefinitions.
 func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinitions", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinitions), arg0, arg1)
 }
 
-// GetReleaseEnvironment mocks base method
+// GetReleaseEnvironment mocks base method.
 func (m *MockReleaseClient) GetReleaseEnvironment(arg0 context.Context, arg1 release.GetReleaseEnvironmentArgs) (*release.ReleaseEnvironment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseEnvironment", arg0, arg1)
@@ -282,13 +283,13 @@ func (m *MockReleaseClient) GetReleaseEnvironment(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// GetReleaseEnvironment indicates an expected call of GetReleaseEnvironment
+// GetReleaseEnvironment indicates an expected call of GetReleaseEnvironment.
 func (mr *MockReleaseClientMockRecorder) GetReleaseEnvironment(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseEnvironment", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseEnvironment), arg0, arg1)
 }
 
-// GetReleaseRevision mocks base method
+// GetReleaseRevision mocks base method.
 func (m *MockReleaseClient) GetReleaseRevision(arg0 context.Context, arg1 release.GetReleaseRevisionArgs) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseRevision", arg0, arg1)
@@ -297,13 +298,13 @@ func (m *MockReleaseClient) GetReleaseRevision(arg0 context.Context, arg1 releas
 	return ret0, ret1
 }
 
-// GetReleaseRevision indicates an expected call of GetReleaseRevision
+// GetReleaseRevision indicates an expected call of GetReleaseRevision.
 func (mr *MockReleaseClientMockRecorder) GetReleaseRevision(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseRevision", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseRevision), arg0, arg1)
 }
 
-// GetReleaseTaskAttachmentContent mocks base method
+// GetReleaseTaskAttachmentContent mocks base method.
 func (m *MockReleaseClient) GetReleaseTaskAttachmentContent(arg0 context.Context, arg1 release.GetReleaseTaskAttachmentContentArgs) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseTaskAttachmentContent", arg0, arg1)
@@ -312,13 +313,13 @@ func (m *MockReleaseClient) GetReleaseTaskAttachmentContent(arg0 context.Context
 	return ret0, ret1
 }
 
-// GetReleaseTaskAttachmentContent indicates an expected call of GetReleaseTaskAttachmentContent
+// GetReleaseTaskAttachmentContent indicates an expected call of GetReleaseTaskAttachmentContent.
 func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseTaskAttachmentContent", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseTaskAttachmentContent), arg0, arg1)
 }
 
-// GetReleaseTaskAttachments mocks base method
+// GetReleaseTaskAttachments mocks base method.
 func (m *MockReleaseClient) GetReleaseTaskAttachments(arg0 context.Context, arg1 release.GetReleaseTaskAttachmentsArgs) (*[]release.ReleaseTaskAttachment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleaseTaskAttachments", arg0, arg1)
@@ -327,13 +328,13 @@ func (m *MockReleaseClient) GetReleaseTaskAttachments(arg0 context.Context, arg1
 	return ret0, ret1
 }
 
-// GetReleaseTaskAttachments indicates an expected call of GetReleaseTaskAttachments
+// GetReleaseTaskAttachments indicates an expected call of GetReleaseTaskAttachments.
 func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachments(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseTaskAttachments", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseTaskAttachments), arg0, arg1)
 }
 
-// GetReleases mocks base method
+// GetReleases mocks base method.
 func (m *MockReleaseClient) GetReleases(arg0 context.Context, arg1 release.GetReleasesArgs) (*release.GetReleasesResponseValue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReleases", arg0, arg1)
@@ -342,13 +343,13 @@ func (m *MockReleaseClient) GetReleases(arg0 context.Context, arg1 release.GetRe
 	return ret0, ret1
 }
 
-// GetReleases indicates an expected call of GetReleases
+// GetReleases indicates an expected call of GetReleases.
 func (mr *MockReleaseClientMockRecorder) GetReleases(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleases", reflect.TypeOf((*MockReleaseClient)(nil).GetReleases), arg0, arg1)
 }
 
-// GetTaskLog mocks base method
+// GetTaskLog mocks base method.
 func (m *MockReleaseClient) GetTaskLog(arg0 context.Context, arg1 release.GetTaskLogArgs) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTaskLog", arg0, arg1)
@@ -357,13 +358,13 @@ func (m *MockReleaseClient) GetTaskLog(arg0 context.Context, arg1 release.GetTas
 	return ret0, ret1
 }
 
-// GetTaskLog indicates an expected call of GetTaskLog
+// GetTaskLog indicates an expected call of GetTaskLog.
 func (mr *MockReleaseClientMockRecorder) GetTaskLog(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTaskLog", reflect.TypeOf((*MockReleaseClient)(nil).GetTaskLog), arg0, arg1)
 }
 
-// UpdateFolder mocks base method
+// UpdateFolder mocks base method.
 func (m *MockReleaseClient) UpdateFolder(arg0 context.Context, arg1 release.UpdateFolderArgs) (*release.Folder, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateFolder", arg0, arg1)
@@ -372,13 +373,13 @@ func (m *MockReleaseClient) UpdateFolder(arg0 context.Context, arg1 release.Upda
 	return ret0, ret1
 }
 
-// UpdateFolder indicates an expected call of UpdateFolder
+// UpdateFolder indicates an expected call of UpdateFolder.
 func (mr *MockReleaseClientMockRecorder) UpdateFolder(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFolder", reflect.TypeOf((*MockReleaseClient)(nil).UpdateFolder), arg0, arg1)
 }
 
-// UpdateGates mocks base method
+// UpdateGates mocks base method.
 func (m *MockReleaseClient) UpdateGates(arg0 context.Context, arg1 release.UpdateGatesArgs) (*release.ReleaseGates, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateGates", arg0, arg1)
@@ -387,13 +388,13 @@ func (m *MockReleaseClient) UpdateGates(arg0 context.Context, arg1 release.Updat
 	return ret0, ret1
 }
 
-// UpdateGates indicates an expected call of UpdateGates
+// UpdateGates indicates an expected call of UpdateGates.
 func (mr *MockReleaseClientMockRecorder) UpdateGates(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGates", reflect.TypeOf((*MockReleaseClient)(nil).UpdateGates), arg0, arg1)
 }
 
-// UpdateManualIntervention mocks base method
+// UpdateManualIntervention mocks base method.
 func (m *MockReleaseClient) UpdateManualIntervention(arg0 context.Context, arg1 release.UpdateManualInterventionArgs) (*release.ManualIntervention, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateManualIntervention", arg0, arg1)
@@ -402,13 +403,13 @@ func (m *MockReleaseClient) UpdateManualIntervention(arg0 context.Context, arg1 
 	return ret0, ret1
 }
 
-// UpdateManualIntervention indicates an expected call of UpdateManualIntervention
+// UpdateManualIntervention indicates an expected call of UpdateManualIntervention.
 func (mr *MockReleaseClientMockRecorder) UpdateManualIntervention(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateManualIntervention", reflect.TypeOf((*MockReleaseClient)(nil).UpdateManualIntervention), arg0, arg1)
 }
 
-// UpdateRelease mocks base method
+// UpdateRelease mocks base method.
 func (m *MockReleaseClient) UpdateRelease(arg0 context.Context, arg1 release.UpdateReleaseArgs) (*release.Release, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateRelease", arg0, arg1)
@@ -417,13 +418,13 @@ func (m *MockReleaseClient) UpdateRelease(arg0 context.Context, arg1 release.Upd
 	return ret0, ret1
 }
 
-// UpdateRelease indicates an expected call of UpdateRelease
+// UpdateRelease indicates an expected call of UpdateRelease.
 func (mr *MockReleaseClientMockRecorder) UpdateRelease(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRelease", reflect.TypeOf((*MockReleaseClient)(nil).UpdateRelease), arg0, arg1)
 }
 
-// UpdateReleaseApproval mocks base method
+// UpdateReleaseApproval mocks base method.
 func (m *MockReleaseClient) UpdateReleaseApproval(arg0 context.Context, arg1 release.UpdateReleaseApprovalArgs) (*release.ReleaseApproval, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateReleaseApproval", arg0, arg1)
@@ -432,13 +433,13 @@ func (m *MockReleaseClient) UpdateReleaseApproval(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// UpdateReleaseApproval indicates an expected call of UpdateReleaseApproval
+// UpdateReleaseApproval indicates an expected call of UpdateReleaseApproval.
 func (mr *MockReleaseClientMockRecorder) UpdateReleaseApproval(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseApproval", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseApproval), arg0, arg1)
 }
 
-// UpdateReleaseDefinition mocks base method
+// UpdateReleaseDefinition mocks base method.
 func (m *MockReleaseClient) UpdateReleaseDefinition(arg0 context.Context, arg1 release.UpdateReleaseDefinitionArgs) (*release.ReleaseDefinition, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateReleaseDefinition", arg0, arg1)
@@ -447,13 +448,13 @@ func (m *MockReleaseClient) UpdateReleaseDefinition(arg0 context.Context, arg1 r
 	return ret0, ret1
 }
 
-// UpdateReleaseDefinition indicates an expected call of UpdateReleaseDefinition
+// UpdateReleaseDefinition indicates an expected call of UpdateReleaseDefinition.
 func (mr *MockReleaseClientMockRecorder) UpdateReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseDefinition), arg0, arg1)
 }
 
-// UpdateReleaseEnvironment mocks base method
+// UpdateReleaseEnvironment mocks base method.
 func (m *MockReleaseClient) UpdateReleaseEnvironment(arg0 context.Context, arg1 release.UpdateReleaseEnvironmentArgs) (*release.ReleaseEnvironment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateReleaseEnvironment", arg0, arg1)
@@ -462,13 +463,13 @@ func (m *MockReleaseClient) UpdateReleaseEnvironment(arg0 context.Context, arg1 
 	return ret0, ret1
 }
 
-// UpdateReleaseEnvironment indicates an expected call of UpdateReleaseEnvironment
+// UpdateReleaseEnvironment indicates an expected call of UpdateReleaseEnvironment.
 func (mr *MockReleaseClientMockRecorder) UpdateReleaseEnvironment(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseEnvironment", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseEnvironment), arg0, arg1)
 }
 
-// UpdateReleaseResource mocks base method
+// UpdateReleaseResource mocks base method.
 func (m *MockReleaseClient) UpdateReleaseResource(arg0 context.Context, arg1 release.UpdateReleaseResourceArgs) (*release.Release, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateReleaseResource", arg0, arg1)
@@ -477,7 +478,7 @@ func (m *MockReleaseClient) UpdateReleaseResource(arg0 context.Context, arg1 rel
 	return ret0, ret1
 }
 
-// UpdateReleaseResource indicates an expected call of UpdateReleaseResource
+// UpdateReleaseResource indicates an expected call of UpdateReleaseResource.
 func (mr *MockReleaseClientMockRecorder) UpdateReleaseResource(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseResource", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseResource), arg0, arg1)
