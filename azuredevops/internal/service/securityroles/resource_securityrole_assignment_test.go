@@ -7,6 +7,7 @@ package securityroles
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -15,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,12 +26,18 @@ var SecurityRoleAssignmentResourceID = "123456789"
 var SecurityRoleAssignmentRole = "Admin"
 
 // verifies that if an error is produced on create, the error is not swallowed
+
 func TestSecurityRoleAssignment_Create_DoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	r := ResourceSecurityRoleAssignment()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"role_name":   SecurityRoleAssignmentRole,
+		"identity_id": SecurityRoleAssignmentIdentityID.String(),
+		"resource_id": SecurityRoleAssignmentResourceID,
+		"scope":       SecurityRoleAssignmentScope,
+	})
 
 	securityrolesClient := azdosdkmocks.NewMockSecurityrolesClient(ctrl)
 	clients := &client.AggregatedClient{SecurityRolesClient: securityrolesClient, Ctx: context.Background()}
@@ -42,11 +50,12 @@ func TestSecurityRoleAssignment_Create_DoesNotSwallowError(t *testing.T) {
 	}
 	securityrolesClient.
 		EXPECT().
-		SetSecurityRoleAssignment(clients.Ctx, expectedArgs).
-		Return(nil).
-		AnyTimes()
+		SetSecurityRoleAssignment(clients.Ctx, &expectedArgs).
+		Return(fmt.Errorf("invalid UUID length")).
+		Times(1)
 
 	err := r.Create(resourceData, clients)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "invalid UUID length")
 }
 
@@ -56,7 +65,11 @@ func TestSecurityRoleAssignment_Read_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	r := ResourceSecurityRoleAssignment()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"identity_id": SecurityRoleAssignmentIdentityID.String(),
+		"resource_id": SecurityRoleAssignmentResourceID,
+		"scope":       SecurityRoleAssignmentScope,
+	})
 
 	securityrolesClient := azdosdkmocks.NewMockSecurityrolesClient(ctrl)
 	clients := &client.AggregatedClient{SecurityRolesClient: securityrolesClient, Ctx: context.Background()}
@@ -69,9 +82,9 @@ func TestSecurityRoleAssignment_Read_DoesNotSwallowError(t *testing.T) {
 
 	securityrolesClient.
 		EXPECT().
-		GetSecurityRoleAssignment(clients.Ctx, expectedArgs).
+		GetSecurityRoleAssignment(clients.Ctx, &expectedArgs).
 		Return(nil, errors.New("invalid UUID length")).
-		AnyTimes()
+		Times(1)
 
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "invalid UUID length")
@@ -83,7 +96,11 @@ func TestSecurityRoleAssignment_Delete_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	r := ResourceSecurityRoleAssignment()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"identity_id": SecurityRoleAssignmentIdentityID.String(),
+		"resource_id": SecurityRoleAssignmentResourceID,
+		"scope":       SecurityRoleAssignmentScope,
+	})
 
 	securityrolesClient := azdosdkmocks.NewMockSecurityrolesClient(ctrl)
 	clients := &client.AggregatedClient{SecurityRolesClient: securityrolesClient, Ctx: context.Background()}
@@ -96,9 +113,9 @@ func TestSecurityRoleAssignment_Delete_DoesNotSwallowError(t *testing.T) {
 
 	securityrolesClient.
 		EXPECT().
-		DeleteSecurityRoleAssignment(clients.Ctx, expectedArgs).
+		DeleteSecurityRoleAssignment(clients.Ctx, &expectedArgs).
 		Return(errors.New("invalid UUID length")).
-		AnyTimes()
+		Times(1)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "invalid UUID length")
