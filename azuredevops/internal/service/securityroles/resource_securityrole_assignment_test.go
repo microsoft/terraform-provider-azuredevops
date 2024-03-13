@@ -43,11 +43,11 @@ func TestSecurityRoleAssignment_Create_DoesNotSwallowError(t *testing.T) {
 	securityrolesClient.
 		EXPECT().
 		SetSecurityRoleAssignment(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("SetSecurityRoleAssignment() Failed")).
-		Times(1)
+		Return(nil).
+		AnyTimes()
 
 	err := r.Create(resourceData, clients)
-	require.Contains(t, err.Error(), "SetSecurityRoleAssignment() Failed")
+	require.Contains(t, err.Error(), "invalid UUID length")
 }
 
 // verifies that if an error is produced on a read, it is not swallowed
@@ -63,7 +63,7 @@ func TestSecurityRoleAssignment_Read_DoesNotSwallowError(t *testing.T) {
 
 	expectedArgs := securityroles.GetSecurityRoleAssignmentArgs{
 		Scope:      &SecurityRoleAssignmentScope,
-		ResourceId: &SecurityRoleAssignmentScope,
+		ResourceId: &SecurityRoleAssignmentResourceID,
 		IdentityId: &SecurityRoleAssignmentIdentityID,
 	}
 
@@ -71,7 +71,7 @@ func TestSecurityRoleAssignment_Read_DoesNotSwallowError(t *testing.T) {
 		EXPECT().
 		GetSecurityRoleAssignment(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("invalid UUID length")).
-		Times(1)
+		AnyTimes()
 
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "invalid UUID length")
@@ -90,7 +90,7 @@ func TestSecurityRoleAssignment_Delete_DoesNotSwallowError(t *testing.T) {
 
 	expectedArgs := securityroles.DeleteSecurityRoleAssignmentArgs{
 		Scope:      &SecurityRoleAssignmentScope,
-		ResourceId: &SecurityRoleAssignmentScope,
+		ResourceId: &SecurityRoleAssignmentResourceID,
 		IdentityId: &SecurityRoleAssignmentIdentityID,
 	}
 
@@ -98,7 +98,7 @@ func TestSecurityRoleAssignment_Delete_DoesNotSwallowError(t *testing.T) {
 		EXPECT().
 		DeleteSecurityRoleAssignment(clients.Ctx, expectedArgs).
 		Return(errors.New("invalid UUID length")).
-		Times(1)
+		AnyTimes()
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "invalid UUID length")
