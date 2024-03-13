@@ -1,3 +1,7 @@
+//go:build (all || resource_securityrole_assignment) && !exclude_securityroles
+// +build all resource_securityrole_assignment
+// +build !exclude_securityroles
+
 package securityroles
 
 import (
