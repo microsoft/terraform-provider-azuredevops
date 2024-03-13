@@ -53,7 +53,7 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	// Set ID and descriptor for group data resource based on targetGroup output.
 	targetGroupID := targetGroup.Id.String()
 	d.SetId(targetGroupID)
-	d.Set("descriptor", targetGroup.Id)
+	d.Set("descriptor", targetGroupID)
 	return nil
 }
 
