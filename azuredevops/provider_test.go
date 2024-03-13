@@ -124,6 +124,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_team",
 		"azuredevops_teams",
 		"azuredevops_groups",
+		"azuredevops_identity_user",
+		"azuredevops_identity_group",
 		"azuredevops_identity_groups",
 		"azuredevops_variable_group",
 		"azuredevops_serviceendpoint_azurerm",

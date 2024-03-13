@@ -16,14 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type groupMeta struct {
-	name       string
-	descriptor string
-	domain     string
-	origin     string
-	originId   string
-}
-
 func TestIdentityGroupDataSource_ProjectDescriptorLookupError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -64,18 +56,6 @@ func TestIdentityGroupDataSource_ProjectDescriptorLookupErrorNotFound(t *testing
 
 	err := dataSourceIdentityGroupRead(resourceData, clients)
 	require.Contains(t, err.Error(), "Error getting groups")
-}
-
-func createIdentityGroups(groups ...groupMeta) *[]identity.Identity {
-	var identities []identity.Identity
-	for _, group := range groups {
-		identities = append(identities, identity.Identity{
-			Descriptor:          converter.String(group.descriptor),
-			ProviderDisplayName: converter.String(group.name),
-		})
-	}
-
-	return &identities
 }
 
 func createIdentityGroupDataSource(t *testing.T, projectID string, groupName string) *schema.ResourceData {
