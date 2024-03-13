@@ -86,7 +86,8 @@ func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 		groupMap := make(map[string]interface{})
 
 		if group.Id != nil {
-			groupMap["id"] = *group.Id
+			groupID := *group.Id
+			groupMap["id"] = groupID.String()
 		} else {
 			return nil, fmt.Errorf("Group Object does not contain an id")
 		}
@@ -99,7 +100,5 @@ func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 }
 
 func getIdentityGroupHash(v interface{}) int {
-	group := v.(map[string]interface{})
-	groupID := group["id"].(string)
-	return tfhelper.HashString(groupID)
+	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
 }

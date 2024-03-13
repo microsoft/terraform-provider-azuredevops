@@ -34,6 +34,7 @@ func testIdentityGroupsDataSource(t *testing.T, projectName string) {
 				Config: generateIdentityGroupsDataSourceConfig(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 				),
 			},
 		},

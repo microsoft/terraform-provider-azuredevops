@@ -22,7 +22,7 @@ func testIdentityGroupDataSource(t *testing.T, groupName string) {
 				Config: createIdentityGroupConfig(groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttr(tfNode, "name", groupName),
+					resource.TestCheckResourceAttr(tfNode, "name", "[default]\\Contributors"),
 				),
 			},
 		},
@@ -37,12 +37,12 @@ data "azuredevops_project" "project" {
 }
 
 data "azuredevops_identity_group" "test" {
-	name       = "%[1]s"
+	name       = "[default]\\%[1]s"
 	project_id = data.azuredevops_project.project.id
 }`, groupName)
 }
 
 func TestAccIdentityGroupDataSource(t *testing.T) {
-	groupName := "[default]\\\\Contributors"
+	groupName := "Contributors"
 	testIdentityGroupDataSource(t, groupName)
 }
