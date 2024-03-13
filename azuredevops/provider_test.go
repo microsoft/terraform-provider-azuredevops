@@ -253,17 +253,19 @@ func TestAuthOIDCToken(t *testing.T) {
 	mockIdentityClient := mock_azuredevops.NewMockIdentityFuncsI(ctrl)
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
-	oidcToken := "buffalo123"
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
 	resourceData.Set("client_id", clientId)
 	resourceData.Set("tenant_id", tenantId)
-	resourceData.Set("oidc_token", oidcToken)
+	resourceData.Set("oidc_token", "buffalo123")
 	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, oidcToken, nil).DoAndReturn(
-		func(tenantID, clientID string, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+		func(tenantID, clientID string,
+			getAssertion func(context.Context) (string, error),
+			options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
+
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -292,8 +294,8 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	resourceData.Set("oidc_token_file_path", tempFile)
 	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, oidcToken, nil).DoAndReturn(
-		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+		func(tenantID, clientID string, token func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -372,8 +374,8 @@ func TestAuthTrfm(t *testing.T) {
 	resourceData.Set("tenant_id", tenantId)
 	resourceData.Set("use_oidc", true)
 
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, fakeTokenValue, nil).DoAndReturn(
-		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -403,8 +405,8 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 
 	// Apply phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId_apply, clientId_apply, trfm_fake_token_apply, nil).DoAndReturn(
-		func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_apply, clientId_apply, gomock.Any(), nil).DoAndReturn(
+		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -416,8 +418,8 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 
 	// Plan phase test
 	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
-	mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId_plan, clientId_plan, trfm_fake_token_plan, nil).DoAndReturn(
-		func(tenantID, clientID string, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_plan, clientId_plan, gomock.Any(), nil).DoAndReturn(
+		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -564,8 +566,8 @@ func TestGHActionsNoAudience(t *testing.T) {
 		resourceData.Set("oidc_request_url", ts.URL)
 		resourceData.Set("oidc_request_token", ghToken)
 
-		mockIdentityClient.EXPECT().NewClientSecretCredential(tenantId, clientId, ghFakeOIDCaccessToken, nil).DoAndReturn(
-			func(tenantID, clientID, secret string, options *azidentity.ClientSecretCredentialOptions) (*simpleTokenGetter, error) {
+		mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
+			func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 				getter := simpleTokenGetter{token: accessToken}
 				return &getter, nil
 			}).Times(1)

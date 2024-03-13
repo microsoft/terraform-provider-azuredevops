@@ -6,35 +6,36 @@ package azdosdkmocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	notification "github.com/microsoft/azure-devops-go-api/azuredevops/v7/notification"
-	reflect "reflect"
 )
 
-// MockNotificationClient is a mock of Client interface
+// MockNotificationClient is a mock of Client interface.
 type MockNotificationClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockNotificationClientMockRecorder
 }
 
-// MockNotificationClientMockRecorder is the mock recorder for MockNotificationClient
+// MockNotificationClientMockRecorder is the mock recorder for MockNotificationClient.
 type MockNotificationClientMockRecorder struct {
 	mock *MockNotificationClient
 }
 
-// NewMockNotificationClient creates a new mock instance
+// NewMockNotificationClient creates a new mock instance.
 func NewMockNotificationClient(ctrl *gomock.Controller) *MockNotificationClient {
 	mock := &MockNotificationClient{ctrl: ctrl}
 	mock.recorder = &MockNotificationClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockNotificationClient) EXPECT() *MockNotificationClientMockRecorder {
 	return m.recorder
 }
 
-// CreateSubscription mocks base method
+// CreateSubscription mocks base method.
 func (m *MockNotificationClient) CreateSubscription(arg0 context.Context, arg1 notification.CreateSubscriptionArgs) (*notification.NotificationSubscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSubscription", arg0, arg1)
@@ -43,13 +44,13 @@ func (m *MockNotificationClient) CreateSubscription(arg0 context.Context, arg1 n
 	return ret0, ret1
 }
 
-// CreateSubscription indicates an expected call of CreateSubscription
+// CreateSubscription indicates an expected call of CreateSubscription.
 func (mr *MockNotificationClientMockRecorder) CreateSubscription(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscription", reflect.TypeOf((*MockNotificationClient)(nil).CreateSubscription), arg0, arg1)
 }
 
-// DeleteSubscription mocks base method
+// DeleteSubscription mocks base method.
 func (m *MockNotificationClient) DeleteSubscription(arg0 context.Context, arg1 notification.DeleteSubscriptionArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSubscription", arg0, arg1)
@@ -57,13 +58,13 @@ func (m *MockNotificationClient) DeleteSubscription(arg0 context.Context, arg1 n
 	return ret0
 }
 
-// DeleteSubscription indicates an expected call of DeleteSubscription
+// DeleteSubscription indicates an expected call of DeleteSubscription.
 func (mr *MockNotificationClientMockRecorder) DeleteSubscription(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSubscription", reflect.TypeOf((*MockNotificationClient)(nil).DeleteSubscription), arg0, arg1)
 }
 
-// GetEventType mocks base method
+// GetEventType mocks base method.
 func (m *MockNotificationClient) GetEventType(arg0 context.Context, arg1 notification.GetEventTypeArgs) (*notification.NotificationEventType, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventType", arg0, arg1)
@@ -72,13 +73,13 @@ func (m *MockNotificationClient) GetEventType(arg0 context.Context, arg1 notific
 	return ret0, ret1
 }
 
-// GetEventType indicates an expected call of GetEventType
+// GetEventType indicates an expected call of GetEventType.
 func (mr *MockNotificationClientMockRecorder) GetEventType(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventType", reflect.TypeOf((*MockNotificationClient)(nil).GetEventType), arg0, arg1)
 }
 
-// GetSettings mocks base method
+// GetSettings mocks base method.
 func (m *MockNotificationClient) GetSettings(arg0 context.Context, arg1 notification.GetSettingsArgs) (*notification.NotificationAdminSettings, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSettings", arg0, arg1)
@@ -87,13 +88,13 @@ func (m *MockNotificationClient) GetSettings(arg0 context.Context, arg1 notifica
 	return ret0, ret1
 }
 
-// GetSettings indicates an expected call of GetSettings
+// GetSettings indicates an expected call of GetSettings.
 func (mr *MockNotificationClientMockRecorder) GetSettings(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSettings", reflect.TypeOf((*MockNotificationClient)(nil).GetSettings), arg0, arg1)
 }
 
-// GetSubscriber mocks base method
+// GetSubscriber mocks base method.
 func (m *MockNotificationClient) GetSubscriber(arg0 context.Context, arg1 notification.GetSubscriberArgs) (*notification.NotificationSubscriber, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriber", arg0, arg1)
@@ -102,13 +103,13 @@ func (m *MockNotificationClient) GetSubscriber(arg0 context.Context, arg1 notifi
 	return ret0, ret1
 }
 
-// GetSubscriber indicates an expected call of GetSubscriber
+// GetSubscriber indicates an expected call of GetSubscriber.
 func (mr *MockNotificationClientMockRecorder) GetSubscriber(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriber", reflect.TypeOf((*MockNotificationClient)(nil).GetSubscriber), arg0, arg1)
 }
 
-// GetSubscription mocks base method
+// GetSubscription mocks base method.
 func (m *MockNotificationClient) GetSubscription(arg0 context.Context, arg1 notification.GetSubscriptionArgs) (*notification.NotificationSubscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscription", arg0, arg1)
@@ -117,13 +118,13 @@ func (m *MockNotificationClient) GetSubscription(arg0 context.Context, arg1 noti
 	return ret0, ret1
 }
 
-// GetSubscription indicates an expected call of GetSubscription
+// GetSubscription indicates an expected call of GetSubscription.
 func (mr *MockNotificationClientMockRecorder) GetSubscription(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscription", reflect.TypeOf((*MockNotificationClient)(nil).GetSubscription), arg0, arg1)
 }
 
-// GetSubscriptionDiagnostics mocks base method
+// GetSubscriptionDiagnostics mocks base method.
 func (m *MockNotificationClient) GetSubscriptionDiagnostics(arg0 context.Context, arg1 notification.GetSubscriptionDiagnosticsArgs) (*notification.SubscriptionDiagnostics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionDiagnostics", arg0, arg1)
@@ -132,13 +133,13 @@ func (m *MockNotificationClient) GetSubscriptionDiagnostics(arg0 context.Context
 	return ret0, ret1
 }
 
-// GetSubscriptionDiagnostics indicates an expected call of GetSubscriptionDiagnostics
+// GetSubscriptionDiagnostics indicates an expected call of GetSubscriptionDiagnostics.
 func (mr *MockNotificationClientMockRecorder) GetSubscriptionDiagnostics(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionDiagnostics", reflect.TypeOf((*MockNotificationClient)(nil).GetSubscriptionDiagnostics), arg0, arg1)
 }
 
-// GetSubscriptionTemplates mocks base method
+// GetSubscriptionTemplates mocks base method.
 func (m *MockNotificationClient) GetSubscriptionTemplates(arg0 context.Context, arg1 notification.GetSubscriptionTemplatesArgs) (*[]notification.NotificationSubscriptionTemplate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTemplates", arg0, arg1)
@@ -147,13 +148,13 @@ func (m *MockNotificationClient) GetSubscriptionTemplates(arg0 context.Context, 
 	return ret0, ret1
 }
 
-// GetSubscriptionTemplates indicates an expected call of GetSubscriptionTemplates
+// GetSubscriptionTemplates indicates an expected call of GetSubscriptionTemplates.
 func (mr *MockNotificationClientMockRecorder) GetSubscriptionTemplates(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTemplates", reflect.TypeOf((*MockNotificationClient)(nil).GetSubscriptionTemplates), arg0, arg1)
 }
 
-// ListEventTypes mocks base method
+// ListEventTypes mocks base method.
 func (m *MockNotificationClient) ListEventTypes(arg0 context.Context, arg1 notification.ListEventTypesArgs) (*[]notification.NotificationEventType, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListEventTypes", arg0, arg1)
@@ -162,13 +163,13 @@ func (m *MockNotificationClient) ListEventTypes(arg0 context.Context, arg1 notif
 	return ret0, ret1
 }
 
-// ListEventTypes indicates an expected call of ListEventTypes
+// ListEventTypes indicates an expected call of ListEventTypes.
 func (mr *MockNotificationClientMockRecorder) ListEventTypes(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEventTypes", reflect.TypeOf((*MockNotificationClient)(nil).ListEventTypes), arg0, arg1)
 }
 
-// ListLogs mocks base method
+// ListLogs mocks base method.
 func (m *MockNotificationClient) ListLogs(arg0 context.Context, arg1 notification.ListLogsArgs) (*[]notification.INotificationDiagnosticLog, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListLogs", arg0, arg1)
@@ -177,13 +178,13 @@ func (m *MockNotificationClient) ListLogs(arg0 context.Context, arg1 notificatio
 	return ret0, ret1
 }
 
-// ListLogs indicates an expected call of ListLogs
+// ListLogs indicates an expected call of ListLogs.
 func (mr *MockNotificationClientMockRecorder) ListLogs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLogs", reflect.TypeOf((*MockNotificationClient)(nil).ListLogs), arg0, arg1)
 }
 
-// ListSubscriptions mocks base method
+// ListSubscriptions mocks base method.
 func (m *MockNotificationClient) ListSubscriptions(arg0 context.Context, arg1 notification.ListSubscriptionsArgs) (*[]notification.NotificationSubscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListSubscriptions", arg0, arg1)
@@ -192,13 +193,13 @@ func (m *MockNotificationClient) ListSubscriptions(arg0 context.Context, arg1 no
 	return ret0, ret1
 }
 
-// ListSubscriptions indicates an expected call of ListSubscriptions
+// ListSubscriptions indicates an expected call of ListSubscriptions.
 func (mr *MockNotificationClientMockRecorder) ListSubscriptions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSubscriptions", reflect.TypeOf((*MockNotificationClient)(nil).ListSubscriptions), arg0, arg1)
 }
 
-// QuerySubscriptions mocks base method
+// QuerySubscriptions mocks base method.
 func (m *MockNotificationClient) QuerySubscriptions(arg0 context.Context, arg1 notification.QuerySubscriptionsArgs) (*[]notification.NotificationSubscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QuerySubscriptions", arg0, arg1)
@@ -207,13 +208,13 @@ func (m *MockNotificationClient) QuerySubscriptions(arg0 context.Context, arg1 n
 	return ret0, ret1
 }
 
-// QuerySubscriptions indicates an expected call of QuerySubscriptions
+// QuerySubscriptions indicates an expected call of QuerySubscriptions.
 func (mr *MockNotificationClientMockRecorder) QuerySubscriptions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuerySubscriptions", reflect.TypeOf((*MockNotificationClient)(nil).QuerySubscriptions), arg0, arg1)
 }
 
-// UpdateSettings mocks base method
+// UpdateSettings mocks base method.
 func (m *MockNotificationClient) UpdateSettings(arg0 context.Context, arg1 notification.UpdateSettingsArgs) (*notification.NotificationAdminSettings, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSettings", arg0, arg1)
@@ -222,13 +223,13 @@ func (m *MockNotificationClient) UpdateSettings(arg0 context.Context, arg1 notif
 	return ret0, ret1
 }
 
-// UpdateSettings indicates an expected call of UpdateSettings
+// UpdateSettings indicates an expected call of UpdateSettings.
 func (mr *MockNotificationClientMockRecorder) UpdateSettings(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockNotificationClient)(nil).UpdateSettings), arg0, arg1)
 }
 
-// UpdateSubscriber mocks base method
+// UpdateSubscriber mocks base method.
 func (m *MockNotificationClient) UpdateSubscriber(arg0 context.Context, arg1 notification.UpdateSubscriberArgs) (*notification.NotificationSubscriber, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSubscriber", arg0, arg1)
@@ -237,13 +238,13 @@ func (m *MockNotificationClient) UpdateSubscriber(arg0 context.Context, arg1 not
 	return ret0, ret1
 }
 
-// UpdateSubscriber indicates an expected call of UpdateSubscriber
+// UpdateSubscriber indicates an expected call of UpdateSubscriber.
 func (mr *MockNotificationClientMockRecorder) UpdateSubscriber(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscriber", reflect.TypeOf((*MockNotificationClient)(nil).UpdateSubscriber), arg0, arg1)
 }
 
-// UpdateSubscription mocks base method
+// UpdateSubscription mocks base method.
 func (m *MockNotificationClient) UpdateSubscription(arg0 context.Context, arg1 notification.UpdateSubscriptionArgs) (*notification.NotificationSubscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSubscription", arg0, arg1)
@@ -252,13 +253,13 @@ func (m *MockNotificationClient) UpdateSubscription(arg0 context.Context, arg1 n
 	return ret0, ret1
 }
 
-// UpdateSubscription indicates an expected call of UpdateSubscription
+// UpdateSubscription indicates an expected call of UpdateSubscription.
 func (mr *MockNotificationClientMockRecorder) UpdateSubscription(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscription", reflect.TypeOf((*MockNotificationClient)(nil).UpdateSubscription), arg0, arg1)
 }
 
-// UpdateSubscriptionDiagnostics mocks base method
+// UpdateSubscriptionDiagnostics mocks base method.
 func (m *MockNotificationClient) UpdateSubscriptionDiagnostics(arg0 context.Context, arg1 notification.UpdateSubscriptionDiagnosticsArgs) (*notification.SubscriptionDiagnostics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSubscriptionDiagnostics", arg0, arg1)
@@ -267,13 +268,13 @@ func (m *MockNotificationClient) UpdateSubscriptionDiagnostics(arg0 context.Cont
 	return ret0, ret1
 }
 
-// UpdateSubscriptionDiagnostics indicates an expected call of UpdateSubscriptionDiagnostics
+// UpdateSubscriptionDiagnostics indicates an expected call of UpdateSubscriptionDiagnostics.
 func (mr *MockNotificationClientMockRecorder) UpdateSubscriptionDiagnostics(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscriptionDiagnostics", reflect.TypeOf((*MockNotificationClient)(nil).UpdateSubscriptionDiagnostics), arg0, arg1)
 }
 
-// UpdateSubscriptionUserSettings mocks base method
+// UpdateSubscriptionUserSettings mocks base method.
 func (m *MockNotificationClient) UpdateSubscriptionUserSettings(arg0 context.Context, arg1 notification.UpdateSubscriptionUserSettingsArgs) (*notification.SubscriptionUserSettings, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSubscriptionUserSettings", arg0, arg1)
@@ -282,7 +283,7 @@ func (m *MockNotificationClient) UpdateSubscriptionUserSettings(arg0 context.Con
 	return ret0, ret1
 }
 
-// UpdateSubscriptionUserSettings indicates an expected call of UpdateSubscriptionUserSettings
+// UpdateSubscriptionUserSettings indicates an expected call of UpdateSubscriptionUserSettings.
 func (mr *MockNotificationClientMockRecorder) UpdateSubscriptionUserSettings(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscriptionUserSettings", reflect.TypeOf((*MockNotificationClient)(nil).UpdateSubscriptionUserSettings), arg0, arg1)
