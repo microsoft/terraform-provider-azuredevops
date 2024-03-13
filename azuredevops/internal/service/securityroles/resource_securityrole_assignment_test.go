@@ -16,7 +16,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
