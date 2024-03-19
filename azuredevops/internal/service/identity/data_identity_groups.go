@@ -65,7 +65,6 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 // Get Groups with Scope of Project ID
-// Get Groups with Scope of Project ID
 func getIdentityGroupsWithProjectID(clients *client.AggregatedClient, projectID string) ([]identity.Identity, error) {
 	response, err := clients.IdentityClient.ListGroups(clients.Ctx, identity.ListGroupsArgs{
 		ScopeIds: &projectID,

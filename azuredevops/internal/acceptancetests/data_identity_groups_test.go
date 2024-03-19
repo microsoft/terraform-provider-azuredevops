@@ -14,12 +14,16 @@ import (
 
 func generateIdentityGroupsDataSourceConfig(projectName string) string {
 	return fmt.Sprintf(`
-data "azuredevops_project" "project" {
-	name = "%[1]s"
+resource "azuredevops_project" "test" {
+	name               = "%[1]s"
+	work_item_template = "Agile"
+	version_control    = "Git"
+	visibility         = "private"
+	description        = "Managed by Terraform"
 }
 
-data "azuredevops_identity_groups" "groups" {
-	project_id = data.azuredevops_project.project.id
+data "azuredevops_identity_groups" "test" {
+	project_id = azuredevops_project.test.id
 }
 `, projectName)
 }
