@@ -65,7 +65,6 @@ resource "azuredevops_variable_group" "vg" {
   variable {
     name      = "key1"
     value     = "value1"
-    is_secret = true
   }
 
   variable {
