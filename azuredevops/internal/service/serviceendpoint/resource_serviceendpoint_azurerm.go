@@ -52,11 +52,10 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 
 	// Subscription scopeLevel
 	r.Schema["azurerm_subscription_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		DefaultFunc:   schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
-		Description:   "The Azure subscription Id which should be used.",
-		ConflictsWith: []string{"azurerm_management_group_id"},
+		Type:        schema.TypeString,
+		Optional:    true,
+		DefaultFunc: schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+		Description: "The Azure subscription Id which should be used.",
 	}
 
 	r.Schema["azurerm_subscription_name"] = &schema.Schema{
@@ -472,18 +471,6 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 	// Check for empty
 	if strings.TrimSpace(strings.Join(scopeMap["subscription"], "")) == "" && strings.TrimSpace(strings.Join(scopeMap["managementGroup"], "")) == "" {
 		return fmt.Errorf("One of either subscription scoped (azurerm_subscription_id, azurerm_subscription_name) or managementGroup scoped (azurerm_management_ggroup_id, azurerm_management_group_name) details must be provided")
-	}
-
-	// check for valid subscription details
-	var subElementCount int
-	for _, ele := range scopeMap["subscription"] {
-		if ele == "" {
-			subElementCount = subElementCount + 1
-		}
-	}
-
-	if subElementCount == 1 {
-		return fmt.Errorf("azurerm_subscription_id and azurerm_subscription_name must be provided")
 	}
 
 	// check for valid managementGroup details
