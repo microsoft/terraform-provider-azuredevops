@@ -7,20 +7,11 @@ description: |-
 
 # Data Source: azuredevops_identity_group
 
-Use this data source to access information about existing Groups within Azure DevOps On-Premise(Azure DevOps Server).
+Use this data source to access information about an existing Group within Azure DevOps On-Premise(Azure DevOps Server).
 
 ## Example Usage
 
 ```hcl
-data "azuredevops_project" "example" {
-  name = "Example Project"
-}
-
-# load all existing groups inside an organization
-data "azuredevops_identity_group" "example-all-group" {
-  name = "Group-Name"
-}
-
 # load all existing groups inside a specific project
 data "azuredevops_identity_group" "example-project-group" {
   project_id = data.azuredevops_project.example.id
@@ -33,7 +24,7 @@ data "azuredevops_identity_group" "example-project-group" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the group.
-- `project_id` - (Optional) The Project ID. If no project ID is specified all groups of an organization will be returned
+- `project_id` - (Required) The Project ID.
 
 ## Attributes Reference
 

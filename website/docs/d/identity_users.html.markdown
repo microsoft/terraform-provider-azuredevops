@@ -43,14 +43,14 @@ data "azuredevops_user" "contoso-user-upn" {
 The following arguments are supported:
 
 - `name` - (required) The PrincipalName of this identity member from the source provider.
-- `search_filter` - (Optional) Default is General, but other options are AccountName, DisplayName, and MailAddress.
+- `search_filter` - (Optional) The type of search to perform. Default is `General`. Possible values are `AccountName`, `DisplayName`, and `MailAddress`.
 
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `users` - A set of existing users in your Azure DevOps Organization with details about every single user which includes:
+  - `user` - A set of existing users in your Azure DevOps Organization with details about every single user which includes:
 
   - `id` - The ID is the primary way to reference the identity subject while the system is running. This field will uniquely identify the same identity subject across both Accounts and Organizations.
   - `name` - This is the PrincipalName of this identity member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the identity member.

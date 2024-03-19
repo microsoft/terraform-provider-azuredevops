@@ -23,7 +23,7 @@ func DataIdentityGroup() *schema.Resource {
 			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
 			},
 			"descriptor": {
 				Type:     schema.TypeString,
@@ -53,7 +53,7 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	// Set ID and descriptor for group data resource based on targetGroup output.
 	targetGroupID := targetGroup.Id.String()
 	d.SetId(targetGroupID)
-	d.Set("descriptor", targetGroupID)
+	d.Set("descriptor", targetGroup.Descriptor)
 	return nil
 }
 

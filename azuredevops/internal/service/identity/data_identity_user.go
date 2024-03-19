@@ -39,19 +39,19 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	userName := d.Get("name").(string)
 	searchFilter := d.Get("search_filter").(string)
 
-	// Query ADO for list of identity users with filter
-	filterUsers, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
+	// Query ADO for list of identity user with filter
+	filterUser, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
 	if err != nil {
 		return fmt.Errorf(" finding user with filter %s. Error: %v", searchFilter, err)
 	}
 
-	flattenUsers, err := FlattenIdentityUsers(filterUsers)
+	flattenUser, err := flattenIdentityUsers(filterUser)
 	if err != nil {
-		return fmt.Errorf("Error flatten users. Error: %v", err)
+		return fmt.Errorf("Error flatten user. Error: %v", err)
 	}
 
 	// Filter for the desired user in the FilterUsers results
-	targetUser := selectIdentityUser(flattenUsers, userName)
+	targetUser := validateIdentityUser(flattenUser, userName, searchFilter)
 	if targetUser == nil {
 		return fmt.Errorf(" Could not find user with name %s with filter %s", userName, searchFilter)
 	}
@@ -63,8 +63,9 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+// Query AZDO for users with matching filter and search string
 func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFilter string, filterValue string) (*[]identity.Identity, error) {
-	// Get list of users with search filter and filter value provided at data source invocation.
+	// Get list of user with search filter and filter value provided at data source invocation.
 	response, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 		SearchFilter: &searchFilter, // Filter to get users
 		FilterValue:  &filterValue,  // Search String for user
@@ -76,7 +77,8 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 	return response, nil
 }
 
-func FlattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, error) {
+// Flatten Query Results
+func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, error) {
 	if users == nil {
 		return nil, fmt.Errorf("Input Users Parameter is nil")
 	}
@@ -96,9 +98,10 @@ func FlattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 	return &results, nil
 }
 
-func selectIdentityUser(users *[]identity.Identity, userName string) *identity.Identity {
+// Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter. 
+func validateIdentityUser(users *[]identity.Identity, userName string, searchFilter string) *identity.Identity {
 	for _, user := range *users {
-		if strings.EqualFold(*user.ProviderDisplayName, userName) {
+		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) {
 			return &user
 		}
 	}
