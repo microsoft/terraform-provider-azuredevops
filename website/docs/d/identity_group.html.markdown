@@ -12,7 +12,7 @@ Use this data source to access information about an existing Group within Azure 
 ## Example Usage
 
 ```hcl
-# load all existing groups inside a specific project
+# load existing group with specific name
 data "azuredevops_identity_group" "example-project-group" {
   project_id = data.azuredevops_project.example.id
   name = "[Project-Name]\\Group-Name"

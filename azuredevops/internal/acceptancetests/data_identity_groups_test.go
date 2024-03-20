@@ -29,7 +29,7 @@ data "azuredevops_identity_groups" "test" {
 }
 
 func testIdentityGroupsDataSource(t *testing.T, projectName string) {
-	tfNode := "data.azuredevops_identity_groups.groups"
+	tfNode := "data.azuredevops_identity_groups.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
@@ -46,6 +46,6 @@ func testIdentityGroupsDataSource(t *testing.T, projectName string) {
 }
 
 func TestAccIdentityGroupsDataSource(t *testing.T) {
-	projectName := "default"
+	projectName := testutils.GenerateResourceName()
 	testIdentityGroupsDataSource(t, projectName)
 }
