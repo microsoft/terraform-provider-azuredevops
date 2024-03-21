@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
@@ -134,6 +135,9 @@ func Provider() *schema.Provider {
 			"azuredevops_team":                       core.DataTeam(),
 			"azuredevops_teams":                      core.DataTeams(),
 			"azuredevops_groups":                     graph.DataGroups(),
+			"azuredevops_identity_groups":            identity.DataIdentityGroups(),
+			"azuredevops_identity_group":             identity.DataIdentityGroup(),
+			"azuredevops_identity_user":              identity.DataIdentityUser(),
 			"azuredevops_variable_group":             taskagent.DataVariableGroup(),
 			"azuredevops_serviceendpoint_azurerm":    serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_github":     serviceendpoint.DataServiceEndpointGithub(),
