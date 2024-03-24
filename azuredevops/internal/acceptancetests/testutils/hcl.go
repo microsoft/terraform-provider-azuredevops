@@ -229,6 +229,15 @@ func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName,
 	return fmt.Sprintf("%s\n%s\n%s", gitRepoResource, serviceEndpointResource, importGitRepoResource)
 }
 
+// HclSecurityroleDefinitionsDataSource HCL describing a data source for securityrole definitions
+func HclSecurityroleDefinitionsDataSource() string {
+	return fmt.Sprintf(`
+data "azuredevops_securityrole_definitions" "definitions-list" {
+	scope = "distributedtask.environmentreferencerole"
+}
+`)
+}
+
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
 func HclUserEntitlementResource(principalName string) string {
 	return fmt.Sprintf(`
