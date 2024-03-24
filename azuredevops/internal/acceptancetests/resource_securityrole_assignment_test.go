@@ -55,7 +55,7 @@ description = "Example pipeline deployment environment"
 
 resource "azuredevops_securityrole_assignment" "test" {
 scope       = "distributedtask.environmentreferencerole"
-resource_id = format("%s_%s", azuredevops_project.test.id, azuredevops_environment.test.id)
+resource_id = format("%%s_%%s", azuredevops_project.test.id, azuredevops_environment.test.id)
 identity_id = azuredevops_group.test.id
 role_name   = "Administrator"
 }
