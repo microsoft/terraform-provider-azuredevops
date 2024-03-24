@@ -231,11 +231,11 @@ func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName,
 
 // HclSecurityroleDefinitionsDataSource HCL describing a data source for securityrole definitions
 func HclSecurityroleDefinitionsDataSource() string {
-	return fmt.Sprint(`
+	return `
 data "azuredevops_securityrole_definitions" "definitions-list" {
 	scope = "distributedtask.environmentreferencerole"
 }
-`)
+`
 }
 
 // HclUserEntitlementResource HCL describing an AzDO UserEntitlement
