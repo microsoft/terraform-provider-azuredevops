@@ -12,6 +12,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
@@ -58,6 +59,7 @@ type AggregatedClient struct {
 	TaskAgentClient               taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
 	FeatureManagementClient       featuremanagement.Client
+	FeedClient                    feed.Client
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
 	WorkItemTrackingClient        workitemtracking.Client
@@ -147,6 +149,12 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 
 	featuremanagementClient := featuremanagement.NewClient(ctx, connection)
 
+	feedClient, err := feed.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): feed.NewClient failed.")
+		return nil, err
+	}
+
 	workitemtrackingClient, err := workitemtracking.NewClient(ctx, connection)
 	if err != nil {
 		log.Printf("getAzdoClient(): workitemtracking.NewClient failed.")
@@ -195,6 +203,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
+		FeedClient:                    feedClient,
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
