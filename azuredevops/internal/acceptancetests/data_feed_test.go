@@ -5,6 +5,7 @@
 package acceptancetests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -12,9 +13,18 @@ import (
 )
 
 func TestAccAzureDevOps_DataSource_Feed(t *testing.T) {
-	FeedData := testutils.HclFeedDataSource()
+	name := testutils.GenerateResourceName()
 
-	tfNode := "data.azuredevops_feed.releases-feed"
+	FeedResource := testutils.HclFeedResource(name)
+	FeedData := fmt.Sprintf(`
+		%s
+
+		data "azuredevops_feed" "feed" {
+			name = azuredevops_feed.feed.name
+		}
+		`, FeedResource)
+
+	tfNode := "data.azuredevops_feed.feed"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
