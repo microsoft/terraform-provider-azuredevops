@@ -1193,3 +1193,12 @@ func HclEnvironmentResourceKubernetes(projectName string, environmentName string
 	environmentKubernetesResource := getEnvironmentResourceKubernetes(resourceName)
 	return fmt.Sprintf("%s\n%s\n%s", serviceEndpointResource, azureEnvironmentResource, environmentKubernetesResource)
 }
+
+// HclFeedDataSource HCL describing a data source for feeds
+func HclFeedDataSource() string {
+	return `
+data "azuredevops_feed" "releases-feed" {
+	name = "releases"
+}
+`
+}

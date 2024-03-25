@@ -50,7 +50,10 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 	if getFeed != nil {
 		d.SetId((*getFeed).Id.String())
 		d.Set("name", (*getFeed).Name)
-		d.Set("project", (*getFeed).Project.Name)
+		project := (*getFeed).Project
+		if project != nil {
+			d.Set("project", (*project).Name)
+		}
 	}
 
 	return nil
