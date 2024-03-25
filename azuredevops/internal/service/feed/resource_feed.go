@@ -3,7 +3,6 @@ package feed
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
@@ -33,7 +32,7 @@ func ResourceFeed() *schema.Resource {
 }
 
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.FeedClient)
+	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	project := d.Get("project").(string)
 
@@ -41,7 +40,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		Name: &name,
 	}
 
-	err := clients.FeedClient.CreateFeed(clients.Ctx, &feed.CreateFeedArgs{
+	createdFeed, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
 		Feed:    &createFeed,
 		Project: &project,
 	})
@@ -50,18 +49,18 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId("feed-" + uuid.New().String())
+	d.SetId((*createdFeed).Id.String())
 
 	return resourceFeedRead(d, m)
 }
 
 func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.FeedClient)
+	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("name").(string)
 	project := d.Get("project").(string)
 
-	getFeed, err := clients.FeedClient.CreateFeed(clients.Ctx, &feed.GetFeedArgs{
+	getFeed, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
 		FeedId:  &name,
 		Project: &project,
 	})
@@ -75,21 +74,22 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if getFeed != nil {
-		d.Set("name", *getFeed.Name)
-		d.Set("project", *getFeed.Project.Name)
+		d.SetId((*getFeed).Id.String())
+		d.Set("name", (*getFeed).Name)
+		d.Set("project", (*getFeed).Project.Name)
 	}
 
 	return nil
 }
 
 func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.FeedClient)
+	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	project := d.Get("project").(string)
 
 	updateFeed := &feed.FeedUpdate{}
 
-	err := clients.FeedClient.UpdateFeed(clients.Ctx, &feed.UpdateFeedArgs{
+	updatedFeed, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
 		Feed:    updateFeed,
 		FeedId:  &name,
 		Project: &project,
@@ -99,17 +99,17 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId(d.Id())
+	d.SetId((*updatedFeed).Id.String())
 
 	return resourceFeedRead(d, m)
 }
 
 func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.FeedClient)
+	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	project := d.Get("project").(string)
 
-	err := clients.FeedClient.DeleteFeed(clients.Ctx, &feed.UpdateFeedArgs{
+	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
 		Project: &project,
 	})
