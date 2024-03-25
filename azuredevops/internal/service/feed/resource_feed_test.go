@@ -1,6 +1,6 @@
-//go:build (all || resource_feed) && !exclude_feeds
+//go:build (all || resource_feed) && !exclude_feed
 // +build all resource_feed
-// +build !exclude_feeds
+// +build !exclude_feed
 
 package feed
 
