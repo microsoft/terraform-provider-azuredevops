@@ -120,6 +120,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
 		"azuredevops_workitem",
+		"azuredevops_feed",
 	}
 
 	resources := azuredevops.Provider().ResourcesMap
@@ -160,6 +161,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_serviceendpoint_azurecr",
+		"azuredevops_feed",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap
