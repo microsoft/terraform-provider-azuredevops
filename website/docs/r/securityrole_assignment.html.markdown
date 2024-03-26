@@ -35,7 +35,7 @@ resource "azuredevops_group" "example" {
 resource "azuredevops_securityrole_assignment" "example" {
   scope       = "distributedtask.environmentreferencerole"
   resource_id = format("%s_%s", azuredevops_project.example.id, azuredevops_environment.example.id)
-  identity_id = azuredevops_group.example.id
+  identity_id = azuredevops_group.example.origin_id
   role_name   = "Administrator"
 }
 ```
