@@ -19,10 +19,10 @@ func ResourceFeed() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Required:     true,
 			},
-			"project": {
+			"project_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
@@ -34,7 +34,7 @@ func ResourceFeed() *schema.Resource {
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
-	project := d.Get("project").(string)
+	projectId := d.Get("project_id").(string)
 
 	createFeed := feed.Feed{
 		Name: &name,
@@ -42,7 +42,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdFeed, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
 		Feed:    &createFeed,
-		Project: &project,
+		Project: &projectId,
 	})
 
 	if err != nil {
@@ -58,11 +58,11 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("name").(string)
-	project := d.Get("project").(string)
+	projectId := d.Get("project_id").(string)
 
 	getFeed, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
 		FeedId:  &name,
-		Project: &project,
+		Project: &projectId,
 	})
 
 	if err != nil {
@@ -78,7 +78,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("name", (*getFeed).Name)
 		project := (*getFeed).Project
 		if project != nil {
-			d.Set("project", (*project).Name)
+			d.Set("project_id", (*project).Id.String())
 		}
 	}
 
@@ -88,14 +88,14 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
-	project := d.Get("project").(string)
+	projectId := d.Get("project_id").(string)
 
 	updateFeed := &feed.FeedUpdate{}
 
 	updatedFeed, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
 		Feed:    updateFeed,
 		FeedId:  &name,
-		Project: &project,
+		Project: &projectId,
 	})
 
 	if err != nil {
@@ -110,11 +110,20 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
-	project := d.Get("project").(string)
+	project_id := d.Get("project_id").(string)
 
-	err := clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
+	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
-		Project: &project,
+		Project: &project_id,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
+		FeedId:  &name,
+		Project: &project_id,
 	})
 
 	if err != nil {

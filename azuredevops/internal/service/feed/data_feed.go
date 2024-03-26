@@ -2,7 +2,6 @@ package feed
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
@@ -16,10 +15,18 @@ func DataFeed() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
-				Required:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Optional:     true,
 			},
-			"project": {
+			"feed_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ConflictsWith: []string{
+					"name",
+				},
+			},
+			"project_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
@@ -32,11 +39,21 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("name").(string)
-	project := d.Get("project").(string)
+	id := d.Get("feed_id").(string)
+	projectId := d.Get("project_id").(string)
+
+	if name == "" && id == "" {
+		return fmt.Errorf("Either feed_id or name must be set ")
+	}
+
+	identifier := id
+	if identifier == "" {
+		identifier = name
+	}
 
 	getFeed, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
-		FeedId:  &name,
-		Project: &project,
+		FeedId:  &identifier,
+		Project: &projectId,
 	})
 
 	if err != nil {
@@ -50,9 +67,10 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 	if getFeed != nil {
 		d.SetId((*getFeed).Id.String())
 		d.Set("name", (*getFeed).Name)
+		d.Set("feed_id", (*getFeed).Id.String())
 		project := (*getFeed).Project
 		if project != nil {
-			d.Set("project", (*project).Name)
+			d.Set("project_id", (*project).Id.String())
 		}
 	}
 
