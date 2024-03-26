@@ -112,7 +112,7 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	project := d.Get("project").(string)
 
-	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
+	err := clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
 		FeedId:  &name,
 		Project: &project,
 	})
