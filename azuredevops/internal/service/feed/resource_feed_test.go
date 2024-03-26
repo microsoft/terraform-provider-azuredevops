@@ -98,14 +98,14 @@ func TestFeed_Delete_DoesNotSwallowError(t *testing.T) {
 	feedClient := azdosdkmocks.NewMockFeedClient(ctrl)
 	clients := &client.AggregatedClient{FeedClient: feedClient, Ctx: context.Background()}
 
-	expectedArgs := feed.DeleteFeedArgs{
+	expectedArgs := feed.PermanentDeleteFeedArgs{
 		FeedId:  &FeedName,
 		Project: &FeedProject,
 	}
 
 	feedClient.
 		EXPECT().
-		DeleteFeed(clients.Ctx, expectedArgs).
+		PermanentDeleteFeed(clients.Ctx, expectedArgs).
 		Return(fmt.Errorf("Feed with given name not found")).
 		Times(1)
 
