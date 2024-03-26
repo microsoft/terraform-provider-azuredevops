@@ -7,6 +7,7 @@ package feed
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"testing"
 
@@ -18,7 +19,7 @@ import (
 )
 
 var FeedName = "some-feed-name"
-var FeedProject = "some-ado-project"
+var FeedProjectId = uuid.New().String()
 
 // verifies that if an error is produced on create, the error is not swallowed
 
@@ -28,8 +29,8 @@ func TestFeed_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceFeed()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
-		"name":    FeedName,
-		"project": FeedProject,
+		"name":       FeedName,
+		"project_id": FeedProjectId,
 	})
 
 	feedClient := azdosdkmocks.NewMockFeedClient(ctrl)
@@ -37,7 +38,7 @@ func TestFeed_Create_DoesNotSwallowError(t *testing.T) {
 
 	expectedArgs := feed.CreateFeedArgs{
 		Feed:    &feed.Feed{Name: &FeedName},
-		Project: &FeedProject,
+		Project: &FeedProjectId,
 	}
 
 	feedClient.
@@ -59,8 +60,8 @@ func TestFeed_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceFeed()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
-		"name":    FeedName,
-		"project": FeedProject,
+		"name":       FeedName,
+		"project_id": FeedProjectId,
 	})
 
 	feedClient := azdosdkmocks.NewMockFeedClient(ctrl)
@@ -69,7 +70,7 @@ func TestFeed_Update_DoesNotSwallowError(t *testing.T) {
 	expectedArgs := feed.UpdateFeedArgs{
 		Feed:    &feed.FeedUpdate{},
 		FeedId:  &FeedName,
-		Project: &FeedProject,
+		Project: &FeedProjectId,
 	}
 
 	feedClient.
@@ -91,21 +92,32 @@ func TestFeed_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceFeed()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
-		"name":    FeedName,
-		"project": FeedProject,
+		"name":       FeedName,
+		"project_id": FeedProjectId,
 	})
 
 	feedClient := azdosdkmocks.NewMockFeedClient(ctrl)
 	clients := &client.AggregatedClient{FeedClient: feedClient, Ctx: context.Background()}
 
-	expectedArgs := feed.PermanentDeleteFeedArgs{
+	expectedDeleteArgs := feed.DeleteFeedArgs{
 		FeedId:  &FeedName,
-		Project: &FeedProject,
+		Project: &FeedProjectId,
+	}
+
+	expectedPermDeleteArgs := feed.PermanentDeleteFeedArgs{
+		FeedId:  &FeedName,
+		Project: &FeedProjectId,
 	}
 
 	feedClient.
 		EXPECT().
-		PermanentDeleteFeed(clients.Ctx, expectedArgs).
+		DeleteFeed(clients.Ctx, expectedDeleteArgs).
+		Return(nil).
+		Times(1)
+
+	feedClient.
+		EXPECT().
+		PermanentDeleteFeed(clients.Ctx, expectedPermDeleteArgs).
 		Return(fmt.Errorf("Feed with given name not found")).
 		Times(1)
 

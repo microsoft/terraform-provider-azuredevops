@@ -15,7 +15,11 @@ import (
 func TestAccAzureDevOps_Resource_Feed(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
-	FeedResource := testutils.HclFeedResource(name)
+	FeedResource := fmt.Sprintf(`
+		resource "azuredevops_feed" "feed" {
+			name = "%s"
+		}
+	`, name)
 
 	tfNode := "azuredevops_feed.feed"
 	resource.ParallelTest(t, resource.TestCase{
@@ -43,7 +47,7 @@ func TestAccAzureDevOps_Resource_Feed_with_Project(t *testing.T) {
 
 	resource "azuredevops_feed" "feed" {
 		name       = "%s"
-		project    = azuredevops_project.project.name
+		project_id    = azuredevops_project.project.id
 	}
 	
 	`, ProjectResource, name)
@@ -57,7 +61,7 @@ func TestAccAzureDevOps_Resource_Feed_with_Project(t *testing.T) {
 				Config: FeedResource,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
-					resource.TestCheckResourceAttrSet(tfNode, "project"),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 				),
 			},
 		},
