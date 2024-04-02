@@ -594,7 +594,7 @@ func readSubjectDescriptors(clients *client.AggregatedClient, members *[]string)
 
 	start := 0
 	step := 20 // 20 descriptors per request
-	subMembers := *members
+	var subMembers []string
 	for start*step <= len(*members) {
 		if (start+1)*step < len(*members) {
 			subMembers = (*members)[start*step : (start+1)*step]
