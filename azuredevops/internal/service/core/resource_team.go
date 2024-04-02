@@ -592,25 +592,36 @@ func readSubjectDescriptors(clients *client.AggregatedClient, members *[]string)
 		return set, nil
 	}
 
-	descriptors := linq.From(*members).
-		Aggregate(func(r interface{}, i interface{}) interface{} {
-			if r.(string) == "" {
-				return i
+	start := 0
+	step := 20 // 20 descriptors per request
+	subMembers := *members
+	for start*step <= len(*members) {
+		if (start+1)*step < len(*members) {
+			subMembers = (*members)[start*step : (start+1)*step]
+		} else {
+			subMembers = (*members)[start*step:]
+		}
+		start++
+		descriptors := linq.From(subMembers).
+			Aggregate(func(r interface{}, i interface{}) interface{} {
+				if r.(string) == "" {
+					return i
+				}
+				return r.(string) + "," + i.(string)
+			}).(string)
+
+		memberIdentities, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+			Descriptors: &descriptors,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if memberIdentities != nil && len(*memberIdentities) > 0 {
+			for _, memberIdentity := range *memberIdentities {
+				set.Add(*memberIdentity.SubjectDescriptor)
 			}
-			return r.(string) + "," + i.(string)
-		}).(string)
-
-	identities, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
-		Descriptors: &descriptors,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if identities != nil && len(*identities) > 0 {
-		for _, identity := range *identities {
-			set.Add(*identity.SubjectDescriptor)
 		}
 	}
 
