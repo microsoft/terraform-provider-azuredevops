@@ -2,6 +2,7 @@ package memberentitlementmanagement
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ahmetb/go-linq"
@@ -152,8 +153,15 @@ func resourceGroupEntitlementRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading group entitlement: %v", err)
+		return fmt.Errorf(" reading group entitlement: %v", err)
 	}
+
+	if groupEntitlement == nil || groupEntitlement.Id == nil {
+		log.Println(" Group has been deleted")
+		d.SetId("")
+		return nil
+	}
+
 	flattenGroupEntitlement(d, groupEntitlement)
 	return nil
 }
