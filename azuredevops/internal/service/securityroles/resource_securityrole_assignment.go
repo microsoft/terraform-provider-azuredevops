@@ -20,22 +20,22 @@ func ResourceSecurityRoleAssignment() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"scope": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotEmpty,
 				Required:     true,
 			},
 			"resource_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotEmpty,
 				Required:     true,
 			},
 			"identity_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.IsUUID,
 				Required:     true,
 			},
 			"role_name": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotEmpty,
 				Required:     true,
 			},
 		},
@@ -64,12 +64,7 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 		return err
 	}
 
-	if d.Id() != "" {
-		d.SetId(d.Id())
-	} else {
-		d.SetId("sra-" + uuid.New().String())
-	}
-
+	d.SetId("sra-" + uuid.New().String())
 	return resourceSecurityRoleAssignmentRead(d, m)
 }
 
@@ -94,7 +89,7 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading group memberships during read: %+v", err)
+		return fmt.Errorf(" reading group memberships during read: %+v", err)
 	}
 
 	if assignment != nil {
