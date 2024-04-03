@@ -13,11 +13,11 @@ import (
 
 func DataSecurityRoleDefinitions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSecurityRoleDefinitiosRead,
+		Read: dataSecurityRoleDefinitionsRead,
 		Schema: map[string]*schema.Schema{
 			"scope": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotEmpty,
 				Required:     true,
 			},
 			"definitions": {
@@ -67,7 +67,7 @@ func DataSecurityRoleDefinitions() *schema.Resource {
 	}
 }
 
-func dataSecurityRoleDefinitiosRead(d *schema.ResourceData, m interface{}) error {
+func dataSecurityRoleDefinitionsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	scope := d.Get("scope").(string)
 
@@ -75,11 +75,13 @@ func dataSecurityRoleDefinitiosRead(d *schema.ResourceData, m interface{}) error
 		Scope: &scope,
 	})
 	if err != nil {
-		errMsg := "Error finding security role definitions"
-		if scope != "" {
-			errMsg = fmt.Sprintf("%s for scope %s", errMsg, scope)
-		}
-		return fmt.Errorf("%s. Error: %v", errMsg, err)
+		d.SetId("")
+		return fmt.Errorf(" finding security role definitions for scope: %s. Error: %v", scope, err)
+	}
+
+	if defs == nil || len(*defs) == 0 {
+		d.SetId("")
+		return fmt.Errorf(" no role definition found at scope: %s", scope)
 	}
 
 	fdefs, err := flattenSRD(defs)
@@ -89,7 +91,6 @@ func dataSecurityRoleDefinitiosRead(d *schema.ResourceData, m interface{}) error
 
 	d.SetId("secroledefs-" + uuid.New().String())
 	d.Set("definitions", fdefs)
-
 	return nil
 }
 
@@ -102,14 +103,12 @@ func flattenSRD(srds *[]securityroles.SecurityRoleDefinition) ([]interface{}, er
 		return []interface{}{}, nil
 	}
 
-	results := make([]interface{}, len(*srds))
-	for i, srd := range *srds {
-		s := make(map[string]interface{})
+	results := make([]interface{}, 0)
+	for _, srd := range *srds {
+		s := map[string]interface{}{}
 
 		if srd.Identifier != nil {
 			s["identifier"] = *srd.Identifier
-		} else {
-			return nil, fmt.Errorf("Security Role Definition Object does not contain an identifier")
 		}
 		if srd.DisplayName != nil {
 			s["display_name"] = *srd.DisplayName
@@ -132,7 +131,7 @@ func flattenSRD(srds *[]securityroles.SecurityRoleDefinition) ([]interface{}, er
 			s["deny_permissions"] = *srd.DenyPermissions
 		}
 
-		results[i] = s
+		results = append(results, s)
 	}
 	return results, nil
 }
