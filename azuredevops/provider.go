@@ -18,6 +18,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
@@ -56,6 +57,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_branch_control":                   approvalsandchecks.ResourceCheckBranchControl(),
 			"azuredevops_check_business_hours":                   approvalsandchecks.ResourceCheckBusinessHours(),
 			"azuredevops_check_required_template":                approvalsandchecks.ResourceCheckRequiredTemplate(),
+			"azuredevops_securityrole_assignment":                securityroles.ResourceSecurityRoleAssignment(),
 			"azuredevops_serviceendpoint_argocd":                 serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_jfrog_artifactory_v2":   serviceendpoint.ResourceServiceEndpointJFrogArtifactoryV2(),
@@ -139,6 +141,7 @@ func Provider() *schema.Provider {
 			"azuredevops_identity_group":             identity.DataIdentityGroup(),
 			"azuredevops_identity_user":              identity.DataIdentityUser(),
 			"azuredevops_variable_group":             taskagent.DataVariableGroup(),
+			"azuredevops_securityrole_definitions":   securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_azurerm":    serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_github":     serviceendpoint.DataServiceEndpointGithub(),
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),

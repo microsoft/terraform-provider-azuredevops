@@ -27,5 +27,6 @@ dist
 
 #GoLand Editor configuration
 .idea
+.fleet
 
 .DS_Store
