@@ -26,7 +26,8 @@ func ResourceFeed() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
 
-				Optional:     true,
+				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
