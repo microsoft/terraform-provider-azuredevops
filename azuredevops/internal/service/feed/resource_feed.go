@@ -38,12 +38,10 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
 
-	createFeed := feed.Feed{
-		Name: &name,
-	}
-
 	createdFeed, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
-		Feed:    &createFeed,
+		Feed: &feed.Feed{
+			Name: &name,
+		},
 		Project: &projectId,
 	})
 
