@@ -92,10 +92,8 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
 
-	updateFeed := &feed.FeedUpdate{}
-
 	_, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
-		Feed:    updateFeed,
+		Feed:    &feed.FeedUpdate{},
 		FeedId:  &name,
 		Project: &projectId,
 	})
