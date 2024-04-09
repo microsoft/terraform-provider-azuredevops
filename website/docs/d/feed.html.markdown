@@ -35,8 +35,11 @@ data "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required if `feed_id` not set) Name of the Feed.
-- `feed_id` - (Required if `name` not set) ID of the Feed.
+- `name` - (Required) Name of the Feed.
+- `feed_id` - (Required) ID of the Feed.
+
+~> **Note** Only one of `name` or `feed_id` can be set at the same time.
+
 - `project_id` - (Optional) ID of the Project Feed is created in.
 
 
