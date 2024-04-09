@@ -161,6 +161,12 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 			d.Get("project_id").(string), d.Get("name").(string), err)
 	}
 
+	if _, ok := d.GetOk("default_branch"); ok {
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
+			return fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
+		}
+	}
+
 	var parentRepoRef *git.GitRepositoryRef = nil
 	if parentRepoID, ok := d.GetOk("parent_repository_id"); ok {
 		parentRepo, err := gitRepositoryRead(clients, parentRepoID.(string), "", "")
@@ -476,12 +482,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
 			initialization.serviceConnectionID = ""
-		}
-
-		if _, ok := d.GetOk("default_branch"); ok {
-			if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
-				return nil, nil, nil, fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
-			}
 		}
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
