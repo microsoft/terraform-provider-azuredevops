@@ -39,8 +39,8 @@ resource "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) Name of the Feed.
-- `project_id` - (Optional) ID of the Project Feed is created in.
+- `name` - (Required) The name of the Feed.
+- `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
 
 
 ## Attributes Reference
