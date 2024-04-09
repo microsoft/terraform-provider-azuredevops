@@ -46,7 +46,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf(" creating new feed. Name: %s, Error: %+v", name, err)
 	}
 
 	d.SetId((*createdFeed).Id.String())
