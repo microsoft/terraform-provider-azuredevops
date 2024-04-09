@@ -94,7 +94,7 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 
 	updateFeed := &feed.FeedUpdate{}
 
-	updatedFeed, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
+	_, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
 		Feed:    updateFeed,
 		FeedId:  &name,
 		Project: &projectId,
@@ -103,8 +103,6 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	d.SetId((*updatedFeed).Id.String())
 
 	return resourceFeedRead(d, m)
 }
