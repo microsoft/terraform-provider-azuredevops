@@ -18,6 +18,9 @@ func DataFeed() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				Optional:     true,
+				AtLeastOneOf: []string{
+					"name", "feed_id",
+				},
 			},
 			"feed_id": {
 				Type:         schema.TypeString,
@@ -42,10 +45,6 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	id := d.Get("feed_id").(string)
 	projectId := d.Get("project_id").(string)
-
-	if name == "" && id == "" {
-		return fmt.Errorf("Either feed_id or name must be set ")
-	}
 
 	identifier := id
 	if identifier == "" {
