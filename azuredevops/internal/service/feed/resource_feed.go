@@ -24,7 +24,8 @@ func ResourceFeed() *schema.Resource {
 			},
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
+
 				Optional:     true,
 			},
 		},
