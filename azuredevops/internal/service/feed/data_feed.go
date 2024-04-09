@@ -25,14 +25,14 @@ func DataFeed() *schema.Resource {
 			"feed_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
 				ConflictsWith: []string{
 					"name",
 				},
 			},
 			"project_id": {
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.IsUUID,
 				Optional:     true,
 			},
 		},
