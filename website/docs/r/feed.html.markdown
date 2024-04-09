@@ -47,7 +47,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-- `name` - Name of the Feed.
+- `name` - The name of the Feed.
 - `project_id` - ID of the Project Feed is created in (if one exists).
 
 ## Relevant Links
