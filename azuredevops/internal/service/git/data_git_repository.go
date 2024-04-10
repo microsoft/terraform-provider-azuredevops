@@ -55,6 +55,10 @@ func DataGitRepository() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"disabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }

@@ -186,6 +186,7 @@ In addition to all arguments above, except `initialization`, the following attri
 - `ssh_url` - Git SSH URL of the repository.
 - `url` - REST API URL of the repository.
 - `web_url` - Web link to the repository.
+- `disabled` - Is the repository disabled?
 
 ## Relevant Links
 

@@ -138,6 +138,7 @@ func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "disabled"),
 				),
 			},
 		},

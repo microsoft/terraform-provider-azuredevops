@@ -40,6 +40,7 @@ var gitRepoList = []git.GitRepository{
 		Url:              nil,
 		ValidRemoteUrls:  nil,
 		WebUrl:           nil,
+		IsDisabled:       nil,
 	},
 	{
 		Links:         nil,
@@ -58,6 +59,7 @@ var gitRepoList = []git.GitRepository{
 		Url:             nil,
 		ValidRemoteUrls: nil,
 		WebUrl:          nil,
+		IsDisabled:      nil,
 	},
 	{
 		Links:            nil,
@@ -76,6 +78,7 @@ var gitRepoList = []git.GitRepository{
 		Url:             nil,
 		ValidRemoteUrls: nil,
 		WebUrl:          nil,
+		IsDisabled:      nil,
 	},
 }
 
