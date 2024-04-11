@@ -36,6 +36,7 @@ func TestAccGitRepository_DataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttr(tfNode, "name", gitRepoName),
 					resource.TestCheckResourceAttr(tfNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttrSet(tfNode, "disabled"),
 				),
 			},
 		},

@@ -36,6 +36,7 @@ func TestAccAzureTfsGitRepositories_DataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "name", gitRepoName),
 					resource.TestCheckResourceAttr(tfNode, "repositories.0.name", gitRepoName),
 					resource.TestCheckResourceAttr(tfNode, "repositories.0.default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttrSet(tfNode, "repositories.0.disabled"),
 				),
 			},
 		},

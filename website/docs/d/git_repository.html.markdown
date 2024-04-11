@@ -44,6 +44,7 @@ The following attributes are exported:
 - `project_id` - Project identifier to which the Git repository belongs.
 - `size` - Compressed size (bytes) of the repository.
 - `default_branch` - The ref of the default branch.
+- `disabled` - Is the repository disabled?
 
 ## Relevant Links
 

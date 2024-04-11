@@ -36,6 +36,7 @@ var gitRepo = git.GitRepository{
 	Url:             nil,
 	ValidRemoteUrls: nil,
 	WebUrl:          nil,
+	IsDisabled:      nil,
 }
 
 func TestGitRepositoryDataSource_Read_DontSwallowError(t *testing.T) {

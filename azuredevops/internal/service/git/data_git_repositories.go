@@ -80,6 +80,10 @@ func DataGitRepositories() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"disabled": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -190,6 +194,10 @@ func flattenGitRepositories(repos *[]git.GitRepository) ([]interface{}, error) {
 
 		if element.DefaultBranch != nil {
 			output["default_branch"] = *element.DefaultBranch
+		}
+
+		if element.IsDisabled != nil {
+			output["disabled"] = *element.IsDisabled
 		}
 
 		results = append(results, output)
