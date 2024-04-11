@@ -30,6 +30,14 @@ data "azuredevops_feed" "example" {
 }
 ```
 
+### Example with Soft Delete
+```hcl
+data "azuredevops_feed" "example" {
+  name = "releases"
+  permanent_delete = false
+}
+```
+
 
 ## Argument Reference
 
@@ -41,6 +49,7 @@ The following arguments are supported:
 ~> **Note** Only one of `name` or `feed_id` can be set at the same time.
 
 - `project_id` - (Optional) ID of the Project Feed is created in.
+- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
 
 
 ## Attributes Reference

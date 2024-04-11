@@ -41,7 +41,7 @@ func ResourceFeed() *schema.Resource {
 
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	permanent_delete := d.Get("permanent_delete").(bool)
-	name := d.Get("name").(bool)
+	name := d.Get("name").(string)
 
 	if !permanent_delete && isFeedRestorable(d, m) {
 		err := restoreFeed(d, m)
