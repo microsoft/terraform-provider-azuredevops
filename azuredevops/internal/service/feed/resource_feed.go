@@ -35,6 +35,10 @@ func ResourceFeed() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"restored": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -49,6 +53,8 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return fmt.Errorf(" restoring feed. Name: %s, Error: %+v", name, err)
 		}
+
+		return resourceFeedRead(d, m)
 	}
 
 	err := createFeed(d, m)
@@ -80,6 +86,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if getFeed != nil {
+		d.SetId(getFeed.Id.String())
 		d.Set("name", getFeed.Name)
 		if getFeed.Project != nil {
 			d.Set("project_id", getFeed.Project.Id.String())
@@ -160,7 +167,7 @@ func createFeed(d *schema.ResourceData, m interface{}) error {
 		Name: &name,
 	}
 
-	createdFeed, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
+	_, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
 		Feed:    &createFeed,
 		Project: &projectId,
 	})
@@ -169,7 +176,8 @@ func createFeed(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId((*createdFeed).Id.String())
+	d.Set("restored", false)
+
 	return nil
 }
 
@@ -196,6 +204,8 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	d.Set("restored", true)
 
 	return nil
 }

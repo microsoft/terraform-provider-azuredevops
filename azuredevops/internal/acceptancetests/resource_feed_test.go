@@ -88,20 +88,31 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckNoResourceAttr(tfNode, "project"),
+					resource.TestCheckResourceAttr(tfNode, "restored", "false"),
 				),
 			},
 		},
 	})
+
+	SecondFeedResource := fmt.Sprintf(`
+		resource "azuredevops_feed" "second_feed" {
+			name = "%s"
+			permanent_delete = false
+		}
+	`, name)
+
+	SecondTfNode := "azuredevops_feed.second_feed"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedResource,
+				Config: SecondFeedResource,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "name"),
-					resource.TestCheckNoResourceAttr(tfNode, "project"),
+					resource.TestCheckResourceAttrSet(SecondTfNode, "name"),
+					resource.TestCheckNoResourceAttr(SecondTfNode, "project"),
+					resource.TestCheckResourceAttr(SecondTfNode, "restored", "true"),
 				),
 			},
 		},

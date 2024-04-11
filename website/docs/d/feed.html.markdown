@@ -59,6 +59,7 @@ The following attributes are exported:
 - `name` - The name of the Feed.
 - `feed_id` - The ID of the Feed.
 - `project_id` - The ID of the Project.
+- `restored` - Determines if Feed was restored after Soft Delete
 
 ## Relevant Links
 
