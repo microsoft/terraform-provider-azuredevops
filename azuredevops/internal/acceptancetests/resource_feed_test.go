@@ -67,3 +67,43 @@ func TestAccAzureDevOps_Resource_Feed_with_Project(t *testing.T) {
 		},
 	})
 }
+
+func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
+	name := testutils.GenerateResourceName()
+
+	FeedResource := fmt.Sprintf(`
+		resource "azuredevops_feed" "feed" {
+			name = "%s"
+			permanent_delete = false
+		}
+	`, name)
+
+	tfNode := "azuredevops_feed.feed"
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: FeedResource,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckNoResourceAttr(tfNode, "project"),
+				),
+			},
+		},
+	})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: FeedResource,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckNoResourceAttr(tfNode, "project"),
+				),
+			},
+		},
+	})
+}
