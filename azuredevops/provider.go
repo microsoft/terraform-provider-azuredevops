@@ -120,6 +120,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
 			"azuredevops_feed":                                   feed.ResourceFeed(),
+			"azuredevops_feed_permission":                        feed.ResourceFeedPermission(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":           build.DataBuildDefinition(),
