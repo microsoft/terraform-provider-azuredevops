@@ -18,7 +18,7 @@ resource "azuredevops_feed" "example" {
 }
 ```
 
-### Create Feed in the scope of whole Organization
+### Create Feed in the scope of a Project
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -29,8 +29,16 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_feed" "example" {
-  name = "releases"
+  name       = "releases"
   project_id = azuredevops_project.example.id
+}
+```
+
+### Create Feed with Soft Delete
+```hcl
+resource "azuredevops_feed" "example" {
+  name             = "releases"
+  permanent_delete = false
 }
 ```
 
@@ -41,7 +49,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the Feed.
 - `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
-
+- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
 
 ## Attributes Reference
 
@@ -49,6 +57,7 @@ The following attributes are exported:
 
 - `name` - The name of the Feed.
 - `project_id` - The ID of the Project Feed is created in (if one exists).
+- `restored` - Determines if Feed was restored after Soft Delete
 
 ## Relevant Links
 

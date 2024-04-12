@@ -25,16 +25,8 @@ data "azuredevops_project" "example" {
 }
 
 data "azuredevops_feed" "example" {
-  name = "releases"
+  name       = "releases"
   project_id = data.azuredevops_project.example.id
-}
-```
-
-### Example with Soft Delete
-```hcl
-data "azuredevops_feed" "example" {
-  name = "releases"
-  permanent_delete = false
 }
 ```
 
@@ -49,8 +41,6 @@ The following arguments are supported:
 ~> **Note** Only one of `name` or `feed_id` can be set at the same time.
 
 - `project_id` - (Optional) ID of the Project Feed is created in.
-- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
-
 
 ## Attributes Reference
 
@@ -59,7 +49,6 @@ The following attributes are exported:
 - `name` - The name of the Feed.
 - `feed_id` - The ID of the Feed.
 - `project_id` - The ID of the Project.
-- `restored` - Determines if Feed was restored after Soft Delete
 
 ## Relevant Links
 
