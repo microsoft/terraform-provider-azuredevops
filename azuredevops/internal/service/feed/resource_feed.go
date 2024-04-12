@@ -51,7 +51,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		err := restoreFeed(d, m)
 
 		if err != nil {
-			return fmt.Errorf(" restoring feed. Name: %s, Error: %+v", name, err)
+			return fmt.Errorf("restoring feed. Name: %s, Error: %+v", name, err)
 		}
 
 		return resourceFeedRead(d, m)
@@ -60,7 +60,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	err := createFeed(d, m)
 
 	if err != nil {
-		return fmt.Errorf(" creating new feed. Name: %s, Error: %+v", name, err)
+		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
 	}
 
 	return resourceFeedRead(d, m)
@@ -82,7 +82,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading feed during read: %+v", err)
+		return fmt.Errorf("error reading feed during read: %+v", err)
 	}
 
 	if getFeed != nil {
