@@ -47,7 +47,7 @@ resource "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the Feed.
+- `name` - (Required) The name of the Feed. *Because of ADO limitations feed name can be **reserved** for up to 15 minutes after permanent delete of the feed*
 - `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
 - `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
 
