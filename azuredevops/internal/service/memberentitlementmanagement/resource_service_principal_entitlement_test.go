@@ -1,6 +1,6 @@
-//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
-// +build all resource_user_entitlement
-// +build !exclude_resource_user_entitlement
+//go:build (all || resource_service_principal_entitlement) && !exclude_resource_service_principal_entitlement
+// +build all resource_service_principal_entitlement
+// +build !exclude_resource_service_principal_entitlement
 
 package memberentitlementmanagement
 

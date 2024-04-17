@@ -96,6 +96,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_git_repository_file",
 		"azuredevops_user_entitlement",
 		"azuredevops_group_entitlement",
+		"azuredevops_service_principal_entitlement",
 		"azuredevops_group_membership",
 		"azuredevops_group",
 		"azuredevops_agent_pool",
