@@ -13,19 +13,16 @@ Manages a service principal entitlement within Azure DevOps.
 
 ```hcl
 resource "azuredevops_service_principal_entitlement" "example" {
-  principal_name = "foo@contoso.com"
+  origin_id = "90c9f86a-8ffb-4ff4-bae5-729100074a0c"
 }
 ```
 
 ## Argument Reference
 
-- `principal_name` - (Optional) The principal name is the PrincipalName of a graph member from the source provider. Usually, e-mail address.
-- `origin_id` - (Optional) The unique identifier from the system of origin. Typically a sid, object id or Guid. e.g. Used for member of other tenant on Azure Active Directory.
-- `origin` - (Optional) The type of source provider for the origin identifier.
+- `origin_id` - (Required) The object ID of the enterprise application.
+- `origin` - (Optional) The type of source provider for the origin identifier. Defaults to `aad`.
 - `account_license_type` - (Optional) Type of Account License. Valid values: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`. In addition the value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
 - `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Valid values: `account` (Default), `auto`, `msdn`, `none`, `profile`, `trial`
-
-> **NOTE:** A service principal can only be referenced by it's `principal_name` or by the combination of `origin_id` and `origin`.
 
 ## Attributes Reference
 

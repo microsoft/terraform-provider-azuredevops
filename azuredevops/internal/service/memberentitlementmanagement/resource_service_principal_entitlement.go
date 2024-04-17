@@ -20,13 +20,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-var (
-	spConfigurationKeys = []string{
-		"origin",
-		"origin_id",
-	}
-)
-
 func ResourceServicePrincipalEntitlement() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceServicePrincipalEntitlementCreate,
@@ -40,9 +33,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			"origin_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Computed:     false,
 				ForceNew:     true,
-				ExactlyOneOf: spConfigurationKeys,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
@@ -51,7 +42,6 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Computed:     true,
 				ForceNew:     true,
 				Default:      string("aad"),
-				ExactlyOneOf: spConfigurationKeys,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
