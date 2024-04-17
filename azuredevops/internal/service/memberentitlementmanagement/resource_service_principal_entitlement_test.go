@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
@@ -204,40 +203,6 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 	assert.Nil(t, err, "err should be nil")
 }
 
-// TestServicePrincipalEntitlement_Import_TestUPN tests if import is successful using an UPN
-func TestServicePrincipalEntitlement_Import_TestUPN(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	identityClient := azdosdkmocks.NewMockIdentityClient(ctrl)
-	clients := &client.AggregatedClient{
-		IdentityClient: identityClient,
-		Ctx:            context.Background(),
-	}
-
-	originID := "b83bb2a9-ebac-4afc-ba71-89902540d16c"
-	id := uuid.New()
-
-	identityClient.
-		EXPECT().
-		ReadIdentities(gomock.Any(), gomock.Any()).
-		Return(&[]identity.Identity{
-			{
-				Id: &id,
-			},
-		}, nil).
-		Times(1)
-
-	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.SetId(originID)
-
-	d, err := importServicePrincipalEntitlement(resourceData, clients)
-	assert.Nil(t, err)
-	assert.NotNil(t, d)
-	assert.Len(t, d, 1)
-	assert.Equal(t, id.String(), d[0].Id())
-}
-
 // TestServicePrincipalEntitlement_Import_TestID tests if import is successful using an UUID
 func TestServicePrincipalEntitlement_Import_TestID(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -249,15 +214,23 @@ func TestServicePrincipalEntitlement_Import_TestID(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id := uuid.New().String()
+	id := uuid.New()
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.SetId(id)
+	resourceData.SetId(id.String())
+
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, "", "", "", "")
+	memberEntitlementClient.
+		EXPECT().
+		GetServicePrincipalEntitlement(gomock.Any(), memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
+			ServicePrincipalId: mockServicePrincipalEntitlement.Id,
+		}).
+		Return(mockServicePrincipalEntitlement, nil)
 
 	d, err := importServicePrincipalEntitlement(resourceData, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 	assert.Len(t, d, 1)
-	assert.Equal(t, id, d[0].Id())
+	assert.Equal(t, id.String(), d[0].Id())
 }
 
 // TestServicePrincipalEntitlement_Import_TestInvalidValue tests if only a valid UPN and UUID can be used to import a resource
@@ -278,7 +251,7 @@ func TestServicePrincipalEntitlement_Import_TestInvalidValue(t *testing.T) {
 	d, err := importServicePrincipalEntitlement(resourceData, clients)
 	assert.Nil(t, d)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Only UUID and UPN values can used for import")
+	assert.Contains(t, err.Error(), "Only UUID values can used for import")
 }
 
 func TestServicePrincipalEntitlement_Create_TestErrorFormatting(t *testing.T) {
