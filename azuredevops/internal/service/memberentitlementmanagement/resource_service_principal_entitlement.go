@@ -22,7 +22,7 @@ import (
 
 var (
 	spConfigurationKeys = []string{
-		"display_name",
+		"origin",
 		"origin_id",
 	}
 )
@@ -37,37 +37,21 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			State: importServicePrincipalEntitlement,
 		},
 		Schema: map[string]*schema.Schema{
-			"principal_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"display_name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Computed:      true,
-				ConflictsWith: []string{"origin_id", "origin"},
-				ExactlyOneOf:  spConfigurationKeys,
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
-			},
 			"origin_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"display_name"},
-				RequiredWith:  []string{"origin"},
-				ExactlyOneOf:  spConfigurationKeys,
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				Type:         schema.TypeString,
+				Optional:     false,
+				Computed:     false,
+				ForceNew:     true,
+				ExactlyOneOf: spConfigurationKeys,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"display_name"},
-				RequiredWith:  []string{"origin_id"},
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				Type:         schema.TypeString,
+				Optional:     false,
+				Computed:     false,
+				ForceNew:     true,
+				ExactlyOneOf: spConfigurationKeys,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,
@@ -264,11 +248,7 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 	d.SetId(servicePrincipalEntitlement.Id.String())
 	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
 	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
-	d.Set("principal_name", *servicePrincipalEntitlement.ServicePrincipal.PrincipalName)
-	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
-		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
-	}
-	d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
+	d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
 	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
 }
@@ -276,7 +256,6 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
 	origin := d.Get("origin").(string)
 	originID := d.Get("origin_id").(string)
-	displayName := d.Get("display_name").(string)
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
 	if err != nil {
@@ -296,7 +275,6 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 		ServicePrincipal: &graph.GraphServicePrincipal{
 			Origin:      &origin,
 			OriginId:    &originID,
-			DisplayName: &displayName,
 			SubjectKind: converter.String("servicePrincipal"),
 		},
 	}, nil
