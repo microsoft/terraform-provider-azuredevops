@@ -51,6 +51,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 					string(licensing.AccountLicenseTypeValues.Advanced),
 					string(licensing.AccountLicenseTypeValues.EarlyAdopter),
 					string(licensing.AccountLicenseTypeValues.Express),
+					"basic",
 					string(licensing.AccountLicenseTypeValues.None),
 					string(licensing.AccountLicenseTypeValues.Professional),
 					string(licensing.AccountLicenseTypeValues.Stakeholder),
