@@ -39,7 +39,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"origin_id": {
 				Type:         schema.TypeString,
-				Optional:     false,
+				Required:     true,
 				Computed:     false,
 				ForceNew:     true,
 				ExactlyOneOf: spConfigurationKeys,
@@ -47,9 +47,10 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			},
 			"origin": {
 				Type:         schema.TypeString,
-				Optional:     false,
-				Computed:     false,
+				Optional:     true,
+				Computed:     true,
 				ForceNew:     true,
+				Default:      string("aad"),
 				ExactlyOneOf: spConfigurationKeys,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
