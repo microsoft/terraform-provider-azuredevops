@@ -206,10 +206,8 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf("Updating service principal entitlement: %v", err)
 	}
 
-	result := *patchResponse.OperationResults
-
-	if !*result[0].IsSuccess {
-		return fmt.Errorf("Updating service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&result))
+	if !*patchResponse.IsSuccess {
+		return fmt.Errorf("Updating service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(patchResponse.OperationResults))
 	}
 	return resourceServicePrincipalEntitlementRead(d, m)
 }
