@@ -39,7 +39,6 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			"origin": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				ForceNew:     true,
 				Default:      string("aad"),
 				ValidateFunc: validation.StringIsNotWhiteSpace,
