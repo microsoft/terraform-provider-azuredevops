@@ -94,6 +94,7 @@ func Provider() *schema.Provider {
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
 			"azuredevops_user_entitlement":                       memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_group_entitlement":                      memberentitlementmanagement.ResourceGroupEntitlement(),
+			"azuredevops_service_principal_entitlement":          memberentitlementmanagement.ResourceServicePrincipalEntitlement(),
 			"azuredevops_group_membership":                       graph.ResourceGroupMembership(),
 			"azuredevops_agent_pool":                             taskagent.ResourceAgentPool(),
 			"azuredevops_elastic_pool":                           taskagent.ResourceAgentPoolVMSS(),
