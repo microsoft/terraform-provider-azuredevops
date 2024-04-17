@@ -2,7 +2,7 @@ package memberentitlementmanagement
 
 import (
 	"fmt"
-	"regexp"
+	"log"
 	"strings"
 
 	"github.com/ahmetb/go-linq"
@@ -10,9 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/licensing"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/memberentitlementmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
@@ -24,49 +22,51 @@ import (
 
 var (
 	spConfigurationKeys = []string{
+		"display_name",
 		"origin_id",
-		"origin",
-		"principal_name",
 	}
 )
 
-// ResourceServicePrincipalEntitlement schema and implementation for service principal entitlement resource
 func ResourceServicePrincipalEntitlement() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceServicePrincipalEntitlementCreate,
 		Read:   resourceServicePrincipalEntitlementRead,
-		Delete: resourceServicePrincipalEntitlementDelete,
 		Update: resourceServicePrincipalEntitlementUpdate,
+		Delete: resourceServicePrincipalEntitlementDelete,
 		Importer: &schema.ResourceImporter{
 			State: importServicePrincipalEntitlement,
 		},
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				ConflictsWith:    []string{"origin_id", "origin"},
-				AtLeastOneOf:     spConfigurationKeys,
-				DiffSuppressFunc: suppress.CaseDifference,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"display_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{"origin_id", "origin"},
+				ExactlyOneOf:  spConfigurationKeys,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin_id": {
 				Type:          schema.TypeString,
-				Computed:      true,
 				Optional:      true,
+				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"principal_name"},
-				AtLeastOneOf:  spConfigurationKeys,
+				ConflictsWith: []string{"display_name"},
+				RequiredWith:  []string{"origin"},
+				ExactlyOneOf:  spConfigurationKeys,
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
 				Type:          schema.TypeString,
-				Computed:      true,
 				Optional:      true,
+				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"principal_name"},
-				AtLeastOneOf:  spConfigurationKeys,
+				ConflictsWith: []string{"display_name"},
+				RequiredWith:  []string{"origin_id"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
@@ -77,7 +77,6 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 					string(licensing.AccountLicenseTypeValues.Advanced),
 					string(licensing.AccountLicenseTypeValues.EarlyAdopter),
 					string(licensing.AccountLicenseTypeValues.Express),
-					"basic",
 					string(licensing.AccountLicenseTypeValues.None),
 					string(licensing.AccountLicenseTypeValues.Professional),
 					string(licensing.AccountLicenseTypeValues.Stakeholder),
@@ -134,7 +133,7 @@ func resourceServicePrincipalEntitlementCreate(d *schema.ResourceData, m interfa
 		return fmt.Errorf("Creating service principal entitlement: %v", err)
 	}
 
-	flattenServicePrincipalEntitlement(d, addedServicePrincipalEntitlement)
+	d.SetId(addedServicePrincipalEntitlement.Id.String())
 	return resourceServicePrincipalEntitlementRead(d, m)
 }
 
@@ -145,100 +144,26 @@ func resourceServicePrincipalEntitlementRead(d *schema.ResourceData, m interface
 	if err != nil {
 		return fmt.Errorf("Error parsing ServicePrincipalEntitlementID: %s. %v", servicePrincipalEntitlementID, err)
 	}
-
-	servicePrincipalEntitlement, err := readServicePrincipalEntitlement(clients, &id)
+	servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
+		ServicePrincipalId: &id,
+	})
 
 	if err != nil {
-		if utils.ResponseWasNotFound(err) || isServicePrincipalDeleted(servicePrincipalEntitlement) {
+		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading service principal entitlement: %v", err)
+		return fmt.Errorf(" reading service principal entitlement: %v", err)
+	}
+
+	if servicePrincipalEntitlement == nil || servicePrincipalEntitlement.Id == nil {
+		log.Println(" Service principal entitlement has been deleted")
+		d.SetId("")
+		return nil
 	}
 
 	flattenServicePrincipalEntitlement(d, servicePrincipalEntitlement)
 	return nil
-}
-
-func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
-	origin := d.Get("origin").(string)
-	originID := d.Get("origin_id").(string)
-	principalName := d.Get("principal_name").(string)
-
-	if len(originID) > 0 && len(principalName) > 0 {
-		return nil, fmt.Errorf("Both origin_id and principal_name set. You can not use both: origin_id: %s principal_name %s", originID, principalName)
-	}
-
-	if len(originID) == 0 && len(principalName) == 0 {
-		return nil, fmt.Errorf("Neither origin_id and principal_name set. Use origin_id or principal_name")
-	}
-
-	if len(originID) > 0 && len(origin) == 0 {
-		return nil, fmt.Errorf("Origin_id requires an origin to be set")
-	}
-
-	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
-	if err != nil {
-		return nil, err
-	}
-	licensingSource, err := converter.AccountLicensingSource(d.Get("licensing_source").(string))
-	if err != nil {
-		return nil, err
-	}
-
-	return &memberentitlementmanagement.ServicePrincipalEntitlement{
-
-		AccessLevel: &licensing.AccessLevel{
-			AccountLicenseType: accountLicenseType,
-			LicensingSource:    licensingSource,
-		},
-
-		// TODO check if it works in both case for GitHub and AzureDevOps
-		ServicePrincipal: &graph.GraphServicePrincipal{
-			Origin:        &origin,
-			OriginId:      &originID,
-			PrincipalName: &principalName,
-			SubjectKind:   converter.String("servicePrincipal"),
-		},
-	}, nil
-}
-
-func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
-	d.SetId(servicePrincipalEntitlement.Id.String())
-	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
-	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
-	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
-		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
-	}
-	d.Set("principal_name", *servicePrincipalEntitlement.ServicePrincipal.PrincipalName)
-	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
-	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
-}
-
-func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
-	servicePrincipalEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.AddServicePrincipalEntitlementArgs{
-		ServicePrincipalEntitlement: servicePrincipalEntitlement,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !*servicePrincipalEntitlementsPostResponse.IsSuccess {
-		opResults := []memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{}
-		if servicePrincipalEntitlementsPostResponse.OperationResult != nil {
-			opResults = append(opResults, *servicePrincipalEntitlementsPostResponse.OperationResult)
-		}
-		return nil, fmt.Errorf("Adding service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&opResults))
-	}
-
-	return servicePrincipalEntitlementsPostResponse.ServicePrincipalEntitlement, nil
-}
-
-func readServicePrincipalEntitlement(clients *client.AggregatedClient, id *uuid.UUID) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
-	return clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
-		ServicePrincipalId: id,
-	})
 }
 
 func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interface{}) error {
@@ -306,41 +231,95 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf("Updating service principal entitlement: %v", err)
 	}
 
-	if !*patchResponse.IsSuccess {
-		return fmt.Errorf("Updating service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(patchResponse.OperationResults))
+	result := *patchResponse.OperationResults
+
+	if !*result[0].IsSuccess {
+		return fmt.Errorf("Updating service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&result))
 	}
 	return resourceServicePrincipalEntitlementRead(d, m)
 }
 
-var spEmailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
 func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	_, err := uuid.Parse(d.Id())
+	upn := d.Id()
+	id, err := uuid.Parse(upn)
+
 	if err != nil {
-		upn := d.Id()
-		if !spEmailRegexp.MatchString(upn) {
-			return nil, fmt.Errorf("Only UUID and UPN values can used for import [%s]", upn)
-		}
-
-		clients := m.(*client.AggregatedClient)
-		result, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
-			SearchFilter: converter.String("General"),
-			FilterValue:  &upn,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		if result == nil || len(*result) <= 0 {
-			return nil, fmt.Errorf("No entitlement found for [%s]", upn)
-		}
-		if len(*result) > 1 {
-			return nil, fmt.Errorf("More than one entitlement found for [%s]", upn)
-		}
-
-		d.SetId((*result)[0].Id.String())
+		return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
 	}
+
+	clients := m.(*client.AggregatedClient)
+	result, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
+		ServicePrincipalId: &id,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error getting the service principal entitlement with supplied id %s: %s", upn, err)
+	}
+
+	d.SetId((*result).Id.String())
+
 	return []*schema.ResourceData{d}, nil
+}
+
+func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
+	d.SetId(servicePrincipalEntitlement.Id.String())
+	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
+	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
+	d.Set("principal_name", *servicePrincipalEntitlement.ServicePrincipal.PrincipalName)
+	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
+		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
+	}
+	d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
+	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
+	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
+}
+
+func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
+	origin := d.Get("origin").(string)
+	originID := d.Get("origin_id").(string)
+	displayName := d.Get("display_name").(string)
+
+	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
+	if err != nil {
+		return nil, err
+	}
+	licensingSource, err := converter.AccountLicensingSource(d.Get("licensing_source").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	return &memberentitlementmanagement.ServicePrincipalEntitlement{
+		AccessLevel: &licensing.AccessLevel{
+			AccountLicenseType: accountLicenseType,
+			LicensingSource:    licensingSource,
+		},
+
+		ServicePrincipal: &graph.GraphServicePrincipal{
+			Origin:      &origin,
+			OriginId:    &originID,
+			DisplayName: &displayName,
+			SubjectKind: converter.String("servicePrincipal"),
+		},
+	}, nil
+}
+
+func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
+	servicePrincipalEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.AddServicePrincipalEntitlementArgs{
+		ServicePrincipalEntitlement: servicePrincipalEntitlement,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !*servicePrincipalEntitlementsPostResponse.IsSuccess {
+		opResults := []memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{}
+		if servicePrincipalEntitlementsPostResponse.OperationResult != nil {
+			opResults = append(opResults, *servicePrincipalEntitlementsPostResponse.OperationResult)
+		}
+		return nil, fmt.Errorf("Adding service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&opResults))
+	}
+
+	return servicePrincipalEntitlementsPostResponse.ServicePrincipalEntitlement, nil
 }
 
 func getServicePrincipalEntitlementAPIErrorMessage(operationResults *[]memberentitlementmanagement.ServicePrincipalEntitlementOperationResult) string {
@@ -373,13 +352,4 @@ func getServicePrincipalEntitlementAPIErrorMessage(operationResults *[]memberent
 			}).(string)
 	}
 	return errMsg
-}
-
-func isServicePrincipalDeleted(servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) bool {
-	if servicePrincipalEntitlement == nil {
-		return true
-	}
-
-	return *servicePrincipalEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.Deleted ||
-		*servicePrincipalEntitlement.AccessLevel.Status == accounts.AccountUserStatusValues.None
 }
