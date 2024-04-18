@@ -36,6 +36,15 @@ func TestFeed_Create_DoesNotSwallowError(t *testing.T) {
 	feedClient := azdosdkmocks.NewMockFeedClient(ctrl)
 	clients := &client.AggregatedClient{FeedClient: feedClient, Ctx: context.Background()}
 
+	feedClient.
+		EXPECT().
+		GetFeedChange(clients.Ctx, feed.GetFeedChangeArgs{
+			FeedId:  &FeedName,
+			Project: &FeedProjectId,
+		}).
+		Return(nil, fmt.Errorf("Feed not found")).
+		Times(1)
+
 	expectedArgs := feed.CreateFeedArgs{
 		Feed:    &feed.Feed{Name: &FeedName},
 		Project: &FeedProjectId,

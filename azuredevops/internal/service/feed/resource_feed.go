@@ -44,10 +44,9 @@ func ResourceFeed() *schema.Resource {
 }
 
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
-	permanent_delete := d.Get("permanent_delete").(bool)
 	name := d.Get("name").(string)
 
-	if !permanent_delete && isFeedRestorable(d, m) {
+	if isFeedRestorable(d, m) {
 		err := restoreFeed(d, m)
 
 		if err != nil {
@@ -117,22 +116,22 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
-	project_id := d.Get("project_id").(string)
-	permanent_delete := d.Get("permanent_delete").(bool)
+	projectId := d.Get("project_id").(string)
+	permanentDelete := d.Get("permanent_delete").(bool)
 
 	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
-		Project: &project_id,
+		Project: &projectId,
 	})
 
 	if err != nil {
 		return err
 	}
 
-	if permanent_delete {
+	if permanentDelete {
 		err = clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
 			FeedId:  &name,
-			Project: &project_id,
+			Project: &projectId,
 		})
 
 		if err != nil {
@@ -148,11 +147,11 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 func isFeedRestorable(d *schema.ResourceData, m interface{}) bool {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
-	project_id := d.Get("project_id").(string)
+	projectId := d.Get("project_id").(string)
 
 	change, err := clients.FeedClient.GetFeedChange(clients.Ctx, feed.GetFeedChangeArgs{
 		FeedId:  &name,
-		Project: &project_id,
+		Project: &projectId,
 	})
 
 	return err == nil && *((*change).ChangeType) == feed.ChangeTypeValues.Delete

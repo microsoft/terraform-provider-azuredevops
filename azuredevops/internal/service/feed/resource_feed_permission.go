@@ -67,37 +67,37 @@ func ResourceFeedPermission() *schema.Resource {
 func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	feed_id := d.Get("feed_id").(string)
+	feedId := d.Get("feed_id").(string)
 	role := feed.FeedRole(d.Get("role").(string))
-	project_id := d.Get("project_id").(string)
-	display_name := d.Get("display_name").(string)
-	identity_descriptor := d.Get("identity_descriptor").(string)
+	projectId := d.Get("project_id").(string)
+	displayName := d.Get("display_name").(string)
+	identityDescriptor := d.Get("identity_descriptor").(string)
 
-	permission, identity_response, err := getFeedPermission(d, m)
+	permission, identityResponse, err := getFeedPermission(d, m)
 
 	if err != nil && !utils.ResponseWasNotFound(err) {
-		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feed_id, identity_descriptor, err)
+		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	if permission != nil {
-		return fmt.Errorf("feed Permission for Feed : %s and Identity : %s already exists", feed_id, identity_descriptor)
+		return fmt.Errorf("feed Permission for Feed : %s and Identity : %s already exists", feedId, identityDescriptor)
 	}
 
 	_, err = clients.FeedClient.SetFeedPermissions(clients.Ctx, feed.SetFeedPermissionsArgs{
-		FeedId:  &feed_id,
-		Project: &project_id,
+		FeedId:  &feedId,
+		Project: &projectId,
 		FeedPermission: &[]feed.FeedPermission{
 			{
-				DisplayName:        &display_name,
-				IdentityDescriptor: identity_response.Descriptor,
-				IdentityId:         identity_response.Id,
+				DisplayName:        &displayName,
+				IdentityDescriptor: identityResponse.Descriptor,
+				IdentityId:         identityResponse.Id,
 				Role:               &role,
 			},
 		},
 	})
 
 	if err != nil {
-		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feed_id, identity_descriptor, err)
+		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	id, _ := uuid.NewUUID()
@@ -107,8 +107,8 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceFeedPermissionRead(d *schema.ResourceData, m interface{}) error {
-	identity_descriptor := d.Get("identity_descriptor").(string)
-	permission, identity_response, err := getFeedPermission(d, m)
+	identityDescriptor := d.Get("identity_descriptor").(string)
+	permission, identityResponse, err := getFeedPermission(d, m)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -122,8 +122,8 @@ func resourceFeedPermissionRead(d *schema.ResourceData, m interface{}) error {
 			d.Set("display_name", *permission.DisplayName)
 		}
 		d.Set("role", *permission.Role)
-		d.Set("identity_descriptor", identity_descriptor)
-		d.Set("identity_id", identity_response.Id.String())
+		d.Set("identity_descriptor", identityDescriptor)
+		d.Set("identity_id", identityResponse.Id.String())
 	}
 
 	return nil
@@ -131,32 +131,32 @@ func resourceFeedPermissionRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceFeedPermissionUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	feed_id := d.Get("feed_id").(string)
-	identity_descriptor := d.Get("identity_descriptor").(string)
+	feedId := d.Get("feed_id").(string)
+	identityDescriptor := d.Get("identity_descriptor").(string)
 	role := feed.FeedRole(d.Get("role").(string))
-	project_id := d.Get("project_id").(string)
-	display_name := d.Get("display_name").(string)
+	projectId := d.Get("project_id").(string)
+	displayName := d.Get("display_name").(string)
 
-	_, identity_response, err := getFeedPermission(d, m)
+	_, identityResponse, err := getFeedPermission(d, m)
 	if err != nil {
 		return fmt.Errorf("error reading feed permission during update: %+v", err)
 	}
 
 	_, err = clients.FeedClient.SetFeedPermissions(clients.Ctx, feed.SetFeedPermissionsArgs{
-		FeedId:  &feed_id,
-		Project: &project_id,
+		FeedId:  &feedId,
+		Project: &projectId,
 		FeedPermission: &[]feed.FeedPermission{
 			{
-				DisplayName:        &display_name,
-				IdentityDescriptor: identity_response.Descriptor,
-				IdentityId:         identity_response.Id,
+				DisplayName:        &displayName,
+				IdentityDescriptor: identityResponse.Descriptor,
+				IdentityId:         identityResponse.Id,
 				Role:               &role,
 			},
 		},
 	})
 
 	if err != nil {
-		return fmt.Errorf("updating feed Permission for Feed : %s and Identity : %s, Error: %+v", feed_id, identity_descriptor, err)
+		return fmt.Errorf("updating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	return resourceFeedPermissionRead(d, m)
@@ -164,30 +164,30 @@ func resourceFeedPermissionUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	feed_id := d.Get("feed_id").(string)
-	identity_descriptor := d.Get("identity_descriptor").(string)
+	feedId := d.Get("feed_id").(string)
+	identityDescriptor := d.Get("identity_descriptor").(string)
 	role := feed.FeedRoleValues.None
-	project_id := d.Get("project_id").(string)
+	projectId := d.Get("project_id").(string)
 
-	identity_response, err := getIdentity(d, m)
+	identityResponse, err := getIdentity(d, m)
 
 	if err != nil {
-		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feed_id, identity_descriptor, err)
+		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	_, err = clients.FeedClient.SetFeedPermissions(clients.Ctx, feed.SetFeedPermissionsArgs{
-		FeedId:  &feed_id,
-		Project: &project_id,
+		FeedId:  &feedId,
+		Project: &projectId,
 		FeedPermission: &[]feed.FeedPermission{
 			{
-				IdentityDescriptor: identity_response.Descriptor,
+				IdentityDescriptor: identityResponse.Descriptor,
 				Role:               &role,
 			},
 		},
 	})
 
 	if err != nil {
-		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feed_id, identity_descriptor, err)
+		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	d.SetId("")
@@ -196,10 +196,10 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 
 func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, error) {
 	clients := m.(*client.AggregatedClient)
-	identity_descriptor := d.Get("identity_descriptor").(string)
+	identityDescriptor := d.Get("identity_descriptor").(string)
 
 	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
-		SubjectDescriptor: &identity_descriptor,
+		SubjectDescriptor: &identityDescriptor,
 	})
 
 	if err != nil {
@@ -220,34 +220,34 @@ func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, err
 func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermission, *identity.Identity, error) {
 	clients := m.(*client.AggregatedClient)
 
-	feed_id := d.Get("feed_id").(string)
-	identity_descriptor := d.Get("identity_descriptor").(string)
-	project_id := d.Get("project_id").(string)
+	feedId := d.Get("feed_id").(string)
+	identityDescriptor := d.Get("identity_descriptor").(string)
+	projectId := d.Get("project_id").(string)
 
-	identity_response, err := getIdentity(d, m)
+	identityResponse, err := getIdentity(d, m)
 
 	if err != nil {
 		return nil, nil, err
 	}
 
 	permissions, err := clients.FeedClient.GetFeedPermissions(clients.Ctx, feed.GetFeedPermissionsArgs{
-		FeedId:  &feed_id,
-		Project: &project_id,
+		FeedId:  &feedId,
+		Project: &projectId,
 	})
 
 	if err != nil {
-		return nil, identity_response, err
+		return nil, identityResponse, err
 	}
 
 	for _, permission := range *permissions {
-		if *permission.IdentityDescriptor == *identity_response.Descriptor {
-			return &permission, identity_response, nil
+		if *permission.IdentityDescriptor == *identityResponse.Descriptor {
+			return &permission, identityResponse, nil
 		}
 	}
 
 	notFound := http.StatusNotFound
-	message := fmt.Sprintf("error reading permission for Feed: %s and Identity: %s", feed_id, identity_descriptor)
-	return nil, identity_response, azuredevops.WrappedError{
+	message := fmt.Sprintf("error reading permission for Feed: %s and Identity: %s", feedId, identityDescriptor)
+	return nil, identityResponse, azuredevops.WrappedError{
 		StatusCode: &notFound,
 		Message:    &message,
 	}
