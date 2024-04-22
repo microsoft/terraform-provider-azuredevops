@@ -23,12 +23,14 @@ func ResourceWiki() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 			"type": {
 				Type:     schema.TypeString,
@@ -49,9 +51,10 @@ func ResourceWiki() *schema.Resource {
 				Computed: true,
 			},
 			"repository_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 			"url": {
 				Type:     schema.TypeString,
@@ -59,9 +62,10 @@ func ResourceWiki() *schema.Resource {
 				Computed: true,
 			},
 			"versions": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 		},
 	}
@@ -162,14 +166,14 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 
 	//  codewiki can be deleted normally, for project wiki the project needs to be deleted
 	wikiType := wiki.WikiType(d.Get("type").(string))
-	if wikiType == "codeWiki" {
+	if wikiType == wiki.WikiTypeValues.CodeWiki {
 		_, err := clients.WikiClient.DeleteWiki(clients.Ctx, wiki.DeleteWikiArgs{
 			WikiIdentifier: converter.String(d.Id()),
 			Project:        converter.String(d.Get("project_id").(string))})
 		if err != nil {
 			return err
 		}
-	} else if wikiType == "projectWiki" {
+	} else if wikiType == wiki.WikiTypeValues.ProjectWiki {
 		resp, err := clients.WikiClient.GetWiki(clients.Ctx, wiki.GetWikiArgs{WikiIdentifier: converter.String(d.Id())})
 		if err != nil {
 			return err

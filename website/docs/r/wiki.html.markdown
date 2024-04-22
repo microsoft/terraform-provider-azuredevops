@@ -45,9 +45,9 @@ resource "azuredevops_wiki" "test2" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID.
+- `project_id` - (Required) The ID of the Project.
 - `name` - (Required) The name of the Wiki.
-- `type` -  (Required) The type of the wiki.
+- `type` -  (Required) The type of the wiki. Possible values are `codeWiki`, `projectWiki`.
 - `repository_id` - (Optional) The repository ID. Not required for ProjectWiki type.
 - `version` - (Optional) Version of the wiki. Not required for ProjectWiki type.
 - `mappedpath` - (Optional) Folder path inside repository which is shown as Wiki. Not required for ProjectWiki type.
