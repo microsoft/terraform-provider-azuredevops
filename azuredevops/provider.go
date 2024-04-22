@@ -22,6 +22,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 )
@@ -116,6 +117,7 @@ func Provider() *schema.Provider {
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":        taskagent.ResourceEnvironmentKubernetes(),
+			"azuredevops_wiki":                                   wiki.ResourceWiki(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
 		},
