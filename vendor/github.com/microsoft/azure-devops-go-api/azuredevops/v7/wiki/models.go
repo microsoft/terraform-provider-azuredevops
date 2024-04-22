@@ -10,8 +10,8 @@ package wiki
 
 import (
 	"github.com/google/uuid"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v6/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 )
 
 // Defines a wiki repository which encapsulates the git repository backing the wiki.
@@ -234,6 +234,8 @@ type WikiV2 struct {
 	Type *WikiType `json:"type,omitempty"`
 	// ID of the wiki.
 	Id *uuid.UUID `json:"id,omitempty"`
+	// Is wiki repository disabled
+	IsDisabled *bool `json:"isDisabled,omitempty"`
 	// Properties of the wiki.
 	Properties *map[string]string `json:"properties,omitempty"`
 	// Remote web url to the wiki.
