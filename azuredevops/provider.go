@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
+			"azuredevops_serviceendpoint_kubernetes": serviceendpoint.DataResourceServiceEndpointKubernetes(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
