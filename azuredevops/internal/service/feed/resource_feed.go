@@ -30,10 +30,23 @@ func ResourceFeed() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 			},
-			"permanent_delete": {
-				Type:     schema.TypeBool,
+			"features": {
+				Type:     schema.TypeList,
 				Optional: true,
-				Default:  true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"permanent_delete": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"restore": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+					},
+				},
 			},
 			"restored": {
 				Type:     schema.TypeBool,
@@ -43,17 +56,25 @@ func ResourceFeed() *schema.Resource {
 	}
 }
 
+var FeatureDefaults = map[string]interface{}{
+	"permanent_delete": true,
+	"restore":          true,
+}
+
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
+	features := buildDefinitionFeatures(d)
 
-	if isFeedRestorable(d, m) {
-		err := restoreFeed(d, m)
+	if v, ok := features["restore"]; ok {
+		if restore := v.(bool); restore && isFeedRestorable(d, m) {
+			err := restoreFeed(d, m)
 
-		if err != nil {
-			return fmt.Errorf("restoring feed. Name: %s, Error: %+v", name, err)
+			if err != nil {
+				return fmt.Errorf("restoring feed. Name: %s, Error: %+v", name, err)
+			}
+
+			return resourceFeedRead(d, m)
 		}
-
-		return resourceFeedRead(d, m)
 	}
 
 	err := createFeed(d, m)
@@ -117,7 +138,7 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	permanentDelete := d.Get("permanent_delete").(bool)
+	features := buildDefinitionFeatures(d)
 
 	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
@@ -128,14 +149,16 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if permanentDelete {
-		err = clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
-			FeedId:  &name,
-			Project: &projectId,
-		})
+	if v, ok := features["permanent_delete"]; ok {
+		if permanentDelete := v.(bool); permanentDelete {
+			err = clients.FeedClient.PermanentDeleteFeed(clients.Ctx, feed.PermanentDeleteFeedArgs{
+				FeedId:  &name,
+				Project: &projectId,
+			})
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -207,4 +230,18 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 	d.Set("restored", true)
 
 	return nil
+}
+
+func buildDefinitionFeatures(d *schema.ResourceData) map[string]interface{} {
+	features := d.Get("features").([]interface{})
+	if len(features) != 0 {
+		featureMap := features[0].(map[string]interface{})
+		for k, v := range FeatureDefaults {
+			if _, ok := featureMap[k]; !ok {
+				featureMap[k] = v
+			}
+		}
+		return featureMap
+	}
+	return FeatureDefaults
 }

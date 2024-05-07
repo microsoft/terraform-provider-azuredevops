@@ -74,7 +74,9 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 	FeedResource := fmt.Sprintf(`
 		resource "azuredevops_feed" "feed" {
 			name = "%s"
-			permanent_delete = false
+			features {
+				permanent_delete = false
+			}
 		}
 	`, name)
 
@@ -97,7 +99,9 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 	SecondFeedResource := fmt.Sprintf(`
 		resource "azuredevops_feed" "second_feed" {
 			name = "%s"
-			permanent_delete = false
+			features {
+				permanent_delete = false
+			}
 		}
 	`, name)
 

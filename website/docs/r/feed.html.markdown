@@ -38,7 +38,9 @@ resource "azuredevops_feed" "example" {
 ```hcl
 resource "azuredevops_feed" "example" {
   name             = "releases"
-  permanent_delete = false
+  features {
+    permanent_delete = false
+  }
 }
 ```
 
@@ -47,9 +49,17 @@ resource "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the Feed. *Because of ADO limitations feed name can be **reserved** for up to 15 minutes after permanent delete of the feed*
+- `name` - (Required) The name of the Feed.
 - `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
+- `features`- (Optional) A `features` blocks as documented below.
+
+~> **Note** *Because of ADO limitations feed name can be **reserved** for up to 15 minutes after permanent delete of the feed*
+
+---
+`features` block supports the following:
+
 - `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
+- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), default value is `true`
 
 ## Attributes Reference
 
