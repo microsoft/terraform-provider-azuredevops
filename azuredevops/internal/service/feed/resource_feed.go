@@ -38,32 +38,28 @@ func ResourceFeed() *schema.Resource {
 						"permanent_delete": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  true,
+							Default:  false,
 						},
 						"restore": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  true,
+							Default:  false,
 						},
 					},
 				},
-			},
-			"restored": {
-				Type:     schema.TypeBool,
-				Computed: true,
 			},
 		},
 	}
 }
 
 var FeatureDefaults = map[string]interface{}{
-	"permanent_delete": true,
-	"restore":          true,
+	"permanent_delete": false,
+	"restore":          false,
 }
 
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
-	features := buildDefinitionFeatures(d)
+	features := feedFeatures(d)
 
 	if v, ok := features["restore"]; ok {
 		if restore := v.(bool); restore && isFeedRestorable(d, m) {
@@ -138,7 +134,7 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	features := buildDefinitionFeatures(d)
+	features := feedFeatures(d)
 
 	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
@@ -198,8 +194,6 @@ func createFeed(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("restored", false)
-
 	return nil
 }
 
@@ -227,12 +221,10 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("restored", true)
-
 	return nil
 }
 
-func buildDefinitionFeatures(d *schema.ResourceData) map[string]interface{} {
+func feedFeatures(d *schema.ResourceData) map[string]interface{} {
 	features := d.Get("features").([]interface{})
 	if len(features) != 0 {
 		featureMap := features[0].(map[string]interface{})

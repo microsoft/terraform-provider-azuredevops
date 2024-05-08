@@ -74,9 +74,6 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 	FeedResource := fmt.Sprintf(`
 		resource "azuredevops_feed" "feed" {
 			name = "%s"
-			features {
-				permanent_delete = false
-			}
 		}
 	`, name)
 
@@ -90,7 +87,6 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckNoResourceAttr(tfNode, "project"),
-					resource.TestCheckResourceAttr(tfNode, "restored", "false"),
 				),
 			},
 		},
@@ -100,7 +96,7 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 		resource "azuredevops_feed" "second_feed" {
 			name = "%s"
 			features {
-				permanent_delete = false
+				restore = true
 			}
 		}
 	`, name)
@@ -116,7 +112,6 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(SecondTfNode, "name"),
 					resource.TestCheckNoResourceAttr(SecondTfNode, "project"),
-					resource.TestCheckResourceAttr(SecondTfNode, "restored", "true"),
 				),
 			},
 		},

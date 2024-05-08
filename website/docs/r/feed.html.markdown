@@ -58,8 +58,8 @@ The following arguments are supported:
 ---
 `features` block supports the following:
 
-- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `true`
-- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), default value is `true`
+- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `false`
+- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), default value is `false`
 
 ## Attributes Reference
 
@@ -67,7 +67,6 @@ The following attributes are exported:
 
 - `name` - The name of the Feed.
 - `project_id` - The ID of the Project Feed is created in (if one exists).
-- `restored` - Determines if Feed was restored after Soft Delete
 
 ## Relevant Links
 
