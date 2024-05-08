@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/feed"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/identity"
@@ -118,6 +119,8 @@ func Provider() *schema.Provider {
 			"azuredevops_environment_resource_kubernetes":        taskagent.ResourceEnvironmentKubernetes(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
+			"azuredevops_feed":                                   feed.ResourceFeed(),
+			"azuredevops_feed_permission":                        feed.ResourceFeedPermission(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":           build.DataBuildDefinition(),
@@ -147,6 +150,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
+			"azuredevops_feed":                       feed.DataFeed(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
