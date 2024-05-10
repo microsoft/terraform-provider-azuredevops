@@ -2,6 +2,7 @@ package feed
 
 import (
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -52,28 +53,29 @@ func ResourceFeed() *schema.Resource {
 	}
 }
 
-var FeatureDefaults = map[string]interface{}{
-	"permanent_delete": false,
-	"restore":          false,
-}
-
 func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+
 	name := d.Get("name").(string)
+	projectId := d.Get("project_id").(string)
 	features := feedFeatures(d)
 
 	if v, ok := features["restore"]; ok {
 		if restore := v.(bool); restore && isFeedRestorable(d, m) {
 			err := restoreFeed(d, m)
-
 			if err != nil {
 				return fmt.Errorf("restoring feed. Name: %s, Error: %+v", name, err)
 			}
-
 			return resourceFeedRead(d, m)
 		}
 	}
 
-	err := createFeed(d, m)
+	_, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
+		Feed: &feed.Feed{
+			Name: &name,
+		},
+		Project: &projectId,
+	})
 
 	if err != nil {
 		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
@@ -98,7 +100,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("error reading feed during read: %+v", err)
+		return fmt.Errorf(" reading feed during read: %+v", err)
 	}
 
 	if getFeed != nil {
@@ -165,56 +167,27 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 
 func isFeedRestorable(d *schema.ResourceData, m interface{}) bool {
 	clients := m.(*client.AggregatedClient)
-	name := d.Get("name").(string)
-	projectId := d.Get("project_id").(string)
 
 	change, err := clients.FeedClient.GetFeedChange(clients.Ctx, feed.GetFeedChangeArgs{
-		FeedId:  &name,
-		Project: &projectId,
+		FeedId:  converter.String(d.Get("name").(string)),
+		Project: converter.String(d.Get("project_id").(string)),
 	})
 
 	return err == nil && *((*change).ChangeType) == feed.ChangeTypeValues.Delete
 }
 
-func createFeed(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	name := d.Get("name").(string)
-	projectId := d.Get("project_id").(string)
-
-	createFeed := feed.Feed{
-		Name: &name,
-	}
-
-	_, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
-		Feed:    &createFeed,
-		Project: &projectId,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func restoreFeed(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	name := d.Get("name").(string)
-	projectId := d.Get("project_id").(string)
-
-	path := "/isDeleted"
-
-	patchJsons := []webapi.JsonPatchOperation{{
-		From:  nil,
-		Path:  &path,
-		Op:    &webapi.OperationValues.Replace,
-		Value: false,
-	}}
 
 	err := clients.FeedClient.RestoreDeletedFeed(clients.Ctx, feed.RestoreDeletedFeedArgs{
-		FeedId:    &name,
-		Project:   &projectId,
-		PatchJson: &patchJsons,
+		FeedId:  converter.String(d.Get("name").(string)),
+		Project: converter.String(d.Get("project_id").(string)),
+		PatchJson: &[]webapi.JsonPatchOperation{{
+			From:  nil,
+			Path:  converter.String("/isDeleted"),
+			Op:    &webapi.OperationValues.Replace,
+			Value: false,
+		}},
 	})
 
 	if err != nil {
@@ -227,13 +200,7 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 func feedFeatures(d *schema.ResourceData) map[string]interface{} {
 	features := d.Get("features").([]interface{})
 	if len(features) != 0 {
-		featureMap := features[0].(map[string]interface{})
-		for k, v := range FeatureDefaults {
-			if _, ok := featureMap[k]; !ok {
-				featureMap[k] = v
-			}
-		}
-		return featureMap
+		return features[0].(map[string]interface{})
 	}
-	return FeatureDefaults
+	return map[string]interface{}{}
 }

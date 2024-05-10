@@ -37,7 +37,7 @@ resource "azuredevops_feed" "example" {
 ### Create Feed with Soft Delete
 ```hcl
 resource "azuredevops_feed" "example" {
-  name             = "releases"
+  name = "releases"
   features {
     permanent_delete = false
   }
