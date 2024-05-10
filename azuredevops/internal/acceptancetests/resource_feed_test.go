@@ -12,22 +12,16 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccAzureDevOps_Resource_Feed(t *testing.T) {
+func TestAccFeed_basic(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
-	FeedResource := fmt.Sprintf(`
-		resource "azuredevops_feed" "feed" {
-			name = "%s"
-		}
-	`, name)
-
-	tfNode := "azuredevops_feed.feed"
+	tfNode := "azuredevops_feed.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedResource,
+				Config: hclFeedBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckNoResourceAttr(tfNode, "project"),
@@ -37,28 +31,17 @@ func TestAccAzureDevOps_Resource_Feed(t *testing.T) {
 	})
 }
 
-func TestAccAzureDevOps_Resource_Feed_with_Project(t *testing.T) {
+func TestAccFeed_with_Project(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
 
-	ProjectResource := testutils.HclProjectResource(projectName)
-	FeedResource := fmt.Sprintf(`
-	%s
-
-	resource "azuredevops_feed" "feed" {
-		name       = "%s"
-		project_id    = azuredevops_project.project.id
-	}
-	
-	`, ProjectResource, name)
-
-	tfNode := "azuredevops_feed.feed"
+	tfNode := "azuredevops_feed.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedResource,
+				Config: hclFeedWithProject(projectName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
@@ -68,22 +51,20 @@ func TestAccAzureDevOps_Resource_Feed_with_Project(t *testing.T) {
 	})
 }
 
-func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
+func TestAccFeed_softDeleteRecovery(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
-	FeedResource := fmt.Sprintf(`
-		resource "azuredevops_feed" "feed" {
-			name = "%s"
-		}
-	`, name)
-
-	tfNode := "azuredevops_feed.feed"
+	tfNode := "azuredevops_feed.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedResource,
+				Config:  hclFeedBasic(name),
+				Destroy: true,
+			},
+			{
+				Config: hclFeedRestore(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckNoResourceAttr(tfNode, "project"),
@@ -91,29 +72,38 @@ func TestAccAzureDevOps_Resource_Feed_Soft_Delete(t *testing.T) {
 			},
 		},
 	})
+}
 
-	SecondFeedResource := fmt.Sprintf(`
-		resource "azuredevops_feed" "second_feed" {
-			name = "%s"
-			features {
-				restore = true
-			}
-		}
-	`, name)
+func hclFeedBasic(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_feed" "test" {
+  name = "%s"
+}`, name)
+}
 
-	SecondTfNode := "azuredevops_feed.second_feed"
+func hclFeedWithProject(projectName, name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: SecondFeedResource,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(SecondTfNode, "name"),
-					resource.TestCheckNoResourceAttr(SecondTfNode, "project"),
-				),
-			},
-		},
-	})
+resource "azuredevops_feed" "test" {
+  name       = "%[1]s"
+  project_id = azuredevops_project.test.id
+}`, projectName, name)
+}
+
+func hclFeedRestore(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_feed" "test" {
+  name = "%s"
+  features {
+    restore = true
+  }
+}
+`, name)
 }

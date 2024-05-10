@@ -37,7 +37,7 @@ resource "azuredevops_feed" "example" {
 ### Create Feed with Soft Delete
 ```hcl
 resource "azuredevops_feed" "example" {
-  name             = "releases"
+  name = "releases"
   features {
     permanent_delete = false
   }
@@ -58,8 +58,8 @@ The following arguments are supported:
 ---
 `features` block supports the following:
 
-- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, default value is `false`
-- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), default value is `false`
+- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, Defaults to `false`
+- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), Defaults to `false`
 
 ## Attributes Reference
 
