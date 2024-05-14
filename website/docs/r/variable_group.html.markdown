@@ -96,7 +96,7 @@ The following arguments are supported:
 - `name` - (Required) The name of the Variable Group.
 - `description` - (Optional) The description of the Variable Group.
 - `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
-- `variable` - (Optional) One or more `variable` blocks as documented below.
+- `variable` - (Required) One or more `variable` blocks as documented below.
 - `key_vault` -(Optional) A list of `key_vault` blocks as documented below.
 
 A `variable` block supports the following:
