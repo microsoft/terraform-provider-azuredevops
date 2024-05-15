@@ -1,3 +1,33 @@
+## 1.1.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_identity_group` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
+* **New Resource** `azuredevops_identity_groups` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
+* **New Resource** `azuredevops_securityrole_assignment` [#982](https://github.com/microsoft/terraform-provider-azuredevops/pull/982)
+* **New Resource** `azuredevops_securityrole_definitions` [#982](https://github.com/microsoft/terraform-provider-azuredevops/pull/982)
+* **New Resource** `azuredevops_feed` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
+* **New Resource** `azuredevops_feed_permission` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
+* **New Data Resource** `azuredevops_feed` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
+
+IMPROVEMENTS:
+
+* `azuredevops_pipeline_authorization ` - Allow pipeline authorization across projects. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
+* Adding information about use in Azure Pipelines. [#1019](https://github.com/microsoft/terraform-provider-azuredevops/pull/1019)
+* `azuredevops_git_repository` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
+* **Data Resource** `azuredevops_git_repositories` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
+* **Data Resource** `azuredevops_git_repository` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
+* `azuredevops_elastic_pool` - Fix document title. [#1037](https://github.com/microsoft/terraform-provider-azuredevops/pull/1037)
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_azurerm` - Fix `azurerm_subscription_id` conflicts with `azurerm_management_group_id`.  [#1004](https://github.com/microsoft/terraform-provider-azuredevops/pull/1004)
+* `azuredevops_team_members` - Optimize `descriptor` read operation.  [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
+* `azuredevops_team` - Optimize `descriptor` read operation.  [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
+* `azuredevops_teams` - Optimize `descriptor` read operation.   [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
+* `azuredevops_group_membership` - Fix group entitlement not found error.   [#1015](https://github.com/microsoft/terraform-provider-azuredevops/pull/1015)
+* `azuredevops_git_repository` - Fix cannot set `default_branch` on update.   [#1020](https://github.com/microsoft/terraform-provider-azuredevops/pull/1020)
+
 ## 1.0.1
 
 FEATURES:
