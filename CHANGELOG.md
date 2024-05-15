@@ -2,26 +2,27 @@
 
 FEATURES:
 
-* **New Resource** `azuredevops_identity_group` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
-* **New Resource** `azuredevops_identity_groups` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
+* **New Data Resource** `azuredevops_identity_user` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
+* **New Data Resource** `azuredevops_identity_group` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
+* **New Data Resource** `azuredevops_identity_groups` [#956](https://github.com/microsoft/terraform-provider-azuredevops/pull/956)
 * **New Resource** `azuredevops_securityrole_assignment` [#982](https://github.com/microsoft/terraform-provider-azuredevops/pull/982)
-* **New Resource** `azuredevops_securityrole_definitions` [#982](https://github.com/microsoft/terraform-provider-azuredevops/pull/982)
-* **New Resource** `azuredevops_feed` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
-* **New Resource** `azuredevops_feed_permission` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
-* **New Data Resource** `azuredevops_feed` [#1043](https://github.com/microsoft/terraform-provider-azuredevops/pull/1043)
+* **New Data Resource** `azuredevops_securityrole_definitions` [#982](https://github.com/microsoft/terraform-provider-azuredevops/pull/982)
+* **New Resource** `azuredevops_feed` [#1011](https://github.com/microsoft/terraform-provider-azuredevops/pull/1011)
+* **New Resource** `azuredevops_feed_permission` [#1011](https://github.com/microsoft/terraform-provider-azuredevops/pull/1011)
+* **New Data Resource** `azuredevops_feed` [#1011](https://github.com/microsoft/terraform-provider-azuredevops/pull/1011)
 
 IMPROVEMENTS:
 
-* `azuredevops_pipeline_authorization ` - Allow pipeline authorization across projects. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
-* Adding information about use in Azure Pipelines. [#1019](https://github.com/microsoft/terraform-provider-azuredevops/pull/1019)
-* `azuredevops_git_repository` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
-* **Data Resource** `azuredevops_git_repositories` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
-* **Data Resource** `azuredevops_git_repository` - Support export repository status. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973)
-* `azuredevops_elastic_pool` - Fix document title. [#1037](https://github.com/microsoft/terraform-provider-azuredevops/pull/1037)
+* `azuredevops_pipeline_authorization` - Allow pipeline authorization across projects. [#973](https://github.com/microsoft/terraform-provider-azuredevops/pull/973) 
+* `azuredevops_git_repository` - Support export repository status. [#1024](https://github.com/microsoft/terraform-provider-azuredevops/pull/1024)
+* **Data Resource** `azuredevops_git_repositories` - Support export repository status. [#1024](https://github.com/microsoft/terraform-provider-azuredevops/pull/1024)
+* **Data Resource** `azuredevops_git_repository` - Support export repository status. [#1024](https://github.com/microsoft/terraform-provider-azuredevops/pull/1024)
+* **Document** `azuredevops_elastic_pool` - Fix document title. [#1037](https://github.com/microsoft/terraform-provider-azuredevops/pull/1037)
+* **Document** Adding information about use in Azure Pipelines. [#1019](https://github.com/microsoft/terraform-provider-azuredevops/pull/1019)
 
 BUG FIX:
 
-* `azuredevops_serviceendpoint_azurerm` - Fix `azurerm_subscription_id` conflicts with `azurerm_management_group_id`.  [#1004](https://github.com/microsoft/terraform-provider-azuredevops/pull/1004)
+* `azuredevops_serviceendpoint_azurerm` - Fix `azurerm_subscription_id` conflicts with `azurerm_management_group_id`.  [#1004](https://github.com/microsoft/terraform-provider-azuredevops/pull/1004) 
 * `azuredevops_team_members` - Optimize `descriptor` read operation.  [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
 * `azuredevops_team` - Optimize `descriptor` read operation.  [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
 * `azuredevops_teams` - Optimize `descriptor` read operation.   [#1014](https://github.com/microsoft/terraform-provider-azuredevops/pull/1014)
