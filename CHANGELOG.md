@@ -1,3 +1,11 @@
+## 1.1.1
+
+BUG FIX:
+
+* `azuredevops_team_members` - Optimize `descriptor` read operation.  [#1048](https://github.com/microsoft/terraform-provider-azuredevops/pull/1048)
+* `azuredevops_team` - Optimize `descriptor` read operation.  [#1048](https://github.com/microsoft/terraform-provider-azuredevops/pull/1048)
+* `azuredevops_teams` - Optimize `descriptor` read operation.   [#1048](https://github.com/microsoft/terraform-provider-azuredevops/pull/1048)
+
 ## 1.1.0
 
 FEATURES:
