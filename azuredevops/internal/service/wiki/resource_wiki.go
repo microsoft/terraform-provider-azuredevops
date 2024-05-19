@@ -23,14 +23,12 @@ func ResourceWiki() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"project_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.IsUUID,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
@@ -47,25 +45,21 @@ func ResourceWiki() *schema.Resource {
 			},
 			"remote_url": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"repository_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IsUUID,
-			},
-			"url": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"versions": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			"url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"version": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 		},
 	}
@@ -90,7 +84,7 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		wikiArgs.RepositoryId = &repositoryUuid
 	}
-	if version, ok := d.GetOk("versions"); ok {
+	if version, ok := d.GetOk("version"); ok {
 		wikiArgs.Version = &git.GitVersionDescriptor{Version: converter.String(version.(string))}
 	}
 
@@ -137,7 +131,7 @@ func resourceWikiRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("url", *resp.Url)
 	}
 	if resp.Versions != nil {
-		d.Set("versions", (*resp.Versions)[0].Version)
+		d.Set("version", (*resp.Versions)[0].Version)
 	}
 
 	return nil

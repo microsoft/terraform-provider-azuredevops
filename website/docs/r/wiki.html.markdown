@@ -35,7 +35,7 @@ resource "azuredevops_wiki" "test2" {
   name = "additional  wiki in repo"
   project_id = azuredevops_project.project.id
   repository_id = azuredevops_git_repository.repository.id
-  versions = "main"
+  version = "main"
   type = "codeWiki"
   mappedpath = "/"
 }
@@ -60,4 +60,4 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 6.0 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/wikis?view=azure-devops-rest-6.0)
+- [Azure DevOps Service REST API 7.1 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/wikis?view=azure-devops-rest-7.1)

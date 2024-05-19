@@ -1212,7 +1212,7 @@ resource "azuredevops_wiki" "code_wiki" {
 	name = "codeWikiRepo"
 	project_id = azuredevops_project.project.id
 	repository_id = azuredevops_git_repository.repository.id
-	versions = "master"
+	version = "master"
 	type = "codeWiki"
 	mapped_path = "/"
 }
