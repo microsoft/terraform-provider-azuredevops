@@ -66,3 +66,9 @@ In addition to all arguments above, the following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.1 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/wikis?view=azure-devops-rest-7.1)
+
+## Import
+Service Connection Maven can be imported using the `id`
+```shell
+terraform import azuredevops_wiki.wiki 00000000-0000-0000-0000-000000000000
+```
