@@ -25,7 +25,7 @@ func TestAccWikiResource_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
-		CheckDestroy: CheckWikiDestroyed(resourceType),
+		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclWiki(projectName),
@@ -52,7 +52,7 @@ func TestAccWikiResource_Complete(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
-		CheckDestroy: CheckWikiDestroyed(resourceType),
+		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclWiki(projectName),
@@ -85,7 +85,7 @@ func TestAccWikiResource_CreateAndUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
-		CheckDestroy: CheckWikiDestroyed("azuredevops_wiki"),
+		CheckDestroy: checkWikiDestroyed("azuredevops_wiki"),
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclWiki(projectName),
@@ -117,7 +117,7 @@ func TestAccWikiResource_ImportErrorStep(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
 		Providers:    testutils.GetProviders(),
-		CheckDestroy: CheckWikiDestroyed(resourceType),
+		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
 				Config: testutils.HclWiki(projectName),
@@ -129,13 +129,13 @@ func TestAccWikiResource_ImportErrorStep(t *testing.T) {
 			},
 			{
 				Config:      hclWikiResourceRequiresImport(projectName),
-				ExpectError: RequiresImportError(),
+				ExpectError: wikiRequiresImportError(),
 			},
 		},
 	})
 }
 
-func CheckWikiDestroyed(resourceType string) resource.TestCheckFunc {
+func checkWikiDestroyed(resourceType string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, resource := range s.RootModule().Resources {
 			if resource.Type != resourceType {
@@ -154,7 +154,7 @@ func CheckWikiDestroyed(resourceType string) resource.TestCheckFunc {
 	}
 }
 
-func RequiresImportError() *regexp.Regexp {
+func wikiRequiresImportError() *regexp.Regexp {
 	message := "Error: Wiki already exists with name ('codeWikiRepo'|'projectWikiRepo')."
 	return regexp.MustCompile(message)
 }
