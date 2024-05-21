@@ -27,6 +27,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
@@ -62,6 +63,7 @@ type AggregatedClient struct {
 	FeedClient                    feed.Client
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
+	WikiClient                    wiki.Client
 	WorkItemTrackingClient        workitemtracking.Client
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
@@ -147,6 +149,12 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		return nil, err
 	}
 
+	wikiClient, err := wiki.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): wiki.NewClient failed.")
+		return nil, err
+	}
+
 	featuremanagementClient := featuremanagement.NewClient(ctx, connection)
 
 	feedClient, err := feed.NewClient(ctx, connection)
@@ -206,6 +214,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		FeedClient:                    feedClient,
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
+		WikiClient:                    wikiClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
