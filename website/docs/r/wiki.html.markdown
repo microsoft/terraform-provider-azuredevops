@@ -12,32 +12,32 @@ Manages Wikis within Azure DevOps project.
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "project" {
-  name = "My Awesome Project"
-  description  = "All of my awesomee things"
+resource "azuredevops_project" "example" {
+  name        = "Example Project"
+  description = "Managed by Terraform"
 }
 
-resource "azuredevops_git_repository" "repository" {
-  project_id = azuredevops_project.project.id
-  name       = "My Awesome Repo"
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_wiki" "test" {
-  name = "project wiki "
-  project_id = azuredevops_project.project.id
-  type = "projectWiki"
+resource "azuredevops_wiki" "example" {
+  name       = "Example project wiki "
+  project_id = azuredevops_project.example.id
+  type       = "projectWiki"
 }
 
-resource "azuredevops_wiki" "test2" {
-  name = "additional  wiki in repo"
-  project_id = azuredevops_project.project.id
-  repository_id = azuredevops_git_repository.repository.id
-  version = "main"
-  type = "codeWiki"
-  mappedpath = "/"
+resource "azuredevops_wiki" "example2" {
+  name          = "Example wiki in repository"
+  project_id    = azuredevops_project.example.id
+  repository_id = azuredevops_git_repository.example.id
+  version       = "main"
+  type          = "codeWiki"
+  mappedpath    = "/"
 }
 ```
 
@@ -49,11 +49,11 @@ The following arguments are supported:
 - `name` - (Required) The name of the Wiki.
 - `type` -  (Required) The type of the wiki. Possible values are `codeWiki`, `projectWiki`.
 
-~> **NOTE:** Project type wiki can only be deleted together with the project.
+~> **NOTE:** Project type wiki(`projectWiki`) can only be deleted together with the project.
 
-- `repository_id` - (Optional) The repository ID. Not required for ProjectWiki type.
-- `version` - (Optional) Version of the wiki. Not required for ProjectWiki type.
-- `mappedpath` - (Optional) Folder path inside repository which is shown as Wiki. Not required for ProjectWiki type.
+- `repository_id` - (Optional) The ID of the repository.
+- `version` - (Optional) Version of the wiki.
+- `mappedpath` - (Optional) Folder path inside repository which is shown as Wiki.
 
 ## Attributes Reference
 
@@ -68,7 +68,9 @@ In addition to all arguments above, the following attributes are exported:
 - [Azure DevOps Service REST API 7.1 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/wikis?view=azure-devops-rest-7.1)
 
 ## Import
-Service Connection Maven can be imported using the `id`
+
+Azure DevOps Wiki can be imported using the `id`
+
 ```shell
 terraform import azuredevops_wiki.wiki 00000000-0000-0000-0000-000000000000
 ```
