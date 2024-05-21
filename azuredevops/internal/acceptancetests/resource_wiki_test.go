@@ -165,26 +165,26 @@ func hclWikiResourceRequiresImport(projectName string) string {
 %s
 
 resource "azuredevops_git_repository" "repository" {
-	project_id = azuredevops_project.project.id
-	name       = "Repo"
-	initialization {
-	  init_type = "Clean"
-	}
+  project_id = azuredevops_project.project.id
+  name       = "Repo"
+  initialization {
+    init_type = "Clean"
+  }
 }
 
 resource "azuredevops_wiki" "code_wiki_test" {
-	name = "codeWikiRepo"
-	project_id = azuredevops_project.project.id
-	repository_id = azuredevops_git_repository.repository.id
-	version = "master"
-	type = "codeWiki"
-	mapped_path = "/"
+  name          = "codeWikiRepo"
+  project_id    = azuredevops_project.project.id
+  repository_id = azuredevops_git_repository.repository.id
+  version       = "master"
+  type          = "codeWiki"
+  mapped_path   = "/"
 }
 
 resource "azuredevops_wiki" "project_wiki_test" {
-	name = "projectWikiRepo"
-	project_id = azuredevops_project.project.id
-	type = "projectWiki"
+  name       = "projectWikiRepo"
+  project_id = azuredevops_project.project.id
+  type       = "projectWiki"
 }
 `, projectResource)
 
