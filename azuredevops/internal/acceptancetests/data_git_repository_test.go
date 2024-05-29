@@ -6,22 +6,15 @@ package acceptancetests
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// Verifies that the following sequence of events occurrs without error:
-//
-//	(1) TF can create a project
-//	(2) A data source is added to the configuration, and that data source can find the created project
 func TestAccGitRepository_DataSource(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	gitRepoName := testutils.GenerateResourceName()
-	tfConfigStep1 := testutils.HclGitRepoResource(projectName, gitRepoName, "Clean")
-	tfConfigStep2 := fmt.Sprintf("%s\n%s", tfConfigStep1, testutils.HclProjectGitRepository(projectName, gitRepoName))
-
+	name := testutils.GenerateResourceName()
 	tfNode := "data.azuredevops_git_repository.repository"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { testutils.PreCheck(t, nil) },
@@ -29,16 +22,55 @@ func TestAccGitRepository_DataSource(t *testing.T) {
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config: tfConfigStep1,
-			}, {
-				Config: tfConfigStep2,
+				Config: hclDataRepository(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					resource.TestCheckResourceAttr(tfNode, "name", gitRepoName),
-					resource.TestCheckResourceAttr(tfNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttr(tfNode, "name", name),
 					resource.TestCheckResourceAttrSet(tfNode, "disabled"),
 				),
 			},
 		},
 	})
+}
+
+func TestAccGitRepository_DataSource_notExist(t *testing.T) {
+	name := testutils.GenerateResourceName()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                  func() { testutils.PreCheck(t, nil) },
+		Providers:                 testutils.GetProviders(),
+		PreventPostDestroyRefresh: true,
+		Steps: []resource.TestStep{
+			{
+				Config:      hclDataRepositoryNotExist(name),
+				ExpectError: regexp.MustCompile(fmt.Sprintf(`Repository with name notExist does not exist`)),
+			},
+		},
+	})
+}
+func hclDataRepository(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%[1]s"
+}
+
+data "azuredevops_git_repository" "repository" {
+  project_id = azuredevops_project.test.id
+  name       = "%[1]s"
+}
+`, projectName)
+
+}
+
+func hclDataRepositoryNotExist(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%[1]s"
+}
+
+data "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "notExist"
+}
+`, name)
+
 }
