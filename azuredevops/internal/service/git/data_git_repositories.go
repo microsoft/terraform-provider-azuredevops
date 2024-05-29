@@ -215,7 +215,10 @@ func getGitRepositoriesByNameAndProject(clients *client.AggregatedClient, name s
 		if err != nil {
 			return nil, err
 		}
-		repos = &[]git.GitRepository{*repo}
+
+		if repo != nil {
+			repos = &[]git.GitRepository{*repo}
+		}
 	} else {
 		repos, err = clients.GitReposClient.GetRepositories(clients.Ctx, git.GetRepositoriesArgs{
 			Project:       converter.String(projectID),
