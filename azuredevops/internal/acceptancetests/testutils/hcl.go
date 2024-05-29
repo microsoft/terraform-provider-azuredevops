@@ -1197,7 +1197,7 @@ func HclEnvironmentResourceKubernetes(projectName string, environmentName string
 // HclWiki HCL describing an wiki setup using azuredevops_wiki
 func HclWiki(projectName string) string {
 	projectResource := HclProjectResource(projectName)
-	projectFeatures := fmt.Sprintf(`
+	return fmt.Sprintf(`
 %s
 
 resource "azuredevops_git_repository" "repository" {
@@ -1223,6 +1223,4 @@ resource "azuredevops_wiki" "project_wiki" {
 	type = "projectWiki"
 }
 `, projectResource)
-
-	return fmt.Sprintf("%s", projectFeatures)
 }
