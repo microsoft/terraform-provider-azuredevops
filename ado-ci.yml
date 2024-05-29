@@ -23,7 +23,7 @@ jobs:
     parameters:
       unitTest: true
       goVersions:
-        - value: '1.18.1'
+        - value: '1.21.10'
           ymlSafeName: '1_18_1'
 
       vmImages:

@@ -59,6 +59,29 @@ resource "azuredevops_check_exclusive_lock" "example" {
 }
 ```
 
+### Protect a repository
+
+```hcl
+resource "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Repository"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_check_exclusive_lock" "example" {
+  project_id           = azuredevops_project.example.id
+  target_resource_id   = "${azuredevops_project.example.id}.${azuredevops_git_repository.example.id}"
+  target_resource_type = "repository"
+  timeout              = 43200
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:

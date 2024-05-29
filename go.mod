@@ -1,6 +1,6 @@
 module github.com/microsoft/terraform-provider-azuredevops
 
-go 1.19
+go 1.21
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.4.0
