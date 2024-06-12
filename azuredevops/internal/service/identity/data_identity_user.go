@@ -92,6 +92,7 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 			Id:                  user.Id,
 			ProviderDisplayName: user.ProviderDisplayName,
 			// Add other fields here if needed
+			CustomDisplayName: user.CustomDisplayName,
 		}
 		results[i] = newUser
 	}
@@ -101,7 +102,7 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 // Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter.
 func validateIdentityUser(users *[]identity.Identity, userName string, searchFilter string) *identity.Identity {
 	for _, user := range *users {
-		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) {
+		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) || strings.Contains(strings.ToLower(*user.CustomDisplayName), strings.ToLower(userName)){
 			return &user
 		}
 	}
