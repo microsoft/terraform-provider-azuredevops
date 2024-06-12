@@ -92,7 +92,8 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 			Id:                  user.Id,
 			ProviderDisplayName: user.ProviderDisplayName,
 			// Add other fields here if needed
-			CustomDisplayName: user.CustomDisplayName,
+			CustomDisplayName: user.CustomDisplayName, //It might be the match is based on CustomDisplayName
+			// TODO check how to compare against "DirectoryAlias":{"$type":"System.String","$value":"user_name"}} and "Account":{"$type":"System.String","$value":"Norkevicius_Ad"}
 		}
 		results[i] = newUser
 	}
@@ -102,8 +103,12 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 // Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter.
 func validateIdentityUser(users *[]identity.Identity, userName string, searchFilter string) *identity.Identity {
 	for _, user := range *users {
-		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) || strings.Contains(strings.ToLower(*user.CustomDisplayName), strings.ToLower(userName)){
-			return &user
+		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) 
+		|| strings.Contains(strings.ToLower(*user.CustomDisplayName), strings.ToLower(userName))
+		// It might be the match is based on CustomDisplayName
+		// TODO check how to compare against "DirectoryAlias":{"$type":"System.String","$value":"user_name"}} and "Account":{"$type":"System.String","$value":"Norkevicius_Ad"}
+
+		return &user
 		}
 	}
 	return nil
