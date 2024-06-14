@@ -375,6 +375,21 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 	description := converter.String(d.Get(vgDescription).(string))
 	variables := d.Get(vgVariable).(*schema.Set).List()
 
+	// needed to detect if the secret_value attribute is set in the config
+	// see https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+	for it := d.GetRawConfig().AsValueMap()[vgVariable].ElementIterator(); it.Next(); {
+		_, ctyVariable := it.Element()
+		ctyVariableAsMap := ctyVariable.AsValueMap()
+		name := ctyVariableAsMap[vgName].AsString()
+		valueSet := !ctyVariableAsMap[vgValue].IsNull()
+		secretValueSet := !ctyVariableAsMap[secretVgValue].IsNull()
+		isSecretSet := !ctyVariableAsMap[vgIsSecret].IsNull()
+
+		if valueSet && (secretValueSet || isSecretSet) || secretValueSet != isSecretSet {
+			return nil, nil, fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
+		}
+	}
+
 	variableMap := make(map[string]interface{})
 
 	for _, variable := range variables {

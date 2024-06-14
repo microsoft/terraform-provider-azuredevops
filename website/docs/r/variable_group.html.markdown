@@ -101,6 +101,8 @@ The following arguments are supported:
 
 A `variable` block supports the following:
 
+!> **Warning** variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes
+
 - `name` - (Required) The key value used for the variable. Must be unique within the Variable Group.
 - `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
 - `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
