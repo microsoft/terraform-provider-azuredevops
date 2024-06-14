@@ -118,6 +118,7 @@ func ResourceVariableGroup() *schema.Resource {
 							ConflictsWith: []string{vgKeyVault},
 						},
 						vgIsSecret: {
+							Deprecated:    fmt.Sprintf("Don't use %s anymore as specifying %s is enough", vgIsSecret, secretVgValue),
 							Type:          schema.TypeBool,
 							Optional:      true,
 							Default:       false,
@@ -375,21 +376,31 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 	description := converter.String(d.Get(vgDescription).(string))
 	variables := d.Get(vgVariable).(*schema.Set).List()
 
+	// needed to detect if the secret_value attribute is set in the config
+	// see https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+	explicitlySetSecrets := make(map[string]bool)
+	for it := d.GetRawConfig().AsValueMap()[vgVariable].ElementIterator(); it.Next(); {
+		_, ctyVariable := it.Element()
+		ctyVariableAsMap := ctyVariable.AsValueMap()
+
+		explicitlySetSecrets[ctyVariableAsMap[vgName].AsString()] = !ctyVariableAsMap[secretVgValue].IsNull()
+	}
+
 	variableMap := make(map[string]interface{})
 
 	for _, variable := range variables {
 		asMap := variable.(map[string]interface{})
+		name := asMap[vgName].(string)
 
-		isSecret := converter.Bool(asMap[vgIsSecret].(bool))
-		if *isSecret {
-			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
-				Value:    converter.String(asMap[secretVgValue].(string)),
-				IsSecret: isSecret,
+		if secretValue, ok := asMap[secretVgValue]; ok && explicitlySetSecrets[name] {
+			variableMap[name] = taskagent.VariableValue{
+				Value:    converter.String(secretValue.(string)),
+				IsSecret: converter.Bool(true),
 			}
 		} else {
-			variableMap[asMap[vgName].(string)] = taskagent.VariableValue{
+			variableMap[name] = taskagent.VariableValue{
 				Value:    converter.String(asMap[vgValue].(string)),
-				IsSecret: isSecret,
+				IsSecret: converter.Bool(false),
 			}
 		}
 	}
@@ -528,7 +539,6 @@ func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]
 		vgName:        varName,
 		vgValue:       nil,
 		secretVgValue: nil,
-		vgIsSecret:    false,
 		vgEnabled:     converter.ToBool(variable.Enabled, false),
 		vgContentType: converter.ToString(variable.ContentType, ""),
 	}
@@ -547,9 +557,8 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 
 	isSecret := converter.ToBool(variable.IsSecret, false)
 	var val = map[string]interface{}{
-		vgName:     varName,
-		vgValue:    converter.ToString(variable.Value, ""),
-		vgIsSecret: isSecret,
+		vgName:  varName,
+		vgValue: converter.ToString(variable.Value, ""),
 	}
 
 	//read secret variables from state if exist
