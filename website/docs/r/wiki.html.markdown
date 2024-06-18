@@ -39,6 +39,13 @@ resource "azuredevops_wiki" "example2" {
   type          = "codeWiki"
   mappedpath    = "/"
 }
+
+resource "azuredevops_wiki_page" "example" {
+  project_id = azuredevops_project.example.id
+  wiki_id = azuredevops_wiki.example.id
+  path = "/path"
+  content = "content"
+}
 ```
 
 ## Argument Reference
