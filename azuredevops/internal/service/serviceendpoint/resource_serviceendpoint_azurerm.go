@@ -110,7 +110,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		ForceNew:     true,
 		Description:  "Environment (Azure Cloud type)",
 		Default:      "AzureCloud",
-		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
+		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud", "AzureUSGovernment", "AzureGermanCloud"}, false),
 	}
 
 	r.Schema["service_endpoint_authentication_scheme"] = &schema.Schema{
@@ -396,6 +396,10 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		endpointUrl = "https://management.azure.com/"
 	} else if environment == "AzureChinaCloud" {
 		endpointUrl = "https://management.chinacloudapi.cn/"
+	} else if environment == "AzureUSGovernment" {
+		endpointUrl = "https://management.usgovcloudapi.net/"
+	} else if environment == "AzureGermanCloud" {
+		endpointUrl = "https://management.microsoftazure.de"
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
