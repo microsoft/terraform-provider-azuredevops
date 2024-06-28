@@ -258,6 +258,11 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
+	if repo == nil {
+		d.SetId("")
+		return nil
+	}
+
 	err = flattenGitRepository(d, repo)
 	if err != nil {
 		return fmt.Errorf("Failed to flatten Git repository: %w", err)
