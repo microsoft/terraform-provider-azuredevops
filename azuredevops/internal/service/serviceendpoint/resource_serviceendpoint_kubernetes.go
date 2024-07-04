@@ -216,7 +216,10 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointKubernetes(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	doBaseFlattening(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = flattenServiceEndpointKubernetes(d, serviceEndpoint); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -233,7 +236,10 @@ func resourceServiceEndpointKubernetesUpdate(d *schema.ResourceData, m interface
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointKubernetes(d, updatedServiceEndpoint, projectID.String())
+	doBaseFlattening(d, serviceEndpoint, projectID.String())
+	if err = flattenServiceEndpointKubernetes(d, updatedServiceEndpoint); err != nil {
+		return err
+	}
 	return resourceServiceEndpointKubernetesRead(d, m)
 }
 
@@ -324,10 +330,16 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set(resourceAttrAuthType, (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType])
-	d.Set(resourceAttrAPIURL, *serviceEndpoint.Url)
+func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
+	if serviceEndpoint.Data != nil {
+		if v, ok := (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType]; ok {
+			d.Set(resourceAttrAuthType, v)
+		}
+	}
+
+	if serviceEndpoint.Url != nil {
+		d.Set(resourceAttrAPIURL, *serviceEndpoint.Url)
+	}
 
 	switch (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType] {
 	case "AzureSubscription":
@@ -360,18 +372,35 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 	case "Kubeconfig":
 		var kubeconfig map[string]interface{}
 		kubeconfigSet := d.Get("kubeconfig").([]interface{})
-
 		configuration := kubeconfigSet[0].(map[string]interface{})
-		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
-		kubeconfig = map[string]interface{}{
-			"kube_config":            configuration["kube_config"].(string),
-			"cluster_context":        (*serviceEndpoint.Authorization.Parameters)["clusterContext"],
-			"accept_untrusted_certs": acceptUntrustedCerts,
-		}
 
-		kubeconfigList := make([]map[string]interface{}, 1)
-		kubeconfigList[0] = kubeconfig
-		d.Set(resourceBlockKubeconfig, kubeconfigList)
+		if len(configuration) > 0 {
+			kubeconfig = map[string]interface{}{}
+
+			if v, ok := configuration["kube_config"]; ok {
+				kubeconfig["kube_config"] = v.(string)
+			}
+
+			if serviceEndpoint.Data != nil {
+				if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
+					acceptUntrustedCerts, err := strconv.ParseBool(v)
+					if err != nil {
+						return fmt.Errorf(" failed to parse `accept_untrusted_certs`: %+v ", err)
+					}
+					kubeconfig["accept_untrusted_certs"] = acceptUntrustedCerts
+				}
+			}
+
+			if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+				if v, ok := (*serviceEndpoint.Authorization.Parameters)["clusterContext"]; ok {
+					kubeconfig["cluster_context"] = v
+				}
+			}
+
+			kubeconfigList := make([]map[string]interface{}, 1)
+			kubeconfigList[0] = kubeconfig
+			d.Set(resourceBlockKubeconfig, kubeconfigList)
+		}
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
 		serviceAccountSet := d.Get("service_account").([]interface{})
@@ -393,4 +422,5 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		serviceAccountList[0] = serviceAccount
 		d.Set(resourceBlockServiceAccount, serviceAccountList)
 	}
+	return nil
 }
