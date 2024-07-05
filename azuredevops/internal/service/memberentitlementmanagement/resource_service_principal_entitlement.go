@@ -62,16 +62,8 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 						string(licensing.AccountLicenseTypeValues.Express),
 						"basic",
 					}
-					stringInSlice := func(v string, valid []string) bool {
-						for _, str := range valid {
-							if strings.EqualFold(v, str) {
-								return true
-							}
-						}
-						return false
-					}
 					return strings.EqualFold(old, new) ||
-						(stringInSlice(old, equalEntitlements) && stringInSlice(new, equalEntitlements))
+						(slices.Contains(equalEntitlements, old) && slices.Contains(equalEntitlements, new))
 				},
 			},
 			"licensing_source": {
