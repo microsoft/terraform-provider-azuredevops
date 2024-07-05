@@ -234,7 +234,7 @@ func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([
 }
 
 func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
-	d.SetId(servicePrincipalEntitlement.Id.String())
+	
 	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
 	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
 	d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
