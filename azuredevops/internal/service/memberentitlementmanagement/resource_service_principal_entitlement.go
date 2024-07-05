@@ -40,7 +40,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
-				Default:      string("aad"),
+				Default:      "aad",
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
