@@ -13,7 +13,7 @@ Manages a service principal entitlement within Azure DevOps.
 
 ```hcl
 resource "azuredevops_service_principal_entitlement" "example" {
-  origin_id = "90c9f86a-8ffb-4ff4-bae5-729100074a0c"
+  origin_id = "00000000-0000-0000-0000-000000000001"
 }
 ```
 
