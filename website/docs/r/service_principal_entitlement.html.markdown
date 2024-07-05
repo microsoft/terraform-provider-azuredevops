@@ -20,7 +20,7 @@ resource "azuredevops_service_principal_entitlement" "example" {
 ## Argument Reference
 
 - `origin_id` - (Required) The object ID of the enterprise application.
-- `origin` - (Optional) The type of source provider for the origin identifier. Defaults to `aad`.
+- `origin` - (Optional) The type of source provider for the origin identifier. Defaults to `aad`. Possible value ad, aad, msa.
 - `account_license_type` - (Optional) Type of Account License. Valid values: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`.
 
   ~> **Note**
