@@ -27,7 +27,7 @@ resource "azuredevops_service_principal_entitlement" "example" {
   The value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
 
 
-- `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Valid values: `account` (Default), `auto`, `msdn`, `none`, `profile`, `trial`
+- `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Valid values: `account`, `auto`, `msdn`, `none`, `profile`, `trial`. Defaults to `account`
 
 ## Attributes Reference
 
