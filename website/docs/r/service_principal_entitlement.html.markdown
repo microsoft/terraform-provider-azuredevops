@@ -45,6 +45,8 @@ The following attributes are exported:
 
 The resources allows the import via the UUID of a service principal entitlement or by using the principal name of a service principal owning an entitlement.
 
+```sh
+terraform import azuredevops_service_principal_entitlement.example 00000000-0000-0000-0000-000000000000
 ## PAT Permissions Required
 
 - **Member Entitlement Management**: Read & Write
