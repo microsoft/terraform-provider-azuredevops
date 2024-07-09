@@ -7,6 +7,7 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -56,6 +57,7 @@ func TestCheckApproval_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	ApprovalCheckAfterRoundTrip, projectID, err := expandCheckApproval(resourceData)
 
 	require.Equal(t, ApprovalCheckTest, *ApprovalCheckAfterRoundTrip)
@@ -70,6 +72,7 @@ func TestCheckApproval_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -93,6 +96,7 @@ func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -121,6 +125,7 @@ func TestCheckApproval_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -148,6 +153,7 @@ func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
