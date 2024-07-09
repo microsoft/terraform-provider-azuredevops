@@ -170,7 +170,6 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		}
 	}
 
-	d.SetId(*resp.Resource.Id)
 	return nil
 }
 
