@@ -153,6 +153,7 @@ func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
