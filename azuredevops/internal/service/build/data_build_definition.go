@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -301,8 +302,10 @@ func dataSourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Multiple build definitions with name %s found in project %s", name, projectID)
 	}
 
-	flattenBuildDefinition(d, &(*buildDefinitions)[0], projectID)
+	buildDetail := &(*buildDefinitions)[0]
+	d.SetId(strconv.Itoa(*buildDetail.Id))
 
+	flattenBuildDefinition(d, buildDetail, projectID)
 	return nil
 }
 
@@ -322,7 +325,7 @@ func getBuildDefinitionsByNameAndProject(clients *client.AggregatedClient, name 
 	}
 	var buildDefinitions []build.BuildDefinition
 	for _, buildDefinition := range builds.Value {
-		build, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
+		buildDetails, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
 			Project:      &projectID,
 			DefinitionId: buildDefinition.Id,
 		})
@@ -330,7 +333,7 @@ func getBuildDefinitionsByNameAndProject(clients *client.AggregatedClient, name 
 			return nil, err
 		}
 
-		buildDefinitions = append(buildDefinitions, *build)
+		buildDefinitions = append(buildDefinitions, *buildDetails)
 	}
 
 	return &buildDefinitions, nil
