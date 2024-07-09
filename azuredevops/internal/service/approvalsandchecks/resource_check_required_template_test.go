@@ -3,16 +3,15 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
-
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/stretchr/testify/require"
 )
@@ -54,6 +53,7 @@ func TestCheckRequiredTemplate_ExpandFlatten_Roundtrip(t *testing.T) {
 	flattenErr := flattenCheckRequiredTemplate(resourceData, &requiredTemplateCheckTest, requiredTemplateCheckProjectID)
 
 	requiredTemplateCheckAfterRoundTrip, projectID, expandErr := expandCheckRequiredTemplate(resourceData)
+	requiredTemplateCheckAfterRoundTrip.Id = requiredTemplateCheckTest.Id
 
 	require.Equal(t, requiredTemplateCheckTest, *requiredTemplateCheckAfterRoundTrip)
 	require.Equal(t, requiredTemplateCheckProjectID, projectID)
@@ -68,12 +68,14 @@ func TestCheckRequiredTemplate_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckRequiredTemplate()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *requiredTemplateCheckTest.Id))
 	flattenErr := flattenCheckRequiredTemplate(resourceData, &requiredTemplateCheckTest, requiredTemplateCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
 
 	expectedArgs := pipelineschecksextras.AddCheckConfigurationArgs{Configuration: &requiredTemplateCheckTest, Project: &requiredTemplateCheckProjectID}
+	//expectedArgs = requiredTemplateCheckTest.Id
 	pipelinesChecksClient.
 		EXPECT().
 		AddCheckConfiguration(clients.Ctx, expectedArgs).
@@ -92,6 +94,7 @@ func TestCheckRequiredTemplate_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckRequiredTemplate()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *requiredTemplateCheckTest.Id))
 	flattenErr := flattenCheckRequiredTemplate(resourceData, &requiredTemplateCheckTest, requiredTemplateCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -121,6 +124,7 @@ func TestCheckRequiredTemplate_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckRequiredTemplate()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *requiredTemplateCheckTest.Id))
 	flattenErr := flattenCheckRequiredTemplate(resourceData, &requiredTemplateCheckTest, requiredTemplateCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -149,6 +153,7 @@ func TestCheckRequiredTemplate_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckRequiredTemplate()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *requiredTemplateCheckTest.Id))
 	flattenErr := flattenCheckRequiredTemplate(resourceData, &requiredTemplateCheckTest, requiredTemplateCheckProjectID)
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
