@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,6 +16,9 @@ import (
 func DataTeams() *schema.Resource {
 	return &schema.Resource{
 		Read: dataTeamsRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -77,9 +81,7 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 	var projectIDList []string
 	data, ok := d.GetOk("project_id")
 	if ok {
-		projectIDList = []string{
-			data.(string),
-		}
+		projectIDList = []string{data.(string)}
 	} else {
 		projectList, err := getProjectsForStateAndName(clients, string(core.ProjectStateValues.All), "")
 		if err != nil {
@@ -92,14 +94,12 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			ToSlice(&projectIDList)
 	}
 
-	top := d.Get("top").(int)
-
 	result := make([]interface{}, 0)
 	for _, projectID := range projectIDList {
 		teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 			ProjectId:      converter.String(projectID),
 			Mine:           converter.Bool(false),
-			Top:            converter.Int(top),
+			Top:            converter.Int(d.Get("top").(int)),
 			ExpandIdentity: converter.Bool(false),
 		})
 
@@ -113,11 +113,11 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 
 		teams := make([]interface{}, len(*teamList))
 		for i, team := range *teamList {
-			members, err := readTeamMembers(clients, &team)
+			members, err := getTeamMembers(clients, &team)
 			if err != nil {
 				return err
 			}
-			administrators, err := readTeamAdministrators(d, clients, &team)
+			administrators, err := getTeamAdministrators(d, clients, &team)
 			if err != nil {
 				return err
 			}
@@ -145,14 +145,13 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 
 			teams[i] = s
 		}
-
 		result = append(result, teams...)
 	}
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
 
 	if err := d.Set("teams", result); err != nil {
-		return fmt.Errorf("Error setting `teams`: %+v", err)
+		return fmt.Errorf(" setting `teams`: %+v", err)
 	}
 
 	return nil

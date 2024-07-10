@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,6 +25,12 @@ func ResourceTeamAdministrators() *schema.Resource {
 		Read:   resourceTeamAdministratorsRead,
 		Update: resourceTeamAdministratorsUpdate,
 		Delete: resourceTeamAdministratorsDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -64,12 +71,9 @@ func ResourceTeamAdministrators() *schema.Resource {
 func resourceTeamAdministratorsCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
 
@@ -93,19 +97,15 @@ func resourceTeamAdministratorsCreate(d *schema.ResourceData, m interface{}) err
 
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
-
 	return resourceTeamAdministratorsRead(d, m)
 }
 
 func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
 
@@ -117,7 +117,7 @@ func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	administratorList, err := readTeamAdministrators(d, clients, team)
+	administratorList, err := getTeamAdministrators(d, clients, team)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,6 @@ func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error
 	d.Set("project_id", team.ProjectId.String())
 	d.Set("team_id", team.Id.String())
 	d.Set("administrators", administrators)
-
 	return nil
 }
 
@@ -145,12 +144,9 @@ func resourceTeamAdministratorsUpdate(d *schema.ResourceData, m interface{}) err
 
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
 
@@ -205,7 +201,7 @@ func resourceTeamAdministratorsDelete(d *schema.ResourceData, m interface{}) err
 	if strings.EqualFold("overwrite", d.Get("mode").(string)) {
 		log.Printf("[TRACE] Removing all administrators from team %s", *team.Name)
 
-		administratorList, err = readTeamAdministrators(d, clients, team)
+		administratorList, err = getTeamAdministrators(d, clients, team)
 		if err != nil {
 			return err
 		}
