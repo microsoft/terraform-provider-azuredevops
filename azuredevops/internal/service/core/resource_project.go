@@ -23,7 +23,6 @@ import (
 
 // timeout used to wait for operations on projects to finish before executing an update or delete
 var projectBusyTimeoutDuration time.Duration = 6
-var projectRetryTimeoutDuration time.Duration = 3
 
 // ResourceProject schema and implementation for project resource
 func ResourceProject() *schema.Resource {
