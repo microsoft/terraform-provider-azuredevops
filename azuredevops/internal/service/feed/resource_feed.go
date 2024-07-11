@@ -58,10 +58,10 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	features := feedFeatures(d)
+	features := expandFeedFeatures(d.Get("features").([]interface{}))
 
-	if v, ok := features["restore"]; ok {
-		if restore := v.(bool); restore && isFeedRestorable(d, m) {
+	if v, ok := features["restore"]; ok && v.(bool) {
+		if isFeedRestorable(d, m) {
 			err := restoreFeed(d, m)
 			if err != nil {
 				return fmt.Errorf("restoring feed. Name: %s, Error: %+v", name, err)
@@ -70,7 +70,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	_, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
+	feedDetail, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
 		Feed: &feed.Feed{
 			Name: &name,
 		},
@@ -81,6 +81,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
 	}
 
+	d.SetId(feedDetail.Id.String())
 	return resourceFeedRead(d, m)
 }
 
@@ -90,7 +91,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
 
-	getFeed, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
+	feedDetail, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
 		FeedId:  &name,
 		Project: &projectId,
 	})
@@ -100,14 +101,14 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" reading feed during read: %+v", err)
+		return fmt.Errorf(" failed get feed. Projecct ID: %s , Feed Name %s : . Error: %+v", projectId, name, err)
 	}
 
-	if getFeed != nil {
-		d.SetId(getFeed.Id.String())
-		d.Set("name", getFeed.Name)
-		if getFeed.Project != nil {
-			d.Set("project_id", getFeed.Project.Id.String())
+	if feedDetail != nil {
+		d.SetId(feedDetail.Id.String())
+		d.Set("name", feedDetail.Name)
+		if feedDetail.Project != nil {
+			d.Set("project_id", feedDetail.Project.Id.String())
 		}
 	}
 
@@ -136,7 +137,7 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	features := feedFeatures(d)
+	features := expandFeedFeatures(d.Get("features").([]interface{}))
 
 	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
@@ -159,9 +160,6 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 	}
-
-	d.SetId("")
-
 	return nil
 }
 
@@ -197,10 +195,9 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func feedFeatures(d *schema.ResourceData) map[string]interface{} {
-	features := d.Get("features").([]interface{})
-	if len(features) != 0 {
-		return features[0].(map[string]interface{})
+func expandFeedFeatures(input []interface{}) map[string]interface{} {
+	if len(input) == 0 || input[0] == nil {
+		return map[string]interface{}{}
 	}
-	return map[string]interface{}{}
+	return input[0].(map[string]interface{})
 }

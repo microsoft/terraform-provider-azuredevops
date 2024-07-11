@@ -190,7 +190,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
-	d.SetId("")
 	return nil
 }
 
@@ -245,10 +244,9 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 		}
 	}
 
-	notFound := http.StatusNotFound
 	message := fmt.Sprintf("error reading permission for Feed: %s and Identity: %s", feedId, identityDescriptor)
 	return nil, identityResponse, azuredevops.WrappedError{
-		StatusCode: &notFound,
+		StatusCode: converter.Int(http.StatusNotFound),
 		Message:    &message,
 	}
 }
