@@ -25,6 +25,12 @@ func ResourceTeamMembers() *schema.Resource {
 		Read:   resourceTeamMembersRead,
 		Update: resourceTeamMembersUpdate,
 		Delete: resourceTeamMembersDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -65,12 +71,9 @@ func ResourceTeamMembers() *schema.Resource {
 func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(true),
 	})
 
@@ -81,15 +84,15 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 	var membersToAdd *schema.Set = nil
 	mode := d.Get("mode").(string)
 	if strings.EqualFold(mode, "overwrite") {
-		membersToAdd := d.Get("members").(*schema.Set)
+		membersToAdd = d.Get("members").(*schema.Set)
 		members := tfhelper.ExpandStringSet(membersToAdd)
-		err := setTeamMembers(clients, team, &members)
+		err = setTeamMembers(clients, team, &members)
 		if err != nil {
 			return err
 		}
 	} else {
-		membersToAdd := d.Get("members").(*schema.Set)
-		err := addTeamMembers(clients, team, linq.From(membersToAdd.List()))
+		membersToAdd = d.Get("members").(*schema.Set)
+		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()))
 		if err != nil {
 			return err
 		}
@@ -99,11 +102,11 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
-			clients := m.(*client.AggregatedClient)
+			clients = m.(*client.AggregatedClient)
 			state := "Waiting"
-			actualMemberships, err := readTeamMembers(clients, team)
+			actualMemberships, err := getTeamMembers(clients, team)
 			if err != nil {
-				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+				return nil, "", fmt.Errorf(" reading team memberships: %+v", err)
 			}
 			if membersToAdd == nil || actualMemberships.Intersection(membersToAdd).Len() == membersToAdd.Len() {
 				state = "Synched"
@@ -125,19 +128,15 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 
 	// The ID for this resource is meaningless so we can just assign a random ID
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
-
 	return resourceTeamMembersRead(d, m)
 }
 
 func resourceTeamMembersRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(true),
 	})
 
@@ -149,7 +148,7 @@ func resourceTeamMembersRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	membershipList, err := readTeamMembers(clients, team)
+	membershipList, err := getTeamMembers(clients, team)
 	if err != nil {
 		return err
 	}
@@ -166,7 +165,6 @@ func resourceTeamMembersRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("project_id", team.ProjectId.String())
 	d.Set("team_id", team.Id.String())
 	d.Set("members", members)
-
 	return nil
 }
 
@@ -177,12 +175,9 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	teamID := d.Get("team_id").(string)
-
 	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
-		ProjectId:      converter.String(projectID),
-		TeamId:         converter.String(teamID),
+		ProjectId:      converter.String(d.Get("project_id").(string)),
+		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(true),
 	})
 
@@ -223,9 +218,9 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
-			clients := m.(*client.AggregatedClient)
+			clients = m.(*client.AggregatedClient)
 			state := "Waiting"
-			actualMemberships, err := readTeamMembers(clients, team)
+			actualMemberships, err := getTeamMembers(clients, team)
 			if err != nil {
 				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
 			}
@@ -245,7 +240,7 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+	if _, err = stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
 	}
 
@@ -290,9 +285,9 @@ func resourceTeamMembersDelete(d *schema.ResourceData, m interface{}) error {
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
-			clients := m.(*client.AggregatedClient)
+			clients = m.(*client.AggregatedClient)
 			state := "Waiting"
-			actualMemberships, err := readTeamMembers(clients, team)
+			actualMemberships, err := getTeamMembers(clients, team)
 			if err != nil {
 				return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
 			}
@@ -309,7 +304,7 @@ func resourceTeamMembersDelete(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+	if _, err = stateConf.WaitForState(); err != nil { //nolint:staticcheck
 		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
 	}
 
