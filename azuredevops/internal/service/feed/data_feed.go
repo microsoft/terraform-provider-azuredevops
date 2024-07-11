@@ -58,10 +58,9 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading feed during read: %+v", err)
+		return fmt.Errorf(" reading feed during read: %+v", err)
 	}
 
 	if getFeed != nil {

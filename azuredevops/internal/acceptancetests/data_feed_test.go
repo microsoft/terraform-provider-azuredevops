@@ -12,26 +12,16 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccAzureDevOps_DataSource_Feed_By_Name(t *testing.T) {
+func TestAccFeed_DataSource_Feed_By_Name(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
-	FeedData := fmt.Sprintf(`
-		resource "azuredevops_feed" "feed" {
-			name = "%s"
-		}
-
-		data "azuredevops_feed" "feed" {
-			name = azuredevops_feed.feed.name
-		}
-		`, name)
-
-	tfNode := "data.azuredevops_feed.feed"
+	tfNode := "data.azuredevops_feed.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedData,
+				Config: hclFeedDataSourceByName(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttrSet(tfNode, "feed_id"),
@@ -41,26 +31,16 @@ func TestAccAzureDevOps_DataSource_Feed_By_Name(t *testing.T) {
 	})
 }
 
-func TestAccAzureDevOps_DataSource_Feed_By_Feed_Id(t *testing.T) {
+func TestAccFeed_DataSource_Feed_By_Feed_Id(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
-	FeedData := fmt.Sprintf(`
-		resource "azuredevops_feed" "feed" {
-			name = "%s"
-		}
-
-		data "azuredevops_feed" "feed" {
-			feed_id = azuredevops_feed.feed.id
-		}
-		`, name)
-
-	tfNode := "data.azuredevops_feed.feed"
+	tfNode := "data.azuredevops_feed.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: FeedData,
+				Config: hclFeedDataSourceByID(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
 					resource.TestCheckResourceAttrSet(tfNode, "feed_id"),
@@ -68,4 +48,26 @@ func TestAccAzureDevOps_DataSource_Feed_By_Feed_Id(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclFeedDataSourceByName(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_feed" "test" {
+  name = "%s"
+}
+
+data "azuredevops_feed" "test" {
+  name = azuredevops_feed.test.name
+}`, name)
+}
+
+func hclFeedDataSourceByID(feedID string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_feed" "test" {
+  name = "%s"
+}
+
+data "azuredevops_feed" "test" {
+  feed_id = azuredevops_feed.test.id
+}`, feedID)
 }
