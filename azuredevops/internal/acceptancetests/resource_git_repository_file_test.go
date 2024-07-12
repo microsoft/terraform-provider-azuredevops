@@ -77,7 +77,7 @@ func TestAccGitRepoFile_Create_IncorrectBranch(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testutils.HclGitRepoFileResource(projectName, gitRepoName, "Clean", "foobar", "foo", "bar"),
-				ExpectError: regexp.MustCompile(`Branch "foobar" does not exist`),
+				ExpectError: regexp.MustCompile(`Creating Git file. Branch not found. Name: foobar`),
 			},
 		},
 	})
