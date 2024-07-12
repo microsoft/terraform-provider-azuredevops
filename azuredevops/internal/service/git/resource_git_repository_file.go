@@ -342,7 +342,6 @@ func checkRepositoryBranchExists(c *client.AggregatedClient, repoId, branch stri
 		}
 	}
 	return nil, nil
-
 }
 
 // checkRepositoryFileExists tests if a file exists in a repository.
