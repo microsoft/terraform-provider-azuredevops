@@ -2,6 +2,7 @@ package graph
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,9 @@ import (
 func DataGroups() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceGroupsRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,

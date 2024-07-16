@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +21,9 @@ import (
 func DataUsers() *schema.Resource {
 	return &schema.Resource{
 		Read: dataUsersRead,
-
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		//https://godoc.org/github.com/hashicorp/terraform/helper/schema#Schema
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
