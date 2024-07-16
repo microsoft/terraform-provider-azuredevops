@@ -3,6 +3,7 @@ package memberentitlementmanagement
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/ahmetb/go-linq"
@@ -37,11 +38,14 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      "aad",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  "AAD",
+				ValidateFunc: validation.StringInSlice([]string{
+					"AAD", "AD", "MSA",
+				}, true),
+				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,
@@ -227,11 +231,29 @@ func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([
 
 func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
 	
-	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
-	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
-	d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
-	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
-	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
+	if servicePrincipalEntitlement.ServicePrincipal != nil {
+		if servicePrincipalEntitlement.ServicePrincipal.Descriptor != nil {
+			d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
+		}
+
+		if servicePrincipalEntitlement.ServicePrincipal.Origin != nil {
+			d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
+		}
+
+		if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
+			d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
+		}
+
+	}
+
+	if servicePrincipalEntitlement.AccessLevel != nil {
+		if servicePrincipalEntitlement.AccessLevel.AccountLicenseType != nil {
+			d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
+		}
+		if servicePrincipalEntitlement.AccessLevel.LicensingSource != nil {
+			d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
+		}
+	}
 }
 
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
