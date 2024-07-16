@@ -6,6 +6,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -199,6 +200,10 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 }
 
 func TestAccGitRepo_PrivateImport_BranchNotEmpty(t *testing.T) {
+	if os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME") == "" ||
+		os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD") == "" {
+		t.Skip("Skipping as AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME or AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD is not specified")
+	}
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 	gitImportRepoName := testutils.GenerateResourceName()

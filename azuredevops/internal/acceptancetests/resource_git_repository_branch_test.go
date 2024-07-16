@@ -13,8 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// TestAccGitRepoBranch_CreateUpdateDelete verifies that a branch can
-// be added to a repository and that it can be replaced
 func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
@@ -26,7 +24,7 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: hclGitRepoBranches(projectName, gitRepoName, "Clean", branchName),
+				Config: hclGitRepoBranches(projectName, gitRepoName, branchName),
 				Check: resource.ComposeTestCheckFunc(
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchName)),
@@ -40,7 +38,7 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 			},
 			// Test replace/update branch when name changes
 			{
-				Config: hclGitRepoBranches(projectName, gitRepoName, "Clean", branchNameChanged),
+				Config: hclGitRepoBranches(projectName, gitRepoName, branchNameChanged),
 				Check: resource.ComposeTestCheckFunc(
 					// test-branch
 					resource.TestCheckResourceAttr("azuredevops_git_repository_branch.from_master", "name", fmt.Sprintf("testbranch-%s", branchNameChanged)),
@@ -52,17 +50,22 @@ func TestAccGitRepoBranch_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet("azuredevops_git_repository_branch.from_commit_id", "last_commit_id"),
 				),
 			},
-			// Test invalid ref
-			{
-				Config: fmt.Sprintf(`
-%s
-
-resource "azuredevops_git_repository_branch" "from_nonexistent_tag" {
-	repository_id = azuredevops_git_repository.repository.id
-    name = "testbranch-non-existent-tag"
-	ref_tag = "0.0.0"
+		},
+	},
+	)
 }
-`, hclGitRepoBranches(projectName, gitRepoName, "Clean", branchNameChanged)),
+
+func TestAccGitRepoBranch_InvalidRef(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	branchName := testutils.GenerateResourceName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config:      hclGitRepoBranchInvalidRef(projectName, gitRepoName, branchName),
 				ExpectError: regexp.MustCompile(`No refs found that match ref "refs/tags/0.0.0"`),
 			},
 		},
@@ -70,20 +73,73 @@ resource "azuredevops_git_repository_branch" "from_nonexistent_tag" {
 	)
 }
 
-func hclGitRepoBranches(projectName, gitRepoName, initType, branchName string) string {
-	gitRepoResource := testutils.HclGitRepoResource(projectName, gitRepoName, initType)
+func hclGitRepoBranches(projectName, gitRepoName, branchName string) string {
 	return fmt.Sprintf(`
-%[1]s
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  initialization {
+    init_type = "Clean"
+  }
+}
 
 resource "azuredevops_git_repository_branch" "from_master" {
-	repository_id = azuredevops_git_repository.repository.id
-	name = "testbranch-%[2]s"
-    ref_branch = "master"
+  repository_id = azuredevops_git_repository.test.id
+  name          = "testbranch-%[3]s"
+  ref_branch    = "master"
+}
+
+resource "azuredevops_git_repository_branch" "from_commit_id" {
+  repository_id = azuredevops_git_repository.test.id
+  name          = "testbranch2-%[3]s"
+  ref_commit_id = azuredevops_git_repository_branch.from_master.last_commit_id
+}
+  `, projectName, gitRepoName, branchName)
+}
+
+func hclGitRepoBranchInvalidRef(projectName, gitRepoName, branchName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_git_repository_branch" "from_master" {
+  repository_id = azuredevops_git_repository.test.id
+  name          = "testbranch-%[3]s"
+  ref_branch    = "master"
 }
 resource "azuredevops_git_repository_branch" "from_commit_id" {
-	repository_id = azuredevops_git_repository.repository.id
-    name = "testbranch2-%[2]s"
-	ref_commit_id = azuredevops_git_repository_branch.from_master.last_commit_id
+  repository_id = azuredevops_git_repository.test.id
+  name          = "testbranch2-%[3]s"
+  ref_commit_id = azuredevops_git_repository_branch.from_master.last_commit_id
 }
-  `, gitRepoResource, branchName)
+
+resource "azuredevops_git_repository_branch" "from_nonexistent_tag" {
+  repository_id = azuredevops_git_repository.test.id
+  name          = "testbranch-non-existent-tag"
+  ref_tag       = "0.0.0"
+}
+
+
+  `, projectName, gitRepoName, branchName)
 }

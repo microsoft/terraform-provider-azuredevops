@@ -4,8 +4,8 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -21,6 +21,9 @@ import (
 func DataGitRepositories() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceGitRepositoriesRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:             schema.TypeString,
@@ -101,26 +104,26 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 	projectRepos, err := getGitRepositoriesByNameAndProject(clients, name, projectID, includeHidden)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding repositories. Error: %v", err)
+		return fmt.Errorf(" finding repositories. Error: %v", err)
 	}
-	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] Git repositories", len(*projectRepos))
 
 	results, err := flattenGitRepositories(projectRepos)
 	if err != nil {
-		return fmt.Errorf("Error flattening projects. Error: %v", err)
+		return fmt.Errorf(" flattening projects. Error: %v", err)
 	}
 
 	repoNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
-		return fmt.Errorf("Failed to get list of repository names: %v", err)
+		return fmt.Errorf(" failed to get list of repository names: %v", err)
 	}
+
 	id, err := createGitRepositoryDataSourceID(d, &repoNames)
 	if err != nil {
 		return err
 	}
+
 	d.SetId(id)
 	err = d.Set("repositories", results)
 	if err != nil {
@@ -133,9 +136,7 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 func createGitRepositoryDataSourceID(d *schema.ResourceData, repoNames *[]string) (string, error) {
 	h := sha1.New()
 	var names []string
-	if nil == repoNames {
-		names = []string{}
-	} else {
+	if repoNames != nil {
 		names = *repoNames
 	}
 	if len(names) <= 0 {
@@ -146,7 +147,7 @@ func createGitRepositoryDataSourceID(d *schema.ResourceData, repoNames *[]string
 		names = append([]string{projectID}, names...)
 	}
 	if _, err := h.Write([]byte(strings.Join(names, "-"))); err != nil {
-		return "", fmt.Errorf("Unable to compute hash for Git repository names: %v", err)
+		return "", fmt.Errorf(" Unable to compute hash for Git repository names: %v", err)
 	}
 	return "gitRepos#" + base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
 }

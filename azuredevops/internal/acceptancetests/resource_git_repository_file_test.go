@@ -19,12 +19,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// TestAccGitRepoFile_CreateUpdateDelete verifies that a file can
-// be added to a repository and the contents can be updated
 func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	tfRepoFileNode := "azuredevops_git_repository_file.file"
+	tfRepoFileNode := "azuredevops_git_repository_file.test"
 
 	branch := "refs/heads/master"
 	file := "foo.txt"
@@ -36,7 +34,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGitRepoFileResource(projectName, gitRepoName, "Clean", branch, file, contentFirst),
+				Config: hclGitRepositoryFileBasic(projectName, gitRepoName, branch, file, contentFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfRepoFileNode, "file", file),
 					resource.TestCheckResourceAttr(tfRepoFileNode, "content", contentFirst),
@@ -46,7 +44,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclGitRepoFileResource(projectName, gitRepoName, "Clean", branch, file, contentSecond),
+				Config: hclGitRepositoryFileBasic(projectName, gitRepoName, branch, file, contentSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfRepoFileNode, "file", file),
 					resource.TestCheckResourceAttr(tfRepoFileNode, "content", contentSecond),
@@ -56,7 +54,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclGitRepoResource(projectName, gitRepoName, "Clean"),
+				Config: hclGitRepositoryFileWithoutFile(projectName, gitRepoName),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoFileNotExists(file),
 				),
@@ -65,9 +63,7 @@ func TestAccGitRepoFile_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-// TestAccGitRepo_Create_IncorrectBranch verifies a file
-// can't be added to a non existant branch
-func TestAccGitRepoFile_Create_IncorrectBranch(t *testing.T) {
+func TestAccGitRepoFile_IncorrectBranch(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 
@@ -76,7 +72,7 @@ func TestAccGitRepoFile_Create_IncorrectBranch(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testutils.HclGitRepoFileResource(projectName, gitRepoName, "Clean", "foobar", "foo", "bar"),
+				Config:      hclGitRepositoryFileBasic(projectName, gitRepoName, "foobar", "foo", "bar"),
 				ExpectError: regexp.MustCompile(`Creating Git file. Branch not found. Name: foobar`),
 			},
 		},
@@ -87,9 +83,9 @@ func checkGitRepoFileNotExists(fileName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-		repo, ok := s.RootModule().Resources["azuredevops_git_repository.repository"]
+		repo, ok := s.RootModule().Resources["azuredevops_git_repository.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a repo definition in the TF state")
+			return fmt.Errorf(" Did not find a repo definition in the TF state")
 		}
 
 		ctx := context.Background()
@@ -109,9 +105,9 @@ func checkGitRepoFileContent(expectedContent string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-		gitFile, ok := s.RootModule().Resources["azuredevops_git_repository_file.file"]
+		gitFile, ok := s.RootModule().Resources["azuredevops_git_repository_file.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a repo definition in the TF state")
+			return fmt.Errorf(" Did not find a repo definition in the TF state")
 		}
 
 		fileID := gitFile.Primary.ID
@@ -139,4 +135,50 @@ func checkGitRepoFileContent(expectedContent string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func hclGitRepositoryFileBasic(name, repoName, branch, file, content string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_git_repository_file" "test" {
+  repository_id = azuredevops_git_repository.test.id
+  branch        = "%[3]s"
+  file          = "%[4]s"
+  content       = "%[5]s"
+}
+`, name, repoName, branch, file, content)
+}
+
+func hclGitRepositoryFileWithoutFile(name, repoName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+  initialization {
+    init_type = "Clean"
+  }
+}`, name, repoName)
 }
