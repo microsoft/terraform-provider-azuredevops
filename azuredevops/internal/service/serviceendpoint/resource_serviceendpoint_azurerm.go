@@ -266,7 +266,7 @@ func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{})
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
-	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
+	serviceEndPointAuthenticationScheme := EndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
@@ -309,7 +309,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	hasCredentials := len(credentials) > 0
 
-	var serviceEndpointCreationMode AzureRmEndpointCreationMode
+	var serviceEndpointCreationMode EndpointCreationMode
 
 	if serviceEndPointAuthenticationSchemeHasCreationMode {
 		if hasCredentials {
@@ -428,7 +428,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
-	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
+	serviceEndPointType := EndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
 		d.Set("environment", v)
@@ -507,18 +507,3 @@ func shouldValidate(features map[string]interface{}) bool {
 	}
 	return validate
 }
-
-type AzureRmEndpointAuthenticationScheme string
-
-const (
-	ServicePrincipal           AzureRmEndpointAuthenticationScheme = "ServicePrincipal"
-	ManagedServiceIdentity     AzureRmEndpointAuthenticationScheme = "ManagedServiceIdentity"
-	WorkloadIdentityFederation AzureRmEndpointAuthenticationScheme = "WorkloadIdentityFederation"
-)
-
-type AzureRmEndpointCreationMode string
-
-const (
-	Automatic AzureRmEndpointCreationMode = "Automatic"
-	Manual    AzureRmEndpointCreationMode = "Manual"
-)
