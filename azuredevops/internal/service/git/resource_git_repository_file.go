@@ -21,6 +21,12 @@ func ResourceGitRepositoryFile() *schema.Resource {
 		Read:   resourceGitRepositoryFileRead,
 		Update: resourceGitRepositoryFileUpdate,
 		Delete: resourceGitRepositoryFileDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), ":")
@@ -87,10 +93,6 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				Default:     false,
 			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Second),
-		},
 	}
 }
 
@@ -128,18 +130,19 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	changeType := git.VersionControlChangeTypeValues.Add
 	if repoItem != nil {
 		if !overwriteOnCreate {
-			return fmt.Errorf("Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
+			return fmt.Errorf(" Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
 		}
 		changeType = git.VersionControlChangeTypeValues.Edit
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
+	// TODO replace with RetryContext
 	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		args, err := resourceGitRepositoryPushArgs(d, objectID, changeType)
+		args, err := gitRepositoryPushArgs(d, objectID, changeType)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -242,18 +245,20 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
+	// TODO replace with RetryContext
 	err = resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		args, err := resourceGitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
+		args, err := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		if *(*args.Push.Commits)[0].Comment == fmt.Sprintf("Add %s", file) {
-			m := fmt.Sprintf("Update %s", file)
-			(*args.Push.Commits)[0].Comment = &m
+
+		commits := *args.Push.Commits
+		if *commits[0].Comment == fmt.Sprintf("Add %s", file) {
+			*commits[0].Comment = fmt.Sprintf("Update %s", file)
 		}
 
 		_, err = clients.GitReposClient.CreatePush(ctx, *args)
@@ -281,6 +286,7 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	message := fmt.Sprintf("Delete %s", file)
 
+	// TODO replace with RetryContext
 	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
@@ -378,8 +384,8 @@ func getLastCommitId(c *client.AggregatedClient, repoId, branch string) (string,
 	return *(*commits)[0].CommitId, nil
 }
 
-// resourceGitRepositoryPushArgs returns args used to commit and push changes.
-func resourceGitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
+// gitRepositoryPushArgs returns args used to commit and push changes.
+func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
 	var message *string
 	if commitMessage, hasCommitMessage := d.GetOk("commit_message"); hasCommitMessage {
 		cm := commitMessage.(string)

@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,6 +15,9 @@ import (
 func DataGitRepository() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceGitRepositoryRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
@@ -72,20 +76,21 @@ func dataSourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 	projectRepos, err := getGitRepositoriesByNameAndProject(clients, name, projectID, true)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Repository with name %s does not exist in project %s", name, projectID)
+			return fmt.Errorf(" Repository with name %s does not exist in project %s", name, projectID)
 		}
-		return fmt.Errorf("Error finding repositories. Error: %v", err)
+		return fmt.Errorf(" finding repositories. Error: %v", err)
 	}
-	if projectRepos == nil || 0 >= len(*projectRepos) {
-		return fmt.Errorf("Repository with name %s does not exist in project %s", name, projectID)
+	if projectRepos == nil || len(*projectRepos) == 0 {
+		return fmt.Errorf(" Repository with name %s does not exist in project %s", name, projectID)
 	}
-	if 1 < len(*projectRepos) {
-		return fmt.Errorf("Multiple Repositories with name %s found in project %s", name, projectID)
+
+	if len(*projectRepos) > 1 {
+		return fmt.Errorf(" Multiple Repositories with name %s found in project %s", name, projectID)
 	}
 
 	err = flattenGitRepository(d, &(*projectRepos)[0])
 	if err != nil {
-		return fmt.Errorf("Error flattening Git repository: %w", err)
+		return fmt.Errorf(" flattening Git repository: %w", err)
 	}
 	return nil
 }

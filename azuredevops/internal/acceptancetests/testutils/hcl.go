@@ -111,19 +111,6 @@ resource "azuredevops_project" "project" {
 }`, projectName, projectName, featureStateTestplans, featureStateArtifacts)
 }
 
-// HclProjectGitRepositories HCL describing a multi value data source for AzDO git repositories
-func HclProjectGitRepositories(projectName string, gitRepoName string) string {
-	return fmt.Sprintf(`
-data "azuredevops_project" "project" {
-	name = azuredevops_project.project.name
-}
-
-data "azuredevops_git_repositories" "repositories" {
-	project_id = data.azuredevops_project.project.id
-	name = "%s"
-}`, gitRepoName)
-}
-
 // HclProjectGitRepositoryImport HCL describing a AzDO git repositories
 func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
 	azureGitRepoResource := fmt.Sprintf(`

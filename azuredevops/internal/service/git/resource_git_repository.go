@@ -37,13 +37,27 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 	Import:        "Import",
 }
 
+// A helper type that is used for transient info only used during repo creation
+type repoInitializationMeta struct {
+	initType            string
+	sourceType          string
+	sourceURL           string
+	serviceConnectionID string
+}
+
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceGitRepositoryCreate,
-		Read:     resourceGitRepositoryRead,
-		Update:   resourceGitRepositoryUpdate,
-		Delete:   resourceGitRepositoryDelete,
+		Create: resourceGitRepositoryCreate,
+		Read:   resourceGitRepositoryRead,
+		Update: resourceGitRepositoryUpdate,
+		Delete: resourceGitRepositoryDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
@@ -59,46 +73,6 @@ func ResourceGitRepository() *schema.Resource {
 				Required:         true,
 				ValidateFunc:     validation.NoZeroValues,
 				DiffSuppressFunc: suppress.CaseDifference,
-			},
-			"parent_repository_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateFunc:     validation.IsUUID,
-				DiffSuppressFunc: suppress.CaseDifference,
-			},
-			"default_branch": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.NoZeroValues,
-			},
-			"is_fork": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"remote_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"ssh_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"web_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"disabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
 			},
 			"initialization": {
 				Type:     schema.TypeList,
@@ -145,18 +119,49 @@ func ResourceGitRepository() *schema.Resource {
 					},
 				},
 			},
+			"parent_repository_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateFunc:     validation.IsUUID,
+				DiffSuppressFunc: suppress.CaseDifference,
+			},
+			"default_branch": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.NoZeroValues,
+			},
+			"is_fork": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"remote_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"size": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"ssh_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"web_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"disabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
-
-// A helper type that is used for transient info only used during repo creation
-type repoInitializationMeta struct {
-	initType            string
-	sourceType          string
-	sourceURL           string
-	serviceConnectionID string
-}
-
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
@@ -186,7 +191,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdRepo, err := createGitRepository(clients, repo.Name, projectID, parentRepoRef)
 	if err != nil {
-		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
 	}
 
 	// set the id immediately after successfully creating the repository, which will allow terraform to track the
