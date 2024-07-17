@@ -93,7 +93,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			state := "Waiting"
 			actualMemberships, err := getGroupMemberships(clients, group)
 			if err != nil {
-				return nil, "", fmt.Errorf(" Ceading group memberships: %+v", err)
+				return nil, "", fmt.Errorf(" Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
 			if err != nil {
