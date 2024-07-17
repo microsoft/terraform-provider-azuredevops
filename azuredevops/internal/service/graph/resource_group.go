@@ -26,6 +26,12 @@ func ResourceGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"scope": {
 				Type:         schema.TypeString,
@@ -139,9 +145,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if v, ok := d.GetOk("origin_id"); ok {
+	} else if v, ok := d.GetOk("origin_id"); ok {
 		param := graph.CreateGroupOriginIdArgs{
 			CreationContext: &graph.GraphGroupOriginIdCreationContext{
 				OriginId: converter.String(v.(string)),
@@ -152,9 +156,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if v, ok := d.GetOk("mail"); ok {
+	} else if v, ok := d.GetOk("mail"); ok {
 		param := graph.CreateGroupMailAddressArgs{
 			CreationContext: &graph.GraphGroupMailAddressCreationContext{
 				MailAddress: converter.String(v.(string)),
@@ -203,9 +205,6 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-
-	// using: PATCH https://vssps.dev.azure.com/{organization}/_apis/graph/groups/{groupDescriptor}?api-version=5.1-preview.1
-	// d.Get("descriptor").(string) => {groupDescriptor}
 
 	var operations []webapi.JsonPatchOperation
 
@@ -284,15 +283,13 @@ func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for group delete. %v ", err)
+		return fmt.Errorf(" Waiting for group delete. %v ", err)
 	}
 
-	d.SetId("")
 	return nil
 }
 
 func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) error {
-	d.SetId(*group.Descriptor)
 	d.Set("descriptor", *group.Descriptor)
 
 	if group.DisplayName != nil {
@@ -343,7 +340,7 @@ func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) 
 		Depth:             converter.Int(1),
 	})
 	if err != nil {
-		return nil, fmt.Errorf(" reading group memberships during read: %+v", err)
+		return nil, fmt.Errorf(" Reading group memberships: %+v", err)
 	}
 
 	members := make([]graph.GraphMembership, len(*actualMembers))
