@@ -109,7 +109,7 @@ func DataUsers() *schema.Resource {
 func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	users := make([]interface{}, 0)
-	var subjectTypes []string
+	subjectTypes := []string{}
 
 	linq.From(d.Get("subject_types").(*schema.Set).List()).
 		SelectT(func(x interface{}) string {
@@ -239,7 +239,7 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	}
 	response, err := clients.GraphClient.ListUsers(clients.Ctx, args)
 	if err != nil {
-		return nil, "", fmt.Errorf("Error listing users: %q", err)
+		return nil, "", fmt.Errorf(" Listing users: %q", err)
 	}
 
 	continuationToken = ""
