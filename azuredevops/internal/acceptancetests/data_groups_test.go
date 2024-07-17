@@ -12,21 +12,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func HclGroupsDataSource(projectName string) string {
-	if projectName == "" {
-		return `
-data "azuredevops_groups" "groups" {
-}`
-	}
-	dataSource := `
-data "azuredevops_groups" "groups" {
-	project_id = azuredevops_project.project.id
-}`
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
-}
-
 // Validates that a configuration containing a project group lookup is able to read the resource correctly.
 // Because this is a data source, there are no resources to inspect in AzDO
 func TestAccGroupsDataSource_Read_Project(t *testing.T) {
@@ -38,7 +23,7 @@ func TestAccGroupsDataSource_Read_Project(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: HclGroupsDataSource(projectName),
+				Config: hclGroupsDataSourceBasic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
@@ -56,11 +41,31 @@ func TestAccGroupsDataSource_Read_NoProject(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: HclGroupsDataSource(""),
+				Config: hclGroupsDataSourceAllGroups(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 				),
 			},
 		},
 	})
+}
+
+func hclGroupsDataSourceBasic(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_groups" "groups" {
+  project_id = azuredevops_project.project.id
+}
+`, projectName)
+}
+
+func hclGroupsDataSourceAllGroups() string {
+	return fmt.Sprintf(`data "azuredevops_groups" "groups" {}`)
 }

@@ -52,24 +52,6 @@ func HclGitRepoFileResource(projectName, gitRepoName, initType, branch, file, co
 	return fmt.Sprintf("%s\n%s", gitRepoFileResource, gitRepoResource)
 }
 
-// HclGroupDataSource HCL describing an AzDO Group Data Source
-func HclGroupDataSource(projectName string, groupName string) string {
-	if projectName == "" {
-		return fmt.Sprintf(`
-data "azuredevops_group" "group" {
-	name       = "%s"
-}`, groupName)
-	}
-	dataSource := fmt.Sprintf(`
-data "azuredevops_group" "group" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
-}`, groupName)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
-}
-
 // HclProjectResource HCL describing an AzDO project
 func HclProjectResource(projectName string) string {
 	if strings.EqualFold(projectName, "") {

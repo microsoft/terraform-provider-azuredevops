@@ -24,7 +24,6 @@ func DataUsers() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(30 * time.Minute),
 		},
-		//https://godoc.org/github.com/hashicorp/terraform/helper/schema#Schema
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
 				Type:          schema.TypeString,
@@ -110,7 +109,7 @@ func DataUsers() *schema.Resource {
 func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	users := make([]interface{}, 0)
-	subjectTypes := []string{}
+	var subjectTypes []string
 
 	linq.From(d.Get("subject_types").(*schema.Set).List()).
 		SelectT(func(x interface{}) string {
