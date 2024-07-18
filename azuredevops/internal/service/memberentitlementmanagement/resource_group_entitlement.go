@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
@@ -33,6 +34,12 @@ func ResourceGroupEntitlement() *schema.Resource {
 		Read:   resourceGroupEntitlementRead,
 		Update: resourceGroupEntitlementUpdate,
 		Delete: resourceGroupEntitlementDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			State: importGroupEntitlement,
 		},
