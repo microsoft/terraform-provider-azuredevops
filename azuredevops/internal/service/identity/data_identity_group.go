@@ -3,6 +3,7 @@ package identity
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,6 +15,9 @@ import (
 func DataIdentityGroup() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIdentityGroupRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -41,13 +45,13 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	// Get groups in specified project ID
 	projectGroups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
-		return fmt.Errorf(" failed to get groups for project with ID: %s. Error: %v", projectID, err)
+		return fmt.Errorf(" Failed to get groups for project with ID: %s. Error: %v", projectID, err)
 	}
 
 	// Select specific group by name/provider name.
 	targetGroup := selectIdentityGroup(&projectGroups, groupName)
 	if targetGroup == nil {
-		return fmt.Errorf(" can not find group with name %s in project with ID %s", groupName, projectID)
+		return fmt.Errorf(" Can not find group with name %s in project with ID %s", groupName, projectID)
 	}
 
 	// Set ID and descriptor for group data resource based on targetGroup output.

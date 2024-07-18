@@ -12,14 +12,16 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func testIdentityGroupDataSource(t *testing.T, groupName string, projectName string) {
+func TestAccIdentityGroupDataSource(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	groupName := "Contributors"
 	tfNode := "data.azuredevops_identity_group.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: createIdentityGroupConfig(groupName, projectName),
+				Config: hclIdentityGroupConfig(groupName, projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "name", fmt.Sprintf("[%s]\\%s", projectName, groupName)),
@@ -29,21 +31,19 @@ func testIdentityGroupDataSource(t *testing.T, groupName string, projectName str
 	})
 }
 
-func createIdentityGroupConfig(groupName string, projectName string) string {
+func hclIdentityGroupConfig(groupName string, projectName string) string {
 	combinedgroupName := fmt.Sprintf("[%s]\\\\%s", projectName, groupName)
-	dataSource := fmt.Sprintf(
-		`
-data "azuredevops_identity_group" "test" {
-	name       = "%s"
-	project_id = azuredevops_project.project.id
-}`, combinedgroupName)
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name               = "%s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
 }
 
-func TestAccIdentityGroupDataSource(t *testing.T) {
-	groupName := "Contributors"
-	projectName := testutils.GenerateResourceName()
-	testIdentityGroupDataSource(t, groupName, projectName)
+data "azuredevops_identity_group" "test" {
+  name       = "%s"
+  project_id = azuredevops_project.project.id
+}`, projectName, combinedgroupName)
 }
