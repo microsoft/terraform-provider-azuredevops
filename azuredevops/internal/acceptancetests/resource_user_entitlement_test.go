@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -21,6 +20,9 @@ import (
 )
 
 func TestAccUserEntitlement_Create(t *testing.T) {
+	if os.Getenv("AZDO_TEST_AAD_USER_EMAIL") == "" {
+		t.Skip("Skip test due to `AZDO_TEST_AAD_USER_EMAIL` not set")
+	}
 	tfNode := "azuredevops_user_entitlement.user"
 	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
 	resource.ParallelTest(t, resource.TestCase{
@@ -29,7 +31,7 @@ func TestAccUserEntitlement_Create(t *testing.T) {
 		CheckDestroy: checkUserEntitlementDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclUserEntitlementResource(principalName),
+				Config: hclUserEntitlementResource(principalName),
 				Check: resource.ComposeTestCheckFunc(
 					checkUserEntitlementExists(principalName),
 					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
@@ -45,13 +47,13 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 	return func(s *terraform.State) error {
 		resource, ok := s.RootModule().Resources["azuredevops_user_entitlement.user"]
 		if !ok {
-			return fmt.Errorf("Did not find a UserEntitlement in the TF state")
+			return fmt.Errorf(" Did not find a UserEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Error parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf(" Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
@@ -59,7 +61,7 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 		})
 
 		if err != nil {
-			return fmt.Errorf("UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
+			return fmt.Errorf(" UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if !strings.EqualFold(strings.ToLower(*userEntitlement.User.PrincipalName), strings.ToLower(expectedPrincipalName)) {
@@ -83,7 +85,7 @@ func checkUserEntitlementDestroyed(s *terraform.State) error {
 
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Error parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf(" Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
@@ -98,47 +100,17 @@ func checkUserEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
-			return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
+			return fmt.Errorf(" Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
 		}
 	}
 
 	return nil
 }
 
-type matchAddUserEntitlementArgs struct {
-	t *testing.T
-	x memberentitlementmanagement.AddUserEntitlementArgs
-}
-
-func MatchAddUserEntitlementArgs(t *testing.T, x memberentitlementmanagement.AddUserEntitlementArgs) gomock.Matcher {
-	return &matchAddUserEntitlementArgs{t, x}
-}
-
-func (m *matchAddUserEntitlementArgs) Matches(x interface{}) bool {
-	args := x.(memberentitlementmanagement.AddUserEntitlementArgs)
-	m.t.Logf("MatchAddUserEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]\n",
-		*args.UserEntitlement.AccessLevel.AccountLicenseType,
-		*args.UserEntitlement.AccessLevel.LicensingSource,
-		*args.UserEntitlement.User.Origin,
-		*args.UserEntitlement.User.OriginId,
-		*args.UserEntitlement.User.PrincipalName,
-		*m.x.UserEntitlement.AccessLevel.AccountLicenseType,
-		*m.x.UserEntitlement.AccessLevel.LicensingSource,
-		*m.x.UserEntitlement.User.Origin,
-		*m.x.UserEntitlement.User.OriginId,
-		*m.x.UserEntitlement.User.PrincipalName)
-
-	return *args.UserEntitlement.AccessLevel.AccountLicenseType == *m.x.UserEntitlement.AccessLevel.AccountLicenseType &&
-		*args.UserEntitlement.User.Origin == *m.x.UserEntitlement.User.Origin &&
-		*args.UserEntitlement.User.OriginId == *m.x.UserEntitlement.User.OriginId &&
-		*args.UserEntitlement.User.PrincipalName == *m.x.UserEntitlement.User.PrincipalName
-}
-
-func (m *matchAddUserEntitlementArgs) String() string {
-	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]",
-		*m.x.UserEntitlement.AccessLevel.AccountLicenseType,
-		*m.x.UserEntitlement.AccessLevel.LicensingSource,
-		*m.x.UserEntitlement.User.Origin,
-		*m.x.UserEntitlement.User.OriginId,
-		*m.x.UserEntitlement.User.PrincipalName)
+func hclUserEntitlementResource(principalName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_user_entitlement" "user" {
+  principal_name       = "%s"
+  account_license_type = "express"
+}`, principalName)
 }

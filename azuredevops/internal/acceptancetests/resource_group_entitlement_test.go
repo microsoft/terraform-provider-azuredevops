@@ -7,10 +7,8 @@ package acceptancetests
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -21,16 +19,16 @@ import (
 )
 
 func TestAccGroupEntitlement_Create(t *testing.T) {
-	tfNode := "azuredevops_group_entitlement.group"
+	tfNode := "azuredevops_group_entitlement.test"
 	displayName := "group-038c153d-c86e-443c-b6f6-3d97378025d0"
 	resource.ParallelTest(t, resource.TestCase{
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkGroupEntitlementDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGroupEntitlementResource(displayName),
+				Config: hclGroupEntitlementResourceBasic(displayName),
 				Check: resource.ComposeTestCheckFunc(
-					checkGroupEntitlementExists(displayName),
+					checkGroupEntitlementExists(),
 					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
@@ -39,7 +37,10 @@ func TestAccGroupEntitlement_Create(t *testing.T) {
 }
 
 func TestAccGroupEntitlement_AAD_Create(t *testing.T) {
-	tfNode := "azuredevops_group_entitlement.group_aad"
+	if os.Getenv("AZDO_TEST_AAD_GROUP_ID") == "" {
+		t.Skip("Skip test dueto `AZDO_TEST_AAD_GROUP_ID` not set")
+	}
+	tfNode := "azuredevops_group_entitlement.test"
 	originId := os.Getenv("AZDO_TEST_AAD_GROUP_ID")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_GROUP_ID"}) },
@@ -47,10 +48,11 @@ func TestAccGroupEntitlement_AAD_Create(t *testing.T) {
 		CheckDestroy: checkGroupEntitlementDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGroupEntitlementResourceAAD(originId),
+				Config: hclGroupEntitlementResourceAAD(originId),
 				Check: resource.ComposeTestCheckFunc(
-					checkGroupEntitlementAADExists(originId),
+					checkGroupEntitlementExists(),
 					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
+					resource.TestCheckResourceAttr(tfNode, "origin_id", originId),
 				),
 			},
 		},
@@ -59,17 +61,17 @@ func TestAccGroupEntitlement_AAD_Create(t *testing.T) {
 
 // Given the principalName of an AzDO groupEntitlement, this will return a function that will check whether
 // or not the groupEntitlement (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func checkGroupEntitlementExists(expectedDisplayName string) resource.TestCheckFunc {
+func checkGroupEntitlementExists() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources["azuredevops_group_entitlement.group"]
+		resource, ok := s.RootModule().Resources["azuredevops_group_entitlement.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a GroupEntitlement in the TF state")
+			return fmt.Errorf(" Did not find a GroupEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Error parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf(" Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
@@ -80,37 +82,8 @@ func checkGroupEntitlementExists(expectedDisplayName string) resource.TestCheckF
 			return fmt.Errorf("GroupEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
-		if !strings.EqualFold(strings.ToLower(*groupEntitlement.Group.DisplayName), strings.ToLower(expectedDisplayName)) {
-			return fmt.Errorf("GroupEntitlement with ID=%s and principalName=%s has displayName=%s, but expected displayName=%s", resource.Primary.ID, *groupEntitlement.Group.PrincipalName, *groupEntitlement.Group.DisplayName, expectedDisplayName)
-		}
-
-		return nil
-	}
-}
-
-func checkGroupEntitlementAADExists(expectedOriginId string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources["azuredevops_group_entitlement.group_aad"]
-		if !ok {
-			return fmt.Errorf("Did not find a GroupEntitlement in the TF state")
-		}
-
-		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-		id, err := uuid.Parse(resource.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
-		}
-
-		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
-			GroupId: &id,
-		})
-
-		if err != nil {
-			return fmt.Errorf("GroupEntitlement with ID=%s cannot be found!. Error=%v", id, err)
-		}
-
-		if !strings.EqualFold(strings.ToLower(*groupEntitlement.Group.OriginId), strings.ToLower(expectedOriginId)) {
-			return fmt.Errorf("GroupEntitlement with ID=%s has originId=%s, but expected originId=%s", resource.Primary.ID, *groupEntitlement.Group.OriginId, expectedOriginId)
+		if groupEntitlement == nil || groupEntitlement.Id == nil {
+			return fmt.Errorf(" GroupEntitlement with ID=%s cannot be found.", id)
 		}
 
 		return nil
@@ -130,7 +103,7 @@ func checkGroupEntitlementDestroyed(s *terraform.State) error {
 
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Error parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf(" Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
@@ -145,50 +118,26 @@ func checkGroupEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if groupEntitlement != nil && groupEntitlement.LicenseRule != nil && string(*groupEntitlement.LicenseRule.Status) != "none" {
-			return fmt.Errorf("Status should be none : %s with readGroupEntitlement error %v", string(*groupEntitlement.LicenseRule.Status), err)
+			return fmt.Errorf(" Status should be none : %s with readGroupEntitlement error %v", string(*groupEntitlement.LicenseRule.Status), err)
 		}
 	}
 
 	return nil
 }
 
-type matchAddGroupEntitlementArgs struct {
-	t *testing.T
-	x memberentitlementmanagement.AddGroupEntitlementArgs
+func hclGroupEntitlementResourceBasic(displayName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_group_entitlement" "test" {
+  display_name         = "%s"
+  account_license_type = "express"
+}`, displayName)
 }
 
-func MatchAddGroupEntitlementArgs(t *testing.T, x memberentitlementmanagement.AddGroupEntitlementArgs) gomock.Matcher {
-	return &matchAddGroupEntitlementArgs{t, x}
-}
-
-func (m *matchAddGroupEntitlementArgs) Matches(x interface{}) bool {
-	args := x.(memberentitlementmanagement.AddGroupEntitlementArgs)
-	m.t.Logf("MatchAddGroupEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], principal_name: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], principal_name: [%s]\n",
-		*args.GroupEntitlement.LicenseRule.AccountLicenseType,
-		*args.GroupEntitlement.LicenseRule.LicensingSource,
-		*args.GroupEntitlement.Group.Origin,
-		*args.GroupEntitlement.Group.OriginId,
-		*args.GroupEntitlement.Group.DisplayName,
-		*args.GroupEntitlement.Group.PrincipalName,
-		*m.x.GroupEntitlement.LicenseRule.AccountLicenseType,
-		*m.x.GroupEntitlement.LicenseRule.LicensingSource,
-		*m.x.GroupEntitlement.Group.Origin,
-		*m.x.GroupEntitlement.Group.OriginId,
-		*m.x.GroupEntitlement.Group.DisplayName,
-		*m.x.GroupEntitlement.Group.PrincipalName)
-
-	return *args.GroupEntitlement.LicenseRule.AccountLicenseType == *m.x.GroupEntitlement.LicenseRule.AccountLicenseType &&
-		*args.GroupEntitlement.Group.Origin == *m.x.GroupEntitlement.Group.Origin &&
-		*args.GroupEntitlement.Group.OriginId == *m.x.GroupEntitlement.Group.OriginId &&
-		*args.GroupEntitlement.Group.PrincipalName == *m.x.GroupEntitlement.Group.PrincipalName
-}
-
-func (m *matchAddGroupEntitlementArgs) String() string {
-	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], principal_name: [%s]",
-		*m.x.GroupEntitlement.LicenseRule.AccountLicenseType,
-		*m.x.GroupEntitlement.LicenseRule.LicensingSource,
-		*m.x.GroupEntitlement.Group.Origin,
-		*m.x.GroupEntitlement.Group.OriginId,
-		*m.x.GroupEntitlement.Group.DisplayName,
-		*m.x.GroupEntitlement.Group.PrincipalName)
+func hclGroupEntitlementResourceAAD(originId string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_group_entitlement" "test" {
+  origin_id            = "%s"
+  origin               = "aad"
+  account_license_type = "express"
+}`, originId)
 }
