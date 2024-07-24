@@ -176,7 +176,7 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 
 	if len(users) == 0 {
 		if principalName != "" {
-			return fmt.Errorf(" User not found. Prinicipal Name: %s", principalName)
+			return fmt.Errorf(" User not found. Principal Name: %s", principalName)
 		} else if originID != "" {
 			return fmt.Errorf(" User not found. Origin ID: %s", originID)
 		}
