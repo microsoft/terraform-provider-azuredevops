@@ -172,7 +172,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	if _, ok := d.GetOk("default_branch"); ok {
 		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
-			return fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
+			return fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannot not be set.")
 		}
 	}
 
