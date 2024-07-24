@@ -75,7 +75,7 @@ data "azuredevops_users" "test" {
 func hclDataUserAllSvc() string {
 	return `
 data "azuredevops_users" "test" {
-  subject_types = ["svc"]
+  subject_types = ["aad"]
 }`
 }
 
