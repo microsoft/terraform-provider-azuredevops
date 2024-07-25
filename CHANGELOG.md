@@ -1,3 +1,69 @@
+## 1.2.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_wiki` [#1032](https://github.com/microsoft/terraform-provider-azuredevops/pull/1032)
+
+BUG FIX:
+
+* `azuredevops_check_exclusive_lock` - Add example.  [#1054](https://github.com/microsoft/terraform-provider-azuredevops/pull/1054)
+* `azuredevops_users` - Fix user not found bug.  [#1110](https://github.com/microsoft/terraform-provider-azuredevops/pull/1110)
+* `azuredevops_git_repository`
+  - Fix repository not found bug.  [#1065](https://github.com/microsoft/terraform-provider-azuredevops/pull/1065)
+  - Detect repository deleted outside of Terraform  [#1087](https://github.com/microsoft/terraform-provider-azuredevops/pull/1087)
+* `azuredevops_pipeline_authorization` - Check Pipeline Project for Resource Permissions.  [#1059](https://github.com/microsoft/terraform-provider-azuredevops/pull/1059)
+* `azuredevops_serviceendpoint_kubernetes` - Enhance parameter `nil` checking.  [#1091](https://github.com/microsoft/terraform-provider-azuredevops/pull/1091)
+* `azuredevops_git_repository_file` - Check branch status.  [#1100](https://github.com/microsoft/terraform-provider-azuredevops/pull/1100)
+
+IMPROVEMENTS:
+
+* `azuredevops_serviceendpoint_azurerm` - Add support for `AzureUSGovernment` and `AzureGermanCloud` clouds. [#1061](https://github.com/microsoft/terraform-provider-azuredevops/pull/1061)
+* `azuredevops_variable_group`
+  - Add validation that variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes. [#1075](https://github.com/microsoft/terraform-provider-azuredevops/pull/1075)
+  - Update document.  [#1044](https://github.com/microsoft/terraform-provider-azuredevops/pull/1044)
+* `azuredevops_serviceendpoint_azurecr` - Add support for `WorkloadIdentityFederation`.  [#1105](https://github.com/microsoft/terraform-provider-azuredevops/pull/1105)
+* `azuredevops_git_repository` - Fix typo error.  [#1111](https://github.com/microsoft/terraform-provider-azuredevops/pull/1111)
+* Dependency upgrade -  [#1083](https://github.com/microsoft/terraform-provider-azuredevops/pull/1083)
+* `azuredevops_check_approval` - Update tests  [#1092](https://github.com/microsoft/terraform-provider-azuredevops/pull/1092)
+* `azuredevops_check_exclusive_lock` - Add default timeout and update tests.  [#1092](https://github.com/microsoft/terraform-provider-azuredevops/pull/1092)
+* `azuredevops_check_branch_control` - Add default timeout and update tests.  [#1092](https://github.com/microsoft/terraform-provider-azuredevops/pull/1092)
+* `azuredevops_check_business_hours` - Add default timeout and update tests.  [#1092](https://github.com/microsoft/terraform-provider-azuredevops/pull/1092)
+* `azuredevops_check_required_template` - Add default timeout and update tests.  [#1092](https://github.com/microsoft/terraform-provider-azuredevops/pull/1092)
+* `azuredevops_build_definition` - Update unit tests.  [#1094](https://github.com/microsoft/terraform-provider-azuredevops/pull/1094)
+* **Data Source** `azuredevops_build_definition` - Update tests.  [#1094](https://github.com/microsoft/terraform-provider-azuredevops/pull/1094)
+* `azuredevops_build_folder` - Add default timeout and update tests.  [#1094](https://github.com/microsoft/terraform-provider-azuredevops/pull/1094)
+* `azuredevops_pipeline_authorization` - Add update tests.  [#1094](https://github.com/microsoft/terraform-provider-azuredevops/pull/1094)
+* `azuredevops_resource_authorization ` - Add update tests.  [#1094](https://github.com/microsoft/terraform-provider-azuredevops/pull/1094)
+* **Data Source** `azuredevops_project` - Add default timeout and update tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* **Data Source** `azuredevops_projects` - Update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* **Data Source** `azuredevops_team` - Update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* **Data Source** `azuredevops_teams` - Update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_project ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_project_features ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_project_pipeline_settings ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_team ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_team_members ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_team_administrators ` - Add update unit tests.  [#1095](https://github.com/microsoft/terraform-provider-azuredevops/pull/1095)
+* `azuredevops_feed` - Optimize code and update tests.  [#1098](https://github.com/microsoft/terraform-provider-azuredevops/pull/1098)
+* **Data Source** `azuredevops_feed` - Optimize code and update tests.  [#1098](https://github.com/microsoft/terraform-provider-azuredevops/pull/1098)
+* `azuredevops_feed_permission` - Optimize code and update tests.  [#1098](https://github.com/microsoft/terraform-provider-azuredevops/pull/1098)
+* **Data Source** `azuredevops_git_repositories` - Add timeout and update tests.  [#1103](https://github.com/microsoft/terraform-provider-azuredevops/pull/1103)
+* **Data Source** `azuredevops_git_repository` - Add timeout and update tests.  [#1103](https://github.com/microsoft/terraform-provider-azuredevops/pull/1103)
+* `azuredevops_git_repository` - Add timeout and update tests.  [#1103](https://github.com/microsoft/terraform-provider-azuredevops/pull/1103)
+* `azuredevops_git_repository_branch` - Add timeout and update tests.  [#1103](https://github.com/microsoft/terraform-provider-azuredevops/pull/1103)
+* `azuredevops_git_repository_file` - Add timeout and update tests.  [#1103](https://github.com/microsoft/terraform-provider-azuredevops/pull/1103)
+* `azuredevops_group_membership` - Add timeout and update tests.  [#1107](https://github.com/microsoft/terraform-provider-azuredevops/pull/1107)
+* `azuredevops_group` - Add timeout and update tests.  [#1107](https://github.com/microsoft/terraform-provider-azuredevops/pull/1107)
+* **Data Source** `azuredevops_users` - Add timeout and update tests.  [#1107](https://github.com/microsoft/terraform-provider-azuredevops/pull/1107)
+* **Data Source** `azuredevops_group` - Add timeout and update tests.  [#1107](https://github.com/microsoft/terraform-provider-azuredevops/pull/1107)
+* **Data Source** `azuredevops_groups` - Add timeout and update tests.  [#1107](https://github.com/microsoft/terraform-provider-azuredevops/pull/1107)
+* **Data Source** `azuredevops_identity_user` - Add timeout and update tests.  [#1108](https://github.com/microsoft/terraform-provider-azuredevops/pull/1108)
+* **Data Source** `azuredevops_identity_group` - Add timeout and update tests.  [#1108](https://github.com/microsoft/terraform-provider-azuredevops/pull/1108)
+* **Data Source** `azuredevops_identity_groups` - Add timeout and update tests.  [#1108](https://github.com/microsoft/terraform-provider-azuredevops/pull/1108)
+* `azuredevops_user_entitlement` - Add timeout and update tests.  [#1109](https://github.com/microsoft/terraform-provider-azuredevops/pull/1109)
+* `azuredevops_group_entitlement` - Add timeout and update tests.  [#1109](https://github.com/microsoft/terraform-provider-azuredevops/pull/1109)
+
+
 ## 1.1.1
 
 BUG FIX:
