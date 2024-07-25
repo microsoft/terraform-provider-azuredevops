@@ -413,3 +413,18 @@ func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClie
 
 	return &(*serviceEndpoints)[0], nil
 }
+
+type EndpointAuthenticationScheme string
+
+const (
+	ServicePrincipal           EndpointAuthenticationScheme = "ServicePrincipal"
+	ManagedServiceIdentity     EndpointAuthenticationScheme = "ManagedServiceIdentity"
+	WorkloadIdentityFederation EndpointAuthenticationScheme = "WorkloadIdentityFederation"
+)
+
+type EndpointCreationMode string
+
+const (
+	Automatic EndpointCreationMode = "Automatic"
+	Manual    EndpointCreationMode = "Manual"
+)
