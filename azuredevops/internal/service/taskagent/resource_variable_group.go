@@ -67,10 +67,16 @@ type KeyVaultSecretResult struct {
 // ResourceVariableGroup schema and implementation for variable group resource
 func ResourceVariableGroup() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceVariableGroupCreate,
-		Read:     resourceVariableGroupRead,
-		Update:   resourceVariableGroupUpdate,
-		Delete:   resourceVariableGroupDelete,
+		Create: resourceVariableGroupCreate,
+		Read:   resourceVariableGroupRead,
+		Update: resourceVariableGroupUpdate,
+		Delete: resourceVariableGroupDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			vgProjectID: {

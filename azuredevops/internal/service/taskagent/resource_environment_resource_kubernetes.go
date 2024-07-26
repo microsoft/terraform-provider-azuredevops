@@ -3,6 +3,7 @@ package taskagent
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,6 +32,11 @@ func ResourceEnvironmentKubernetes() *schema.Resource {
 		Create: resourceEnvironmentKubernetesCreate,
 		Read:   resourceEnvironmentKubernetesRead,
 		Delete: resourceEnvironmentKubernetesDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			kubeResProjectId: {
 				Type:         schema.TypeString,
