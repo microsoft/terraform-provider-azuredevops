@@ -3,6 +3,7 @@ package taskagent
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -25,9 +26,14 @@ const (
 func ResourceAgentQueue() *schema.Resource {
 	// Note: there is no update API, so all fields will require a new resource
 	return &schema.Resource{
-		Create:   resourceAgentQueueCreate,
-		Read:     resourceAgentQueueRead,
-		Delete:   resourceAgentQueueDelete,
+		Create: resourceAgentQueueCreate,
+		Read:   resourceAgentQueueRead,
+		Delete: resourceAgentQueueDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
 			agentQueueName: {

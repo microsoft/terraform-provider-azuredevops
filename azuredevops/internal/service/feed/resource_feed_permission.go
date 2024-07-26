@@ -3,6 +3,7 @@ package feed
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +23,12 @@ func ResourceFeedPermission() *schema.Resource {
 		Read:   resourceFeedPermissionRead,
 		Update: resourceFeedPermissionUpdate,
 		Delete: resourceFeedPermissionDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"feed_id": {
 				Type:         schema.TypeString,

@@ -2,6 +2,7 @@ package feed
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -18,6 +19,12 @@ func ResourceFeed() *schema.Resource {
 		Read:   resourceFeedRead,
 		Update: resourceFeedUpdate,
 		Delete: resourceFeedDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,

@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -52,6 +53,9 @@ func DataBuildDefinition() *schema.Resource {
 
 	return &schema.Resource{
 		Read: dataSourceGitRepositoryRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,

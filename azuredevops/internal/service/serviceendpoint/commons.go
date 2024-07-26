@@ -290,6 +290,9 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
 	return &schema.Resource{
 		Read: dataSourceReadFunc,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,

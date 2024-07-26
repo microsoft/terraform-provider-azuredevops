@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,6 +44,12 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 		Update:   genPolicyUpdateFunc(crudArgs),
 		Delete:   genPolicyDeleteFunc(crudArgs),
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,

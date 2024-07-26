@@ -5,12 +5,16 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking/utils"
+	"time"
 )
 
 // DataArea schema for data area
 func DataArea() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceAreaRead,
+		Read: dataSourceAreaRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: utils.CreateClassificationNodeSchema(map[string]*schema.Schema{}),
 	}
 }

@@ -3,6 +3,7 @@ package servicehook
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,7 +57,12 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 		Read:   resourceServicehookStorageQueuePipelinesRead,
 		Update: resourceServicehookStorageQueuePipelinesUpdate,
 		Delete: resourceServicehookStorageQueuePipelinesDelete,
-
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -12,7 +12,7 @@ import (
 
 // DataAgentPools schema and implementation for agent pools data source
 func DataAgentPools() *schema.Resource {
-	baseSchema := ResourceAgentPool()
+	baseSchema := ResourceAgentPool() //TODO separate schema from resource
 
 	// Now that the base schema's ID is not being used as the resource's ID, we can correctly
 	// set it to be an integer.

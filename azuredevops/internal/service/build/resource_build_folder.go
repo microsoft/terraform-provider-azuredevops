@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,6 +24,12 @@ func ResourceBuildFolder() *schema.Resource {
 		Update:   resourceBuildFolderUpdate,
 		Delete:   resourceBuildFolderDelete,
 		Importer: tfhelper.ImportProjectQualifiedResource(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
