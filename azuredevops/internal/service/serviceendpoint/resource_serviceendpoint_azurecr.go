@@ -231,7 +231,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
 					"authenticationType": "spnKey",
-					"tenantid":           d.Get("azurecr_spn_tenantid").(string),
+					"tenantId":           d.Get("azurecr_spn_tenantid").(string),
 					"loginServer":        loginServer,
 					"scope":              scope,
 					"serviceprincipalid": d.Get("service_principal_id").(string),
@@ -313,7 +313,7 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-		d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantid"])
+		d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
 		d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 
 		if scope, ok := (*serviceEndpoint.Authorization.Parameters)["scope"]; ok {
