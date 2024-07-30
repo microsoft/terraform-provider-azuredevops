@@ -174,14 +174,6 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 		).
 		ToSlice(&descriptors)
 
-	if len(users) == 0 {
-		if principalName != "" {
-			return fmt.Errorf(" User not found. Principal Name: %s", principalName)
-		} else if originID != "" {
-			return fmt.Errorf(" User not found. Origin ID: %s", originID)
-		}
-	}
-
 	h := sha1.New()
 	if _, err := h.Write([]byte(strings.Join(descriptors, "-"))); err != nil {
 		return fmt.Errorf("Unable to compute hash for user descriptors: %v", err)
