@@ -110,8 +110,8 @@ data "azuredevops_users" "test" {
 }
 
 func hclDataUserUserNotFound() string {
-	return fmt.Sprintf(`
+	return `
 data "azuredevops_users" "test" {
   principal_name = "dummy"
-}`)
+}`
 }
