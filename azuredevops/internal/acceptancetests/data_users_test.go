@@ -63,6 +63,23 @@ func TestAccUsers_DataSource_All_WithFeatures(t *testing.T) {
 	})
 }
 
+func TestAccUsers_DataSource_userNotFound(t *testing.T) {
+	tfNode := "data.azuredevops_users.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclDataUserUserNotFound(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttr(tfNode, "users.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func hclDataUserAllWithFeatures(numWorkers int) string {
 	return fmt.Sprintf(`
 data "azuredevops_users" "test" {
@@ -90,4 +107,11 @@ data "azuredevops_users" "test" {
   principal_name = "%[1]s"
   depends_on     = [azuredevops_user_entitlement.test]
 }`, uname)
+}
+
+func hclDataUserUserNotFound() string {
+	return `
+data "azuredevops_users" "test" {
+  principal_name = "dummy"
+}`
 }
