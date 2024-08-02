@@ -121,11 +121,11 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	name := d.Get("name").(string)
+	feedID := d.Id()
 	projectId := d.Get("project_id").(string)
 
 	feedDetail, err := clients.FeedClient.GetFeed(clients.Ctx, feed.GetFeedArgs{
-		FeedId:  &name,
+		FeedId:  &feedID,
 		Project: &projectId,
 	})
 
@@ -134,11 +134,10 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" failed get feed. Projecct ID: %s , Feed Name %s : . Error: %+v", projectId, name, err)
+		return fmt.Errorf(" failed get feed. Projecct ID: %s , Feed ID %s : . Error: %+v", projectId, feedID, err)
 	}
 
 	if feedDetail != nil {
-		d.SetId(feedDetail.Id.String())
 		d.Set("name", feedDetail.Name)
 		if feedDetail.Project != nil {
 			d.Set("project_id", feedDetail.Project.Id.String())
