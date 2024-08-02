@@ -1,7 +1,9 @@
 package feed
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceFeed() *schema.Resource {
@@ -24,6 +27,29 @@ func ResourceFeed() *schema.Resource {
 			Read:   schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				ids := strings.Split(d.Id(), "/")
+				if len(ids) == 1 {
+					d.SetId(ids[0])
+				} else {
+					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id())
+					if err != nil {
+						return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
+					}
+
+					if projectNameOrID, err = tfhelper.GetRealProjectId(projectNameOrID, meta); err == nil {
+						d.Set("project_id", projectNameOrID)
+						d.SetId(resourceID)
+					}
+
+					if err != nil {
+						return nil, err
+					}
+				}
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
