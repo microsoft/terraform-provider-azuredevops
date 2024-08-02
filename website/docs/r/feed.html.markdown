@@ -71,3 +71,18 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.0 - Feed Management](https://learn.microsoft.com/en-us/rest/api/azure/devops/artifacts/feed-management?view=azure-devops-rest-7.0)
+
+## Import
+
+Azure DevOps Feed can be imported using the Project ID and Feed ID or Feed ID e.g.:
+
+```sh
+terraform import azuredevops_feed.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+```
+
+or 
+
+```sh
+terraform import azuredevops_feed.example 00000000-0000-0000-0000-000000000000
+```
+
