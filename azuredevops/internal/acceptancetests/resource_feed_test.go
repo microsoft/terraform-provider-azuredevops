@@ -175,7 +175,7 @@ func hclFeedImportProject(name string) string {
 %s
 
 resource "azuredevops_feed" "import" {
-  name = azuredevops_feed.test.name
+  name       = azuredevops_feed.test.name
   project_id = azuredevops_project.test.id
 }
 `, hclFeedWithProject(name, name))
