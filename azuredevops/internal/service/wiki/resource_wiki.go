@@ -33,10 +33,6 @@ func ResourceWiki() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -45,7 +41,21 @@ func ResourceWiki() *schema.Resource {
 					string(wiki.WikiTypeValues.CodeWiki)},
 					false),
 			},
+			"project_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"mapped_path": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"repository_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"version": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -54,18 +64,8 @@ func ResourceWiki() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"repository_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
 			"url": {
 				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"version": {
-				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 		},
@@ -80,10 +80,16 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	wikiArgs := &wiki.WikiCreateParametersV2{Name: converter.String(d.Get("name").(string)), ProjectId: &uuidProject, Type: &wikiType}
+	wikiArgs := &wiki.WikiCreateParametersV2{
+		Name:      converter.String(d.Get("name").(string)),
+		ProjectId: &uuidProject,
+		Type:      &wikiType,
+	}
+
 	if mappedPath, ok := d.GetOk("mapped_path"); ok {
 		wikiArgs.MappedPath = converter.String(mappedPath.(string))
 	}
+
 	if repositoryId, ok := d.GetOk("repository_id"); ok {
 		repositoryUuid, err := uuid.Parse(repositoryId.(string))
 		if err != nil {
@@ -183,6 +189,5 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 			return errors.New("projectWiki can only be removed when attached project is removed.")
 		}
 	}
-	d.SetId("")
 	return nil
 }

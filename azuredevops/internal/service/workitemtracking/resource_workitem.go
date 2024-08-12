@@ -16,7 +16,22 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-// ResourceWorkItem schema and implementation for Project WorkItem resource
+var systemFieldMapping = map[string]string{
+	"System.State":         "state",
+	"System.Title":         "title",
+	"System.WorkItemType":  "type",
+	"System.AreaPath":      "area_path",
+	"System.IterationPath": "iteration_path",
+}
+
+var fieldMapping = map[string]string{
+	"state":          "System.State",
+	"title":          "System.Title",
+	"type":           "System.WorkItemType",
+	"area_path":      "System.AreaPath",
+	"iteration_path": "System.IterationPath",
+}
+
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceWorkItemCreate,
@@ -87,22 +102,6 @@ func ResourceWorkItem() *schema.Resource {
 	}
 }
 
-var systemFieldMapping = map[string]string{
-	"System.State":         "state",
-	"System.Title":         "title",
-	"System.WorkItemType":  "type",
-	"System.AreaPath":      "area_path",
-	"System.IterationPath": "iteration_path",
-}
-
-var fieldMapping = map[string]string{
-	"state":          "System.State",
-	"title":          "System.Title",
-	"type":           "System.WorkItemType",
-	"area_path":      "System.AreaPath",
-	"iteration_path": "System.IterationPath",
-}
-
 func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
@@ -166,12 +165,11 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 		Project:  &project,
 		Document: &operations,
 	}
-	workItem, err := clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
+	_, err = clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%d", *workItem.Id))
 	return resourceWorkItemRead(d, m)
 }
 
@@ -193,13 +191,12 @@ func resourceWorkItemDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
-	d.SetId("")
 	return nil
 }
 
 func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
-	custom_fields := d.Get("custom_fields").(map[string]interface{})
-	for customFieldName, customFieldValue := range custom_fields {
+	customFields := d.Get("custom_fields").(map[string]interface{})
+	for customFieldName, customFieldValue := range customFields {
 		operations = append(operations, webapi.JsonPatchOperation{
 			Op:    &webapi.OperationValues.Add,
 			From:  nil,
