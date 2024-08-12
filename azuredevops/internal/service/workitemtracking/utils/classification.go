@@ -99,7 +99,7 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 		// "VS402485: The Area/Iteration name is not recognized"
 		d.SetId("")
 		js, _ := json.Marshal(params)
-		return fmt.Errorf(" getting ClassificationNode failed. %s", js)
+		return fmt.Errorf(" getting ClassificationNode failed. %s. Error: %w", js, err)
 	}
 
 	d.SetId(node.Identifier.String())
