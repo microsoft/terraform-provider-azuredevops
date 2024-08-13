@@ -216,7 +216,17 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	doBaseFlattening(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	var projectID string
+	if serviceEndpoint != nil && serviceEndpoint.ServiceEndpointProjectReferences != nil {
+		if len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
+			projectReference := (*serviceEndpoint.ServiceEndpointProjectReferences)[0]
+			if projectReference.ProjectReference != nil && projectReference.ProjectReference.Id != nil {
+				projectID = projectReference.ProjectReference.Id.String()
+			}
+		}
+	}
+
+	doBaseFlattening(d, serviceEndpoint, projectID)
 	if err = flattenServiceEndpointKubernetes(d, serviceEndpoint); err != nil {
 		return err
 	}
