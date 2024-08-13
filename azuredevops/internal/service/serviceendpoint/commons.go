@@ -273,7 +273,7 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
 func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	if serviceEndpoint.Id == nil {
+	if serviceEndpoint.Id != nil {
 		d.SetId(serviceEndpoint.Id.String())
 	}
 
