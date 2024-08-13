@@ -12,31 +12,38 @@ import (
 
 // DataAgentPools schema and implementation for agent pools data source
 func DataAgentPools() *schema.Resource {
-	baseSchema := ResourceAgentPool() //TODO separate schema from resource
-
-	// Now that the base schema's ID is not being used as the resource's ID, we can correctly
-	// set it to be an integer.
-	baseSchema.Schema["id"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Computed: true,
-	}
-
-	for k, v := range baseSchema.Schema {
-		baseSchema.Schema[k] = &schema.Schema{
-			Type:     v.Type,
-			Computed: true,
-		}
-	}
-
 	return &schema.Resource{
 		Read: dataSourceAgentPoolsRead,
-
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"agent_pools": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
-					Schema: baseSchema.Schema,
+					Schema: map[string]*schema.Schema{
+						"auto_provision": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"auto_update": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"pool_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
 				},
 			},
 		},
@@ -46,15 +53,15 @@ func DataAgentPools() *schema.Resource {
 func dataSourceAgentPoolsRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	agentPools, err := getAgentPools(clients)
+	agentPools, err := clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{})
 	if err != nil {
-		return fmt.Errorf("Error finding agent pools. Error: %v", err)
+		return fmt.Errorf(" finding agent pools. Error: %v", err)
 	}
 	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] agent pools from current organization", len(*agentPools))
 
 	err = d.Set("agent_pools", flattenAgentPoolReferences(agentPools))
 	if err != nil {
-		return fmt.Errorf("Error setting agent_pools field in state. Error: %v", err)
+		return fmt.Errorf(" setting agent_pools field in state. Error: %v", err)
 	}
 
 	d.SetId(time.Now().UTC().String())
@@ -94,8 +101,4 @@ func flattenAgentPoolReferences(input *[]taskagent.TaskAgentPool) []interface{} 
 	}
 
 	return results
-}
-
-func getAgentPools(clients *client.AggregatedClient) (*[]taskagent.TaskAgentPool, error) {
-	return clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{})
 }

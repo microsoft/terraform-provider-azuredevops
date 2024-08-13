@@ -16,7 +16,7 @@ import (
 //	(1) TF can create a project
 //	(2) A data source is added to the configuration, and that data source can find the created project
 
-func TestAccAgentPools_DataSource(t *testing.T) {
+func TestAccAgentPoolsDataSource_Basic(t *testing.T) {
 	agentPoolName := testutils.GenerateResourceName()
 	agentPool1Name := agentPoolName + "_1"
 	agentPool2Name := agentPoolName + "_2"

@@ -19,55 +19,55 @@ func DataVariableGroup() *schema.Resource {
 			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
-			vgProjectID: {
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			vgName: {
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
-			vgDescription: {
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			vgAllowAccess: {
+			"allow_access": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			vgVariable: {
+			"variable": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						vgName: {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						vgValue: {
+						"value": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						secretVgValue: {
+						"secret_value": {
 							Type:      schema.TypeString,
 							Computed:  true,
 							Sensitive: true,
 						},
-						vgIsSecret: {
+						"is_secret": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						vgContentType: {
+						"content_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						vgEnabled: {
+						"enabled": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						vgExpires: {
+						"expires": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -75,16 +75,16 @@ func DataVariableGroup() *schema.Resource {
 				},
 				Set: getVariableHash,
 			},
-			vgKeyVault: {
+			"key_vault": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						vgName: {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						vgServiceEndpointID: {
+						"service_endpoint_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -95,13 +95,9 @@ func DataVariableGroup() *schema.Resource {
 	}
 }
 
-func getVariableHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})[vgName].(string))
-}
-
 func dataSourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
-	projectID := d.Get(vgProjectID).(string)
-	name := d.Get(vgName).(string)
+	projectID := d.Get("project_id").(string)
+	name := d.Get("name").(string)
 	clients := m.(*client.AggregatedClient)
 
 	variableGroups, err := clients.TaskAgentClient.GetVariableGroups(clients.Ctx, taskagent.GetVariableGroupsArgs{
@@ -114,13 +110,17 @@ func dataSourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if len(*variableGroups) == 0 {
-		return fmt.Errorf("Unable to find variable group with name: %s", name)
+		return fmt.Errorf(" Unable to find variable group with name: %s", name)
 	}
 
 	err = flattenVariableGroup(d, &(*variableGroups)[0], &projectID)
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" flattening variable group: %v", err)
 	}
 
 	return nil
+}
+
+func getVariableHash(v interface{}) int {
+	return tfhelper.HashString(v.(map[string]interface{})["name"].(string))
 }

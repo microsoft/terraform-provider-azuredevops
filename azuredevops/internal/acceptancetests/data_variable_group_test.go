@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccVariableGroup_DataSource(t *testing.T) {
+func TestAccVariableGroupDataSource_Basic(t *testing.T) {
 	variableGroupName := testutils.GenerateResourceName()
 	createAndGetVariableGroupData := fmt.Sprintf("%s\n%s\n%s",
 		testutils.HclProjectResource(testutils.GenerateResourceName()),
@@ -38,7 +38,7 @@ func TestAccVariableGroup_DataSource(t *testing.T) {
 	})
 }
 
-func TestAccVariableGroup_DataSourceKeyVault(t *testing.T) {
+func TestAccVariableGroupDataSource_KeyVault(t *testing.T) {
 	t.Skip("Skipping test TestAccVariableGroup_DataSourceKeyVault: azure key vault not provisioned on test infrastructure")
 	projectName := testutils.GenerateResourceName()
 	variableGroupName := testutils.GenerateResourceName()
