@@ -100,6 +100,7 @@ func TestEnvironmentKubernetesResource_CreateKubernetesResource(t *testing.T) {
 	require.NoError(t, err)
 
 	project, resource, err := expandEnvironmentKubernetesResource(resourceData)
+	resource.Id = testEnvironmentKubernetesResource.Id
 	require.NoError(t, err)
 	assert.Equal(t, testEnvironmentKubernetesResourceProject, *project)
 	assert.Equal(t, testEnvironmentKubernetesResource, *resource)
