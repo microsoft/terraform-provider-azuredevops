@@ -273,10 +273,21 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
 func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	d.SetId(serviceEndpoint.Id.String())
-	d.Set("service_endpoint_name", serviceEndpoint.Name)
-	d.Set("project_id", projectID)
-	d.Set("description", serviceEndpoint.Description)
+	if serviceEndpoint.Id != nil {
+		d.SetId(serviceEndpoint.Id.String())
+	}
+
+	if serviceEndpoint.Name != nil {
+		d.Set("service_endpoint_name", serviceEndpoint.Name)
+	}
+
+	if serviceEndpoint.Description != nil {
+		d.Set("description", serviceEndpoint.Description)
+	}
+
+	if projectID != "" {
+		d.Set("project_id", projectID)
+	}
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 		d.Set("authorization", &map[string]interface{}{
