@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccDataSourceAgentPool_basic(t *testing.T) {
+func TestAccAgentPoolDataSource_basic(t *testing.T) {
 	agentPoolName := testutils.GenerateResourceName()
 	tfNode := "data.azuredevops_agent_pool.test"
 

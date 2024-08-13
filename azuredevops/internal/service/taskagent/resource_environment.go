@@ -82,7 +82,7 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 
 	environment, err := clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
 		EnvironmentId: &environmentID,
-		Project:       converter.String(d.Get(projectID).(string)),
+		Project:       converter.String(d.Get("project_id").(string)),
 	})
 
 	if err != nil {
@@ -120,7 +120,7 @@ func resourceEnvironmentDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = clients.TaskAgentClient.DeleteEnvironment(clients.Ctx, taskagent.DeleteEnvironmentArgs{
-		Project:       converter.String(d.Get(projectID).(string)),
+		Project:       converter.String(d.Get("project_id").(string)),
 		EnvironmentId: &environmentId,
 	})
 
@@ -160,7 +160,7 @@ func updateEnvironment(clients *client.AggregatedClient, environment *taskagent.
 func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
 	projectId, err := uuid.Parse(d.Get(envProjectId).(string))
 	if err != nil {
-		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", projectID, err)
+		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", "project_id", err)
 	}
 	environment := &taskagent.EnvironmentInstance{
 		Name:        converter.String(d.Get(envName).(string)),

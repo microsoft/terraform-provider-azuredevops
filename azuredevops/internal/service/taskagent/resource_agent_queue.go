@@ -15,16 +15,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const (
-	agentQueueName                   = "name"
-	agentPoolID                      = "agent_pool_id"
-	projectID                        = "project_id"
-	invalidQueueIDErrorMessageFormat = "Queue ID was unexpectedly not a valid integer: %+v"
-)
-
-// ResourceAgentQueue schema and implementation for agent queue resource
 func ResourceAgentQueue() *schema.Resource {
-	// Note: there is no update API, so all fields will require a new resource
 	return &schema.Resource{
 		Create: resourceAgentQueueCreate,
 		Read:   resourceAgentQueueRead,
@@ -36,23 +27,23 @@ func ResourceAgentQueue() *schema.Resource {
 		},
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
-			agentQueueName: {
+			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				AtLeastOneOf:  []string{agentPoolID, agentQueueName},
-				ConflictsWith: []string{agentPoolID},
+				AtLeastOneOf:  []string{"agent_pool_id", "name"},
+				ConflictsWith: []string{"agent_pool_id"},
 			},
-			agentPoolID: {
+			"agent_pool_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				AtLeastOneOf:  []string{agentPoolID, agentQueueName},
-				ConflictsWith: []string{agentQueueName},
+				AtLeastOneOf:  []string{"agent_pool_id", "name"},
+				ConflictsWith: []string{"name"},
 			},
-			projectID: {
+			"project_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
@@ -67,7 +58,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queue, projectID, err := expandAgentQueue(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding the agent queue resource from state: %+v", err)
+		return fmt.Errorf(" expanding the agent queue resource from state: %+v", err)
 	}
 
 	if queue.Pool != nil {
@@ -75,11 +66,11 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 			PoolId: queue.Pool.Id,
 		})
 		if err != nil {
-			return fmt.Errorf("Error looking up referenced agent pool: %+v", err)
+			return fmt.Errorf(" looking up referenced agent pool: %+v", err)
 		}
 		queue.Name = referencedPool.Name
 	} else {
-		queue.Name = converter.String(d.Get(agentQueueName).(string))
+		queue.Name = converter.String(d.Get("agentQueueName").(string))
 	}
 
 	createdQueue, err := clients.TaskAgentClient.AddAgentQueue(clients.Ctx, taskagent.AddAgentQueueArgs{
@@ -89,7 +80,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating agent queue: %+v", err)
+		return fmt.Errorf(" creating agent queue: %+v", err)
 	}
 
 	d.SetId(strconv.Itoa(*createdQueue.Id))
@@ -99,7 +90,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string, error) {
 	queue := &taskagent.TaskAgentQueue{}
 
-	if v, exist := d.GetOk(agentPoolID); exist {
+	if v, ok := d.GetOk("agent_pool_id"); ok {
 		queue.Pool = &taskagent.TaskAgentPoolReference{
 			Id: converter.Int(v.(int)),
 		}
@@ -108,24 +99,24 @@ func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string
 	if d.Id() != "" {
 		id, err := converter.ASCIIToIntPtr(d.Id())
 		if err != nil {
-			return nil, "", fmt.Errorf(invalidQueueIDErrorMessageFormat, err)
+			return nil, "", fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
 		}
 		queue.Id = id
 	}
 
-	return queue, d.Get(projectID).(string), nil
+	return queue, d.Get("project_id").(string), nil
 }
 
 func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queueID, err := converter.ASCIIToIntPtr(d.Id())
 	if err != nil {
-		return fmt.Errorf(invalidQueueIDErrorMessageFormat, err)
+		return fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
 	}
 
 	queue, err := clients.TaskAgentClient.GetAgentQueue(clients.Ctx, taskagent.GetAgentQueueArgs{
 		QueueId: queueID,
-		Project: converter.String(d.Get(projectID).(string)),
+		Project: converter.String(d.Get("project_id").(string)),
 	})
 
 	if utils.ResponseWasNotFound(err) {
@@ -134,11 +125,11 @@ func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("Error reading the agent queue resource: %+v", err)
+		return fmt.Errorf(" reading the agent queue resource: %+v", err)
 	}
 
 	if queue.Pool != nil && queue.Pool.Id != nil {
-		d.Set(agentPoolID, *queue.Pool.Id)
+		d.Set("agent_pool_id", *queue.Pool.Id)
 	}
 
 	return nil
@@ -148,18 +139,17 @@ func resourceAgentQueueDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queueID, err := converter.ASCIIToIntPtr(d.Id())
 	if err != nil {
-		return fmt.Errorf(invalidQueueIDErrorMessageFormat, err)
+		return fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
 	}
 
 	err = clients.TaskAgentClient.DeleteAgentQueue(clients.Ctx, taskagent.DeleteAgentQueueArgs{
 		QueueId: queueID,
-		Project: converter.String(d.Get(projectID).(string)),
+		Project: converter.String(d.Get("project_id").(string)),
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting agent queue: %+v", err)
+		return fmt.Errorf(" deleting agent queue: %+v", err)
 	}
 
-	d.SetId("")
 	return nil
 }

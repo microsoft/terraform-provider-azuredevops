@@ -12,7 +12,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// DataAgentPool schema and implementation for agent pool data source
 func DataAgentPool() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceAgentPoolRead,
@@ -65,12 +64,20 @@ func dataSourceAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 	pool := (*agentPools)[0]
 
 	d.SetId(strconv.Itoa(*pool.Id))
-	d.Set("name", pool.Name)
-	d.Set("pool_type", *pool.PoolType)
-	d.Set("auto_provision", *pool.AutoProvision)
+	if pool.Name != nil {
+		d.Set("name", pool.Name)
+	}
+
+	if pool.PoolType != nil {
+		d.Set("pool_type", pool.PoolType)
+	}
+
+	if pool.AutoProvision != nil {
+		d.Set("auto_provision", pool.AutoProvision)
+	}
 
 	if pool.AutoUpdate != nil {
-		d.Set("auto_update", *pool.AutoUpdate)
+		d.Set("auto_update", pool.AutoUpdate)
 	}
 	return nil
 }
