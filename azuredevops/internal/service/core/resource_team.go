@@ -450,7 +450,7 @@ func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, que
 		}
 		if ok != nil && !*ok {
 			if !isAddMode {
-			    return fmt.Errorf("Failed adding member %s to team %s", *id.SubjectDescriptor, *team.Name)
+				return fmt.Errorf("Failed adding member %s to team %s", *id.SubjectDescriptor, *team.Name)
 			} else {
 				log.Printf("[TRACE] Member %s is already a member of team %s", *id.SubjectDescriptor, *team.Name)
 			}
