@@ -136,6 +136,5 @@ func resourceSecurityRoleAssignmentDelete(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }

@@ -21,13 +21,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-var (
-	groupConfigurationKeys = []string{
-		"display_name",
-		"origin_id",
-	}
-)
-
 func ResourceGroupEntitlement() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGroupEntitlementCreate,
@@ -50,7 +43,7 @@ func ResourceGroupEntitlement() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				ConflictsWith: []string{"origin_id", "origin"},
-				ExactlyOneOf:  groupConfigurationKeys,
+				ExactlyOneOf:  []string{"display_name", "origin_id"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin_id": {
@@ -60,7 +53,7 @@ func ResourceGroupEntitlement() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"display_name"},
 				RequiredWith:  []string{"origin"},
-				ExactlyOneOf:  groupConfigurationKeys,
+				ExactlyOneOf:  []string{"display_name", "origin_id"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
