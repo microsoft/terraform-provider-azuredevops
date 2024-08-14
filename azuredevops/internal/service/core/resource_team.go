@@ -377,7 +377,7 @@ func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, sub
 	}
 
 	// determine the list of all added members
-	err = addTeamMembers(clients, team, linq.From(*subjectDescriptors).Except(linq.From(currentMembers)))
+	err = addTeamMembers(clients, team, linq.From(*subjectDescriptors).Except(linq.From(currentMembers)), false)
 	if err != nil {
 		return err
 	}
