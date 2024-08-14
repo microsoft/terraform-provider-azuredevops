@@ -429,7 +429,7 @@ func removeTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, 
 	return nil
 }
 
-func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, query linq.Query) error {
+func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, query linq.Query, isAddMode bool) error {
 	idList, err := getIdentitiesFromSubjects(clients, query)
 	if err != nil {
 		return err
@@ -449,7 +449,11 @@ func addTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, que
 			return fmt.Errorf("Error adding member %s to team %s: %+v", *id.SubjectDescriptor, *team.Name, err)
 		}
 		if ok != nil && !*ok {
-			return fmt.Errorf("Failed adding member %s to team %s", *id.SubjectDescriptor, *team.Name)
+			if !isAddMode {
+			    return fmt.Errorf("Failed adding member %s to team %s", *id.SubjectDescriptor, *team.Name)
+			} else {
+				log.Printf("[TRACE] Member %s is already a member of team %s", *id.SubjectDescriptor, *team.Name)
+			}
 		}
 	}
 
