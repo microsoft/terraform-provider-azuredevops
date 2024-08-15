@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
+	"maps"
 )
 
 // ResourceBranchPolicyMinReviewers schema and implementation for min reviewer policy resource
@@ -15,52 +16,53 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 		PolicyType:  MinReviewerCount,
 	})
 
-	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
+	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
+	maps.Copy(settingsSchema, map[string]*schema.Schema{
+		"reviewer_count": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+		},
 
-	settingsSchema["reviewer_count"] = &schema.Schema{
-		Type:         schema.TypeInt,
-		Optional:     true,
-		ValidateFunc: validation.IntAtLeast(1),
-	}
+		"submitter_can_vote": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
 
-	settingsSchema["submitter_can_vote"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
-		Default:  false,
-	}
+		"allow_completion_with_rejects_or_waits": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
 
-	settingsSchema["allow_completion_with_rejects_or_waits"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
-		Default:  false,
-	}
+		"on_last_iteration_require_vote": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes"},
+		},
 
-	settingsSchema["on_last_iteration_require_vote"] = &schema.Schema{
-		Type:          schema.TypeBool,
-		Optional:      true,
-		Default:       false,
-		ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes"},
-	}
+		"on_push_reset_approved_votes": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
+		},
 
-	settingsSchema["on_push_reset_approved_votes"] = &schema.Schema{
-		Type:          schema.TypeBool,
-		Optional:      true,
-		Default:       false,
-		ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
-	}
+		"on_push_reset_all_votes": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
+		},
 
-	settingsSchema["on_push_reset_all_votes"] = &schema.Schema{
-		Type:          schema.TypeBool,
-		Optional:      true,
-		Default:       false,
-		ConflictsWith: []string{"settings.0.on_last_iteration_require_vote"},
-	}
-
-	settingsSchema["last_pusher_cannot_approve"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
-		Default:  false,
-	}
+		"last_pusher_cannot_approve": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
+	})
 	return resource
 }
 
@@ -73,7 +75,7 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	settings["reviewer_count"] = policySettings["minimumApproverCount"]
@@ -84,7 +86,7 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 	settings["on_push_reset_all_votes"] = policySettings["resetRejectionsOnSourcePush"]
 	settings["last_pusher_cannot_approve"] = policySettings["blockLastPusherVote"]
 
-	d.Set(SchemaSettings, settingsList)
+	d.Set("settings", settingsList)
 	return nil
 }
 
@@ -95,7 +97,7 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 		return nil, nil, err
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})

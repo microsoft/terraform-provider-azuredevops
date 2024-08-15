@@ -3,6 +3,7 @@ package branch
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,15 +19,6 @@ type autoReviewerPolicySettings struct {
 	MinimumApproverCount int      `json:"minimumApproverCount"`
 }
 
-const (
-	autoReviewerIds        = "auto_reviewer_ids"
-	pathFilters            = "path_filters"
-	displayMessage         = "message"
-	schemaSubmitterCanVote = "submitter_can_vote"
-	minimumApproverCount   = "minimum_number_of_reviewers"
-)
-
-// ResourceBranchPolicyAutoReviewers schema and implementation for automatic code reviewer policy resource
 func ResourceBranchPolicyAutoReviewers() *schema.Resource {
 	resource := genBasePolicyResource(&policyCrudArgs{
 		FlattenFunc: autoReviewersFlattenFunc,
@@ -34,40 +26,45 @@ func ResourceBranchPolicyAutoReviewers() *schema.Resource {
 		PolicyType:  AutoReviewers,
 	})
 
-	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
-	settingsSchema[autoReviewerIds] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem: &schema.Schema{
-			Type:         schema.TypeString,
-			ValidateFunc: validation.StringIsNotEmpty,
+	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
+	maps.Copy(settingsSchema, map[string]*schema.Schema{
+		"auto_reviewer_ids": {
+			Type:     schema.TypeList,
+			Required: true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 		},
-	}
-	settingsSchema[pathFilters] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type:         schema.TypeString,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-	}
-	settingsSchema[displayMessage] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
-	}
-	settingsSchema[schemaSubmitterCanVote] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Default:  false,
-		Optional: true,
-	}
-	settingsSchema[minimumApproverCount] = &schema.Schema{
-		Type:         schema.TypeInt,
-		Optional:     true,
-		Default:      1,
-		ValidateFunc: validation.IntAtLeast(1),
-	}
 
+		"path_filters": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+		},
+
+		"message": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Default:  "",
+		},
+
+		"submitter_can_vote": {
+			Type:     schema.TypeBool,
+			Default:  false,
+			Optional: true,
+		},
+
+		"minimum_number_of_reviewers": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      1,
+			ValidateFunc: validation.IntAtLeast(1),
+		},
+	})
 	return resource
 }
 
@@ -87,15 +84,15 @@ func autoReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Polic
 		return fmt.Errorf("unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
-	settings[schemaSubmitterCanVote] = policySettings.SubmitterCanVote
-	settings[autoReviewerIds] = policySettings.AutoReviewerIds
-	settings[pathFilters] = policySettings.PathFilters
-	settings[displayMessage] = policySettings.DisplayMessage
-	settings[minimumApproverCount] = policySettings.MinimumApproverCount
-	_ = d.Set(SchemaSettings, settingsList)
+	settings["submitter_can_vote"] = policySettings.SubmitterCanVote
+	settings["auto_reviewer_ids"] = policySettings.AutoReviewerIds
+	settings["path_filters"] = policySettings.PathFilters
+	settings["message"] = policySettings.DisplayMessage
+	settings["minimum_number_of_reviewers"] = policySettings.MinimumApproverCount
+	_ = d.Set("settings", settingsList)
 	return nil
 }
 
@@ -105,15 +102,15 @@ func autoReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.
 		return nil, nil, err
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
-	policySettings["creatorVoteCounts"] = settings[schemaSubmitterCanVote].(bool)
-	policySettings["message"] = settings[displayMessage].(string)
-	policySettings["minimumApproverCount"] = settings[minimumApproverCount].(int)
+	policySettings["creatorVoteCounts"] = settings["submitter_can_vote"].(bool)
+	policySettings["message"] = settings["message"].(string)
+	policySettings["minimumApproverCount"] = settings["minimum_number_of_reviewers"].(int)
 
-	if value, ok := settings[autoReviewerIds]; ok {
+	if value, ok := settings["auto_reviewer_ids"]; ok {
 		var reviewersID []string
 		for _, item := range value.([]interface{}) {
 			reviewersID = append(reviewersID, item.(string))
@@ -121,12 +118,12 @@ func autoReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.
 		policySettings["requiredReviewerIds"] = reviewersID
 	}
 
-	if value, ok := settings[pathFilters]; ok {
-		var pathFilters []string
+	if value, ok := settings["path_filters"]; ok {
+		var pathFilterSettings []string
 		for _, item := range value.([]interface{}) {
-			pathFilters = append(pathFilters, item.(string))
+			pathFilterSettings = append(pathFilterSettings, item.(string))
 		}
-		policySettings["filenamePatterns"] = pathFilters
+		policySettings["filenamePatterns"] = pathFilterSettings
 	}
 
 	return policyConfig, projectID, nil
