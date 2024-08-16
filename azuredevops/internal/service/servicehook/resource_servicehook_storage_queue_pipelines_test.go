@@ -182,6 +182,7 @@ func TestServicehookStorageQueuePipelines_Delete_DoestNotSwallowError(t *testing
 	r := ResourceServicehookStorageQueuePipelines()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+		resourceData.SetId(subscription.Id.String())
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
