@@ -89,6 +89,7 @@ func TestServicehookStorageQueuePipelines_FlattenExpandRoundTrip(t *testing.T) {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServicehookStorageQueuePipelines().Schema, nil)
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 		subscriptionAfterRoundTrip, _ := expandServicehookStorageQueuePipelines(resourceData)
+		subscriptionAfterRoundTrip.Id = subscription.Id
 
 		require.Equal(t, subscription, *subscriptionAfterRoundTrip)
 	}
@@ -101,11 +102,11 @@ func TestServicehookStorageQueuePipelines_Create_DoesNotSwallowError(t *testing.
 	r := ResourceServicehookStorageQueuePipelines()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+		resourceData.SetId(subscription.Id.String())
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
-
 		expectedArgs := servicehooks.CreateSubscriptionArgs{Subscription: &subscription}
 
 		mockClient.
@@ -126,6 +127,7 @@ func TestServicehookStorageQueuePipelines_Update_DoestNotSwallowError(t *testing
 	r := ResourceServicehookStorageQueuePipelines()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+		resourceData.SetId(subscription.Id.String())
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
@@ -154,6 +156,7 @@ func TestServicehookStorageQueuePipelines_Read_DoestNotSwallowError(t *testing.T
 	r := ResourceServicehookStorageQueuePipelines()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+		resourceData.SetId(subscription.Id.String())
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
