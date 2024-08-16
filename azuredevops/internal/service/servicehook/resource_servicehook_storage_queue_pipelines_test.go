@@ -102,11 +102,11 @@ func TestServicehookStorageQueuePipelines_Create_DoesNotSwallowError(t *testing.
 	r := ResourceServicehookStorageQueuePipelines()
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-		resourceData.SetId(subscription.Id.String())
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
 
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
+		subscription.Id = nil
 		expectedArgs := servicehooks.CreateSubscriptionArgs{Subscription: &subscription}
 
 		mockClient.

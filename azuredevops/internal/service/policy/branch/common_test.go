@@ -73,6 +73,7 @@ func TestBranchPolicyCRUD_CreateError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
@@ -123,6 +124,7 @@ func TestBranchPolicyCRUD_UpdateError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
@@ -149,6 +151,7 @@ func TestBranchPolicyCRUD_DeleteError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
