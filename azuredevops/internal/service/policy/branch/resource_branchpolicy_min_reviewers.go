@@ -1,11 +1,12 @@
 package branch
 
 import (
+	"maps"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
-	"maps"
 )
 
 // ResourceBranchPolicyMinReviewers schema and implementation for min reviewer policy resource

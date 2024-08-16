@@ -3,10 +3,11 @@ package branch
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
-	"maps"
 )
 
 type mergeTypePolicySettings struct {
