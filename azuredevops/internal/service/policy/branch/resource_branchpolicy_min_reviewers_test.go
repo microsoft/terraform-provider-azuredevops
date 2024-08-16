@@ -5,14 +5,14 @@
 package branch
 
 import (
+	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/stretchr/testify/require"
-
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/stretchr/testify/require"
 )
 
 // verifies that the flatten/expand round trip path produces repeatable results
@@ -45,6 +45,7 @@ func TestBranchPolicyMinReviewers_ExpandFlatten_Roundtrip(t *testing.T) {
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyMinReviewers().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 	err := minReviewersFlattenFunc(resourceData, testPolicy, &projectID)
 	require.Nil(t, err)
 	expandedPolicy, expandedProjectID, err := minReviewersExpandFunc(resourceData, randomUUID)

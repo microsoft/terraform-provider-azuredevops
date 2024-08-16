@@ -23,13 +23,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-var (
-	configurationKeys = []string{
-		"origin_id",
-		"principal_name",
-	}
-)
-
 // ResourceUserEntitlement schema and implementation for user entitlement resource
 func ResourceUserEntitlement() *schema.Resource {
 	return &schema.Resource{
@@ -53,7 +46,7 @@ func ResourceUserEntitlement() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				ConflictsWith:    []string{"origin_id", "origin"},
-				AtLeastOneOf:     configurationKeys,
+				AtLeastOneOf:     []string{"origin_id", "principal_name"},
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
 			},
@@ -64,7 +57,7 @@ func ResourceUserEntitlement() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"principal_name"},
 				RequiredWith:  []string{"origin"},
-				AtLeastOneOf:  configurationKeys,
+				AtLeastOneOf:  []string{"origin_id", "principal_name"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {

@@ -85,13 +85,104 @@ type commonPolicySettings struct {
 	} `json:"scope"`
 }
 
-// baseFlattenFunc flattens each of the base elements of the schema
-func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
-	if policyConfig.Id == nil {
-		d.SetId("")
+//lint:ignore SA1019 schema.CreateFunc is deprecated: Please use the context aware equivalents instead
+func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:staticcheck
+	return func(d *schema.ResourceData, m interface{}) error {
+		clients := m.(*client.AggregatedClient)
+		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
+		if err != nil {
+			return err
+		}
+
+		createPolicy, err := clients.PolicyClient.CreatePolicyConfiguration(clients.Ctx, policy.CreatePolicyConfigurationArgs{
+			Configuration: policyConfig,
+			Project:       projectID,
+		})
+
+		if err != nil {
+			return fmt.Errorf(" Creating policy in Azure DevOps: %+v", err)
+		}
+
+		d.SetId(strconv.Itoa(*createPolicy.Id))
+		return genPolicyReadFunc(crudArgs)(d, m)
+	}
+}
+
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:staticcheck
+	return func(d *schema.ResourceData, m interface{}) error {
+		clients := m.(*client.AggregatedClient)
+		projectID := d.Get("project_id").(string)
+		policyID, err := strconv.Atoi(d.Id())
+
+		if err != nil {
+			return fmt.Errorf(" Converting policy ID to an integer: (%+v)", err)
+		}
+
+		policyConfig, err := clients.PolicyClient.GetPolicyConfiguration(clients.Ctx, policy.GetPolicyConfigurationArgs{
+			Project:         &projectID,
+			ConfigurationId: &policyID,
+		})
+
+		if utils.ResponseWasNotFound(err) || (policyConfig != nil && *policyConfig.IsDeleted) {
+			d.SetId("")
+			return nil
+		}
+
+		if err != nil {
+			return fmt.Errorf(" Looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
+		}
+
+		return crudArgs.FlattenFunc(d, policyConfig, &projectID)
+	}
+}
+
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:staticcheck
+	return func(d *schema.ResourceData, m interface{}) error {
+		clients := m.(*client.AggregatedClient)
+		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
+		if err != nil {
+			return err
+		}
+
+		_, err = clients.PolicyClient.UpdatePolicyConfiguration(clients.Ctx, policy.UpdatePolicyConfigurationArgs{
+			ConfigurationId: policyConfig.Id,
+			Configuration:   policyConfig,
+			Project:         projectID,
+		})
+
+		if err != nil {
+			return fmt.Errorf(" Updating policy in Azure DevOps: %+v", err)
+		}
+
+		return genPolicyReadFunc(crudArgs)(d, m)
+	}
+}
+
+//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
+func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:staticcheck
+	return func(d *schema.ResourceData, m interface{}) error {
+		clients := m.(*client.AggregatedClient)
+		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
+		if err != nil {
+			return err
+		}
+
+		err = clients.PolicyClient.DeletePolicyConfiguration(clients.Ctx, policy.DeletePolicyConfigurationArgs{
+			ConfigurationId: policyConfig.Id,
+			Project:         projectID,
+		})
+
+		if err != nil {
+			return fmt.Errorf(" Deleting policy in Azure DevOps: %+v", err)
+		}
+
 		return nil
 	}
-	d.SetId(strconv.Itoa(*policyConfig.Id))
+}
+
+func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
 	d.Set("project_id", converter.ToString(projectID, ""))
 	d.Set("enabled", converter.ToBool(policyConfig.IsEnabled, true))
 	d.Set("blocking", converter.ToBool(policyConfig.IsBlocking, true))
@@ -101,7 +192,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	}
 	err = d.Set("repository_ids", repoIds)
 	if err != nil {
-		return fmt.Errorf("Unable to persist policy settings configuration: %+v", err)
+		return fmt.Errorf(" Unable to persist policy settings configuration: %+v", err)
 	}
 	return nil
 }
@@ -111,7 +202,7 @@ func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, e
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 
 	if err != nil {
-		return nil, fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
+		return nil, fmt.Errorf(" Unable to marshal policy settings into JSON: %+v", err)
 	}
 
 	_ = json.Unmarshal(policyAsJSON, &policySettings)
@@ -124,7 +215,6 @@ func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, e
 	return repoIds, nil
 }
 
-// baseExpandFunc expands each of the base elements of the schema
 func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
 	projectID := d.Get("project_id").(string)
 
@@ -140,7 +230,7 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 	if d.Id() != "" {
 		policyID, err := strconv.Atoi(d.Id())
 		if err != nil {
-			return nil, nil, fmt.Errorf("Error parsing policy configuration ID: (%+v)", err)
+			return nil, nil, fmt.Errorf(" parsing policy configuration ID: (%+v)", err)
 		}
 		policyConfig.Id = &policyID
 	}
@@ -168,101 +258,5 @@ func expandSettings(d *schema.ResourceData) map[string]interface{} {
 	}
 	return map[string]interface{}{
 		"scope": scopes,
-	}
-}
-
-//lint:ignore SA1019 schema.CreateFunc is deprecated: Please use the context aware equivalents instead
-func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:staticcheck
-	return func(d *schema.ResourceData, m interface{}) error {
-		clients := m.(*client.AggregatedClient)
-		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
-		if err != nil {
-			return err
-		}
-
-		createdPolicy, err := clients.PolicyClient.CreatePolicyConfiguration(clients.Ctx, policy.CreatePolicyConfigurationArgs{
-			Configuration: policyConfig,
-			Project:       projectID,
-		})
-
-		if err != nil {
-			return fmt.Errorf("Error creating policy in Azure DevOps: %+v", err)
-		}
-
-		return crudArgs.FlattenFunc(d, createdPolicy, projectID)
-	}
-}
-
-//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
-func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:staticcheck
-	return func(d *schema.ResourceData, m interface{}) error {
-		clients := m.(*client.AggregatedClient)
-		projectID := d.Get("project_id").(string)
-		policyID, err := strconv.Atoi(d.Id())
-
-		if err != nil {
-			return fmt.Errorf("Error converting policy ID to an integer: (%+v)", err)
-		}
-
-		policyConfig, err := clients.PolicyClient.GetPolicyConfiguration(clients.Ctx, policy.GetPolicyConfigurationArgs{
-			Project:         &projectID,
-			ConfigurationId: &policyID,
-		})
-
-		if utils.ResponseWasNotFound(err) || (policyConfig != nil && *policyConfig.IsDeleted) {
-			d.SetId("")
-			return nil
-		}
-
-		if err != nil {
-			return fmt.Errorf("Error looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
-		}
-
-		return crudArgs.FlattenFunc(d, policyConfig, &projectID)
-	}
-}
-
-//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
-func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:staticcheck
-	return func(d *schema.ResourceData, m interface{}) error {
-		clients := m.(*client.AggregatedClient)
-		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
-		if err != nil {
-			return err
-		}
-
-		updatedPolicy, err := clients.PolicyClient.UpdatePolicyConfiguration(clients.Ctx, policy.UpdatePolicyConfigurationArgs{
-			ConfigurationId: policyConfig.Id,
-			Configuration:   policyConfig,
-			Project:         projectID,
-		})
-
-		if err != nil {
-			return fmt.Errorf("Error updating policy in Azure DevOps: %+v", err)
-		}
-
-		return crudArgs.FlattenFunc(d, updatedPolicy, projectID)
-	}
-}
-
-//lint:ignore SA1019 SDKv2 migration  - staticcheck's own linter directives are currently being ignored under golanci-lint
-func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:staticcheck
-	return func(d *schema.ResourceData, m interface{}) error {
-		clients := m.(*client.AggregatedClient)
-		policyConfig, projectID, err := crudArgs.ExpandFunc(d, crudArgs.PolicyType)
-		if err != nil {
-			return err
-		}
-
-		err = clients.PolicyClient.DeletePolicyConfiguration(clients.Ctx, policy.DeletePolicyConfigurationArgs{
-			ConfigurationId: policyConfig.Id,
-			Project:         projectID,
-		})
-
-		if err != nil {
-			return fmt.Errorf("Error deleting policy in Azure DevOps: %+v", err)
-		}
-
-		return nil
 	}
 }
