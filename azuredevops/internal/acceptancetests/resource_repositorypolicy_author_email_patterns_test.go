@@ -26,7 +26,7 @@ func TestAccRepositoryPolicyAuthorEmailPatterns(t *testing.T) {
 }
 
 func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyBasic(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -51,7 +51,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyBasic(t *testing.T) {
 }
 
 func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyUpdate(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -81,7 +81,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsRepoPolicyUpdate(t *testing.T) {
 }
 
 func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyBasic(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -106,7 +106,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyBasic(t *testing.T) 
 }
 
 func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyUpdate(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_author_email_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -137,7 +137,7 @@ func testAccRepositoryPolicyAuthorEmailPatternsProjectPolicyUpdate(t *testing.T)
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -145,8 +145,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -157,59 +157,63 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceRepoPolicyBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
-  project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_author_email_pattern" "test" {
+  project_id = azuredevops_project.test.id
 
   enabled  = true
   blocking = true
 
   author_email_patterns = ["test1@test.com"]
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+  repository_ids        = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceRepoPolicyUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
- project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
- enabled  = true
- blocking = true
+resource "azuredevops_repository_policy_author_email_pattern" "test" {
+  project_id = azuredevops_project.test.id
 
- author_email_patterns = ["test2@test.com"]
- repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+  enabled  = true
+  blocking = true
+
+  author_email_patterns = ["test2@test.com"]
+  repository_ids        = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceProjectPolicyBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
-  project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
-  enabled  = true
-  blocking = true
+resource "azuredevops_repository_policy_author_email_pattern" "test" {
+  project_id = azuredevops_project.test.id
+
+  enabled               = true
+  blocking              = true
   author_email_patterns = ["test1@test.com"]
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on            = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
 
 func hclRepositoryPolicyAuthorEmailPatternsResourceProjectPolicyUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclRepositoryPolicyAuthorEmailPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_author_email_pattern" "p" {
- project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
- enabled  = true
- blocking = true
+resource "azuredevops_repository_policy_author_email_pattern" "test" {
+  project_id = azuredevops_project.test.id
 
- author_email_patterns = ["test1@test.com", "test2@test.com"]
- depends_on = [azuredevops_git_repository.r]
-}
-`)
+  enabled  = true
+  blocking = true
+
+  author_email_patterns = ["test1@test.com", "test2@test.com"]
+  depends_on            = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }

@@ -12,9 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-const checkCredentialsTfNode = "azuredevops_repository_policy_check_credentials.p"
-
-func TestAccRepoPolicyCheckCredentials(t *testing.T) {
+func TestAccRepositoryPolicyCheckCredentials(t *testing.T) {
 	testutils.RunTestsInSequence(t, map[string]map[string]func(t *testing.T){
 		"RepositoryPolicies": {
 			"basic":  testAccRepoPolicyCheckCredentialsBasic,
@@ -28,6 +26,7 @@ func TestAccRepoPolicyCheckCredentials(t *testing.T) {
 }
 
 func testAccRepoPolicyCheckCredentialsBasic(t *testing.T) {
+	checkCredentialsTfNode := "azuredevops_repository_policy_check_credentials.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -51,6 +50,7 @@ func testAccRepoPolicyCheckCredentialsBasic(t *testing.T) {
 }
 
 func testAccRepoPolicyCheckCredentialsUpdate(t *testing.T) {
+	checkCredentialsTfNode := "azuredevops_repository_policy_check_credentials.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -79,6 +79,7 @@ func testAccRepoPolicyCheckCredentialsUpdate(t *testing.T) {
 }
 
 func testAccProjectPolicyCheckCredentialsBasic(t *testing.T) {
+	checkCredentialsTfNode := "azuredevops_repository_policy_check_credentials.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -102,6 +103,7 @@ func testAccProjectPolicyCheckCredentialsBasic(t *testing.T) {
 }
 
 func testAccProjectPolicyCheckCredentialsUpdate(t *testing.T) {
+	checkCredentialsTfNode := "azuredevops_repository_policy_check_credentials.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -131,7 +133,7 @@ func testAccProjectPolicyCheckCredentialsUpdate(t *testing.T) {
 
 func hclPolicyCheckCredentialsResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -139,8 +141,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -151,49 +153,54 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepoPolicyCheckCredentialsBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyCheckCredentialsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_check_credentials" "p" {
-  project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
-  enabled  = true
-  blocking = true
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+resource "azuredevops_repository_policy_check_credentials" "test" {
+  project_id = azuredevops_project.test.id
+
+  enabled        = true
+  blocking       = true
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyCheckCredentialsUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyCheckCredentialsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_check_credentials" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = false
-  blocking = true
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_check_credentials" "test" {
+  project_id     = azuredevops_project.test.id
+  enabled        = false
+  blocking       = true
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyCheckCredentialsBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyCheckCredentialsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_check_credentials" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  depends_on = [azuredevops_git_repository.r]
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_check_credentials" "test" {
+  project_id = azuredevops_project.test.id
+  enabled    = true
+  blocking   = true
+  depends_on = [azuredevops_git_repository.test]
 }
-`)
+`, projectAndRepo)
 }
 
 func hclProjectPolicyCheckCredentialsUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyCheckCredentialsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_check_credentials" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = false
-  blocking = true
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_check_credentials" "test" {
+  project_id = azuredevops_project.test.id
+  enabled    = false
+  blocking   = true
+  depends_on = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }

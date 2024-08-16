@@ -12,9 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-const caseEnforceTfNode = "azuredevops_repository_policy_case_enforcement.p"
-
-func TestAccPolicyCaseEnforcement(t *testing.T) {
+func TestAccRepositoryPolicyCaseEnforcement(t *testing.T) {
 	testutils.RunTestsInSequence(t, map[string]map[string]func(t *testing.T){
 		"RepositoryPolicies": {
 			"basic":  testAccRepoPolicyEnforceConsistentCaseBasic,
@@ -28,6 +26,7 @@ func TestAccPolicyCaseEnforcement(t *testing.T) {
 }
 
 func testAccRepoPolicyEnforceConsistentCaseBasic(t *testing.T) {
+	caseEnforceTfNode := "azuredevops_repository_policy_case_enforcement.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -52,6 +51,7 @@ func testAccRepoPolicyEnforceConsistentCaseBasic(t *testing.T) {
 }
 
 func testAccRepoPolicyEnforceConsistentCaseUpdate(t *testing.T) {
+	caseEnforceTfNode := "azuredevops_repository_policy_case_enforcement.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -71,8 +71,8 @@ func testAccRepoPolicyEnforceConsistentCaseUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(caseEnforceTfNode, "enforce_consistent_case", "false"),
 				),
 			}, {
-				ResourceName:      caseEnforceTfNode,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(caseEnforceTfNode),
+				ResourceName:      "azuredevops_repository_policy_case_enforcement.test",
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID("azuredevops_repository_policy_case_enforcement.test"),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -81,6 +81,7 @@ func testAccRepoPolicyEnforceConsistentCaseUpdate(t *testing.T) {
 }
 
 func testAccProjectPolicyEnforceConsistentCaseBasic(t *testing.T) {
+	caseEnforceTfNode := "azuredevops_repository_policy_case_enforcement.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -105,6 +106,7 @@ func testAccProjectPolicyEnforceConsistentCaseBasic(t *testing.T) {
 }
 
 func testAccProjectPolicyEnforceConsistentCaseUpdate(t *testing.T) {
+	caseEnforceTfNode := "azuredevops_repository_policy_case_enforcement.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -135,7 +137,7 @@ func testAccProjectPolicyEnforceConsistentCaseUpdate(t *testing.T) {
 
 func hclPolicyEnforceConsistentCaseResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -143,8 +145,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -155,55 +157,59 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepoPolicyEnforceConsistentCaseBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyEnforceConsistentCaseResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_case_enforcement" "p" {
-  project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
-  enabled  = true
-  blocking = true
+resource "azuredevops_repository_policy_case_enforcement" "test" {
+  project_id = azuredevops_project.test.id
+
+  enabled                 = true
+  blocking                = true
   enforce_consistent_case = true
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+  repository_ids          = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyEnforceConsistentCaseUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyEnforceConsistentCaseResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_case_enforcement" "p" {
- project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
- enabled  = true
- blocking = true
- enforce_consistent_case = false
- repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+resource "azuredevops_repository_policy_case_enforcement" "test" {
+  project_id = azuredevops_project.test.id
+
+  enabled                 = true
+  blocking                = true
+  enforce_consistent_case = false
+  repository_ids          = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyEnforceConsistentCaseBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyEnforceConsistentCaseResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_case_enforcement" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_case_enforcement" "test" {
+  project_id              = azuredevops_project.test.id
+  enabled                 = true
+  blocking                = true
   enforce_consistent_case = true
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on              = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyEnforceConsistentCaseUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyEnforceConsistentCaseResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_case_enforcement" "p" {
- project_id = azuredevops_project.p.id
+	return fmt.Sprintf(`
+%s
 
- enabled  = true
- blocking = true
- enforce_consistent_case = false
- depends_on = [azuredevops_git_repository.r]
-}
-`)
+resource "azuredevops_repository_policy_case_enforcement" "test" {
+  project_id = azuredevops_project.test.id
+
+  enabled                 = true
+  blocking                = true
+  enforce_consistent_case = false
+  depends_on              = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
