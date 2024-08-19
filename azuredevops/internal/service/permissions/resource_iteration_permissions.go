@@ -91,7 +91,6 @@ func resourceIterationPermissionsDelete(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }
 

@@ -13,45 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclVariableGroupPermissions(projectName string, variableGroupName string, permissions map[string]string) string {
-	variableGroupPermissions := datahelper.JoinMap(permissions, "=", "\n")
-
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_variable_group" "example" {
-	project_id   = azuredevops_project.project.id
-	name         = "%s"
-	description  = "Test Description"
-	allow_access = true
-
-	variable {
-	  name  = "key1"
-	  value = "val1"
-	}
-  }
-
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_variable_group_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
-	variable_group_id = azuredevops_variable_group.example.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
-		%s
-	}
-}
-
-`,
-		testutils.HclProjectResource(projectName),
-		variableGroupName,
-		variableGroupPermissions,
-	)
-}
-
 func TestAccVariableGroupPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	variableGroupName := testutils.GenerateResourceName()
@@ -150,4 +111,43 @@ func TestAccVariableGroupPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclVariableGroupPermissions(projectName string, variableGroupName string, permissions map[string]string) string {
+	variableGroupPermissions := datahelper.JoinMap(permissions, "=", "\n")
+
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_variable_group" "example" {
+  project_id   = azuredevops_project.project.id
+  name         = "%s"
+  description  = "Test Description"
+  allow_access = true
+
+  variable {
+    name  = "key1"
+    value = "val1"
+  }
+}
+
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_variable_group_permissions" "permissions" {
+  project_id        = azuredevops_project.project.id
+  variable_group_id = azuredevops_variable_group.example.id
+  principal         = data.azuredevops_group.tf-project-readers.id
+  permissions = {
+		%s
+  }
+}
+
+
+`, testutils.HclProjectResource(projectName),
+		variableGroupName,
+		variableGroupPermissions,
+	)
 }
