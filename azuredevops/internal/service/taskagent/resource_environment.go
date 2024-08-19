@@ -16,12 +16,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const (
-	envProjectId   = "project_id"
-	envName        = "name"
-	envDescription = "description"
-)
-
 // ResourceEnvironment schema and implementation for environment resource
 func ResourceEnvironment() *schema.Resource {
 	return &schema.Resource{
@@ -37,18 +31,18 @@ func ResourceEnvironment() *schema.Resource {
 		},
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Schema: map[string]*schema.Schema{
-			envProjectId: {
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			envName: {
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.EnvironmentName,
 			},
-			envDescription: {
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
@@ -61,12 +55,12 @@ func resourceEnvironmentCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	environment, err := expandEnvironment(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding the environment resource from state: %+v", err)
+		return fmt.Errorf(" Expanding the environment resource from state: %+v", err)
 	}
 
 	createdEnvironment, err := createEnvironment(clients, environment)
 	if err != nil {
-		return fmt.Errorf("Error creating environment in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Creating environment in Azure DevOps: %+v", err)
 	}
 
 	flattenEnvironment(d, createdEnvironment)
@@ -158,13 +152,13 @@ func updateEnvironment(clients *client.AggregatedClient, environment *taskagent.
 }
 
 func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
-	projectId, err := uuid.Parse(d.Get(envProjectId).(string))
+	projectId, err := uuid.Parse(d.Get("project_id").(string))
 	if err != nil {
 		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", "project_id", err)
 	}
 	environment := &taskagent.EnvironmentInstance{
-		Name:        converter.String(d.Get(envName).(string)),
-		Description: converter.String(d.Get(envDescription).(string)),
+		Name:        converter.String(d.Get("name").(string)),
+		Description: converter.String(d.Get("description").(string)),
 		Project: &taskagent.ProjectReference{
 			Id: &projectId,
 		},
@@ -183,7 +177,7 @@ func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, 
 
 func flattenEnvironment(d *schema.ResourceData, environment *taskagent.EnvironmentInstance) {
 	d.SetId(strconv.Itoa(*environment.Id))
-	d.Set(envProjectId, environment.Project.Id.String())
-	d.Set(envName, *environment.Name)
-	d.Set(envDescription, converter.ToString(environment.Description, ""))
+	d.Set("project_id", environment.Project.Id.String())
+	d.Set("name", *environment.Name)
+	d.Set("description", converter.ToString(environment.Description, ""))
 }
