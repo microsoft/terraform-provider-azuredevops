@@ -2,12 +2,19 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataResourceServiceEndpointSonarCloud() *schema.Resource {
-	return dataSourceGenBaseServiceEndpointResource(dataSourceServiceEndpointSonarCloudRead)
+	return &schema.Resource{
+		Read: dataSourceServiceEndpointSonarCloudRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
+		Schema: dataSourceGenBaseSchema(),
+	}
 }
 
 func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface{}) error {
@@ -20,5 +27,5 @@ func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface
 
 		return nil
 	}
-	return fmt.Errorf("Error looking up Sonar Cloud service endpoint !")
+	return fmt.Errorf(" Looking up Sonar Cloud service endpoint !")
 }

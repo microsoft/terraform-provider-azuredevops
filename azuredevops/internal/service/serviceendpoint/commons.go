@@ -298,6 +298,44 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 // data resources
 
+func dataSourceGenBaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+
+		"service_endpoint_name": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+
+		"service_endpoint_id": {
+			Description:  "The ID of the serviceendpoint",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.IsUUID,
+		},
+
+		"authorization": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+
+		"description": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+}
 func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
 	return &schema.Resource{
 		Read: dataSourceReadFunc,
