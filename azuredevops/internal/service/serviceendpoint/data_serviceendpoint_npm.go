@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,10 +17,12 @@ func DataResourceServiceEndpointNpm() *schema.Resource {
 		Schema: dataSourceGenBaseSchema(),
 	}
 
-	resource.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+	maps.Copy(resource.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	})
 
 	return resource
 }
