@@ -3,12 +3,13 @@ package serviceendpoint
 import (
 	"errors"
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"maps"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -33,64 +34,55 @@ func ResourceServiceEndpointArtifactory() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: func(i interface{}, key string) (_ []string, errors []error) {
-			url, ok := i.(string)
-			if !ok {
-				errors = append(errors, fmt.Errorf("expected type of %q to be string", key))
-				return
-			}
-			if strings.HasSuffix(url, "/") {
-				errors = append(errors, fmt.Errorf("%q should not end with slash, got %q.", key, url))
-				return
-			}
-			return validation.IsURLWithHTTPorHTTPS(url, key)
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.Url,
+			Description:  "Url for the Artifactory Server",
 		},
-		Description: "Url for the Artifactory Server",
-	}
 
-	r.Schema["authentication_token"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"token": {
-					Description: "The Artifactory access token.",
-					Type:        schema.TypeString,
-					Required:    true,
-					Sensitive:   true,
+		"authentication_token": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"token": {
+						Description: "The Artifactory access token.",
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+					},
+				},
+			},
+			ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
+		},
+
+		"authentication_basic": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"username": {
+						Description: "The Artifactory user name.",
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+					},
+					"password": {
+						Description: "The Artifactory password.",
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+					},
 				},
 			},
 		},
-		ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
-	}
-
-	r.Schema["authentication_basic"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"username": {
-					Description: "The Artifactory user name.",
-					Type:        schema.TypeString,
-					Required:    true,
-					Sensitive:   true,
-				},
-				"password": {
-					Description: "The Artifactory password.",
-					Type:        schema.TypeString,
-					Required:    true,
-					Sensitive:   true,
-				},
-			},
-		},
-	}
+	})
 
 	return r
 }

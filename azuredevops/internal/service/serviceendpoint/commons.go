@@ -16,9 +16,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
-const errMsgServiceCreate = "Error looking up service endpoint given ID (%s) and project ID (%s): %v "
-const errMsgServiceDelete = "Error delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
+const errMsgTfConfigRead = " Reading terraform configuration: %+v"
+const errMsgServiceCreate = " Looking up service endpoint given ID (%s) and project ID (%s): %v "
+const errMsgServiceDelete = " Delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
 
 type operationState struct {
 	Ready      string

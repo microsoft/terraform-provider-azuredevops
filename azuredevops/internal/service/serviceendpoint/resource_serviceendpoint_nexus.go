@@ -2,12 +2,12 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"strings"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -31,36 +31,26 @@ func ResourceServiceEndpointNexus() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-
-	r.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: func(i interface{}, key string) (_ []string, errors []error) {
-			url, ok := i.(string)
-			if !ok {
-				errors = append(errors, fmt.Errorf("expected type of %q to be string", key))
-				return
-			}
-			if strings.HasSuffix(url, "/") {
-				errors = append(errors, fmt.Errorf("%q should not end with slash, got %q.", key, url))
-				return
-			}
-			return validation.IsURLWithHTTPorHTTPS(url, key)
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.Url,
+			Description:  "Url for the Nexus Repository",
 		},
-		Description: "Url for the Nexus Repository",
-	}
 
-	r.Schema["username"] = &schema.Schema{
-		Description: "The Nexus user name.",
-		Type:        schema.TypeString,
-		Required:    true,
-	}
-	r.Schema["password"] = &schema.Schema{
-		Description: "The Nexus password.",
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-	}
+		"username": {
+			Description: "The Nexus user name.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"password": {
+			Description: "The Nexus password.",
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+		},
+	})
 
 	return r
 }

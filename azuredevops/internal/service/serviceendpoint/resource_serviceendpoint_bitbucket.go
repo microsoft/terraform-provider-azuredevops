@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,20 +31,23 @@ func ResourceServiceEndpointBitBucket() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["username"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", nil),
-		Description: "The bitbucket username which should be used.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"username": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", nil),
+			Description: "The bitbucket username which should be used.",
+		},
 
-	r.Schema["password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The bitbucket password which should be used.",
-		Sensitive:   true,
-	}
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", nil),
+			Description: "The bitbucket password which should be used.",
+			Sensitive:   true,
+		},
+	})
+
 	return r
 }
 

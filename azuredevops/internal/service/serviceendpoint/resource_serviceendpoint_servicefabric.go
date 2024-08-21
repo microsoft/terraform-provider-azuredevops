@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -13,12 +14,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-)
-
-const (
-	resourceBlockServiceFabricAzureActiveDirectory = "azure_active_directory"
-	resourceBlockServiceFabricCertificate          = "certificate"
-	resourceBlockServiceFabricNone                 = "none"
 )
 
 // ResourceServiceEndpointServiceFabric schema and implementation for ServiceFabric service endpoint resource
@@ -38,89 +33,129 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["cluster_endpoint"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"cluster_endpoint": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Client connection endpoint for the cluster. Prefix the value with 'tcp://';. This value overrides the publish profile.",
+		},
 
-	r.Schema[resourceBlockServiceFabricCertificate] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"server_certificate_lookup":      servicefabricServerCertificateLookupSchema(),
-				"server_certificate_thumbprint":  servicefabricServerCertificateThumbprintSchema(resourceBlockServiceFabricCertificate),
-				"server_certificate_common_name": servicefabricServerCertificateCommonNameSchema(resourceBlockServiceFabricCertificate),
-				"client_certificate": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Description:  "Base64 encoding of the cluster's client certificate file.",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotEmpty,
-				},
-				"client_certificate_password": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "Password for the certificate.",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotEmpty,
+		"certificate": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"server_certificate_lookup": {
+						Type:     schema.TypeString,
+						Required: true,
+						ValidateFunc: validation.StringInSlice([]string{
+							"Thumbprint",
+							"CommonName",
+						}, false),
+					},
+					"server_certificate_thumbprint": {
+						Type:          schema.TypeString,
+						Optional:      true,
+						Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')",
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{"certificate.0.server_certificate_common_name"},
+					},
+					"server_certificate_common_name": {
+						Type:          schema.TypeString,
+						Optional:      true,
+						Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')",
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{"certificate.0.server_certificate_thumbprint"},
+					},
+					"client_certificate": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "Base64 encoding of the cluster's client certificate file.",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
+					"client_certificate_password": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "Password for the certificate.",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
 				},
 			},
+			ConflictsWith: []string{"azure_active_directory", "none"},
 		},
-		ConflictsWith: []string{resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricNone},
-	}
 
-	r.Schema[resourceBlockServiceFabricAzureActiveDirectory] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"server_certificate_lookup":      servicefabricServerCertificateLookupSchema(),
-				"server_certificate_thumbprint":  servicefabricServerCertificateThumbprintSchema(resourceBlockServiceFabricAzureActiveDirectory),
-				"server_certificate_common_name": servicefabricServerCertificateCommonNameSchema(resourceBlockServiceFabricAzureActiveDirectory),
-				"username": {
-					Type:         schema.TypeString,
-					Required:     true,
-					ValidateFunc: validation.StringIsNotEmpty,
-					Description:  "Specify an Azure Active Directory account.",
-				},
-				"password": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Description:  "Password for the Azure Active Directory account.",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotEmpty,
+		"azure_active_directory": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"server_certificate_lookup": {
+						Type:     schema.TypeString,
+						Required: true,
+						ValidateFunc: validation.StringInSlice([]string{
+							"Thumbprint",
+							"CommonName",
+						}, false),
+					},
+					"server_certificate_thumbprint": {
+						Type:          schema.TypeString,
+						Optional:      true,
+						Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')",
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{"azure_active_directory.0.server_certificate_common_name"},
+					},
+					"server_certificate_common_name": {
+						Type:          schema.TypeString,
+						Optional:      true,
+						Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')",
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{"azure_active_directory.0.server_certificate_thumbprint"},
+					},
+					"username": {
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  "Specify an Azure Active Directory account.",
+					},
+					"password": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "Password for the Azure Active Directory account.",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
 				},
 			},
+			ConflictsWith: []string{"certificate", "none"},
 		},
-		ConflictsWith: []string{resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone},
-	}
 
-	r.Schema[resourceBlockServiceFabricNone] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"unsecured": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Default:     false,
-					Description: "Skip using windows security for authentication.",
-				},
-				"cluster_spn": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					ValidateFunc: validation.StringLenBetween(0, 1024),
-					Description:  "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
+		"none": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"unsecured": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     false,
+						Description: "Skip using windows security for authentication.",
+					},
+					"cluster_spn": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ValidateFunc: validation.StringLenBetween(0, 1024),
+						Description:  "Fully qualified domain SPN for gMSA account. This is applicable only if `unsecured` option is disabled.",
+					},
 				},
 			},
+			ConflictsWith: []string{"certificate", "azure_active_directory"},
 		},
-		ConflictsWith: []string{resourceBlockServiceFabricCertificate, resourceBlockServiceFabricAzureActiveDirectory},
-	}
+	})
 
 	return r
 }
@@ -171,7 +206,7 @@ func resourceServiceEndpointServiceFabricUpdate(d *schema.ResourceData, m interf
 	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
 
 	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	flattenServiceEndpointServiceFabric(d, updatedServiceEndpoint, projectID.String())
@@ -188,43 +223,12 @@ func resourceServiceEndpointServiceFabricDelete(d *schema.ResourceData, m interf
 	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
 }
 
-func servicefabricServerCertificateLookupSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: validation.StringInSlice([]string{
-			"Thumbprint",
-			"CommonName",
-		}, false),
-	}
-}
-
-func servicefabricServerCertificateThumbprintSchema(blockName string) *schema.Schema {
-	return &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The thumbprint(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple thumbprints with a comma (',')",
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_common_name", blockName)},
-	}
-}
-
-func servicefabricServerCertificateCommonNameSchema(blockName string) *schema.Schema {
-	return &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The common name(s) of the cluster's certificate(s). This is used to verify the identity of the cluster. This value overrides the publish profile. Separate multiple common names with a comma (',')",
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{fmt.Sprintf("%s.0.server_certificate_thumbprint", blockName)},
-	}
-}
-
 // Convert internal Terraform data structure to an AzDO data structure
 func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("servicefabric")
 	serviceEndpoint.Url = converter.String(d.Get("cluster_endpoint").(string))
-	certificate, certificateOk := d.GetOk(resourceBlockServiceFabricCertificate)
+	certificate, certificateOk := d.GetOk("certificate")
 	if certificateOk {
 		configuration := certificate.([]interface{})[0].(map[string]interface{})
 		parameters := expandServiceEndpointServiceFabricServerCertificateLookup(configuration)
@@ -237,7 +241,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 		return serviceEndpoint, projectID, nil
 	}
 
-	azureActiveDirectory, azureActiveDirectoryExists := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory)
+	azureActiveDirectory, azureActiveDirectoryExists := d.GetOk("azure_active_directory")
 	if azureActiveDirectoryExists {
 		configuration := azureActiveDirectory.([]interface{})[0].(map[string]interface{})
 		parameters := expandServiceEndpointServiceFabricServerCertificateLookup(configuration)
@@ -250,7 +254,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 		return serviceEndpoint, projectID, nil
 	}
 
-	none, noneExists := d.GetOk(resourceBlockServiceFabricNone)
+	none, noneExists := d.GetOk("none")
 	if noneExists {
 		configuration := none.([]interface{})[0].(map[string]interface{})
 		parameters := map[string]string{
@@ -264,7 +268,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 		return serviceEndpoint, projectID, nil
 	}
 
-	return nil, nil, fmt.Errorf("One of %s or %s or %s blocks must be specified", resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone)
+	return nil, nil, fmt.Errorf(" One of %s or %s or %s blocks must be specified", "azure_active_directory", "certificate", "none")
 }
 
 func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map[string]interface{}) map[string]string {
@@ -283,7 +287,7 @@ func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map
 
 func flattenServiceFabricCertificate(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
-	if certificate, ok := d.GetOk(resourceBlockServiceFabricCertificate); ok {
+	if certificate, ok := d.GetOk("certificate"); ok {
 		configuration := certificate.([]interface{})[0].(map[string]interface{})
 		if v, ok := configuration["client_certificate"]; ok {
 			result[0]["client_certificate"] = v.(string)
@@ -299,7 +303,7 @@ func flattenServiceFabricCertificate(d *schema.ResourceData, serviceEndpoint *se
 func flattenServiceFabricAzureActiveDirectory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) interface{} {
 	result := flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint)
 	result[0]["username"] = (*serviceEndpoint.Authorization.Parameters)["username"]
-	if azureActiveDirectory, ok := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory); ok {
+	if azureActiveDirectory, ok := d.GetOk("azure_active_directory"); ok {
 		configuration := azureActiveDirectory.([]interface{})[0].(map[string]interface{})
 		if v, ok := configuration["password"]; ok {
 			result[0]["password"] = v.(string)
@@ -341,13 +345,13 @@ func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint
 	switch *serviceEndpoint.Authorization.Scheme {
 	case "Certificate":
 		certificate := flattenServiceFabricCertificate(d, serviceEndpoint)
-		d.Set(resourceBlockServiceFabricCertificate, certificate)
+		d.Set("certificate", certificate)
 	case "UsernamePassword":
 		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(d, serviceEndpoint)
-		d.Set(resourceBlockServiceFabricAzureActiveDirectory, azureActiveDirectory)
+		d.Set("azure_active_directory", azureActiveDirectory)
 	case "None":
 		none := flattenServiceFabricNone(serviceEndpoint)
-		d.Set(resourceBlockServiceFabricNone, none)
+		d.Set("none", none)
 	}
 
 	d.Set("cluster_endpoint", (*serviceEndpoint.Url))
