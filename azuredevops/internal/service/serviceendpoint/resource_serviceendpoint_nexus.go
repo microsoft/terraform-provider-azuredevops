@@ -2,7 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"maps"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointNexus schema and implementation for Nexus service endpoint resource

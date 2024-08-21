@@ -3,7 +3,6 @@ package serviceendpoint
 import (
 	"errors"
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"maps"
 	"strings"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointMaven schema and implementation for Maven service endpoint resource

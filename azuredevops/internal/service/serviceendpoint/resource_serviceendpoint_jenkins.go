@@ -2,7 +2,6 @@ package serviceendpoint
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"maps"
 	"strconv"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointJenkins schema and implementation for Jenkins service endpoint resource

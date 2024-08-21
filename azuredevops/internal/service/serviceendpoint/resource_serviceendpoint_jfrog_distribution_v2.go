@@ -3,7 +3,6 @@ package serviceendpoint
 import (
 	"errors"
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 	"maps"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointJFrogDistributionV2 schema and implementation for JFrog Artifactory service endpoint resource
