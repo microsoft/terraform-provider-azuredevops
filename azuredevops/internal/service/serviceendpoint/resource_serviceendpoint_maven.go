@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointMaven schema and implementation for Maven service endpoint resource
@@ -33,70 +35,61 @@ func ResourceServiceEndpointMaven() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: func(i interface{}, key string) (_ []string, errors []error) {
-			url, ok := i.(string)
-			if !ok {
-				errors = append(errors, fmt.Errorf("expected type of %q to be string", key))
-				return
-			}
-			if strings.HasSuffix(url, "/") {
-				errors = append(errors, fmt.Errorf("%q should not end with slash, got %q.", key, url))
-				return
-			}
-			return validation.IsURLWithHTTPorHTTPS(url, key)
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.Url,
+			Description:  "Url for the Maven Repository",
 		},
-		Description: "Url for the Maven Repository",
-	}
 
-	r.Schema["repository_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.StringIsNotEmpty,
-		Description:  "This is the ID of the server that matches the id element of the repository/mirror that Maven tries to connect to",
-	}
+		"repository_id": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  "This is the ID of the server that matches the id element of the repository/mirror that Maven tries to connect to",
+		},
 
-	r.Schema["authentication_token"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"token": {
-					Description: "The Maven access token.",
-					Type:        schema.TypeString,
-					Required:    true,
-					Sensitive:   true,
+		"authentication_token": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"token": {
+						Description: "The Maven access token.",
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+					},
+				},
+			},
+			ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
+		},
+
+		"authentication_basic": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"username": {
+						Description: "The Maven user name.",
+						Type:        schema.TypeString,
+						Required:    true,
+					},
+					"password": {
+						Description: "The Maven password.",
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+					},
 				},
 			},
 		},
-		ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
-	}
-
-	r.Schema["authentication_basic"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"username": {
-					Description: "The Maven user name.",
-					Type:        schema.TypeString,
-					Required:    true,
-				},
-				"password": {
-					Description: "The Maven password.",
-					Type:        schema.TypeString,
-					Required:    true,
-					Sensitive:   true,
-				},
-			},
-		},
-	}
+	})
 
 	return r
 }

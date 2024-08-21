@@ -16,9 +16,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
-const errMsgServiceCreate = "Error looking up service endpoint given ID (%s) and project ID (%s): %v "
-const errMsgServiceDelete = "Error delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
+const errMsgTfConfigRead = " Reading terraform configuration: %+v"
+const errMsgServiceCreate = " Looking up service endpoint given ID (%s) and project ID (%s): %v "
+const errMsgServiceDelete = " Delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
 
 type operationState struct {
 	Ready      string
@@ -298,55 +298,42 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 // data resources
 
-func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
-	return &schema.Resource{
-		Read: dataSourceReadFunc,
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(5 * time.Minute),
+func dataSourceGenBaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:     schema.TypeString,
+			Required: true,
 		},
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 
-			"service_endpoint_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
+		"service_endpoint_name": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 
-			"service_endpoint_id": {
-				Description:  "The ID of the serviceendpoint",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.IsUUID,
-			},
+		"service_endpoint_id": {
+			Description:  "The ID of the serviceendpoint",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.IsUUID,
+		},
 
-			"authorization": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+		"authorization": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
 		},
-	}
-}
 
-func dataSourceMakeUnprotectedComputedSchema(r *schema.Resource, keyName string) {
-	r.Schema[keyName] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+		"description": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 

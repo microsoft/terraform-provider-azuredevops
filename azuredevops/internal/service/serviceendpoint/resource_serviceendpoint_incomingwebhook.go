@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,26 +30,29 @@ func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"webhook_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_WEBHOOK_NAME", nil),
+			Description: "The name of the WebHook.",
+		},
 
-	r.Schema["webhook_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_WEBHOOK_NAME", nil),
-		Description: "The name of the WebHook.",
-	}
-	r.Schema["secret"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_SECRET", nil),
-		Description: "Optional secret for the webhook. WebHook service will use this secret to calculate the payload checksum.",
-		Sensitive:   true,
-	}
-	r.Schema["http_header"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_HTTP_HEADER", nil),
-		Description: "Optional http header name on which checksum will be sent.",
-	}
+		"secret": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_SECRET", nil),
+			Description: "Optional secret for the webhook. WebHook service will use this secret to calculate the payload checksum.",
+			Sensitive:   true,
+		},
+
+		"http_header": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_INCOMING_WEBHOOK_SERVICE_CONNECTION_HTTP_HEADER", nil),
+			Description: "Optional http header name on which checksum will be sent.",
+		},
+	})
 	return r
 }
 

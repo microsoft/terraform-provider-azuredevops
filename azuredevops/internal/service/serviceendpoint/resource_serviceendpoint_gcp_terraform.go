@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,38 +30,41 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"private_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
+			Description: "Private Key for connecting to the endpoint.",
+		},
 
-	r.Schema["private_key"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_PRIVATE_KEY", nil),
-		Description: "Private Key for connecting to the endpoint.",
-	}
-	r.Schema["token_uri"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_TOKEN_URI", nil),
-		Description: "The token uri field in the JSON key file for creating the JSON Web Token.",
-	}
-	r.Schema["gcp_project_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_GCP_PROJECT_ID", nil),
-		Description: "Scope to be provided",
-	}
-	r.Schema["client_email"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_CLIENT_EMAIL", nil),
-		Description: "The client email field in the JSON key file for creating the JSON Web Token.",
-	}
-	r.Schema["scope"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_SCOPE", nil),
-		Description: "Scope to be provided",
-	}
+		"token_uri": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_TOKEN_URI", nil),
+			Description: "The token uri field in the JSON key file for creating the JSON Web Token.",
+		},
+		"gcp_project_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_GCP_PROJECT_ID", nil),
+			Description: "Scope to be provided",
+		},
+		"client_email": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_CLIENT_EMAIL", nil),
+			Description: "The client email field in the JSON key file for creating the JSON Web Token.",
+		},
+		"scope": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GCP_SERVICE_CONNECTION_SCOPE", nil),
+			Description: "Scope to be provided",
+		},
+	})
+
 	return r
 }
 

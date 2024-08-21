@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,30 +32,32 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["organization_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Azure DevOps organization name",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"organization_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Azure DevOps organization name",
+		},
 
-	r.Schema["auth_personal"] = &schema.Schema{
-		Type:     schema.TypeSet,
-		Required: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"personal_access_token": {
-					Type:         schema.TypeString,
-					Required:     true,
-					DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
-					Description:  "The Azure DevOps personal access token which should be used.",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotWhiteSpace,
+		"auth_personal": {
+			Type:     schema.TypeSet,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"personal_access_token": {
+						Type:         schema.TypeString,
+						Required:     true,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
+						Description:  "The Azure DevOps personal access token which should be used.",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotWhiteSpace,
+					},
 				},
 			},
 		},
-	}
+	})
 
 	return r
 }

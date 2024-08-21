@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -32,99 +33,104 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["azurecr_spn_tenantid"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("ACR_TENANT_ID", nil),
-		Description: "The service principal tenant id which should be used.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"azurecr_spn_tenantid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ACR_TENANT_ID", nil),
+			Description: "The service principal tenant id which should be used.",
+		},
 
-	r.Schema["azurecr_subscription_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_ID", nil),
-		Description: "The Azure subscription Id which should be used.",
-	}
+		"azurecr_subscription_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_ID", nil),
+			Description: "The Azure subscription Id which should be used.",
+		},
 
-	r.Schema["azurecr_subscription_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_NAME", nil),
-		Description: "The Azure subscription name which should be used.",
-	}
+		"azurecr_subscription_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_NAME", nil),
+			Description: "The Azure subscription name which should be used.",
+		},
 
-	r.Schema["resource_group"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Scope Resource Group",
-	}
+		"azurecr_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AZURECR_SERVICE_CONNECTION_REGISTRY", nil),
+			Description: "The AzureContainerRegistry registry which should be used.",
+		},
 
-	r.Schema["azurecr_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AZURECR_SERVICE_CONNECTION_REGISTRY", nil),
-		Description: "The AzureContainerRegistry registry which should be used.",
-	}
+		"resource_group": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Scope Resource Group",
+		},
 
-	r.Schema["credentials"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"serviceprincipalid": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "The service principal id which should be used.",
+		"credentials": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"serviceprincipalid": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The service principal id which should be used.",
+					},
 				},
 			},
 		},
-	}
 
-	r.Schema["service_endpoint_authentication_scheme"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		Description:  "The AzureCR Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
-		Default:      "ServicePrincipal",
-		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
-	}
+		"service_endpoint_authentication_scheme": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  "The AzureCR Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
+			Default:      "ServicePrincipal",
+			ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
+		},
 
-	r.Schema["workload_identity_federation_issuer"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The issuer of the workload identity federation service principal.",
-	}
+		"workload_identity_federation_issuer": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The issuer of the workload identity federation service principal.",
+		},
 
-	r.Schema["workload_identity_federation_subject"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The subject of the workload identity federation service principal.",
-	}
+		"workload_identity_federation_subject": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The subject of the workload identity federation service principal.",
+		},
 
-	r.Schema["app_object_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-	r.Schema["spn_object_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-	r.Schema["az_spn_role_assignment_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-	r.Schema["az_spn_role_permissions"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"app_object_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["service_principal_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"spn_object_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"az_spn_role_assignment_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"az_spn_role_permissions": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"service_principal_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	})
 
 	return r
 }

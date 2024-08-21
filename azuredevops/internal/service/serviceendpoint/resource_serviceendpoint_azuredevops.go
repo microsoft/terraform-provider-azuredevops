@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,28 +32,30 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	}
 	r.DeprecationMessage = "This resource is duplicate with azuredevops_serviceendpoint_runpipeline,  will be removed in the future, use azuredevops_serviceendpoint_runpipeline instead."
 
-	r.Schema["org_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		DefaultFunc:  schema.EnvDefaultFunc("AZDO_DEVOPS_ORG_URL", "https://dev.azure.com/[organization]"),
-		Description:  "The Organization Url.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"org_url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_DEVOPS_ORG_URL", "https://dev.azure.com/[organization]"),
+			Description:  "The Organization Url.",
+		},
 
-	r.Schema["release_api_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		DefaultFunc:  schema.EnvDefaultFunc("AZDO_DEVOPS_RELEASE_API_URL", "https://vsrm.dev.azure.com/[organization]"),
-	}
+		"release_api_url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_DEVOPS_RELEASE_API_URL", "https://vsrm.dev.azure.com/[organization]"),
+		},
 
-	r.Schema["personal_access_token"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DEVOPS_PAT", nil),
-		Description: "The Azure DevOps personal access token.",
-	}
+		"personal_access_token": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_DEVOPS_PAT", nil),
+			Description: "The Azure DevOps personal access token.",
+		},
+	})
 
 	return r
 }

@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,20 +32,23 @@ func ResourceServiceEndpointNpm() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Description:  "Url for the npm registry",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Description:  "Url for the npm registry",
+		},
 
-	r.Schema["access_token"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		Description:  "The access token for npm registry",
-	}
+		"access_token": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Description:  "The access token for npm registry",
+		},
+	})
+
 	return r
 }
 

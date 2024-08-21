@@ -69,6 +69,7 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `azurerm_subscription_name` - Specifies the Subscription Name of the Service Endpoint target, if available.
 * `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
 * `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
+* `service_principal_id` - The Application(Client) ID of the Service Principal.
 * `description` - Specifies the description of the Service Endpoint.
 * `environment` - The Cloud Environment. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, and `AzureGermanCloud`.
 * `service_endpoint_authentication_scheme` - Specifies the authentication scheme of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. 

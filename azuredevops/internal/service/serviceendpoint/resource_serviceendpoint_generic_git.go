@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -30,31 +31,35 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["repository_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Required:     true,
-		Description:  "The server URL of the GenericGit git service connection.",
-	}
-	r.Schema["username"] = &schema.Schema{
-		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_USERNAME", nil),
-		Description: "The username to use for the GenericGit service git connection.",
-		Optional:    true,
-	}
-	r.Schema["password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The password or token key to use for the GenericGit git service connection.",
-		Sensitive:   true,
-		Optional:    true,
-	}
-	r.Schema["enable_pipelines_access"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Default:     true,
-		Description: "A value indicating whether or not to attempt accessing this git server from Azure Pipelines.",
-		Optional:    true,
-	}
+
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"repository_url": {
+			Type:         schema.TypeString,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Required:     true,
+			Description:  "The server URL of the GenericGit git service connection.",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_USERNAME", nil),
+			Description: "The username to use for the GenericGit service git connection.",
+			Optional:    true,
+		},
+		"password": {
+			Type:        schema.TypeString,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_PASSWORD", nil),
+			Description: "The password or token key to use for the GenericGit git service connection.",
+			Sensitive:   true,
+			Optional:    true,
+		},
+		"enable_pipelines_access": {
+			Type:        schema.TypeBool,
+			Default:     true,
+			Description: "A value indicating whether or not to attempt accessing this git server from Azure Pipelines.",
+			Optional:    true,
+		},
+	})
+
 	return r
 }
 
