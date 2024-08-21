@@ -58,6 +58,11 @@ func DataServiceEndpointAzureRM() *schema.Resource {
 			Computed: true,
 		},
 
+		"service_principal_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
 		"workload_identity_federation_issuer": {
 			Type:     schema.TypeString,
 			Computed: true,
