@@ -336,57 +336,6 @@ func dataSourceGenBaseSchema() map[string]*schema.Schema {
 		},
 	}
 }
-func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
-	return &schema.Resource{
-		Read: dataSourceReadFunc,
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(5 * time.Minute),
-		},
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"service_endpoint_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
-
-			"service_endpoint_id": {
-				Description:  "The ID of the serviceendpoint",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.IsUUID,
-			},
-
-			"authorization": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
-	}
-}
-
-func dataSourceMakeUnprotectedComputedSchema(r *schema.Resource, keyName string) {
-	r.Schema[keyName] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-}
 
 func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	clients := m.(*client.AggregatedClient)
