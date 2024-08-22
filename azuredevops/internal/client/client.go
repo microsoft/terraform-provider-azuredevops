@@ -27,6 +27,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/tokens"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
@@ -68,6 +69,7 @@ type AggregatedClient struct {
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
 	SecurityRolesClient           securityroles.Client
+	TokensClient                  tokens.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -193,6 +195,12 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 
 	securityRolesClient := securityroles.NewClient(ctx, connection)
 
+	tokensClient, err := tokens.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): tokens.NewClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -218,6 +226,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		WorkItemTrackingClient:        workitemtrackingClient,
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
+		TokensClient:                  tokensClient,
 		Ctx:                           ctx,
 	}
 

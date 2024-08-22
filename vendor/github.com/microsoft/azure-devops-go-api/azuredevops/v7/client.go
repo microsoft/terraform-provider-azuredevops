@@ -44,7 +44,7 @@ var SessionId = uuid.New().String()
 var apiResourceLocationCache = make(map[string]*map[uuid.UUID]ApiResourceLocation)
 var apiResourceLocationCacheLock = sync.RWMutex{}
 
-var version = "7.1.220.1" // todo: remove hardcoded version
+var version = "7.2.0.0" // todo: remove hardcoded version
 var versionSuffix = " (dev)"
 
 // Base user agent string.  The UserAgent set on the connection will be appended to this.
