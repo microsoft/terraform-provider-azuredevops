@@ -12,7 +12,7 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   variables:
-    goVersion: 1.21.10
+    goVersion: 1.22.6
     GOBIN:  '$(GOPATH)/bin' # Go binaries path
     GOROOT: '/usr/local/go' # Go installation path
     GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
