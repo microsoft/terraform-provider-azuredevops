@@ -333,7 +333,9 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 		if _, ok := d.GetOk("credentials"); !ok {
 			credentials := make(map[string]interface{})
 			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
-			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
+			if serviceEndPointType == ServicePrincipal {
+				credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
+			}
 			d.Set("credentials", []interface{}{credentials})
 		}
 	}
