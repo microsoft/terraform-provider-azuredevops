@@ -266,7 +266,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
 					"serviceprincipalid": "",
-					"tenantid":           d.Get("azurecr_spn_tenantid").(string),
+					"tenantId":           d.Get("azurecr_spn_tenantid").(string),
 					"loginServer":        loginServer,
 					"scope":              scope,
 				},
@@ -281,7 +281,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
 					"serviceprincipalid": servicePrincipalId,
-					"tenantid":           d.Get("azurecr_spn_tenantid").(string),
+					"tenantId":           d.Get("azurecr_spn_tenantid").(string),
 					"loginServer":        loginServer,
 					"scope":              scope,
 				},
