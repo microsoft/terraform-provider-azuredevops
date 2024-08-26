@@ -92,7 +92,7 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	} else {
 		membersToAdd = d.Get("members").(*schema.Set)
-		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()))
+		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()), true)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 
 		// members that need to be added will be missing from the old data, but present in the new data
 		membersToAdd = newData.(*schema.Set).Difference(oldData.(*schema.Set))
-		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()))
+		err = addTeamMembers(clients, team, linq.From(membersToAdd.List()), true)
 		if err != nil {
 			return err
 		}
