@@ -1,6 +1,7 @@
 package build
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -19,11 +20,26 @@ import (
 // ResourceBuildFolder schema and implementation for build folder resource
 func ResourceBuildFolder() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceBuildFolderCreate,
-		Read:     resourceBuildFolderRead,
-		Update:   resourceBuildFolderUpdate,
-		Delete:   resourceBuildFolderDelete,
-		Importer: tfhelper.ImportProjectQualifiedResource(),
+		Create: resourceBuildFolderCreate,
+		Read:   resourceBuildFolderRead,
+		Update: resourceBuildFolderUpdate,
+		Delete: resourceBuildFolderDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				projectNameOrID, path, err := tfhelper.ParseImportedName(d.Id())
+				if err != nil {
+					return nil, fmt.Errorf(" parsing the resource ID from the Terraform resource data: %v", err)
+				}
+
+				if projectID, err := tfhelper.GetRealProjectId(projectNameOrID, m); err == nil {
+					d.SetId(projectID)
+					d.Set("project_id", projectID)
+					d.Set("path", path)
+					return []*schema.ResourceData{d}, nil
+				}
+				return nil, err
+			},
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
