@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -34,23 +33,20 @@ func ResourceServiceEndpointAws() *schema.Resource {
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"access_key_id": {
-			Type:          schema.TypeString,
-			Required:      false,
-			DefaultFunc:   schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
-			Description:   "The AWS access key ID for signing programmatic requests.",
-			ConflictsWith: []string{"use_oidc"},
-			RequiredWith:  []string{"secret_access_key"},
-			AtLeastOneOf:  []string{"access_key_id", "secret_access_key", "use_oidc"},
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
+			Description:  "The AWS access key ID for signing programmatic requests.",
+			RequiredWith: []string{"secret_access_key"},
 		},
 
 		"secret_access_key": {
-			Type:          schema.TypeString,
-			Required:      false,
-			DefaultFunc:   schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
-			Description:   "The AWS secret access key for signing programmatic requests.",
-			Sensitive:     true,
-			ConflictsWith: []string{"use_oidc"},
-			RequiredWith:  []string{"access_key_id"},
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
+			Description:  "The AWS secret access key for signing programmatic requests.",
+			Sensitive:    true,
+			RequiredWith: []string{"access_key_id"},
 		},
 
 		"session_token": {
@@ -61,12 +57,10 @@ func ResourceServiceEndpointAws() *schema.Resource {
 			Sensitive:   true,
 		},
 		"role_to_assume": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-			DefaultFunc:  schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RTA", nil),
-			Description:  "The Amazon Resource Name (ARN) of the role to assume.",
-			RequiredWith: []string{"use_oidc"},
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RTA", nil),
+			Description: "The Amazon Resource Name (ARN) of the role to assume.",
 		},
 
 		"role_session_name": {
@@ -83,12 +77,11 @@ func ResourceServiceEndpointAws() *schema.Resource {
 		},
 
 		"use_oidc": {
-			Type:          schema.TypeBool,
-			Optional:      true,
-			Default:       false,
-			DefaultFunc:   schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_USE_OIDC", nil),
-			Description:   "Enable this to attempt getting credentials with OIDC token from Azure Devops",
-			ConflictsWith: []string{"access_key_id", "secret_access_key"},
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_USE_OIDC", nil),
+			Description: "Enable this to attempt getting credentials with OIDC token from Azure Devops.",
 		},
 	})
 
