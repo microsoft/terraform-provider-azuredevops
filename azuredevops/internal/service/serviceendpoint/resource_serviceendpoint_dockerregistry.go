@@ -155,8 +155,22 @@ func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoi
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("docker_registry", (*serviceEndpoint.Authorization.Parameters)["registry"])
-	d.Set("docker_email", (*serviceEndpoint.Authorization.Parameters)["email"])
-	d.Set("docker_username", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("registry_type", (*serviceEndpoint.Data)["registrytype"])
+	if serviceEndpoint.Authorization != nil {
+		if serviceEndpoint.Authorization.Parameters != nil {
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["registry"]; ok {
+				d.Set("docker_registry", v)
+			}
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["email"]; ok {
+				d.Set("docker_email", v)
+			}
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["username"]; ok {
+				d.Set("docker_username", v)
+			}
+		}
+	}
+	if serviceEndpoint.Data != nil {
+		if v, ok := (*serviceEndpoint.Data)["registrytype"]; ok {
+			d.Set("registry_type", v)
+		}
+	}
 }
