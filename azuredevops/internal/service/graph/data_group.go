@@ -43,6 +43,10 @@ func DataGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"group_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -87,6 +91,17 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("descriptor", targetGroup.Descriptor)
 	d.Set("origin", targetGroup.Origin)
 	d.Set("origin_id", targetGroup.OriginId)
+
+	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+		SubjectDescriptor: targetGroup.Descriptor,
+	})
+	if err != nil {
+		return err
+	}
+
+	if storageKey.Value != nil {
+		d.Set("group_id", storageKey.Value.String())
+	}
 	return nil
 }
 
