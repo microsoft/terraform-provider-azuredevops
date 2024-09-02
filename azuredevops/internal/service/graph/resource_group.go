@@ -112,6 +112,11 @@ func ResourceGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"group_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -200,7 +205,21 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	return flattenGroup(d, group, members)
+
+	flattenGroup(d, group, members)
+
+	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+		SubjectDescriptor: group.Descriptor,
+	})
+	if err != nil {
+		return err
+	}
+
+	if storageKey.Value != nil {
+		d.Set("group_id", storageKey.Value.String())
+	}
+
+	return nil
 }
 
 func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
@@ -289,7 +308,7 @@ func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) error {
+func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]graph.GraphMembership) {
 	d.Set("descriptor", *group.Descriptor)
 
 	if group.DisplayName != nil {
@@ -330,7 +349,6 @@ func flattenGroup(d *schema.ResourceData, group *graph.GraphGroup, members *[]gr
 	if projectId := domain2ProjectID(*group.Domain); projectId != "" {
 		d.Set("scope", projectId)
 	}
-	return nil
 }
 
 func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) (*[]graph.GraphMembership, error) {
