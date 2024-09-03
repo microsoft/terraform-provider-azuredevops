@@ -1,9 +1,5 @@
 ## 1.3.0
 
-FEATURES:
-
-* **New Resource** `azuredevops_wiki` [#1032](https://github.com/microsoft/terraform-provider-azuredevops/pull/1032)
-
 BUG FIX:
 
 * `azuredevops_serviceendpoint_azurecr`
