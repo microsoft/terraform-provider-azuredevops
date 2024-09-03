@@ -1,3 +1,26 @@
+## 1.3.0
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_azurecr`
+  - Fix `tenant_id` not set as expected.  [#1115](https://github.com/microsoft/terraform-provider-azuredevops/pull/1115)
+  - Fix `tenant_id` not set bug.  [#1142](https://github.com/microsoft/terraform-provider-azuredevops/pull/1142)
+* **Data Source** `azuredevops_users` - Return empty list if user not found.  [#1116](https://github.com/microsoft/terraform-provider-azuredevops/pull/1116)
+* `azuredevops_securityrole_assignment` - Detecting role assignment revoke.  [#1120](https://github.com/microsoft/terraform-provider-azuredevops/pull/1120)
+* `azuredevops_serviceendpoint_kubernetes` - Enhance `nil` check.  [#1127](https://github.com/microsoft/terraform-provider-azuredevops/pull/1127)
+* `azuredevops_team` - Fix idempotency add members issue.  [#1130](https://github.com/microsoft/terraform-provider-azuredevops/pull/1130)
+* `azuredevops_serviceendpoint_azurecr` - Expect `serviceprincipalkey` only if ServicePrincipal authentication is used. [#1134](https://github.com/microsoft/terraform-provider-azuredevops/pull/1134)
+* `azuredevops_build_folder` - Fix import bug. [#1143](https://github.com/microsoft/terraform-provider-azuredevops/pull/1143)
+* `azuredevops_serviceendpoint_dockerregistry` - Enhance `nil` check. [#1146](https://github.com/microsoft/terraform-provider-azuredevops/pull/1146)
+* `azuredevops_group` - Add support for `group_id`. [#1147](https://github.com/microsoft/terraform-provider-azuredevops/pull/1147)
+* **Data Source** `azuredevops_group` - Add support for `group_id`. [#1149](https://github.com/microsoft/terraform-provider-azuredevops/pull/1149)
+
+IMPROVEMENTS:
+
+* `azuredevops_feed` Support import [#1119](https://github.com/microsoft/terraform-provider-azuredevops/pull/1119)
+* Add default timeout [#1114](https://github.com/microsoft/terraform-provider-azuredevops/pull/1114)
+* Update Task Agent resources  [#1128](https://github.com/microsoft/terraform-provider-azuredevops/pull/1128)
+
 ## 1.2.0
 
 FEATURES:
