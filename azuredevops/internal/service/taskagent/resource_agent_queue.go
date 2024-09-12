@@ -70,7 +70,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		queue.Name = referencedPool.Name
 	} else {
-		queue.Name = converter.String(d.Get("agentQueueName").(string))
+		queue.Name = converter.String(d.Get("name").(string))
 	}
 
 	createdQueue, err := clients.TaskAgentClient.AddAgentQueue(clients.Ctx, taskagent.AddAgentQueueArgs{
@@ -85,26 +85,6 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(strconv.Itoa(*createdQueue.Id))
 	return resourceAgentQueueRead(d, m)
-}
-
-func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string, error) {
-	queue := &taskagent.TaskAgentQueue{}
-
-	if v, ok := d.GetOk("agent_pool_id"); ok {
-		queue.Pool = &taskagent.TaskAgentPoolReference{
-			Id: converter.Int(v.(int)),
-		}
-	}
-
-	if d.Id() != "" {
-		id, err := converter.ASCIIToIntPtr(d.Id())
-		if err != nil {
-			return nil, "", fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
-		}
-		queue.Id = id
-	}
-
-	return queue, d.Get("project_id").(string), nil
 }
 
 func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
@@ -132,6 +112,10 @@ func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("agent_pool_id", *queue.Pool.Id)
 	}
 
+	if queue.Name != nil {
+		d.Set("name", *queue.Name)
+	}
+
 	return nil
 }
 
@@ -152,4 +136,24 @@ func resourceAgentQueueDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
+}
+
+func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string, error) {
+	queue := &taskagent.TaskAgentQueue{}
+
+	if v, ok := d.GetOk("agent_pool_id"); ok {
+		queue.Pool = &taskagent.TaskAgentPoolReference{
+			Id: converter.Int(v.(int)),
+		}
+	}
+
+	if d.Id() != "" {
+		id, err := converter.ASCIIToIntPtr(d.Id())
+		if err != nil {
+			return nil, "", fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
+		}
+		queue.Id = id
+	}
+
+	return queue, d.Get("project_id").(string), nil
 }
