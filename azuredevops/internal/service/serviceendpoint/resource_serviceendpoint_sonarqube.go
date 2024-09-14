@@ -84,6 +84,20 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
+	var projectID string
+	if serviceEndpoint != nil && serviceEndpoint.ServiceEndpointProjectReferences != nil {
+		if len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
+			projectReference := (*serviceEndpoint.ServiceEndpointProjectReferences)[0]
+			if projectReference.ProjectReference != nil && projectReference.ProjectReference.Id != nil {
+				projectID = projectReference.ProjectReference.Id.String()
+			}
+		}
+	}
+
+	if projectID == "" {
+		return fmt.Errorf("Project ID not found for service endpoint %v", getArgs.EndpointId)
+	}
+
 	flattenServiceEndpointSonarQube(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
