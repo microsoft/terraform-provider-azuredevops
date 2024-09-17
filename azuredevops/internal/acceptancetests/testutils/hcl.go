@@ -1108,5 +1108,12 @@ resource "azuredevops_wiki" "project_wiki" {
 	project_id = azuredevops_project.project.id
 	type = "projectWiki"
 }
+
+resource "azuredevops_wiki_page" "wiki_page" {
+  project_id = azuredevops_project.project.id
+  wiki_id = azuredevops_wiki.project_wiki.id
+  path = "/path"
+  content = "content"
+}
 `, projectResource)
 }
