@@ -55,6 +55,8 @@ The following arguments are supported:
 - `project_id` - (Required) The ID of the Project.
 - `name` - (Required) The name of the Wiki.
 - `type` -  (Required) The type of the wiki. Possible values are `codeWiki`, `projectWiki`.
+- `path` - (Required) The path of the wiki page.
+- `content` - (Required) The content of thw wiki page.
 
 ~> **NOTE:** Project type wiki(`projectWiki`) can only be deleted together with the project.
 
