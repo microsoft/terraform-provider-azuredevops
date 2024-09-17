@@ -122,11 +122,11 @@ func TestAgentQueue_DoesNotSwallowDeleteErrors(t *testing.T) {
 func generateResourceData(t *testing.T, project *string, poolID *int, resourceID *int) *schema.ResourceData {
 	resourceData := schema.TestResourceDataRaw(t, ResourceAgentQueue().Schema, nil)
 	if project != nil {
-		resourceData.Set(projectID, *project)
+		resourceData.Set("project_id", *project)
 	}
 
 	if poolID != nil {
-		resourceData.Set(agentPoolID, *poolID)
+		resourceData.Set("agent_pool_id", *poolID)
 	}
 
 	if resourceID != nil {

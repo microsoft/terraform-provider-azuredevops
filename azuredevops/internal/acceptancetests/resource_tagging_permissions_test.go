@@ -13,25 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclTaggingPermissions(projectName string, permissions map[string]map[string]string) string {
-	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
-
-	return fmt.Sprintf(`
-%s
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-resource "azuredevops_tagging_permissions" "acctest" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
-		%s
-	}
-}
-`, testutils.HclProjectResource(projectName), rootPermissions)
-}
-
 func TestAccTaggingPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := hclTaggingPermissions(projectName, map[string]map[string]string{
@@ -125,4 +106,25 @@ func TestAccTaggingPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclTaggingPermissions(projectName string, permissions map[string]map[string]string) string {
+	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
+
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+	project_id = azuredevops_project.project.id
+	name       = "Readers"
+}
+
+resource "azuredevops_tagging_permissions" "acctest" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.tf-project-readers.id
+	permissions = {
+		%s
+	}
+}
+`, testutils.HclProjectResource(projectName), rootPermissions)
 }

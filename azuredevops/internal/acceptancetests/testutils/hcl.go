@@ -52,24 +52,6 @@ func HclGitRepoFileResource(projectName, gitRepoName, initType, branch, file, co
 	return fmt.Sprintf("%s\n%s", gitRepoFileResource, gitRepoResource)
 }
 
-// HclGroupDataSource HCL describing an AzDO Group Data Source
-func HclGroupDataSource(projectName string, groupName string) string {
-	if projectName == "" {
-		return fmt.Sprintf(`
-data "azuredevops_group" "group" {
-	name       = "%s"
-}`, groupName)
-	}
-	dataSource := fmt.Sprintf(`
-data "azuredevops_group" "group" {
-	project_id = azuredevops_project.project.id
-	name       = "%s"
-}`, groupName)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, dataSource)
-}
-
 // HclProjectResource HCL describing an AzDO project
 func HclProjectResource(projectName string) string {
 	if strings.EqualFold(projectName, "") {
@@ -109,85 +91,6 @@ resource "azuredevops_project" "project" {
 		"artifacts" = "%s"
 	}
 }`, projectName, projectName, featureStateTestplans, featureStateArtifacts)
-}
-
-// HclProjectFeatures HCL describing an AzDO project including feature setup using azuredevops_git_repositories
-func HclProjectFeatures(projectName string, featureStateTestplans string, featureStateArtifacts string) string {
-	projectFeatures := fmt.Sprintf(`
-resource "azuredevops_project_features" "project-features" {
-	project_id = azuredevops_project.project.id
-	features = {
-		"testplans" = "%s"
-		"artifacts" = "%s"
-	}
-}`, featureStateTestplans, featureStateArtifacts)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, projectFeatures)
-}
-
-// HclProjectFeatures HCL describing an AzDO project including feature setup using azuredevops_git_repositories
-func HclProjectPipelineSettings(projectName string, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases bool) string {
-	projectPipelineSettings := fmt.Sprintf(`
-resource "azuredevops_project_pipeline_settings" "this" {
-	project_id = azuredevops_project.project.id
-
-	enforce_job_scope = %t
-	enforce_referenced_repo_scoped_token = %t
-	enforce_settable_var = %t
-	publish_pipeline_metadata = %t
-	status_badges_are_private = %t
-	enforce_job_scope_for_release = %t
-}`, enforceJobAuthScope, enforceReferencedRepoScopedToken, enforceSettableVar, publishPipelineMetadata, statusBadgesArePrivate, enforceJobAuthScopeForReleases)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, projectPipelineSettings)
-}
-
-// HclProjectsDataSource HCL describing a data source for multiple AzDO projects
-func HclProjectsDataSource(projectName string) string {
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_projects" "project-list" {
-	name = azuredevops_project.project.name
-}
-`, projectResource)
-}
-
-// HclProjectsDataSourceWithStateAndInvalidName creates HCL for a multi value data source for AzDo projects
-func HclProjectsDataSourceWithStateAndInvalidName() string {
-	return `data "azuredevops_projects" "project-list" {
-		name = "invalid_name"
-		state = "wellFormed"
-	}`
-}
-
-// HclProjectGitRepository HCL describing a single-value data source for an AzDO git repository
-func HclProjectGitRepository(projectName string, gitRepoName string) string {
-	return fmt.Sprintf(`
-data "azuredevops_project" "project" {
-	name = "%s"
-}
-
-data "azuredevops_git_repository" "repository" {
-	project_id = data.azuredevops_project.project.id
-	name = "%s"
-}`, projectName, gitRepoName)
-}
-
-// HclProjectGitRepositories HCL describing a multi value data source for AzDO git repositories
-func HclProjectGitRepositories(projectName string, gitRepoName string) string {
-	return fmt.Sprintf(`
-data "azuredevops_project" "project" {
-	name = azuredevops_project.project.name
-}
-
-data "azuredevops_git_repositories" "repositories" {
-	project_id = data.azuredevops_project.project.id
-	name = "%s"
-}`, gitRepoName)
 }
 
 // HclProjectGitRepositoryImport HCL describing a AzDO git repositories
@@ -356,23 +259,6 @@ resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	project_id             = azuredevops_project.project.id
 	service_endpoint_name  = "%s"
 
-}`, serviceEndpointName)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
-}
-
-// HclServiceEndpointAzureCRResource HCL describing an AzDO service endpoint
-func HclServiceEndpointAzureCRResource(projectName string, serviceEndpointName string) string {
-	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_azurecr" "serviceendpoint" {
-	project_id                = azuredevops_project.project.id
-	service_endpoint_name     = "%s"
-	azurecr_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
-	azurecr_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
-	azurecr_subscription_name = "Microsoft Azure DEMO"
-	resource_group            = "testrg"
-	azurecr_name              = "testacr"
 }`, serviceEndpointName)
 
 	projectResource := HclProjectResource(projectName)
@@ -1197,7 +1083,7 @@ func HclEnvironmentResourceKubernetes(projectName string, environmentName string
 // HclWiki HCL describing an wiki setup using azuredevops_wiki
 func HclWiki(projectName string) string {
 	projectResource := HclProjectResource(projectName)
-	projectFeatures := fmt.Sprintf(`
+	return fmt.Sprintf(`
 %s
 
 resource "azuredevops_git_repository" "repository" {
@@ -1223,6 +1109,4 @@ resource "azuredevops_wiki" "project_wiki" {
 	type = "projectWiki"
 }
 `, projectResource)
-
-	return fmt.Sprintf("%s", projectFeatures)
 }

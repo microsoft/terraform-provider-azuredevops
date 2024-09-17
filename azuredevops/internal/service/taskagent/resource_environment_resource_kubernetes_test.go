@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"strconv"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -47,7 +48,9 @@ func TestEnvironmentKubernetesResource_ExpandFlatten_RoundTrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
 
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	projectAfterRoundTrip, resourceAfterRoundTrip, err := expandEnvironmentKubernetesResource(resourceData)
+	resourceAfterRoundTrip.Id = testEnvironmentKubernetesResource.Id
 	require.Nil(t, err)
 	require.Equal(t, testEnvironmentKubernetesResourceProject, *projectAfterRoundTrip)
 	require.Equal(t, testEnvironmentKubernetesResource, *resourceAfterRoundTrip)
@@ -91,11 +94,13 @@ func TestEnvironmentKubernetesResource_CreateKubernetesResource(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesCreate(resourceData, clients)
 	require.NoError(t, err)
 
 	project, resource, err := expandEnvironmentKubernetesResource(resourceData)
+	resource.Id = testEnvironmentKubernetesResource.Id
 	require.NoError(t, err)
 	assert.Equal(t, testEnvironmentKubernetesResourceProject, *project)
 	assert.Equal(t, testEnvironmentKubernetesResource, *resource)
@@ -132,6 +137,7 @@ func TestEnvironmentKubernetesResource_CreateKubernetesResourceReturnsErrorOnFai
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesCreate(resourceData, clients)
 	assert.Contains(t, err.Error(), expectedError.Error())
@@ -160,11 +166,13 @@ func TestEnvironmentKubernetesResource_ReadKubernetesResource(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesRead(resourceData, clients)
 	require.NoError(t, err)
 
 	project, resource, err := expandEnvironmentKubernetesResource(resourceData)
+	resource.Id = testEnvironmentKubernetesResource.Id
 	require.NoError(t, err)
 	assert.Equal(t, testEnvironmentKubernetesResourceProject, *project)
 	assert.Equal(t, testEnvironmentKubernetesResource, *resource)
@@ -195,6 +203,7 @@ func TestEnvironmentKubernetesResource_ReadKubernetesResourceReturnsErrorOnFailu
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesRead(resourceData, clients)
 	assert.Contains(t, err.Error(), expectedError.Error())
@@ -223,6 +232,7 @@ func TestEnvironmentKubernetesResource_DeleteKubernetesResource(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesDelete(resourceData, clients)
 	require.NoError(t, err)
@@ -257,6 +267,7 @@ func TestEnvironmentKubernetesResource_DeleteKubernetesResourceReturnsErrorOnFai
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceEnvironmentKubernetes().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testEnvironmentKubernetesResource.Id))
 	flattenEnvironmentKubernetesResource(resourceData, &testEnvironmentKubernetesResourceProject, &testEnvironmentKubernetesResource)
 	err := resourceEnvironmentKubernetesDelete(resourceData, clients)
 	assert.Contains(t, err.Error(), expectedError.Error())

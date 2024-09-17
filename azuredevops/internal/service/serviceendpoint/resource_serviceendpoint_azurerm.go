@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -35,109 +36,128 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["azurerm_spn_tenantid"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
-		Description: "The service principal tenant id which should be used.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"azurerm_spn_tenantid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			Description: "The service principal tenant id which should be used.",
+		},
 
-	r.Schema["resource_group"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		ForceNew:      true,
-		Description:   "Scope Resource Group",
-		ConflictsWith: []string{"credentials", "azurerm_management_group_id"},
-	}
+		"resource_group": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Scope Resource Group",
+			ConflictsWith: []string{"credentials", "azurerm_management_group_id"},
+		},
 
-	// Subscription scopeLevel
-	r.Schema["azurerm_subscription_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
-		Description: "The Azure subscription Id which should be used.",
-	}
+		// Subscription scopeLevel
+		"azurerm_subscription_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			Description: "The Azure subscription Id which should be used.",
+		},
 
-	r.Schema["azurerm_subscription_name"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		DefaultFunc:   schema.EnvDefaultFunc("ARM_SUBSCRIPTION_NAME", nil),
-		Description:   "The Azure subscription name which should be used.",
-		ConflictsWith: []string{"azurerm_management_group_id"},
-	}
+		"azurerm_subscription_name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			DefaultFunc:   schema.EnvDefaultFunc("ARM_SUBSCRIPTION_NAME", nil),
+			Description:   "The Azure subscription name which should be used.",
+			ConflictsWith: []string{"azurerm_management_group_id"},
+		},
 
-	// ManagementGroup scopeLevel
-	r.Schema["azurerm_management_group_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_ID", nil),
-		Description:   "The Azure managementGroup Id which should be used.",
-		ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
-	}
+		// ManagementGroup scopeLevel
+		"azurerm_management_group_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_ID", nil),
+			Description:   "The Azure managementGroup Id which should be used.",
+			ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
+		},
 
-	r.Schema["azurerm_management_group_name"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_NAME", nil),
-		Description:   "The Azure managementGroup name which should be used.",
-		ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
-	}
+		"azurerm_management_group_name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			DefaultFunc:   schema.EnvDefaultFunc("ARM_MGMT_GROUP_NAME", nil),
+			Description:   "The Azure managementGroup name which should be used.",
+			ConflictsWith: []string{"azurerm_subscription_id", "resource_group"},
+		},
 
-	r.Schema["credentials"] = &schema.Schema{
-		Type:          schema.TypeList,
-		Optional:      true,
-		MaxItems:      1,
-		ConflictsWith: []string{"resource_group"},
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"serviceprincipalid": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "The service principal id which should be used.",
-				},
-				"serviceprincipalkey": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "The service principal secret which should be used.",
-					Sensitive:   true,
+		"credentials": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"resource_group"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"serviceprincipalid": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The service principal id which should be used.",
+					},
+					"serviceprincipalkey": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The service principal secret which should be used.",
+						Sensitive:   true,
+					},
 				},
 			},
 		},
-	}
-	r.Schema["environment"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		Description:  "Environment (Azure Cloud type)",
-		Default:      "AzureCloud",
-		ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud"}, false),
-	}
 
-	r.Schema["service_endpoint_authentication_scheme"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		Description:  "The AzureRM Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
-		Default:      "ServicePrincipal",
-		ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
-	}
+		"environment": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  "Environment (Azure Cloud type)",
+			Default:      "AzureCloud",
+			ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud", "AzureUSGovernment", "AzureGermanCloud"}, false),
+		},
 
-	r.Schema["workload_identity_federation_issuer"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The issuer of the workload identity federation service principal.",
-	}
+		"service_endpoint_authentication_scheme": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  "The AzureRM Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
+			Default:      "ServicePrincipal",
+			ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
+		},
 
-	r.Schema["workload_identity_federation_subject"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The subject of the workload identity federation service principal.",
-	}
+		"workload_identity_federation_issuer": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The issuer of the workload identity federation service principal.",
+		},
 
-	r.Schema["service_principal_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"workload_identity_federation_subject": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The subject of the workload identity federation service principal.",
+		},
+
+		"service_principal_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"features": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"validate": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     false,
+						Description: "Whether or not to validate connection with azure after create or update operations",
+					},
+				},
+			},
+		},
+	})
 
 	r.SchemaVersion = 2
 	r.StateUpgraders = []schema.StateUpgrader{
@@ -153,21 +173,6 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		},
 	}
 
-	r.Schema["features"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"validate": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Default:     false,
-					Description: "Whether or not to validate connection with azure after create or update operations",
-				},
-			},
-		},
-	}
 	return r
 }
 
@@ -266,7 +271,7 @@ func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{})
 func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
-	serviceEndPointAuthenticationScheme := AzureRmEndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
+	serviceEndPointAuthenticationScheme := EndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
 	// Validate one of either subscriptionId or managementGroupId is set
 	subId := d.Get("azurerm_subscription_id").(string)
@@ -309,7 +314,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	hasCredentials := len(credentials) > 0
 
-	var serviceEndpointCreationMode AzureRmEndpointCreationMode
+	var serviceEndpointCreationMode EndpointCreationMode
 
 	if serviceEndPointAuthenticationSchemeHasCreationMode {
 		if hasCredentials {
@@ -392,10 +397,15 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	}
 
 	var endpointUrl string
-	if environment == "AzureCloud" {
+	switch environment {
+	case "AzureCloud":
 		endpointUrl = "https://management.azure.com/"
-	} else if environment == "AzureChinaCloud" {
+	case "AzureChinaCloud":
 		endpointUrl = "https://management.chinacloudapi.cn/"
+	case "AzureUSGovernment":
+		endpointUrl = "https://management.usgovcloudapi.net/"
+	case "AzureGermanCloud":
+		endpointUrl = "https://management.microsoftazure.de"
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
@@ -424,7 +434,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	doBaseFlattening(d, serviceEndpoint, projectID)
 	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
 
-	serviceEndPointType := AzureRmEndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
+	serviceEndPointType := EndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 	d.Set("service_endpoint_authentication_scheme", string(serviceEndPointType))
 	if v, ok := (*serviceEndpoint.Data)["environment"]; ok {
 		d.Set("environment", v)
@@ -503,18 +513,3 @@ func shouldValidate(features map[string]interface{}) bool {
 	}
 	return validate
 }
-
-type AzureRmEndpointAuthenticationScheme string
-
-const (
-	ServicePrincipal           AzureRmEndpointAuthenticationScheme = "ServicePrincipal"
-	ManagedServiceIdentity     AzureRmEndpointAuthenticationScheme = "ManagedServiceIdentity"
-	WorkloadIdentityFederation AzureRmEndpointAuthenticationScheme = "WorkloadIdentityFederation"
-)
-
-type AzureRmEndpointCreationMode string
-
-const (
-	Automatic AzureRmEndpointCreationMode = "Automatic"
-	Manual    AzureRmEndpointCreationMode = "Manual"
-)

@@ -5,15 +5,16 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -23,7 +24,9 @@ import (
 func DataProjects() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceProjectsRead,
-
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
@@ -77,10 +80,6 @@ func DataProjects() *schema.Resource {
 	}
 }
 
-func getProjectHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["project_id"].(string))
-}
-
 func dataSourceProjectsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	state := d.Get("state").(string)
@@ -88,24 +87,24 @@ func dataSourceProjectsRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	projects, err := getProjectsForStateAndName(clients, state, name)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error finding projects with state %s. Error: %v", state, err))
+		return diag.FromErr(fmt.Errorf(" finding projects with state %s. Error: %v", state, err))
 	}
-	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] projects from current organization", len(projects))
 
 	results := flattenProjectReferences(&projects)
 
 	projectNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Failed to get list of project names: %v", err))
+		return diag.FromErr(fmt.Errorf(" failed to get list of project names: %v", err))
 	}
 	if len(projectNames) <= 0 && name != "" {
 		projectNames = append(projectNames, name)
 	}
 	h := sha1.New()
 	if _, err := h.Write([]byte(state + strings.Join(projectNames, "-"))); err != nil {
-		return diag.FromErr(fmt.Errorf("Unable to compute hash for project names: %v", err))
+		return diag.FromErr(fmt.Errorf(" Unable to compute hash for project names: %v", err))
 	}
 	d.SetId("projects#" + base64.URLEncoding.EncodeToString(h.Sum(nil)))
+
 	err = d.Set("projects", results)
 	if err != nil {
 		return diag.FromErr(err)
@@ -154,19 +153,15 @@ func getProjectsForStateAndName(clients *client.AggregatedClient, projectState s
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Received [%d] projects; Continuation token [%s]", len(newProjects), currentToken)
 
 		if projectName != "" {
-			log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Searching for project name [%s]", projectName)
 			for _, project := range newProjects {
 				if strings.EqualFold(*project.Name, projectName) {
-					log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Found project [%s] in current project list", projectName)
 					return []core.TeamProjectReference{project}, nil
 				}
 			}
 		} else {
 			projects = append(projects, newProjects...)
-			log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Appended new projects to current project list (Length: %d)", len(projects))
 		}
 		hasMore = currentToken != ""
 	}
@@ -175,9 +170,8 @@ func getProjectsForStateAndName(clients *client.AggregatedClient, projectState s
 }
 
 func getProjectsWithContinuationToken(clients *client.AggregatedClient, projectState string, continuationToken string) ([]core.TeamProjectReference, string, error) {
-	state := core.ProjectState(projectState)
 	args := core.GetProjectsArgs{
-		StateFilter: &state,
+		StateFilter: converter.ToPtr(core.ProjectState(projectState)),
 	}
 	if continuationToken != "" {
 		token, err := strconv.Atoi(continuationToken)
@@ -193,4 +187,8 @@ func getProjectsWithContinuationToken(clients *client.AggregatedClient, projectS
 	}
 
 	return response.Value, response.ContinuationToken, nil
+}
+
+func getProjectHash(v interface{}) int {
+	return tfhelper.HashString(v.(map[string]interface{})["project_id"].(string))
 }

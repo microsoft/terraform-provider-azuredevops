@@ -1,9 +1,10 @@
 package build
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,11 +20,32 @@ import (
 // ResourceBuildFolder schema and implementation for build folder resource
 func ResourceBuildFolder() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceBuildFolderCreate,
-		Read:     resourceBuildFolderRead,
-		Update:   resourceBuildFolderUpdate,
-		Delete:   resourceBuildFolderDelete,
-		Importer: tfhelper.ImportProjectQualifiedResource(),
+		Create: resourceBuildFolderCreate,
+		Read:   resourceBuildFolderRead,
+		Update: resourceBuildFolderUpdate,
+		Delete: resourceBuildFolderDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				projectNameOrID, path, err := tfhelper.ParseImportedName(d.Id())
+				if err != nil {
+					return nil, fmt.Errorf(" parsing the resource ID from the Terraform resource data: %v", err)
+				}
+
+				if projectID, err := tfhelper.GetRealProjectId(projectNameOrID, m); err == nil {
+					d.SetId(projectID)
+					d.Set("project_id", projectID)
+					d.Set("path", path)
+					return []*schema.ResourceData{d}, nil
+				}
+				return nil, err
+			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -56,7 +78,7 @@ func resourceBuildFolderCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" failed creating resource Build Folder, %+v", err)
 	}
 
-	flattenBuildFolder(d, createdBuildFolder, projectID)
+	d.SetId(createdBuildFolder.Project.Id.String())
 	return resourceBuildFolderRead(d, m)
 }
 
@@ -64,7 +86,7 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
-	path := d.Id()
+	path := d.Get("path").(string)
 
 	buildFolders, err := clients.BuildClient.GetFolders(clients.Ctx, build.GetFoldersArgs{
 		Project: &projectID,
@@ -87,56 +109,56 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 
 	buildFolder := (*buildFolders)[0]
 
-	flattenBuildFolder(d, &buildFolder, projectID)
+	d.Set("project_id", projectID)
+
+	if buildFolder.Path != nil {
+		d.Set("path", buildFolder.Path)
+	}
+
+	if buildFolder.Description != nil {
+		d.Set("description", buildFolder.Description)
+	}
 	return nil
 }
 
 func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	oldPath, _ := d.GetChange("path")
-	buildFolder, projectID, err := expandBuildFolder(d)
+	oldPath, path := d.GetChange("path")
+	projectID := d.Get("project_id").(string)
+	projectUuid, err := uuid.Parse(projectID)
 	if err != nil {
-		return fmt.Errorf(" failed to expand build folder configurations. Project ID: %s , Error: %+v", projectID, err)
+		return fmt.Errorf(" failed to parse Project ID. Project ID: %s , Error: %+v", projectID, err)
 	}
 
-	updatedBuildFolder, err := clients.BuildClient.UpdateFolder(m.(*client.AggregatedClient).Ctx, build.UpdateFolderArgs{
+	_, err = clients.BuildClient.UpdateFolder(m.(*client.AggregatedClient).Ctx, build.UpdateFolderArgs{
 		Project: &projectID,
 		Path:    converter.String(oldPath.(string)),
-		Folder:  buildFolder,
+		Folder: &build.Folder{
+			Description: converter.String(d.Get("description").(string)),
+			Path:        converter.String(path.(string)),
+			Project: &core.TeamProjectReference{
+				Id: &projectUuid,
+			},
+		},
 	})
 
 	if err != nil {
 		return fmt.Errorf("failed to update build folder.  Project ID: %s, Error: %+v ", projectID, err)
 	}
 
-	flattenBuildFolder(d, updatedBuildFolder, projectID)
 	return resourceBuildFolderRead(d, m)
 }
 
 func resourceBuildFolderDelete(d *schema.ResourceData, m interface{}) error {
-	if strings.EqualFold(d.Id(), "") {
-		return nil
-	}
-
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	path := d.Get("path").(string)
-
 	err := clients.BuildClient.DeleteFolder(m.(*client.AggregatedClient).Ctx, build.DeleteFolderArgs{
-		Project: &projectID,
-		Path:    &path,
+		Project: converter.ToPtr(d.Get("project_id").(string)),
+		Path:    converter.ToPtr(d.Get("path").(string)),
 	})
 
 	return err
-}
-
-func flattenBuildFolder(d *schema.ResourceData, buildFolder *build.Folder, projectID string) {
-	d.SetId(*buildFolder.Path)
-	d.Set("project_id", projectID)
-	d.Set("path", buildFolder.Path)
-	d.Set("description", buildFolder.Description)
 }
 
 // create a Folder object to pass to the API
@@ -159,26 +181,4 @@ func createBuildFolder(clients *client.AggregatedClient, path string, project st
 	})
 
 	return createdBuild, err
-}
-
-// create a Folder object from the tf Resource Data
-func expandBuildFolder(d *schema.ResourceData) (*build.Folder, string, error) {
-	projectID := d.Get("project_id").(string)
-
-	projectUuid, err := uuid.Parse(projectID)
-	if err != nil {
-		return nil, "", err
-	}
-
-	projectReference := core.TeamProjectReference{
-		Id: &projectUuid,
-	}
-
-	buildFolder := build.Folder{
-		Description: converter.String(d.Get("description").(string)),
-		Path:        converter.String(d.Get("path").(string)),
-		Project:     &projectReference,
-	}
-
-	return &buildFolder, projectID, nil
 }

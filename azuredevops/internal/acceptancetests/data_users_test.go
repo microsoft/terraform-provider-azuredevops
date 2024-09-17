@@ -16,7 +16,7 @@ func TestAccUsers_DataSource(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: dataUser_basic(userName),
+				Config: hclDataUserBasic(userName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "users.#", "1"),
@@ -34,7 +34,7 @@ func TestAccUsers_DataSource_AllSvc(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: dataUser_all_svc(),
+				Config: hclDataUserAllSvc(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "users.0.id"),
@@ -52,7 +52,7 @@ func TestAccUsers_DataSource_All_WithFeatures(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: dataUser_all_withFeatures(3),
+				Config: hclDataUserAllWithFeatures(3),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "users.0.id"),
@@ -63,26 +63,41 @@ func TestAccUsers_DataSource_All_WithFeatures(t *testing.T) {
 	})
 }
 
-func dataUser_all_withFeatures(numWorkers int) string {
-	return fmt.Sprintf(
-		`
+func TestAccUsers_DataSource_userNotFound(t *testing.T) {
+	tfNode := "data.azuredevops_users.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclDataUserUserNotFound(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttr(tfNode, "users.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func hclDataUserAllWithFeatures(numWorkers int) string {
+	return fmt.Sprintf(`
 data "azuredevops_users" "test" {
-	features {
-		concurrent_workers = %d
-	}
+  features {
+    concurrent_workers = %d
+  }
 }`, numWorkers)
 }
 
-func dataUser_all_svc() string {
+func hclDataUserAllSvc() string {
 	return `
 data "azuredevops_users" "test" {
-	subject_types = ["svc"]
+  subject_types = ["aad"]
 }`
 }
 
-func dataUser_basic(uname string) string {
-	return fmt.Sprintf(
-		`
+func hclDataUserBasic(uname string) string {
+	return fmt.Sprintf(`
 resource "azuredevops_user_entitlement" "test" {
   principal_name       = "%[1]s"
   account_license_type = "basic"
@@ -90,6 +105,13 @@ resource "azuredevops_user_entitlement" "test" {
 
 data "azuredevops_users" "test" {
   principal_name = "%[1]s"
-  depends_on = [azuredevops_user_entitlement.test]
+  depends_on     = [azuredevops_user_entitlement.test]
 }`, uname)
+}
+
+func hclDataUserUserNotFound() string {
+	return `
+data "azuredevops_users" "test" {
+  principal_name = "dummy"
+}`
 }

@@ -67,10 +67,16 @@ type KeyVaultSecretResult struct {
 // ResourceVariableGroup schema and implementation for variable group resource
 func ResourceVariableGroup() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceVariableGroupCreate,
-		Read:     resourceVariableGroupRead,
-		Update:   resourceVariableGroupUpdate,
-		Delete:   resourceVariableGroupDelete,
+		Create: resourceVariableGroupCreate,
+		Read:   resourceVariableGroupRead,
+		Update: resourceVariableGroupUpdate,
+		Delete: resourceVariableGroupDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			vgProjectID: {
@@ -374,6 +380,21 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 	name := converter.String(d.Get(vgName).(string))
 	description := converter.String(d.Get(vgDescription).(string))
 	variables := d.Get(vgVariable).(*schema.Set).List()
+
+	// needed to detect if the secret_value attribute is set in the config
+	// see https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+	for it := d.GetRawConfig().AsValueMap()[vgVariable].ElementIterator(); it.Next(); {
+		_, ctyVariable := it.Element()
+		ctyVariableAsMap := ctyVariable.AsValueMap()
+		name := ctyVariableAsMap[vgName].AsString()
+		valueSet := !ctyVariableAsMap[vgValue].IsNull()
+		secretValueSet := !ctyVariableAsMap[secretVgValue].IsNull()
+		isSecretSet := !ctyVariableAsMap[vgIsSecret].IsNull()
+
+		if valueSet && (secretValueSet || isSecretSet) || secretValueSet != isSecretSet {
+			return nil, nil, fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
+		}
+	}
 
 	variableMap := make(map[string]interface{})
 

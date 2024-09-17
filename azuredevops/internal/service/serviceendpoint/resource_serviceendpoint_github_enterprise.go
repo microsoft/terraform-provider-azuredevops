@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -31,30 +32,32 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["auth_personal"] = &schema.Schema{
-		Type:     schema.TypeSet,
-		Required: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"personal_access_token": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Sensitive:    true,
-					DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
-					Description:  "The GitHub personal access token which should be used.",
-					ValidateFunc: validation.StringIsNotWhiteSpace,
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"auth_personal": {
+			Type:     schema.TypeSet,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"personal_access_token": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Sensitive:    true,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_ENTERPRISE_SERVICE_CONNECTION_PAT", nil),
+						Description:  "The GitHub personal access token which should be used.",
+						ValidateFunc: validation.StringIsNotWhiteSpace,
+					},
 				},
 			},
 		},
-	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Required:     true,
-	}
+		"url": {
+			Type:         schema.TypeString,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Required:     true,
+		},
+	})
 	return r
 }
 
@@ -172,6 +175,6 @@ func expandAuthPersonalSetGithubEnterprise(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
 
-	authPerson["apitoken"] = val[personalAccessTokenGithub].(string)
+	authPerson["apitoken"] = val["personal_access_token"].(string)
 	return authPerson
 }

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -30,6 +31,12 @@ func TestAccBuildFolder_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "path"),
 					resource.TestCheckResourceAttrSet(tfNode, "description"),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateIdFunc: importBuildFolderID("azuredevops_build_folder.test"),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -52,6 +59,12 @@ func TestAccBuildFolder_update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateIdFunc: importBuildFolderID("azuredevops_build_folder.test"),
+				ImportStateVerify: true,
+			},
+			{
 				Config: buildFolderBasic(projectName, "\\\\test folderupdate", "Acceptance Test Folder"),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
@@ -59,11 +72,23 @@ func TestAccBuildFolder_update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateIdFunc: importBuildFolderID("azuredevops_build_folder.test"),
+				ImportStateVerify: true,
+			},
+			{
 				Config: buildFolderBasic(projectName, "\\\\test folder", "Acceptance Test Folder"),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckProjectExists(projectName),
 					resource.TestCheckResourceAttr(tfNode, "path", `\test folder`),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateIdFunc: importBuildFolderID("azuredevops_build_folder.test"),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -84,6 +109,12 @@ func TestAccBuildFolder_requiresImportErrorStep(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "azuredevops_build_folder.test",
+				ImportState:       true,
+				ImportStateIdFunc: importBuildFolderID("azuredevops_build_folder.test"),
+				ImportStateVerify: true,
+			},
+			{
 				Config:      buildFolderRequiresImport(projectName, "\\\\test folder", "Acceptance Test Folder"),
 				ExpectError: buildFolderRequiresImportError(`\\test folder\\`, projectName),
 			},
@@ -94,6 +125,15 @@ func TestAccBuildFolder_requiresImportErrorStep(t *testing.T) {
 func buildFolderRequiresImportError(resourceName, projectName string) *regexp.Regexp {
 	message := `failed creating resource Build Folder, Folder %[1]s already exists for project %[2]s.`
 	return regexp.MustCompile(fmt.Sprintf(message, resourceName, projectName))
+}
+
+func importBuildFolderID(resName string) func(state *terraform.State) (string, error) {
+	return func(state *terraform.State) (string, error) {
+		res := state.RootModule().Resources[resName]
+		projectID := res.Primary.Attributes["project_id"]
+		path := res.Primary.Attributes["path"]
+		return fmt.Sprintf("%s/%s", projectID, path), nil
+	}
 }
 
 func buildFolderBasic(projectName, path, description string) string {

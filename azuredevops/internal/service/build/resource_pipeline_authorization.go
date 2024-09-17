@@ -170,7 +170,6 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		}
 	}
 
-	d.SetId(*resp.Resource.Id)
 	return nil
 }
 
@@ -224,6 +223,10 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 		projectId := d.Get("project_id").(string)
 		resourceType := d.Get("type").(string)
 		resourceId := d.Get("resource_id").(string)
+		pipelineProjectId := projectId
+		if d.Get("pipeline_project_id").(string) != "" {
+			pipelineProjectId = d.Get("pipeline_project_id").(string)
+		}
 
 		if strings.EqualFold(resourceType, "repository") {
 			resourceId = projectId + "." + resourceId
@@ -231,7 +234,7 @@ func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.Reso
 
 		resp, err := clients.PipelinePermissionsClient.GetPipelinePermissionsForResource(clients.Ctx,
 			pipelinepermissions.GetPipelinePermissionsForResourceArgs{
-				Project:      &projectId,
+				Project:      &pipelineProjectId,
 				ResourceType: &resourceType,
 				ResourceId:   &resourceId,
 			},

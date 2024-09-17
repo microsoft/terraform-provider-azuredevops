@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointNpm_DataSource(t *testing.T) {
+func TestAccServiceEndpointNpm_dataSource(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
 	tfNode := "data.azuredevops_serviceendpoint_npm.test"

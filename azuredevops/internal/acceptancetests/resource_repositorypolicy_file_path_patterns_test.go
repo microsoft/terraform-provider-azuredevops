@@ -15,14 +15,14 @@ func TestAccRepositoryPolicyFilePathPatterns(t *testing.T) {
 			"update": testAccRepositoryPolicyFilePathPatternsRepoPolicyUpdate,
 		},
 		"ProjectPolicies": {
-			"basic":  TestAccRepositoryPolicyFilePathPatternsProjectPolicyBasic,
+			"basic":  testAccRepositoryPolicyFilePathPatternsProjectPolicyBasic,
 			"update": testAccRepositoryPolicyFilePathPatternsProjectPolicyUpdate,
 		},
 	})
 }
 
 func testAccRepositoryPolicyFilePathPatternsRepoPolicyBasic(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -47,7 +47,7 @@ func testAccRepositoryPolicyFilePathPatternsRepoPolicyBasic(t *testing.T) {
 }
 
 func testAccRepositoryPolicyFilePathPatternsRepoPolicyUpdate(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -77,8 +77,8 @@ func testAccRepositoryPolicyFilePathPatternsRepoPolicyUpdate(t *testing.T) {
 	})
 }
 
-func TestAccRepositoryPolicyFilePathPatternsProjectPolicyBasic(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.p"
+func testAccRepositoryPolicyFilePathPatternsProjectPolicyBasic(t *testing.T) {
+	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -103,7 +103,7 @@ func TestAccRepositoryPolicyFilePathPatternsProjectPolicyBasic(t *testing.T) {
 }
 
 func testAccRepositoryPolicyFilePathPatternsProjectPolicyUpdate(t *testing.T) {
-	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.p"
+	authorEmailTfNode := "azuredevops_repository_policy_file_path_pattern.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -135,7 +135,7 @@ func testAccRepositoryPolicyFilePathPatternsProjectPolicyUpdate(t *testing.T) {
 
 func hclRepoPolicyFilePathPatternsResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -143,8 +143,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -155,52 +155,56 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepoPolicyFilePathPatternsResourceRepoPolicyBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepoPolicyFilePathPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_file_path_pattern" "test" {
+  project_id        = azuredevops_project.test.id
+  enabled           = true
+  blocking          = true
   filepath_patterns = ["*.go"]
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+  repository_ids    = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyFilePathPatternsResourceRepoPolicyUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclRepoPolicyFilePathPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_file_path_pattern" "test" {
+  project_id        = azuredevops_project.test.id
+  enabled           = true
+  blocking          = true
   filepath_patterns = ["*.go", "/home/test/*.ts"]
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+  repository_ids    = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyFilePathPatternsResourceProjectPolicyBasic(projectName string, repoName string) string {
 	projectAndRepo := hclRepoPolicyFilePathPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_file_path_pattern" "test" {
+  project_id        = azuredevops_project.test.id
+  enabled           = true
+  blocking          = true
   filepath_patterns = ["*.go"]
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on        = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyFilePathPatternsResourceProjectPolicyUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclRepoPolicyFilePathPatternsResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_file_path_pattern" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_file_path_pattern" "test" {
+  project_id        = azuredevops_project.test.id
+  enabled           = true
+  blocking          = true
   filepath_patterns = ["*.go", "/home/test/*.ts"]
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on        = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }

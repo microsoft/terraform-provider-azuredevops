@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,46 +30,48 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"feed_url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+		},
 
-	r.Schema["feed_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-	}
+		"api_key": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			ValidateFunc:  validation.StringIsNotEmpty,
+			ConflictsWith: []string{"personal_access_token", "username", "password"},
+			AtLeastOneOf:  []string{"api_key", "personal_access_token", "username", "password"},
+		},
 
-	r.Schema["api_key"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Sensitive:     true,
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{"personal_access_token", "username", "password"},
-		AtLeastOneOf:  []string{"api_key", "personal_access_token", "username", "password"},
-	}
+		"personal_access_token": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			ValidateFunc:  validation.StringIsNotEmpty,
+			ConflictsWith: []string{"api_key", "username", "password"},
+		},
 
-	r.Schema["personal_access_token"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Sensitive:     true,
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{"api_key", "username", "password"},
-	}
+		"username": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			ValidateFunc:  validation.StringIsNotEmpty,
+			ConflictsWith: []string{"personal_access_token", "api_key"},
+			RequiredWith:  []string{"password"},
+		},
 
-	r.Schema["username"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{"personal_access_token", "api_key"},
-		RequiredWith:  []string{"password"},
-	}
+		"password": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			ValidateFunc:  validation.StringIsNotEmpty,
+			ConflictsWith: []string{"personal_access_token", "api_key"},
+			RequiredWith:  []string{"username"},
+		},
+	})
 
-	r.Schema["password"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Sensitive:     true,
-		ValidateFunc:  validation.StringIsNotEmpty,
-		ConflictsWith: []string{"personal_access_token", "api_key"},
-		RequiredWith:  []string{"username"},
-	}
 	return r
 }
 

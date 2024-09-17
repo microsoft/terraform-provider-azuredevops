@@ -3,6 +3,7 @@ package identity
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,6 +15,9 @@ import (
 func DataIdentityUser() *schema.Resource {
 	return &schema.Resource{
 		Read: dataIdentitySourceUserRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -42,18 +46,18 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Query ADO for list of identity user with filter
 	filterUser, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
 	if err != nil {
-		return fmt.Errorf(" finding user with filter %s. Error: %v", searchFilter, err)
+		return fmt.Errorf(" Finding user with filter %s. Error: %v", searchFilter, err)
 	}
 
 	flattenUser, err := flattenIdentityUsers(filterUser)
 	if err != nil {
-		return fmt.Errorf("Error flatten user. Error: %v", err)
+		return fmt.Errorf(" Fatten user. Error: %v", err)
 	}
 
 	// Filter for the desired user in the FilterUsers results
 	targetUser := validateIdentityUser(flattenUser, userName, searchFilter)
 	if targetUser == nil {
-		return fmt.Errorf(" Could not find user with name %s with filter %s", userName, searchFilter)
+		return fmt.Errorf(" Could not find user with name: %s with filter: %s", userName, searchFilter)
 	}
 
 	// Set id and user list for users data resource
@@ -80,12 +84,12 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 // Flatten Query Results
 func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, error) {
 	if users == nil {
-		return nil, fmt.Errorf("Input Users Parameter is nil")
+		return nil, fmt.Errorf(" Input Users Parameter is nil")
 	}
 	results := make([]identity.Identity, len(*users))
 	for i, user := range *users {
 		if user.Descriptor == nil {
-			return nil, fmt.Errorf("User Object does not contain an id")
+			return nil, fmt.Errorf(" User Object does not contain an id")
 		}
 		newUser := identity.Identity{
 			Descriptor:          user.Descriptor,

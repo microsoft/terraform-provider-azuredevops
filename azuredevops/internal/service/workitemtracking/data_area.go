@@ -1,6 +1,8 @@
 package workitemtracking
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -10,7 +12,10 @@ import (
 // DataArea schema for data area
 func DataArea() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceAreaRead,
+		Read: dataSourceAreaRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: utils.CreateClassificationNodeSchema(map[string]*schema.Schema{}),
 	}
 }

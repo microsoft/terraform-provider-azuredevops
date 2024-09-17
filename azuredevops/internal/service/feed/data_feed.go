@@ -2,6 +2,7 @@ package feed
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -13,6 +14,9 @@ import (
 func DataFeed() *schema.Resource {
 	return &schema.Resource{
 		Read: dataFeedRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -58,10 +62,9 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading feed during read: %+v", err)
+		return fmt.Errorf(" reading feed during read: %+v", err)
 	}
 
 	if getFeed != nil {

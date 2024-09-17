@@ -2,6 +2,7 @@ package securityroles
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,12 @@ func ResourceSecurityRoleAssignment() *schema.Resource {
 		Read:   resourceSecurityRoleAssignmentRead,
 		Update: resourceSecurityRoleAssignmentCreateOrUpdate,
 		Delete: resourceSecurityRoleAssignmentDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"scope": {
 				Type:         schema.TypeString,
@@ -92,16 +99,19 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" reading group memberships during read: %+v", err)
 	}
 
-	if assignment != nil {
-		if assignment.Role != nil {
-			d.Set("scope", *assignment.Role.Scope)
-			d.Set("role_name", *assignment.Role.Name)
-		}
-		if assignment.Identity != nil {
-			d.Set("identity_id", *assignment.Identity.ID)
-		}
-		d.Set("resource_id", resourceId)
+	if assignment != nil && (assignment.Identity == nil && assignment.Role == nil) {
+		d.SetId("")
+		return nil
 	}
+
+	if assignment.Role != nil {
+		d.Set("scope", *assignment.Role.Scope)
+		d.Set("role_name", *assignment.Role.Name)
+	}
+	if assignment.Identity != nil {
+		d.Set("identity_id", *assignment.Identity.ID)
+	}
+	d.Set("resource_id", resourceId)
 
 	return nil
 }
@@ -126,6 +136,5 @@ func resourceSecurityRoleAssignmentDelete(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }

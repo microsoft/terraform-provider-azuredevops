@@ -10,6 +10,7 @@ package branch
 import (
 	"context"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -58,6 +59,7 @@ func getFlattenedResourceData(t *testing.T) *schema.ResourceData {
 // verifies that the flatten/expand round trip path produces repeatable results
 func TestBranchPolicyCRUD_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 	expandedPolicy, expandedProjectID, err := baseExpandFunc(resourceData, randomUUID)
 	require.Nil(t, err)
 
@@ -71,6 +73,7 @@ func TestBranchPolicyCRUD_CreateError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
@@ -96,7 +99,7 @@ func TestBranchPolicyCRUD_ReadError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
-
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
 
@@ -121,6 +124,7 @@ func TestBranchPolicyCRUD_UpdateError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}
@@ -147,6 +151,7 @@ func TestBranchPolicyCRUD_DeleteError_NotSwallowed(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := getFlattenedResourceData(t)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 
 	policyClient := azdosdkmocks.NewMockPolicyClient(ctrl)
 	clients := &client.AggregatedClient{PolicyClient: policyClient, Ctx: context.Background()}

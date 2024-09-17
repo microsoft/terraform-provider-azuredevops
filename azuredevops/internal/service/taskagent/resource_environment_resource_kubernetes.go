@@ -3,6 +3,7 @@ package taskagent
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,58 +15,51 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-const (
-	kubeResClusterName = "cluster_name"
-	kubeResName        = "name"
-	kubeResNamespace   = "namespace"
-	kubeResTags        = "tags"
-
-	kubeResProjectId         = "project_id"
-	kubeResEnvironmentId     = "environment_id"
-	kubeResServiceEndpointId = "service_endpoint_id"
-)
-
-// ResourceKubernetesResource schema and implementation for kubernetes resource
 func ResourceEnvironmentKubernetes() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceEnvironmentKubernetesCreate,
 		Read:   resourceEnvironmentKubernetesRead,
 		Delete: resourceEnvironmentKubernetesDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
-			kubeResProjectId: {
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			kubeResEnvironmentId: {
+			"environment_id": {
 				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
 			},
-			kubeResServiceEndpointId: {
+			"service_endpoint_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			kubeResName: {
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			kubeResNamespace: {
+			"namespace": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			kubeResClusterName: {
+			"cluster_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 				Default:  "",
 			},
-			kubeResTags: {
+			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: true,
@@ -82,7 +76,7 @@ func ResourceEnvironmentKubernetes() *schema.Resource {
 func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -98,7 +92,7 @@ func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) 
 		EnvironmentId: resource.EnvironmentReference.Id,
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating Kubernetes resource in Azure DevOps: %+v", err)
+		return fmt.Errorf(" creating Kubernetes resource in Azure DevOps: %+v", err)
 	}
 
 	d.SetId(strconv.Itoa(*createdResource.Id))
@@ -108,21 +102,26 @@ func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) 
 func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
+	}
+
+	resourceId, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf(" getting kubernetes resource id: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
 	fetchedResource, err := clients.TaskAgentClient.GetKubernetesResource(clients.Ctx, taskagent.GetKubernetesResourceArgs{
 		Project:       converter.String(project.Id.String()),
 		EnvironmentId: resource.EnvironmentReference.Id,
-		ResourceId:    resource.Id,
+		ResourceId:    &resourceId,
 	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading the Kubernetes resource: %+v", err)
+		return fmt.Errorf(" reading the Kubernetes resource: %+v", err)
 	}
 
 	flattenEnvironmentKubernetesResource(d, project, fetchedResource)
@@ -132,74 +131,69 @@ func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) er
 func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf("Error expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
+	}
+
+	resourceId, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf(" getting kubernetes resource id: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
 	err = clients.TaskAgentClient.DeleteKubernetesResource(clients.Ctx, taskagent.DeleteKubernetesResourceArgs{
 		Project:       converter.String(project.Id.String()),
 		EnvironmentId: resource.EnvironmentReference.Id,
-		ResourceId:    resource.Id,
+		ResourceId:    &resourceId,
 	})
+
 	if err != nil {
-		return fmt.Errorf("Error deleting Kubernetes environment: %+v", err)
+		return fmt.Errorf(" deleting Kubernetes environment: %+v", err)
 	}
 
-	d.SetId("")
 	return nil
 }
 
 func expandEnvironmentKubernetesResource(d *schema.ResourceData) (*taskagent.ProjectReference, *taskagent.KubernetesResource, error) {
-	projectId, err := uuid.Parse(d.Get(kubeResProjectId).(string))
+	projectId, err := uuid.Parse(d.Get("project_id").(string))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to parse project ID to UUID: %s, %+v", d.Get(kubeResProjectId), err)
+		return nil, nil, fmt.Errorf(" Failed to parse project ID to UUID: %s, %+v", d.Get("project_id"), err)
 	}
 	project := &taskagent.ProjectReference{Id: &projectId}
 
-	serviceEndpointId, err := uuid.Parse(d.Get(kubeResServiceEndpointId).(string))
+	serviceEndpointId, err := uuid.Parse(d.Get("service_endpoint_id").(string))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to parse service endpoint ID to UUID: %s, %+v", d.Get(kubeResServiceEndpointId), err)
+		return nil, nil, fmt.Errorf(" Failed to parse service endpoint ID to UUID: %s, %+v", d.Get("service_endpoint_id"), err)
 	}
-	tagsSchemaSet := d.Get(kubeResTags).(*schema.Set)
+	tagsSchemaSet := d.Get("tags").(*schema.Set)
 	tags := tfhelper.ExpandStringSet(tagsSchemaSet)
 
 	resource := &taskagent.KubernetesResource{
 		EnvironmentReference: &taskagent.EnvironmentReference{
-			Id: converter.Int(d.Get(kubeResEnvironmentId).(int)),
+			Id: converter.Int(d.Get("environment_id").(int)),
 		},
-		Name:              converter.String(d.Get(kubeResName).(string)),
+		Name:              converter.String(d.Get("name").(string)),
 		Tags:              &tags,
-		ClusterName:       converter.String(d.Get(kubeResClusterName).(string)),
-		Namespace:         converter.String(d.Get(kubeResNamespace).(string)),
+		ClusterName:       converter.String(d.Get("cluster_name").(string)),
+		Namespace:         converter.String(d.Get("namespace").(string)),
 		ServiceEndpointId: &serviceEndpointId,
 	}
 
-	// Look for the ID. This may not exist if we are within the context of a "create" operation,
-	// so it is OK if it is missing.
-	if d.Id() != "" {
-		resourceId, err := strconv.Atoi(d.Id())
-		if err != nil {
-			return nil, nil, fmt.Errorf("Error getting kubernetes resource id: %+v", err)
-		}
-		resource.Id = &resourceId
-	}
 	return project, resource, nil
 }
 
 func flattenEnvironmentKubernetesResource(d *schema.ResourceData, project *taskagent.ProjectReference, resource *taskagent.KubernetesResource) {
-	d.SetId(strconv.Itoa(*resource.Id))
-	d.Set(kubeResClusterName, converter.ToString(resource.ClusterName, ""))
-	d.Set(kubeResName, *resource.Name)
-	d.Set(kubeResNamespace, *resource.Namespace)
+	d.Set("cluster_name", converter.ToString(resource.ClusterName, ""))
+	d.Set("name", *resource.Name)
+	d.Set("namespace", *resource.Namespace)
 	if resource.Tags != nil {
 		tags := *resource.Tags
 		ifaceTags := make([]interface{}, len(tags))
 		for i, tag := range tags {
 			ifaceTags[i] = tag
 		}
-		d.Set(kubeResTags, schema.NewSet(schema.HashString, ifaceTags))
+		d.Set("tags", schema.NewSet(schema.HashString, ifaceTags))
 	}
-	d.Set(kubeResProjectId, project.Id.String())
-	d.Set(kubeResEnvironmentId, *resource.EnvironmentReference.Id)
-	d.Set(kubeResServiceEndpointId, resource.ServiceEndpointId.String())
+	d.Set("project_id", project.Id.String())
+	d.Set("environment_id", *resource.EnvironmentReference.Id)
+	d.Set("service_endpoint_id", resource.ServiceEndpointId.String())
 }

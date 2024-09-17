@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,20 +32,22 @@ func ResourceServiceEndpointSonarQube() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Description:  "Url for the SonarQube Server",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Description:  "Url for the SonarQube Server",
+		},
 
-	r.Schema["token"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		Description:  "Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens)",
-	}
+		"token": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Description:  "Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens)",
+		},
+	})
 
 	return r
 }

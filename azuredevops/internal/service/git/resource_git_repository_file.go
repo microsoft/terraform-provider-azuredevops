@@ -21,6 +21,12 @@ func ResourceGitRepositoryFile() *schema.Resource {
 		Read:   resourceGitRepositoryFileRead,
 		Update: resourceGitRepositoryFileUpdate,
 		Delete: resourceGitRepositoryFileDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), ":")
@@ -87,10 +93,6 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				Default:     false,
 			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Second),
-		},
 	}
 }
 
@@ -103,9 +105,14 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	overwriteOnCreate := d.Get("overwrite_on_create").(bool)
 
-	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
+	ref, err := checkRepositoryBranchExists(clients, repoId, branch)
+	if err != nil {
 		return err
 	}
+	if ref == nil {
+		return fmt.Errorf(" Creating Git file. Branch not found. Name: %s.", branch)
+	}
+
 	version := shortBranchName(branch)
 	repoItem, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
 		RepositoryId: &repoId,
@@ -123,18 +130,19 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	changeType := git.VersionControlChangeTypeValues.Add
 	if repoItem != nil {
 		if !overwriteOnCreate {
-			return fmt.Errorf("Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
+			return fmt.Errorf(" Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
 		}
 		changeType = git.VersionControlChangeTypeValues.Edit
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
+	// TODO replace with RetryContext
 	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		args, err := resourceGitRepositoryPushArgs(d, objectID, changeType)
+		args, err := gitRepositoryPushArgs(d, objectID, changeType)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -175,11 +183,17 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" Repository not found, repositoryID: %s. Error:  %+v", repoId, err)
+		return fmt.Errorf(" Get Git file. Repository not found, repositoryID: %s. Error:  %+v", repoId, err)
 	}
 
-	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
-		return err
+	ref, err := checkRepositoryBranchExists(clients, repoId, branch)
+	if err != nil {
+		return fmt.Errorf(" Get Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
+	}
+
+	if ref == nil {
+		d.SetId("")
+		return nil
 	}
 
 	// Get the repository item if it exists
@@ -225,23 +239,26 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 	file := d.Get("file").(string)
 	branch := d.Get("branch").(string)
 
-	if err := checkRepositoryBranchExists(clients, repoId, branch); err != nil {
-		return err
+	_, err := checkRepositoryBranchExists(clients, repoId, branch)
+	if err != nil {
+		return fmt.Errorf(" Updating Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
-	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
+	// TODO replace with RetryContext
+	err = resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		args, err := resourceGitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
+		args, err := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		if *(*args.Push.Commits)[0].Comment == fmt.Sprintf("Add %s", file) {
-			m := fmt.Sprintf("Update %s", file)
-			(*args.Push.Commits)[0].Comment = &m
+
+		commits := *args.Push.Commits
+		if *commits[0].Comment == fmt.Sprintf("Add %s", file) {
+			*commits[0].Comment = fmt.Sprintf("Update %s", file)
 		}
 
 		_, err = clients.GitReposClient.CreatePush(ctx, *args)
@@ -269,6 +286,7 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	message := fmt.Sprintf("Delete %s", file)
 
+	// TODO replace with RetryContext
 	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
@@ -312,14 +330,24 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	return nil
 }
 
-// checkRepositoryBranchExists tests if a branch exists in a repository.
-func checkRepositoryBranchExists(c *client.AggregatedClient, repoId, branch string) error {
+func checkRepositoryBranchExists(c *client.AggregatedClient, repoId, branch string) (*git.GitRef, error) {
 	ctx := context.Background()
-	_, err := c.GitReposClient.GetBranch(ctx, git.GetBranchArgs{
+	branchName := shortBranchName(branch)
+	resp, err := c.GitReposClient.GetRefs(ctx, git.GetRefsArgs{
 		RepositoryId: &repoId,
-		Name:         converter.String(shortBranchName(branch)),
+		Filter:       converter.String("heads/" + branchName),
 	})
-	return err
+	if err != nil {
+		return nil, fmt.Errorf(" Failed to get  the repository branch: %s. Error: %+v", branch, err)
+	}
+	if resp != nil {
+		for _, ref := range resp.Value {
+			if strings.EqualFold(branchName, shortBranchName(*ref.Name)) {
+				return &ref, nil
+			}
+		}
+	}
+	return nil, nil
 }
 
 // checkRepositoryFileExists tests if a file exists in a repository.
@@ -356,8 +384,8 @@ func getLastCommitId(c *client.AggregatedClient, repoId, branch string) (string,
 	return *(*commits)[0].CommitId, nil
 }
 
-// resourceGitRepositoryPushArgs returns args used to commit and push changes.
-func resourceGitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
+// gitRepositoryPushArgs returns args used to commit and push changes.
+func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
 	var message *string
 	if commitMessage, hasCommitMessage := d.GetOk("commit_message"); hasCommitMessage {
 		cm := commitMessage.(string)

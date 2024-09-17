@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,25 +37,6 @@ var (
 	StatusCheck       = uuid.MustParse("cbdc66da-9728-4af8-aada-9a5a32e4a226")
 )
 
-// Keys for schema elements
-const (
-	SchemaProjectID     = "project_id"
-	SchemaEnabled       = "enabled"
-	SchemaBlocking      = "blocking"
-	SchemaSettings      = "settings"
-	SchemaScope         = "scope"
-	SchemaRepositoryID  = "repository_id"
-	SchemaRepositoryRef = "repository_ref"
-	SchemaMatchType     = "match_type"
-)
-
-// The type of repository branch name matching strategy used by the policy
-const (
-	matchTypeExact         string = "Exact"
-	matchTypePrefix        string = "Prefix"
-	matchTypeDefaultBranch string = "DefaultBranch"
-)
-
 // policyCrudArgs arguments for genBasePolicyResource
 type policyCrudArgs struct {
 	FlattenFunc func(d *schema.ResourceData, policy *policy.PolicyConfiguration, projectID *string) error
@@ -70,53 +52,59 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 		Update:   genPolicyUpdateFunc(crudArgs),
 		Delete:   genPolicyDeleteFunc(crudArgs),
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(20 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(20 * time.Minute),
+			Delete: schema.DefaultTimeout(20 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
-			SchemaProjectID: {
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			SchemaEnabled: {
+			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			SchemaBlocking: {
+			"blocking": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			SchemaSettings: {
+			"settings": {
 				Type:     schema.TypeList,
 				Required: true,
 				MinItems: 1,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						SchemaScope: {
+						"scope": {
 							Type:     schema.TypeList,
 							Required: true,
 							MinItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									SchemaRepositoryID: {
+									"repository_id": {
 										Type:         schema.TypeString,
 										Optional:     true,
 										ValidateFunc: validation.StringIsNotEmpty,
 									},
-									SchemaRepositoryRef: {
+									"repository_ref": {
 										Type:         schema.TypeString,
 										Optional:     true,
 										ValidateFunc: validation.StringIsNotEmpty,
 									},
-									SchemaMatchType: {
+									"match_type": {
 										Type:             schema.TypeString,
 										Optional:         true,
-										Default:          matchTypeExact,
+										Default:          "Exact",
 										DiffSuppressFunc: suppress.CaseDifference,
 										ValidateFunc: validation.StringInSlice([]string{
-											matchTypeExact, matchTypePrefix, matchTypeDefaultBranch,
+											"Exact", "Prefix", "DefaultBranch",
 										}, true),
 									},
 								},
@@ -139,21 +127,16 @@ type commonPolicySettings struct {
 
 // baseFlattenFunc flattens each of the base elements of the schema
 func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration, projectID *string) error {
-	if policyConfig.Id == nil {
-		d.SetId("")
-		return nil
-	}
-	d.SetId(strconv.Itoa(*policyConfig.Id))
-	d.Set(SchemaProjectID, converter.ToString(projectID, ""))
-	d.Set(SchemaEnabled, converter.ToBool(policyConfig.IsEnabled, true))
-	d.Set(SchemaBlocking, converter.ToBool(policyConfig.IsBlocking, true))
+	d.Set("project_id", converter.ToString(projectID, ""))
+	d.Set("enabled", converter.ToBool(policyConfig.IsEnabled, true))
+	d.Set("blocking", converter.ToBool(policyConfig.IsBlocking, true))
 	settings, err := flattenSettings(d, policyConfig)
 	if err != nil {
 		return err
 	}
-	err = d.Set(SchemaSettings, settings)
+	err = d.Set("settings", settings)
 	if err != nil {
-		return fmt.Errorf("Unable to persist policy settings configuration: %+v", err)
+		return fmt.Errorf(" Unable to persist policy settings configuration: %+v", err)
 	}
 	return nil
 }
@@ -162,7 +145,7 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	policySettings := commonPolicySettings{}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
+		return nil, fmt.Errorf(" Unable to marshal policy settings into JSON: %+v", err)
 	}
 
 	_ = json.Unmarshal(policyAsJSON, &policySettings)
@@ -170,19 +153,19 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	for index, scope := range policySettings.Scopes {
 		scopeSetting := map[string]interface{}{}
 		if scope.RepositoryID != "" {
-			scopeSetting[SchemaRepositoryID] = scope.RepositoryID
+			scopeSetting["repository_id"] = scope.RepositoryID
 		}
 		if scope.RepositoryRefName != "" {
-			scopeSetting[SchemaRepositoryRef] = scope.RepositoryRefName
+			scopeSetting["repository_ref"] = scope.RepositoryRefName
 		}
 		if scope.MatchType != "" {
-			scopeSetting[SchemaMatchType] = scope.MatchType
+			scopeSetting["match_type"] = scope.MatchType
 		}
 		scopes[index] = scopeSetting
 	}
 	settings := []interface{}{
 		map[string]interface{}{
-			SchemaScope: scopes,
+			"scope": scopes,
 		},
 	}
 	return settings, nil
@@ -190,14 +173,14 @@ func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 
 // baseExpandFunc expands each of the base elements of the schema
 func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyConfiguration, *string, error) {
-	projectID := d.Get(SchemaProjectID).(string)
+	projectID := d.Get("project_id").(string)
 	policySettings, err := expandSettings(d)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error parsing policy configuration settings: (%+v)", err)
+		return nil, nil, fmt.Errorf(" parsing policy configuration settings: (%+v)", err)
 	}
 	policyConfig := policy.PolicyConfiguration{
-		IsEnabled:  converter.Bool(d.Get(SchemaEnabled).(bool)),
-		IsBlocking: converter.Bool(d.Get(SchemaBlocking).(bool)),
+		IsEnabled:  converter.Bool(d.Get("enabled").(bool)),
+		IsBlocking: converter.Bool(d.Get("blocking").(bool)),
 		Type: &policy.PolicyTypeRef{
 			Id: &typeID,
 		},
@@ -207,7 +190,7 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 	if d.Id() != "" {
 		policyID, err := strconv.Atoi(d.Id())
 		if err != nil {
-			return nil, nil, fmt.Errorf("Error parsing policy configuration ID: (%+v)", err)
+			return nil, nil, fmt.Errorf(" parsing policy configuration ID: (%+v)", err)
 		}
 		policyConfig.Id = &policyID
 	}
@@ -216,43 +199,43 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 }
 
 func expandSettings(d *schema.ResourceData) (map[string]interface{}, error) {
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
-	settingsScopes := settings[SchemaScope].([]interface{})
+	settingsScopes := settings["scope"].([]interface{})
 
 	scopes := make([]map[string]interface{}, len(settingsScopes))
 	for index, scope := range settingsScopes {
 		scopeMap := scope.(map[string]interface{})
 
 		scopeSetting := map[string]interface{}{}
-		if repoID, ok := scopeMap[SchemaRepositoryID]; ok {
+		if repoID, ok := scopeMap["repository_id"]; ok {
 			if repoID == "" {
 				scopeSetting["repositoryId"] = nil
 			} else {
 				scopeSetting["repositoryId"] = repoID
 			}
 		}
-		if repoRef, ok := scopeMap[SchemaRepositoryRef]; ok {
+		if repoRef, ok := scopeMap["repository_ref"]; ok {
 			if repoRef == "" {
 				scopeSetting["refName"] = nil
 			} else {
 				scopeSetting["refName"] = repoRef
 			}
 		}
-		if matchType, ok := scopeMap[SchemaMatchType]; ok {
+		if matchType, ok := scopeMap["match_type"]; ok {
 			if matchType == "" {
 				scopeSetting["matchKind"] = nil
 			} else {
 				scopeSetting["matchKind"] = matchType
 			}
 		}
-		if strings.EqualFold(scopeSetting["matchKind"].(string), matchTypeDefaultBranch) && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
+		if strings.EqualFold(scopeSetting["matchKind"].(string), "DefaultBranch") && (scopeSetting["repositoryId"] != nil || scopeSetting["refName"] != nil) {
 			return nil, fmt.Errorf(" neither 'repository_id' nor 'repository_ref' can be set when 'match_type=DefaultBranch'")
 		}
 		scopes[index] = scopeSetting
 	}
 	return map[string]interface{}{
-		SchemaScope: scopes,
+		"scope": scopes,
 	}, nil
 }
 
@@ -271,10 +254,11 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:
 		})
 
 		if err != nil {
-			return fmt.Errorf("Error creating policy in Azure DevOps: %+v", err)
+			return fmt.Errorf(" creating policy in Azure DevOps: %+v", err)
 		}
 
-		return crudArgs.FlattenFunc(d, createdPolicy, projectID)
+		d.SetId(strconv.Itoa(*createdPolicy.Id))
+		return genPolicyReadFunc(crudArgs)(d, m)
 	}
 }
 
@@ -282,11 +266,11 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:
 func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
-		projectID := d.Get(SchemaProjectID).(string)
+		projectID := d.Get("project_id").(string)
 		policyID, err := strconv.Atoi(d.Id())
 
 		if err != nil {
-			return fmt.Errorf("Error converting policy ID to an integer: (%+v)", err)
+			return fmt.Errorf(" converting policy ID to an integer: (%+v)", err)
 		}
 
 		policyConfig, err := clients.PolicyClient.GetPolicyConfiguration(clients.Ctx, policy.GetPolicyConfigurationArgs{
@@ -300,7 +284,7 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:stat
 		}
 
 		if err != nil {
-			return fmt.Errorf("Error looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
+			return fmt.Errorf(" looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
 		}
 
 		return crudArgs.FlattenFunc(d, policyConfig, &projectID)
@@ -316,17 +300,17 @@ func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:
 			return err
 		}
 
-		updatedPolicy, err := clients.PolicyClient.UpdatePolicyConfiguration(clients.Ctx, policy.UpdatePolicyConfigurationArgs{
+		_, err = clients.PolicyClient.UpdatePolicyConfiguration(clients.Ctx, policy.UpdatePolicyConfigurationArgs{
 			ConfigurationId: policyConfig.Id,
 			Configuration:   policyConfig,
 			Project:         projectID,
 		})
 
 		if err != nil {
-			return fmt.Errorf("Error updating policy in Azure DevOps: %+v", err)
+			return fmt.Errorf(" updating policy in Azure DevOps: %+v", err)
 		}
 
-		return crudArgs.FlattenFunc(d, updatedPolicy, projectID)
+		return genPolicyReadFunc(crudArgs)(d, m)
 	}
 }
 
@@ -345,7 +329,7 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 		})
 
 		if err != nil {
-			return fmt.Errorf("Error deleting policy in Azure DevOps: %+v", err)
+			return fmt.Errorf(" deleting policy in Azure DevOps: %+v", err)
 		}
 
 		return nil

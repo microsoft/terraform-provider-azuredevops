@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,6 +75,12 @@ func ResourceBuildDefinition() *schema.Resource {
 		UpdateContext: resourceBuildDefinitionUpdate,
 		DeleteContext: resourceBuildDefinitionDelete,
 		Importer:      tfhelper.ImportProjectQualifiedResource(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -382,7 +389,11 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
 
-	createdBuildDefinition, err := createBuildDefinition(clients, buildDefinition, projectID)
+	createdBuildDefinition, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
+		Definition: buildDefinition,
+		Project:    &projectID,
+	})
+
 	if err != nil {
 		return diag.Errorf("error creating resource Build Definition: %+v", err)
 	}
@@ -422,10 +433,10 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 			}
 		}
 	}
+
 	d.SetId(strconv.Itoa(*createdBuildDefinition.Id))
 
 	readDiag := resourceBuildDefinitionRead(ctx, d, m)
-
 	if readDiag != nil {
 		return readDiag
 	} else {
@@ -469,7 +480,7 @@ func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	updatedBuildDefinition, err := clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
+	_, err = clients.BuildClient.UpdateDefinition(m.(*client.AggregatedClient).Ctx, build.UpdateDefinitionArgs{
 		Definition:   buildDefinition,
 		Project:      &projectID,
 		DefinitionId: buildDefinition.Id,
@@ -479,15 +490,10 @@ func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	flattenBuildDefinition(d, updatedBuildDefinition, projectID)
 	return resourceBuildDefinitionRead(ctx, d, m)
 }
 
 func resourceBuildDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if strings.EqualFold(d.Id(), "") {
-		return nil
-	}
-
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
@@ -502,8 +508,6 @@ func resourceBuildDefinitionDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
-	d.SetId(strconv.Itoa(*buildDefinition.Id))
-
 	d.Set("project_id", projectID)
 	d.Set("name", *buildDefinition.Name)
 	d.Set("path", *buildDefinition.Path)
@@ -542,18 +546,6 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	d.Set("queue_status", *buildDefinition.QueueStatus)
 }
 
-func createBuildDefinition(clients *client.AggregatedClient, buildDefinition *build.BuildDefinition, project string) (*build.BuildDefinition, error) {
-	createdBuild, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
-		Definition: buildDefinition,
-		Project:    &project,
-	})
-
-	return createdBuild, err
-}
-
-// Return an interface suitable for serialization into the resource state. This function ensures that
-// any secrets, for which values will not be returned by the service, are not overidden with null or
-// empty values
 func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildDefinition) interface{} {
 	if buildDefinition.Variables == nil {
 		return nil
@@ -615,11 +607,11 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 
 	// Set github_enterprise_url value from buildDefinition.Repository URL
 	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
-		url, err := url.Parse(*buildDefinition.Repository.Url)
+		repoUrl, err := url.Parse(*buildDefinition.Repository.Url)
 		if err != nil {
 			return fmt.Errorf("Unable to parse repository URL: %+v ", err)
 		}
-		githubEnterpriseUrl = fmt.Sprintf("%s://%s", url.Scheme, url.Host)
+		githubEnterpriseUrl = fmt.Sprintf("%s://%s", repoUrl.Scheme, repoUrl.Host)
 	}
 
 	repo := []map[string]interface{}{{

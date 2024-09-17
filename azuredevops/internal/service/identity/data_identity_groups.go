@@ -2,6 +2,7 @@ package identity
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,6 +16,9 @@ import (
 func DataIdentityGroups() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIdentityGroupsRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -88,7 +92,7 @@ func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 			groupID := *group.Id
 			groupMap["id"] = groupID.String()
 		} else {
-			return nil, fmt.Errorf("Group Object does not contain an id")
+			return nil, fmt.Errorf(" Group Object does not contain an id")
 		}
 		if group.ProviderDisplayName != nil {
 			groupMap["name"] = *group.ProviderDisplayName

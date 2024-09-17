@@ -18,8 +18,9 @@ func TestAccIterationDataSource_Read(t *testing.T) {
 %s
 
 data "azuredevops_iteration" "root-iteration" {
-	project_id     = azuredevops_project.project.id
+  project_id = azuredevops_project.project.id
 }
+
 
 `, testutils.HclProjectResource(projectName))
 
@@ -49,9 +50,10 @@ func TestAccIterationDataSource_ReadNoChildren(t *testing.T) {
 %s
 
 data "azuredevops_iteration" "root-iteration" {
-	project_id     = azuredevops_project.project.id
-	fetch_children = false
+  project_id     = azuredevops_project.project.id
+  fetch_children = false
 }
+
 
 `, testutils.HclProjectResource(projectName))
 

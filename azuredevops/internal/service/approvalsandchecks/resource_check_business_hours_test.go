@@ -7,6 +7,7 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -48,6 +49,7 @@ var CheckBusinessHoursTest = pipelineschecksextras.CheckConfiguration{
 // verifies that the flatten/expand round trip yields the same business hours check
 func TestCheckBusinessHours_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckBusinessHours().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckBusinessHoursID))
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
 	CheckBusinessHoursAfterRoundTrip, projectID, err := expandBusinessHours(resourceData)
@@ -64,6 +66,7 @@ func TestCheckBusinessHours_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckBusinessHours()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckBusinessHoursID))
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -87,6 +90,7 @@ func TestCheckBusinessHours_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckBusinessHours()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *CheckBusinessHoursTest.Id))
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -115,6 +119,7 @@ func TestCheckBusinessHours_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckBusinessHours()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *CheckBusinessHoursTest.Id))
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -142,6 +147,7 @@ func TestCheckBusinessHours_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckBusinessHours()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *CheckBusinessHoursTest.Id))
 	flattenBusinessHours(resourceData, &CheckBusinessHoursTest, CheckBusinessHoursProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)

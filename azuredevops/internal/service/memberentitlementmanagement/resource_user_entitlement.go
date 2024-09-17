@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
@@ -22,14 +23,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-var (
-	configurationKeys = []string{
-		"origin_id",
-		"origin",
-		"principal_name",
-	}
-)
-
 // ResourceUserEntitlement schema and implementation for user entitlement resource
 func ResourceUserEntitlement() *schema.Resource {
 	return &schema.Resource{
@@ -37,27 +30,34 @@ func ResourceUserEntitlement() *schema.Resource {
 		Read:   resourceUserEntitlementRead,
 		Delete: resourceUserEntitlementDelete,
 		Update: resourceUserEntitlementUpdate,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			State: importUserEntitlement,
 		},
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
 				Type:             schema.TypeString,
-				Computed:         true,
 				Optional:         true,
+				Computed:         true,
 				ForceNew:         true,
 				ConflictsWith:    []string{"origin_id", "origin"},
-				AtLeastOneOf:     configurationKeys,
+				AtLeastOneOf:     []string{"origin_id", "principal_name"},
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
 			},
 			"origin_id": {
 				Type:          schema.TypeString,
-				Computed:      true,
 				Optional:      true,
+				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"principal_name"},
-				AtLeastOneOf:  configurationKeys,
+				RequiredWith:  []string{"origin"},
+				AtLeastOneOf:  []string{"origin_id", "principal_name"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
@@ -66,7 +66,6 @@ func ResourceUserEntitlement() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"principal_name"},
-				AtLeastOneOf:  configurationKeys,
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
@@ -126,15 +125,15 @@ func resourceUserEntitlementCreate(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	userEntitlement, err := expandUserEntitlement(d)
 	if err != nil {
-		return fmt.Errorf("Creating user entitlement: %v", err)
+		return fmt.Errorf(" Creating user entitlement: %v", err)
 	}
 
 	addedUserEntitlement, err := addUserEntitlement(clients, userEntitlement)
 	if err != nil {
-		return fmt.Errorf("Creating user entitlement: %v", err)
+		return fmt.Errorf(" Creating user entitlement: %v", err)
 	}
 
-	flattenUserEntitlement(d, addedUserEntitlement)
+	d.SetId(addedUserEntitlement.Id.String())
 	return resourceUserEntitlementRead(d, m)
 }
 
@@ -143,125 +142,22 @@ func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
-		return fmt.Errorf("Error parsing UserEntitlementID: %s. %v", userEntitlementID, err)
+		return fmt.Errorf(" Parsing UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
-	userEntitlement, err := readUserEntitlement(clients, &id)
+	userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
+		UserId: &id,
+	})
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) || isUserDeleted(userEntitlement) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading user entitlement: %v", err)
+		return fmt.Errorf(" Reading user entitlement: %v", err)
 	}
 
 	flattenUserEntitlement(d, userEntitlement)
-	return nil
-}
-
-func expandUserEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.UserEntitlement, error) {
-	origin := d.Get("origin").(string)
-	originID := d.Get("origin_id").(string)
-	principalName := d.Get("principal_name").(string)
-
-	if len(originID) > 0 && len(principalName) > 0 {
-		return nil, fmt.Errorf("Both origin_id and principal_name set. You can not use both: origin_id: %s principal_name %s", originID, principalName)
-	}
-
-	if len(originID) == 0 && len(principalName) == 0 {
-		return nil, fmt.Errorf("Neither origin_id and principal_name set. Use origin_id or principal_name")
-	}
-
-	if len(originID) > 0 && len(origin) == 0 {
-		return nil, fmt.Errorf("Origin_id requires an origin to be set")
-	}
-
-	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
-	if err != nil {
-		return nil, err
-	}
-	licensingSource, err := converter.AccountLicensingSource(d.Get("licensing_source").(string))
-	if err != nil {
-		return nil, err
-	}
-
-	return &memberentitlementmanagement.UserEntitlement{
-
-		AccessLevel: &licensing.AccessLevel{
-			AccountLicenseType: accountLicenseType,
-			LicensingSource:    licensingSource,
-		},
-
-		// TODO check if it works in both case for GitHub and AzureDevOps
-		User: &graph.GraphUser{
-			Origin:        &origin,
-			OriginId:      &originID,
-			PrincipalName: &principalName,
-			SubjectKind:   converter.String("user"),
-		},
-	}, nil
-}
-
-func flattenUserEntitlement(d *schema.ResourceData, userEntitlement *memberentitlementmanagement.UserEntitlement) {
-	d.SetId(userEntitlement.Id.String())
-	d.Set("descriptor", *userEntitlement.User.Descriptor)
-	d.Set("origin", *userEntitlement.User.Origin)
-	if userEntitlement.User.OriginId != nil {
-		d.Set("origin_id", *userEntitlement.User.OriginId)
-	}
-	d.Set("principal_name", *userEntitlement.User.PrincipalName)
-	d.Set("account_license_type", string(*userEntitlement.AccessLevel.AccountLicenseType))
-	d.Set("licensing_source", *userEntitlement.AccessLevel.LicensingSource)
-}
-
-func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *memberentitlementmanagement.UserEntitlement) (*memberentitlementmanagement.UserEntitlement, error) {
-	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.Ctx, memberentitlementmanagement.AddUserEntitlementArgs{
-		UserEntitlement: userEntitlement,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !*userEntitlementsPostResponse.IsSuccess {
-		opResults := []memberentitlementmanagement.UserEntitlementOperationResult{}
-		if userEntitlementsPostResponse.OperationResult != nil {
-			opResults = append(opResults, *userEntitlementsPostResponse.OperationResult)
-		}
-		return nil, fmt.Errorf("Adding user entitlement: %s", getAPIErrorMessage(&opResults))
-	}
-
-	return userEntitlementsPostResponse.UserEntitlement, nil
-}
-
-func readUserEntitlement(clients *client.AggregatedClient, id *uuid.UUID) (*memberentitlementmanagement.UserEntitlement, error) {
-	return clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
-		UserId: id,
-	})
-}
-
-func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error {
-	if d.Id() == "" {
-		return nil
-	}
-
-	userEntitlementID := d.Id()
-	id, err := uuid.Parse(userEntitlementID)
-	if err != nil {
-		return fmt.Errorf("Error parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
-	}
-
-	clients := m.(*client.AggregatedClient)
-
-	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
-		UserId: &id,
-	})
-
-	if err != nil {
-		return fmt.Errorf("Deleting user entitlement: %v", err)
-	}
-
 	return nil
 }
 
@@ -269,7 +165,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
-		return fmt.Errorf("Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
+		return fmt.Errorf(" Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
@@ -278,7 +174,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 	licensingSource, ok := d.GetOk("licensing_source")
 	if !ok {
-		return fmt.Errorf("Reading account licensing source for UserEntitlementID: %s", userEntitlementID)
+		return fmt.Errorf(" Reading account licensing source for UserEntitlementID: %s", userEntitlementID)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -303,13 +199,98 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 		})
 
 	if err != nil {
-		return fmt.Errorf("Updating user entitlement: %v", err)
+		return fmt.Errorf(" Updating user entitlement: %v", err)
 	}
 
 	if !*patchResponse.IsSuccess {
-		return fmt.Errorf("Updating user entitlement: %s", getAPIErrorMessage(patchResponse.OperationResults))
+		return fmt.Errorf(" Updating user entitlement: %s", getAPIErrorMessage(patchResponse.OperationResults))
 	}
 	return resourceUserEntitlementRead(d, m)
+}
+
+func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error {
+	if d.Id() == "" {
+		return nil
+	}
+
+	userEntitlementID := d.Id()
+	id, err := uuid.Parse(userEntitlementID)
+	if err != nil {
+		return fmt.Errorf(" Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
+	}
+
+	clients := m.(*client.AggregatedClient)
+
+	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
+		UserId: &id,
+	})
+
+	if err != nil {
+		return fmt.Errorf(" Deleting user entitlement: %v", err)
+	}
+
+	return nil
+}
+
+func expandUserEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.UserEntitlement, error) {
+	origin := d.Get("origin").(string)
+	originID := d.Get("origin_id").(string)
+	principalName := d.Get("principal_name").(string)
+
+	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
+	if err != nil {
+		return nil, err
+	}
+	licensingSource, err := converter.AccountLicensingSource(d.Get("licensing_source").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	return &memberentitlementmanagement.UserEntitlement{
+		AccessLevel: &licensing.AccessLevel{
+			AccountLicenseType: accountLicenseType,
+			LicensingSource:    licensingSource,
+		},
+
+		// TODO check if it works in both case for GitHub and AzureDevOps
+		User: &graph.GraphUser{
+			Origin:        &origin,
+			OriginId:      &originID,
+			PrincipalName: &principalName,
+			SubjectKind:   converter.String("user"),
+		},
+	}, nil
+}
+
+func flattenUserEntitlement(d *schema.ResourceData, userEntitlement *memberentitlementmanagement.UserEntitlement) {
+	d.Set("descriptor", *userEntitlement.User.Descriptor)
+	d.Set("origin", *userEntitlement.User.Origin)
+	if userEntitlement.User.OriginId != nil {
+		d.Set("origin_id", *userEntitlement.User.OriginId)
+	}
+	d.Set("principal_name", *userEntitlement.User.PrincipalName)
+	d.Set("account_license_type", string(*userEntitlement.AccessLevel.AccountLicenseType))
+	d.Set("licensing_source", *userEntitlement.AccessLevel.LicensingSource)
+}
+
+func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *memberentitlementmanagement.UserEntitlement) (*memberentitlementmanagement.UserEntitlement, error) {
+	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.Ctx, memberentitlementmanagement.AddUserEntitlementArgs{
+		UserEntitlement: userEntitlement,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !*userEntitlementsPostResponse.IsSuccess {
+		opResults := []memberentitlementmanagement.UserEntitlementOperationResult{}
+		if userEntitlementsPostResponse.OperationResult != nil {
+			opResults = append(opResults, *userEntitlementsPostResponse.OperationResult)
+		}
+		return nil, fmt.Errorf(" Adding user entitlement: %s", getAPIErrorMessage(&opResults))
+	}
+
+	return userEntitlementsPostResponse.UserEntitlement, nil
 }
 
 var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")

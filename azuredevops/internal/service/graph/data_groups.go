@@ -2,6 +2,7 @@ package graph
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,9 @@ import (
 func DataGroups() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceGroupsRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -97,23 +101,23 @@ func dataSourceGroupsRead(d *schema.ResourceData, m interface{}) error {
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Project with with ID %s was not found. Error: %v", projectID, err)
+			return fmt.Errorf(" Project with with ID %s was not found. Error: %v", projectID, err)
 		}
-		return fmt.Errorf("Error finding descriptor for project with ID %s. Error: %v", projectID, err)
+		return fmt.Errorf(" Finding descriptor for project with ID %s. Error: %v", projectID, err)
 	}
 
 	groups, err := getGroupsForDescriptor(clients, projectDescriptor)
 	if err != nil {
-		errMsg := "Error finding groups"
+		errMsg := " Finding groups"
 		if projectID != "" {
-			errMsg = fmt.Sprintf("%s for project with ID %s", errMsg, projectID)
+			errMsg = fmt.Sprintf("%s for project with ID: %s", errMsg, projectID)
 		}
 		return fmt.Errorf("%s. Error: %v", errMsg, err)
 	}
 
 	fgroups, err := flattenGroups(groups)
 	if err != nil {
-		return fmt.Errorf("Error flatten groups. Error: %w", err)
+		return fmt.Errorf(" Flatten groups. Error: %w", err)
 	}
 
 	for _, group := range fgroups {
@@ -133,10 +137,6 @@ func dataSourceGroupsRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func getGroupHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["descriptor"].(string))
-}
-
 func flattenGroups(groups *[]graph.GraphGroup) ([]interface{}, error) {
 	if groups == nil {
 		return []interface{}{}, nil
@@ -149,7 +149,7 @@ func flattenGroups(groups *[]graph.GraphGroup) ([]interface{}, error) {
 		if group.Descriptor != nil {
 			s["descriptor"] = *group.Descriptor
 		} else {
-			return nil, fmt.Errorf("Group Object does not contain a descriptor")
+			return nil, fmt.Errorf(" Group Object does not contain a descriptor")
 		}
 		if group.DisplayName != nil {
 			s["display_name"] = *group.DisplayName
@@ -179,4 +179,8 @@ func flattenGroups(groups *[]graph.GraphGroup) ([]interface{}, error) {
 		results[i] = s
 	}
 	return results, nil
+}
+
+func getGroupHash(v interface{}) int {
+	return tfhelper.HashString(v.(map[string]interface{})["descriptor"].(string))
 }

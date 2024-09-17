@@ -7,6 +7,7 @@ package build
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"testing"
 
@@ -384,6 +385,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -406,6 +408,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -425,6 +428,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 // verifies that the flatten/expand round trip yields the same build definition
 func TestBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	for _, triggerGroup := range triggerGroups {
 		testBuildDefinitionWithCustomTriggers := testBuildDefinition
 		testBuildDefinitionWithCustomTriggers.Triggers = &triggerGroup
@@ -450,6 +454,7 @@ func TestBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -472,6 +477,7 @@ func TestBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -494,6 +500,7 @@ func TestBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -516,6 +523,7 @@ func TestBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)

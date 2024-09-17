@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,6 +30,11 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 		CreateContext: resourceGitRepositoryBranchCreate,
 		ReadContext:   resourceGitRepositoryBranchRead,
 		DeleteContext: resourceGitRepositoryBranchDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -75,11 +81,9 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 	clients := m.(*client.AggregatedClient)
 	repoId := d.Get("repository_id").(string)
 
-	name := d.Get("name").(string)
-	shortBranchName := withoutPrefix(REF_BRANCH_PREFIX, name)
-	longBranchName := withPrefix(REF_BRANCH_PREFIX, name)
-	if name != shortBranchName {
-		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", name)
+	branchName := d.Get("name").(string)
+	if strings.HasPrefix(branchName, REF_BRANCH_PREFIX) {
+		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", branchName)
 	}
 
 	var newObjectId string
@@ -102,21 +106,21 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 			PeelTags:     converter.Bool(true),
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error getting refs matching %q: %w", filter, err))
+			return diag.FromErr(fmt.Errorf(" Getting refs matching %q: %w", filter, err))
 		}
 
 		if len(gotRefs.Value) == 0 {
-			return diag.FromErr(fmt.Errorf("No refs found that match ref %q.", rs))
+			return diag.FromErr(fmt.Errorf(" No refs found that match ref %q.", rs))
 		}
 
 		gotRef := gotRefs.Value[0]
 		if gotRef.Name == nil {
-			return diag.FromErr(fmt.Errorf("Got unexpected GetRefs response, a ref without a name was returned."))
+			return diag.FromErr(fmt.Errorf(" Got unexpected GetRefs response, a ref without a name was returned."))
 		}
 
 		// Check for complete match. Sometimes refs exist that match prefix with Ref, but do not match completely.
 		if *gotRef.Name != rs {
-			return diag.FromErr(fmt.Errorf("Ref %q not found, closest match is %q.", filter, *gotRef.Name))
+			return diag.FromErr(fmt.Errorf(" Ref %q not found, closest match is %q.", filter, *gotRef.Name))
 		}
 
 		if gotRef.PeeledObjectId != nil {
@@ -124,44 +128,43 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		} else if gotRef.ObjectId != nil {
 			newObjectId = *gotRef.ObjectId
 		} else {
-			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
+			return diag.FromErr(fmt.Errorf(" GetRefs response doesn't have a valid commit id."))
 		}
 	}
 
 	_, err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
-			Name:        &longBranchName,
+			Name:        converter.String(REF_BRANCH_PREFIX + branchName),
 			NewObjectId: &newObjectId,
 			OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
 		RepositoryId: converter.String(repoId),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error creating branch %q: %w", shortBranchName, err))
+		return diag.FromErr(fmt.Errorf(" creating branch %q: %w", branchName, err))
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", repoId, shortBranchName))
-
+	d.SetId(fmt.Sprintf("%s:%s", repoId, branchName))
 	return resourceGitRepositoryBranchRead(ctx, d, m)
 }
 
 func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	repoId, name, err := tfhelper.ParseGitRepoBranchID(d.Id())
+	repoId, branchName, err := tfhelper.ParseGitRepoBranchID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	shortBranchName := withoutPrefix(REF_BRANCH_PREFIX, name)
-	if name != shortBranchName {
-		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", name)
+	if strings.HasPrefix(branchName, REF_BRANCH_PREFIX) {
+		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", branchName)
 	}
 
 	gotBranch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
-		RepositoryId: converter.String(repoId),
-		Name:         converter.String(shortBranchName),
+		RepositoryId: &repoId,
+		Name:         &branchName,
 	})
+
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -169,17 +172,16 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 		}
 		var branchErr azuredevops.WrappedError
 		if errors.As(err, &branchErr) {
-			regx := regexp.MustCompile(fmt.Sprintf("Branch \"%[1]s\" does not exist in the %[2]s repository.", shortBranchName, repoId))
+			regx := regexp.MustCompile(fmt.Sprintf("Branch \"%[1]s\" does not exist in the %[2]s repository.", branchName, repoId))
 			if branchErr.Message != nil && regx.MatchString(*branchErr.Message) {
 				d.SetId("")
 				return nil
 			}
 		}
-		return diag.FromErr(fmt.Errorf("Error reading branch %q: %w", name, err))
+		return diag.FromErr(fmt.Errorf(" Reading branch %q: %w", branchName, err))
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", repoId, shortBranchName))
-	d.Set("name", shortBranchName)
+	d.Set("name", branchName)
 	d.Set("repository_id", repoId)
 	d.Set("last_commit_id", *gotBranch.Commit.CommitId)
 
@@ -189,35 +191,33 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	repoId, name, err := tfhelper.ParseGitRepoBranchID(d.Id())
+	repoId, branchName, err := tfhelper.ParseGitRepoBranchID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	shortBranchName := withoutPrefix(REF_BRANCH_PREFIX, name)
-	longBranchName := withPrefix(REF_BRANCH_PREFIX, name)
-	if name != shortBranchName {
-		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", name)
+	if strings.HasPrefix(branchName, REF_BRANCH_PREFIX) {
+		return diag.Errorf("Branch name must be in short format without refs/heads/ prefix, got: %q", branchName)
 	}
 
 	gotBranch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
-		RepositoryId: converter.String(repoId),
-		Name:         converter.String(shortBranchName),
+		RepositoryId: &repoId,
+		Name:         &branchName,
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting latest commit of %q: %w", name, err))
+		return diag.FromErr(fmt.Errorf(" Getting latest commit of %q: %w", branchName, err))
 	}
 
 	_, err = updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
-			Name:        converter.String(longBranchName),
+			Name:        converter.String(REF_BRANCH_PREFIX + branchName),
 			OldObjectId: gotBranch.Commit.CommitId,
 			NewObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
 		RepositoryId: converter.String(repoId),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error deleting branch %q: %w", name, err))
+		return diag.FromErr(fmt.Errorf(" Deleting branch %q: %w", branchName, err))
 	}
 
 	return nil
@@ -243,11 +243,4 @@ func withPrefix(prefix, name string) string {
 		return name
 	}
 	return prefix + name
-}
-
-func withoutPrefix(prefix, name string) string {
-	if strings.HasPrefix(name, prefix) {
-		return name[len(prefix):]
-	}
-	return name
 }

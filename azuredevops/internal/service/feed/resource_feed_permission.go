@@ -3,6 +3,7 @@ package feed
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +23,12 @@ func ResourceFeedPermission() *schema.Resource {
 		Read:   resourceFeedPermissionRead,
 		Update: resourceFeedPermissionUpdate,
 		Delete: resourceFeedPermissionDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"feed_id": {
 				Type:         schema.TypeString,
@@ -190,7 +197,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
-	d.SetId("")
 	return nil
 }
 
@@ -245,10 +251,9 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 		}
 	}
 
-	notFound := http.StatusNotFound
 	message := fmt.Sprintf("error reading permission for Feed: %s and Identity: %s", feedId, identityDescriptor)
 	return nil, identityResponse, azuredevops.WrappedError{
-		StatusCode: &notFound,
+		StatusCode: converter.Int(http.StatusNotFound),
 		Message:    &message,
 	}
 }

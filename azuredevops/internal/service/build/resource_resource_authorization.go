@@ -14,9 +14,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-const msgErrorFailedResourceCreate = "error creating authorized resource: %+v"
-const msgErrorFailedResourceUpdate = "error updating authorized resource: %+v"
-const msgErrorFailedResourceDelete = "error deleting authorized resource: %+v"
 const msgErrorAuthorizationNoLongerExists = "[WARN] The authorization with ID '%s' no longer exists. Setting Id to empty \n"
 
 // ResourceResourceAuthorization schema and implementation for resource authorization resource
@@ -70,9 +67,10 @@ func resourceResourceAuthorizationCreate(d *schema.ResourceData, m interface{}) 
 
 	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceCreate, err)
+		return fmt.Errorf(" creating authorized resource: %+v", err)
 	}
 
+	d.SetId(*authorizedResource.Id)
 	return resourceResourceAuthorizationRead(d, m)
 }
 
@@ -141,6 +139,18 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
+func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
+
+	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
+	if err != nil {
+		return fmt.Errorf(" updating authorized resource: %+v", err)
+	}
+
+	return resourceResourceAuthorizationRead(d, m)
+}
+
 func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
@@ -151,26 +161,13 @@ func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 
 	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceDelete, err)
+		return fmt.Errorf(" deleting authorized resource: %+v", err)
 	}
 
 	return nil
 }
 
-func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	authorizedResource, projectID, definitionID := expandAuthorizedResource(d)
-
-	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
-	if err != nil {
-		return fmt.Errorf(msgErrorFailedResourceUpdate, err)
-	}
-
-	return resourceResourceAuthorizationRead(d, m)
-}
-
 func flattenAuthorizedResource(d *schema.ResourceData, authorizedResource *build.DefinitionResourceReference, projectID string, definitionID int) {
-	d.SetId(*authorizedResource.Id)
 	d.Set("resource_id", authorizedResource.Id)
 	d.Set("type", authorizedResource.Type)
 	d.Set("authorized", authorizedResource.Authorized)
