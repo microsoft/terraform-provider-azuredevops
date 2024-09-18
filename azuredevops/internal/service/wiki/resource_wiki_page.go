@@ -13,7 +13,7 @@ import (
 /*
 To improve concurrent page api response:
 "The wiki page has already been updated by another client, so you cannot update it. Please try again."
-Add mutex lock to limit terraform providor concurrent create / update / delete request.
+Add mutex lock to limit terraform provider concurrent create / update / delete request.
 */
 var pageLock = sync.Mutex{}
 
