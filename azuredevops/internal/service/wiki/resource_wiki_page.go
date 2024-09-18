@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 /*
@@ -63,15 +64,13 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 	path := d.Get("path").(string)
 	content := d.Get("content").(string)
 
-	wiki_page_upsert_params := wiki.WikiPageCreateOrUpdateParameters{
-		Content: &content,
-	}
-
 	pageLock.Lock()
 	defer pageLock.Unlock()
 
-	_, err := clients.WikiClient.CreateOrUpdatePage(clients.Ctx, wiki.CreateOrUpdatePageArgs{
-		Parameters:     &wiki_page_upsert_params,
+	resp, err := clients.WikiClient.CreateOrUpdatePage(clients.Ctx, wiki.CreateOrUpdatePageArgs{
+		Parameters: &wiki.WikiPageCreateOrUpdateParameters{
+			Content: &content,
+		},
 		Project:        &projectID,
 		WikiIdentifier: &wikiID,
 		Path:           &path,
@@ -80,6 +79,7 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+	d.SetId(strconv.Itoa(*resp.Page.Id))
 	return resourceWikiPageRead(d, m)
 }
 
@@ -88,11 +88,13 @@ func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	wikiID := d.Get("wiki_id").(string)
 	path := d.Get("path").(string)
+	includeContent := true
 
 	resp, err := clients.WikiClient.GetPage(clients.Ctx, wiki.GetPageArgs{
 		Project:        &projectID,
 		WikiIdentifier: &wikiID,
 		Path:           &path,
+		IncludeContent: &includeContent,
 	})
 
 	if err != nil {
@@ -100,7 +102,8 @@ func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 	}
 	etagValue := strings.Trim(strings.Join(*resp.ETag, " "), `\"`)
 	d.Set("etag", etagValue)
-	d.SetId(strconv.Itoa(*resp.Page.Id))
+	d.Set("content", *resp.Page.Content)
+	d.Set("path", *resp.Page.Path)
 	return nil
 }
 
@@ -115,14 +118,14 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	content := d.Get("content").(string)
-	wiki_page_upsert_params := wiki.WikiPageCreateOrUpdateParameters{
-		Content: &content,
-	}
+
 	pageLock.Lock()
 	defer pageLock.Unlock()
 
 	_, err = clients.WikiClient.UpdatePageById(clients.Ctx, wiki.UpdatePageByIdArgs{
-		Parameters:     &wiki_page_upsert_params,
+		Parameters: &wiki.WikiPageCreateOrUpdateParameters{
+			Content: &content,
+		},
 		Project:        &projectID,
 		WikiIdentifier: &wikiID,
 		Id:             &id,
@@ -130,8 +133,13 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
+
 	return resourceWikiPageRead(d, m)
 }
 
