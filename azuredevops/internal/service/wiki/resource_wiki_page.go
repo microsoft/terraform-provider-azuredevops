@@ -55,8 +55,8 @@ func ResourceWikiPage() *schema.Resource {
 func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	project_id := d.Get("project_id").(string)
-	wiki_id := d.Get("wiki_id").(string)
+	projectID := d.Get("project_id").(string)
+	wikiID := d.Get("wiki_id").(string)
 	path := d.Get("path").(string)
 	content := d.Get("content").(string)
 
@@ -69,8 +69,8 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 
 	_, err := clients.WikiClient.CreateOrUpdatePage(clients.Ctx, wiki.CreateOrUpdatePageArgs{
 		Parameters:     &wiki_page_upsert_params,
-		Project:        &project_id,
-		WikiIdentifier: &wiki_id,
+		Project:        &projectID,
+		WikiIdentifier: &wikiID,
 		Path:           &path,
 	})
 
@@ -82,13 +82,13 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	project_id := d.Get("project_id").(string)
-	wiki_id := d.Get("wiki_id").(string)
+	projectID := d.Get("project_id").(string)
+	wikiID := d.Get("wiki_id").(string)
 	path := d.Get("path").(string)
 
 	resp, err := clients.WikiClient.GetPage(clients.Ctx, wiki.GetPageArgs{
-		Project:        &project_id,
-		WikiIdentifier: &wiki_id,
+		Project:        &projectID,
+		WikiIdentifier: &wikiID,
 		Path:           &path,
 	})
 
@@ -103,8 +103,8 @@ func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	project_id := d.Get("project_id").(string)
-	wiki_id := d.Get("wiki_id").(string)
+	projectID := d.Get("project_id").(string)
+	wikiID := d.Get("wiki_id").(string)
 
 	etag := d.Get("etag").(string)
 	id, err := strconv.Atoi(d.Id())
@@ -120,8 +120,8 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 
 	_, err = clients.WikiClient.UpdatePageById(clients.Ctx, wiki.UpdatePageByIdArgs{
 		Parameters:     &wiki_page_upsert_params,
-		Project:        &project_id,
-		WikiIdentifier: &wiki_id,
+		Project:        &projectID,
+		WikiIdentifier: &wikiID,
 		Id:             &id,
 		Version:        &etag,
 	})
@@ -135,8 +135,8 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceWikiPageDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	project_id := d.Get("project_id").(string)
-	wiki_id := d.Get("wiki_id").(string)
+	projectID := d.Get("project_id").(string)
+	wikiID := d.Get("wiki_id").(string)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return err
@@ -146,8 +146,8 @@ func resourceWikiPageDelete(d *schema.ResourceData, m interface{}) error {
 	defer pageLock.Unlock()
 
 	_, err = clients.WikiClient.DeletePageById(clients.Ctx, wiki.DeletePageByIdArgs{
-		Project:        &project_id,
-		WikiIdentifier: &wiki_id,
+		Project:        &projectID,
+		WikiIdentifier: &wikiID,
 		Id:             &id,
 	})
 	if err != nil {
