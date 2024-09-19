@@ -51,7 +51,7 @@ resource "azurerm_resource_group" "identity" {
 resource "azurerm_user_assigned_identity" "example" {
   location            = azurerm_resource_group.identity.location
   name                = "example-identity"
-  resource_group_name = "azurerm_resource_group.identity.name"
+  resource_group_name = azurerm_resource_group.identity.name
 }
 
 # azure container registry service connection
@@ -74,8 +74,8 @@ resource "azurerm_federated_identity_credential" "example" {
   resource_group_name = azurerm_resource_group.identity.name
   parent_id           = azurerm_user_assigned_identity.example.id
   audience            = ["api://AzureADTokenExchange"]
-  issuer              = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_issuer
-  subject             = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_subject
+  issuer              = azuredevops_serviceendpoint_azurecr.example.workload_identity_federation_issuer
+  subject             = azuredevops_serviceendpoint_azurecr.example.workload_identity_federation_subject
 }
 ```
 
