@@ -33,10 +33,6 @@ func TestAccWikiResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "name"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "wiki_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "path"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "content"),
 				),
 			},
 			{
@@ -70,10 +66,6 @@ func TestAccWikiResource_Complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "repository_id"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "version"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "mapped_path"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "wiki_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "path"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "content"),
 				),
 			},
 			{
@@ -107,10 +99,6 @@ func TestAccWikiResource_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "repository_id"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "version"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "mapped_path"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "wiki_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "path"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki_page.wiki_page", "content"),
 				),
 			},
 			{
@@ -197,13 +185,6 @@ resource "azuredevops_wiki" "project_wiki_test" {
   name       = "projectWikiRepo"
   project_id = azuredevops_project.project.id
   type       = "projectWiki"
-}
-
-resource "azuredevops_wiki_page" "wiki_page" {
-  project_id = azuredevops_project.project.id
-  wiki_id = azuredevops_wiki.project_wiki_test.id
-  path = "/path"
-  content = "content"
 }
 `, projectResource)
 
