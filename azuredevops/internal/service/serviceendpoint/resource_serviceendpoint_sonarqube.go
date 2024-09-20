@@ -84,6 +84,10 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
+	if serviceEndpoint.Id == nil {
+		d.SetId("")
+		return nil
+	}
 	flattenServiceEndpointSonarQube(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }
