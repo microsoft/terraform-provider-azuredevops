@@ -47,7 +47,7 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the Project.
 
-* `name` - (Required) The name of the Wiki.\
+* `name` - (Required) The name of the Wiki.
 
 * `type` -  (Required) The type of the wiki. Possible values are `codeWiki`, `projectWiki`.
 
