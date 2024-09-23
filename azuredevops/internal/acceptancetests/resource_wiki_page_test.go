@@ -23,7 +23,7 @@ func TestAccWikiPageResource_Basic(t *testing.T) {
 		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: HclProjectWikiPage(projectName),
+				Config: hclProjectWikiPage(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
@@ -54,7 +54,7 @@ func TestAccWikiPageResource_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkWikiDestroyed("azuredevops_wiki"),
 		Steps: []resource.TestStep{
 			{
-				Config: HclProjectWikiPage(projectName),
+				Config: hclProjectWikiPage(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
 					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
@@ -74,7 +74,7 @@ func TestAccWikiPageResource_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func HclProjectWikiPage(projectName string) string {
+func hclProjectWikiPage(projectName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf(`
 %s
