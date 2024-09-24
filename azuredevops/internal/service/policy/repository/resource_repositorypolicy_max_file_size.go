@@ -19,7 +19,7 @@ func ResourceRepositoryMaxFileSize() *schema.Resource {
 	resource.Schema["max_file_size"] = &schema.Schema{
 		Type:         schema.TypeInt,
 		Required:     true,
-		ValidateFunc: validation.IntInSlice([]int{1, 2, 5, 10, 100, 200}),
+		ValidateFunc: validation.IntInSlice([]int{1, 2, 5, 10, 50, 100, 200}),
 	}
 	return resource
 }
