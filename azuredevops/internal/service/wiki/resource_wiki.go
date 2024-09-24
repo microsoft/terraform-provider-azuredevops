@@ -1,7 +1,7 @@
 package wiki
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -185,8 +185,14 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		if resp.Id == nil {
-			return errors.New("projectWiki can only be removed when attached project is removed.")
+
+		err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
+			RepositoryId: resp.RepositoryId,
+			Project:      converter.String(d.Get("project_id").(string)),
+		})
+
+		if err != nil {
+			return fmt.Errorf(" Delete Project wiki failed. Error: %+v", err)
 		}
 	}
 	return nil
