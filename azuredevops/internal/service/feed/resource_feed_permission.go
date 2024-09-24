@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -15,6 +16,12 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+)
+
+const (
+	syncing = "Syncing"
+	failed  = "Failed"
+	succeed = "Succeeded"
 )
 
 func ResourceFeedPermission() *schema.Resource {
@@ -107,6 +114,11 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
+	err = checkPermissions(d, m)
+	if err != nil {
+		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
+	}
+
 	id, _ := uuid.NewUUID()
 	d.SetId(fmt.Sprintf("fp-%s", id.String()))
 
@@ -164,6 +176,11 @@ func resourceFeedPermissionUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf("updating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
+	}
+
+	err = checkPermissions(d, m)
+	if err != nil {
+		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
 	}
 
 	return resourceFeedPermissionRead(d, m)
@@ -255,5 +272,35 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 	return nil, identityResponse, azuredevops.WrappedError{
 		StatusCode: converter.Int(http.StatusNotFound),
 		Message:    &message,
+	}
+}
+
+func checkPermissions(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	stateConf := &resource.StateChangeConf{
+		ContinuousTargetOccurence: 2,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Pending:                   []string{syncing},
+		Target:                    []string{succeed, failed},
+		Refresh:                   pollPermissions(d, m),
+	}
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return fmt.Errorf(" Failed waiting for Feed Permission create. %v ", err)
+	}
+	return nil
+}
+
+func pollPermissions(d *schema.ResourceData, m interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		_, _, err := getFeedPermission(d, m)
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return nil, syncing, nil
+			}
+			return nil, failed, nil
+		}
+		return "", succeed, nil
 	}
 }
