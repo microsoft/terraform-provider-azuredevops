@@ -299,7 +299,7 @@ func pollPermissions(d *schema.ResourceData, m interface{}) resource.StateRefres
 			if utils.ResponseWasNotFound(err) {
 				return nil, syncing, nil
 			}
-			return nil, failed, nil
+			return nil, failed, err
 		}
 		return "", succeed, nil
 	}
