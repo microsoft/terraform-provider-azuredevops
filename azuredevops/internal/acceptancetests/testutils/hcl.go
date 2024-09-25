@@ -1110,3 +1110,20 @@ resource "azuredevops_wiki" "project_wiki" {
 }
 `, projectResource)
 }
+
+// HclPersonalAccessTokenDataSource HCL describing a data source for Personal Access Token definitions
+func HclPersonalAccessTokenDataSource(authorization_id string) string {
+	return fmt.Sprintf(`
+data "azuredevops_personal_access_token" "pat" {
+       authorization_id = %s
+}
+`, authorization_id)
+}
+
+// HclPersonalAccessTokenResource HCL describing an Azure DevOps Personal Access Token
+func HclPersonalAccessTokenResource(tokenName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_personal_access_token" "pat" {
+       name           = "%s"
+}`, tokenName)
+}
