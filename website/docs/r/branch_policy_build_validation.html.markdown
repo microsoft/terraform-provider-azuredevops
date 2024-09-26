@@ -42,10 +42,10 @@ resource "azuredevops_branch_policy_build_validation" "example" {
   blocking = true
 
   settings {
-    display_name        = "Example build validation policy"
-    build_definition_id = azuredevops_build_definition.example.id
+    display_name                = "Example build validation policy"
+    build_definition_id         = azuredevops_build_definition.example.id
     queue_on_source_update_only = true
-    valid_duration      = 720
+    valid_duration              = 720
     filename_patterns = [
       "/WebApp/*",
       "!/WebApp/Tests/*",
@@ -63,9 +63,9 @@ resource "azuredevops_branch_policy_build_validation" "example" {
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
-    
+
     scope {
-      match_type     = "DefaultBranch"
+      match_type = "DefaultBranch"
     }
   }
 }
