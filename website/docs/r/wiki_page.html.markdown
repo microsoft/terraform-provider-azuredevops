@@ -42,7 +42,7 @@ The following arguments are supported:
 
 * `path` -  (Required) The path of the wiki page.
 
-* `content` - (Optional) The content of the wiki page.
+* `content` - (Required) The content of the wiki page.
 
 ## Attributes Reference
 
