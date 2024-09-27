@@ -103,7 +103,6 @@ func TestAccAgentPool_requiresImportErrorStep(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "pool_type", "automation"),
 				),
 			},
-
 			{
 				Config:      hclAgentPoolResourceRequiresImport(poolName),
 				ExpectError: requiresImportError(poolName),

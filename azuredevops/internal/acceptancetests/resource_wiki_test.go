@@ -17,10 +17,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func TestAccWikiResource_Basic(t *testing.T) {
+func TestAccWikiResource_projectWiki(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 
-	tf := "azuredevops_wiki.project_wiki"
+	tf := "azuredevops_wiki.test"
 	resourceType := "azuredevops_wiki"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -28,11 +28,10 @@ func TestAccWikiResource_Basic(t *testing.T) {
 		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclWiki(projectName),
+				Config: hclWikiResourceProjectWiki(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "name"),
+					resource.TestCheckResourceAttrSet(tf, "project_id"),
+					resource.TestCheckResourceAttrSet(tf, "name"),
 				),
 			},
 			{
@@ -44,10 +43,10 @@ func TestAccWikiResource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccWikiResource_Complete(t *testing.T) {
+func TestAccWikiResource_codeWiki(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 
-	tf := "azuredevops_wiki.project_wiki"
+	tf := "azuredevops_wiki.test"
 	resourceType := "azuredevops_wiki"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -55,17 +54,14 @@ func TestAccWikiResource_Complete(t *testing.T) {
 		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclWiki(projectName),
+				Config: hclWikiResourceCodeWiki(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "name"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "name"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "repository_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "version"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "mapped_path"),
+					resource.TestCheckResourceAttrSet(tf, "project_id"),
+					resource.TestCheckResourceAttrSet(tf, "type"),
+					resource.TestCheckResourceAttrSet(tf, "name"),
+					resource.TestCheckResourceAttrSet(tf, "repository_id"),
+					resource.TestCheckResourceAttrSet(tf, "version"),
+					resource.TestCheckResourceAttrSet(tf, "mapped_path"),
 				),
 			},
 			{
@@ -77,42 +73,9 @@ func TestAccWikiResource_Complete(t *testing.T) {
 	})
 }
 
-func TestAccWikiResource_CreateAndUpdate(t *testing.T) {
-
+func TestAccWikiResource_importErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	tf := "azuredevops_wiki.project_wiki"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: checkWikiDestroyed("azuredevops_wiki"),
-		Steps: []resource.TestStep{
-			{
-				Config: testutils.HclWiki(projectName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "name"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "name"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "repository_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "version"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.code_wiki", "mapped_path"),
-				),
-			},
-			{
-				ResourceName:      tf,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccWikiResource_ImportErrorStep(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-
+	tf := "azuredevops_wiki.test"
 	resourceType := "azuredevops_wiki"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -120,12 +83,17 @@ func TestAccWikiResource_ImportErrorStep(t *testing.T) {
 		CheckDestroy: checkWikiDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclWiki(projectName),
+				Config: hclWikiResourceProjectWiki(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "project_id"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "type"),
-					resource.TestCheckResourceAttrSet("azuredevops_wiki.project_wiki", "name"),
+					resource.TestCheckResourceAttrSet("azuredevops_wiki.test", "project_id"),
+					resource.TestCheckResourceAttrSet("azuredevops_wiki.test", "type"),
+					resource.TestCheckResourceAttrSet("azuredevops_wiki.test", "name"),
 				),
+			},
+			{
+				ResourceName:      tf,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config:      hclWikiResourceRequiresImport(projectName),
@@ -149,7 +117,6 @@ func checkWikiDestroyed(resourceType string) resource.TestCheckFunc {
 				return fmt.Errorf("found wiki that should have been deleted")
 			}
 		}
-
 		return nil
 	}
 }
@@ -159,34 +126,58 @@ func wikiRequiresImportError() *regexp.Regexp {
 	return regexp.MustCompile(message)
 }
 
-func hclWikiResourceRequiresImport(projectName string) string {
-	projectResource := testutils.HclProjectResource(projectName)
-	projectFeatures := fmt.Sprintf(`
-%s
+func hclWikiResourceProjectWiki(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
 
-resource "azuredevops_git_repository" "repository" {
-  project_id = azuredevops_project.project.id
+resource "azuredevops_wiki" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "projectWikiRepo"
+  type       = "projectWiki"
+}
+`, projectName)
+}
+
+func hclWikiResourceCodeWiki(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "Repo"
   initialization {
     init_type = "Clean"
   }
 }
 
-resource "azuredevops_wiki" "code_wiki_test" {
+resource "azuredevops_wiki" "test" {
+  project_id    = azuredevops_project.test.id
+  repository_id = azuredevops_git_repository.test.id
   name          = "codeWikiRepo"
-  project_id    = azuredevops_project.project.id
-  repository_id = azuredevops_git_repository.repository.id
   version       = "master"
   type          = "codeWiki"
   mapped_path   = "/"
+}`, projectName)
 }
 
-resource "azuredevops_wiki" "project_wiki_test" {
-  name       = "projectWikiRepo"
-  project_id = azuredevops_project.project.id
-  type       = "projectWiki"
-}
-`, projectResource)
+func hclWikiResourceRequiresImport(projectName string) string {
+	return fmt.Sprintf(`
+%s
 
-	return fmt.Sprintf("%s", projectFeatures)
+resource "azuredevops_wiki" "import" {
+  project_id = azuredevops_wiki.test.project_id
+  name       = azuredevops_wiki.test.name
+  type       = azuredevops_wiki.test.type
+}
+`, hclWikiResourceProjectWiki(projectName))
 }
