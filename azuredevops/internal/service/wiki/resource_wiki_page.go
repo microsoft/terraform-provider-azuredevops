@@ -30,12 +30,12 @@ func ResourceWikiPage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"wiki_id": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"path": {
