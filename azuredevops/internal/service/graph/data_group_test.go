@@ -183,6 +183,13 @@ func testGroupDataSource_HandlesCollectionGroups(t *testing.T, resourceData *sch
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
 	clients := &client.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil)
 
 	firstListGroupCallArgs := graph.ListGroupsArgs{}
 	continuationToken := "continuation-token"
