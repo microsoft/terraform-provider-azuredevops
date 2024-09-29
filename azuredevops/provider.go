@@ -119,6 +119,7 @@ func Provider() *schema.Provider {
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":        taskagent.ResourceEnvironmentKubernetes(),
 			"azuredevops_wiki":                                   wiki.ResourceWiki(),
+			"azuredevops_wiki_page":                              wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
 			"azuredevops_feed":                                   feed.ResourceFeed(),
