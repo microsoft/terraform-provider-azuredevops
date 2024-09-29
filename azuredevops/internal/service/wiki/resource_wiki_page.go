@@ -1,6 +1,8 @@
 package wiki
 
 import (
+	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"strconv"
 	"strings"
 	"sync"
@@ -39,8 +41,9 @@ func ResourceWikiPage() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"path": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"content": {
 				Type:     schema.TypeString,
@@ -58,21 +61,16 @@ func ResourceWikiPage() *schema.Resource {
 func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	wikiID := d.Get("wiki_id").(string)
-	path := d.Get("path").(string)
-	content := d.Get("content").(string)
-
 	pageLock.Lock()
 	defer pageLock.Unlock()
 
 	resp, err := clients.WikiClient.CreateOrUpdatePage(clients.Ctx, wiki.CreateOrUpdatePageArgs{
 		Parameters: &wiki.WikiPageCreateOrUpdateParameters{
-			Content: &content,
+			Content: converter.String(d.Get("content").(string)),
 		},
-		Project:        &projectID,
-		WikiIdentifier: &wikiID,
-		Path:           &path,
+		Project:        converter.String(d.Get("project_id").(string)),
+		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
+		Path:           converter.String(d.Get("path").(string)),
 	})
 
 	if err != nil {
@@ -84,51 +82,48 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	projectID := d.Get("project_id").(string)
-	wikiID := d.Get("wiki_id").(string)
-	path := d.Get("path").(string)
-	includeContent := true
 
 	resp, err := clients.WikiClient.GetPage(clients.Ctx, wiki.GetPageArgs{
-		Project:        &projectID,
-		WikiIdentifier: &wikiID,
-		Path:           &path,
-		IncludeContent: &includeContent,
+		Project:        converter.String(d.Get("project_id").(string)),
+		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
+		Path:           converter.String(d.Get("path").(string)),
+		IncludeContent: converter.Bool(true),
 	})
 
 	if err != nil {
 		return err
 	}
-	etagValue := strings.Trim(strings.Join(*resp.ETag, " "), `\"`)
-	d.Set("etag", etagValue)
-	d.Set("content", *resp.Page.Content)
-	d.Set("path", *resp.Page.Path)
+
+	if resp.ETag != nil && len(*resp.ETag) > 0 {
+		etagValue := strings.Trim(strings.Join(*resp.ETag, " "), `\"`)
+		d.Set("etag", etagValue)
+	}
+
+	if resp.Page != nil {
+		d.Set("content", resp.Page.Content)
+		d.Set("path", resp.Page.Path)
+	}
 	return nil
 }
 
 func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	projectID := d.Get("project_id").(string)
-	wikiID := d.Get("wiki_id").(string)
-
-	etag := d.Get("etag").(string)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return err
+		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
-	content := d.Get("content").(string)
 
 	pageLock.Lock()
 	defer pageLock.Unlock()
 
 	_, err = clients.WikiClient.UpdatePageById(clients.Ctx, wiki.UpdatePageByIdArgs{
 		Parameters: &wiki.WikiPageCreateOrUpdateParameters{
-			Content: &content,
+			Content: converter.String(d.Get("content").(string)),
 		},
-		Project:        &projectID,
-		WikiIdentifier: &wikiID,
 		Id:             &id,
-		Version:        &etag,
+		Project:        converter.String(d.Get("project_id").(string)),
+		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
+		Version:        converter.String(d.Get("etag").(string)),
 	})
 
 	if err != nil {
@@ -141,19 +136,17 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceWikiPageDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	projectID := d.Get("project_id").(string)
-	wikiID := d.Get("wiki_id").(string)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return err
+		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
 
 	pageLock.Lock()
 	defer pageLock.Unlock()
 
 	_, err = clients.WikiClient.DeletePageById(clients.Ctx, wiki.DeletePageByIdArgs{
-		Project:        &projectID,
-		WikiIdentifier: &wikiID,
+		Project:        converter.String(d.Get("project_id").(string)),
+		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
 		Id:             &id,
 	})
 	if err != nil {
