@@ -124,6 +124,15 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 		GetDescriptor(clients.Ctx, expectedProjectDescriptorLookupArgs).
 		Return(&projectDescriptorResponse, nil)
 
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil).
+		Times(1)
+
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	continuationToken := "continuation-token"
 	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()})
