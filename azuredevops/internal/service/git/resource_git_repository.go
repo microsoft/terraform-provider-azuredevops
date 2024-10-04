@@ -439,6 +439,8 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 		var allRepo *[]git.GitRepository
 		allRepo, err = clients.GitReposClient.GetRepositories(clients.Ctx, git.GetRepositoriesArgs{
 			Project: converter.String(projectID),
+			// This flag is used to include disabled repos
+			IncludeHidden: converter.Bool(true),
 		})
 		if err != nil {
 			return nil, err
