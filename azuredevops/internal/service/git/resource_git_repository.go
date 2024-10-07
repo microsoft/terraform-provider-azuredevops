@@ -329,6 +329,11 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	clients := m.(*client.AggregatedClient)
 
+	uuid, err := uuid.Parse(repoID)
+	if err != nil {
+		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
+	}
+
 	// you cannot delete a disabled repo. We must enable in order to delete
 	repoActual, err := gitRepositoryRead(clients, repoID, repoName, projectID)
 	if err != nil {
@@ -346,7 +351,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	err = deleteGitRepository(clients, repoID)
+	err = deleteGitRepository(clients, uuid)
 	if err != nil {
 		return err
 	}
@@ -465,11 +470,7 @@ func updateGitRepository(clients *client.AggregatedClient, repository *git.GitRe
 		})
 }
 
-func deleteGitRepository(clients *client.AggregatedClient, repoID string) error {
-	uuid, err := uuid.Parse(repoID)
-	if err != nil {
-		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
-	}
+func deleteGitRepository(clients *client.AggregatedClient, uuid uuid.UUID) error {
 	return clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &uuid,
 	})
