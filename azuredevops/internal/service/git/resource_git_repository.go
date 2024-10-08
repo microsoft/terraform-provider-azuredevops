@@ -340,7 +340,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
 	}
 
-	// you cannot delete a disabled repo. We must enable in order to delete
+	// you cannot delete a disabled repo
 	repoActual, err := gitRepositoryRead(clients, repoID, repoName, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
