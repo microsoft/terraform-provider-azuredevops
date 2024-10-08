@@ -72,11 +72,12 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 
 // This test verifies the following:
 // 1. You can create a repo with disabled = true
-// 2. You can update a disabled repo
-// 3. You can delete a disabled repo
+// 2. You cannot update a disabled repo
+// 3. You can enable a disabled repo
 func TestAccGitRepo_CreateAndDisable(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
+	gitRepoName2 := testutils.GenerateResourceName()
 	tfRepoNode := "azuredevops_git_repository.repository"
 	disabledTrue := "true"
 	disabledFalse := "false"
@@ -96,6 +97,16 @@ func TestAccGitRepo_CreateAndDisable(t *testing.T) {
 				),
 			},
 			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName2, disabledTrue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+				),
+				ExpectError: regexp.MustCompile(`A disabled repository cannot be updated, please enable the repository before attempting to update`),
+			},
+			{
 				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -111,6 +122,15 @@ func TestAccGitRepo_CreateAndDisable(t *testing.T) {
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+				),
+			},
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledFalse),
 				),
 			},
 		},
