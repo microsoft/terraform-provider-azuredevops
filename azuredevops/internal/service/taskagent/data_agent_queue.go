@@ -23,13 +23,13 @@ func DataAgentQueue() *schema.Resource {
 			"project_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validation.NoZeroValues,
+				ValidateFunc:     validation.IsUUID,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"agent_pool_id": {
 				Type:     schema.TypeInt,
