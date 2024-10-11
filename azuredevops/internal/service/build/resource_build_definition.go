@@ -82,6 +82,11 @@ func ResourceBuildDefinition() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
 			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -90,11 +95,6 @@ func ResourceBuildDefinition() *schema.Resource {
 			"revision": {
 				Type:     schema.TypeInt,
 				Computed: true,
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
 			},
 			"path": {
 				Type:         schema.TypeString,
