@@ -93,7 +93,6 @@ resource "azuredevops_project" "project" {
 }`, projectName, projectName, featureStateTestplans, featureStateArtifacts)
 }
 
-// HclProjectGitRepositoryImport HCL describing a AzDO git repositories
 func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
 	azureGitRepoResource := fmt.Sprintf(`
 	resource "azuredevops_git_repository" "repository" {
@@ -109,29 +108,6 @@ func HclProjectGitRepositoryImport(gitRepoName string, projectName string) strin
 	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }
 
-func HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName string) string {
-	gitRepoResource := HclGitRepoResource(projectName, gitRepoName, "Clean")
-	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_generic_git" "serviceendpoint" {
-		project_id            = azuredevops_project.project.id
-		service_endpoint_name = "%s"
-		repository_url        = azuredevops_git_repository.repository.remote_url
-	}
-	`, serviceEndpointName)
-	importGitRepoResource := fmt.Sprintf(`
-	resource "azuredevops_git_repository" "import" {
-		project_id      = azuredevops_project.project.id
-		name            = "%s"
-		initialization {
-		   init_type             = "Import"
-		   source_type           = "Git"
-		   source_url            = azuredevops_git_repository.repository.remote_url
-		   service_connection_id = azuredevops_serviceendpoint_generic_git.serviceendpoint.id
-		 }
-	}`, gitImportRepoName)
-	return fmt.Sprintf("%s\n%s\n%s", gitRepoResource, serviceEndpointResource, importGitRepoResource)
-}
-
 // HclSecurityroleDefinitionsDataSource HCL describing a data source for securityrole definitions
 func HclSecurityroleDefinitionsDataSource() string {
 	return `
@@ -139,35 +115,6 @@ data "azuredevops_securityrole_definitions" "definitions-list" {
 	scope = "distributedtask.environmentreferencerole"
 }
 `
-}
-
-// HclUserEntitlementResource HCL describing an AzDO UserEntitlement
-func HclUserEntitlementResource(principalName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_user_entitlement" "user" {
-	principal_name     = "%s"
-	account_license_type = "express"
-}`, principalName)
-}
-
-// HclGroupEntitlementResource HCL describing an AzDO GroupEntitlement
-func HclGroupEntitlementResource(displayName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_group_entitlement" "group" {
-	display_name = "%s"
-	account_license_type = "express"
-}`, displayName)
-}
-
-// HclGroupEntitlementResource HCL describing an AzDO GroupEntitlement linked
-// with Azure AD
-func HclGroupEntitlementResourceAAD(originId string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_group_entitlement" "group_aad" {
-	origin_id = "%s"
-	origin = "aad"
-	account_license_type = "express"
-}`, originId)
 }
 
 // HclServiceEndpointGitHubResource HCL describing an AzDO service endpoint
@@ -832,22 +779,6 @@ output "user_descriptor" {
 `, projectName, groupName, userPrincipalName)
 }
 
-// HclGroupResource HCL describing an AzDO group, if the projectName is empty, only a azuredevops_group instance is returned
-func HclGroupResource(groupResourceName, projectName, groupName string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_group" "%s" {
-	scope        = azuredevops_project.project.id
-	display_name = "%s"
-}
-
-output "group_id_%s" {
-	value = azuredevops_group.%s.id
-}
-`, HclProjectResource(projectName), groupResourceName, groupName, groupResourceName, groupResourceName)
-}
-
 // HclResourceAuthorization HCL describing a resource authorization
 func HclResourceAuthorization(resourceID string, authorized bool) string {
 	return fmt.Sprintf(`
@@ -932,34 +863,6 @@ resource "azuredevops_git_permissions" "git-permissions" {
 	}
 }
 `, projectResource)
-}
-
-// HclGitPermissionsForRepository creates HCl for testing to set permissions for a the all Git repositories of AzDO project
-func HclGitPermissionsForRepository(projectName string, gitRepoName string) string {
-	projectResource := HclProjectResource(projectName)
-	gitRepository := getGitRepoResource(gitRepoName, "clean")
-
-	return fmt.Sprintf(`
-%s
-
-%s
-
-data "azuredevops_group" "project-readers" {
-	project_id = azuredevops_project.project.project_id
-	name       = "Readers"
-}
-
-resource "azuredevops_git_permissions" "git-permissions" {
-	project_id    = azuredevops_project.project.project_id
-	repository_id = azuredevops_git_repository.gitrepo.id
-	principal     = data.azuredevops_group.project-readers.id
-	permissions   = {
-		CreateRepository = "Deny"
-		DeleteRepository = "Deny"
-		RenameRepository = "NotSet"
-	}
-}
-`, projectResource, gitRepository)
 }
 
 func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {

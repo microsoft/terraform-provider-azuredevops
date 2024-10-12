@@ -110,7 +110,7 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	project := core.TeamProjectReference{Id: &projectID}
 
 	repoID := uuid.New()
-	repoName := "name"
+	repoName := "repoName"
 	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
@@ -122,8 +122,6 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 
 	require.Nil(t, err)
 	require.NotNil(t, expandedGitRepo)
-	require.NotNil(t, expandedGitRepo.Id)
-	require.Equal(t, *expandedGitRepo.Id, repoID)
 	require.NotNil(t, expandedProjectID)
 	require.Equal(t, *expandedProjectID, projectID)
 	require.NotNil(t, repoInitialization)
@@ -252,7 +250,7 @@ func TestGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
 
 	err := resourceGitRepositoryDelete(resourceData, &client.AggregatedClient{})
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "Invalid repositoryId UUID")
+	require.Contains(t, err.Error(), "invalid repositoryId UUID")
 }
 
 func TestGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.T) {

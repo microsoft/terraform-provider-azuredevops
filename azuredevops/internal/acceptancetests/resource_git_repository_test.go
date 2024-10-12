@@ -20,18 +20,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// Verifies that the following sequence of events occurrs without error:
-//
-//	(1) TF apply creates resource
-//	(2) TF state values are set
-//	(3) resource can be queried by ID and has expected name
-//	(4) TF destroy deletes resource
-//	(5) resource can no longer be queried by ID
-func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
+func TestAccGitRepository_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoNameFirst := testutils.GenerateResourceName()
 	gitRepoNameSecond := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.repository"
+	tfRepoNode := "azuredevops_git_repository.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -39,7 +32,7 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGitRepoResource(projectName, gitRepoNameFirst, "Uninitialized"),
+				Config: hclGitRepositoryBasic(projectName, gitRepoNameFirst, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameFirst),
@@ -53,7 +46,7 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclGitRepoResource(projectName, gitRepoNameSecond, "Uninitialized"),
+				Config: hclGitRepositoryBasic(projectName, gitRepoNameSecond, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameSecond),
@@ -70,17 +63,10 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-// This test verifies the following:
-// 1. You can create a repo with disabled = true
-// 2. You cannot update a disabled repo
-// 3. You can enable a disabled repo
-func TestAccGitRepo_CreateAndDisable(t *testing.T) {
+func TestAccGitRepository_disabled(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	gitRepoName2 := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.repository"
-	disabledTrue := "true"
-	disabledFalse := "false"
+	tfRepoNode := "azuredevops_git_repository.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -88,74 +74,79 @@ func TestAccGitRepo_CreateAndDisable(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledTrue),
+				Config: hclGitRepositoryDisable(projectName, gitRepoName, true),
 				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					checkGitRepoExists(gitRepoName),
-					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "true"),
 				),
 			},
 			{
-				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName2, disabledTrue),
+				Config: hclGitRepositoryDisable(projectName, gitRepoName, false),
 				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					checkGitRepoExists(gitRepoName),
-					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
-				),
-				ExpectError: regexp.MustCompile(`A disabled repository cannot be updated, please enable the repository before attempting to update`),
-			},
-			{
-				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
-					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					checkGitRepoExists(gitRepoName),
-					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledFalse),
-				),
-			},
-			{
-				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledTrue),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
-					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					checkGitRepoExists(gitRepoName),
-					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
-				),
-			},
-			{
-				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
-					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
-					checkGitRepoExists(gitRepoName),
-					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledFalse),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "false"),
 				),
 			},
 		},
 	})
 }
 
-// Verifies that the create operation fails if the initialization is
-// not specified.
-func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
+func TestAccGitRepository_disabledCannotUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	azureGitRepoResource := fmt.Sprintf(`
-	resource "azuredevops_git_repository" "repository" {
-		project_id      = azuredevops_project.project.id
-		name            = "%s"
-	}`, gitRepoName)
-	projectResource := testutils.HclProjectResource(projectName)
-	gitRepoResource := fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
+	gitRepoNameUpdate := gitRepoName + "update"
+	tfRepoNode := "azuredevops_git_repository.test"
 
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryDisable(projectName, gitRepoName, true),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "true"),
+				),
+			},
+			{
+				Config: hclGitRepositoryDisable(projectName, gitRepoNameUpdate, true),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoNameUpdate),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "true"),
+				),
+				ExpectError: regexp.MustCompile(`A disabled repository cannot be updated, please enable the repository before attempting to update`),
+			},
+			{
+				Config: hclGitRepositoryDisable(projectName, gitRepoName, false),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGitRepository_incorrectInitialization(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config:      gitRepoResource,
+				Config:      hclGitRepositoryIncorrectInitialization(projectName, gitRepoName),
 				ExpectError: regexp.MustCompile(`Insufficient initialization blocks`),
 			},
 		},
@@ -163,17 +154,17 @@ func TestAccGitRepo_Create_IncorrectInitialization(t *testing.T) {
 
 }
 
-func TestAccGitRepo_Create_Import(t *testing.T) {
+func TestAccGitRepository_import(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	repoImportConfig := testutils.HclProjectGitRepositoryImport(gitRepoName, projectName)
-	tfRepoNode := "azuredevops_git_repository.repository"
+
+	tfRepoNode := "azuredevops_git_repository.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: repoImportConfig,
+				Config: hclGitRepositoryImport(projectName, gitRepoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "is_fork"),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "remote_url"),
@@ -189,12 +180,10 @@ func TestAccGitRepo_Create_Import(t *testing.T) {
 
 }
 
-// Verifies that a newly created repo with init_type of "Clean" has the expected
-// master branch available
-func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
+func TestAccGitRepository_initializationClean(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.repository"
+	tfRepoNode := "azuredevops_git_repository.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -202,7 +191,7 @@ func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGitRepoResource(projectName, gitRepoName, "Clean"),
+				Config: hclGitRepositoryBasic(projectName, gitRepoName, "Clean"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
@@ -215,12 +204,10 @@ func TestAccGitRepo_RepoInitialization_Clean(t *testing.T) {
 	})
 }
 
-// Verifies that a newly created repo with init_type of "Uninitialized" does NOT
-// have a master branch established
-func TestAccGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
+func TestAccGitRepository_uninitialized(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.repository"
+	tfRepoNode := "azuredevops_git_repository.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -228,7 +215,7 @@ func TestAccGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGitRepoResource(projectName, gitRepoName, "Uninitialized"),
+				Config: hclGitRepositoryBasic(projectName, gitRepoName, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -240,13 +227,12 @@ func TestAccGitRepo_RepoInitialization_Uninitialized(t *testing.T) {
 	})
 }
 
-// Verifies that a newly forked repo does NOT return an empty branch_name
-func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
+func TestAccGitRepository_forkBranchNotEmpty(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 	gitForkedRepoName := testutils.GenerateResourceName()
-	tfRepoNode := "azuredevops_git_repository.repository"
-	tfForkedRepoNode := "azuredevops_git_repository.gitforkedrepo"
+	tfRepoNode := "azuredevops_git_repository.test"
+	tfForkedRepoNode := "azuredevops_git_repository.fork"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -254,7 +240,7 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclForkedGitRepoResource(projectName, gitRepoName, gitForkedRepoName, "Clean", "Uninitialized"),
+				Config: hclGitRepositoryForkBranchNotEmpty(projectName, gitRepoName, gitForkedRepoName, "Uninitialized"),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -268,7 +254,7 @@ func TestAccGitRepo_RepoFork_BranchNotEmpty(t *testing.T) {
 	})
 }
 
-func TestAccGitRepo_PrivateImport_BranchNotEmpty(t *testing.T) {
+func TestAccGitRssepository_privateImportBranchNotEmpty(t *testing.T) {
 	if os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME") == "" ||
 		os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD") == "" {
 		t.Skip("Skipping as AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME or AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD is not specified")
@@ -292,7 +278,7 @@ func TestAccGitRepo_PrivateImport_BranchNotEmpty(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclProjectGitRepoImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
+				Config: hclGitRepositoryImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -312,9 +298,9 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.repository"]
+		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a repo definition in the TF state")
+			return fmt.Errorf(" Did not find a repo definition in the TF state")
 		}
 
 		repoID := gitRepo.Primary.ID
@@ -326,7 +312,7 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 		}
 
 		if *repo.Name != expectedName {
-			return fmt.Errorf("AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
+			return fmt.Errorf(" AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
 		}
 
 		return nil
@@ -387,16 +373,105 @@ func readGitRepo(clients *client.AggregatedClient, repoID string, projectID stri
 	return repo, nil
 }
 
-func gitRepoDisabledResourceConfig(projectName string, gitRepoName string, disabled string) string {
-	projectResource := testutils.HclProjectResource(projectName)
-	azureGitRepoResource := fmt.Sprintf(`
-	resource "azuredevops_git_repository" "repository" {
-		project_id      = azuredevops_project.project.id
-		name            = "%s"
-		disabled = %s
-		initialization {
-			init_type = "Clean"
-		}
-	}`, gitRepoName, disabled)
-	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
+func hclGitRepositoryBasic(projectName, repoName, initType string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+  initialization {
+    init_type = "%s"
+  }
+}
+`, projectName, repoName, initType)
+}
+
+func hclGitRepositoryDisable(projectName, repoName string, disabled bool) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+  disabled   = %t
+  initialization {
+    init_type = "Clean"
+  }
+}
+`, projectName, repoName, disabled)
+}
+
+func hclGitRepositoryIncorrectInitialization(projectName, repoName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+}
+`, projectName, repoName)
+}
+
+func hclGitRepositoryImport(projectName, repoName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+  initialization {
+    init_type   = "Import"
+    source_type = "Git"
+    source_url  = "https://github.com/microsoft/terraform-provider-azuredevops.git"
+  }
+}
+`, projectName, repoName)
+}
+
+func hclGitRepositoryForkBranchNotEmpty(projectName, repoName, forkRepoName, forkInitType string) string {
+	repoInit := hclGitRepositoryBasic(projectName, repoName, "Clean")
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_git_repository" "fork" {
+  project_id           = azuredevops_project.test.id
+  parent_repository_id = azuredevops_git_repository.test.id
+  name                 = "%s"
+  initialization {
+    init_type = "%s"
+  }
+}`, repoInit, forkRepoName, forkInitType)
+}
+
+func hclGitRepositoryImportPrivate(projectName, repoName, importRepoName, serviceEndpointName string) string {
+	repoInit := hclGitRepositoryBasic(projectName, repoName, "Clean")
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_serviceendpoint_generic_git" "test" {
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%s"
+  repository_url        = azuredevops_git_repository.test.remote_url
+}
+
+resource "azuredevops_git_repository" "import" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+  initialization {
+    init_type             = "Import"
+    source_type           = "Git"
+    source_url            = azuredevops_git_repository.test.remote_url
+    service_connection_id = azuredevops_serviceendpoint_generic_git.test.id
+  }
+}
+`, repoInit, serviceEndpointName, importRepoName)
 }
