@@ -189,16 +189,9 @@ func TestGroupDataSource_HandlesCollectionGroups_And_ReturnsCorrectGroup(t *test
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
 	clients := &client.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
-	graphClient.
-		EXPECT().
-		GetStorageKey(clients.Ctx, gomock.Any()).
-		Return(&graph.GraphStorageKeyResult{
-			Links: "",
-			Value: &id,
-		}, nil)
 
-	secondListGroupCallArgs := graph.ListGroupsArgs{}
-	secondListGroupCallResponse := createPaginatedResponse("",
+	listGroupCallArgs := graph.ListGroupsArgs{}
+	listGroupCallResponse := createPaginatedResponse("",
 		groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()},
 		groupMeta{name: "name5", descriptor: "descriptor5", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Classification/TeamProject/" + uuid.New().String()},
 		groupMeta{name: "name3", descriptor: "descriptor3", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Framework/IdentityDomain/" + uuid.New().String()},
@@ -206,8 +199,8 @@ func TestGroupDataSource_HandlesCollectionGroups_And_ReturnsCorrectGroup(t *test
 	)
 	graphClient.
 		EXPECT().
-		ListGroups(clients.Ctx, secondListGroupCallArgs).
-		Return(secondListGroupCallResponse, nil)
+		ListGroups(clients.Ctx, listGroupCallArgs).
+		Return(listGroupCallResponse, nil)
 	err := dataSourceGroupRead(resourceData, clients)
 
 	require.Nil(t, err)
