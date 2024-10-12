@@ -86,12 +86,12 @@ func TestGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
 
 	reposClient.
 		EXPECT().
-		UpdateRepository(clients.Ctx, gomock.Any()).
-		Return(nil, errors.New("UpdateGitRepository() Failed")).
+		GetRepository(clients.Ctx, gomock.Any()).
+		Return(nil, fmt.Errorf("GetRepository() Failed")).
 		Times(1)
 
 	err := resourceGitRepositoryUpdate(resourceData, clients)
-	require.Regexp(t, ".*UpdateGitRepository\\(\\) Failed$", err.Error())
+	require.Regexp(t, ".*GetRepository\\(\\) Failed$", err.Error())
 }
 
 func configureCleanInitialization(d *schema.ResourceData) {
@@ -110,7 +110,7 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	project := core.TeamProjectReference{Id: &projectID}
 
 	repoID := uuid.New()
-	repoName := "name"
+	repoName := "repoName"
 	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
@@ -122,8 +122,6 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 
 	require.Nil(t, err)
 	require.NotNil(t, expandedGitRepo)
-	require.NotNil(t, expandedGitRepo.Id)
-	require.Equal(t, *expandedGitRepo.Id, repoID)
 	require.NotNil(t, expandedProjectID)
 	require.Equal(t, *expandedProjectID, projectID)
 	require.NotNil(t, repoInitialization)
@@ -252,7 +250,7 @@ func TestGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
 
 	err := resourceGitRepositoryDelete(resourceData, &client.AggregatedClient{})
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "Invalid repositoryId UUID")
+	require.Contains(t, err.Error(), "invalid repositoryId UUID")
 }
 
 func TestGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.T) {
@@ -269,15 +267,14 @@ func TestGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.T) {
 	id := uuid.New()
 	resourceData.SetId(id.String())
 
-	expectedArgs := git.DeleteRepositoryArgs{RepositoryId: &id}
 	reposClient.
 		EXPECT().
-		DeleteRepository(clients.Ctx, expectedArgs).
-		Return(fmt.Errorf("DeleteRepository() Failed")).
+		GetRepository(clients.Ctx, gomock.Any()).
+		Return(nil, fmt.Errorf("GetRepository() Failed")).
 		Times(1)
 
 	err := resourceGitRepositoryDelete(resourceData, clients)
-	require.Contains(t, err.Error(), "DeleteRepository() Failed")
+	require.Contains(t, err.Error(), "GetRepository() Failed")
 }
 
 // verifies that the name is used for reads if the ID is not set

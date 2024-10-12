@@ -186,6 +186,26 @@ resource "azuredevops_git_repository" "example-import" {
 }
 ```
 
+### Disable a Git repository
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Empty Git Repository"
+  disabled   = true
+  initialization {
+    init_type = "Clean"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -193,6 +213,7 @@ The following arguments are supported:
 - `project_id` - (Required) The project ID or project name.
 - `name` - (Required) The name of the git repository.
 - `parent_repository_id` - (Optional) The ID of a Git project from which a fork is to be created.
+- `disabled` - (Optional) The ability to disable or enable the repository. Defaults to `false`.
 - `initialization` - (Required) An `initialization` block as documented below.
 
 `initialization` - (Required) block supports the following:
@@ -215,7 +236,6 @@ In addition to all arguments above, except `initialization`, the following attri
 - `ssh_url` - Git SSH URL of the repository.
 - `url` - REST API URL of the repository.
 - `web_url` - Web link to the repository.
-- `disabled` - Is the repository disabled?
 
 ## Relevant Links
 
