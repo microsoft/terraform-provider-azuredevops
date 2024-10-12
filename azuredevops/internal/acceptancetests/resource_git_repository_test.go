@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,6 +16,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -62,6 +64,73 @@ func TestAccGitRepo_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfRepoNode, "ssh_url"),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "url"),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "web_url"),
+				),
+			},
+		},
+	})
+}
+
+// This test verifies the following:
+// 1. You can create a repo with disabled = true
+// 2. You cannot update a disabled repo
+// 3. You can enable a disabled repo
+func TestAccGitRepo_CreateAndDisable(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	gitRepoName2 := testutils.GenerateResourceName()
+	tfRepoNode := "azuredevops_git_repository.repository"
+	disabledTrue := "true"
+	disabledFalse := "false"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledTrue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+				),
+			},
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName2, disabledTrue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+				),
+				ExpectError: regexp.MustCompile(`A disabled repository cannot be updated, please enable the repository before attempting to update`),
+			},
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledFalse),
+				),
+			},
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledTrue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledTrue),
+				),
+			},
+			{
+				Config: gitRepoDisabledResourceConfig(projectName, gitRepoName, disabledFalse),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disabled", disabledFalse),
 				),
 			},
 		},
@@ -287,8 +356,47 @@ func checkGitRepoDestroyed(s *terraform.State) error {
 
 // Lookup an Azure Git Repository using the ID, or name if the ID is not set.
 func readGitRepo(clients *client.AggregatedClient, repoID string, projectID string) (*git.GitRepository, error) {
-	return clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
+	repo, err := clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
 		RepositoryId: converter.String(repoID),
 		Project:      converter.String(projectID),
 	})
+
+	// If the repository is disabled, the repository cannot be obtained through the GET API
+	if utils.ResponseWasNotFound(err) {
+		var allRepo *[]git.GitRepository
+		allRepo, err = clients.GitReposClient.GetRepositories(clients.Ctx, git.GetRepositoriesArgs{
+			Project: converter.String(projectID),
+			// This flag is used to include disabled repos
+			IncludeHidden: converter.Bool(true),
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, gitRepo := range *allRepo {
+			if strings.EqualFold((*gitRepo.Id).String(), repoID) ||
+				strings.EqualFold(*gitRepo.Name, repoID) {
+				repo = &gitRepo
+				break
+			}
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return repo, nil
+}
+
+func gitRepoDisabledResourceConfig(projectName string, gitRepoName string, disabled string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	azureGitRepoResource := fmt.Sprintf(`
+	resource "azuredevops_git_repository" "repository" {
+		project_id      = azuredevops_project.project.id
+		name            = "%s"
+		disabled = %s
+		initialization {
+			init_type = "Clean"
+		}
+	}`, gitRepoName, disabled)
+	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
 }

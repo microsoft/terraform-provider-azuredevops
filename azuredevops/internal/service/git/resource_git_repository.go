@@ -157,7 +157,8 @@ func ResourceGitRepository() *schema.Resource {
 			},
 			"disabled": {
 				Type:     schema.TypeBool,
-				Computed: true,
+				Optional: true,
+				Default:  false,
 			},
 		},
 	}
@@ -241,7 +242,14 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		createdRepo.DefaultBranch = converter.String(v)
 		_, err = updateGitRepository(clients, createdRepo, projectID)
 		if err != nil {
-			return fmt.Errorf(" updating repository `default_branch`: %+v", err)
+			return fmt.Errorf(" updating repository : %+v", err)
+		}
+	}
+
+	if v := d.Get("disabled").(bool); v {
+		_, err = updateIsDisabledGitRepository(clients, createdRepo.Id.String(), projectID.String(), true)
+		if err != nil {
+			return fmt.Errorf("Error disabling created repository in Azure DevOps: %+v", err)
 		}
 	}
 
@@ -278,8 +286,31 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, _, projectID, err := expandGitRepository(d)
+	disabled := d.Get("disabled").(bool)
 	if err != nil {
 		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
+	}
+
+	// you cannot update a disabled repo. We must temporarily enable to update
+	repoActual, err := gitRepositoryRead(clients, repo.Id.String(), *repo.Name, projectID.String())
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", *repo.Id, *repo.Name, err)
+	}
+
+	// potentially enabling repo to match the config
+	if *repoActual.IsDisabled && !disabled {
+		repoActual, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
+		if err != nil {
+			return fmt.Errorf("Error enabling repository in Azure DevOps: %+v", err)
+		}
+	}
+
+	if *repoActual.IsDisabled {
+		return fmt.Errorf("A disabled repository cannot be updated, please enable the repository before attempting to update : %s", repo.Id.String())
 	}
 
 	_, err = updateGitRepository(clients, repo, projectID)
@@ -287,13 +318,43 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error updating repository in Azure DevOps: %+v", err)
 	}
 
+	// potentially disabling repo to match the config
+	if !*repoActual.IsDisabled && disabled {
+		_, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
+		if err != nil {
+			return fmt.Errorf("Error disabling repository in Azure DevOps: %+v", err)
+		}
+	}
+
 	return resourceGitRepositoryRead(d, m)
 }
 
 func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	repoID := d.Id()
+	repoName := d.Get("name").(string)
+	projectID := d.Get("project_id").(string)
 	clients := m.(*client.AggregatedClient)
-	err := deleteGitRepository(clients, repoID)
+
+	uuid, err := uuid.Parse(repoID)
+	if err != nil {
+		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
+	}
+
+	// you cannot delete a disabled repo
+	repoActual, err := gitRepositoryRead(clients, repoID, repoName, projectID)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
+	}
+
+	if *repoActual.IsDisabled {
+		return fmt.Errorf("A disabled repository cannot be deleted, please enable the repository before attempting to delete : %s", repoID)
+	}
+
+	err = deleteGitRepository(clients, uuid)
 	if err != nil {
 		return err
 	}
@@ -412,11 +473,7 @@ func updateGitRepository(clients *client.AggregatedClient, repository *git.GitRe
 		})
 }
 
-func deleteGitRepository(clients *client.AggregatedClient, repoID string) error {
-	uuid, err := uuid.Parse(repoID)
-	if err != nil {
-		return fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
-	}
+func deleteGitRepository(clients *client.AggregatedClient, uuid uuid.UUID) error {
 	return clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &uuid,
 	})
@@ -439,6 +496,8 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 		var allRepo *[]git.GitRepository
 		allRepo, err = clients.GitReposClient.GetRepositories(clients.Ctx, git.GetRepositoriesArgs{
 			Project: converter.String(projectID),
+			// This flag is used to include disabled repos
+			IncludeHidden: converter.Bool(true),
 		})
 		if err != nil {
 			return nil, err
@@ -525,4 +584,24 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")
 	}
 	return repo, initialization, &projectID, nil
+}
+
+// When enabling or disabling a repo, isDisabled must be the only data in the post body
+func updateIsDisabledGitRepository(clients *client.AggregatedClient, repoID string, projectID string, isDisabled bool) (*git.GitRepository, error) {
+	uuid, err := uuid.Parse(repoID)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid repositoryId UUID: %s", repoID)
+	}
+	repo, err := clients.GitReposClient.UpdateRepository(
+		clients.Ctx,
+		git.UpdateRepositoryArgs{
+			NewRepositoryInfo: &git.GitRepository{IsDisabled: converter.Bool(isDisabled)},
+			RepositoryId:      &uuid,
+			Project:           converter.String(projectID),
+		})
+	if err != nil {
+		return nil, fmt.Errorf(" updating isDisabled on repository : %+v", err)
+	}
+
+	return repo, nil
 }
