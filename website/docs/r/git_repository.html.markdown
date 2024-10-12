@@ -9,6 +9,35 @@ description: |-
 
 Manages a git repository within Azure DevOps.
 
+
+~> **NOTE** Importing an existing repository and running `terraform plan` will detect a difference on the initialization block. The plan and apply will then attempt to delete the repository and recreate it so that the configuration matches. The initialization block must be ignored from the plan in order to support configuring existing repositories imported into Terraform state.
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id     = azuredevops_project.example.id
+  name           = "Example Git Repository"
+  default_branch = "refs/heads/main"
+  initialization {
+    init_type = "Clean"
+  }
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to initialization to support importing existing repositories
+      # Given that a repo now exists, either imported into terraform state or created by terraform,
+      # we don't care for the configuration of initialization against the existing resource
+      initialization,
+    ]
+  }
+}
+```
+
 ## Example Usage
 
 ### Create Git repository
@@ -205,30 +234,6 @@ or
 ```sh
 terraform import azuredevops_git_repository.example projectName/00000000-0000-0000-0000-000000000000
 ```
-**NOTE:** Importing an existing repository and running `terraform plan` will detect a difference on the initialization block. The plan and apply will then attempt to delete the repository and recreate it so that the configuration matches. The initialization block must be ignored from the plan in order to support configuring existing repositories imported into Terraform state.
 
-```hcl
-resource "azuredevops_project" "example" {
-  name               = "Example Project"
-  visibility         = "private"
-  version_control    = "Git"
-  work_item_template = "Agile"
-}
-
-resource "azuredevops_git_repository" "example" {
-  project_id     = azuredevops_project.example.id
-  name           = "Example Git Repository"
-  default_branch = "refs/heads/main"
-  initialization {
-    init_type = "Clean"
-  }
-  lifecycle {
-    ignore_changes = [
-      # Ignore changes to initialization to support importing existing repositories
-      # Given that a repo now exists, either imported into terraform state or created by terraform,
-      # we don't care for the configuration of initialization against the existing resource
-      initialization,
-    ]
-  }
-}
-```
+## PAT Permissions Required
+- **Code**: Read, Create, & Manage.
