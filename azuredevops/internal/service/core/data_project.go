@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,19 +18,23 @@ import (
 func DataProject() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataProjectRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				ConflictsWith: []string{"project_id"},
+				AtLeastOneOf:  []string{"name", "project_id"},
 			},
 			"project_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-				ConflictsWith: []string{
-					"name",
-				},
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				ConflictsWith: []string{"name"},
+				AtLeastOneOf:  []string{"name", "project_id"},
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -59,17 +64,11 @@ func DataProject() *schema.Resource {
 	}
 }
 
-// Introducing a read method here which is almost the same code a in resource_project.go
-// but this follows the `A little copying is better than a little dependency.` GO proverb.
 func dataProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	name := d.Get("name").(string)
 	id := d.Get("project_id").(string)
-
-	if name == "" && id == "" {
-		return diag.FromErr(fmt.Errorf("Either project_id or name must be set "))
-	}
 
 	identifier := id
 	if identifier == "" {
@@ -89,10 +88,12 @@ func dataProjectRead(ctx context.Context, d *schema.ResourceData, m interface{})
 		return diag.FromErr(fmt.Errorf("Error looking up project with Name %s or ID %s, %+v ", name, id, err))
 	}
 
-	err = flattenProject(clients, d, project)
+	d.SetId(project.Id.String())
 	d.Set("project_id", project.Id.String())
+
+	err = flattenProject(clients, d, project)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error flattening project: %v", err))
+		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
 	}
 	return nil
 }

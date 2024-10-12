@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -82,31 +83,36 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 	if d.Get("fetch_children").(bool) {
 		depth = 1
 	}
-	args := workitemtracking.GetClassificationNodeArgs{
+	params := workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &structureType,
 		Depth:          converter.Int(depth),
 	}
 
-	path, pathSet := d.GetOk("path")
-	if pathSet {
-		args.Path = converter.String(strings.TrimSpace(path.(string)))
+	if path, ok := d.GetOk("path"); ok {
+		params.Path = converter.String(strings.TrimSpace(path.(string)))
 	}
 
-	node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, args)
+	node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, params)
 	if err != nil {
 		// the following error will be returned in case the classification node isn't present
 		// "VS402485: The Area/Iteration name is not recognized"
 		d.SetId("")
-		return fmt.Errorf("Error getting Iteration with path %q: %w", path, err)
+		js, _ := json.Marshal(params)
+		return fmt.Errorf(" getting ClassificationNode failed. %s. Error: %w", js, err)
 	}
 
 	d.SetId(node.Identifier.String())
-	if args.Path == nil {
+	d.Set("name", node.Name)
+
+	if node.Path != nil {
 		d.Set("path", convertNodePath(node.Path))
 	}
-	d.Set("name", node.Name)
-	d.Set("has_children", converter.ToBool(node.HasChildren, false))
+
+	if node.HasChildren != nil {
+		d.Set("has_children", converter.ToBool(node.HasChildren, false))
+	}
+
 	d.Set("children", flattenClassificationChildNodes(projectID, node.Children))
 	return nil
 }

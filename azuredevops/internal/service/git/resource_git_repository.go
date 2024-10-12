@@ -37,13 +37,27 @@ var RepoInitTypeValues = repoInitTypeValuesType{
 	Import:        "Import",
 }
 
+// A helper type that is used for transient info only used during repo creation
+type repoInitializationMeta struct {
+	initType            string
+	sourceType          string
+	sourceURL           string
+	serviceConnectionID string
+}
+
 // ResourceGitRepository schema and implementation for git repo resource
 func ResourceGitRepository() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceGitRepositoryCreate,
-		Read:     resourceGitRepositoryRead,
-		Update:   resourceGitRepositoryUpdate,
-		Delete:   resourceGitRepositoryDelete,
+		Create: resourceGitRepositoryCreate,
+		Read:   resourceGitRepositoryRead,
+		Update: resourceGitRepositoryUpdate,
+		Delete: resourceGitRepositoryDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Schema: map[string]*schema.Schema{
 			"project_id": {
@@ -59,42 +73,6 @@ func ResourceGitRepository() *schema.Resource {
 				Required:         true,
 				ValidateFunc:     validation.NoZeroValues,
 				DiffSuppressFunc: suppress.CaseDifference,
-			},
-			"parent_repository_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateFunc:     validation.IsUUID,
-				DiffSuppressFunc: suppress.CaseDifference,
-			},
-			"default_branch": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.NoZeroValues,
-			},
-			"is_fork": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"remote_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"ssh_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"web_url": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 			"initialization": {
 				Type:     schema.TypeList,
@@ -141,24 +119,61 @@ func ResourceGitRepository() *schema.Resource {
 					},
 				},
 			},
+			"parent_repository_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateFunc:     validation.IsUUID,
+				DiffSuppressFunc: suppress.CaseDifference,
+			},
+			"default_branch": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.NoZeroValues,
+			},
+			"is_fork": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"remote_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"size": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"ssh_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"web_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"disabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
-
-// A helper type that is used for transient info only used during repo creation
-type repoInitializationMeta struct {
-	initType            string
-	sourceType          string
-	sourceURL           string
-	serviceConnectionID string
-}
-
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
 		return fmt.Errorf(" failed expanding repository resource data (ProjectID:  %s, Repository: %s) Error: %+v",
 			d.Get("project_id").(string), d.Get("name").(string), err)
+	}
+
+	if _, ok := d.GetOk("default_branch"); ok {
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
+			return fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannot not be set.")
+		}
 	}
 
 	var parentRepoRef *git.GitRepositoryRef = nil
@@ -176,7 +191,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdRepo, err := createGitRepository(clients, repo.Name, projectID, parentRepoRef)
 	if err != nil {
-		return fmt.Errorf("Error creating repository in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
 	}
 
 	// set the id immediately after successfully creating the repository, which will allow terraform to track the
@@ -231,6 +246,60 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return resourceGitRepositoryRead(d, m)
+}
+
+func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
+	repoID := d.Id()
+	repoName := d.Get("name").(string)
+	projectID := d.Get("project_id").(string)
+
+	clients := m.(*client.AggregatedClient)
+	repo, err := gitRepositoryRead(clients, repoID, repoName, projectID)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
+	}
+
+	if repo == nil {
+		d.SetId("")
+		return nil
+	}
+
+	err = flattenGitRepository(d, repo)
+	if err != nil {
+		return fmt.Errorf("Failed to flatten Git repository: %w", err)
+	}
+	return nil
+}
+
+func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	repo, _, projectID, err := expandGitRepository(d)
+	if err != nil {
+		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
+	}
+
+	_, err = updateGitRepository(clients, repo, projectID)
+	if err != nil {
+		return fmt.Errorf("Error updating repository in Azure DevOps: %+v", err)
+	}
+
+	return resourceGitRepositoryRead(d, m)
+}
+
+func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
+	repoID := d.Id()
+	clients := m.(*client.AggregatedClient)
+	err := deleteGitRepository(clients, repoID)
+	if err != nil {
+		return err
+	}
+
+	d.SetId("")
+	return nil
 }
 
 func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID fmt.Stringer) error {
@@ -329,43 +398,6 @@ func initializeGitRepository(clients *client.AggregatedClient, repo *git.GitRepo
 	return err
 }
 
-func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
-	repoID := d.Id()
-	repoName := d.Get("name").(string)
-	projectID := d.Get("project_id").(string)
-
-	clients := m.(*client.AggregatedClient)
-	repo, err := gitRepositoryRead(clients, repoID, repoName, projectID)
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
-	}
-
-	err = flattenGitRepository(d, repo)
-	if err != nil {
-		return fmt.Errorf("Failed to flatten Git repository: %w", err)
-	}
-	return nil
-}
-
-func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	repo, _, projectID, err := expandGitRepository(d)
-	if err != nil {
-		return fmt.Errorf("Error converting terraform data model to AzDO project reference: %+v", err)
-	}
-
-	_, err = updateGitRepository(clients, repo, projectID)
-	if err != nil {
-		return fmt.Errorf("Error updating repository in Azure DevOps: %+v", err)
-	}
-
-	return resourceGitRepositoryRead(d, m)
-}
-
 func updateGitRepository(clients *client.AggregatedClient, repository *git.GitRepository, project fmt.Stringer) (*git.GitRepository, error) {
 	if nil == project {
 		return nil, fmt.Errorf("updateGitRepository: ID of project cannot be nil")
@@ -378,18 +410,6 @@ func updateGitRepository(clients *client.AggregatedClient, repository *git.GitRe
 			RepositoryId:      repository.Id,
 			Project:           &projectID,
 		})
-}
-
-func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
-	repoID := d.Id()
-	clients := m.(*client.AggregatedClient)
-	err := deleteGitRepository(clients, repoID)
-	if err != nil {
-		return err
-	}
-
-	d.SetId("")
-	return nil
 }
 
 func deleteGitRepository(clients *client.AggregatedClient, repoID string) error {
@@ -409,10 +429,33 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 		identifier = repoName
 	}
 
-	return clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
+	repo, err := clients.GitReposClient.GetRepository(clients.Ctx, git.GetRepositoryArgs{
 		RepositoryId: converter.String(identifier),
 		Project:      converter.String(projectID),
 	})
+
+	// If the repository is disabled, the repository cannot be obtained through the GET API
+	if utils.ResponseWasNotFound(err) {
+		var allRepo *[]git.GitRepository
+		allRepo, err = clients.GitReposClient.GetRepositories(clients.Ctx, git.GetRepositoriesArgs{
+			Project: converter.String(projectID),
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, gitRepo := range *allRepo {
+			if strings.EqualFold((*gitRepo.Id).String(), identifier) ||
+				strings.EqualFold(*gitRepo.Name, identifier) {
+				repo = &gitRepo
+				break
+			}
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return repo, nil
 }
 
 func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository) error {
@@ -429,6 +472,7 @@ func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository)
 	d.Set("ssh_url", repository.SshUrl)
 	d.Set("url", repository.Url)
 	d.Set("web_url", repository.WebUrl)
+	d.Set("disabled", repository.IsDisabled)
 
 	return nil
 }
@@ -476,12 +520,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
 			initialization.serviceConnectionID = ""
-		}
-
-		if _, ok := d.GetOk("default_branch"); ok {
-			if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
-				return nil, nil, nil, fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannt not be set.")
-			}
 		}
 	} else if len(initData) > 1 {
 		return nil, nil, nil, fmt.Errorf("Multiple initialization blocks")

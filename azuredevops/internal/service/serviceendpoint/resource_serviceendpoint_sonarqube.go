@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,20 +32,22 @@ func ResourceServiceEndpointSonarQube() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Description:  "Url for the SonarQube Server",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Description:  "Url for the SonarQube Server",
+		},
 
-	r.Schema["token"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		Description:  "Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens)",
-	}
+		"token": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Description:  "Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens)",
+		},
+	})
 
 	return r
 }
@@ -81,6 +84,10 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
+	if serviceEndpoint.Id == nil {
+		d.SetId("")
+		return nil
+	}
 	flattenServiceEndpointSonarQube(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	return nil
 }

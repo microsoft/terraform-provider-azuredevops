@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -13,10 +14,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-)
-
-const (
-	personalAccessTokenGithub = "personal_access_token"
 )
 
 // ResourceServiceEndpointGitHub schema and implementation for github service endpoint resource
@@ -35,42 +32,43 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-
-	r.Schema["auth_personal"] = &schema.Schema{
-		Type:     schema.TypeSet,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"personal_access_token": {
-					Type:         schema.TypeString,
-					Required:     true,
-					DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
-					Description:  "The GitHub personal access token which should be used.",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotWhiteSpace,
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"auth_personal": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"personal_access_token": {
+						Type:         schema.TypeString,
+						Required:     true,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_GITHUB_SERVICE_CONNECTION_PAT", nil),
+						Description:  "The GitHub personal access token which should be used.",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotWhiteSpace,
+					},
 				},
 			},
+			ConflictsWith: []string{"auth_oauth"},
 		},
-		ConflictsWith: []string{"auth_oauth"},
-	}
 
-	r.Schema["auth_oauth"] = &schema.Schema{
-		Type:     schema.TypeSet,
-		Optional: true,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"oauth_configuration_id": {
-					Type:     schema.TypeString,
-					Required: true,
+		"auth_oauth": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"oauth_configuration_id": {
+						Type:     schema.TypeString,
+						Required: true,
+					},
 				},
 			},
+			ConflictsWith: []string{"auth_personal"},
 		},
-		ConflictsWith: []string{"auth_personal"},
-	}
+	})
 
 	return r
 }
@@ -168,7 +166,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
-	authPerson["AccessToken"] = val[personalAccessTokenGithub].(string)
+	authPerson["AccessToken"] = val["personal_access_token"].(string)
 	return authPerson
 }
 

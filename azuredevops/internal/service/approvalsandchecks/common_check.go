@@ -94,58 +94,12 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 	}
 }
 
-// doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
-func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecksextras.CheckType, settings map[string]interface{}, timeout *int) (*pipelineschecksextras.CheckConfiguration, string, error) {
-	projectID := d.Get("project_id").(string)
-
-	taskCheck := pipelineschecksextras.CheckConfiguration{
-		Type:     checkType,
-		Settings: settings,
-		Resource: &pipelineschecksextras.Resource{
-			Id:   converter.String(d.Get("target_resource_id").(string)),
-			Type: converter.String(d.Get("target_resource_type").(string)),
-		},
-		Version: converter.Int(d.Get("version").(int)),
-	}
-
-	if timeout != nil {
-		taskCheck.Timeout = timeout
-	}
-
-	if d.Id() != "" {
-		taskCheckId, err := strconv.Atoi(d.Id())
-		if err != nil {
-			return nil, "", fmt.Errorf("Error parsing task check ID: (%+v)", err)
-		}
-		taskCheck.Id = &taskCheckId
-	}
-
-	return &taskCheck, projectID, nil
-}
-
-// doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
-func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
-	d.SetId(fmt.Sprintf("%d", *check.Id))
-
-	d.Set("project_id", projectID)
-
-	if check.Resource == nil {
-		return fmt.Errorf("Resource nil")
-	}
-
-	d.Set("target_resource_id", check.Resource.Id)
-	d.Set("target_resource_type", check.Resource.Type)
-	d.Set("version", check.Version)
-
-	return nil
-}
-
 func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema.ResourceData, m interface{}) error {
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		configuration, projectID, err := expandFunc(d)
 		if err != nil {
-			return fmt.Errorf(" failed in expandFunc. Error: %+v", err)
+			return fmt.Errorf(" failed to expand check. Error: %+v", err)
 		}
 
 		createdCheck, err := clients.PipelinesChecksClientExtras.AddCheckConfiguration(clients.Ctx, pipelineschecksextras.AddCheckConfigurationArgs{
@@ -156,10 +110,7 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 			return fmt.Errorf(" failed creating check, project ID: %s. Error: %+v", projectID, err)
 		}
 
-		err = flatFunc(d, createdCheck, projectID)
-		if err != nil {
-			return err
-		}
+		d.SetId(fmt.Sprintf("%d", *createdCheck.Id))
 		return genCheckReadFunc(flatFunc)(d, m)
 	}
 }
@@ -235,4 +186,48 @@ func genCheckDeleteFunc() schema.DeleteFunc { //nolint:staticcheck
 				Id:      &BusinessHoursID,
 			})
 	}
+}
+
+// doBaseExpansion performs the expansion for the 'base' attributes that are defined in the schema, above
+func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecksextras.CheckType, settings map[string]interface{}, timeout *int) (*pipelineschecksextras.CheckConfiguration, string, error) {
+	projectID := d.Get("project_id").(string)
+
+	taskCheck := pipelineschecksextras.CheckConfiguration{
+		Type:     checkType,
+		Settings: settings,
+		Resource: &pipelineschecksextras.Resource{
+			Id:   converter.String(d.Get("target_resource_id").(string)),
+			Type: converter.String(d.Get("target_resource_type").(string)),
+		},
+		Version: converter.Int(d.Get("version").(int)),
+	}
+
+	if timeout != nil {
+		taskCheck.Timeout = timeout
+	}
+
+	if d.Id() != "" {
+		taskCheckId, err := strconv.Atoi(d.Id())
+		if err != nil {
+			return nil, "", fmt.Errorf(" parsing task check ID: (%+v)", err)
+		}
+		taskCheck.Id = &taskCheckId
+	}
+
+	return &taskCheck, projectID, nil
+}
+
+// doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
+func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error {
+	d.Set("project_id", projectID)
+
+	if check.Resource == nil {
+		return fmt.Errorf(" resource not found")
+	}
+
+	d.Set("target_resource_id", check.Resource.Id)
+	d.Set("target_resource_type", check.Resource.Type)
+	d.Set("version", check.Version)
+
+	return nil
 }

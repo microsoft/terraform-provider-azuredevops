@@ -3,6 +3,7 @@ package graph
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,6 +17,9 @@ import (
 func DataGroup() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceGroupRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -39,6 +43,10 @@ func DataGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"group_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -56,9 +64,9 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Project with with ID %s was not found. Error: %v", projectID, err)
+			return fmt.Errorf(" Project with with ID: %s was not found. Error: %v", projectID, err)
 		}
-		return fmt.Errorf("Error finding descriptor for project with ID %s. Error: %v", projectID, err)
+		return fmt.Errorf(" Finding descriptor for project with ID: %s. Error: %v", projectID, err)
 	}
 
 	projectGroups, err := getGroupsForDescriptor(clients, projectDescriptor)
@@ -83,6 +91,17 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("descriptor", targetGroup.Descriptor)
 	d.Set("origin", targetGroup.Origin)
 	d.Set("origin_id", targetGroup.OriginId)
+
+	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+		SubjectDescriptor: targetGroup.Descriptor,
+	})
+	if err != nil {
+		return err
+	}
+
+	if storageKey.Value != nil {
+		d.Set("group_id", storageKey.Value.String())
+	}
 	return nil
 }
 
@@ -118,7 +137,7 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 		if newGroups != nil && len(*newGroups) > 0 {
 			if projectDescriptor == "" {
 				// filter on collection groups
-				filteredGroups := []graph.GraphGroup{}
+				var filteredGroups []graph.GraphGroup
 				for _, grp := range *newGroups {
 					if grp.Domain == nil {
 						continue
@@ -156,7 +175,7 @@ func getGroupsWithContinuationToken(clients *client.AggregatedClient, projectDes
 	}
 
 	if response.ContinuationToken != nil && len(*response.ContinuationToken) > 1 {
-		return nil, "", fmt.Errorf("Expected at most 1 continuation token, but found %d", len(*response.ContinuationToken))
+		return nil, "", fmt.Errorf(" Expected at most 1 continuation token, but found %d", len(*response.ContinuationToken))
 	}
 
 	var newToken string

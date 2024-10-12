@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 	"time"
@@ -16,137 +17,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v3"
 )
-
-const (
-	resourceAttrAuthType            = "authorization_type"
-	resourceAttrAPIURL              = "apiserver_url"
-	resourceBlockAzSubscription     = "azure_subscription"
-	resourceBlockKubeconfig         = "kubeconfig"
-	resourceBlockServiceAccount     = "service_account"
-	serviceEndpointDataAttrAuthType = "authorizationType"
-)
-
-func makeSchemaAzureSubscription(r *schema.Resource) {
-	r.Schema[resourceBlockAzSubscription] = &schema.Schema{
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Description: "'AzureSubscription'-type of configuration",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"azure_environment": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Default:      "AzureCloud",
-					Description:  "type of azure cloud: AzureCloud",
-					ValidateFunc: validation.StringInSlice([]string{"AzureCloud"}, false),
-				},
-				"cluster_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "name of aks-resource",
-				},
-				"subscription_id": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Description:  "id of azure subscription",
-					ValidateFunc: validation.IsUUID,
-				},
-				"subscription_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "name of azure subscription",
-				},
-				"tenant_id": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Description:  "id of aad-tenant",
-					ValidateFunc: validation.IsUUID,
-				},
-				"resourcegroup_id": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "id of resourcegroup",
-				},
-				"namespace": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Default:     "default",
-					Description: "accessed namespace",
-				},
-				"cluster_admin": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					ForceNew:    true,
-					Default:     false,
-					Description: "Enable Cluster Admin",
-				},
-			},
-		},
-	}
-}
-
-func makeSchemaKubeconfig(r *schema.Resource) {
-	resourceElemSchema := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"kube_config": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", nil),
-				Description: "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.",
-			},
-			"cluster_context": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Context of your cluster",
-			},
-			"accept_untrusted_certs": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Enable this if your authentication uses untrusted certificates",
-			},
-		},
-	}
-	r.Schema[resourceBlockKubeconfig] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		MinItems:    1,
-		MaxItems:    1,
-		Description: "'Kubeconfig'-type of configuration",
-		Elem:        resourceElemSchema,
-	}
-}
-
-func makeSchemaServiceAccount(r *schema.Resource) {
-	resourceElemSchema := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"ca_cert": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", nil),
-				Description: "Secret cert",
-			},
-			"token": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
-				Description: "Secret token",
-			},
-		},
-	}
-
-	r.Schema[resourceBlockServiceAccount] = &schema.Schema{
-		Type:        schema.TypeList,
-		MaxItems:    1,
-		Optional:    true,
-		Description: "'ServiceAccount'-type of configuration",
-		Elem:        resourceElemSchema,
-	}
-}
 
 // ResourceServiceEndpointKubernetes schema and implementation for kubernetes service endpoint resource
 func ResourceServiceEndpointKubernetes() *schema.Resource {
@@ -165,21 +35,136 @@ func ResourceServiceEndpointKubernetes() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema[resourceAttrAPIURL] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "URL to Kubernete's API-Server",
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-	}
-	r.Schema[resourceAttrAuthType] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "Type of credentials to use",
-		ValidateFunc: validation.StringInSlice([]string{"AzureSubscription", "Kubeconfig", "ServiceAccount"}, false),
-	}
-	makeSchemaAzureSubscription(r)
-	makeSchemaKubeconfig(r)
-	makeSchemaServiceAccount(r)
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"apiserver_url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "URL to Kubernete's API-Server",
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+		},
+
+		"authorization_type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "Type of credentials to use",
+			ValidateFunc: validation.StringInSlice([]string{"AzureSubscription", "Kubeconfig", "ServiceAccount"}, false),
+		},
+
+		"azure_subscription": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "'AzureSubscription'-type of configuration",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"azure_environment": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Default:      "AzureCloud",
+						Description:  "type of azure cloud: AzureCloud",
+						ValidateFunc: validation.StringInSlice([]string{"AzureCloud"}, false),
+					},
+					"cluster_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "name of aks-resource",
+					},
+					"subscription_id": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "id of azure subscription",
+						ValidateFunc: validation.IsUUID,
+					},
+					"subscription_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "name of azure subscription",
+					},
+					"tenant_id": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "id of aad-tenant",
+						ValidateFunc: validation.IsUUID,
+					},
+					"resourcegroup_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "id of resourcegroup",
+					},
+					"namespace": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Default:     "default",
+						Description: "accessed namespace",
+					},
+					"cluster_admin": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						ForceNew:    true,
+						Default:     false,
+						Description: "Enable Cluster Admin",
+					},
+				},
+			},
+		},
+
+		"kubeconfig": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MinItems:    1,
+			MaxItems:    1,
+			Description: "'Kubeconfig'-type of configuration",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"kube_config": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Sensitive:   true,
+						DefaultFunc: schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_KUBECONFIG", nil),
+						Description: "Content of the kubeconfig file. The configuration information in your kubeconfig file allows Kubernetes clients to talk to your Kubernetes API servers. This file is used by kubectl and all supported Kubernetes clients.",
+					},
+					"cluster_context": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Context of your cluster",
+					},
+					"accept_untrusted_certs": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     true,
+						Description: "Enable this if your authentication uses untrusted certificates",
+					},
+				},
+			},
+		},
+
+		"service_account": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Description: "'ServiceAccount'-type of configuration",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ca_cert": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_CERT", nil),
+						Description:  "Secret cert",
+					},
+					"token": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
+						Description:  "Secret token",
+					},
+				},
+			},
+		},
+	})
 
 	return r
 }
@@ -216,7 +201,20 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointKubernetes(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	var projectID string
+	if serviceEndpoint != nil && serviceEndpoint.ServiceEndpointProjectReferences != nil {
+		if len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
+			projectReference := (*serviceEndpoint.ServiceEndpointProjectReferences)[0]
+			if projectReference.ProjectReference != nil && projectReference.ProjectReference.Id != nil {
+				projectID = projectReference.ProjectReference.Id.String()
+			}
+		}
+	}
+
+	doBaseFlattening(d, serviceEndpoint, projectID)
+	if err = flattenServiceEndpointKubernetes(d, serviceEndpoint); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -233,7 +231,10 @@ func resourceServiceEndpointKubernetesUpdate(d *schema.ResourceData, m interface
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointKubernetes(d, updatedServiceEndpoint, projectID.String())
+	doBaseFlattening(d, serviceEndpoint, projectID.String())
+	if err = flattenServiceEndpointKubernetes(d, updatedServiceEndpoint); err != nil {
+		return err
+	}
 	return resourceServiceEndpointKubernetesRead(d, m)
 }
 
@@ -251,11 +252,11 @@ func resourceServiceEndpointKubernetesDelete(d *schema.ResourceData, m interface
 func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("kubernetes")
-	serviceEndpoint.Url = converter.String(d.Get(resourceAttrAPIURL).(string))
+	serviceEndpoint.Url = converter.String(d.Get("apiserver_url").(string))
 
-	switch d.Get(resourceAttrAuthType).(string) {
+	switch d.Get("authorization_type").(string) {
 	case "AzureSubscription":
-		configurationRaw := d.Get(resourceBlockAzSubscription).(*schema.Set).List()
+		configurationRaw := d.Get("azure_subscription").(*schema.Set).List()
 		configuration := configurationRaw[0].(map[string]interface{})
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
@@ -275,7 +276,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"clusterAdmin":          strconv.FormatBool(configuration["cluster_admin"].(bool)),
 		}
 	case "Kubeconfig":
-		configurationRaw := d.Get(resourceBlockKubeconfig).([]interface{})
+		configurationRaw := d.Get("kubeconfig").([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		clusterContextInput := configuration["cluster_context"].(string)
@@ -304,7 +305,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			"acceptUntrustedCerts": fmt.Sprintf("%v", configuration["accept_untrusted_certs"].(bool)),
 		}
 	case "ServiceAccount":
-		configurationRaw := d.Get(resourceBlockServiceAccount).([]interface{})
+		configurationRaw := d.Get("service_account").([]interface{})
 		configuration := configurationRaw[0].(map[string]interface{})
 
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -324,12 +325,18 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set(resourceAttrAuthType, (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType])
-	d.Set(resourceAttrAPIURL, *serviceEndpoint.Url)
+func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
+	if serviceEndpoint.Data != nil {
+		if v, ok := (*serviceEndpoint.Data)["authorizationType"]; ok {
+			d.Set("authorization_type", v)
+		}
+	}
 
-	switch (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType] {
+	if serviceEndpoint.Url != nil {
+		d.Set("apiserver_url", *serviceEndpoint.Url)
+	}
+
+	switch (*serviceEndpoint.Data)["authorizationType"] {
 	case "AzureSubscription":
 		clusterIDSplit := strings.Split((*serviceEndpoint.Data)["clusterId"], "/")
 		var clusterNameIndex int
@@ -356,22 +363,39 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		configItemList := make([]map[string]interface{}, 1)
 		configItemList[0] = configItems
 
-		d.Set(resourceBlockAzSubscription, configItemList)
+		d.Set("azure_subscription", configItemList)
 	case "Kubeconfig":
 		var kubeconfig map[string]interface{}
 		kubeconfigSet := d.Get("kubeconfig").([]interface{})
-
 		configuration := kubeconfigSet[0].(map[string]interface{})
-		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
-		kubeconfig = map[string]interface{}{
-			"kube_config":            configuration["kube_config"].(string),
-			"cluster_context":        (*serviceEndpoint.Authorization.Parameters)["clusterContext"],
-			"accept_untrusted_certs": acceptUntrustedCerts,
-		}
 
-		kubeconfigList := make([]map[string]interface{}, 1)
-		kubeconfigList[0] = kubeconfig
-		d.Set(resourceBlockKubeconfig, kubeconfigList)
+		if len(configuration) > 0 {
+			kubeconfig = map[string]interface{}{}
+
+			if v, ok := configuration["kube_config"]; ok {
+				kubeconfig["kube_config"] = v.(string)
+			}
+
+			if serviceEndpoint.Data != nil {
+				if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
+					acceptUntrustedCerts, err := strconv.ParseBool(v)
+					if err != nil {
+						return fmt.Errorf(" failed to parse `accept_untrusted_certs`: %+v ", err)
+					}
+					kubeconfig["accept_untrusted_certs"] = acceptUntrustedCerts
+				}
+			}
+
+			if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+				if v, ok := (*serviceEndpoint.Authorization.Parameters)["clusterContext"]; ok {
+					kubeconfig["cluster_context"] = v
+				}
+			}
+
+			kubeconfigList := make([]map[string]interface{}, 1)
+			kubeconfigList[0] = kubeconfig
+			d.Set("kubeconfig", kubeconfigList)
+		}
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
 		serviceAccountSet := d.Get("service_account").([]interface{})
@@ -391,6 +415,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 
 		serviceAccountList := make([]map[string]interface{}, 1)
 		serviceAccountList[0] = serviceAccount
-		d.Set(resourceBlockServiceAccount, serviceAccountList)
+		d.Set("service_account", serviceAccountList)
 	}
+	return nil
 }

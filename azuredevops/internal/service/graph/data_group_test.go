@@ -189,6 +189,13 @@ func TestGroupDataSource_HandlesCollectionGroups_And_ReturnsCorrectGroup(t *test
 
 	graphClient := azdosdkmocks.NewMockGraphClient(ctrl)
 	clients := &client.AggregatedClient{GraphClient: graphClient, Ctx: context.Background()}
+	graphClient.
+		EXPECT().
+		GetStorageKey(clients.Ctx, gomock.Any()).
+		Return(&graph.GraphStorageKeyResult{
+			Links: "",
+			Value: &id,
+		}, nil)
 
 	listGroupCallArgs := graph.ListGroupsArgs{}
 	listGroupCallResponse := createPaginatedResponse("",

@@ -1,6 +1,8 @@
 package branch
 
 import (
+	"maps"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -24,48 +26,55 @@ func ResourceBranchPolicyStatusCheck() *schema.Resource {
 		PolicyType:  StatusCheck,
 	})
 
-	settingsSchema := resource.Schema[SchemaSettings].Elem.(*schema.Resource).Schema
-
-	settingsSchema["name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-	}
-	settingsSchema["genre"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-	}
-	settingsSchema["author_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ValidateFunc: validation.IsUUID,
-	}
-	settingsSchema["invalidate_on_update"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
-		Default:  false,
-	}
-	settingsSchema["applicability"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		ValidateFunc: validation.StringInSlice([]string{
-			applicability.Default,
-			applicability.Conditional,
-		}, false),
-		Default: applicability.Default,
-	}
-	settingsSchema["filename_patterns"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type:         schema.TypeString,
-			ValidateFunc: validation.StringIsNotEmpty,
+	settingsSchema := resource.Schema["settings"].Elem.(*schema.Resource).Schema
+	maps.Copy(settingsSchema, map[string]*schema.Schema{
+		"name": {
+			Type:     schema.TypeString,
+			Required: true,
 		},
-	}
-	settingsSchema["display_name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
-	}
+
+		"genre": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+
+		"author_id": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.IsUUID,
+		},
+
+		"invalidate_on_update": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
+
+		"applicability": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ValidateFunc: validation.StringInSlice([]string{
+				applicability.Default,
+				applicability.Conditional,
+			}, false),
+			Default: applicability.Default,
+		},
+
+		"filename_patterns": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+		},
+
+		"display_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Default:  "",
+		},
+	})
 	return resource
 }
 
@@ -77,7 +86,7 @@ func statusCheckFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyC
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	settings["name"] = policySettings["statusName"]
@@ -98,7 +107,7 @@ func statusCheckFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyC
 			settings["applicability"] = applicability.Conditional
 		}
 	}
-	_ = d.Set(SchemaSettings, settingsList)
+	_ = d.Set("settings", settingsList)
 	return nil
 }
 
@@ -108,7 +117,7 @@ func statusCheckExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Po
 		return nil, nil, err
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 	settings := settingsList[0].(map[string]interface{})
 
 	policySettings := policyConfig.Settings.(map[string]interface{})
@@ -118,7 +127,7 @@ func statusCheckExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.Po
 	policySettings["invalidateOnSourceUpdate"] = settings["invalidate_on_update"].(bool)
 	policySettings["defaultDisplayName"] = settings["display_name"].(string)
 
-	patterns := settings[filenamePatterns].([]interface{})
+	patterns := settings["filename_patterns"].([]interface{})
 	patternsArray := make([]string, len(patterns))
 	for i, variableGroup := range patterns {
 		patternsArray[i] = variableGroup.(string)

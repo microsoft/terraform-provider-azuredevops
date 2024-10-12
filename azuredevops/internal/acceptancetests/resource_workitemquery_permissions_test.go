@@ -14,33 +14,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclWorkItemQueryPermissions(projectName string, path string, permissions map[string]string) string {
-	projectResource := testutils.HclProjectResource(projectName)
-	szPermissions := datahelper.JoinMap(permissions, "=", "\n")
-	szPath := ""
-	if path != "" {
-		szPath = fmt.Sprintf("path = \"%s\"", path)
-	}
-
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_group" "project-administrators" {
-	project_id = azuredevops_project.project.id
-	name       = "Project administrators"
-}
-
-resource "azuredevops_workitemquery_permissions" "wiq-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-administrators.id
-	%s
-	permissions = {
-		%s
-	}
-}
-`, projectResource, szPath, szPermissions)
-}
-
 func TestAccWorkItemQueryPermissions_SetProjectPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	permissions := map[string]string{
@@ -179,4 +152,31 @@ func TestAccWorkItemQueryPermissions_SetInvalidFolderPermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclWorkItemQueryPermissions(projectName string, path string, permissions map[string]string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	szPermissions := datahelper.JoinMap(permissions, "=", "\n")
+	szPath := ""
+	if path != "" {
+		szPath = fmt.Sprintf("path = \"%s\"", path)
+	}
+
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "project-administrators" {
+	project_id = azuredevops_project.project.id
+	name       = "Project administrators"
+}
+
+resource "azuredevops_workitemquery_permissions" "wiq-permissions" {
+	project_id  = azuredevops_project.project.id
+	principal   = data.azuredevops_group.project-administrators.id
+	%s
+	permissions = {
+		%s
+	}
+}
+`, projectResource, szPath, szPermissions)
 }

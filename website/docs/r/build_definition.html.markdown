@@ -142,10 +142,10 @@ resource "azuredevops_build_definition" "example" {
 The following arguments are supported:
 
 - `project_id` - (Required) The project ID or project name.
+- `name` - (Required) The name of the build definition.
 - `repository` - (Required) A `repository` block as documented below.
 
 ---
-- `name` - (Optional) The name of the build definition.
 - `path` - (Optional) The folder path of the build definition.
 - `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
 - `ci_trigger` - (Optional) Continuous Integration trigger.

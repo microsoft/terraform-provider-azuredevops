@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,8 +21,9 @@ import (
 func DataUsers() *schema.Resource {
 	return &schema.Resource{
 		Read: dataUsersRead,
-
-		//https://godoc.org/github.com/hashicorp/terraform/helper/schema#Schema
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
 				Type:          schema.TypeString,
@@ -237,7 +239,7 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	}
 	response, err := clients.GraphClient.ListUsers(clients.Ctx, args)
 	if err != nil {
-		return nil, "", fmt.Errorf("Error listing users: %q", err)
+		return nil, "", fmt.Errorf(" Listing users: %q", err)
 	}
 
 	continuationToken = ""

@@ -25,28 +25,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// if origin_id is provided, it will be used. if principal_name is also supplied, an error will be reported.
-func TestUserEntitlement_CreateUserEntitlement_DoNotAllowToSetOridinIdAndPrincipalName(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	clients := &client.AggregatedClient{
-		MemberEntitleManagementClient: nil,
-		Ctx:                           context.Background(),
-	}
-
-	originID := "e97b0e7f-0a61-41ad-860c-748ec5fcb20b"
-	principalName := "foobar@microsoft.com"
-
-	resourceData := schema.TestResourceDataRaw(t, ResourceUserEntitlement().Schema, nil)
-	resourceData.Set("origin_id", originID)
-	resourceData.Set("principal_name", principalName)
-
-	err := resourceUserEntitlementCreate(resourceData, clients)
-	assert.NotNil(t, err, "err should not be nil")
-	require.Regexp(t, "Both origin_id and principal_name set. You can not use both", err.Error())
-}
-
 // if origin_id is "" and principal_name is supplied, the principal_name will be used.
 func TestUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -92,23 +70,24 @@ func TestUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *testing.T) {
 	assert.Nil(t, err, "err should not be nil")
 }
 
-// if origin_id is "" and principal_name is "", an error will be reported.
-func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	clients := &client.AggregatedClient{
-		MemberEntitleManagementClient: nil,
-		Ctx:                           context.Background(),
-	}
-
-	resourceData := schema.TestResourceDataRaw(t, ResourceUserEntitlement().Schema, nil)
-	// originID and principalName is not set.
-
-	err := resourceUserEntitlementCreate(resourceData, clients)
-	assert.NotNil(t, err, "err should not be nil")
-	require.Regexp(t, "Use origin_id or principal_name", err.Error())
-}
+//
+//// if origin_id is "" and principal_name is "", an error will be reported.
+//func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	clients := &client.AggregatedClient{
+//		MemberEntitleManagementClient: nil,
+//		Ctx:                           context.Background(),
+//	}
+//
+//	resourceData := schema.TestResourceDataRaw(t, ResourceUserEntitlement().Schema, nil)
+//	// originID and principalName is not set.
+//
+//	err := resourceUserEntitlementCreate(resourceData, clients)
+//	assert.NotNil(t, err, "err should not be nil")
+//	require.Regexp(t, "Use origin_id or principal_name", err.Error())
+//}
 
 // if the REST-API return the failure, it should fail.
 

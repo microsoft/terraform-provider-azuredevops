@@ -23,9 +23,9 @@ func commentResolutionFlattenFunc(d *schema.ResourceData, policyConfig *policy.P
 		return err
 	}
 
-	settingsList := d.Get(SchemaSettings).([]interface{})
+	settingsList := d.Get("settings").([]interface{})
 
-	d.Set(SchemaSettings, settingsList)
+	d.Set("settings", settingsList)
 	return nil
 }
 

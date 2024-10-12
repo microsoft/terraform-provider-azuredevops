@@ -12,9 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-const reservedNameTfNode = "azuredevops_repository_policy_reserved_names.p"
-
-func TestAccPolicyReservedNames(t *testing.T) {
+func TestAccRepositoryPolicyReservedNames(t *testing.T) {
 	testutils.RunTestsInSequence(t, map[string]map[string]func(t *testing.T){
 		"RepositoryPolicies": {
 			"basic":  testAccRepoPolicyReservedNamesBasic,
@@ -28,6 +26,7 @@ func TestAccPolicyReservedNames(t *testing.T) {
 }
 
 func testAccRepoPolicyReservedNamesBasic(t *testing.T) {
+	reservedNameTfNode := "azuredevops_repository_policy_reserved_names.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -51,6 +50,7 @@ func testAccRepoPolicyReservedNamesBasic(t *testing.T) {
 }
 
 func testAccRepoPolicyReservedNamesUpdate(t *testing.T) {
+	reservedNameTfNode := "azuredevops_repository_policy_reserved_names.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -79,6 +79,7 @@ func testAccRepoPolicyReservedNamesUpdate(t *testing.T) {
 }
 
 func testAccProjectPolicyReservedNamesBasic(t *testing.T) {
+	reservedNameTfNode := "azuredevops_repository_policy_reserved_names.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -102,6 +103,7 @@ func testAccProjectPolicyReservedNamesBasic(t *testing.T) {
 }
 
 func testAccProjectPolicyReservedNamesUpdate(t *testing.T) {
+	reservedNameTfNode := "azuredevops_repository_policy_reserved_names.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -131,7 +133,7 @@ func testAccProjectPolicyReservedNamesUpdate(t *testing.T) {
 
 func hclPolicyReservedNamesResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -139,8 +141,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -151,48 +153,52 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepoPolicyReservedNamesBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyReservedNamesResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_reserved_names" "test" {
+  project_id     = azuredevops_project.test.id
+  enabled        = true
+  blocking       = true
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyReservedNamesUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyReservedNamesResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = false
-  blocking = true
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_reserved_names" "test" {
+  project_id     = azuredevops_project.test.id
+  enabled        = false
+  blocking       = true
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyReservedNamesBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyReservedNamesResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_reserved_names" "test" {
+  project_id = azuredevops_project.test.id
+  enabled    = true
+  blocking   = true
+  depends_on = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyReservedNamesUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyReservedNamesResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_reserved_names" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = false
-  blocking = true
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_reserved_names" "test" {
+  project_id = azuredevops_project.test.id
+  enabled    = false
+  blocking   = true
+  depends_on = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }

@@ -1,6 +1,6 @@
 ---
 layout: "azuredevops"
-page_title: "Azure DevOps Provider: Authenticating via Managed Identity
+page_title: "Azure DevOps Provider: Authenticating via Managed Identity"
 description: |-
   This guide will cover how to use a managed identity to authenticate to Azure DevOps.
 ---

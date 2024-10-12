@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,10 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
-)
-
-const (
-	personalAccessTokenExternalTFS = "personal_access_token"
 )
 
 func ResourceServiceEndpointExternalTFS() *schema.Resource {
@@ -33,31 +30,35 @@ func ResourceServiceEndpointExternalTFS() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["connection_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Required:     true,
-		Description:  "URL of the Azure DevOps organization or the TFS Project Collection to connect to.",
-	}
 
-	r.Schema["auth_personal"] = &schema.Schema{
-		Type:     schema.TypeSet,
-		MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				personalAccessTokenExternalTFS: {
-					Type:         schema.TypeString,
-					Required:     true,
-					DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
-					Description:  "Personal access tokens are applicable only for connections targeting Azure DevOps organization or TFS 2017 (and higher)",
-					Sensitive:    true,
-					ValidateFunc: validation.StringIsNotEmpty,
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"connection_url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Description:  "URL of the Azure DevOps organization or the TFS Project Collection to connect to.",
+		},
+
+		"auth_personal": {
+			Type:     schema.TypeSet,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"personal_access_token": {
+						Type:         schema.TypeString,
+						Required:     true,
+						DefaultFunc:  schema.EnvDefaultFunc("AZDO_PERSONAL_ACCESS_TOKEN", nil),
+						Description:  "Personal access tokens are applicable only for connections targeting Azure DevOps organization or TFS 2017 (and higher)",
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
 				},
 			},
 		},
-		Required: true,
-	}
+	})
+
 	return r
 }
 
@@ -147,7 +148,7 @@ func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	val := d.List()[0].(map[string]interface{})
 
-	authPerson["apitoken"] = val[personalAccessTokenExternalTFS].(string)
+	authPerson["apitoken"] = val["personal_access_token"].(string)
 	return authPerson
 }
 

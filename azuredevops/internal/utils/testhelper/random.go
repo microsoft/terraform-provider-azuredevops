@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.NewSource(time.Now().UnixNano())
 }
 
 // RandIntSlice returns a random range of numbers as a slice within a range

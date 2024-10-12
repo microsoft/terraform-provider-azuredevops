@@ -51,6 +51,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_check_branch_control",
 		"azuredevops_check_business_hours",
 		"azuredevops_check_required_template",
+		"azuredevops_securityrole_assignment",
 		"azuredevops_serviceendpoint_gcp_terraform",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_github_enterprise",
@@ -106,6 +107,8 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_area_permissions",
 		"azuredevops_iteration_permissions",
 		"azuredevops_team",
+		"azuredevops_wiki",
+		"azuredevops_wiki_page",
 		"azuredevops_team_members",
 		"azuredevops_team_administrators",
 		"azuredevops_serviceendpoint_permissions",
@@ -119,15 +122,17 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_build_folder",
 		"azuredevops_build_folder_permissions",
 		"azuredevops_workitem",
+		"azuredevops_feed",
+		"azuredevops_feed_permission",
 	}
 
 	resources := azuredevops.Provider().ResourcesMap
-	require.Equal(t, len(expectedResources), len(resources), "There are an unexpected number of registered resources")
 
 	for _, resource := range expectedResources {
 		require.Contains(t, resources, resource, "An expected resource was not registered")
 		require.NotNil(t, resources[resource], "A resource cannot have a nil schema")
 	}
+	require.Equal(t, len(expectedResources), len(resources), "There are an unexpected number of registered resources")
 }
 
 func TestProvider_HasChildDataSources(t *testing.T) {
@@ -149,21 +154,26 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_team",
 		"azuredevops_teams",
 		"azuredevops_groups",
+		"azuredevops_identity_user",
+		"azuredevops_identity_group",
+		"azuredevops_identity_groups",
 		"azuredevops_variable_group",
+		"azuredevops_securityrole_definitions",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_serviceendpoint_azurecr",
+		"azuredevops_feed",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap
-	require.Equal(t, len(expectedDataSources), len(dataSources), "There are an unexpected number of registered data sources")
 
 	for _, resource := range expectedDataSources {
 		require.Contains(t, dataSources, resource, "An expected data source was not registered")
 		require.NotNil(t, dataSources[resource], "A data source cannot have a nil schema")
 	}
+	require.Equal(t, len(expectedDataSources), len(dataSources), "There are an unexpected number of registered data sources")
 }
 
 func TestProvider_SchemaIsValid(t *testing.T) {

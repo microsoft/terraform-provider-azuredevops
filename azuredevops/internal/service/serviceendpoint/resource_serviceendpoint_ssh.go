@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -30,39 +31,42 @@ func ResourceServiceEndpointSSH() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["host"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.StringIsNotEmpty,
-		Description:  "The Organization Url.",
-	}
 
-	r.Schema["username"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ValidateFunc: validation.StringIsNotEmpty,
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"host": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  "The Organization Url.",
+		},
 
-	r.Schema["port"] = &schema.Schema{
-		Type:         schema.TypeInt,
-		Optional:     true,
-		ValidateFunc: validation.IntAtLeast(0),
-		Default:      22,
-	}
+		"username": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 
-	r.Schema["password"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotEmpty,
-	}
+		"port": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+			Default:      22,
+		},
 
-	r.Schema["private_key"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotEmpty,
-	}
+		"password": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+
+		"private_key": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+	})
 	return r
 }
 

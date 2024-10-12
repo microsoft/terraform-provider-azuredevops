@@ -13,50 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclServiceEndpointPermissions(projectName string, serviceEndpointName string, permissions map[string]map[string]string) string {
-	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
-	serviceEndpointPermissions := datahelper.JoinMap(permissions["service_endpoint"], "=", "\n")
-
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
-	docker_email           = "test@email.com"
-	docker_username        = "testuser"
-	docker_password        = "secret"
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-}
-
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
-		%s
-	}
-}
-
-resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions" {
-	project_id  			 = azuredevops_project.project.id
-	principal   			 = data.azuredevops_group.tf-project-readers.id
-	serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.serviceendpoint.id
-	permissions = {
-		%s
-	}
-}
-
-`,
-		testutils.HclProjectResource(projectName),
-		serviceEndpointName,
-		rootPermissions,
-		serviceEndpointPermissions)
-}
-
 func TestAccServiceEndpointPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
@@ -205,4 +161,48 @@ func TestAccServiceEndpointPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclServiceEndpointPermissions(projectName string, serviceEndpointName string, permissions map[string]map[string]string) string {
+	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
+	serviceEndpointPermissions := datahelper.JoinMap(permissions["service_endpoint"], "=", "\n")
+
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
+  docker_email          = "test@email.com"
+  docker_username       = "testuser"
+  docker_password       = "secret"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+}
+
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_serviceendpoint_permissions" "root-permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  permissions = {
+		%s
+  }
+}
+
+resource "azuredevops_serviceendpoint_permissions" "serviceendpoint-permissions" {
+  project_id         = azuredevops_project.project.id
+  principal          = data.azuredevops_group.tf-project-readers.id
+  serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.serviceendpoint.id
+  permissions = {
+		%s
+  }
+}
+
+
+`, testutils.HclProjectResource(projectName),
+		serviceEndpointName,
+		rootPermissions,
+		serviceEndpointPermissions)
 }

@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,13 +32,15 @@ func ResourceServiceEndpointSonarCloud() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["token"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		Description:  "Authentication Token generated through SonarCloud (go to My Account > Security > Generate Tokens)",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"token": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Description:  "Authentication Token generated through SonarCloud (go to My Account > Security > Generate Tokens)",
+		},
+	})
 	return r
 }
 

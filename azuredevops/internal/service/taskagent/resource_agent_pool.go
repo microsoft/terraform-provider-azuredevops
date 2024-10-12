@@ -15,7 +15,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
-// ResourceAgentPool schema and implementation for agent pool resource
 func ResourceAgentPool() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAzureAgentPoolCreate,
@@ -79,7 +78,7 @@ func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" creating agent pool in Azure DevOps: %+v", err)
 	}
 
-	// auto update can only be set to true on creation
+	// auto update can only be set to true after creation
 	if args.Pool.AutoUpdate != nil && !*args.Pool.AutoUpdate {
 		updateArgs := taskagent.UpdateAgentPoolArgs{
 			PoolId: agentPool.Id,

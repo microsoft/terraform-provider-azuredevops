@@ -13,34 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclBuildDefinitionPermissions(projectName string, path string, permissions map[string]string) string {
-	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
-	buildDefinitionNameFirst := testutils.GenerateResourceName()
-
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_build_definition_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-
-	build_definition_id   = azuredevops_build_definition.build.id
-
-	permissions = {
-		%s
-	}
-}
-`,
-		testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, path),
-		rootPermissions,
-	)
-}
-
 func TestAccBuildDefinitionPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := hclBuildDefinitionPermissions(projectName, `\`, map[string]string{
@@ -128,4 +100,31 @@ func TestAccBuildDefinitionPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclBuildDefinitionPermissions(projectName string, path string, permissions map[string]string) string {
+	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
+	buildDefinitionNameFirst := testutils.GenerateResourceName()
+
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_build_definition_permissions" "permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+
+  build_definition_id = azuredevops_build_definition.build.id
+
+  permissions = {
+		%s
+  }
+}
+`, testutils.HclBuildDefinitionResourceGitHub(projectName, buildDefinitionNameFirst, path),
+		rootPermissions,
+	)
 }

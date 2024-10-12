@@ -2,7 +2,9 @@ package servicehook
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,50 +15,58 @@ import (
 )
 
 func ResourceServicehookStorageQueuePipelines() *schema.Resource {
-	resourceSchema := genPipelinesPublisherSchema()
-	resourceSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		ForceNew:     true,
-		ValidateFunc: validation.IsUUID,
-		Description:  "The ID of the project",
+	resourceSchema := map[string]*schema.Schema{
+		"project_id": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  "The ID of the project",
+		},
+		"account_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The queue's storage account name",
+		},
+		"account_key": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringLenBetween(64, 100),
+			Description:  "A valid account key from the queue's storage account",
+		},
+		"queue_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the queue that will store the events",
+		},
+		"visi_timeout": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     "0",
+			Description: "event visibility timout - how long a message is invisible to other consumers after it's been dequeued",
+		},
+		"ttl": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     "604800",
+			Description: "event time-to-live - the duration a message can remain in the queue before it's automatically removed",
+		},
 	}
-	resourceSchema["account_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The queue's storage account name",
-	}
-	resourceSchema["account_key"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Sensitive:    true,
-		ValidateFunc: validation.StringLenBetween(64, 100),
-		Description:  "A valid account key from the queue's storage account",
-	}
-	resourceSchema["queue_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The name of the queue that will store the events",
-	}
-	resourceSchema["visi_timeout"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Optional:    true,
-		Default:     "0",
-		Description: "event visibility timout - how long a message is invisible to other consumers after it's been dequeued",
-	}
-	resourceSchema["ttl"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Optional:    true,
-		Default:     "604800",
-		Description: "event time-to-live - the duration a message can remain in the queue before it's automatically removed",
-	}
+
+	maps.Copy(resourceSchema, genPipelinesPublisherSchema())
 
 	return &schema.Resource{
 		Create: resourceServicehookStorageQueuePipelinesCreate,
 		Read:   resourceServicehookStorageQueuePipelinesRead,
 		Update: resourceServicehookStorageQueuePipelinesUpdate,
 		Delete: resourceServicehookStorageQueuePipelinesDelete,
-
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -71,7 +81,7 @@ func resourceServicehookStorageQueuePipelinesCreate(d *schema.ResourceData, m in
 		return err
 	}
 
-	createdSubscription, err := createSubscription(d, clients, subscription)
+	createdSubscription, err := createSubscription(clients, subscription)
 	if err != nil {
 		return err
 	}
@@ -98,12 +108,17 @@ func resourceServicehookStorageQueuePipelinesUpdate(d *schema.ResourceData, m in
 		return err
 	}
 
-	newSubscription, err := updateSubscription(clients, subscription)
+	parsedID, err := uuid.Parse(d.Id())
+	if err != nil {
+		return err
+	}
+	subscription.Id = &parsedID
+
+	_, err = updateSubscription(clients, subscription)
 	if err != nil {
 		return err
 	}
 
-	flattenServicehookStorageQueuePipelines(d, newSubscription, d.Get("account_key").(string))
 	return resourceServicehookStorageQueuePipelinesRead(d, m)
 }
 
@@ -116,16 +131,10 @@ func resourceServicehookStorageQueuePipelinesDelete(d *schema.ResourceData, m in
 }
 
 func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehooks.Subscription, error) {
-	var subscriptionId *uuid.UUID
-	parsedID, err := uuid.Parse(d.Id())
-	if err == nil {
-		subscriptionId = &parsedID
-	}
 	visiTimeout := strconv.Itoa(d.Get("visi_timeout").(int))
 	ttl := strconv.Itoa(d.Get("ttl").(int))
 	publisherInputs, eventType := expandPipelinesEventConfig(d)
 	return &servicehooks.Subscription{
-		Id:               subscriptionId,
 		ConsumerActionId: converter.String("enqueue"),
 		ConsumerId:       converter.String("azureStorageQueue"),
 		ConsumerInputs: &map[string]string{
@@ -143,7 +152,6 @@ func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehoo
 }
 
 func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
-	d.SetId(subscription.Id.String())
 	visiTimeout, err := strconv.Atoi((*subscription.ConsumerInputs)["visiTimeout"])
 	if err != nil {
 		visiTimeout = 0
@@ -163,14 +171,14 @@ func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscriptio
 	d.Set("ttl", ttl)
 }
 
-func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
+func createSubscription(clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
 	createdSubscription, err := clients.ServiceHooksClient.CreateSubscription(
 		clients.Ctx,
 		servicehooks.CreateSubscriptionArgs{
 			Subscription: subscription,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("Error creating subscription in Azure DevOps: %+v", err)
+		return nil, fmt.Errorf(" creating subscription in Azure DevOps: %+v", err)
 	}
 
 	return createdSubscription, err

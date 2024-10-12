@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,25 +31,30 @@ func ResourceServiceEndpointGeneric() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["server_url"] = &schema.Schema{
-		Type:         schema.TypeString,
-		ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		Required:     true,
-		Description:  "The server URL of the generic service connection.",
-	}
-	r.Schema["username"] = &schema.Schema{
-		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_SERVICE_CONNECTION_USERNAME", nil),
-		Description: "The username to use for the generic service connection.",
-		Optional:    true,
-	}
-	r.Schema["password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The password or token key to use for the generic service connection.",
-		Sensitive:   true,
-		Optional:    true,
-	}
+
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"server_url": {
+			Type:         schema.TypeString,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			Required:     true,
+			Description:  "The server URL of the generic service connection.",
+		},
+
+		"username": {
+			Type:        schema.TypeString,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_SERVICE_CONNECTION_USERNAME", nil),
+			Description: "The username to use for the generic service connection.",
+			Optional:    true,
+		},
+
+		"password": {
+			Type:        schema.TypeString,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_SERVICE_CONNECTION_PASSWORD", nil),
+			Description: "The password or token key to use for the generic service connection.",
+			Sensitive:   true,
+			Optional:    true,
+		},
+	})
 	return r
 }
 

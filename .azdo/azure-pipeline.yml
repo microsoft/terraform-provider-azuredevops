@@ -23,8 +23,8 @@ jobs:
     parameters:
       unitTest: true
       goVersions:
-        - value: '1.18.1'
-          ymlSafeName: '1_18_1'
+        - value: '1.22.6'
+          ymlSafeName: '1_21_6'
 
       vmImages:
         - value: 'ubuntu-20.04'

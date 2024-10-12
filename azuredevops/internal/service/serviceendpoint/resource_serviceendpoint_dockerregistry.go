@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,38 +31,41 @@ func ResourceServiceEndpointDockerRegistry() *schema.Resource {
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
 		Schema:   baseSchema(),
 	}
-	r.Schema["docker_registry"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_REGISTRY", "https://index.docker.io/v1/"),
-		Description: "The DockerRegistry registry which should be used.",
-	}
-	r.Schema["docker_username"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME", nil),
-		Description: "The DockerRegistry username which should be used.",
-	}
-	r.Schema["docker_password"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD", nil),
-		Description: "The DockerRegistry password which should be used.",
-		Sensitive:   true,
-	}
-	r.Schema["docker_email"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL", nil),
-		Description: "The DockerRegistry email address which should be used.",
-	}
-	r.Schema["registry_type"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		DefaultFunc:  schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_REGISTRY_TYPE", "DockerHub"),
-		ValidateFunc: validation.StringInSlice([]string{"DockerHub", "Others"}, false),
-		ForceNew:     true,
-	}
+
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"docker_registry": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_REGISTRY", "https://index.docker.io/v1/"),
+			Description: "The DockerRegistry registry which should be used.",
+		},
+		"docker_username": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_USERNAME", nil),
+			Description: "The DockerRegistry username which should be used.",
+		},
+		"docker_password": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_PASSWORD", nil),
+			Description: "The DockerRegistry password which should be used.",
+			Sensitive:   true,
+		},
+		"docker_email": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_EMAIL", nil),
+			Description: "The DockerRegistry email address which should be used.",
+		},
+		"registry_type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_DOCKERREGISTRY_SERVICE_CONNECTION_REGISTRY_TYPE", "DockerHub"),
+			ValidateFunc: validation.StringInSlice([]string{"DockerHub", "Others"}, false),
+			ForceNew:     true,
+		},
+	})
 	return r
 }
 
@@ -151,8 +155,22 @@ func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoi
 // Convert AzDO data structure to internal Terraform data structure
 func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
 	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("docker_registry", (*serviceEndpoint.Authorization.Parameters)["registry"])
-	d.Set("docker_email", (*serviceEndpoint.Authorization.Parameters)["email"])
-	d.Set("docker_username", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("registry_type", (*serviceEndpoint.Data)["registrytype"])
+	if serviceEndpoint.Authorization != nil {
+		if serviceEndpoint.Authorization.Parameters != nil {
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["registry"]; ok {
+				d.Set("docker_registry", v)
+			}
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["email"]; ok {
+				d.Set("docker_email", v)
+			}
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["username"]; ok {
+				d.Set("docker_username", v)
+			}
+		}
+	}
+	if serviceEndpoint.Data != nil {
+		if v, ok := (*serviceEndpoint.Data)["registrytype"]; ok {
+			d.Set("registry_type", v)
+		}
+	}
 }

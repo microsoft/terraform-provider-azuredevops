@@ -2,18 +2,18 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // ResourceServiceEndpointJenkins schema and implementation for Jenkins service endpoint resource
@@ -33,42 +33,34 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: func(i interface{}, key string) (_ []string, errors []error) {
-			url, ok := i.(string)
-			if !ok {
-				errors = append(errors, fmt.Errorf("expected type of %q to be string", key))
-				return
-			}
-			if strings.HasSuffix(url, "/") {
-				errors = append(errors, fmt.Errorf("%q should not end with slash, got %q.", key, url))
-				return
-			}
-			return validation.IsURLWithHTTPorHTTPS(url, key)
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.Url,
+			Description:  "Url for the Jenkins Repository",
 		},
-		Description: "Url for the Jenkins Repository",
-	}
 
-	r.Schema["accept_untrusted_certs"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "Allows the Jenkins clients to accept self-signed SSL server certificates without installing them into the TFS service role and/or Build Agent computers.",
-	}
+		"username": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The Jenkins user name.",
+		},
 
-	r.Schema["username"] = &schema.Schema{
-		Description: "The Jenkins user name.",
-		Type:        schema.TypeString,
-		Required:    true,
-	}
-	r.Schema["password"] = &schema.Schema{
-		Description: "The Jenkins password.",
-		Type:        schema.TypeString,
-		Required:    true,
-		Sensitive:   true,
-	}
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "The Jenkins password.",
+		},
+
+		"accept_untrusted_certs": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Allows the Jenkins clients to accept self-signed SSL server certificates without installing them into the TFS service role and/or Build Agent computers.",
+		},
+	})
 
 	return r
 }

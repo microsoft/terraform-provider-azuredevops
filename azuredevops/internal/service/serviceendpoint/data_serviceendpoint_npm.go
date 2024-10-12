@@ -2,19 +2,29 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataResourceServiceEndpointNpm() *schema.Resource {
-	r := dataSourceGenBaseServiceEndpointResource(dataSourceServiceEndpointNpmRead)
-
-	r.Schema["url"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+	resource := &schema.Resource{
+		Read: dataSourceServiceEndpointNpmRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
+		Schema: dataSourceGenBaseSchema(),
 	}
 
-	return r
+	maps.Copy(resource.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	})
+
+	return resource
 }
 
 func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) error {
@@ -28,5 +38,5 @@ func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) err
 
 		return nil
 	}
-	return fmt.Errorf("Error looking up service endpoint!")
+	return fmt.Errorf(" Looking up service endpoint!")
 }

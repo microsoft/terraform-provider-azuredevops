@@ -2,65 +2,73 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataResourceServiceEndpointAzureCR() *schema.Resource {
-	r := dataSourceGenBaseServiceEndpointResource(dataSourceServiceEndpointAzureCRRead)
-
-	r.Schema["azurecr_spn_tenantid"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+	resource := &schema.Resource{
+		Read: dataSourceServiceEndpointAzureCRRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
+		Schema: dataSourceGenBaseSchema(),
 	}
+	maps.Copy(resource.Schema, map[string]*schema.Schema{
+		"azurecr_spn_tenantid": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["azurecr_subscription_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"azurecr_subscription_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"azurecr_subscription_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["azurecr_subscription_name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"resource_group": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["resource_group"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"azurecr_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["azurecr_name"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"app_object_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["app_object_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"spn_object_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["spn_object_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"az_spn_role_assignment_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["az_spn_role_assignment_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"az_spn_role_permissions": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
-	r.Schema["az_spn_role_permissions"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
+		"service_principal_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	})
 
-	r.Schema["service_principal_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-
-	return r
+	return resource
 }
 
 func dataSourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{}) error {
@@ -87,5 +95,5 @@ func dataSourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{})
 
 		return nil
 	}
-	return fmt.Errorf(" looking up service endpoint!")
+	return fmt.Errorf(" Looking up service endpoint!")
 }

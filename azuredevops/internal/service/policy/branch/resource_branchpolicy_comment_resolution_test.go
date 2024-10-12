@@ -5,6 +5,7 @@
 package branch
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -38,6 +39,7 @@ func TestBranchPolicyCommentResolution_ExpandFlatten_Roundtrip(t *testing.T) {
 	}
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBranchPolicyCommentResolution().Schema, nil)
+	resourceData.SetId(strconv.Itoa(*testPolicy.Id))
 	err := workItemLinkingFlattenFunc(resourceData, testPolicy, &projectID)
 	require.Nil(t, err)
 	expandedPolicy, expandedProjectID, err := workItemLinkingExpandFunc(resourceData, randomUUID)

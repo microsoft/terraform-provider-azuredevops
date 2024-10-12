@@ -12,9 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-const fileSizeTfNode = "azuredevops_repository_policy_max_file_size.p"
-
-func TestAccPolicyFileSize(t *testing.T) {
+func TestAccRepositoryPolicyFileSize(t *testing.T) {
 	testutils.RunTestsInSequence(t, map[string]map[string]func(t *testing.T){
 		"RepositoryPolicies": {
 			"basic":  testAccRepoPolicyFileSizeBasic,
@@ -28,6 +26,7 @@ func TestAccPolicyFileSize(t *testing.T) {
 }
 
 func testAccRepoPolicyFileSizeBasic(t *testing.T) {
+	fileSizeTfNode := "azuredevops_repository_policy_max_file_size.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -52,6 +51,7 @@ func testAccRepoPolicyFileSizeBasic(t *testing.T) {
 }
 
 func testAccRepoPolicyFileSizeUpdate(t *testing.T) {
+	fileSizeTfNode := "azuredevops_repository_policy_max_file_size.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -81,6 +81,7 @@ func testAccRepoPolicyFileSizeUpdate(t *testing.T) {
 }
 
 func testAccProjectPolicyFileSizeBasic(t *testing.T) {
+	fileSizeTfNode := "azuredevops_repository_policy_max_file_size.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -105,6 +106,7 @@ func testAccProjectPolicyFileSizeBasic(t *testing.T) {
 }
 
 func testAccProjectPolicyFileSizeUpdate(t *testing.T) {
+	fileSizeTfNode := "azuredevops_repository_policy_max_file_size.test"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 
@@ -135,7 +137,7 @@ func testAccProjectPolicyFileSizeUpdate(t *testing.T) {
 
 func hclPolicyFileSizeResourceTemplate(projectName string, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "p" {
+resource "azuredevops_project" "test" {
   name               = "%s"
   description        = "Test Project Description"
   visibility         = "private"
@@ -143,8 +145,8 @@ resource "azuredevops_project" "p" {
   work_item_template = "Agile"
 }
 
-resource "azuredevops_git_repository" "r" {
-  project_id = azuredevops_project.p.id
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -155,52 +157,56 @@ resource "azuredevops_git_repository" "r" {
 
 func hclRepoPolicyFileSizeBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyFileSizeResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  max_file_size = 1
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_max_file_size" "test" {
+  project_id     = azuredevops_project.test.id
+  enabled        = true
+  blocking       = true
+  max_file_size  = 1
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclRepoPolicyFileSizeUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyFileSizeResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
-  max_file_size = 5
-  repository_ids  = [azuredevops_git_repository.r.id]
-}
-`)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_max_file_size" "test" {
+  project_id     = azuredevops_project.test.id
+  enabled        = true
+  blocking       = true
+  max_file_size  = 5
+  repository_ids = [azuredevops_git_repository.test.id]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyFileSizeBasic(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyFileSizeResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_max_file_size" "test" {
+  project_id    = azuredevops_project.test.id
+  enabled       = true
+  blocking      = true
   max_file_size = 1
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on    = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }
 
 func hclProjectPolicyFileSizeUpdate(projectName string, repoName string) string {
 	projectAndRepo := hclPolicyFileSizeResourceTemplate(projectName, repoName)
-	return fmt.Sprintf(`%s %s`, projectAndRepo, `
-resource "azuredevops_repository_policy_max_file_size" "p" {
-  project_id = azuredevops_project.p.id
-  enabled  = true
-  blocking = true
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_repository_policy_max_file_size" "test" {
+  project_id    = azuredevops_project.test.id
+  enabled       = true
+  blocking      = true
   max_file_size = 5
-  depends_on = [azuredevops_git_repository.r]
-}
-`)
+  depends_on    = [azuredevops_git_repository.test]
+}`, projectAndRepo)
 }

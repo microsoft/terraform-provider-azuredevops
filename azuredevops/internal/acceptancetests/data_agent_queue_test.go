@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccAgentQueue_DataSource(t *testing.T) {
+func TestAccAgentQueueDataSource_Basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	agentQueueName := "Azure Pipelines"
 	agentQueueData := testutils.HclAgentQueueDataSource(projectName, agentQueueName)

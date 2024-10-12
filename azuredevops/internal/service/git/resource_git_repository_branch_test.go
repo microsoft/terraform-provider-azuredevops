@@ -73,7 +73,7 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 					clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error creating branch \"a-branch\": an-error")),
+			diag.FromErr(fmt.Errorf(" creating branch \"a-branch\": an-error")),
 		},
 		{
 			"When more than one of ref_commit_id, ref_tag, or ref_branch are given, the first one from left to right wins",
@@ -108,7 +108,7 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 					clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error creating branch \"a-branch\": an-error")),
+			diag.FromErr(fmt.Errorf(" creating branch \"a-branch\": an-error")),
 		},
 		{
 			"When invalid RefUpdate UpdateStatus, throw error",
@@ -159,7 +159,7 @@ func TestGitRepositoryBranch_Create(t *testing.T) {
 					clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error creating branch \"a-branch\": Error got invalid GitRefUpdate.UpdateStatus: invalidRefName")),
+			diag.FromErr(fmt.Errorf(" creating branch \"a-branch\": Error got invalid GitRefUpdate.UpdateStatus: invalidRefName")),
 		},
 	}
 	for _, tt := range tests {
@@ -215,7 +215,7 @@ func TestGitRepositoryBranch_Read(t *testing.T) {
 					m:   clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error reading branch \"a-branch\": an-error")),
+			diag.FromErr(fmt.Errorf(" Reading branch \"a-branch\": an-error")),
 		},
 	}
 	for _, tt := range tests {
@@ -286,7 +286,7 @@ func TestGitRepositoryBranch_Delete(t *testing.T) {
 					m:   clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf("Error deleting branch \"a-branch\": an-error")),
+			diag.FromErr(fmt.Errorf(" Deleting branch \"a-branch\": an-error")),
 		},
 	}
 	for _, tt := range tests {

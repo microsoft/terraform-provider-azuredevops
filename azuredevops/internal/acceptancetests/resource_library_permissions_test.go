@@ -13,30 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclLibraryPermissions(projectName string, permissions map[string]string) string {
-	LibraryPermissions := datahelper.JoinMap(permissions, "=", "\n")
-
-	return fmt.Sprintf(`
-%s
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_library_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
-		%s
-	}
-}
-
-`,
-		testutils.HclProjectResource(projectName),
-		LibraryPermissions,
-	)
-}
-
 func TestAccLibraryPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := hclLibraryPermissions(projectName, map[string]string{
@@ -131,4 +107,28 @@ func TestAccLibraryPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclLibraryPermissions(projectName string, permissions map[string]string) string {
+	LibraryPermissions := datahelper.JoinMap(permissions, "=", "\n")
+
+	return fmt.Sprintf(`
+%s
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_library_permissions" "permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  permissions = {
+		%s
+  }
+}
+
+
+`, testutils.HclProjectResource(projectName),
+		LibraryPermissions,
+	)
 }

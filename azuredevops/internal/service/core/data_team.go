@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,6 +17,9 @@ import (
 func DataTeam() *schema.Resource {
 	return &schema.Resource{
 		Read: dataTeamRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -70,10 +74,9 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 
 	projectID := d.Get("project_id").(string)
 	teamName := d.Get("name").(string)
-
 	top := d.Get("top").(int)
 
-	team, members, administrators, err := readTeamByName(d, clients, projectID, teamName, top)
+	team, members, administrators, err := getTeamByName(d, clients, projectID, teamName, top)
 	if err != nil {
 		return err
 	}
@@ -91,11 +94,10 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("administrators", administrators)
 	d.Set("members", members)
 	d.Set("descriptor", descriptor.Value)
-
 	return nil
 }
 
-func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string, top int) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
+func getTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string, top int) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
 	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
 		ProjectId:      converter.String(projectID),
 		Mine:           converter.Bool(false),
@@ -108,7 +110,7 @@ func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, pr
 	}
 
 	if teamList == nil || len(*teamList) <= 0 {
-		return nil, nil, nil, fmt.Errorf("Project [%s] does not contain any teams", projectID)
+		return nil, nil, nil, fmt.Errorf(" Project [%s] does not contain any teams", projectID)
 	}
 
 	iTeam := linq.From(*teamList).
@@ -117,15 +119,15 @@ func readTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, pr
 			return strings.EqualFold(*item.Name, teamName)
 		})
 	if iTeam == nil {
-		return nil, nil, nil, fmt.Errorf("Unable to find Team with name [%s] in project with ID [%s]", teamName, projectID)
+		return nil, nil, nil, fmt.Errorf(" Unable to find Team with name [%s] in project with ID [%s]", teamName, projectID)
 	}
 
 	team := iTeam.(core.WebApiTeam)
-	members, err := readTeamMembers(clients, &team)
+	members, err := getTeamMembers(clients, &team)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	administrators, err := readTeamAdministrators(d, clients, &team)
+	administrators, err := getTeamAdministrators(d, clients, &team)
 	if err != nil {
 		return nil, nil, nil, err
 	}

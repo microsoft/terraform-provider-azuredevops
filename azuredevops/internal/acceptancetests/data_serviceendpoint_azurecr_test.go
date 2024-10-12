@@ -13,7 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointAzureCR_DataSource(t *testing.T) {
+func TestAccServiceEndpointAzureCR_dataSource(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {

@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,44 +31,50 @@ func ResourceServiceEndpointAws() *schema.Resource {
 		Schema:   baseSchema(),
 	}
 
-	r.Schema["access_key_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
-		Description: "The AWS access key ID for signing programmatic requests.",
-	}
-	r.Schema["secret_access_key"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
-		Description: "The AWS secret access key for signing programmatic requests.",
-		Sensitive:   true,
-	}
-	r.Schema["session_token"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SESSION_TOKEN", nil),
-		Description: "The AWS session token for signing programmatic requests.",
-		Sensitive:   true,
-	}
-	r.Schema["role_to_assume"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RTA", nil),
-		Description: "The Amazon Resource Name (ARN) of the role to assume.",
-	}
-	r.Schema["role_session_name"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RSN", nil),
-		Description: "Optional identifier for the assumed role session.",
-	}
-	r.Schema["external_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_EXTERNAL_ID", nil),
-		Description: "A unique identifier that is used by third parties when assuming roles in their customers' accounts, aka cross-account role access.",
-	}
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"access_key_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
+			Description: "The AWS access key ID for signing programmatic requests.",
+		},
+
+		"secret_access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
+			Description: "The AWS secret access key for signing programmatic requests.",
+			Sensitive:   true,
+		},
+
+		"session_token": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SESSION_TOKEN", nil),
+			Description: "The AWS session token for signing programmatic requests.",
+			Sensitive:   true,
+		},
+		"role_to_assume": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RTA", nil),
+			Description: "The Amazon Resource Name (ARN) of the role to assume.",
+		},
+
+		"role_session_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_RSN", nil),
+			Description: "Optional identifier for the assumed role session.",
+		},
+		"external_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_EXTERNAL_ID", nil),
+			Description: "A unique identifier that is used by third parties when assuming roles in their customers' accounts, aka cross-account role access.",
+		},
+	})
+
 	return r
 }
 

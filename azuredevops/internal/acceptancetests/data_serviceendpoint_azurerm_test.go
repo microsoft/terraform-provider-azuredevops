@@ -17,7 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.T) {
+func TestAccServiceEndpointAzureRM_dataSource_with_serviceEndpointID(t *testing.T) {
 	serviceEndpointAzureRMName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
 	serviceprincipalkey := uuid.New().String()
@@ -45,7 +45,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointID_DataSource(t *testing.
 	})
 }
 
-func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testing.T) {
+func TestAccServiceEndpointAzureRM_dataSource_with_serviceEndpointName(t *testing.T) {
 	serviceEndpointAzureRMName := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()
@@ -73,7 +73,7 @@ func TestAccServiceEndpointAzureRM_with_serviceEndpointName_DataSource(t *testin
 	})
 }
 
-func TestAccServiceEndpointAzureRM_with_WorkloadIdentityFederation_DataSource(t *testing.T) {
+func TestAccServiceEndpointAzureRM_dataSource_with_WorkloadIdentityFederation(t *testing.T) {
 	serviceEndpointAzureRMName := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
 	serviceprincipalid := uuid.New().String()

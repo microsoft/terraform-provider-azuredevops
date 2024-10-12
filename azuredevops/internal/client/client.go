@@ -12,6 +12,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
@@ -26,9 +27,11 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -57,11 +60,14 @@ type AggregatedClient struct {
 	TaskAgentClient               taskagent.Client
 	MemberEntitleManagementClient memberentitlementmanagement.Client
 	FeatureManagementClient       featuremanagement.Client
+	FeedClient                    feed.Client
 	SecurityClient                security.Client
 	IdentityClient                identity.Client
+	WikiClient                    wiki.Client
 	WorkItemTrackingClient        workitemtracking.Client
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
+	SecurityRolesClient           securityroles.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -143,7 +149,19 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		return nil, err
 	}
 
+	wikiClient, err := wiki.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): wiki.NewClient failed.")
+		return nil, err
+	}
+
 	featuremanagementClient := featuremanagement.NewClient(ctx, connection)
+
+	feedClient, err := feed.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): feed.NewClient failed.")
+		return nil, err
+	}
 
 	workitemtrackingClient, err := workitemtracking.NewClient(ctx, connection)
 	if err != nil {
@@ -173,6 +191,8 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 
 	serviceHooksClient := servicehooks.NewClient(ctx, connection)
 
+	securityRolesClient := securityroles.NewClient(ctx, connection)
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -191,10 +211,13 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		TaskAgentClient:               taskagentClient,
 		MemberEntitleManagementClient: memberentitlementmanagementClient,
 		FeatureManagementClient:       featuremanagementClient,
+		FeedClient:                    feedClient,
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
+		WikiClient:                    wikiClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
 		ServiceHooksClient:            serviceHooksClient,
+		SecurityRolesClient:           securityRolesClient,
 		Ctx:                           ctx,
 	}
 

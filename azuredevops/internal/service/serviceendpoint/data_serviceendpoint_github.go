@@ -2,13 +2,19 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataServiceEndpointGithub() *schema.Resource {
-	r := dataSourceGenBaseServiceEndpointResource(dataSourceServiceEndpointGithubRead)
-	return r
+	return &schema.Resource{
+		Read: dataSourceServiceEndpointGithubRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
+		Schema: dataSourceGenBaseSchema(),
+	}
 }
 
 func dataSourceServiceEndpointGithubRead(d *schema.ResourceData, m interface{}) error {
@@ -21,5 +27,5 @@ func dataSourceServiceEndpointGithubRead(d *schema.ResourceData, m interface{}) 
 		doBaseFlattening(d, serviceEndpoint, projectID.String())
 		return nil
 	}
-	return fmt.Errorf("Error looking up service endpoint!")
+	return fmt.Errorf(" Looking up service endpoint!")
 }

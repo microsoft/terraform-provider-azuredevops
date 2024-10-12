@@ -31,6 +31,7 @@ func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkGroupExists(groupName),
 					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
 					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
 				),
 			},

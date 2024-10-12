@@ -5,6 +5,7 @@
 package acceptancetests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,14 +17,14 @@ import (
 func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	group := "Build Administrators"
-	tfBuildDefNode := "data.azuredevops_group.group"
+	tfBuildDefNode := "data.azuredevops_group.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGroupDataSource(projectName, group),
+				Config: hclGroupDataBasic(projectName, group),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "project_id"),
@@ -31,6 +32,7 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "group_id"),
 				),
 			},
 		},
@@ -39,22 +41,46 @@ func TestAccGroupDataSource_Read_HappyPath(t *testing.T) {
 
 func TestAccGroupDataSource_Read_ProjectCollectionAdministrators(t *testing.T) {
 	group := "Project Collection Administrators"
-	tfBuildDefNode := "data.azuredevops_group.group"
+	tfBuildDefNode := "data.azuredevops_group.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclGroupDataSource("", group),
+				Config: hclGroupDataAllGroups(group),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "name"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "descriptor"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
 					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin_id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "group_id"),
 				),
 			},
 		},
 	})
+}
+
+func hclGroupDataBasic(projectName, groupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_group" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+}`, projectName, groupName)
+}
+
+func hclGroupDataAllGroups(groupName string) string {
+	return fmt.Sprintf(`
+data "azuredevops_group" "test" {
+  name = "%s"
+}`, groupName)
 }

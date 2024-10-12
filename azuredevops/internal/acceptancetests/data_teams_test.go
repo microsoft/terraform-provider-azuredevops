@@ -12,28 +12,15 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccTeams_DataSource(t *testing.T) {
+func TestAccTeams_DataSource_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	projectResource := testutils.HclProjectResource(projectName)
-
-	config := fmt.Sprintf(`
-
-%s
-
-data "azuredevops_teams" "all_teams" {
-	project_id = azuredevops_project.project.id
-}
-
-	`, projectResource)
-
-	tfNode := "data.azuredevops_teams.all_teams"
+	tfNode := "data.azuredevops_teams.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck:                  func() { testutils.PreCheck(t, nil) },
-		Providers:                 testutils.GetProviders(),
-		PreventPostDestroyRefresh: true,
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: hclTeamsDataSourceBasic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttr(tfNode, "teams.#", "1"),
@@ -47,4 +34,20 @@ data "azuredevops_teams" "all_teams" {
 			},
 		},
 	})
+}
+
+func hclTeamsDataSourceBasic(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_teams" "test" {
+  project_id = azuredevops_project.test.id
+}
+`, name)
 }

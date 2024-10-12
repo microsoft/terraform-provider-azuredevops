@@ -13,38 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclIterationPermissions(projectName string, permissions map[string]map[string]string) string {
-	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
-	iterationPermissions := datahelper.JoinMap(permissions["iteration"], "=", "\n")
-
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_iteration_permissions" "root-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
-		%s
-	}
-}
-
-resource "azuredevops_iteration_permissions" "iteration-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	path        = "Iteration 1"
-	permissions = {
-		%s
-	}
-}
-
-`, testutils.HclProjectResource(projectName), rootPermissions, iterationPermissions)
-}
-
 func TestAccIterationPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := hclIterationPermissions(projectName, map[string]map[string]string{
@@ -167,4 +135,37 @@ func TestAccIterationPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclIterationPermissions(projectName string, permissions map[string]map[string]string) string {
+	rootPermissions := datahelper.JoinMap(permissions["root"], "=", "\n")
+	iterationPermissions := datahelper.JoinMap(permissions["iteration"], "=", "\n")
+
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_iteration_permissions" "root-permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  permissions = {
+		%s
+  }
+}
+
+resource "azuredevops_iteration_permissions" "iteration-permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  path       = "Iteration 1"
+  permissions = {
+		%s
+  }
+}
+
+
+`, testutils.HclProjectResource(projectName), rootPermissions, iterationPermissions)
 }

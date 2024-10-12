@@ -13,43 +13,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/datahelper"
 )
 
-func hclBuildFolderPermissions(projectName string, path string, permissions map[string]string) string {
-	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
-	var requiredResources string
-	var pathArgument string
-	if path != `\\` {
-		pathArgument = `azuredevops_build_folder.test_folder.path`
-		description := "Integration Test Folder"
-		requiredResources = testutils.HclBuildFolder(projectName, path, description)
-	} else {
-		pathArgument = `"\\"`
-		requiredResources = testutils.HclProjectResource(projectName)
-	}
-
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_build_folder_permissions" "permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	path        = %s
-
-	permissions = {
-		%s
-	}
-}
-`,
-		requiredResources,
-		pathArgument,
-		rootPermissions,
-	)
-}
-
 func TestAccBuildFolderPermissions_SetPermissions(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	permissions := map[string]string{
@@ -152,4 +115,40 @@ func TestAccBuildFolderPermissions_UpdatePermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func hclBuildFolderPermissions(projectName string, path string, permissions map[string]string) string {
+	rootPermissions := datahelper.JoinMap(permissions, "=", "\n")
+	var requiredResources string
+	var pathArgument string
+	if path != `\\` {
+		pathArgument = `azuredevops_build_folder.test_folder.path`
+		description := "Integration Test Folder"
+		requiredResources = testutils.HclBuildFolder(projectName, path, description)
+	} else {
+		pathArgument = `"\\"`
+		requiredResources = testutils.HclProjectResource(projectName)
+	}
+
+	return fmt.Sprintf(`
+%s
+
+data "azuredevops_group" "tf-project-readers" {
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
+}
+
+resource "azuredevops_build_folder_permissions" "permissions" {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  path       = %s
+
+  permissions = {
+		%s
+  }
+}
+`, requiredResources,
+		pathArgument,
+		rootPermissions,
+	)
 }

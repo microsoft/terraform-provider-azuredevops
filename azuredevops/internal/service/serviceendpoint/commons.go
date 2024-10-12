@@ -16,9 +16,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const errMsgTfConfigRead = "Error reading terraform configuration: %+v"
-const errMsgServiceCreate = "Error looking up service endpoint given ID (%s) and project ID (%s): %v "
-const errMsgServiceDelete = "Error delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
+const errMsgTfConfigRead = " Reading terraform configuration: %+v"
+const errMsgServiceCreate = " Looking up service endpoint given ID (%s) and project ID (%s): %v "
+const errMsgServiceDelete = " Delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
 
 type operationState struct {
 	Ready      string
@@ -273,10 +273,21 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 
 // doBaseFlattening performs the flattening for the 'base' attributes that are defined in the schema, above
 func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	d.SetId(serviceEndpoint.Id.String())
-	d.Set("service_endpoint_name", serviceEndpoint.Name)
-	d.Set("project_id", projectID)
-	d.Set("description", serviceEndpoint.Description)
+	if serviceEndpoint.Id != nil {
+		d.SetId(serviceEndpoint.Id.String())
+	}
+
+	if serviceEndpoint.Name != nil {
+		d.Set("service_endpoint_name", serviceEndpoint.Name)
+	}
+
+	if serviceEndpoint.Description != nil {
+		d.Set("description", serviceEndpoint.Description)
+	}
+
+	if projectID != "" {
+		d.Set("project_id", projectID)
+	}
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 		d.Set("authorization", &map[string]interface{}{
@@ -287,52 +298,42 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 // data resources
 
-func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc) *schema.Resource { //nolint:staticcheck
-	return &schema.Resource{
-		Read: dataSourceReadFunc,
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
+func dataSourceGenBaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
 
-			"service_endpoint_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
+		"service_endpoint_name": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 
-			"service_endpoint_id": {
-				Description:  "The ID of the serviceendpoint",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
-				ValidateFunc: validation.IsUUID,
-			},
+		"service_endpoint_id": {
+			Description:  "The ID of the serviceendpoint",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
+			ValidateFunc: validation.IsUUID,
+		},
 
-			"authorization": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+		"authorization": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
 		},
-	}
-}
 
-func dataSourceMakeUnprotectedComputedSchema(r *schema.Resource, keyName string) {
-	r.Schema[keyName] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+		"description": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -413,3 +414,18 @@ func dataSourceGetServiceEndpointByNameAndProject(clients *client.AggregatedClie
 
 	return &(*serviceEndpoints)[0], nil
 }
+
+type EndpointAuthenticationScheme string
+
+const (
+	ServicePrincipal           EndpointAuthenticationScheme = "ServicePrincipal"
+	ManagedServiceIdentity     EndpointAuthenticationScheme = "ManagedServiceIdentity"
+	WorkloadIdentityFederation EndpointAuthenticationScheme = "WorkloadIdentityFederation"
+)
+
+type EndpointCreationMode string
+
+const (
+	Automatic EndpointCreationMode = "Automatic"
+	Manual    EndpointCreationMode = "Manual"
+)

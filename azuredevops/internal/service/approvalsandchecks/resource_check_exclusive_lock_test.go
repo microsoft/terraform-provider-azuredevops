@@ -7,6 +7,7 @@ package approvalsandchecks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -39,6 +40,7 @@ var CheckExclusiveLockTest = pipelineschecksextras.CheckConfiguration{
 // verifies that the flatten/expand round trip yields the same exclusive lock check
 func TestCheckExclusiveLock_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
 	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
 
 	CheckExclusiveLockAfterRoundTrip, projectID, err := expandExclusiveLock(resourceData)
@@ -55,6 +57,7 @@ func TestCheckExclusiveLock_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
 	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -78,6 +81,7 @@ func TestCheckExclusiveLock_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
 	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -106,6 +110,7 @@ func TestCheckExclusiveLock_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
 	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
@@ -133,6 +138,7 @@ func TestCheckExclusiveLock_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
 	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)

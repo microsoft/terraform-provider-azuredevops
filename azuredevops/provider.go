@@ -11,15 +11,19 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/feed"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/memberentitlementmanagement"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 )
@@ -55,6 +59,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_branch_control":                   approvalsandchecks.ResourceCheckBranchControl(),
 			"azuredevops_check_business_hours":                   approvalsandchecks.ResourceCheckBusinessHours(),
 			"azuredevops_check_required_template":                approvalsandchecks.ResourceCheckRequiredTemplate(),
+			"azuredevops_securityrole_assignment":                securityroles.ResourceSecurityRoleAssignment(),
 			"azuredevops_serviceendpoint_argocd":                 serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":            serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_jfrog_artifactory_v2":   serviceendpoint.ResourceServiceEndpointJFrogArtifactoryV2(),
@@ -113,8 +118,12 @@ func Provider() *schema.Provider {
 			"azuredevops_tagging_permissions":                    permissions.ResourceTaggingPermissions(),
 			"azuredevops_environment":                            taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":        taskagent.ResourceEnvironmentKubernetes(),
+			"azuredevops_wiki":                                   wiki.ResourceWiki(),
+			"azuredevops_wiki_page":                              wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                               workitemtracking.ResourceWorkItem(),
 			"azuredevops_servicehook_storage_queue_pipelines":    servicehook.ResourceServicehookStorageQueuePipelines(),
+			"azuredevops_feed":                                   feed.ResourceFeed(),
+			"azuredevops_feed_permission":                        feed.ResourceFeedPermission(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_build_definition":           build.DataBuildDefinition(),
@@ -134,12 +143,17 @@ func Provider() *schema.Provider {
 			"azuredevops_team":                       core.DataTeam(),
 			"azuredevops_teams":                      core.DataTeams(),
 			"azuredevops_groups":                     graph.DataGroups(),
+			"azuredevops_identity_groups":            identity.DataIdentityGroups(),
+			"azuredevops_identity_group":             identity.DataIdentityGroup(),
+			"azuredevops_identity_user":              identity.DataIdentityUser(),
 			"azuredevops_variable_group":             taskagent.DataVariableGroup(),
+			"azuredevops_securityrole_definitions":   securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_azurerm":    serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_github":     serviceendpoint.DataServiceEndpointGithub(),
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
+			"azuredevops_feed":                       feed.DataFeed(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

@@ -187,7 +187,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 func configureExternalTfsAuthPersonal(d *schema.ResourceData) {
 	d.Set("auth_personal", &[]map[string]interface{}{
 		{
-			personalAccessTokenExternalTFS: "UNIT_TEST_ACCESS_TOKEN",
+			"personal_access_token": "UNIT_TEST_ACCESS_TOKEN",
 		},
 	})
 }

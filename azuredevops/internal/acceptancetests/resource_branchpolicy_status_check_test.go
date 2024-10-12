@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccBranchPolicyStatusCheckBasic(t *testing.T) {
+func TestAccBranchPolicyStatusCheck_basic(t *testing.T) {
 	statusCheckTfNode := "azuredevops_branch_policy_status_check.p"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
@@ -35,7 +35,7 @@ func TestAccBranchPolicyStatusCheckBasic(t *testing.T) {
 	})
 }
 
-func TestAccBranchPolicyStatusCheckComplete(t *testing.T) {
+func TestAccBranchPolicyStatusCheck_complete(t *testing.T) {
 	statusCheckTfNode := "azuredevops_branch_policy_status_check.p"
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()

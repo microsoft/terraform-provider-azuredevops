@@ -5,7 +5,7 @@ description: |-
   Manages Elastic pool within Azure DevOps organization.
 ---
 
-# azuredevops_agent_pool
+# azuredevops_elastic_pool
 
 Manages Elastic pool within Azure DevOps.
 

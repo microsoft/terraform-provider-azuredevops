@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointGitHub_with_serviceEndpointID_DataSource(t *testing.T) {
+func TestAccServiceEndpointGitHub_dataSource_with_serviceEndpointID(t *testing.T) {
 	serviceEndpointGitHubName := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
 	createServiceEndpointGitHubWithServiceEndpointIDData := fmt.Sprintf("%s\n%s",
@@ -36,7 +36,7 @@ func TestAccServiceEndpointGitHub_with_serviceEndpointID_DataSource(t *testing.T
 	})
 }
 
-func TestAccServiceEndpointGitHub_with_serviceEndpointName_DataSource(t *testing.T) {
+func TestAccServiceEndpointGitHub_dataSource_with_serviceEndpointName_DataSource(t *testing.T) {
 	serviceEndpointGitHubName := testutils.GenerateResourceName()
 	projectName := testutils.GenerateResourceName()
 	createServiceEndpointGitHubWithServiceEndpointNameData := fmt.Sprintf("%s\n%s",
