@@ -1,13 +1,13 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_serviceendpoint_permissions"
+page_title: "AzureDevops: azuredevops_serviceendpoint_project_permissions"
 description: |-
-  Manages permissions for a AzureDevOps Service Endpoint
+  Manages project permissions for a AzureDevOps Service Endpoint
 ---
 
-# azuredevops_serviceendpoint_permissions
+# azuredevops_serviceendpoint_project_permissions
 
-Manages permissions for a Service Endpoint
+Manages project permissions for a Service Endpoint, allowing sharing a service connection with multiple projects including optional service_endpoint_name and description.
 
 ~> **Note** Permissions can be assigned to group principals and not to single user principals.
 
@@ -19,50 +19,19 @@ Those levels are reflected by specifying (or omitting) values for the arguments 
 ## Example Usage
 
 ```hcl
-resource "azuredevops_project" "example" {
-  name               = "Example Project"
-  work_item_template = "Agile"
-  version_control    = "Git"
-  visibility         = "private"
-  description        = "Managed by Terraform"
-}
+resource "azuredevops_serviceendpoint_project_permissions" "example-share" {
+  serviceendpoint_id = azuredevops_serviceendpoint_azurerm.example.id
 
-data "azuredevops_group" "example-readers" {
-  project_id = azuredevops_project.example.id
-  name       = "Readers"
-}
-
-resource "azuredevops_serviceendpoint_permissions" "example-root-permissions" {
-  project_id = azuredevops_project.example.id
-  principal  = data.azuredevops_group.example-readers.id
-  permissions = {
-    Use               = "allow"
-    Administer        = "allow"
-    Create            = "allow"
-    ViewAuthorization = "allow"
-    ViewEndpoint      = "allow"
+  project_reference {
+    project_id            = azuredevops_project.example_one.id
+    service_endpoint_name = "service-connection-shared"
+    description           = "Service Connection Shared by Terraform - Cluster One"
   }
-}
 
-resource "azuredevops_serviceendpoint_dockerregistry" "example" {
-  project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Example Docker Hub"
-  docker_username       = "username"
-  docker_email          = "email@example.com"
-  docker_password       = "password"
-  registry_type         = "DockerHub"
-}
-
-resource "azuredevops_serviceendpoint_permissions" "example-permissions" {
-  project_id         = azuredevops_project.example.id
-  principal          = data.azuredevops_group.example-readers.id
-  serviceendpoint_id = azuredevops_serviceendpoint_dockerregistry.example.id
-  permissions = {
-    Use               = "allow"
-    Administer        = "deny"
-    Create            = "deny"
-    ViewAuthorization = "allow"
-    ViewEndpoint      = "allow"
+  project_reference {
+    project_id            = azuredevops_project.example_two.id
+    service_endpoint_name = "service-connection-shared"
+    description           = "Service Connection Shared by Terraform - Cluster Two"
   }
 }
 ```
@@ -71,19 +40,14 @@ resource "azuredevops_serviceendpoint_permissions" "example-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) The ID of the project.
-* `principal` - (Required) The **group** principal to assign the permissions.
-* `permissions` - (Required) the permissions to assign. The following permissions are available.
-* `serviceendpoint_id` - (Optional) The id of the service endpoint to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
+* `serviceendpoint_id` - (Required) The ID of the service endpoint to share.
+* `project_reference` - (Required) A list of `project_reference` block as defined below. Objects describing which projects the service connection will be shared.
 
-| Permission        | Description                         |
-| ----------------- | ----------------------------------- |
-| Use               | Use service endpoint                |
-| Administer        | Full control over service endpoints |
-| Create            | Create service endpoints            |
-| ViewAuthorization | View authorizations                 |
-| ViewEndpoint      | View service endpoint properties    |
+An `project_reference` block supports the following:
+
+* `project_id` - (Required) Project id which service endpoint will be shared.
+* `service_endpoint_name` - (Optional) Name for service connection in the shared project. Default keep the same name.
+* `description` - (Optional) Description for service connection in the shared project. Default keep the same description.
 
 ## Relevant Links
 
