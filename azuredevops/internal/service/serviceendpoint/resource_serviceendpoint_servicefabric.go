@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -162,7 +161,7 @@ func ResourceServiceEndpointServiceFabric() *schema.Resource {
 
 func resourceServiceEndpointServiceFabricCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointServiceFabric(d)
+	serviceEndpoint, err := expandServiceEndpointServiceFabric(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -192,40 +191,40 @@ func resourceServiceEndpointServiceFabricRead(d *schema.ResourceData, m interfac
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointServiceFabric(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointServiceFabric(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointServiceFabricUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointServiceFabric(d)
+	serviceEndpoint, err := expandServiceEndpointServiceFabric(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointServiceFabric(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointServiceFabricRead(d, m)
 }
 
 func resourceServiceEndpointServiceFabricDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointServiceFabric(d)
+	serviceEndpoint, err := expandServiceEndpointServiceFabric(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("servicefabric")
 	serviceEndpoint.Url = converter.String(d.Get("cluster_endpoint").(string))
 	certificate, certificateOk := d.GetOk("certificate")
@@ -238,7 +237,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("Certificate"),
 		}
-		return serviceEndpoint, projectID, nil
+		return serviceEndpoint, nil
 	}
 
 	azureActiveDirectory, azureActiveDirectoryExists := d.GetOk("azure_active_directory")
@@ -251,7 +250,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("UsernamePassword"),
 		}
-		return serviceEndpoint, projectID, nil
+		return serviceEndpoint, nil
 	}
 
 	none, noneExists := d.GetOk("none")
@@ -265,10 +264,10 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("None"),
 		}
-		return serviceEndpoint, projectID, nil
+		return serviceEndpoint, nil
 	}
 
-	return nil, nil, fmt.Errorf(" One of %s or %s or %s blocks must be specified", "azure_active_directory", "certificate", "none")
+	return nil, fmt.Errorf(" One of %s or %s or %s blocks must be specified", "azure_active_directory", "certificate", "none")
 }
 
 func expandServiceEndpointServiceFabricServerCertificateLookup(configuration map[string]interface{}) map[string]string {
@@ -339,8 +338,8 @@ func flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint 
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 
 	switch *serviceEndpoint.Authorization.Scheme {
 	case "Certificate":

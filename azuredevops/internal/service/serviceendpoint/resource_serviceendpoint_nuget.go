@@ -5,7 +5,6 @@ import (
 	"maps"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -77,7 +76,7 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 
 func resourceServiceEndpointNuGetCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointNuGet(d)
+	serviceEndpoint, err := expandServiceEndpointNuGet(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -107,39 +106,39 @@ func resourceServiceEndpointNuGetRead(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointNuGet(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointNuGet(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointNuGetUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointNuGet(d)
+	serviceEndpoint, err := expandServiceEndpointNuGet(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointNuGet(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointNuGetRead(d, m)
 }
 
 func resourceServiceEndpointNuGetDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointNuGet(d)
+	serviceEndpoint, err := expandServiceEndpointNuGet(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externalnugetfeed")
 	serviceEndpoint.Url = converter.String(d.Get("feed_url").(string))
 	if apiKey := d.Get("api_key"); apiKey != "" {
@@ -171,11 +170,11 @@ func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.Servic
 			Scheme: converter.String("UsernamePassword"),
 		}
 	}
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 	d.Set("feed_url", *serviceEndpoint.Url)
 
 	switch *serviceEndpoint.Authorization.Scheme {

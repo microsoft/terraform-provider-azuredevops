@@ -54,15 +54,13 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID.String(),
-	)
+		&externalTfsTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointExternalTFS(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointExternalTFS(resourceData)
 
 	require.Nil(t, err)
 	require.Equal(t, externalTfsTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, externalTfsTestServiceEndpointProjectID, projectID)
+	require.Equal(t, externalTfsTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 }
 
 func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
@@ -74,9 +72,7 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID.String(),
-	)
+		&externalTfsTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -100,9 +96,7 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID.String(),
-	)
+		&externalTfsTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -129,9 +123,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID.String(),
-	)
+		&externalTfsTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -162,9 +154,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
-		externalTfsTestServiceEndpointProjectID.String(),
-	)
+		&externalTfsTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

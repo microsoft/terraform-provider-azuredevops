@@ -257,11 +257,11 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
-		serviceEndpointAfterRoundTrip, projectID, _ := expandServiceEndpointAzureRM(resourceData)
+		flattenServiceEndpointAzureRM(resourceData, &resource)
+		serviceEndpointAfterRoundTrip, _ := expandServiceEndpointAzureRM(resourceData)
 
 		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, projectID)
+		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
 
@@ -273,7 +273,7 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -299,7 +299,7 @@ func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testin
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)
 		resourceData.Set("features", features)
@@ -354,7 +354,7 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -383,7 +383,7 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -414,7 +414,7 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -442,7 +442,7 @@ func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testin
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID.String())
+		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)
 		resourceData.Set("features", features)

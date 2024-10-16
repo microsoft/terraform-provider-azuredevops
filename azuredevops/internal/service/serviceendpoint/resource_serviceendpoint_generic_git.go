@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -65,7 +64,7 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 
 func resourceServiceEndpointGenericGitCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointGenericGit(d)
+	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -95,39 +94,39 @@ func resourceServiceEndpointGenericGitRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointGenericGit(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointGenericGit(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointGenericGitUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointGenericGit(d)
+	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Upating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointGenericGit(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointGenericGitRead(d, m)
 }
 
 func resourceServiceEndpointGenericGitDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointGenericGit(d)
+	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("git")
 	serviceEndpoint.Url = converter.String(d.Get("repository_url").(string))
 	serviceEndpoint.Data = &map[string]string{
@@ -140,11 +139,11 @@ func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.S
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 	d.Set("repository_url", *serviceEndpoint.Url)
 	if v, err := strconv.ParseBool((*serviceEndpoint.Data)["accessExternalGitServer"]); err != nil {
 		d.Set("enable_pipelines_access", v)

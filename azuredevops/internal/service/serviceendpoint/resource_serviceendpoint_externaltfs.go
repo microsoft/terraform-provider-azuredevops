@@ -5,7 +5,6 @@ import (
 	"maps"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -64,7 +63,7 @@ func ResourceServiceEndpointExternalTFS() *schema.Resource {
 
 func resourceServiceEndpointExternalTFSCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointExternalTFS(d)
+	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -94,38 +93,39 @@ func resourceServiceEndpointExternalTFSRead(d *schema.ResourceData, m interface{
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointExternalTFS(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+
+	flattenServiceEndpointExternalTFS(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointExternalTFSUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointExternalTFS(d)
+	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointExternalTFS(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointExternalTFSRead(d, m)
 }
 
 func resourceServiceEndpointExternalTFSDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointExternalTFS(d)
+	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
-func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externaltfs")
 	serviceEndpoint.Url = converter.String(d.Get("connection_url").(string))
 
@@ -141,7 +141,7 @@ func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.
 		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
 func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
@@ -152,8 +152,7 @@ func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func flattenServiceEndpointExternalTFS(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-
+func flattenServiceEndpointExternalTFS(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 	d.Set("connection_url", *serviceEndpoint.Url)
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -171,7 +170,7 @@ func ResourceServiceEndpointKubernetes() *schema.Resource {
 
 func resourceServiceEndpointKubernetesCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointKubernetes(d)
+	serviceEndpoint, err := expandServiceEndpointKubernetes(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -201,17 +200,11 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	var projectID string
-	if serviceEndpoint != nil && serviceEndpoint.ServiceEndpointProjectReferences != nil {
-		if len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
-			projectReference := (*serviceEndpoint.ServiceEndpointProjectReferences)[0]
-			if projectReference.ProjectReference != nil && projectReference.ProjectReference.Id != nil {
-				projectID = projectReference.ProjectReference.Id.String()
-			}
-		}
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
 	}
 
-	doBaseFlattening(d, serviceEndpoint, projectID)
+	doBaseFlattening(d, serviceEndpoint)
 	if err = flattenServiceEndpointKubernetes(d, serviceEndpoint); err != nil {
 		return err
 	}
@@ -220,37 +213,31 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 
 func resourceServiceEndpointKubernetesUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointKubernetes(d)
+	serviceEndpoint, err := expandServiceEndpointKubernetes(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	doBaseFlattening(d, serviceEndpoint, projectID.String())
-	if err = flattenServiceEndpointKubernetes(d, updatedServiceEndpoint); err != nil {
-		return err
-	}
 	return resourceServiceEndpointKubernetesRead(d, m)
 }
 
 func resourceServiceEndpointKubernetesDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointKubernetes(d)
+	serviceEndpoint, err := expandServiceEndpointKubernetes(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("kubernetes")
 	serviceEndpoint.Url = converter.String(d.Get("apiserver_url").(string))
 
@@ -286,7 +273,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 			err := yaml.Unmarshal([]byte(kubeConfigYAML), &kubeConfigYAMLUnmarshalled)
 			if err != nil {
 				errResult := fmt.Errorf("kube_config contains an invalid YAML: %s", err)
-				return nil, nil, errResult
+				return nil, errResult
 			}
 			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[string]interface{})
 			clusterContextInput = clusterContextInputList["name"].(string)
@@ -321,7 +308,7 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 		}
 	}
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
