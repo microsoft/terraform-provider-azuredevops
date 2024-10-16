@@ -14,6 +14,11 @@ import (
 )
 
 func TestAccServiceEndpointAzureCR_Spn_Basic(t *testing.T) {
+	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") == "" || os.Getenv("TEST_ARM_SUBSCRIPTION_NAME") == "" ||
+		os.Getenv("TEST_ARM_TENANT_ID") == "" || os.Getenv("TEST_ARM_RESOURCE_GROUP") == "" || os.Getenv("TEST_ARM_ACR_NAME") == "" {
+		t.Skip("Skip test as `TEST_ARM_SUBSCRIPTION_ID` or `TEST_ARM_SUBSCRIPTION_NAME` or `TEST_ARM_TENANT_ID` or `TEST_ARM_RESOURCE_GROUP` or `TEST_ARM_ACR_NAME` is not set")
+	}
+
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
@@ -21,8 +26,7 @@ func TestAccServiceEndpointAzureCR_Spn_Basic(t *testing.T) {
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			testutils.PreCheck(t, &[]string{"TEST_ARM_SUBSCRIPTION_ID", "TEST_ARM_SUBSCRIPTION_NAME", "TEST_ARM_TENANT_ID",
-				"TEST_ARM_RESOURCE_GROUP", "TEST_ARM_ACR_NAME"})
+			testutils.PreCheck(t, nil)
 		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
@@ -48,6 +52,11 @@ func TestAccServiceEndpointAzureCR_Spn_Basic(t *testing.T) {
 }
 
 func TestAccServiceEndpointAzureCR_Spn_Update(t *testing.T) {
+	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") == "" || os.Getenv("TEST_ARM_SUBSCRIPTION_NAME") == "" ||
+		os.Getenv("TEST_ARM_TENANT_ID") == "" || os.Getenv("TEST_ARM_RESOURCE_GROUP") == "" || os.Getenv("TEST_ARM_ACR_NAME") == "" {
+		t.Skip("Skip test as `TEST_ARM_SUBSCRIPTION_ID` or `TEST_ARM_SUBSCRIPTION_NAME` or `TEST_ARM_TENANT_ID` or `TEST_ARM_RESOURCE_GROUP` or `TEST_ARM_ACR_NAME` is not set")
+	}
+
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
@@ -56,8 +65,7 @@ func TestAccServiceEndpointAzureCR_Spn_Update(t *testing.T) {
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			testutils.PreCheck(t, &[]string{"TEST_ARM_SUBSCRIPTION_ID", "TEST_ARM_SUBSCRIPTION_NAME", "TEST_ARM_TENANT_ID",
-				"TEST_ARM_RESOURCE_GROUP", "TEST_ARM_ACR_NAME"})
+			testutils.PreCheck(t, nil)
 		},
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),

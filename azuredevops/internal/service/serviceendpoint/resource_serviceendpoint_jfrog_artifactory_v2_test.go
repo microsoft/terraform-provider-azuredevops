@@ -81,12 +81,12 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogArtifactoryV2().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+		flattenServiceEndpointArtifactory(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogArtifactoryV2(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJFrogArtifactoryV2(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, id, projectID)
+		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 
 	}
 }
@@ -105,7 +105,7 @@ func testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -120,9 +120,11 @@ func testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t *testing.T, e
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactoryV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactoryV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }
@@ -134,7 +136,7 @@ func testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -152,9 +154,11 @@ func testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactoryV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactoryV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }
@@ -166,7 +170,7 @@ func testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -186,42 +190,19 @@ func testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t *testing.T, e
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactoryV2_Delete_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactoryV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }
 
-// verifies that if an error is produced on an update, it is not swallowed
-func testServiceEndpointArtifactoryV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	r := ResourceServiceEndpointJFrogArtifactoryV2()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
-
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
-
-	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   ep,
-		EndpointId: ep.Id,
-	}
-
-	buildClient.
-		EXPECT().
-		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
-		Times(1)
-
-	err := r.Update(resourceData, clients)
-	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
-}
 func TestServiceEndpointArtifactoryV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactoryV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }

@@ -28,15 +28,20 @@ func DataResourceServiceEndpointNpm() *schema.Resource {
 }
 
 func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) error {
-	serviceEndpoint, projectID, err := dataSourceGetBaseServiceEndpoint(d, m)
+	serviceEndpoint, err := dataSourceGetBaseServiceEndpoint(d, m)
+
 	if err != nil {
 		return err
 	}
-	if serviceEndpoint != nil {
-		doBaseFlattening(d, serviceEndpoint, projectID.String())
-		d.Set("url", serviceEndpoint.Url)
 
+	if serviceEndpoint != nil {
+		if err = checkServiceConnection(serviceEndpoint); err != nil {
+			return err
+		}
+		doBaseFlattening(d, serviceEndpoint)
+		d.Set("url", serviceEndpoint.Url)
 		return nil
 	}
+
 	return fmt.Errorf(" Looking up service endpoint!")
 }

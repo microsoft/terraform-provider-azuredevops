@@ -6,7 +6,6 @@ import (
 	"maps"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -88,7 +87,7 @@ func ResourceServiceEndpointJFrogXRayV2() *schema.Resource {
 
 func resourceServiceEndpointJFrogXRayV2Create(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointJFrogXRayV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogXRayV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -118,40 +117,40 @@ func resourceServiceEndpointJFrogXRayV2Read(d *schema.ResourceData, m interface{
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointJFrogXRayV2Update(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointJFrogXRayV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogXRayV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointJFrogXRayV2Read(d, m)
 }
 
 func resourceServiceEndpointJFrogXRayV2Delete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointJFrogXRayV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogXRayV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointJFrogXRayV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointJFrogXRayV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("jfrogXrayService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	authScheme := "Token"
@@ -163,18 +162,18 @@ func expandServiceEndpointJFrogXRayV2(d *schema.ResourceData) (*serviceendpoint.
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"], ok = msi["token"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'token'")
+			return nil, errors.New("Unable to read 'token'")
 		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["username"], ok = msi["username"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'username'")
+			return nil, errors.New("Unable to read 'username'")
 		}
 		authParams["password"], ok = msi["password"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'password'")
+			return nil, errors.New("Unable to read 'password'")
 		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -182,5 +181,5 @@ func expandServiceEndpointJFrogXRayV2(d *schema.ResourceData) (*serviceendpoint.
 		Scheme:     &authScheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }

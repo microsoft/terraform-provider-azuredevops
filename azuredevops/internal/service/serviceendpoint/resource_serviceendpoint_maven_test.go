@@ -87,13 +87,13 @@ var mavenTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func testServiceEndpointMaven_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointMaven().Schema, nil)
-		flattenServiceEndpointMaven(resourceData, ep, id.String())
+		flattenServiceEndpointMaven(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointMaven(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointMaven(resourceData)
 
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, id, projectID)
+		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
 func TestServiceEndpointMaven_ExpandFlatten_RoundtripPassword(t *testing.T) {
@@ -111,7 +111,7 @@ func testServiceEndpointMaven_Create_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointMaven(resourceData, ep, id.String())
+	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -140,7 +140,7 @@ func testServiceEndpointMaven_Read_DoesNotSwallowError(t *testing.T, ep *service
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointMaven(resourceData, ep, id.String())
+	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -172,7 +172,7 @@ func testServiceEndpointMaven_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointMaven(resourceData, ep, id.String())
+	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -206,7 +206,7 @@ func testServiceEndpointMaven_Update_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointMaven(resourceData, ep, id.String())
+	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

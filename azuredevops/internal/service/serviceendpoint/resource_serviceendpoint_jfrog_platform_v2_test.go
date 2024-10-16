@@ -81,12 +81,12 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogPlatformV2().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+		flattenServiceEndpointArtifactory(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogPlatformV2(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJFrogPlatformV2(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, id, projectID)
+		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 
 	}
 }
@@ -105,7 +105,7 @@ func testServiceEndpointplatformV2_Create_DoesNotSwallowError(t *testing.T, ep *
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -134,7 +134,7 @@ func testServiceEndpointplatformV2_Read_DoesNotSwallowError(t *testing.T, ep *se
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -166,7 +166,7 @@ func testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t *testing.T, ep *
 
 	r := ResourceServiceEndpointJFrogPlatformV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -186,42 +186,19 @@ func testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t *testing.T, ep *
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointplatformV2_Delete_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointplatformV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
-// verifies that if an error is produced on an update, it is not swallowed
-func testServiceEndpointplatformV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	r := ResourceServiceEndpointJFrogPlatformV2()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
-
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
-
-	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   ep,
-		EndpointId: ep.Id,
-	}
-
-	buildClient.
-		EXPECT().
-		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
-		Times(1)
-
-	err := r.Update(resourceData, clients)
-	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
-}
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }

@@ -51,13 +51,13 @@ var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHubEnterprise().Schema, nil)
 	configureGhesAuthPersonal(resourceData)
-	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID.String())
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHubEnterprise(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointGitHubEnterprise(resourceData)
 
 	require.Nil(t, err)
 	require.Equal(t, ghesTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, ghesTestServiceEndpointProjectID, projectID)
+	require.Equal(t, ghesTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -68,7 +68,7 @@ func TestServiceEndpointGitHubEnterprise_Create_DoesNotSwallowError(t *testing.T
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureGhesAuthPersonal(resourceData)
-	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID.String())
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -91,7 +91,7 @@ func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) 
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID.String())
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -117,7 +117,7 @@ func TestServiceEndpointGitHubEnterprise_Delete_DoesNotSwallowError(t *testing.T
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID.String())
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -147,7 +147,7 @@ func TestServiceEndpointGitHubEnterprise_Update_DoesNotSwallowError(t *testing.T
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureGhesAuthPersonal(resourceData)
-	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint, ghesTestServiceEndpointProjectID.String())
+	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

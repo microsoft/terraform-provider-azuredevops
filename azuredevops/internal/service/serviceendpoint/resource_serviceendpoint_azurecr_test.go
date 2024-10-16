@@ -70,12 +70,12 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointAzureCR_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureCR().Schema, nil)
-	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID.String())
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAzureCR(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointAzureCR(resourceData)
 
 	require.Equal(t, azureCRTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
-	require.Equal(t, azureCRTestServiceEndpointProjectID, projectID)
+	require.Equal(t, azureCRTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	require.Nil(t, err)
 }
 
@@ -86,7 +86,7 @@ func TestServiceEndpointAzureCR_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID.String())
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -109,7 +109,7 @@ func TestServiceEndpointAzureCR_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID.String())
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -135,7 +135,7 @@ func TestServiceEndpointAzureCR_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID.String())
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -163,7 +163,7 @@ func TestServiceEndpointAzureCR_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint, azureCRTestServiceEndpointProjectID.String())
+	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

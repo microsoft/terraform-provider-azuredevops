@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -75,7 +74,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 
 func resourceServiceEndpointGitHubCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointGitHub(d)
+	serviceEndpoint, err := expandServiceEndpointGitHub(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -105,40 +104,40 @@ func resourceServiceEndpointGitHubRead(d *schema.ResourceData, m interface{}) er
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointGitHub(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointGitHub(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointGitHubUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointGitHub(d)
+	serviceEndpoint, err := expandServiceEndpointGitHub(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointGitHub(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointGitHubRead(d, m)
 }
 
 func resourceServiceEndpointGitHubDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointGitHub(d)
+	serviceEndpoint, err := expandServiceEndpointGitHub(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
 	parameters := map[string]string{}
@@ -160,7 +159,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	serviceEndpoint.Type = converter.String("github")
 	serviceEndpoint.Url = converter.String("https://github.com")
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
 func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
@@ -179,8 +178,8 @@ func expandAuthOauthSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
 		d.Set("auth_oauth", &[]map[string]interface{}{
 			{

@@ -18,12 +18,16 @@ func DataResourceServiceEndpointSonarCloud() *schema.Resource {
 }
 
 func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface{}) error {
-	serviceEndpoint, projectID, err := dataSourceGetBaseServiceEndpoint(d, m)
+	serviceEndpoint, err := dataSourceGetBaseServiceEndpoint(d, m)
 	if err != nil {
 		return err
 	}
+
 	if serviceEndpoint != nil {
-		doBaseFlattening(d, serviceEndpoint, projectID.String())
+		if err = checkServiceConnection(serviceEndpoint); err != nil {
+			return err
+		}
+		doBaseFlattening(d, serviceEndpoint)
 
 		return nil
 	}

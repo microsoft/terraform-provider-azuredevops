@@ -6,7 +6,6 @@ import (
 	"maps"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -87,7 +86,7 @@ func ResourceServiceEndpointJFrogDistributionV2() *schema.Resource {
 
 func resourceServiceEndpointJFrogDistributionV2Create(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointJFrogDistributionV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogDistributionV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -117,40 +116,40 @@ func resourceServiceEndpointJFrogDistributionV2Read(d *schema.ResourceData, m in
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointJFrogDistributionV2Update(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointJFrogDistributionV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogDistributionV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointArtifactoryV2(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointJFrogDistributionV2Read(d, m)
 }
 
 func resourceServiceEndpointJFrogDistributionV2Delete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointJFrogDistributionV2(d)
+	serviceEndpoint, err := expandServiceEndpointJFrogDistributionV2(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("jfrogDistributionService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	authScheme := "Token"
@@ -162,18 +161,18 @@ func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*servicee
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"], ok = msi["token"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'token'")
+			return nil, errors.New("Unable to read 'token'")
 		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["username"], ok = msi["username"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'username'")
+			return nil, errors.New("Unable to read 'username'")
 		}
 		authParams["password"], ok = msi["password"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'password'")
+			return nil, errors.New("Unable to read 'password'")
 		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -181,5 +180,5 @@ func expandServiceEndpointJFrogDistributionV2(d *schema.ResourceData) (*servicee
 		Scheme:     &authScheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }

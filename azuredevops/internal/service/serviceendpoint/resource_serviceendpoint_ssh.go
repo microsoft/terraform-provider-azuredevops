@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -72,7 +71,7 @@ func ResourceServiceEndpointSSH() *schema.Resource {
 
 func resourceServiceEndpointSSHCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointSSH(d)
+	serviceEndpoint, err := expandServiceEndpointSSH(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -102,39 +101,39 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointSSH(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointSSH(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointSSHUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointSSH(d)
+	serviceEndpoint, err := expandServiceEndpointSSH(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointSSH(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointSSHRead(d, m)
 }
 
 func resourceServiceEndpointSSHDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointSSH(d)
+	serviceEndpoint, err := expandServiceEndpointSSH(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("UsernamePassword"),
 	}
@@ -156,11 +155,11 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Data = &data
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
 		port, _ := strconv.ParseInt(portStr, 10, 64)

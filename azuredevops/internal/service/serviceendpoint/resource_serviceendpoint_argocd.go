@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -89,7 +88,7 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 
 func resourceServiceEndpointArgoCDCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointArgoCD(d)
+	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -119,38 +118,39 @@ func resourceServiceEndpointArgoCDRead(d *schema.ResourceData, m interface{}) er
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointArgoCD(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointArgoCD(d, serviceEndpoint)
 	return nil
 }
 func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointArgoCD(d)
+	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+	_, err = updateServiceEndpoint(clients, serviceEndpoint)
 
 	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
 	}
-
-	flattenServiceEndpointArgoCD(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointArgoCDRead(d, m)
 }
 func resourceServiceEndpointArgoCDDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointArgoCD(d)
+	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("argocd")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	authScheme := "Token"
@@ -162,18 +162,18 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["apitoken"], ok = msi["token"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'token'")
+			return nil, errors.New("Unable to read 'token'")
 		}
 	} else if x, ok := d.GetOk("authentication_basic"); ok {
 		authScheme = "UsernamePassword"
 		msi := x.([]interface{})[0].(map[string]interface{})
 		authParams["username"], ok = msi["username"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'username'")
+			return nil, errors.New("Unable to read 'username'")
 		}
 		authParams["password"], ok = msi["password"].(string)
 		if !ok {
-			return nil, nil, errors.New("Unable to read 'password'")
+			return nil, errors.New("Unable to read 'password'")
 		}
 	}
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -181,14 +181,14 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 		Scheme:     &authScheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
 // Note that 'username', 'password', and 'apitoken' service connection fields
 // are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
 		if _, ok := d.GetOk("authentication_basic"); !ok {

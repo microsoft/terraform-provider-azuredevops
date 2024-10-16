@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -137,7 +136,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 
 func resourceServiceEndpointAzureCRCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, _, err := expandServiceEndpointAzureCR(d)
+	serviceEndpoint, err := expandServiceEndpointAzureCR(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
@@ -167,40 +166,40 @@ func resourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	flattenServiceEndpointAzureCR(d, serviceEndpoint, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointAzureCR(d, serviceEndpoint)
 	return nil
 }
 
 func resourceServiceEndpointAzureCRUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectID, err := expandServiceEndpointAzureCR(d)
+	serviceEndpoint, err := expandServiceEndpointAzureCR(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
-
-	if err != nil {
-		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
+	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	flattenServiceEndpointAzureCR(d, updatedServiceEndpoint, projectID.String())
 	return resourceServiceEndpointAzureCRRead(d, m)
 }
 
 func resourceServiceEndpointAzureCRDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, projectId, err := expandServiceEndpointAzureCR(d)
+	serviceEndpoint, err := expandServiceEndpointAzureCR(d)
 	if err != nil {
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	return deleteServiceEndpoint(clients, projectId, serviceEndpoint.Id, d.Timeout(schema.TimeoutDelete))
+	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
-	serviceEndpoint, projectID := doBaseExpansion(d)
+func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+	serviceEndpoint := doBaseExpansion(d)
 	serviceEndPointAuthenticationScheme := EndpointAuthenticationScheme(d.Get("service_endpoint_authentication_scheme").(string))
 
 	subscriptionID := d.Get("azurecr_subscription_id")
@@ -246,7 +245,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			}
 		}
 		if serviceEndpointCreationMode == Manual {
-			return nil, nil, fmt.Errorf("ServicePrincipal Manual EndpointCreationMode is not supported yet")
+			return nil, fmt.Errorf("ServicePrincipal Manual EndpointCreationMode is not supported yet")
 		}
 
 		serviceEndpoint.Data = &map[string]string{
@@ -260,7 +259,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 			"azureSpnRoleAssignmentId": d.Get("az_spn_role_assignment_id").(string),
 		}
 	case ManagedServiceIdentity:
-		return nil, nil, fmt.Errorf("ManagedServiceIdentity AuthenticationScheme is not supported yet")
+		return nil, fmt.Errorf("ManagedServiceIdentity AuthenticationScheme is not supported yet")
 	case WorkloadIdentityFederation:
 		if serviceEndpointCreationMode == Automatic {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
@@ -276,7 +275,7 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 		if serviceEndpointCreationMode == Manual {
 			servicePrincipalId := credentials["serviceprincipalid"].(string)
 			if servicePrincipalId == "" {
-				return nil, nil, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
+				return nil, fmt.Errorf("serviceprincipalid is required for WorkloadIdentityFederation")
 			}
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
@@ -302,12 +301,12 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 	azureContainerRegistryURL := fmt.Sprintf("https://%s", loginServer)
 	serviceEndpoint.Url = converter.String(azureContainerRegistryURL)
 
-	return serviceEndpoint, projectID, nil
+	return serviceEndpoint, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID string) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
 
 	serviceEndPointType := EndpointAuthenticationScheme(*serviceEndpoint.Authorization.Scheme)
 

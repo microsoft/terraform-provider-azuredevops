@@ -81,12 +81,12 @@ func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *se
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+		flattenServiceEndpointArtifactory(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointArtifactory(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
-		require.Equal(t, id, projectID)
+		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
 
@@ -105,7 +105,7 @@ func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -134,7 +134,7 @@ func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *s
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -166,7 +166,7 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -186,39 +186,15 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }
 
-// verifies that if an error is produced on an update, it is not swallowed
-func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	r := ResourceServiceEndpointArtifactory()
-	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id.String())
-
-	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
-	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
-
-	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-		Endpoint:   ep,
-		EndpointId: ep.Id,
-	}
-
-	buildClient.
-		EXPECT().
-		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
-		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
-		Times(1)
-
-	err := r.Update(resourceData, clients)
-	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
-}
 func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
