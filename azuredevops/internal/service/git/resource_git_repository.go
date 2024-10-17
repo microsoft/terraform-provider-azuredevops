@@ -1,7 +1,9 @@
 package git
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -211,9 +214,28 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
 			}
 
+			//TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
 			_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
 			if importErr != nil {
-				return fmt.Errorf("Error import repository in Azure DevOps: %+v ", importErr)
+				var wrapperError *azuredevops.WrappedError
+				if errors.As(importErr, &wrapperError) {
+					if wrapperError.StatusCode != nil && *wrapperError.StatusCode == http.StatusBadRequest {
+						return fmt.Errorf(""+
+							"Import repository in Azure DevOps: %+v \n"+
+							"Import request cannot be processed due to one of the following reasons:\n\n"+
+							"	Clone URL is incorrect.\n"+
+							"	Clone URL requires authorization.\n", importErr)
+					}
+				}
+
+				err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
+					RepositoryId: createdRepo.Id,
+				})
+				if err != nil {
+					return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
+				}
+
+				return fmt.Errorf(" Import repository in Azure DevOps: %+v ", importErr)
 			}
 		}
 
