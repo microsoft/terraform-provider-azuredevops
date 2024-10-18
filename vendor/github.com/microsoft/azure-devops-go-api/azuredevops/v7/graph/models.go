@@ -87,6 +87,8 @@ type GraphGroup struct {
 	PrincipalName *string `json:"principalName,omitempty"`
 	// A short phrase to help human readers disambiguate groups with similar names
 	Description *string `json:"description,omitempty"`
+	// Whether the group has been deleted
+	IsDeleted *bool `json:"isDeleted,omitempty"`
 }
 
 // Do not attempt to use this type to create a new group. This type does not contain sufficient fields to create a new group.
