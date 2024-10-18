@@ -286,7 +286,7 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
+		return fmt.Errorf(" Looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
 	if repo == nil {
@@ -535,7 +535,6 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 }
 
 func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository) error {
-	d.SetId(repository.Id.String())
 	d.Set("name", repository.Name)
 	if repository.Project == nil || repository.Project.Id == nil {
 		return fmt.Errorf(" Unable to flatten Git repository without a valid projectID")
