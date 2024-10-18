@@ -17,7 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
+func TestAccGroupResource_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()
 
@@ -28,6 +28,118 @@ func TestAccGroupResource_CreateAndUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: hclGroupBasic(projectName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGroupExists(groupName),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccGroupResource_update(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+	groupNameUpdate := groupName + "update"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGroupBasic(projectName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGroupExists(groupName),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: hclGroupBasic(projectName, groupNameUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					checkGroupExists(groupNameUpdate),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupNameUpdate),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccGroupResource_updateMembers(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGroupMembers(projectName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGroupExists(groupName),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "members.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: hclGroupMembersUpdate(projectName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGroupExists(groupName),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
+					resource.TestCheckResourceAttrSet("azuredevops_group.test", "group_id"),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "display_name", groupName),
+					resource.TestCheckResourceAttr("azuredevops_group.test", "members.#", "2"),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccGroupResource_complete(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGroupComplete(projectName, groupName),
 				Check: resource.ComposeTestCheckFunc(
 					checkGroupExists(groupName),
 					resource.TestCheckResourceAttrSet("azuredevops_group.test", "scope"),
@@ -60,10 +172,10 @@ func checkGroupExists(expectedName string) resource.TestCheckFunc {
 			return err
 		}
 		if group == nil {
-			return fmt.Errorf("Group with Name=%s does not exit", varGroup.Primary.Attributes["display_name"])
+			return fmt.Errorf(" Group with Name=%s does not exit", varGroup.Primary.Attributes["display_name"])
 		}
 		if *group.DisplayName != expectedName {
-			return fmt.Errorf("Group has Name=%s, but expected %s", *group.DisplayName, expectedName)
+			return fmt.Errorf(" Group has Name=%s, but expected %s", *group.DisplayName, expectedName)
 		}
 
 		return nil
@@ -97,7 +209,6 @@ func checkGroupDestroyed(s *terraform.State) error {
 }
 
 func hclGroupBasic(projectName, groupName string) string {
-
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
   name               = "%[1]s"
@@ -110,7 +221,90 @@ resource "azuredevops_project" "test" {
 resource "azuredevops_group" "test" {
   scope        = azuredevops_project.test.id
   display_name = "%[2]s"
+}`, projectName, groupName)
 }
-`, projectName, groupName)
 
+func hclGroupComplete(projectName, groupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_group" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "Readers"
+}
+
+data "azuredevops_group" "test2" {
+  project_id = azuredevops_project.test.id
+  name       = "Contributors"
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.test.id
+  display_name = "%[2]s"
+  description  = "managed by Terraform"
+  members = [
+    data.azuredevops_group.test.descriptor,
+    data.azuredevops_group.test2.descriptor,
+  ]
+}`, projectName, groupName)
+}
+
+func hclGroupMembers(projectName, groupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_group" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "Readers"
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.test.id
+  display_name = "%[2]s"
+  members = [
+    data.azuredevops_group.test.descriptor,
+  ]
+}`, projectName, groupName)
+}
+
+func hclGroupMembersUpdate(projectName, groupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+data "azuredevops_group" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "Readers"
+}
+
+data "azuredevops_group" "test2" {
+  project_id = azuredevops_project.test.id
+  name       = "Contributors"
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.test.id
+  display_name = "%[2]s"
+  members = [
+    data.azuredevops_group.test.descriptor,
+    data.azuredevops_group.test2.descriptor,
+  ]
+}`, projectName, groupName)
 }
