@@ -201,6 +201,11 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if group.IsDeleted != nil && *group.IsDeleted {
+		d.SetId("")
+		return nil
+	}
+
 	members, err := groupReadMembers(*group.Descriptor, clients)
 	if err != nil {
 		return err
