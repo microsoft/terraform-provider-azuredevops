@@ -68,6 +68,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_servicefabric",
 		"azuredevops_serviceendpoint_argocd",
 		"azuredevops_serviceendpoint_aws",
+		"azuredevops_serviceendpoint_aws_terraform",
 		"azuredevops_serviceendpoint_artifactory",
 		"azuredevops_serviceendpoint_sonarqube",
 		"azuredevops_serviceendpoint_sonarcloud",
