@@ -150,6 +150,7 @@ func Provider() *schema.Provider {
 			"azuredevops_securityrole_definitions":   securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_azurerm":    serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_github":     serviceendpoint.DataServiceEndpointGithub(),
+			"azuredevops_serviceendpoint_bitbucket":  serviceendpoint.DataResourceServiceEndpointBitbucket(),
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
