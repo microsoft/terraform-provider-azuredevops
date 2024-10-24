@@ -1,3 +1,36 @@
+## 1.4.0
+
+FEATURES:
+
+* **New Data Resource** `azuredevops_serviceendpoint_bitbucket` [#1200](https://github.com/microsoft/terraform-provider-azuredevops/pull/1200)
+
+BUG FIX:
+
+* `azuredevops_agent_queue` - Fix `name` not set bug.  [#1157](https://github.com/microsoft/terraform-provider-azuredevops/pull/1157)
+* `azuredevops_serviceendpoint_sonarqube` - Adding nil check to project ID. [#1159](https://github.com/microsoft/terraform-provider-azuredevops/pull/1159)
+* `azuredevops_group` - Detect that group has been deleted. [#1196](https://github.com/microsoft/terraform-provider-azuredevops/pull/1196)
+* All service connection - Detect that service connection is not fully returned and this appears to be a permission issue. [#1193](https://github.com/microsoft/terraform-provider-azuredevops/pull/1193)
+
+IMPROVEMENTS:
+
+* `azuredevops_wiki` - Add support for delete project type wiki [#1166](https://github.com/microsoft/terraform-provider-azuredevops/pull/1166)
+* `azuredevops_agent_queue` - Add `name` validation [#1184](https://github.com/microsoft/terraform-provider-azuredevops/pull/1184)
+* **Data Source** `azuredevops_agent_queue` - Add `name` validation [#1184](https://github.com/microsoft/terraform-provider-azuredevops/pull/1184)
+* `azuredevops_git_repository` 
+  - Add support for enable/disable repository [#1181](https://github.com/microsoft/terraform-provider-azuredevops/pull/1181)
+  - Update test case [#1188](https://github.com/microsoft/terraform-provider-azuredevops/pull/1188)
+  - Optimize resource import [#1194](https://github.com/microsoft/terraform-provider-azuredevops/pull/1194)
+* **Data Source** `azuredevops_git_repository` - Optimize resource acquisition. [#1197](https://github.com/microsoft/terraform-provider-azuredevops/pull/1197)
+* `azuredevops_repository_policy_max_file_size` - Add support for max file size `50M` [#1168](https://github.com/microsoft/terraform-provider-azuredevops/pull/1168)
+* `azuredevops_feed_permission` - Sync permissions after create/update [#1169](https://github.com/microsoft/terraform-provider-azuredevops/pull/1169)
+* `azuredevops_branch_policy_build_validation` - Update document [#1172](https://github.com/microsoft/terraform-provider-azuredevops/pull/1172)
+* `serviceendpoint_azurecr` - Fix document error [#1163](https://github.com/microsoft/terraform-provider-azuredevops/pull/1163)
+* `azuredevops_build_definition_permissions` - Update document [#1195](https://github.com/microsoft/terraform-provider-azuredevops/pull/1195)
+
+BREAKING CHANGE:
+
+* `azuredevops_build_definition` - Change `name` from optional to required. [#1185](https://github.com/microsoft/terraform-provider-azuredevops/pull/1185)
+
 ## 1.3.0
 
 BUG FIX:
