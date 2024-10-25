@@ -346,7 +346,7 @@ Terraform provides the following mechanisms to wait for a state change of a reso
 
 1. Using the `retry` mechanism of the `schema.Resource` ([Retry](https://www.terraform.io/docs/extend/resources/retries-and-customizable-timeouts.html#retry))
 
-2. Using the `WaitForState` function of `resource.StateChangeConf` ([StateChangeConf](https://www.terraform.io/docs/extend/resources/retries-and-customizable-timeouts.html#statechangeconf))
+2. Using the `WaitForState` function of `retry.StateChangeConf` ([StateChangeConf](https://www.terraform.io/docs/extend/resources/retries-and-customizable-timeouts.html#statechangeconf))
 
 Both means, if implemented correctly, guarantee that subsequent actions within the provider implementation can be confident that the affected resource has reached an expected state.
 

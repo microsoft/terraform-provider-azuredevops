@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
@@ -136,15 +136,14 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
-	// TODO replace with RetryContext
-	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		args, err := gitRepositoryPushArgs(d, objectID, changeType)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		if (*args.Push.Commits)[0].Comment == nil {
 			m := fmt.Sprintf("Add %s", file)
@@ -154,9 +153,9 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		_, err = clients.GitReposClient.CreatePush(ctx, *args)
 		if err != nil {
 			if utils.ResponseContainsStatusMessage(err, "has already been updated by another client") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -245,15 +244,14 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
-	// TODO replace with RetryContext
-	err = resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError { //nolint:staticcheck
+	err = retry.RetryContext(clients.Ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		args, err := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		commits := *args.Push.Commits
@@ -264,9 +262,9 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 		_, err = clients.GitReposClient.CreatePush(ctx, *args)
 		if err != nil {
 			if utils.ResponseContainsStatusMessage(err, "has already been updated by another client") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -286,11 +284,10 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 	branch := d.Get("branch").(string)
 	message := fmt.Sprintf("Delete %s", file)
 
-	// TODO replace with RetryContext
-	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError { //nolint:staticcheck
+	err := retry.RetryContext(clients.Ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		objectID, err := getLastCommitId(clients, repoId, branch)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		change := &git.GitChange{
@@ -318,9 +315,9 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 		})
 		if err != nil {
 			if utils.ResponseContainsStatusMessage(err, "has already been updated by another client") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

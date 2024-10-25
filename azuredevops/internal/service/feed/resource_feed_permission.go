@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -277,7 +277,7 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 
 func checkPermissions(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 2,
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -292,7 +292,7 @@ func checkPermissions(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func pollPermissions(d *schema.ResourceData, m interface{}) resource.StateRefreshFunc {
+func pollPermissions(d *schema.ResourceData, m interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		_, _, err := getFeedPermission(d, m)
 		if err != nil {

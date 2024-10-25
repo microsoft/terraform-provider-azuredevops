@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
@@ -294,7 +294,7 @@ func resourceAzureAgentPoolVMSSDelete(d *schema.ResourceData, m interface{}) err
 	}
 
 	//  waiting resource deleted
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
@@ -324,7 +324,7 @@ func resourceAzureAgentPoolVMSSDelete(d *schema.ResourceData, m interface{}) err
 }
 
 func syncElasticPoolStatus(params taskagent.UpdateAgentPoolArgs, client *client.AggregatedClient) error {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
