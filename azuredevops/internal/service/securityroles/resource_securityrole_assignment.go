@@ -34,6 +34,7 @@ func ResourceSecurityRoleAssignment() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
 				Required:     true,
+				ForceNew:     true,
 			},
 			"identity_id": {
 				Type:         schema.TypeString,
