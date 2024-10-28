@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccSecurityroleAssignmentResource_Basic(t *testing.T) {
+func TestAccSecurityRoleAssignmentResource_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()
 
