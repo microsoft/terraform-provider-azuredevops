@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -80,7 +80,7 @@ func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedCli
 
 	projectID := (*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -124,7 +124,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 		return fmt.Errorf(" Delete service endpoint error %v", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -134,7 +134,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 		Timeout:                   timeout,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf(" Wait for service endpoint to be deleted error. %v ", err)
 	}
 	return nil
@@ -159,15 +159,15 @@ func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *service
 	}
 
 	log.Printf(":: %s :: Initiating validation", *endpoint.Name)
-	err := resource.RetryContext(clients.Ctx, retryTimeout, func() *resource.RetryError {
+	err := retry.RetryContext(clients.Ctx, retryTimeout, func() *retry.RetryError {
 		reqResult, err := clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs)
 		if err != nil {
 			log.Printf(":: %s :: error during endpoint validation request", *endpoint.Name)
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		if !strings.EqualFold(*reqResult.StatusCode, "ok") {
 			log.Printf(":: %s :: validation failed with StatusCode '%s', retrying...", *endpoint.Name, *reqResult.StatusCode)
-			return resource.RetryableError(fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage))
+			return retry.RetryableError(fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage))
 		}
 		log.Printf(":: %s :: successfully validated connection", *endpoint.Name)
 		return nil
@@ -193,7 +193,7 @@ func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetService
 }
 
 // Service endpoint delete is an async operation, make sure service endpoint is deleted.
-func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) resource.StateRefreshFunc {
+func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 			clients.Ctx,
@@ -216,7 +216,7 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 	}
 }
 
-func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) resource.StateRefreshFunc {
+func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		serviceEndpoint, err := client.ServiceEndpointClient.GetServiceEndpointDetails(
 			client.Ctx,

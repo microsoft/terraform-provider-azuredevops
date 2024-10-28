@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
@@ -171,7 +171,7 @@ func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	//  waiting resource deleted
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {
@@ -201,7 +201,7 @@ func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func syncStatus(params taskagent.UpdateAgentPoolArgs, client *client.AggregatedClient) error {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {

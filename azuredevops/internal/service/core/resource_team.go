@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
@@ -289,7 +289,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set) error {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
 		Refresh: func() (interface{}, string, error) {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
@@ -109,7 +109,7 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	// waiting creation operation finished or timeout
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -254,7 +254,7 @@ func updateProjectFeatures(clients *client.AggregatedClient, project *core.TeamP
 	return nil
 }
 
-func pollOperationResult(clients *client.AggregatedClient, operationRef *operations.OperationReference) resource.StateRefreshFunc {
+func pollOperationResult(clients *client.AggregatedClient, operationRef *operations.OperationReference) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		ret, err := clients.OperationsClient.GetOperation(clients.Ctx, operations.GetOperationArgs{
 			OperationId: operationRef.Id,
@@ -279,7 +279,7 @@ func getProject(clients *client.AggregatedClient, projectID string, projectName 
 	}
 
 	var project *core.TeamProject
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     5 * time.Second,
 		MinTimeout:                20 * time.Second,
@@ -317,7 +317,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 
 	// project updates may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for updates, up until a timeout is reached
-	err := resource.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+	err := retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *retry.RetryError {
 		var updateErr error
 		operationRef, updateErr = clients.CoreClient.UpdateProject(
 			clients.Ctx,
@@ -326,7 +326,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 				ProjectId:     project.Id,
 			})
 		if updateErr != nil {
-			return resource.RetryableError(updateErr)
+			return retry.RetryableError(updateErr)
 		}
 		return nil
 	})
@@ -335,7 +335,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -368,14 +368,14 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 
 	// project deletes may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for deletes, up until a timeout is reached
-	err = resource.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *resource.RetryError {
+	err = retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *retry.RetryError {
 		var deleteErr error
 		operationRef, deleteErr = clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
 			ProjectId: &uuid,
 		})
 
 		if deleteErr != nil {
-			return resource.RetryableError(deleteErr)
+			return retry.RetryableError(deleteErr)
 		}
 		return nil
 	})
@@ -384,7 +384,7 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions"
@@ -101,7 +101,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	}
 
 	// ensure authorization is complete
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -218,7 +218,7 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.ResourceData, params pipelinepermissions.UpdatePipelinePermisionsForResourceArgs) resource.StateRefreshFunc {
+func checkPipelineAuthorization(clients *client.AggregatedClient, d *schema.ResourceData, params pipelinepermissions.UpdatePipelinePermisionsForResourceArgs) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		projectId := d.Get("project_id").(string)
 		resourceType := d.Get("type").(string)
