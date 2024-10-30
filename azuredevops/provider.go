@@ -356,7 +356,6 @@ func clientErrorHandle(err error, orgUrl string) error {
 				}
 			}
 		}
-
 	}
 	return err
 }
