@@ -338,7 +338,7 @@ func clientErrorHandle(err error, orgUrl string) error {
 		if errors.As(err, &wrapperError) {
 			if wrapperError.StatusCode != nil {
 				if *wrapperError.StatusCode == http.StatusNotFound {
-					return fmt.Errorf(" Azure DevOps Organizaiton: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
+					return fmt.Errorf(" Azure DevOps Organization: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
 				} else if *wrapperError.StatusCode == http.StatusUnauthorized {
 					return fmt.Errorf(" You are not authorized to access Azure DevOps Organization %s", orgUrl)
 				}
@@ -350,7 +350,7 @@ func clientErrorHandle(err error, orgUrl string) error {
 		if errors.As(err, &wrapperError) {
 			if wrapperError.StatusCode != nil {
 				if *wrapperError.StatusCode == http.StatusNotFound {
-					return fmt.Errorf(" Azure DevOps Organizaiton: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
+					return fmt.Errorf(" Azure DevOps Organization: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
 				} else if *wrapperError.StatusCode == http.StatusUnauthorized {
 					return fmt.Errorf(" You are not authorized to access Azure DevOps Organization %s", orgUrl)
 				}
