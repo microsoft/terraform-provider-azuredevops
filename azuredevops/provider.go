@@ -2,10 +2,14 @@ package azuredevops
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
@@ -316,7 +320,43 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			return nil, diag.FromErr(err)
 		}
 
-		azdoClient, err := client.GetAzdoClient(tokenFunction, d.Get("org_service_url").(string), terraformVersion)
+		organizationUrl := d.Get("org_service_url").(string)
+		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl, terraformVersion)
+
+		if err != nil {
+			return nil, diag.FromErr(clientErrorHandle(err, organizationUrl))
+		}
+
 		return azdoClient, diag.FromErr(err)
 	}
+}
+
+func clientErrorHandle(err error, orgUrl string) error {
+	switch err.(type) {
+	case azuredevops.WrappedError:
+		var wrapperError azuredevops.WrappedError
+		if errors.As(err, &wrapperError) {
+			if clientError := buildError(*wrapperError.StatusCode, orgUrl); clientError != nil {
+				return clientError
+			}
+		}
+
+	case *azuredevops.WrappedError:
+		var wrapperError *azuredevops.WrappedError
+		if errors.As(err, &wrapperError) {
+			if clientError := buildError(*wrapperError.StatusCode, orgUrl); clientError != nil {
+				return clientError
+			}
+		}
+	}
+	return err
+}
+
+func buildError(statusCode int, orgUrl string) error {
+	if statusCode == http.StatusNotFound {
+		return fmt.Errorf(" Azure DevOps Organization: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
+	} else if statusCode == http.StatusUnauthorized {
+		return fmt.Errorf(" You are not authorized to access Azure DevOps Organization %s", orgUrl)
+	}
+	return nil
 }
