@@ -126,14 +126,20 @@ func resourceServiceEndpointGitHubEnterpriseDelete(d *schema.ResourceData, m int
 func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
 	doBaseFlattening(d, serviceEndpoint)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
-		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-		authPersonal := flattenAuthPersonGithubEnterprise(d, authPersonalSet)
-		if authPersonal != nil {
-			d.Set("auth_personal", authPersonal)
+	if serviceEndpoint != nil {
+		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
+			if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+				authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
+				authPersonal := flattenAuthPersonGithubEnterprise(d, authPersonalSet)
+				if authPersonal != nil {
+					d.Set("auth_personal", authPersonal)
+				}
+			}
+		}
+		if serviceEndpoint.Url != nil {
+			d.Set("url", *serviceEndpoint.Url)
 		}
 	}
-	d.Set("url", *serviceEndpoint.Url)
 }
 
 func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
