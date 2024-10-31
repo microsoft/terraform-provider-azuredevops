@@ -41,7 +41,17 @@ The following attributes are exported:
 
 ## Import
 
-The resources allows the import via the UUID of a user entitlement or by using the principal name of a user owning an entitlement.
+This resource allows importing by the UUID of a user entitlement or by using the principal name of a user who owns the entitlement.
+
+```sh
+terraform import azuredevops_user_entitlement.example "00000000-0000-0000-0000-000000000000"
+```
+
+or 
+
+```sh
+terraform import azuredevops_user_entitlement.example "example@example.com"
+```
 
 ## PAT Permissions Required
 
