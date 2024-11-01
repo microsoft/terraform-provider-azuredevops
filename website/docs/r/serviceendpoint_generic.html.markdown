@@ -57,8 +57,7 @@ The following attributes are exported:
 
 ## Import
 
-Azure DevOps Service Endpoint Generic can be imported using **projectID/serviceEndpointID** or
-**projectName/serviceEndpointID**
+Azure DevOps Service Endpoint Generic can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 terraform import azuredevops_serviceendpoint_generic.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

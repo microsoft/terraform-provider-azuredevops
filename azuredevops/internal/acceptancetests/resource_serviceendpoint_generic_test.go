@@ -102,7 +102,7 @@ func TestAccServiceEndpointGeneric_update(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointGeneric_RequiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointGeneric_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	resourceType := "azuredevops_serviceendpoint_generic"
@@ -130,9 +130,9 @@ func TestAccServiceEndpointGeneric_RequiresImportErrorStep(t *testing.T) {
 func hclSvcEndpointGenericResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_generic" "test" {
-	project_id            = azuredevops_project.project.id
-	service_endpoint_name = "%s"
-	server_url            = "https://some-server.example.com"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  server_url            = "https://some-server.example.com"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -142,12 +142,12 @@ resource "azuredevops_serviceendpoint_generic" "test" {
 func hclSvcEndpointGenericResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_generic" "test" {
-	project_id            = azuredevops_project.project.id
-	service_endpoint_name = "%s"
-	description           = "%s"
-	server_url            = "https://some-server.example.com"
-	username              = "username"
-	password              = "password"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  server_url            = "https://some-server.example.com"
+  username              = "username"
+  password              = "password"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -157,12 +157,12 @@ resource "azuredevops_serviceendpoint_generic" "test" {
 func hclSvcEndpointGenericResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_generic" "test" {
-	project_id            = azuredevops_project.project.id
-	service_endpoint_name = "%s"
-	description           = "%s"
-	server_url            = "https://some-server.example.com"
-	username              = "username"
-	password              = "password"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  server_url            = "https://some-server.example.com"
+  username              = "username"
+  password              = "password"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)

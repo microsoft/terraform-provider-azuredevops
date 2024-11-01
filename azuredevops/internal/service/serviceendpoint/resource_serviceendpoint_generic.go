@@ -34,7 +34,7 @@ func ResourceServiceEndpointGeneric() *schema.Resource {
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"server_url": {
 			Type:         schema.TypeString,
-			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			ValidateFunc: validation.StringIsNotEmpty,
 			Required:     true,
 			Description:  "The server URL of the generic service connection.",
 		},
