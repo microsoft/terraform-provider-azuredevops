@@ -81,6 +81,7 @@ func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
+		resourceData.Set("project_id", (*(*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id).String())
 		flattenServiceEndpointArgoCD(resourceData, ep)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointArgoCD(resourceData)
