@@ -287,9 +287,11 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	}
 
 	if serviceEndpoint.ServiceEndpointProjectReferences != nil && len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
-		project := (*serviceEndpoint.ServiceEndpointProjectReferences)[0]
-		if project.ProjectReference != nil && project.ProjectReference.Id != nil {
-			d.Set("project_id", project.ProjectReference.Id.String())
+		for _, project := range *serviceEndpoint.ServiceEndpointProjectReferences {
+			if strings.EqualFold((*project.ProjectReference.Id).String(), d.Get("project_id").(string)) {
+				d.Set("project_id", project.ProjectReference.Id.String())
+				break
+			}
 		}
 	}
 
