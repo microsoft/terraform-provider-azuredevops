@@ -156,7 +156,8 @@ func resourceGroupEntitlementRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" reading group entitlement: %v", err)
 	}
 
-	if groupEntitlement == nil || groupEntitlement.Id == nil {
+	if groupEntitlement == nil || groupEntitlement.Id == nil ||
+		(groupEntitlement.Group != nil && groupEntitlement.Group.IsDeleted != nil && *groupEntitlement.Group.IsDeleted) {
 		log.Println(" Group has been deleted")
 		d.SetId("")
 		return nil
