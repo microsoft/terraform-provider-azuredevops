@@ -95,6 +95,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_generic":                serviceendpoint.ResourceServiceEndpointGeneric(),
 			"azuredevops_serviceendpoint_generic_git":            serviceendpoint.ResourceServiceEndpointGenericGit(),
 			"azuredevops_serviceendpoint_externaltfs":            serviceendpoint.ResourceServiceEndpointExternalTFS(),
+			"azuredevops_serviceendpoint_aws_terraform":          serviceendpoint.ResourceServiceEndpointAwsForTerraform(),
 			"azuredevops_git_repository":                         git.ResourceGitRepository(),
 			"azuredevops_git_repository_branch":                  git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                    git.ResourceGitRepositoryFile(),
