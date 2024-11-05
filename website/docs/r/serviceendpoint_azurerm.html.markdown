@@ -206,7 +206,8 @@ The following arguments are supported:
 - `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
 - `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
 - `azurerm_subscription_name` - (Optional) The Subscription Name of the targets.
-- `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, and `AzureGermanCloud`. Changing this forces a new resource to be created.
+- `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, `AzureGermanCloud` and `AzureStack`. Changing this forces a new resource to be created.
+- `server_url` - (Optional) The server URL of the service endpoint. Changing this forces a new resource to be created.
 
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 

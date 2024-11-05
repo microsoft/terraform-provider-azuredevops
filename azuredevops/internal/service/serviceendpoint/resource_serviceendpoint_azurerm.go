@@ -112,7 +112,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 			ForceNew:     true,
 			Description:  "Environment (Azure Cloud type)",
 			Default:      "AzureCloud",
-			ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud", "AzureUSGovernment", "AzureGermanCloud"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"AzureCloud", "AzureChinaCloud", "AzureUSGovernment", "AzureGermanCloud", "AzureStack"}, false),
 		},
 
 		"service_endpoint_authentication_scheme": {
@@ -122,6 +122,14 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 			Description:  "The AzureRM Service Endpoint Authentication Scheme, this can be 'WorkloadIdentityFederation', 'ManagedServiceIdentity' or 'ServicePrincipal'.",
 			Default:      "ServicePrincipal",
 			ValidateFunc: validation.StringInSlice([]string{"WorkloadIdentityFederation", "ManagedServiceIdentity", "ServicePrincipal"}, false),
+		},
+
+		"server_url": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		},
 
 		"workload_identity_federation_issuer": {
@@ -406,6 +414,12 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		endpointUrl = "https://management.usgovcloudapi.net/"
 	case "AzureGermanCloud":
 		endpointUrl = "https://management.microsoftazure.de"
+	case "AzureStack":
+		if serverUrl, ok := d.GetOk("server_url"); ok {
+			endpointUrl = serverUrl.(string)
+		} else {
+			return nil, fmt.Errorf(" `server_url` is required when `environment` is `AzureStack`")
+		}
 	}
 
 	if scopeLevel == "Subscription" || scopeLevel == "ResourceGroup" {
@@ -452,6 +466,10 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
 			d.Set("credentials", []interface{}{credentials})
 		}
+	}
+
+	if serviceEndpoint.Url != nil {
+		d.Set("server_url", serviceEndpoint.Url)
 	}
 
 	s := strings.SplitN(scope, "/", -1)

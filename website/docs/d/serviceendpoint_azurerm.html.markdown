@@ -62,16 +62,17 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - Specifies the Authorization Scheme Map.
-* `azurerm_management_group_id` - Specified the Management Group ID of the Service Endpoint is target, if available.
-* `azurerm_management_group_name` - Specified the Management Group Name of the Service Endpoint target, if available.
-* `azurerm_subscription_id` - Specifies the Subscription ID of the Service Endpoint target, if available.
-* `azurerm_subscription_name` - Specifies the Subscription Name of the Service Endpoint target, if available.
-* `resource_group` - Specifies the Resource Group of the Service Endpoint target, if available.
-* `azurerm_spn_tenantid` - Specifies the Tenant ID of the Azure targets.
+* `authorization` - The Authorization Scheme Map.
+* `azurerm_management_group_id` - The Management Group ID of the Service Endpoint is target, if available.
+* `azurerm_management_group_name` - The Management Group Name of the Service Endpoint target, if available.
+* `azurerm_subscription_id` - The Subscription ID of the Service Endpoint target, if available.
+* `azurerm_subscription_name` - The Subscription Name of the Service Endpoint target, if available.
+* `resource_group` - The Resource Group of the Service Endpoint target, if available.
+* `azurerm_spn_tenantid` - The Tenant ID of the Azure targets.
 * `service_principal_id` - The Application(Client) ID of the Service Principal.
-* `description` - Specifies the description of the Service Endpoint.
-* `environment` - The Cloud Environment. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, and `AzureGermanCloud`.
-* `service_endpoint_authentication_scheme` - Specifies the authentication scheme of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. 
-* `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/f66a4bc2-08ad-4ec0-a25e-e769d6b3b294`, where the GUID is the Organization ID of your Azure DevOps Organisation.
-* `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://my-organisation/my-project/my-service-connection-name`.
+* `description` - The description of the Service Endpoint.
+* `server_url` - The server URL of the service Endpoint.
+* `environment` - The Cloud Environment.
+* `service_endpoint_authentication_scheme` - The authentication scheme of Azure Resource Management Endpoint 
+* `workload_identity_federation_issuer` - The issuer if `of the Workload Identity Federation Subject 
+* `workload_identity_federation_subject` - The subject of the Workload Identity Federation Subject.

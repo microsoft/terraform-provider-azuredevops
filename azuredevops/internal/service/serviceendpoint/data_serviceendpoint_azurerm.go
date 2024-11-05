@@ -58,6 +58,11 @@ func DataServiceEndpointAzureRM() *schema.Resource {
 			Computed: true,
 		},
 
+		"server_url": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
 		"service_principal_id": {
 			Type:     schema.TypeString,
 			Computed: true,
