@@ -360,3 +360,58 @@ func TestAccServiceEndpointAzureRm_ManagedServiceIdentity_CreateAndUpdate(t *tes
 		},
 	})
 }
+
+func TestAccServiceEndpointAzureRm_azureStack(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	tfNode := "azuredevops_serviceendpoint_azurerm.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed("azuredevops_serviceendpoint_azurerm"),
+		Steps: []resource.TestStep{
+			{
+				Config: hclAzureRMServiceEndpointEnvironmentAzureStack(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttrSet(tfNode, "azurerm_subscription_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "server_url"),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointName),
+				),
+			},
+			{
+				ResourceName:            tfNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"credentials.0.serviceprincipalkey"},
+			},
+		},
+	})
+}
+
+func hclAzureRMServiceEndpointEnvironmentAzureStack(projectName, serviceEndpointName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+	name       = "%s"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "test" {
+  project_id                             = azuredevops_project.test.id
+  service_endpoint_name                  = "%s"
+  environment = "AzureStack"
+  server_url = "https://www.azuredevops.com"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Test Sub"
+  credentials {
+     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
+     serviceprincipalkey = "00000000-0000-0000-0000-000000000000"
+   }
+}
+`, projectName, serviceEndpointName)
+}
