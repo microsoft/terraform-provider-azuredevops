@@ -1,6 +1,7 @@
 package git
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -85,7 +86,6 @@ func ResourceGitRepository() *schema.Resource {
 						"init_type": {
 							Type:     schema.TypeString,
 							Required: true,
-							ForceNew: true,
 							ValidateFunc: validation.StringInSlice([]string{
 								string(RepoInitTypeValues.Clean),
 								string(RepoInitTypeValues.Fork),
@@ -96,14 +96,12 @@ func ResourceGitRepository() *schema.Resource {
 						"source_type": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"Git"}, false),
 							RequiredWith: []string{"initialization.0.source_url"},
 						},
 						"source_url": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ForceNew:     true,
 							Default:      "",
 							RequiredWith: []string{"initialization.0.source_type"},
 							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
@@ -162,6 +160,41 @@ func ResourceGitRepository() *schema.Resource {
 				Computed: true,
 			},
 		},
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			initDataOld, initDataNew := d.GetChange("initialization")
+			if len(initDataOld.([]interface{})) != 0 {
+				initOldConfig := initDataOld.([]interface{})[0].(map[string]interface{})
+				initOld := &repoInitializationMeta{
+					initType:            initOldConfig["init_type"].(string),
+					sourceType:          initOldConfig["source_type"].(string),
+					sourceURL:           initOldConfig["source_url"].(string),
+					serviceConnectionID: initOldConfig["service_connection_id"].(string),
+				}
+
+				initONewConfig := initDataNew.([]interface{})[0].(map[string]interface{})
+				initNew := &repoInitializationMeta{
+					initType:            initONewConfig["init_type"].(string),
+					sourceType:          initONewConfig["source_type"].(string),
+					sourceURL:           initONewConfig["source_url"].(string),
+					serviceConnectionID: initONewConfig["service_connection_id"].(string),
+				}
+
+				if !strings.EqualFold(initOld.initType, string(RepoInitTypeValues.Uninitialized)) {
+					if !strings.EqualFold(initOld.initType, initNew.initType) {
+						d.ForceNew("initialization.0.init_type")
+					}
+
+					if !strings.EqualFold(initOld.sourceType, initNew.sourceType) {
+						d.ForceNew("initialization.0.source_type")
+					}
+					if !strings.EqualFold(initOld.sourceURL, initNew.sourceURL) {
+						d.ForceNew("initialization.0.source_url")
+					}
+				}
+			}
+
+			return nil
+		},
 	}
 }
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
@@ -198,54 +231,8 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(createdRepo.Id.String())
 
-	if initialization != nil {
-		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) && strings.EqualFold(initialization.sourceType, "Git") {
-			importRequest := git.GitImportRequest{
-				Parameters: &git.GitImportRequestParameters{
-					GitSource: &git.GitImportGitSource{
-						Url: &initialization.sourceURL,
-					},
-				},
-				Repository: createdRepo,
-			}
-
-			if initialization.serviceConnectionID != "" {
-				importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
-				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
-			}
-
-			//TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
-			_, importErr := createImportRequest(clients, importRequest, projectID.String(), *createdRepo.Name)
-			if importErr != nil {
-				var wrapperError *azuredevops.WrappedError
-				if errors.As(importErr, &wrapperError) {
-					if wrapperError.StatusCode != nil && *wrapperError.StatusCode == http.StatusBadRequest {
-						return fmt.Errorf(""+
-							"Import repository in Azure DevOps: %+v \n"+
-							"Import request cannot be processed due to one of the following reasons:\n\n"+
-							"	Clone URL is incorrect.\n"+
-							"	Clone URL requires authorization.\n", importErr)
-					}
-				}
-
-				err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
-					RepositoryId: createdRepo.Id,
-				})
-				if err != nil {
-					return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
-				}
-
-				return fmt.Errorf(" Import repository in Azure DevOps: %+v ", importErr)
-			}
-		}
-
-		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) ||
-			strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Fork)) {
-			err = initializeGitRepository(clients, createdRepo, repo.DefaultBranch)
-			if err != nil {
-				return fmt.Errorf(" initializing repository in Azure DevOps: %+v ", err)
-			}
-		}
+	if err = initializeRepository(clients, initialization, createdRepo, projectID.String()); err != nil {
+		return err
 	}
 
 	if !strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) || parentRepoRef != nil {
@@ -304,7 +291,7 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	repo, _, projectID, err := expandGitRepository(d)
+	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
 		return fmt.Errorf(" converting terraform data model to AzDO project reference: %+v", err)
 	}
@@ -318,7 +305,7 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	disabled := d.Get("disabled").(bool)
 
 	// you cannot update a disabled repo
-	repoActual, err := gitRepositoryRead(clients, repo.Id.String(), *repo.Name, projectID.String())
+	repoExist, err := gitRepositoryRead(clients, repo.Id.String(), *repo.Name, projectID.String())
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -328,24 +315,34 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Enable before update to match the config, disabled repository cannot be updated. Disabled -> Enabled
-	if *repoActual.IsDisabled && !disabled {
-		repoActual, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
+	if *repoExist.IsDisabled && !disabled {
+		repoExist, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
 		if err != nil {
 			return fmt.Errorf(" enabling repository in Azure DevOps: %+v", err)
 		}
 	}
 
-	if *repoActual.IsDisabled {
+	if *repoExist.IsDisabled {
 		return fmt.Errorf("A disabled repository cannot be updated, please enable the repository before attempting to update : %s", repo.Id.String())
 	}
 
+	// Initialize the repository if not initialized
+	if (repoExist.DefaultBranch == nil || *repoExist.DefaultBranch == "") &&
+		(repoExist.Size == nil || *repoExist.Size == 0) {
+		if d.HasChange("initialization") {
+			repo.Project = repoExist.Project
+			if err = initializeRepository(clients, initialization, repo, projectID.String()); err != nil {
+				return err
+			}
+		}
+	}
 	_, err = updateGitRepository(clients, repo, projectID)
 	if err != nil {
 		return fmt.Errorf(" updating repository in Azure DevOps: %+v", err)
 	}
 
 	// Disable after updating to match the config, disabled repository cannot be updated Enabled -> Disabled
-	if !*repoActual.IsDisabled && disabled {
+	if !*repoExist.IsDisabled && disabled {
 		_, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
 		if err != nil {
 			return fmt.Errorf(" disabling repository in Azure DevOps: %+v", err)
@@ -582,8 +579,6 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			initialization.sourceURL = ""
 			initialization.serviceConnectionID = ""
 		}
-	} else if len(initData) > 1 {
-		return nil, nil, nil, fmt.Errorf(" multiple initialization blocks")
 	}
 	return repo, initialization, &projectID, nil
 }
@@ -606,4 +601,59 @@ func updateIsDisabledGitRepository(clients *client.AggregatedClient, repoID stri
 	}
 
 	return repo, nil
+}
+
+func initializeRepository(clients *client.AggregatedClient, initialization *repoInitializationMeta, repository *git.GitRepository, projectId string) error {
+	if initialization != nil {
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Import)) && strings.EqualFold(initialization.sourceType, "Git") {
+			importRequest := git.GitImportRequest{
+				Parameters: &git.GitImportRequestParameters{
+					GitSource: &git.GitImportGitSource{
+						Url: &initialization.sourceURL,
+					},
+				},
+				Repository: repository,
+			}
+
+			if initialization.serviceConnectionID != "" {
+				importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
+				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
+			}
+
+			//TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
+			_, importErr := createImportRequest(clients, importRequest, projectId, *repository.Name)
+			if importErr != nil {
+				var wrapperError *azuredevops.WrappedError
+				if errors.As(importErr, &wrapperError) {
+					if wrapperError.StatusCode != nil && *wrapperError.StatusCode == http.StatusBadRequest {
+						return fmt.Errorf(""+
+							"Import repository in Azure DevOps: %+v \n"+
+							"Import request cannot be processed due to one of the following reasons:\n\n"+
+							"	Clone URL is incorrect.\n"+
+							"	Clone URL requires authorization.\n", importErr)
+					}
+				}
+
+				err := clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
+					RepositoryId: repository.Id,
+				})
+				if err != nil {
+					return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
+				}
+
+				return fmt.Errorf(" Import repository in Azure DevOps: %+v ", importErr)
+			}
+		}
+
+		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) ||
+			strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Fork)) {
+			err := initializeGitRepository(clients, repository, repository.DefaultBranch)
+			if err != nil {
+				return fmt.Errorf(" initializing repository in Azure DevOps: %+v ", err)
+			}
+		}
+	}
+
+	return nil
+
 }
