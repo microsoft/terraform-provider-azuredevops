@@ -653,7 +653,5 @@ func initializeRepository(clients *client.AggregatedClient, initialization *repo
 			}
 		}
 	}
-
 	return nil
-
 }
