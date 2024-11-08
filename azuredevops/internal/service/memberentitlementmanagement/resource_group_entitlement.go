@@ -262,14 +262,18 @@ func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Re
 	}
 
 	clients := m.(*client.AggregatedClient)
-	result, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
+	resp, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 		GroupId: &id,
 	})
 	if err != nil {
 		return nil, fmt.Errorf(" Getting the group entitlement with supplied id %s: %s", upn, err)
 	}
 
-	d.SetId((*result).Id.String())
+	if resp == nil || resp.Id == nil {
+		return nil, fmt.Errorf(" Group entitlement with ID: %s not found", upn)
+	}
+
+	d.SetId((*resp).Id.String())
 
 	return []*schema.ResourceData{d}, nil
 }
