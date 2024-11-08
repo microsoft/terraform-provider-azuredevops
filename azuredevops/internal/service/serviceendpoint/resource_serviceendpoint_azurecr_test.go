@@ -70,6 +70,7 @@ var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointAzureCR_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureCR().Schema, nil)
+	resourceData.Set("project_id", (*azureCRTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	serviceEndpointAfterRoundTrip, err := expandServiceEndpointAzureCR(resourceData)
@@ -86,6 +87,7 @@ func TestServiceEndpointAzureCR_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*azureCRTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -109,6 +111,7 @@ func TestServiceEndpointAzureCR_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*azureCRTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -135,6 +138,7 @@ func TestServiceEndpointAzureCR_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*azureCRTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -163,6 +167,7 @@ func TestServiceEndpointAzureCR_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureCR()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*azureCRTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAzureCR(resourceData, &azureCRTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

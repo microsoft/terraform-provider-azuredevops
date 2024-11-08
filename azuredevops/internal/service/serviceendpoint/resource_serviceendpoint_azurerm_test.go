@@ -257,6 +257,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 		serviceEndpointAfterRoundTrip, _ := expandServiceEndpointAzureRM(resourceData)
 
@@ -273,6 +274,7 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -299,6 +301,7 @@ func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testin
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)
@@ -354,6 +357,7 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -383,6 +387,7 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -414,6 +419,7 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -442,6 +448,7 @@ func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testin
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
+		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)

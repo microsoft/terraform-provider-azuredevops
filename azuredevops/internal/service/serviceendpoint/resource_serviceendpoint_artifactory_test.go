@@ -81,6 +81,7 @@ func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *se
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
+		resourceData.Set("project_id", id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointArtifactory(resourceData)
@@ -105,6 +106,7 @@ func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -134,6 +136,7 @@ func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *s
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -166,6 +169,7 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

@@ -56,6 +56,7 @@ var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo 
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointDockerRegistry_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointDockerRegistry().Schema, nil)
+	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
 	serviceEndpointAfterRoundTrip, err := expandServiceEndpointDockerRegistry(resourceData)
@@ -72,6 +73,7 @@ func TestServiceEndpointDockerRegistry_Create_DoesNotSwallowError(t *testing.T) 
 
 	r := ResourceServiceEndpointDockerRegistry()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -95,6 +97,7 @@ func TestServiceEndpointDockerRegistry_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointDockerRegistry()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -122,6 +125,7 @@ func TestServiceEndpointDockerRegistry_Delete_DoesNotSwallowError(t *testing.T) 
 
 	r := ResourceServiceEndpointDockerRegistry()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -151,6 +155,7 @@ func TestServiceEndpointDockerRegistry_Update_DoesNotSwallowError(t *testing.T) 
 
 	r := ResourceServiceEndpointDockerRegistry()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

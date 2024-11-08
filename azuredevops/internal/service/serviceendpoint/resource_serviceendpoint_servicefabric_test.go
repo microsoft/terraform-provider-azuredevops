@@ -53,6 +53,7 @@ var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointServiceFabric_FlattenExpand_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointServiceFabric().Schema, nil)
+	resourceData.Set("project_id", (*serviceFabricTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureAuthServiceFabricCertificate(resourceData)
 	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint)
 
@@ -70,6 +71,7 @@ func TestServiceEndpointServiceFabric_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*serviceFabricTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureAuthServiceFabricCertificate(resourceData)
 	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint)
 
@@ -94,6 +96,7 @@ func TestServiceEndpointServiceFabric_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*serviceFabricTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureAuthServiceFabricCertificate(resourceData)
 	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint)
 
@@ -121,6 +124,7 @@ func TestServiceEndpointServiceFabric_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*serviceFabricTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureAuthServiceFabricCertificate(resourceData)
 	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint)
 
@@ -150,6 +154,7 @@ func TestServiceEndpointServiceFabric_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointServiceFabric()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*serviceFabricTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureAuthServiceFabricCertificate(resourceData)
 	flattenServiceEndpointServiceFabric(resourceData, &serviceFabricTestServiceEndpoint)
 

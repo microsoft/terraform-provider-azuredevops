@@ -106,6 +106,7 @@ func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointArgoCD(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -135,6 +136,7 @@ func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *servic
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArgoCD(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -167,6 +169,7 @@ func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArgoCD(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -203,6 +206,7 @@ func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serv
 
 	r := ResourceServiceEndpointArgoCD()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
 	flattenServiceEndpointArgoCD(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

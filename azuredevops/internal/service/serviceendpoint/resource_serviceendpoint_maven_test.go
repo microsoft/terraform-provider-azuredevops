@@ -87,6 +87,7 @@ var mavenTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func testServiceEndpointMaven_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointMaven().Schema, nil)
+		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointMaven(resourceData, ep)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointMaven(resourceData)
@@ -111,6 +112,7 @@ func testServiceEndpointMaven_Create_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -140,6 +142,7 @@ func testServiceEndpointMaven_Read_DoesNotSwallowError(t *testing.T, ep *service
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -172,6 +175,7 @@ func testServiceEndpointMaven_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -206,6 +210,7 @@ func testServiceEndpointMaven_Update_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointMaven()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointMaven(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

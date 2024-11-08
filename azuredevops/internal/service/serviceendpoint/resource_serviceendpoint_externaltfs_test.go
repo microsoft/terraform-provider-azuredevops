@@ -51,6 +51,7 @@ var externalTfsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 
 func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointExternalTFS().Schema, nil)
+	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
@@ -69,6 +70,7 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointExternalTFS()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
@@ -94,6 +96,7 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointExternalTFS()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint)
@@ -121,6 +124,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointExternalTFS()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointExternalTFS(
 		resourceData,
 		&externalTfsTestServiceEndpoint)
@@ -151,6 +155,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointExternalTFS()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,

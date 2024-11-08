@@ -50,6 +50,7 @@ var ghesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointGitHubEnterprise().Schema, nil)
+	resourceData.Set("project_id", (*ghesTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureGhesAuthPersonal(resourceData)
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
@@ -67,6 +68,7 @@ func TestServiceEndpointGitHubEnterprise_Create_DoesNotSwallowError(t *testing.T
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ghesTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureGhesAuthPersonal(resourceData)
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
@@ -91,6 +93,7 @@ func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) 
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ghesTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -117,6 +120,7 @@ func TestServiceEndpointGitHubEnterprise_Delete_DoesNotSwallowError(t *testing.T
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ghesTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -146,6 +150,7 @@ func TestServiceEndpointGitHubEnterprise_Update_DoesNotSwallowError(t *testing.T
 
 	r := ResourceServiceEndpointGitHubEnterprise()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ghesTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	configureGhesAuthPersonal(resourceData)
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
