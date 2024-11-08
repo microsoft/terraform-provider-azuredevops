@@ -53,14 +53,15 @@ var jenkinsTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
-	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
+	for _, se := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJenkins().Schema, nil)
-		flattenServiceEndpointJenkins(resourceData, ep)
+		resourceData.Set("project_id", (*se.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+		flattenServiceEndpointJenkins(resourceData, se)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJenkins(resourceData)
 
 		require.Nil(t, err)
-		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
+		require.Equal(t, *se, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
@@ -74,6 +75,7 @@ func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T)
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*jenkinsTestServiceEndpointPassword.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointJenkins(resourceData, &jenkinsTestServiceEndpointPassword)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -98,6 +100,7 @@ func testServiceEndpointJenkins_Read_DoesNotSwallowError(t *testing.T, ep *servi
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointJenkins(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -128,6 +131,7 @@ func testServiceEndpointJenkins_Delete_DoesNotSwallowError(t *testing.T, ep *ser
 
 	r := ResourceServiceEndpointJenkins()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointJenkins(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

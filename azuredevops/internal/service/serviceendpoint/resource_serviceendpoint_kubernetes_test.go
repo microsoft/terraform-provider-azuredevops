@@ -7,18 +7,16 @@ package serviceendpoint
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
-
-	"github.com/google/uuid"
-
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 )
 
 const errMsgCreateServiceEndpoint = "CreateServiceEndpoint() Failed"
@@ -122,6 +120,7 @@ func createkubernetesTestServiceEndpointForServiceAccount() *serviceendpoint.Ser
 func TestServiceEndpointKubernetesForAzureSubscriptionExpandFlattenRoundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointKubernetes().Schema, nil)
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 
@@ -140,6 +139,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionCreateDoesNotSwallowError(
 	r := ResourceServiceEndpointKubernetes()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 
@@ -165,6 +165,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionReadDoesNotSwallowError(t 
 	r := ResourceServiceEndpointKubernetes()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 
@@ -193,6 +194,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionDeleteDoesNotSwallowError(
 	r := ResourceServiceEndpointKubernetes()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 
@@ -224,6 +226,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionUpdateDoesNotSwallowError(
 	r := ResourceServiceEndpointKubernetes()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
 
@@ -250,6 +253,7 @@ func TestServiceEndpointKubernetesForKubeconfigExpandFlattenRoundtrip(t *testing
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointKubernetes().Schema, nil)
 	configureKubeconfig(resourceData)
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 
@@ -268,6 +272,7 @@ func TestServiceEndpointKubernetesForKubeconfigCreateDoesNotSwallowError(t *test
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureKubeconfig(resourceData)
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 
@@ -294,6 +299,7 @@ func TestServiceEndpointKubernetesForKubeconfigReadDoesNotSwallowError(t *testin
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureKubeconfig(resourceData)
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 
@@ -323,6 +329,7 @@ func TestServiceEndpointKubernetesForKubeconfigDeleteDoesNotSwallowError(t *test
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureKubeconfig(resourceData)
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 
@@ -354,6 +361,7 @@ func TestServiceEndpointKubernetesForKubeconfigUpdateDoesNotSwallowError(t *test
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureKubeconfig(resourceData)
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
 
@@ -380,6 +388,7 @@ func TestServiceEndpointKubernetesForServiceAccountExpandFlattenRoundtrip(t *tes
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointKubernetes().Schema, nil)
 	configureServiceAccount(resourceData)
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 
@@ -399,6 +408,7 @@ func TestServiceEndpointKubernetesForServiceAccountCreateDoesNotSwallowError(t *
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureServiceAccount(resourceData)
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 
@@ -425,6 +435,7 @@ func TestServiceEndpointKubernetesForServiceAccountReadDoesNotSwallowError(t *te
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureServiceAccount(resourceData)
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 
@@ -454,6 +465,7 @@ func TestServiceEndpointKubernetesForServiceAccountDeleteDoesNotSwallowError(t *
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureServiceAccount(resourceData)
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 
@@ -485,6 +497,7 @@ func TestServiceEndpointKubernetesForServiceAccountUpdateDoesNotSwallowError(t *
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	configureServiceAccount(resourceData)
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
+	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
 

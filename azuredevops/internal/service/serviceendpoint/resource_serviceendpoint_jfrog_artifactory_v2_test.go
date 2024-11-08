@@ -49,7 +49,6 @@ var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 }
 
 var artifactoryV2TestServiceEndpointID = uuid.New()
-var artifactoryV2RandomServiceEndpointProjectID = uuid.New()
 var artifactoryV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
 
 var artifactoryV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -81,6 +80,7 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogArtifactoryV2().Schema, nil)
+		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJFrogArtifactoryV2(resourceData)
@@ -105,6 +105,7 @@ func testServiceEndpointArtifactoryV2_Create_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -136,6 +137,7 @@ func testServiceEndpointArtifactoryV2_Read_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -170,6 +172,7 @@ func testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t *testing.T, e
 
 	r := ResourceServiceEndpointJFrogArtifactoryV2()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointArtifactory(resourceData, ep)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)

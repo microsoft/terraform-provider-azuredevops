@@ -54,6 +54,7 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRunPipeline().Schema, nil)
+	resourceData.Set("project_id", (*rpTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	rpConfigureExtraFields(resourceData)
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint)
 
@@ -71,6 +72,7 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*rpTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	rpConfigureExtraFields(resourceData)
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint)
 
@@ -95,6 +97,7 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*rpTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -121,6 +124,7 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*rpTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
@@ -149,6 +153,7 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*rpTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	rpConfigureExtraFields(resourceData)
 	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint)
 
