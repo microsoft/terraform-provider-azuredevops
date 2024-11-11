@@ -10,7 +10,12 @@ description: |-
 Manages a git repository within Azure DevOps.
 
 
-~> **NOTE** Importing an existing repository and running `terraform plan` will detect a difference on the initialization block. The plan and apply will then attempt to delete the repository and recreate it so that the configuration matches. The initialization block must be ignored from the plan in order to support configuring existing repositories imported into Terraform state.
+~>**NOTE** Importing an existing repository and running `terraform plan` will detect a difference on the `initialization` block. The `plan` and `apply` will then attempt to update the repository based on the `initialization` configurations. It may be necessary to ignore the `initialization` block from `plan` and `apply` to support configuring existing repositories imported into Terraform state.<br>
+
+~>**NOTE**   1. `initialization.init_type` is `Uninitialized`: Changing `source_type` or `source_url` will not recreate the repository, but initialize the repository.   <br>2. `initialization.init_type` is not `Uninitialized`:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;1) Updating `init_type` will recreate the repository
+<br>&nbsp;&nbsp;&nbsp;&nbsp;2) Updating `source_type` or `source_url` will recreate the repository
+
 
 ```hcl
 resource "azuredevops_project" "example" {
