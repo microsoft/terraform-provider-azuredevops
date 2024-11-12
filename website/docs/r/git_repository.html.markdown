@@ -244,6 +244,9 @@ The following arguments are supported:
 - `username` (Optional) The username used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
 - `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
 
+    ~>**Note**
+    At least `service_connection_id` or `username/password` needs to be set to import private repository.
+
 ## Attributes Reference
 
 In addition to all arguments above, except `initialization`, the following attributes are exported:
