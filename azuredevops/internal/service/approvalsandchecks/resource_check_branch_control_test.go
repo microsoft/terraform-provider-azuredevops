@@ -24,7 +24,6 @@ import (
 var branchControlCheckID = 123456789
 var branchControlEndpointID = uuid.New().String()
 var branchControlCheckProjectID = uuid.New().String()
-var branchControlCheckTestProjectID = &branchControlCheckProjectID
 
 var endpointType = "endpoint"
 var endpointResource = pipelineschecksextras.Resource{
@@ -34,8 +33,8 @@ var endpointResource = pipelineschecksextras.Resource{
 
 var branchControlInputs = map[string]interface{}{
 	"allowedBranches":          "refs/heads/releases/*",
-	"ensureProtectionOfBranch": strconv.FormatBool(false),
-	"allowUnknownStatusBranch": strconv.FormatBool(true),
+	"ensureProtectionOfBranch": strconv.FormatBool(true),
+	"allowUnknownStatusBranch": strconv.FormatBool(false),
 }
 
 var branchControlCheckSettings = map[string]interface{}{

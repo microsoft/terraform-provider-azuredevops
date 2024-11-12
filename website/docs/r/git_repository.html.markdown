@@ -179,6 +179,7 @@ resource "azuredevops_serviceendpoint_generic_git" "example-serviceendpoint" {
   description           = "Managed by Terraform"
 }
 
+# with service connection
 resource "azuredevops_git_repository" "example-import" {
   project_id = azuredevops_project.example.id
   name       = "Example Import Existing Repository"
@@ -187,6 +188,19 @@ resource "azuredevops_git_repository" "example-import" {
     source_type           = "Git"
     source_url            = "https://dev.azure.com/example-org/private-repository.git"
     service_connection_id = azuredevops_serviceendpoint_generic_git.example-serviceendpoint.id
+  }
+}
+
+# with username/password
+resource "azuredevops_git_repository" "example-import2" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Import Existing Repository"
+  initialization {
+    init_type   = "Import"
+    source_type = "Git"
+    source_url  = "https://dev.azure.com/example-org/private-repository.git"
+    username    = "username"
+    password    = "password"
   }
 }
 ```
@@ -226,7 +240,9 @@ The following arguments are supported:
 - `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`.
 - `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
 - `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
-- `service_connection_id` (Optional) The id of service connection used to authenticate to a private repository for import initialization.
+- `service_connection_id` (Optional) The ID of service connection used to authenticate to a private repository for import initialization. Conflicts with `username` and `password`. 
+- `username` (Optional) The username used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
+- `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
 
 ## Attributes Reference
 
