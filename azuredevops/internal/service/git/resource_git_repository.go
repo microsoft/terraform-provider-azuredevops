@@ -15,6 +15,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -46,6 +47,8 @@ type repoInitializationMeta struct {
 	sourceType          string
 	sourceURL           string
 	serviceConnectionID string
+	userName            string
+	password            string
 }
 
 // ResourceGitRepository schema and implementation for git repo resource
@@ -112,6 +115,36 @@ func ResourceGitRepository() *schema.Resource {
 							RequiredWith: []string{
 								"initialization.0.source_url",
 								"initialization.0.source_type",
+							},
+							ConflictsWith: []string{
+								"initialization.0.username",
+								"initialization.0.password",
+							},
+							Default: "",
+						},
+
+						"username": {
+							Type:     schema.TypeString,
+							Optional: true,
+							RequiredWith: []string{
+								"initialization.0.source_url",
+								"initialization.0.source_type",
+							},
+							ConflictsWith: []string{
+								"initialization.0.service_connection_id",
+							},
+							Default: "",
+						},
+
+						"password": {
+							Type:     schema.TypeString,
+							Optional: true,
+							RequiredWith: []string{
+								"initialization.0.source_url",
+								"initialization.0.source_type",
+							},
+							ConflictsWith: []string{
+								"initialization.0.service_connection_id",
 							},
 							Default: "",
 						},
@@ -572,12 +605,16 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 			sourceType:          initValues["source_type"].(string),
 			sourceURL:           initValues["source_url"].(string),
 			serviceConnectionID: initValues["service_connection_id"].(string),
+			userName:            initValues["username"].(string),
+			password:            initValues["password"].(string),
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
 			initialization.sourceType = ""
 			initialization.sourceURL = ""
 			initialization.serviceConnectionID = ""
+			initialization.userName = ""
+			initialization.password = ""
 		}
 	}
 	return repo, initialization, &projectID, nil
@@ -618,6 +655,39 @@ func initializeRepository(clients *client.AggregatedClient, initialization *repo
 			if initialization.serviceConnectionID != "" {
 				importRequest.Parameters.ServiceEndpointId = converter.UUID(initialization.serviceConnectionID)
 				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(false)
+			} else if initialization.userName != "" || initialization.password != "" {
+				seName := fmt.Sprintf("Repository Import (%s)", uuid.New().String())
+				se, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
+					clients.Ctx,
+					serviceendpoint.CreateServiceEndpointArgs{
+						Endpoint: &serviceendpoint.ServiceEndpoint{
+							Authorization: &serviceendpoint.EndpointAuthorization{
+								Parameters: &map[string]string{
+									"username": initialization.userName,
+									"password": initialization.password,
+								},
+								Scheme: converter.String("UsernamePassword"),
+							},
+							Name:  &seName,
+							Type:  converter.String("git"),
+							Url:   &initialization.sourceURL,
+							Owner: converter.String("library"),
+							ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+								{
+									ProjectReference: &serviceendpoint.ProjectReference{
+										Id: converter.ToPtr(uuid.MustParse(projectId)),
+									},
+									Name: &seName,
+								},
+							},
+						},
+					})
+				if err != nil {
+					return err
+				}
+				importRequest.Parameters.ServiceEndpointId = se.Id
+				// destroy the service connection after importing
+				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(true)
 			}
 
 			//TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
