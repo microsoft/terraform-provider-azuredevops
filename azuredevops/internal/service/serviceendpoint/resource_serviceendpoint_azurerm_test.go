@@ -29,7 +29,7 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			Parameters: &map[string]string{
 				"authenticationType":  "spnKey",
 				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
-				"serviceprincipalkey": "",                                     //fake value
+				"serviceprincipalkey": "serviceprincipalkey",                  //fake value
 				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
 			},
 			Scheme: converter.String("ServicePrincipal"),
@@ -258,6 +258,16 @@ func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
 		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+		if (*resource.Data)["creationMode"] == "Manual" {
+			credentials := []interface{}{
+				map[string]string{
+					"serviceprincipalid":          (*resource.Authorization.Parameters)["serviceprincipalid"],
+					"serviceprincipalkey":         (*resource.Authorization.Parameters)["serviceprincipalkey"],
+					"serviceprincipalcertificate": (*resource.Authorization.Parameters)[""],
+				},
+			}
+			resourceData.Set("credentials", credentials)
+		}
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 		serviceEndpointAfterRoundTrip, _ := expandServiceEndpointAzureRM(resourceData)
 
@@ -302,6 +312,16 @@ func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testin
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
 		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+		if (*resource.Data)["creationMode"] == "Manual" {
+			credentials := []interface{}{
+				map[string]string{
+					"serviceprincipalid":          (*resource.Authorization.Parameters)["serviceprincipalid"],
+					"serviceprincipalkey":         (*resource.Authorization.Parameters)["serviceprincipalkey"],
+					"serviceprincipalcertificate": (*resource.Authorization.Parameters)[""],
+				},
+			}
+			resourceData.Set("credentials", credentials)
+		}
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)
@@ -449,6 +469,16 @@ func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testin
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, resource)
 		resourceData.Set("project_id", (*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+		if (*resource.Data)["creationMode"] == "Manual" {
+			credentials := []interface{}{
+				map[string]string{
+					"serviceprincipalid":          (*resource.Authorization.Parameters)["serviceprincipalid"],
+					"serviceprincipalkey":         (*resource.Authorization.Parameters)["serviceprincipalkey"],
+					"serviceprincipalcertificate": (*resource.Authorization.Parameters)[""],
+				},
+			}
+			resourceData.Set("credentials", credentials)
+		}
 		flattenServiceEndpointAzureRM(resourceData, &resource)
 
 		features := initializeFeaturesWithValidate(true)
@@ -498,9 +528,8 @@ func getResourceData(t *testing.T, resource serviceendpoint.ServiceEndpoint) *sc
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAzureRM().Schema, nil)
 	if key := (*resource.Authorization.Parameters)["serviceprincipalkey"]; key != "" {
 		resourceData.Set("credentials", []map[string]interface{}{{
-			"serviceprincipalid":       (*resource.Authorization.Parameters)["serviceprincipalid"],
-			"serviceprincipalkey":      (*resource.Authorization.Parameters)["serviceprincipalkey"],
-			"serviceprincipalkey_hash": key,
+			"serviceprincipalid":  (*resource.Authorization.Parameters)["serviceprincipalid"],
+			"serviceprincipalkey": (*resource.Authorization.Parameters)["serviceprincipalkey"],
 		}})
 	}
 	return resourceData

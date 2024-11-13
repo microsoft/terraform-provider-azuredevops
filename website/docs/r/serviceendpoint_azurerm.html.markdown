@@ -220,8 +220,9 @@ The following arguments are supported:
 
 A `credentials` block supports the following:
 
-- `serviceprincipalid` - (Required) The service principal application Id
+- `serviceprincipalid` - (Required) The service principal application ID
 - `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+- `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
 
 ---
 
