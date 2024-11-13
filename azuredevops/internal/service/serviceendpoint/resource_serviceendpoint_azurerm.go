@@ -97,10 +97,18 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 						Description: "The service principal id which should be used.",
 					},
 					"serviceprincipalkey": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "The service principal secret which should be used.",
-						Sensitive:   true,
+						Type:          schema.TypeString,
+						Optional:      true,
+						ConflictsWith: []string{"credentials.0.serviceprincipalcertificate"},
+						Sensitive:     true,
+						ValidateFunc:  validation.StringIsNotEmpty,
+					},
+					"serviceprincipalcertificate": {
+						Type:          schema.TypeString,
+						Optional:      true,
+						ConflictsWith: []string{"credentials.0.serviceprincipalkey"},
+						Sensitive:     true,
+						ValidateFunc:  validation.StringIsNotEmpty,
 					},
 				},
 			},
@@ -348,12 +356,19 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		if serviceEndpointCreationMode == Manual {
 			serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 				Parameters: &map[string]string{
-					"authenticationType":  "spnKey",
-					"serviceprincipalid":  credentials["serviceprincipalid"].(string),
-					"serviceprincipalkey": credentials["serviceprincipalkey"].(string),
-					"tenantid":            d.Get("azurerm_spn_tenantid").(string),
+					"serviceprincipalid": credentials["serviceprincipalid"].(string),
+					"tenantid":           d.Get("azurerm_spn_tenantid").(string),
 				},
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
+			}
+
+			if spnKey := credentials["serviceprincipalkey"].(string); spnKey != "" {
+				(*serviceEndpoint.Authorization.Parameters)["authenticationType"] = "spnKey"
+				(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = spnKey
+			}
+			if spnCert := credentials["serviceprincipalcertificate"].(string); spnCert != "" {
+				(*serviceEndpoint.Authorization.Parameters)["authenticationType"] = "spnCertificate"
+				(*serviceEndpoint.Authorization.Parameters)["servicePrincipalCertificate"] = spnCert
 			}
 		}
 
@@ -463,7 +478,8 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		if _, ok := d.GetOk("credentials"); !ok {
 			credentials := make(map[string]interface{})
 			credentials["serviceprincipalid"] = (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"]
-			credentials["serviceprincipalkey"] = d.Get("credentials.0.serviceprincipalkey").(string)
+			credentials["serviceprincipalkey"] = ""
+			credentials["serviceprincipalcertificate"] = ""
 			d.Set("credentials", []interface{}{credentials})
 		}
 	}
