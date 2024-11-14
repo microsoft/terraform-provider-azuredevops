@@ -182,7 +182,7 @@ resource "azuredevops_build_definition" "example" {
   ci_trigger {
     use_yaml = false
   }
-  
+
   repository {
     repo_type             = "GitHub"
     repo_id               = "<GitHub Org>/<Repo Name>"

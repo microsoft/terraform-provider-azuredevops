@@ -304,8 +304,13 @@ func TestBuildDefinition_PathInvalidStartingSlashIsError(t *testing.T) {
 // verifies that GitHub repo urls are expanded to URLs Azure DevOps expects
 func TestBuildDefinition_Expand_RepoUrl_Github(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
 	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
-	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
+	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
 	require.Equal(t, *buildDefinitionAfterRoundTrip.Repository.Url, "https://github.com/RepoId.git")
@@ -315,9 +320,14 @@ func TestBuildDefinition_Expand_RepoUrl_Github(t *testing.T) {
 // verifies that Bitbucket repo urls are expanded to URLs Azure DevOps expects
 func TestBuildDefinition_Expand_RepoUrl_Bitbucket(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
 	bitBucketBuildDef := testBuildDefinitionBitbucket()
 	flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID)
-	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
+	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
 	require.Equal(t, *buildDefinitionAfterRoundTrip.Repository.Url, "https://bitbucket.org/RepoId.git")
@@ -327,10 +337,14 @@ func TestBuildDefinition_Expand_RepoUrl_Bitbucket(t *testing.T) {
 // verifies that GitHub Enterprise repo urls are expanded to URLs Azure DevOps expects
 func TestBuildDefinition_Expand_RepoUrl_GithubEnterprise(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
 
 	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
-	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
+	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
 	require.Equal(t, *buildDefinitionAfterRoundTrip.Repository.Url, "https://github.company.com/RepoId.git")
@@ -428,12 +442,17 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 // verifies that the flatten/expand round trip yields the same build definition
 func TestBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
 	for _, triggerGroup := range triggerGroups {
 		testBuildDefinitionWithCustomTriggers := testBuildDefinition
 		testBuildDefinitionWithCustomTriggers.Triggers = &triggerGroup
 		flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID)
-		buildDefinitionYamlAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData)
+		buildDefinitionYamlAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 		require.Nil(t, err)
 		require.Equal(t, sortBuildDefinition(testBuildDefinitionWithCustomTriggers), sortBuildDefinition(*buildDefinitionYamlAfterRoundTrip))
@@ -444,7 +463,12 @@ func TestBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 // verifies that an expand will fail if there is insufficient configuration data found in the resource
 func TestBuildDefinition_Expand_FailsIfNotEnoughData(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
-	_, _, err := expandBuildDefinition(resourceData)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
+
+	_, _, err := expandBuildDefinition(resourceData, clients)
 	require.NotNil(t, err)
 }
 
