@@ -54,7 +54,7 @@ func ResourceBuildDefinition() *schema.Resource {
 
 	branchFilter := &schema.Schema{
 		Type:     schema.TypeSet,
-		Optional: true,
+		Required: true,
 		MinItems: 1,
 		Elem: &schema.Resource{
 			Schema: filterSchema,
@@ -305,6 +305,21 @@ func ResourceBuildDefinition() *schema.Resource {
 					},
 				},
 			},
+			"build_completion_trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"build_definition_id": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.NoZeroValues,
+						},
+						"branch_filter": branchFilter,
+					},
+				},
+			},
 			"schedules": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -384,9 +399,9 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	buildDefinition, projectID, err := expandBuildDefinition(d)
+	buildDefinition, projectID, err := expandBuildDefinition(d, m)
 	if err != nil {
-		return diag.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf(" Creating Build Definition: %+v", err)
 	}
 
 	createdBuildDefinition, err := clients.BuildClient.CreateDefinition(clients.Ctx, build.CreateDefinitionArgs{
@@ -395,7 +410,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 	})
 
 	if err != nil {
-		return diag.Errorf("error creating resource Build Definition: %+v", err)
+		return diag.Errorf("  Ceating Build Definition: %+v", err)
 	}
 
 	var diags diag.Diagnostics = nil
@@ -475,7 +490,7 @@ func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	buildDefinition, projectID, err := expandBuildDefinition(d)
+	buildDefinition, projectID, err := expandBuildDefinition(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -533,6 +548,10 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 
 		if triggers[build.DefinitionTriggerTypeValues.Schedule] != nil {
 			d.Set("schedules", triggers[build.DefinitionTriggerTypeValues.Schedule])
+		}
+
+		if triggers[build.DefinitionTriggerTypeValues.BuildCompletion] != nil {
+			d.Set("build_completion_trigger", triggers[build.DefinitionTriggerTypeValues.BuildCompletion])
 		}
 	}
 
@@ -745,6 +764,15 @@ func flattenBuildDefinitionScheduleTrigger(ms map[string]interface{}) []interfac
 	return schedules
 }
 
+func flattenBuildCompletionTrigger(buildCompletionTrigger map[string]interface{}) interface{} {
+	buildId := buildCompletionTrigger["definition"].(map[string]interface{})["id"].(float64)
+	triggerConfig := map[string]interface{}{
+		"branch_filter":       flattenBuildDefinitionBranchOrPathFilter(buildCompletionTrigger["branchFilters"].([]interface{})),
+		"build_definition_id": buildId,
+	}
+	return triggerConfig
+}
+
 func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interface{} {
 	buildTriggers := map[build.DefinitionTriggerType][]interface{}{}
 	for _, ds := range *m {
@@ -768,6 +796,15 @@ func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interfa
 		}
 		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.Schedule)) {
 			buildTriggers[build.DefinitionTriggerTypeValues.Schedule] = flattenBuildDefinitionScheduleTrigger(trigger)
+		}
+		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.BuildCompletion)) {
+			if _, ok := buildTriggers[build.DefinitionTriggerTypeValues.BuildCompletion]; !ok {
+				buildTriggers[build.DefinitionTriggerTypeValues.BuildCompletion] = []interface{}{flattenBuildCompletionTrigger(trigger)}
+			} else {
+				buildTriggers[build.DefinitionTriggerTypeValues.BuildCompletion] = append(
+					buildTriggers[build.DefinitionTriggerTypeValues.BuildCompletion],
+					flattenBuildCompletionTrigger(trigger))
+			}
 		}
 	}
 	return buildTriggers
@@ -881,7 +918,7 @@ func expandBuildDefinitionManualContinuousIntegrationTriggerListFirstOrNil(d []i
 	return d2[0]
 }
 
-func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTriggerType) interface{} {
+func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTriggerType, m interface{}, projectID string) (interface{}, error) {
 	switch t {
 	case build.DefinitionTriggerTypeValues.ContinuousIntegration:
 		isYaml := d["use_yaml"].(bool)
@@ -893,9 +930,9 @@ func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTr
 				"pathFilters":                  []interface{}{},
 				"triggerType":                  string(t),
 				"settingsSourceType":           float64(2),
-			}
+			}, nil
 		}
-		return expandBuildDefinitionManualContinuousIntegrationTriggerListFirstOrNil(d["override"].([]interface{}))
+		return expandBuildDefinitionManualContinuousIntegrationTriggerListFirstOrNil(d["override"].([]interface{})), nil
 	case build.DefinitionTriggerTypeValues.PullRequest:
 		isYaml := d["use_yaml"].(bool)
 		commentRequired := d["comment_required"].(string)
@@ -917,7 +954,7 @@ func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTr
 			vs["pathFilters"] = override["pathFilters"]
 			vs["autoCancel"] = override["autoCancel"]
 		}
-		return vs
+		return vs, nil
 	case build.DefinitionTriggerTypeValues.Schedule:
 		scheduleConfig := map[string]interface{}{
 			"branchFilters":           expandBuildDefinitionBranchOrPathFilterSet(d["branch_filter"].(*schema.Set)),
@@ -928,19 +965,40 @@ func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTr
 			"scheduleJobId":           nil,
 		}
 		scheduleConfig["daysToBuild"] = DateToDays(d["days_to_build"].([]interface{}))
-		return scheduleConfig
+		return scheduleConfig, nil
+	case build.DefinitionTriggerTypeValues.BuildCompletion:
+		buildCompleteConfig := map[string]interface{}{
+			"branchFilters":           expandBuildDefinitionBranchOrPathFilterSet(d["branch_filter"].(*schema.Set)),
+			"requiresSuccessfulBuild": true,
+			"triggerType":             string(t),
+		}
+		clients := m.(*client.AggregatedClient)
+
+		buildDefinition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
+			Project:      &projectID,
+			DefinitionId: converter.ToPtr(d["build_definition_id"].(int)),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("%+v", err)
+		}
+		buildCompleteConfig["definition"] = buildDefinition
+		return buildCompleteConfig, nil
 	}
-	return nil
+	return nil, nil
 }
-func expandBuildDefinitionTriggerList(d []interface{}, t build.DefinitionTriggerType) []interface{} {
+func expandBuildDefinitionTriggerList(d []interface{}, t build.DefinitionTriggerType, m interface{}, projectID string) ([]interface{}, error) {
 	vs := make([]interface{}, 0, len(d))
 	for _, v := range d {
 		val, ok := v.(map[string]interface{})
 		if ok {
-			vs = append(vs, expandBuildDefinitionTrigger(val, t))
+			trigger, err := expandBuildDefinitionTrigger(val, t, m, projectID)
+			if err != nil {
+				return nil, err
+			}
+			vs = append(vs, trigger)
 		}
 	}
-	return vs
+	return vs, nil
 }
 
 func expandVariableGroups(d *schema.ResourceData) *[]build.VariableGroup {
@@ -971,7 +1029,7 @@ func expandVariables(d *schema.ResourceData) (*map[string]build.BuildDefinitionV
 		varName := varAsMap[bdVariableName].(string)
 
 		if _, ok := expandedVars[varName]; ok {
-			return nil, fmt.Errorf("Unexpectedly found duplicate variable with name %s", varName)
+			return nil, fmt.Errorf(" Unexpectedly found duplicate variable with name %s", varName)
 		}
 
 		isSecret := converter.Bool(varAsMap[bdVariableIsSecret].(bool))
@@ -992,7 +1050,7 @@ func expandVariables(d *schema.ResourceData) (*map[string]build.BuildDefinitionV
 	return &expandedVars, nil
 }
 
-func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, string, error) {
+func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.BuildDefinition, string, error) {
 	projectID := d.Get("project_id").(string)
 	repositories := d.Get("repository").([]interface{})
 
@@ -1022,21 +1080,48 @@ func expandBuildDefinition(d *schema.ResourceData) (*build.BuildDefinition, stri
 		repoAPIURL = fmt.Sprintf("%s/api/v3/repos/%s", githubEnterpriseURL, repoID)
 	}
 
-	ciTriggers := expandBuildDefinitionTriggerList(
+	ciTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
 		build.DefinitionTriggerTypeValues.ContinuousIntegration,
+		meta,
+		projectID,
 	)
-	pullRequestTriggers := expandBuildDefinitionTriggerList(
+	if err != nil {
+		return nil, "", err
+	}
+
+	pullRequestTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("pull_request_trigger").([]interface{}),
 		build.DefinitionTriggerTypeValues.PullRequest,
+		meta,
+		projectID,
 	)
+	if err != nil {
+		return nil, "", err
+	}
 
 	buildTriggers := append(ciTriggers, pullRequestTriggers...)
 
-	schedules := expandBuildDefinitionTriggerList(
+	buildCompletionTriggers, err := expandBuildDefinitionTriggerList(
+		d.Get("build_completion_trigger").([]interface{}),
+		build.DefinitionTriggerTypeValues.BuildCompletion,
+		meta,
+		projectID,
+	)
+	if err != nil {
+		return nil, "", err
+	}
+	buildTriggers = append(buildTriggers, buildCompletionTriggers...)
+
+	schedules, err := expandBuildDefinitionTriggerList(
 		d.Get("schedules").([]interface{}),
 		build.DefinitionTriggerTypeValues.Schedule,
+		meta,
+		projectID,
 	)
+	if err != nil {
+		return nil, "", err
+	}
 	if len(schedules) > 0 {
 		scheduleTriggers := map[string]interface{}{
 			"schedules":   schedules,

@@ -11,7 +11,7 @@ Manages a Build Definition within Azure DevOps.
 
 ## Example Usage
 
-### Tfs
+### Azure DevOps
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -137,6 +137,74 @@ resource "azuredevops_build_definition" "example" {
 }
 ```
 
+### Build Completion Trigger
+```hcl
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = false
+  }
+
+  repository {
+    repo_type             = "GitHubEnterprise"
+    repo_id               = "<GitHub Org>/<Repo Name>"
+    github_enterprise_url = "https://github.company.com"
+    branch_name           = "main"
+    yml_path              = "azure-pipelines.yml"
+    service_connection_id = azuredevops_serviceendpoint_github_enterprise.example.id
+  }
+
+  build_completion_trigger {
+    build_definition_id = 10
+    branch_filter {
+      include = ["main"]
+      exclude = ["test"]
+    }
+  }
+}
+```
+
+### Pull Request Trigger
+```hcl
+data "azuredevops_serviceendpoint_github" "example" {
+  project_id          = data.azuredevops_project.example.id
+  service_endpoint_id = "00000000-0000-0000-0000-000000000000"
+}
+
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = false
+  }
+
+  repository {
+    repo_type             = "GitHub"
+    repo_id               = "<GitHub Org>/<Repo Name>"
+    branch_name           = "main"
+    yml_path              = "azure-pipelines.yml"
+    service_connection_id = data.azuredevops_serviceendpoint_github.example.id
+  }
+
+  pull_request_trigger {
+    override {
+      branch_filter {
+        include = ["main"]
+      }
+    }
+    forks {
+      enabled       = false
+      share_secrets = false
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -148,8 +216,9 @@ The following arguments are supported:
 ---
 - `path` - (Optional) The folder path of the build definition.
 - `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
-- `ci_trigger` - (Optional) Continuous Integration trigger.
-- `pull_request_trigger` - (Optional) Pull Request Integration trigger.
+- `ci_trigger` - (Optional) A `ci_trigger` block as documented below.
+- `pull_request_trigger` - (Optional) A `pull_request_trigger` block as documented below.
+- `build_completion_trigger` - (Optional) A `build_completion_trigger` block as documented below.
 - `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
 - `variable` - (Optional) A list of `variable` blocks, as documented below.
 - `features`- (Optional) A `features` blocks as documented below.
@@ -191,12 +260,18 @@ The following arguments are supported:
 ---
 `ci_trigger` `override` block supports the following:
 
+- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
 - `batch` - (Optional) If you set batch to true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built. Defaults to `true`.
-- `branch_filter` - (Optional) The branches to include and exclude from the trigger.
 - `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
 - `max_concurrent_builds_per_branch` - (Optional) The number of max builds per branch. Defaults to `1`.
 - `polling_interval` - (Optional) How often the external repository is polled. Defaults to `0`.
 - `polling_job_id` - (Computed) This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
+
+---
+`build_completion_trigger` block supports the following:
+
+- `build_definition_id` - (Required) The ID of the build pipeline will be triggered.
+- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
 
 ---
 `pull_request_trigger` block supports the following:
@@ -215,8 +290,8 @@ The following arguments are supported:
 ---
 `pull_request_trigger` `override` block supports the following:
 
+- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
 - `auto_cancel` - (Optional) . Defaults to `true`.
-- `branch_filter` - (Optional) The branches to include and exclude from the trigger.
 - `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
 
 ---
@@ -382,10 +457,9 @@ The following arguments are supported:
   `(UTC+13:00) Nuku'alofa`,   
   `(UTC+13:00) Samoa`,   
   `(UTC+14:00) Kiritimati Island`.
-- `branch_filter` block supports the following:
-
-- `include` - (Optional) List of branch patterns to include.
-- `exclude` - (Optional) List of branch patterns to exclude.
+- `branch_filter` (Required) block supports the following:
+  - `include` - (Optional) List of branch patterns to include.
+  - `exclude` - (Optional) List of branch patterns to exclude.
 
 
 ## Attributes Reference
