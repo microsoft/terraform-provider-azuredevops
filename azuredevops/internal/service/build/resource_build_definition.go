@@ -54,7 +54,7 @@ func ResourceBuildDefinition() *schema.Resource {
 
 	branchFilter := &schema.Schema{
 		Type:     schema.TypeSet,
-		Optional: true,
+		Required: true,
 		MinItems: 1,
 		Elem: &schema.Resource{
 			Schema: filterSchema,
@@ -316,14 +316,7 @@ func ResourceBuildDefinition() *schema.Resource {
 							Required:     true,
 							ValidateFunc: validation.NoZeroValues,
 						},
-						"branch_filter": {
-							Type:     schema.TypeSet,
-							Required: true,
-							MinItems: 1,
-							Elem: &schema.Resource{
-								Schema: filterSchema,
-							},
-						},
+						"branch_filter": branchFilter,
 					},
 				},
 			},
