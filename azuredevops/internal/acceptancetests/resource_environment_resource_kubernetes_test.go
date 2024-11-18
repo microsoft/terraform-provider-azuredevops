@@ -25,13 +25,13 @@ import (
 //	(5) Resource can be queried by ID and has expected name
 //	(6) TF destroy deletes resource
 //	(7) Resource can no longer be queried by ID
-func TestAccEnvironmentKubernetes_CreateAndUpdate(t *testing.T) {
+func TestAccEnvironmentKubernetes_createUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	environmentName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	resourceNameFirst := testutils.GenerateResourceName()
 	resourceNameSecond := testutils.GenerateResourceName()
-	tfNode := "azuredevops_environment_resource_kubernetes.kubernetes"
+	tfNode := "azuredevops_environment_resource_kubernetes.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -39,7 +39,7 @@ func TestAccEnvironmentKubernetes_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkEnvironmentKubernetesDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclEnvironmentResourceKubernetes(projectName, environmentName, serviceEndpointName, resourceNameFirst),
+				Config: hclEnvironmentKubernetes(projectName, environmentName, serviceEndpointName, resourceNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", resourceNameFirst),
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
@@ -49,7 +49,7 @@ func TestAccEnvironmentKubernetes_CreateAndUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testutils.HclEnvironmentResourceKubernetes(projectName, environmentName, serviceEndpointName, resourceNameSecond),
+				Config: hclEnvironmentKubernetes(projectName, environmentName, serviceEndpointName, resourceNameSecond),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", resourceNameSecond),
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
@@ -134,4 +134,38 @@ func readEnvironmentKubernetes(clients *client.AggregatedClient, projectId strin
 			ResourceId:    &resourceId,
 		},
 	)
+}
+
+func hclEnvironmentKubernetes(projectName, environmentName, serviceEndpointName, k8sName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_environment" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+}
+
+resource "azuredevops_serviceendpoint_kubernetes" "test" {
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%s"
+  apiserver_url         = "https://test-dns-r9lconkh.hcp.eastus.azmk8s.io:443"
+  authorization_type    = "ServiceAccount"
+  service_account {
+    token   = "test"
+    ca_cert = "test"
+  }
+}
+
+resource "azuredevops_environment_resource_kubernetes" "test" {
+  project_id          = azuredevops_project.test.id
+  environment_id      = azuredevops_environment.test.id
+  service_endpoint_id = azuredevops_serviceendpoint_kubernetes.test.id
+  name                = "%s"
+  namespace           = "test"
+  cluster_name        = "k8scluster"
+  tags                = ["tag1", "tag2"]
+}
+`, projectName, environmentName, serviceEndpointName, k8sName)
 }
