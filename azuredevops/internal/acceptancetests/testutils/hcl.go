@@ -212,7 +212,6 @@ resource "azuredevops_serviceendpoint_dockerregistry" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-// HclServiceEndpointKubernetesResource HCL describing an AzDO kubernetes service endpoint
 func HclServiceEndpointKubernetesResource(projectName string, serviceEndpointName string, authorizationType string) string {
 	var serviceEndpointResource string
 	switch authorizationType {
@@ -975,7 +974,6 @@ resource "azuredevops_environment_resource_kubernetes" "kubernetes" {
 }`, resourceName)
 }
 
-// HclEnvironmentResourceKubernetesResource HCL describing an AzDO environment kubernetes resource
 func HclEnvironmentResourceKubernetes(projectName string, environmentName string, serviceEndpointName string, resourceName string) string {
 	serviceEndpointResource := HclServiceEndpointKubernetesResource(projectName, serviceEndpointName, "ServiceAccount")
 	azureEnvironmentResource := getEnvironmentResource(environmentName)

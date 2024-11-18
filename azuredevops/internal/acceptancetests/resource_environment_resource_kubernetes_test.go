@@ -66,18 +66,18 @@ func TestAccEnvironmentKubernetes_CreateAndUpdate(t *testing.T) {
 // the resource (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkEnvironmentKubernetesExists(tfNode string, expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources[tfNode]
+		res, ok := s.RootModule().Resources[tfNode]
 		if !ok {
-			return fmt.Errorf("Did not find an resource in the TF state")
+			return fmt.Errorf(" Did not find an resource in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-		id, err := strconv.Atoi(resource.Primary.ID)
+		id, err := strconv.Atoi(res.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Parse resource id, ID:  %v !. Error= %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parse resource id, ID:  %v !. Error= %v", res.Primary.ID, err)
 		}
-		projectId := resource.Primary.Attributes["project_id"]
-		environmentIdStr := resource.Primary.Attributes["environment_id"]
+		projectId := res.Primary.Attributes["project_id"]
+		environmentIdStr := res.Primary.Attributes["environment_id"]
 		environmentId, err := strconv.Atoi(environmentIdStr)
 		if err != nil {
 			return fmt.Errorf("Parse environment_id error, ID:  %v !. Error= %v", environmentIdStr, err)
@@ -85,13 +85,12 @@ func checkEnvironmentKubernetesExists(tfNode string, expectedName string) resour
 
 		readResource, err := readEnvironmentKubernetes(clients, projectId, environmentId, id)
 		if err != nil {
-			return fmt.Errorf("Resource with ID=%d cannot be found!. Error=%v", id, err)
+			return fmt.Errorf(" Resource with ID=%d cannot be found!. Error=%v", id, err)
 		}
 
 		if *readResource.Name != expectedName {
-			return fmt.Errorf("Resource with ID=%d has Name=%s, but expected Name=%s", id, *readResource.Name, expectedName)
+			return fmt.Errorf(" Resource with ID=%d has Name=%s, but expected Name=%s", id, *readResource.Name, expectedName)
 		}
-
 		return nil
 	}
 }
@@ -102,17 +101,17 @@ func checkEnvironmentKubernetesDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 	// verify that every environment referenced in the state does not exist in AzDO
-	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_environment_kubernetes" {
+	for _, res := range s.RootModule().Resources {
+		if res.Type != "azuredevops_environment_kubernetes" {
 			continue
 		}
 
-		id, err := strconv.Atoi(resource.Primary.ID)
+		id, err := strconv.Atoi(res.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Parse resource id, ID:  %v !. Error= %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parse resource id, ID:  %v !. Error= %v", res.Primary.ID, err)
 		}
-		projectId := resource.Primary.Attributes["project_id"]
-		environmentIdStr := resource.Primary.Attributes["environment_id"]
+		projectId := res.Primary.Attributes["project_id"]
+		environmentIdStr := res.Primary.Attributes["environment_id"]
 		environmentId, err := strconv.Atoi(environmentIdStr)
 		if err != nil {
 			return fmt.Errorf("Parse environment_id error, ID:  %v !. Error= %v", environmentIdStr, err)
@@ -120,10 +119,9 @@ func checkEnvironmentKubernetesDestroyed(s *terraform.State) error {
 
 		// indicates the environment still exists - this should fail the test
 		if _, err := readEnvironmentKubernetes(clients, projectId, environmentId, id); err == nil {
-			return fmt.Errorf("Resource ID %d should not exist", id)
+			return fmt.Errorf(" Resource ID %d should not exist", id)
 		}
 	}
-
 	return nil
 }
 
