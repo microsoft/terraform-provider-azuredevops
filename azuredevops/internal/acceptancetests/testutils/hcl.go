@@ -889,17 +889,3 @@ resource "azuredevops_servicehook_storage_queue_pipelines" "test" {
 }
 `, projectResource, accountKey, queueName, eventType)
 }
-
-func getEnvironmentResourceKubernetes(resourceName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_environment_resource_kubernetes" "kubernetes" {
-	project_id          = azuredevops_project.project.id
-	environment_id      = azuredevops_environment.environment.id
-	service_endpoint_id = azuredevops_serviceendpoint_kubernetes.serviceendpoint.id
-	
-	name         = "%s"
-	namespace    = "default"
-	cluster_name = "example-aks"
-	tags         = ["tag1", "tag2"]
-}`, resourceName)
-}
