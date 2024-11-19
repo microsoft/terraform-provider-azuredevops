@@ -275,8 +275,14 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 				errResult := fmt.Errorf("kube_config contains an invalid YAML: %s", err)
 				return nil, errResult
 			}
-			clusterContextInputList := kubeConfigYAMLUnmarshalled["contexts"].([]interface{})[0].(map[string]interface{})
-			clusterContextInput = clusterContextInputList["name"].(string)
+			if v, ok := kubeConfigYAMLUnmarshalled["contexts"]; ok {
+				if rawConfig, ok := v.([]interface{}); ok && len(rawConfig) > 0 {
+					clusterContextInputList := rawConfig[0].(map[string]interface{})
+					if name, exist := clusterContextInputList["name"]; exist {
+						clusterContextInput = name.(string)
+					}
+				}
+			}
 		}
 
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
