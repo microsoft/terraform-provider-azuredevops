@@ -9,9 +9,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
-func DataResourceServiceEndpointJFrogPlatformV2() *schema.Resource {
+func DataSourceServiceEndpointJFrogPlatformV2() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceServiceEndpointJFrogPlatformV2Read,
+		Read: DataSourceServiceEndpointJFrogPlatformV2Read,
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
@@ -19,7 +19,7 @@ func DataResourceServiceEndpointJFrogPlatformV2() *schema.Resource {
 	}
 }
 
-func dataSourceServiceEndpointJFrogPlatformV2Read(d *schema.ResourceData, m interface{}) error {
+func DataSourceServiceEndpointJFrogPlatformV2Read(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	getArgs, err := serviceEndpointGetArgs(d)
 	if err != nil {
