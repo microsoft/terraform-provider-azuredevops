@@ -282,7 +282,6 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 						clusterContextInput = name.(string)
 					}
 				}
-
 			}
 		}
 
