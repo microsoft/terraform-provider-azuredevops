@@ -124,6 +124,7 @@ The configuration for authorization_type="ServiceAccount". This type uses the cr
 
 - `token` - (Required) The token from a Kubernetes secret object.
 - `ca_cert` - (Required) The certificate from a Kubernetes secret object.
+- `accept_untrusted_certs` - (Optional) Set this option to allow clients to accept a self-signed certificate. Defaults to `false`.
 
 ## Attributes Reference
 

@@ -85,6 +85,7 @@ func TestAccServiceEndpointKubernetes_serviceAccount(t *testing.T) {
 					checkSvcEndpointKubernetesExists(serviceEndpointNameFirst),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_account.#"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_account.0.accept_untrusted_certs"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "authorization_type", "ServiceAccount"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 				),
@@ -226,6 +227,7 @@ resource "azuredevops_serviceendpoint_kubernetes" "test" {
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "ServiceAccount"
   service_account {
+	accept_untrusted_certs = false
     token   = "kubernetes_TEST_api_token"
     ca_cert = "kubernetes_TEST_ca_cert"
   }
