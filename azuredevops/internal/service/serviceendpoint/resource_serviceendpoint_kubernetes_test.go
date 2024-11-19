@@ -110,7 +110,8 @@ func createkubernetesTestServiceEndpointForServiceAccount() *serviceendpoint.Ser
 		"serviceAccountCertificate": "kubernetes_TEST_ca_cert",
 	}
 	serviceEndpoint.Data = &map[string]string{
-		"authorizationType": "ServiceAccount",
+		"acceptUntrustedCerts": "false",
+		"authorizationType":    "ServiceAccount",
 	}
 
 	return &serviceEndpoint
