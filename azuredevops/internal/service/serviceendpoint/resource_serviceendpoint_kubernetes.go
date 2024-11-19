@@ -160,6 +160,11 @@ func ResourceServiceEndpointKubernetes() *schema.Resource {
 						DefaultFunc:  schema.EnvDefaultFunc("AZDO_KUBERNETES_SERVICE_CONNECTION_SERVICE_ACCOUNT_TOKEN", nil),
 						Description:  "Secret token",
 					},
+					"accept_untrusted_certs": {
+						Type:     schema.TypeBool,
+						Optional: true,
+						Default:  false,
+					},
 				},
 			},
 		},
@@ -310,7 +315,8 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 		}
 
 		serviceEndpoint.Data = &map[string]string{
-			"authorizationType": "ServiceAccount",
+			"acceptUntrustedCerts": strconv.FormatBool(configuration["accept_untrusted_certs"].(bool)),
+			"authorizationType":    "ServiceAccount",
 		}
 	}
 
@@ -403,6 +409,10 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			serviceAccount = map[string]interface{}{
 				"token":   configuration["token"].(string),
 				"ca_cert": configuration["ca_cert"].(string),
+			}
+			if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
+				acceptUntrustedCerts, _ := strconv.ParseBool(v)
+				serviceAccount["accept_untrusted_certs"] = acceptUntrustedCerts
 			}
 		}
 
