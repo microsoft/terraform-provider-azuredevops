@@ -227,9 +227,9 @@ resource "azuredevops_serviceendpoint_kubernetes" "test" {
   apiserver_url         = "https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io"
   authorization_type    = "ServiceAccount"
   service_account {
-	accept_untrusted_certs = false
-    token   = "kubernetes_TEST_api_token"
-    ca_cert = "kubernetes_TEST_ca_cert"
+    accept_untrusted_certs = false
+    token                  = "kubernetes_TEST_api_token"
+    ca_cert                = "kubernetes_TEST_ca_cert"
   }
 }
 `, projectName, serviceEndpointName)
