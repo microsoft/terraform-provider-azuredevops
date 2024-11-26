@@ -37,6 +37,7 @@ func baseSchema() map[string]*schema.Schema {
 		"project_id": {
 			Type:         schema.TypeString,
 			Required:     true,
+			ForceNew:     true,
 			ValidateFunc: validation.IsUUID,
 		},
 		"service_endpoint_name": {
