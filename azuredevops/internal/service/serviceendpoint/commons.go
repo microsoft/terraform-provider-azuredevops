@@ -43,7 +43,6 @@ func baseSchema() map[string]*schema.Schema {
 		"service_endpoint_name": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotWhiteSpace,
 		},
 		"description": {
