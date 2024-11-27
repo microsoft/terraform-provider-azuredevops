@@ -124,8 +124,7 @@ func resourceServiceEndpointAwsRead(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	flattenServiceEndpointAws(d, serviceEndpoint)
-	return nil
+	return flattenServiceEndpointAws(d, serviceEndpoint)
 }
 
 func resourceServiceEndpointAwsUpdate(d *schema.ResourceData, m interface{}) error {
@@ -172,18 +171,35 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
 	doBaseFlattening(d, serviceEndpoint)
 
-	useOIDC, err := strconv.ParseBool((*serviceEndpoint.Authorization.Parameters)["useOIDC"])
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["username"]; ok {
+			d.Set("access_key_id", v)
+		}
 
-	d.Set("access_key_id", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("role_to_assume", (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"])
-	d.Set("role_session_name", (*serviceEndpoint.Authorization.Parameters)["roleSessionName"])
-	d.Set("external_id", (*serviceEndpoint.Authorization.Parameters)["externalId"])
-	d.Set("use_oidc", useOIDC)
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"]; ok {
+			d.Set("role_to_assume", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["roleSessionName"]; ok {
+			d.Set("role_session_name", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["externalId"]; ok {
+			d.Set("external_id", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["useOIDC"]; ok {
+			if v != "" {
+				useOIDC, err := strconv.ParseBool(v)
+				if err != nil {
+					return fmt.Errorf(" parse `useOIDC`. Error: %+v", err)
+				}
+				d.Set("use_oidc", useOIDC)
+			}
+		}
+	}
+	return nil
 }
