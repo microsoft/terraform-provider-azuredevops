@@ -31,6 +31,7 @@ func TestAccServiceEndpointAws_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "access_key_id", "0000"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "secret_access_key", "secretkey"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "use_oidc", "false"),
 				),
 			},
 		},
@@ -66,6 +67,7 @@ func TestAccServiceEndpointAws_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "role_to_assume", rta),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "role_session_name", rsn),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "external_id", externalId),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "use_oidc", "false"),
 				),
 			},
 		},
@@ -148,6 +150,7 @@ resource "azuredevops_serviceendpoint_aws" "test" {
   secret_access_key     = "secretkey"
   service_endpoint_name = "%s"
   description           = "%s"
+  use_oidc              = false
 }`, projectName, serviceEndpointName, description)
 }
 
@@ -167,6 +170,7 @@ resource "azuredevops_serviceendpoint_aws" "test" {
   role_to_assume    = "%s"
   role_session_name = "%s"
   external_id       = "%s"
+  use_oidc          = false
 }`, projectName, serviceEndpointName, description, sessionToken, rta, rsn, externalId)
 
 }
@@ -182,6 +186,7 @@ resource "azuredevops_serviceendpoint_aws" "import" {
   secret_access_key     = "secretkey"
   service_endpoint_name = azuredevops_serviceendpoint_aws.test.service_endpoint_name
   description           = azuredevops_serviceendpoint_aws.test.description
+  use_oidc              = azuredevops_serviceendpoint_aws.test.use_oidc
 }
 `, template)
 }
