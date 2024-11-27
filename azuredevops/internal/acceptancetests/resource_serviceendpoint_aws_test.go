@@ -108,6 +108,32 @@ func TestAccServiceEndpointAws_update(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointAws_oidc(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_aws"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSvcEndpointAwsResourceOidc(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "access_key_id", "0000"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "secret_access_key", "secretkey"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "use_oidc", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServiceEndpointAws_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
@@ -173,6 +199,20 @@ resource "azuredevops_serviceendpoint_aws" "test" {
   use_oidc          = false
 }`, projectName, serviceEndpointName, description, sessionToken, rta, rsn, externalId)
 
+}
+
+func hclSvcEndpointAwsResourceOidc(projectName, serviceEndpointName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name = "%s"
+}
+resource "azuredevops_serviceendpoint_aws" "test" {
+  project_id            = azuredevops_project.project.id
+  access_key_id         = "0000"
+  secret_access_key     = "secretkey"
+  service_endpoint_name = "%s"
+  use_oidc              = true
+}`, projectName, serviceEndpointName)
 }
 
 func hclSvcEndpointAwsResourceRequiresImport(projectName string, serviceEndpointName string) string {
