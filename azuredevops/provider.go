@@ -97,6 +97,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_externaltfs":                 serviceendpoint.ResourceServiceEndpointExternalTFS(),
 			"azuredevops_serviceendpoint_snyk":                        serviceendpoint.ResourceServiceEndpointSnyk(),
 			"azuredevops_serviceendpoint_dynamics_lifecycle_services": serviceendpoint.ResourceServiceEndpointDynamicsLifecycleServices(),
+			"azuredevops_serviceendpoint_azure_service_bus":           serviceendpoint.ResourceServiceEndpointAzureServiceBus(),
 			"azuredevops_git_repository":                              git.ResourceGitRepository(),
 			"azuredevops_git_repository_branch":                       git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                         git.ResourceGitRepositoryFile(),
