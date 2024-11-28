@@ -40,6 +40,7 @@ func ResourceServiceEndpointSnyk() *schema.Resource {
 		"api_token": {
 			Type:         schema.TypeString,
 			Required:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.IsUUID,
 		},
 	})
