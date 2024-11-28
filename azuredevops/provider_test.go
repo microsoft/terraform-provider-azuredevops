@@ -85,6 +85,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_serviceendpoint_snyk",
 		"azuredevops_serviceendpoint_dynamics_lifecycle_services",
+		"azuredevops_serviceendpoint_azure_service_bus",
 		"azuredevops_variable_group",
 		"azuredevops_repository_policy_author_email_pattern",
 		"azuredevops_repository_policy_case_enforcement",
