@@ -117,44 +117,47 @@ func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
 }
 
 func hclSvcEndpointSnykResourceBasic(projectName string, serviceEndpointName string) string {
-	serviceEndpointResource := fmt.Sprintf(`
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name = "%s"
+}
+
 resource "azuredevops_serviceendpoint_snyk" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   server_url            = "https://snyk.io/"
   api_token             = "00000000-0000-0000-0000-000000000001"
-}`, serviceEndpointName)
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}`, projectName, serviceEndpointName)
 }
 
 func hclSvcEndpointSnykResourceComplete(projectName string, serviceEndpointName string, description string) string {
-	serviceEndpointResource := fmt.Sprintf(`
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name = "%s"
+}
+
 resource "azuredevops_serviceendpoint_snyk" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
   server_url            = "https://snyk.io/"
   api_token             = "00000000-0000-0000-0000-000000000001"
-}`, serviceEndpointName, description)
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}`, projectName, serviceEndpointName, description)
 }
 
 func hclSvcEndpointSnykResourceUpdate(projectName string, serviceEndpointName string, description string) string {
-	serviceEndpointResource := fmt.Sprintf(`
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name = "%s"
+}
+
 resource "azuredevops_serviceendpoint_snyk" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
   server_url            = "https://snyk.io/update/"
   api_token             = "00000000-0000-0000-0000-000000000002"
-}`, serviceEndpointName, description)
-
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}`, projectName, serviceEndpointName, description)
 }
 
 func hclSvcEndpointSnykResourceRequiresImport(projectName string, serviceEndpointName string) string {
