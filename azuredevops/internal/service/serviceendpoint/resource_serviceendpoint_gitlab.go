@@ -15,12 +15,12 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
-func ResourceServiceEndpointDynamicsLifecycleServices() *schema.Resource {
+func ResourceServiceEndpointGitLab() *schema.Resource {
 	r := &schema.Resource{
-		CreateContext: resourceServiceEndpointDynamicsLifecycleServicesCreate,
-		ReadContext:   resourceServiceEndpointDynamicsLifecycleServicesRead,
-		UpdateContext: resourceServiceEndpointDynamicsLifecycleServicesUpdate,
-		DeleteContext: resourceServiceEndpointDynamicsLifecycleServicesDelete,
+		CreateContext: resourceServiceEndpointGitLabCreate,
+		ReadContext:   resourceServiceEndpointGitLabRead,
+		UpdateContext: resourceServiceEndpointGitLabUpdate,
+		DeleteContext: resourceServiceEndpointGitLabDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(2 * time.Minute),
 			Read:   schema.DefaultTimeout(1 * time.Minute),
@@ -32,31 +32,17 @@ func ResourceServiceEndpointDynamicsLifecycleServices() *schema.Resource {
 	}
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
-		"authorization_endpoint": {
+		"url": {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		},
-
-		"lifecycle_services_api_endpoint": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		},
-
-		"client_id": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.IsUUID,
-		},
-
 		"username": {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-
-		"password": {
+		"api_token": {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -66,9 +52,9 @@ func ResourceServiceEndpointDynamicsLifecycleServices() *schema.Resource {
 	return r
 }
 
-func resourceServiceEndpointDynamicsLifecycleServicesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceEndpointGitLabCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
+	serviceEndpoint, err := expandServiceEndpointGitLab(d)
 	if err != nil {
 		return diag.Errorf(errMsgTfConfigRead, err)
 	}
@@ -79,10 +65,10 @@ func resourceServiceEndpointDynamicsLifecycleServicesCreate(ctx context.Context,
 	}
 
 	d.SetId(serviceEndPoint.Id.String())
-	return resourceServiceEndpointDynamicsLifecycleServicesRead(ctx, d, m)
+	return resourceServiceEndpointGitLabRead(ctx, d, m)
 }
 
-func resourceServiceEndpointDynamicsLifecycleServicesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceEndpointGitLabRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	getArgs, err := serviceEndpointGetArgs(d)
 	if err != nil {
@@ -93,7 +79,7 @@ func resourceServiceEndpointDynamicsLifecycleServicesRead(ctx context.Context, d
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
-			return diag.FromErr(err)
+			return nil
 		}
 		return diag.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
@@ -101,13 +87,13 @@ func resourceServiceEndpointDynamicsLifecycleServicesRead(ctx context.Context, d
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return diag.FromErr(err)
 	}
-	flattenServiceEndpointDynamicsLifecycleServices(d, serviceEndpoint)
+	flattenServiceEndpointGitLab(d, serviceEndpoint)
 	return nil
 }
 
-func resourceServiceEndpointDynamicsLifecycleServicesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceEndpointGitLabUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
+	serviceEndpoint, err := expandServiceEndpointGitLab(d)
 	if err != nil {
 		return diag.Errorf(errMsgTfConfigRead, err)
 	}
@@ -116,12 +102,12 @@ func resourceServiceEndpointDynamicsLifecycleServicesUpdate(ctx context.Context,
 		return diag.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
-	return resourceServiceEndpointDynamicsLifecycleServicesRead(ctx, d, m)
+	return resourceServiceEndpointGitLabRead(ctx, d, m)
 }
 
-func resourceServiceEndpointDynamicsLifecycleServicesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceEndpointGitLabDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
+	serviceEndpoint, err := expandServiceEndpointGitLab(d)
 	if err != nil {
 		return diag.Errorf(errMsgTfConfigRead, err)
 	}
@@ -132,44 +118,31 @@ func resourceServiceEndpointDynamicsLifecycleServicesDelete(ctx context.Context,
 	return nil
 }
 
-func expandServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGitLab(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
-			"clientid": d.Get("client_id").(string),
-			"username": d.Get("username").(string),
-			"password": d.Get("password").(string),
+			"apitoken": d.Get("api_token").(string),
 		},
-		Scheme: converter.String("UsernamePassword"),
+		Scheme: converter.String("Token"),
 	}
+	serviceEndpoint.Type = converter.String("gitlab")
+	serviceEndpoint.Url = converter.String(d.Get("url").(string))
 	serviceEndpoint.Data = &map[string]string{
-		"apiurl": d.Get("lifecycle_services_api_endpoint").(string),
+		"username": d.Get("username").(string),
 	}
-	serviceEndpoint.Type = converter.String("lcsserviceendpoint")
-	serviceEndpoint.Url = converter.String(d.Get("authorization_endpoint").(string))
 	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) {
-	doBaseFlattening(d, endpoint)
-	if endpoint.Data != nil {
-		if v, ok := (*endpoint.Data)["apiurl"]; ok {
-			d.Set("lifecycle_services_api_endpoint", v)
-		}
-	}
-
-	if endpoint.Url != nil {
-		d.Set("authorization_endpoint", *endpoint.Url)
-	}
-
-	if endpoint.Authorization != nil && endpoint.Authorization.Parameters != nil {
-		params := *endpoint.Authorization.Parameters
-		if v, ok := params["clientid"]; ok {
-			d.Set("client_id", v)
-		}
-
-		if v, ok := params["username"]; ok {
+func flattenServiceEndpointGitLab(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+	doBaseFlattening(d, serviceEndpoint)
+	if serviceEndpoint.Data != nil {
+		if v, ok := (*serviceEndpoint.Data)["username"]; ok {
 			d.Set("username", v)
 		}
+	}
+
+	if serviceEndpoint.Url != nil {
+		d.Set("url", *serviceEndpoint.Url)
 	}
 }
