@@ -59,6 +59,7 @@ func ResourceServiceEndpointDynamicsLifecycleServices() *schema.Resource {
 		"password": {
 			Type:         schema.TypeString,
 			Required:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	})
