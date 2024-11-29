@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_gitlab
 
-Manages an GitLab endpoint within Azure DevOps.
+Manages an GitLab service endpoint within Azure DevOps. Using this service endpoint requires you to install: [GitLab Integration](https://marketplace.visualstudio.com/items?itemName=onlyutkarsh.gitlab-integration)
 
 ## Example Usage
 
