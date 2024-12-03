@@ -8,7 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointMarketplace_basicToken(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_basicToken(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
@@ -33,7 +33,7 @@ func TestAccServiceEndpointMarketplace_basicToken(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointMarketplace_basicUsernamePassword(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_basicUsernamePassword(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
@@ -58,7 +58,7 @@ func TestAccServiceEndpointMarketplace_basicUsernamePassword(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointMarketplace_update(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
@@ -95,7 +95,7 @@ func TestAccServiceEndpointMarketplace_update(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointMarketplace_requiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
