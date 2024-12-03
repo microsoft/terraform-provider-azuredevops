@@ -99,7 +99,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_dynamics_lifecycle_services": serviceendpoint.ResourceServiceEndpointDynamicsLifecycleServices(),
 			"azuredevops_serviceendpoint_azure_service_bus":           serviceendpoint.ResourceServiceEndpointAzureServiceBus(),
 			"azuredevops_serviceendpoint_gitlab":                      serviceendpoint.ResourceServiceEndpointGitLab(),
-			"azuredevops_serviceendpoint_marketplace":                 serviceendpoint.ResourceServiceEndpointMarketplace(),
+			"azuredevops_serviceendpoint_visualstudiomarketplace":     serviceendpoint.ResourceServiceEndpointMarketplace(),
 			"azuredevops_git_repository":                              git.ResourceGitRepository(),
 			"azuredevops_git_repository_branch":                       git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                         git.ResourceGitRepositoryFile(),
