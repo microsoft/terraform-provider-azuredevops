@@ -12,7 +12,7 @@ func TestAccServiceEndpointMarketplace_basicToken(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_marketplace"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -37,7 +37,7 @@ func TestAccServiceEndpointMarketplace_basicUsernamePassword(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_marketplace"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -65,7 +65,7 @@ func TestAccServiceEndpointMarketplace_update(t *testing.T) {
 	description := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_marketplace"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -98,7 +98,7 @@ func TestAccServiceEndpointMarketplace_update(t *testing.T) {
 func TestAccServiceEndpointMarketplace_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-	resourceType := "azuredevops_serviceendpoint_marketplace"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -126,7 +126,7 @@ resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_marketplace" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   url                   = "https://marketplace.com"
@@ -142,7 +142,7 @@ resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_marketplace" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   url                   = "https://marketplace.com"
@@ -159,7 +159,7 @@ resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_marketplace" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
@@ -175,13 +175,13 @@ func hclSvcEndpointMarketplaceResourceRequiresImport(projectName string, service
 	return fmt.Sprintf(`
 %s
 
-resource "azuredevops_serviceendpoint_marketplace" "import" {
-  project_id            = azuredevops_serviceendpoint_marketplace.test.project_id
-  service_endpoint_name = azuredevops_serviceendpoint_marketplace.test.service_endpoint_name
-  description           = azuredevops_serviceendpoint_marketplace.test.description
-  url                   = azuredevops_serviceendpoint_marketplace.test.url
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "import" {
+  project_id            = azuredevops_serviceendpoint_visualstudiomarketplace.test.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_visualstudiomarketplace.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_visualstudiomarketplace.test.description
+  url                   = azuredevops_serviceendpoint_visualstudiomarketplace.test.url
   authentication_token {
-    token = azuredevops_serviceendpoint_marketplace.test.authentication_token.0.token
+    token = azuredevops_serviceendpoint_visualstudiomarketplace.test.authentication_token.0.token
   }
 }
 `, template)

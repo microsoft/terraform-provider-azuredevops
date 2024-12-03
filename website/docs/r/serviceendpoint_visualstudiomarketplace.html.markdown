@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_serviceendpoint_marketplace"
+page_title: "AzureDevops: azuredevops_serviceendpoint_visualstudiomarketplace"
 description: |-
   Manages a Visual Studio Marketplace service endpoint within Azure DevOps organization. Packaging and publishing Azure Devops and Visual Studio extensions to the Visual Studio Marketplace.
 ---
 
-# azuredevops_serviceendpoint_marketplace
+# azuredevops_serviceendpoint_visualstudiomarketplace
 
 Manages a Visual Studio Marketplace service endpoint within Azure DevOps. Using this service endpoint requires you to install: [Azure DevOps Extension Tasks](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.vsts-developer-tools-build-tasks)
 
@@ -20,7 +20,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_marketplace" "example" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "example" {
   project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example Marketplace"
   url                   = "https://markpetplace.com"
@@ -42,7 +42,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_marketplace" "example" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "example" {
   project_id            = azuredevops_project.example.id
   service_endpoint_name = "Example Marketplace"
   url                   = "https://markpetplace.com"
@@ -101,5 +101,5 @@ The following attributes are exported:
 Azure DevOps Visual Studio Marketplace Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
-terraform import azuredevops_serviceendpoint_marketplace.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+terraform import azuredevops_serviceendpoint_visualstudiomarketplace.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
 ```
