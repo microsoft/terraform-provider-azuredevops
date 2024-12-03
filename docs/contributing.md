@@ -101,7 +101,7 @@ If you are using Go 1.13+ , you can get this below error during the execution of
 ```
 verifying golang.org/x/mod@v0.1.0: golang.org/x/mod@v0.1.0: open /mnt/d/Go/pkg/sumdb/sum.golang.org/latest: no such file or directory
 ```
-As mentionned in the Changelog 1.13 https://golang.org/doc/go1.13#modules For solve it, run in your terminal the commands:
+As mentioned in the Changelog 1.13 https://golang.org/doc/go1.13#modules For solve it, run in your terminal the commands:
 
 ```
 go env -w GOPROXY=direct
@@ -151,7 +151,7 @@ $ ./scripts/build.sh
 
 After this script runs you should see a `./bin/` directory with the compiled terraform provider.
 
-The `build.sh` suppports the following parameters:
+The `build.sh` supports the following parameters:
 
 `-s | --SkipTests` : Skip executing the unit tests
 `-d | --DebugBuild`: Execute _go build_ with flags that disables optimization and adds debug symbols to the created binary
@@ -195,7 +195,7 @@ You can now use the provider just like you normally would. Try it out by using t
 ```bash
 $ cd examples/github-based-cicd-simple/
 
-# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
+# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provision
 # resources inside of.
 #   ex: https://dev.azure.com/<your org name>
 $ export AZDO_ORG_SERVICE_URL="..."
@@ -226,7 +226,7 @@ This section outlines typical development scenarios for the repository, relevant
 
 ## 1. Pick an issue
 
-Please find an open issue in the backlog that has no asignee and request it to be assigned to you by a core contributor if you don't have the permissions to do it yourself. This will help us track which work items are being worked on.
+Please find an open issue in the backlog that has no assignee and request it to be assigned to you by a core contributor if you don't have the permissions to do it yourself. This will help us track which work items are being worked on.
 
 ## 2. Repository Structure
 
@@ -262,7 +262,7 @@ If you need to add, remove or modify the schema of a data source or resource, yo
   - `data_foo.go` - an implementation for the Terraform data source for the **foo** Azure DevOps resource
   - `resource_foo.go` - an implementation for the Terraform resource for the **foo** Azure DevOps resource
 
-Open the file and look for the schema. Here is a simple schema found in `data_group.go`. This is fairly simple and only defines three attributes. More complicated ones can be found in the [build definition code](../azuredevops/resource_build_definition.go). The official documentation for the schema can be [found here](https://godoc.org/github.com/bradfeehan/terraform/helper/schema).
+Open the file and look for the schema. Here is a simple schema found in `data_group.go`. This is fairly simple and only defines three attributes. More complicated ones can be found in the [build definition code](../azuredevops/internal/service/build/resource_build_definition.go). The official documentation for the schema can be [found here](https://godoc.org/github.com/bradfeehan/terraform/helper/schema).
 
 ![Group Data Source Schema](https://user-images.githubusercontent.com/2497673/67519578-b2500400-f66c-11e9-89f2-725a4341a317.png)
 
@@ -275,8 +275,8 @@ If you need to modify the business logic in an existing resource or data source,
 The prototype of these functions are all quite similar. Here is an example of a create function. Keep note of the following details:
 
  - `d *schema.ResourceData` is passed to the provider by Terraform. It contains the resource configuration specified by the client using the provider, along with any data pulled from the Terraform state.
- - `m interface{}` is, in the case of this provider, a structure containing all of the (intialized) clients needed to make API calls to Azure DevOps.
- - [Flatten/Expand](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers#implementing-a-more-complex-read) is a common "idiom" used across terraform providers. It is a standard approach to marshaling and unmarshaling API data structures into the internal terraform state.
+ - `m interface{}` is, in the case of this provider, a structure containing all of the (initialized) clients needed to make API calls to Azure DevOps.
+ - [Flatten/Expand](https://learn.hashicorp.com/terraform/development/writing-custom-terraform-providers#implementing-a-more-complex-read) is a common "idiom" used across terraform providers. It is a standard approach to marshaling and unmarshalling API data structures into the internal terraform state.
 
 ![image](https://user-images.githubusercontent.com/2497673/67520284-217a2800-f66e-11e9-87c8-2f87e882eaca.png)
 
@@ -416,7 +416,7 @@ The acceptance tests for terraform providers are typically implemented as [Accep
 > When generating a new PAT, the acceptance tests require the provisioning of certain resources this token will need to provide permission for creating. For simplicity you can authorize the scope of access associated with this token to `Full Access` with a short expiration date. For custom defined scope, refer to the [Azure DevOps Provider: Authenticating using the Personal Access Token](../website/docs/guides//authenticating_using_the_personal_access_token.md) document that provides more information on how to configure this correctly.
 
 ```bash
-# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison
+# AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provision
 # resources inside of.
 #   ex: https://dev.azure.com/<your org name>
 $ export AZDO_ORG_SERVICE_URL="..."
@@ -497,7 +497,7 @@ To be able to make the release you need to have the required permissions to crea
 Making the release:
 1. Open this project in the dev container or [install gorelaser](https://goreleaser.com/install/)
 1. Create a Github PAT token with all of the `Repo` permissions
-1. Set `GITHUB_TOKEN` enviorment variable to the above PAT token
+1. Set `GITHUB_TOKEN` environment variable to the above PAT token
     ```bash
     export GITHUB_TOKEN=<Your PAT token>
     ```
