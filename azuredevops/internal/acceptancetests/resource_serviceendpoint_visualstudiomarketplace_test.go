@@ -20,7 +20,7 @@ func TestAccServiceEndpointVisualStudioMarketplace_basicToken(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointMarketplaceResourceBasicToken(projectName, serviceEndpointName),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -45,7 +45,7 @@ func TestAccServiceEndpointVisualStudioMarketplace_basicUsernamePassword(t *test
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointMarketplaceResourceBasicUsernamePasword(projectName, serviceEndpointName),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicUsernamePasword(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -73,7 +73,7 @@ func TestAccServiceEndpointVisualStudioMarketplace_update(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointMarketplaceResourceBasicToken(projectName, serviceEndpointNameFirst),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
@@ -82,7 +82,7 @@ func TestAccServiceEndpointVisualStudioMarketplace_update(t *testing.T) {
 				),
 			},
 			{
-				Config: hclSvcEndpointMarketplaceResourceUpdate(projectName, serviceEndpointNameSecond, description),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceUpdate(projectName, serviceEndpointNameSecond, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
@@ -107,20 +107,20 @@ func TestAccServiceEndpointVisualStudioMarketplace_requiresImportErrorStep(t *te
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointMarketplaceResourceBasicToken(projectName, serviceEndpointName),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 				),
 			},
 			{
-				Config:      hclSvcEndpointMarketplaceResourceRequiresImport(projectName, serviceEndpointName),
+				Config:      hclSvcEndpointVisualStudioMarketplaceResourceRequiresImport(projectName, serviceEndpointName),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func hclSvcEndpointMarketplaceResourceBasicToken(projectName string, serviceEndpointName string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
@@ -136,7 +136,7 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
 }`, projectName, serviceEndpointName)
 }
 
-func hclSvcEndpointMarketplaceResourceBasicUsernamePasword(projectName string, serviceEndpointName string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceBasicUsernamePasword(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
@@ -153,7 +153,7 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
 }`, projectName, serviceEndpointName)
 }
 
-func hclSvcEndpointMarketplaceResourceUpdate(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
@@ -170,8 +170,8 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
 }`, projectName, serviceEndpointName, description)
 }
 
-func hclSvcEndpointMarketplaceResourceRequiresImport(projectName string, serviceEndpointName string) string {
-	template := hclSvcEndpointMarketplaceResourceBasicToken(projectName, serviceEndpointName)
+func hclSvcEndpointVisualStudioMarketplaceResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 %s
 
