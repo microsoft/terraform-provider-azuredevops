@@ -13,7 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointAzureCR_Spn_Basic(t *testing.T) {
+func TestAccServiceEndpointAzureCR_spn_basic(t *testing.T) {
 	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") == "" || os.Getenv("TEST_ARM_SUBSCRIPTION_NAME") == "" ||
 		os.Getenv("TEST_ARM_TENANT_ID") == "" || os.Getenv("TEST_ARM_RESOURCE_GROUP") == "" || os.Getenv("TEST_ARM_ACR_NAME") == "" {
 		t.Skip("Skip test as `TEST_ARM_SUBSCRIPTION_ID` or `TEST_ARM_SUBSCRIPTION_NAME` or `TEST_ARM_TENANT_ID` or `TEST_ARM_RESOURCE_GROUP` or `TEST_ARM_ACR_NAME` is not set")
@@ -51,7 +51,7 @@ func TestAccServiceEndpointAzureCR_Spn_Basic(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointAzureCR_Spn_Update(t *testing.T) {
+func TestAccServiceEndpointAzureCR_spn_update(t *testing.T) {
 	if os.Getenv("TEST_ARM_SUBSCRIPTION_ID") == "" || os.Getenv("TEST_ARM_SUBSCRIPTION_NAME") == "" ||
 		os.Getenv("TEST_ARM_TENANT_ID") == "" || os.Getenv("TEST_ARM_RESOURCE_GROUP") == "" || os.Getenv("TEST_ARM_ACR_NAME") == "" {
 		t.Skip("Skip test as `TEST_ARM_SUBSCRIPTION_ID` or `TEST_ARM_SUBSCRIPTION_NAME` or `TEST_ARM_TENANT_ID` or `TEST_ARM_RESOURCE_GROUP` or `TEST_ARM_ACR_NAME` is not set")
