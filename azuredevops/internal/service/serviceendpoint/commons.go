@@ -139,7 +139,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 	return nil
 }
 
-func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, serviceEndpointID *string, retryTimeout time.Duration) error {
+func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, projectId string, retryTimeout time.Duration) error {
 	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
 		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
 			DataSourceDetails: &serviceendpoint.DataSourceDetails{
@@ -153,8 +153,8 @@ func validateServiceEndpoint(clients *client.AggregatedClient, endpoint *service
 				Type:          endpoint.Type,
 			},
 		},
-		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
-		EndpointId: serviceEndpointID,
+		Project:    &projectId,
+		EndpointId: converter.String(endpoint.Id.String()),
 	}
 
 	log.Printf(":: %s :: Initiating validation", *endpoint.Name)

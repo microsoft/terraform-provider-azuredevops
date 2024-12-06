@@ -198,20 +198,21 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf(errMsgTfConfigRead, err)
 	}
 
-	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
 	}
 
+	serviceEndpoint.Id = resp.Id
 	if shouldValidate(endpointFeatures(d)) {
-		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndPoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
 			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 				clients.Ctx,
 				serviceendpoint.DeleteServiceEndpointArgs{
 					ProjectIds: &[]string{
 						(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
 					},
-					EndpointId: serviceEndPoint.Id,
+					EndpointId: resp.Id,
 				}); delErr != nil {
 				return fmt.Errorf(" Delete service endpoint error %v", delErr)
 			}
@@ -219,7 +220,7 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	d.SetId(serviceEndPoint.Id.String())
+	d.SetId(resp.Id.String())
 	return resourceServiceEndpointAzureRMRead(d, m)
 }
 
@@ -260,7 +261,7 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if shouldValidate(endpointFeatures(d)) {
-		if err := validateServiceEndpoint(clients, serviceEndpoint, converter.String(serviceEndpoint.Id.String()), endpointValidationTimeoutSeconds); err != nil {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
 			return err
 		}
 	}
