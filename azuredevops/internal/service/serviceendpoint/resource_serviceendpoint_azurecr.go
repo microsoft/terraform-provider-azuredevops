@@ -78,6 +78,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 					"serviceprincipalid": {
 						Type:        schema.TypeString,
 						Required:    true,
+						ForceNew:    true,
 						Description: "The service principal id which should be used.",
 					},
 				},

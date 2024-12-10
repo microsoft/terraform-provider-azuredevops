@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"fmt"
 	"maps"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,18 +33,20 @@ func ResourceServiceEndpointAws() *schema.Resource {
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"access_key_id": {
-			Type:        schema.TypeString,
-			Required:    true,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
-			Description: "The AWS access key ID for signing programmatic requests.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_ACCESS_KEY_ID", nil),
+			Description:  "The AWS access key ID for signing programmatic requests.",
+			RequiredWith: []string{"secret_access_key"},
 		},
 
 		"secret_access_key": {
-			Type:        schema.TypeString,
-			Required:    true,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
-			Description: "The AWS secret access key for signing programmatic requests.",
-			Sensitive:   true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_SECRET_ACCESS_KEY", nil),
+			Description:  "The AWS secret access key for signing programmatic requests.",
+			Sensitive:    true,
+			RequiredWith: []string{"access_key_id"},
 		},
 
 		"session_token": {
@@ -71,6 +74,14 @@ func ResourceServiceEndpointAws() *schema.Resource {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_EXTERNAL_ID", nil),
 			Description: "A unique identifier that is used by third parties when assuming roles in their customers' accounts, aka cross-account role access.",
+		},
+
+		"use_oidc": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_AWS_SERVICE_CONNECTION_USE_OIDC", nil),
+			Description: "Enable this to attempt getting credentials with OIDC token from Azure Devops.",
 		},
 	})
 
@@ -113,8 +124,7 @@ func resourceServiceEndpointAwsRead(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	flattenServiceEndpointAws(d, serviceEndpoint)
-	return nil
+	return flattenServiceEndpointAws(d, serviceEndpoint)
 }
 
 func resourceServiceEndpointAwsUpdate(d *schema.ResourceData, m interface{}) error {
@@ -151,6 +161,7 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 			"assumeRoleArn":   d.Get("role_to_assume").(string),
 			"roleSessionName": d.Get("role_session_name").(string),
 			"externalId":      d.Get("external_id").(string),
+			"useOIDC":         strconv.FormatBool(d.Get("use_oidc").(bool)),
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
@@ -160,11 +171,35 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
 	doBaseFlattening(d, serviceEndpoint)
 
-	d.Set("access_key_id", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("role_to_assume", (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"])
-	d.Set("role_session_name", (*serviceEndpoint.Authorization.Parameters)["roleSessionName"])
-	d.Set("external_id", (*serviceEndpoint.Authorization.Parameters)["externalId"])
+	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["username"]; ok {
+			d.Set("access_key_id", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"]; ok {
+			d.Set("role_to_assume", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["roleSessionName"]; ok {
+			d.Set("role_session_name", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["externalId"]; ok {
+			d.Set("external_id", v)
+		}
+
+		if v, ok := (*serviceEndpoint.Authorization.Parameters)["useOIDC"]; ok {
+			if v != "" {
+				useOIDC, err := strconv.ParseBool(v)
+				if err != nil {
+					return fmt.Errorf(" parse `useOIDC`. Error: %+v", err)
+				}
+				d.Set("use_oidc", useOIDC)
+			}
+		}
+	}
+	return nil
 }

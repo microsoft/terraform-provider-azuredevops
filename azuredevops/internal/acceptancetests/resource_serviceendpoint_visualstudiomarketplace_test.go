@@ -8,11 +8,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointSnyk_basic(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_basicToken(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -20,50 +20,52 @@ func TestAccServiceEndpointSnyk_basic(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServiceEndpointSnyk_complete(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	serviceEndpointName := testutils.GenerateResourceName()
-	description := testutils.GenerateResourceName()
-
-	resourceType := "azuredevops_serviceendpoint_snyk"
-	tfSvcEpNode := resourceType + ".test"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
-		Steps: []resource.TestStep{
-			{
-				Config: hclSvcEndpointSnykResourceComplete(projectName, serviceEndpointName, description),
-				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://marketplace.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_token.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointSnyk_update(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_basicUsernamePassword(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicUsernamePasword(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://marketplace.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_basic.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointVisualStudioMarketplace_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
 	description := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -71,30 +73,32 @@ func TestAccServiceEndpointSnyk_update(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointNameFirst),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://marketplace.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_token.#", "1"),
 				),
 			},
 			{
-				Config: hclSvcEndpointSnykResourceUpdate(projectName, serviceEndpointNameSecond, description),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceUpdate(projectName, serviceEndpointNameSecond, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/update/"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://marketplace.com/update"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "authentication_token.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointVisualStudioMarketplace_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_visualstudiomarketplace"
 	tfSvcEpNode := resourceType + ".test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -103,73 +107,82 @@ func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 				),
 			},
 			{
-				Config:      hclSvcEndpointSnykResourceRequiresImport(projectName, serviceEndpointName),
+				Config:      hclSvcEndpointVisualStudioMarketplaceResourceRequiresImport(projectName, serviceEndpointName),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func hclSvcEndpointSnykResourceBasic(projectName string, serviceEndpointName string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
-  server_url            = "https://snyk.io/"
-  api_token             = "00000000-0000-0000-0000-000000000001"
+  url                   = "https://marketplace.com"
+  authentication_token {
+    token = "token"
+  }
 }`, projectName, serviceEndpointName)
 }
 
-func hclSvcEndpointSnykResourceComplete(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceBasicUsernamePasword(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
-  description           = "%s"
-  server_url            = "https://snyk.io/"
-  api_token             = "00000000-0000-0000-0000-000000000001"
-}`, projectName, serviceEndpointName, description)
+  url                   = "https://marketplace.com"
+  authentication_basic {
+    username = "uname"
+    password = "pwd"
+  }
+}`, projectName, serviceEndpointName)
 }
 
-func hclSvcEndpointSnykResourceUpdate(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointVisualStudioMarketplaceResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  server_url            = "https://snyk.io/update/"
-  api_token             = "00000000-0000-0000-0000-000000000002"
+  url                   = "https://marketplace.com/update"
+  authentication_token {
+    token = "tokenupdate"
+  }
 }`, projectName, serviceEndpointName, description)
 }
 
-func hclSvcEndpointSnykResourceRequiresImport(projectName string, serviceEndpointName string) string {
-	template := hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName)
+func hclSvcEndpointVisualStudioMarketplaceResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 %s
-resource "azuredevops_serviceendpoint_snyk" "import" {
-  project_id            = azuredevops_serviceendpoint_snyk.test.project_id
-  service_endpoint_name = azuredevops_serviceendpoint_snyk.test.service_endpoint_name
-  description           = azuredevops_serviceendpoint_snyk.test.description
-  server_url            = azuredevops_serviceendpoint_snyk.test.server_url
-  api_token             = "00000000-0000-0000-0000-000000000002"
+
+resource "azuredevops_serviceendpoint_visualstudiomarketplace" "import" {
+  project_id            = azuredevops_serviceendpoint_visualstudiomarketplace.test.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_visualstudiomarketplace.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_visualstudiomarketplace.test.description
+  url                   = azuredevops_serviceendpoint_visualstudiomarketplace.test.url
+  authentication_token {
+    token = azuredevops_serviceendpoint_visualstudiomarketplace.test.authentication_token.0.token
+  }
 }
 `, template)
 }

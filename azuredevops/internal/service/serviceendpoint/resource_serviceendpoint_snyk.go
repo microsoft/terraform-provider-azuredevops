@@ -35,12 +35,12 @@ func ResourceServiceEndpointSnyk() *schema.Resource {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-			//Default:      "https://snyk.io/",
 		},
 
 		"api_token": {
 			Type:         schema.TypeString,
 			Required:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.IsUUID,
 		},
 	})

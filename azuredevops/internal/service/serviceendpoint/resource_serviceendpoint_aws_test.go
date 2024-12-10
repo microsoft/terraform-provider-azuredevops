@@ -32,6 +32,7 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 			"assumeRoleArn":   "AWS_TEST_assumeRoleArn",
 			"roleSessionName": "ARS_TEST_roleSessionName",
 			"externalId":      "AWS_TEST_externalId",
+			"useOIDC":         "false",
 		},
 		Scheme: converter.String("UsernamePassword"),
 	},

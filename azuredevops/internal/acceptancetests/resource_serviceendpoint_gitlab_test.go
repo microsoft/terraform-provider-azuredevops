@@ -8,11 +8,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointSnyk_basic(t *testing.T) {
+func TestAccServiceEndpointGitLab_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_gitlab"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -20,23 +20,25 @@ func TestAccServiceEndpointSnyk_basic(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGitLabResourceBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointSnyk_complete(t *testing.T) {
+func TestAccServiceEndpointGitLab_complete(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 	description := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_gitlab"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -44,26 +46,27 @@ func TestAccServiceEndpointSnyk_complete(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceComplete(projectName, serviceEndpointName, description),
+				Config: hclSvcEndpointGitLabResourceComplete(projectName, serviceEndpointName, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointSnyk_update(t *testing.T) {
+func TestAccServiceEndpointGitLab_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 
 	description := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_gitlab"
 	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -71,30 +74,32 @@ func TestAccServiceEndpointSnyk_update(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointNameFirst),
+				Config: hclSvcEndpointGitLabResourceBasic(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
 				),
 			},
 			{
-				Config: hclSvcEndpointSnykResourceUpdate(projectName, serviceEndpointNameSecond, description),
+				Config: hclSvcEndpointGitLabResourceUpdate(projectName, serviceEndpointNameSecond, description),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://snyk.io/update/"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "url", "https://gitlab.com/update"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "usernameupdate"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
+func TestAccServiceEndpointGitLab_requiresImportErrorStep(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
-	resourceType := "azuredevops_serviceendpoint_snyk"
+	resourceType := "azuredevops_serviceendpoint_gitlab"
 	tfSvcEpNode := resourceType + ".test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -103,73 +108,78 @@ func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName),
+				Config: hclSvcEndpointGitLabResourceBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 				),
 			},
 			{
-				Config:      hclSvcEndpointSnykResourceRequiresImport(projectName, serviceEndpointName),
+				Config:      hclSvcEndpointGitLabResourceRequiresImport(projectName, serviceEndpointName),
 				ExpectError: testutils.RequiresImportError(serviceEndpointName),
 			},
 		},
 	})
 }
 
-func hclSvcEndpointSnykResourceBasic(projectName string, serviceEndpointName string) string {
+func hclSvcEndpointGitLabResourceBasic(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_gitlab" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
-  server_url            = "https://snyk.io/"
-  api_token             = "00000000-0000-0000-0000-000000000001"
+  url                   = "https://gitlab.com"
+  username              = "username"
+  api_token             = "token"
 }`, projectName, serviceEndpointName)
 }
 
-func hclSvcEndpointSnykResourceComplete(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointGitLabResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_gitlab" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  server_url            = "https://snyk.io/"
-  api_token             = "00000000-0000-0000-0000-000000000001"
+  url                   = "https://gitlab.com"
+  username              = "username"
+  api_token             = "token"
 }`, projectName, serviceEndpointName, description)
 }
 
-func hclSvcEndpointSnykResourceUpdate(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointGitLabResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name = "%s"
 }
 
-resource "azuredevops_serviceendpoint_snyk" "test" {
+resource "azuredevops_serviceendpoint_gitlab" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  server_url            = "https://snyk.io/update/"
-  api_token             = "00000000-0000-0000-0000-000000000002"
+  url                   = "https://gitlab.com/update"
+  username              = "usernameupdate"
+  api_token             = "tokenupdate"
 }`, projectName, serviceEndpointName, description)
 }
 
-func hclSvcEndpointSnykResourceRequiresImport(projectName string, serviceEndpointName string) string {
-	template := hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointName)
+func hclSvcEndpointGitLabResourceRequiresImport(projectName string, serviceEndpointName string) string {
+	template := hclSvcEndpointGitLabResourceBasic(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 %s
-resource "azuredevops_serviceendpoint_snyk" "import" {
-  project_id            = azuredevops_serviceendpoint_snyk.test.project_id
-  service_endpoint_name = azuredevops_serviceendpoint_snyk.test.service_endpoint_name
-  description           = azuredevops_serviceendpoint_snyk.test.description
-  server_url            = azuredevops_serviceendpoint_snyk.test.server_url
-  api_token             = "00000000-0000-0000-0000-000000000002"
+
+resource "azuredevops_serviceendpoint_gitlab" "import" {
+  project_id            = azuredevops_serviceendpoint_gitlab.test.project_id
+  service_endpoint_name = azuredevops_serviceendpoint_gitlab.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_gitlab.test.description
+  url                   = azuredevops_serviceendpoint_gitlab.test.url
+  username              = azuredevops_serviceendpoint_gitlab.test.username
+  api_token             = azuredevops_serviceendpoint_gitlab.test.api_token
 }
 `, template)
 }

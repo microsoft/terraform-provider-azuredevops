@@ -2,7 +2,7 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_serviceendpoint_snyk"
 description: |-
-  Manages a Snyk Security Scan Security Scan service endpoint within Azure DevOps organization.
+  Manages a Snyk Security Scan service endpoint within Azure DevOps organization.
 ---
 
 # azuredevops_serviceendpoint_snyk
