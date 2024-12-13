@@ -38,13 +38,13 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			State: importServicePrincipalEntitlement,
 		},
 		Schema: map[string]*schema.Schema{
-			"application_id": {
+			"principal_name": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
 				ForceNew:         true,
 				ConflictsWith:    []string{"origin_id", "origin"},
-				AtLeastOneOf:     []string{"origin_id", "application_id"},
+				AtLeastOneOf:     []string{"origin_id", "principal_name"},
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
 			},
@@ -53,9 +53,9 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"application_id"},
+				ConflictsWith: []string{"principal_name"},
 				RequiredWith:  []string{"origin"},
-				AtLeastOneOf:  []string{"origin_id", "application_id"},
+				AtLeastOneOf:  []string{"origin_id", "principal_name"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
@@ -63,7 +63,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Computed:      true,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"application_id"},
+				ConflictsWith: []string{"principal_name"},
 				ValidateFunc:  validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
@@ -233,7 +233,7 @@ func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interfa
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
 	origin := d.Get("origin").(string)
 	originID := d.Get("origin_id").(string)
-	applicationId := d.Get("application_id").(string)
+	principalName := d.Get("principal_name").(string)
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
 	if err != nil {
@@ -253,7 +253,7 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 
 			Origin:        &origin,
 			OriginId:      &originID,
-			ApplicationId: &applicationId,
+			PrincipalName: &principalName,
 			SubjectKind:   converter.String("user"),
 		},
 	}, nil
@@ -265,7 +265,7 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
 		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
 	}
-	d.Set("application_id", *servicePrincipalEntitlement.ServicePrincipal.ApplicationId)
+	d.Set("principal_name", *servicePrincipalEntitlement.ServicePrincipal.PrincipalName)
 	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
 }

@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// if origin_id is "" and application_id is supplied, the application_id will be used.
+// if origin_id is "" and principal_name is supplied, the principal_name will be used.
 func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithPrincipalName(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -38,13 +38,13 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithPrinc
 	accountLicenseType := licensing.AccountLicenseTypeValues.Express
 	origin := ""
 	originID := ""
-	applicationId := "e087fdc4-edf5-4975-b1a6-9dae60137a25"
+	principalName := "sp-test"
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, applicationId, descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, principalName, descriptor)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("application_id", applicationId)
+	resourceData.Set("principal_name", principalName)
 
 	expectedIsSuccess := true
 	memberEntitlementClient.
@@ -79,12 +79,12 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithError
 		Ctx:                           context.Background(),
 	}
 
-	applicationId := "e087fdc4-edf5-4975-b1a6-9dae60137a25"
+	principalName := "sp-test"
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	// resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", "express")
-	resourceData.Set("application_id", applicationId)
+	resourceData.Set("principal_name", principalName)
 
 	// No error but it has a error on the response.
 	memberEntitlementClient.
@@ -108,12 +108,12 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithEarly
 		Ctx:                           context.Background(),
 	}
 
-	applicationId := "e087fdc4-edf5-4975-b1a6-9dae60137a25"
+	principalName := "sp-test"
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	// resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", "earlyAdopter")
-	resourceData.Set("application_id", applicationId)
+	resourceData.Set("principal_name", principalName)
 
 	var expectedKey interface{} = 5000
 	var expectedValue interface{} = "A service principal cannot be assigned an Account-EarlyAdopter license."
@@ -156,10 +156,10 @@ func TestServicePrincipalEntitlement_Update_TestChangeEntitlement(t *testing.T) 
 	accountLicenseType := licensing.AccountLicenseTypeValues.Stakeholder
 	origin := ""
 	originID := ""
-	applicationId := "e087fdc4-edf5-4975-b1a6-9dae60137a25"
+	principalName := "sp-test"
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, applicationId, descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, principalName, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -197,7 +197,7 @@ func TestServicePrincipalEntitlement_Update_TestChangeEntitlement(t *testing.T) 
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("application_id", applicationId)
+	resourceData.Set("principal_name", principalName)
 	resourceData.Set("account_license_type", string(licensing.AccountLicenseTypeValues.Stakeholder))
 	resourceData.Set("licensing_source", string(licensing.LicensingSourceValues.Account))
 
@@ -219,10 +219,10 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 	accountLicenseType := licensing.AccountLicenseTypeValues.Express
 	origin := ""
 	originID := ""
-	applicationId := "e087fdc4-edf5-4975-b1a6-9dae60137a25"
+	principalName := "sp-test"
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, applicationId, descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, principalName, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -244,7 +244,7 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 		Return(mockServicePrincipalEntitlement, nil)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("application_id", applicationId)
+	resourceData.Set("principal_name", principalName)
 	resourceData.Set("account_license_type", "basic")
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
@@ -262,15 +262,23 @@ func TestServicePrincipalEntitlement_Import_TestID(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id := uuid.New().String()
+	id := uuid.New()
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.SetId(id)
+	resourceData.SetId(id.String())
+
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, "", "", "", "", "")
+	memberEntitlementClient.
+		EXPECT().
+		GetServicePrincipalEntitlement(gomock.Any(), memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
+			ServicePrincipalId: mockServicePrincipalEntitlement.Id,
+		}).
+		Return(mockServicePrincipalEntitlement, nil)
 
 	d, err := importServicePrincipalEntitlement(resourceData, clients)
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 	assert.Len(t, d, 1)
-	assert.Equal(t, id, d[0].Id())
+	assert.Equal(t, id.String(), d[0].Id())
 }
 
 func TestServicePrincipalEntitlement_Create_TestErrorFormatting(t *testing.T) {
@@ -321,7 +329,7 @@ func TestServicePrincipalEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Times(0)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("application_id", "e087fdc4-edf5-4975-b1a6-9dae60137a25")
+	resourceData.Set("principal_name", "sp-test")
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -364,7 +372,7 @@ func TestServicePrincipalEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Times(0)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("application_id", "e087fdc4-edf5-4975-b1a6-9dae60137a25")
+	resourceData.Set("principal_name", "sp-test")
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -422,7 +430,7 @@ func TestServicePrincipalEntitlement_Update_TestErrorFormatting(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("application_id", "e087fdc4-edf5-4975-b1a6-9dae60137a25")
+	resourceData.Set("principal_name", "sp-test")
 
 	err := resourceServicePrincipalEntitlementUpdate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -468,14 +476,14 @@ func TestServicePrincipalEntitlement_Update_TestEmptyErrors(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("application_id", "e087fdc4-edf5-4975-b1a6-9dae60137a25")
+	resourceData.Set("principal_name", "sp-test")
 
 	err := resourceServicePrincipalEntitlementUpdate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
 	assert.Contains(t, err.Error(), "Unknown API error")
 }
 
-func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, applicationId string, descriptor string) *memberentitlementmanagement.ServicePrincipalEntitlement {
+func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, principalName string, descriptor string) *memberentitlementmanagement.ServicePrincipalEntitlement {
 	subjectKind := "user"
 	licensingSource := licensing.LicensingSourceValues.Account
 
@@ -488,7 +496,7 @@ func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licens
 		ServicePrincipal: &graph.GraphServicePrincipal{
 			Origin:        &origin,
 			OriginId:      &originID,
-			ApplicationId: &applicationId,
+			PrincipalName: &principalName,
 			SubjectKind:   &subjectKind,
 			Descriptor:    &descriptor,
 		},
@@ -506,29 +514,29 @@ func MatchAddServicePrincipalEntitlementArgs(t *testing.T, x memberentitlementma
 
 func (m *matchAddServicePrincipalEntitlementArgs) Matches(x interface{}) bool {
 	args := x.(memberentitlementmanagement.AddServicePrincipalEntitlementArgs)
-	m.t.Logf("MatchAddServicePrincipalEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], application_id: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], application_id: [%s]\n",
+	m.t.Logf("MatchAddServicePrincipalEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]\n",
 		*args.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*args.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*args.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*args.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
-		*args.ServicePrincipalEntitlement.ServicePrincipal.ApplicationId,
+		*args.ServicePrincipalEntitlement.ServicePrincipal.PrincipalName,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
-		*m.x.ServicePrincipalEntitlement.ServicePrincipal.ApplicationId)
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.PrincipalName)
 
 	return *args.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType == *m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType &&
 		*args.ServicePrincipalEntitlement.ServicePrincipal.Origin == *m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin &&
 		*args.ServicePrincipalEntitlement.ServicePrincipal.OriginId == *m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId &&
-		*args.ServicePrincipalEntitlement.ServicePrincipal.ApplicationId == *m.x.ServicePrincipalEntitlement.ServicePrincipal.ApplicationId
+		*args.ServicePrincipalEntitlement.ServicePrincipal.PrincipalName == *m.x.ServicePrincipalEntitlement.ServicePrincipal.PrincipalName
 }
 
 func (m *matchAddServicePrincipalEntitlementArgs) String() string {
-	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], application_id: [%s]",
+	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], principal_name: [%s]",
 		*m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
-		*m.x.ServicePrincipalEntitlement.ServicePrincipal.ApplicationId)
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.PrincipalName)
 }
