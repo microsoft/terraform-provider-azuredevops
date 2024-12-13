@@ -224,5 +224,6 @@ The following Environment Variables must be set in your shell prior to running a
 - `AZDO_GITHUB_SERVICE_CONNECTION_PAT`
 - `AZDO_TEST_AAD_USER_EMAIL`
 - `AZDO_TEST_AAD_GROUP_ID`
+- `AZDO_TEST_AAD_SERVICE_PRINCIPAL_APPLICATION_ID`
 
 **Note:** Acceptance tests create real resources in Azure DevOps which often cost money to run.

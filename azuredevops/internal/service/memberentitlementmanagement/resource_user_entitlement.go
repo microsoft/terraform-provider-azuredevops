@@ -203,7 +203,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	if !*patchResponse.IsSuccess {
-		return fmt.Errorf(" Updating user entitlement: %s", getAPIErrorMessage(patchResponse.OperationResults))
+		return fmt.Errorf(" Updating user entitlement: %s", getUserEntitlementAPIErrorMessage(patchResponse.OperationResults))
 	}
 	return resourceUserEntitlementRead(d, m)
 }
@@ -287,7 +287,7 @@ func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *membe
 		if userEntitlementsPostResponse.OperationResult != nil {
 			opResults = append(opResults, *userEntitlementsPostResponse.OperationResult)
 		}
-		return nil, fmt.Errorf(" Adding user entitlement: %s", getAPIErrorMessage(&opResults))
+		return nil, fmt.Errorf(" Adding user entitlement: %s", getUserEntitlementAPIErrorMessage(&opResults))
 	}
 
 	return userEntitlementsPostResponse.UserEntitlement, nil
@@ -324,7 +324,7 @@ func importUserEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Res
 	return []*schema.ResourceData{d}, nil
 }
 
-func getAPIErrorMessage(operationResults *[]memberentitlementmanagement.UserEntitlementOperationResult) string {
+func getUserEntitlementAPIErrorMessage(operationResults *[]memberentitlementmanagement.UserEntitlementOperationResult) string {
 	errMsg := "Unknown API error"
 	if operationResults != nil && len(*operationResults) > 0 {
 		errMsg = linq.From(*operationResults).
