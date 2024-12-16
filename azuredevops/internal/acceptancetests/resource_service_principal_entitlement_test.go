@@ -20,20 +20,20 @@ import (
 )
 
 func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
-	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_APPLICATION_ID") == "" {
-		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_APPLICATION_ID` not set")
+	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID") == "" {
+		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID` not set")
 	}
 	tfNode := "azuredevops_service_principal_entitlement.service_principal"
-	principalName := os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_APPLICATION_ID")
+	ServicePrincipalId := os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_SERVICE_PRINCIPAL_APPLICATION_ID"}) },
+		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkServicePrincipalEntitlementDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: hclServicePrincipalEntitlementResource(principalName),
+				Config: hclServicePrincipalEntitlementResource(ServicePrincipalId),
 				Check: resource.ComposeTestCheckFunc(
-					checkServicePrincipalEntitlementExists(principalName),
+					checkServicePrincipalEntitlementExists(ServicePrincipalId),
 					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
 				),
 			},
@@ -43,7 +43,7 @@ func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
 
 // Given the principalName of an AzDO userEntitlement, this will return a function that will check whether
 // or not the userEntitlement (1) exists in the state and (2) exist in AzDO and (3) has the correct name
-func checkServicePrincipalEntitlementExists(expectedPrincipalName string) resource.TestCheckFunc {
+func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resource, ok := s.RootModule().Resources["azuredevops_user_entitlement.user"]
 		if !ok {
@@ -64,8 +64,8 @@ func checkServicePrincipalEntitlementExists(expectedPrincipalName string) resour
 			return fmt.Errorf(" ServicePrincipalEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
-		if !strings.EqualFold(strings.ToLower(*servicePrincipalEntitlement.ServicePrincipal.PrincipalName), strings.ToLower(expectedPrincipalName)) {
-			return fmt.Errorf("ServicePrincipalEntitlement with ID=%s has PrincipalName=%s, but expected Name=%s", resource.Primary.ID, *servicePrincipalEntitlement.ServicePrincipal.PrincipalName, expectedPrincipalName)
+		if !strings.EqualFold(strings.ToLower(*servicePrincipalEntitlement.ServicePrincipal.OriginId), strings.ToLower(expectedServicePrincipalId)) {
+			return fmt.Errorf("ServicePrincipalEntitlement with ID=%s has OriginId=%s, but expected OriginId=%s", resource.Primary.ID, *servicePrincipalEntitlement.ServicePrincipal.OriginId, expectedServicePrincipalId)
 		}
 
 		return nil
@@ -107,10 +107,10 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func hclServicePrincipalEntitlementResource(principalName string) string {
+func hclServicePrincipalEntitlementResource(servicePrincipalId string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_service_principal_entitlement" "service_principal" {
-  application_id       = "%s"
+  origin_id       = "%s"
   account_license_type = "express"
-}`, principalName)
+}`, servicePrincipalId)
 }

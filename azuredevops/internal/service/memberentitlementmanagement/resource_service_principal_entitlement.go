@@ -2,6 +2,7 @@ package memberentitlementmanagement
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -38,33 +39,19 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 			State: importServicePrincipalEntitlement,
 		},
 		Schema: map[string]*schema.Schema{
-			"principal_name": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				ConflictsWith:    []string{"origin_id", "origin"},
-				AtLeastOneOf:     []string{"origin_id", "principal_name"},
-				DiffSuppressFunc: suppress.CaseDifference,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
-			},
 			"origin_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"principal_name"},
-				RequiredWith:  []string{"origin"},
-				AtLeastOneOf:  []string{"origin_id", "principal_name"},
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				RequiredWith: []string{"origin"},
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
-				Type:          schema.TypeString,
-				Computed:      true,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"principal_name"},
-				ValidateFunc:  validation.StringIsNotWhiteSpace,
+				Type:         schema.TypeString,
+				Computed:     true,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,
@@ -155,6 +142,13 @@ func resourceServicePrincipalEntitlementRead(d *schema.ResourceData, m interface
 		return fmt.Errorf(" Reading service principal entitlement: %v", err)
 	}
 
+	if servicePrincipalEntitlement == nil || servicePrincipalEntitlement.Id == nil ||
+		(servicePrincipalEntitlement.ServicePrincipal != nil && servicePrincipalEntitlement.ServicePrincipal.IsDeletedInOrigin != nil && *servicePrincipalEntitlement.ServicePrincipal.IsDeletedInOrigin) {
+		log.Println(" Service Principal has been deleted")
+		d.SetId("")
+		return nil
+	}
+
 	flattenServicePrincipalEntitlement(d, servicePrincipalEntitlement)
 	return nil
 }
@@ -233,7 +227,7 @@ func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interfa
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
 	origin := d.Get("origin").(string)
 	originID := d.Get("origin_id").(string)
-	principalName := d.Get("principal_name").(string)
+	descriptor := d.Get("descriptor").(string)
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
 	if err != nil {
@@ -250,11 +244,10 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 			LicensingSource:    licensingSource,
 		},
 		ServicePrincipal: &graph.GraphServicePrincipal{
-
-			Origin:        &origin,
-			OriginId:      &originID,
-			PrincipalName: &principalName,
-			SubjectKind:   converter.String("user"),
+			Origin:      &origin,
+			OriginId:    &originID,
+			SubjectKind: converter.String("servicePrincipal"),
+			Descriptor:  &descriptor,
 		},
 	}, nil
 }
@@ -265,7 +258,6 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
 		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
 	}
-	d.Set("principal_name", *servicePrincipalEntitlement.ServicePrincipal.PrincipalName)
 	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
 }
