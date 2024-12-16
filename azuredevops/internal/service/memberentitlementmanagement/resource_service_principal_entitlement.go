@@ -283,11 +283,11 @@ func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePri
 }
 
 func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	upn := d.Id()
-	id, err := uuid.Parse(upn)
+	servicePrincipalEntitlementId := d.Id()
+	id, err := uuid.Parse(servicePrincipalEntitlementId)
 
 	if err != nil {
-		return nil, fmt.Errorf(" Only UUID values can used for import [%s]", upn)
+		return nil, fmt.Errorf(" Only UUID values can used for import [%s]", servicePrincipalEntitlementId)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -295,11 +295,11 @@ func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([
 		ServicePrincipalId: &id,
 	})
 	if err != nil {
-		return nil, fmt.Errorf(" Getting the service principal entitlement with supplied id %s: %s", upn, err)
+		return nil, fmt.Errorf(" Getting the service principal entitlement with supplied id %s: %s", servicePrincipalEntitlementId, err)
 	}
 
 	if resp == nil || resp.Id == nil {
-		return nil, fmt.Errorf(" Service principal entitlement with ID: %s not found", upn)
+		return nil, fmt.Errorf(" Service Principal entitlement with ID: %s not found", servicePrincipalEntitlementId)
 	}
 
 	d.SetId((*resp).Id.String())

@@ -35,15 +35,14 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithOrigi
 	}
 
 	accountLicenseType := licensing.AccountLicenseTypeValues.Express
-	origin := "aad"
-	originID := uuid.New()
+	origin := ""
+	originID := uuid.New().String()
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID.String(), descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, descriptor)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", origin)
-	resourceData.Set("origin_id", originID.String())
+	resourceData.Set("origin_id", originID)
 
 	expectedIsSuccess := true
 	memberEntitlementClient.
@@ -78,13 +77,11 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithError
 		Ctx:                           context.Background(),
 	}
 
-	origin := "aad"
-	originID := uuid.New()
+	originID := uuid.New().String()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", origin)
-	resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", "express")
+	resourceData.Set("origin_id", originID)
 
 	// No error but it has a error on the response.
 	memberEntitlementClient.
@@ -108,13 +105,11 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithEarly
 		Ctx:                           context.Background(),
 	}
 
-	origin := "aad"
-	originID := uuid.New()
+	originID := uuid.New().String()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", origin)
-	resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", "earlyAdopter")
+	resourceData.Set("origin_id", originID)
 
 	var expectedKey interface{} = 5000
 	var expectedValue interface{} = "A service principal cannot be assigned an Account-EarlyAdopter license."
@@ -155,11 +150,11 @@ func TestServicePrincipalEntitlement_Update_TestChangeEntitlement(t *testing.T) 
 	}
 
 	accountLicenseType := licensing.AccountLicenseTypeValues.Stakeholder
-	origin := "aad"
-	originID := uuid.New()
+	origin := ""
+	originID := uuid.New().String()
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID.String(), descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -197,7 +192,6 @@ func TestServicePrincipalEntitlement_Update_TestChangeEntitlement(t *testing.T) 
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("origin", origin)
 	resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", string(licensing.AccountLicenseTypeValues.Stakeholder))
 	resourceData.Set("licensing_source", string(licensing.LicensingSourceValues.Account))
@@ -218,11 +212,11 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 	}
 
 	accountLicenseType := licensing.AccountLicenseTypeValues.Express
-	origin := "aad"
-	originID := uuid.New()
+	origin := ""
+	originID := uuid.New().String()
 	descriptor := "baz"
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID.String(), descriptor)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -244,8 +238,7 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 		Return(mockServicePrincipalEntitlement, nil)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", origin)
-	resourceData.Set("origin_id", originID.String())
+	resourceData.Set("origin_id", originID)
 	resourceData.Set("account_license_type", "basic")
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
@@ -264,7 +257,7 @@ func TestServicePrincipalEntitlement_Import_TestID(t *testing.T) {
 	}
 
 	id := uuid.New()
-	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, ResourceUserEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
 
 	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, "", "", "", "")
@@ -330,8 +323,7 @@ func TestServicePrincipalEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Times(0)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", "aad")
-	resourceData.Set("origin_id", uuid.New())
+	resourceData.Set("origin_id", uuid.New().String())
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -374,8 +366,7 @@ func TestServicePrincipalEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Times(0)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
-	resourceData.Set("origin", "aad")
-	resourceData.Set("origin_id", uuid.New())
+	resourceData.Set("origin_id", uuid.New().String())
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -433,8 +424,7 @@ func TestServicePrincipalEntitlement_Update_TestErrorFormatting(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("origin", "aad")
-	resourceData.Set("origin_id", uuid.New())
+	resourceData.Set("origin_id", uuid.New().String())
 
 	err := resourceServicePrincipalEntitlementUpdate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
@@ -480,8 +470,7 @@ func TestServicePrincipalEntitlement_Update_TestEmptyErrors(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
-	resourceData.Set("origin", "aad")
-	resourceData.Set("origin_id", uuid.New())
+	resourceData.Set("origin_id", uuid.New().String())
 
 	err := resourceServicePrincipalEntitlementUpdate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
