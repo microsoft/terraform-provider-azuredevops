@@ -164,6 +164,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_npm":        serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_azurecr":    serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_sonarcloud": serviceendpoint.DataResourceServiceEndpointSonarCloud(),
+			"azuredevops_service_principal":          graph.DataServicePrincipal(),
 			"azuredevops_feed":                       feed.DataFeed(),
 		},
 		Schema: map[string]*schema.Schema{

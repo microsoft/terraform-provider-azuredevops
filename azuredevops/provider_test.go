@@ -171,6 +171,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_serviceendpoint_azurecr",
 		"azuredevops_serviceendpoint_bitbucket",
+		"azuredevops_service_principal",
 		"azuredevops_feed",
 	}
 

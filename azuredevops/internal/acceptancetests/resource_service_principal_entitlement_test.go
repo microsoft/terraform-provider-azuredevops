@@ -1,6 +1,6 @@
-//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
-// +build all resource_user_entitlement
-// +build !exclude_resource_user_entitlement
+//go:build (all || resource_service_principal_entitlement) && !exclude_resource_service_principal_entitlement
+// +build all resource_service_principal_entitlement
+// +build !exclude_resource_service_principal_entitlement
 
 package acceptancetests
 
@@ -20,13 +20,13 @@ import (
 )
 
 func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
-	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID") == "" {
-		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID` not set")
+	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID") == "" {
+		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID` not set")
 	}
 	tfNode := "azuredevops_service_principal_entitlement.service_principal"
-	ServicePrincipalId := os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID")
+	ServicePrincipalId := os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_SERVICE_PRINCIPAL_ID"}) },
+		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID"}) },
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: checkServicePrincipalEntitlementDestroyed,
 		Steps: []resource.TestStep{
@@ -34,7 +34,8 @@ func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
 				Config: hclServicePrincipalEntitlementResource(ServicePrincipalId),
 				Check: resource.ComposeTestCheckFunc(
 					checkServicePrincipalEntitlementExists(ServicePrincipalId),
-					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfNode, "display_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "origin_id"),
 				),
 			},
 		},
@@ -45,9 +46,9 @@ func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
 // or not the userEntitlement (1) exists in the state and (2) exist in AzDO and (3) has the correct name
 func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource, ok := s.RootModule().Resources["azuredevops_user_entitlement.user"]
+		resource, ok := s.RootModule().Resources["azuredevops_service_principal_entitlement.service_principal"]
 		if !ok {
-			return fmt.Errorf(" Did not find a UserEntitlement in the TF state")
+			return fmt.Errorf(" Did not find a ServicePrincipalEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -100,7 +101,7 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if servicePrincipalEntitlement != nil && servicePrincipalEntitlement.AccessLevel != nil && string(*servicePrincipalEntitlement.AccessLevel.Status) != "none" {
-			return fmt.Errorf(" Status should be none : %s with readUserEntitlement error %v", string(*servicePrincipalEntitlement.AccessLevel.Status), err)
+			return fmt.Errorf(" Status should be none : %s with readServicePrincipalEntitlement error %v", string(*servicePrincipalEntitlement.AccessLevel.Status), err)
 		}
 	}
 
@@ -111,6 +112,7 @@ func hclServicePrincipalEntitlementResource(servicePrincipalId string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_service_principal_entitlement" "service_principal" {
   origin_id       = "%s"
+  origin          = "aad"
   account_license_type = "express"
 }`, servicePrincipalId)
 }

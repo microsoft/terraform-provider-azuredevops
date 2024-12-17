@@ -98,7 +98,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				}, true),
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
-			"descriptor": {
+			"display_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -227,7 +227,7 @@ func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interfa
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
 	origin := d.Get("origin").(string)
 	originID := d.Get("origin_id").(string)
-	descriptor := d.Get("descriptor").(string)
+	displayName := d.Get("display_name").(string)
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
 	if err != nil {
@@ -246,20 +246,20 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 		ServicePrincipal: &graph.GraphServicePrincipal{
 			Origin:      &origin,
 			OriginId:    &originID,
+			DisplayName: &displayName,
 			SubjectKind: converter.String("servicePrincipal"),
-			Descriptor:  &descriptor,
 		},
 	}, nil
 }
 
 func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
-	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
 	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
 	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
 		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
 	}
 	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
+	d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
 }
 
 func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
