@@ -38,8 +38,9 @@ func TestServicePrincipalEntitlement_CreateServicePrincipalEntitlement_WithOrigi
 	origin := ""
 	originID := uuid.New().String()
 	displayName := "sp-test"
+	descriptor := ""
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName, descriptor)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.Set("origin_id", originID)
@@ -154,8 +155,9 @@ func TestServicePrincipalEntitlement_Update_TestChangeEntitlement(t *testing.T) 
 	origin := ""
 	originID := uuid.New().String()
 	displayName := "sp-test"
+	descriptor := ""
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -217,8 +219,9 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 	origin := ""
 	originID := uuid.New().String()
 	displayName := "sp-test"
+	descriptor := ""
 	id := uuid.New()
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName)
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, accountLicenseType, origin, originID, displayName, descriptor)
 	expectedIsSuccess := true
 
 	memberEntitlementClient.
@@ -263,7 +266,7 @@ func TestServicePrincipalEntitlement_Import_TestID(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceUserEntitlement().Schema, nil)
 	resourceData.SetId(id.String())
 
-	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, "", "", "", "")
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, "", "", "", "", "")
 	memberEntitlementClient.
 		EXPECT().
 		GetServicePrincipalEntitlement(gomock.Any(), memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
@@ -480,7 +483,7 @@ func TestServicePrincipalEntitlement_Update_TestEmptyErrors(t *testing.T) {
 	assert.Contains(t, err.Error(), "Unknown API error")
 }
 
-func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, displayName string) *memberentitlementmanagement.ServicePrincipalEntitlement {
+func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, displayName string, descriptor string) *memberentitlementmanagement.ServicePrincipalEntitlement {
 	subjectKind := "servicePrincipal"
 	licensingSource := licensing.LicensingSourceValues.Account
 
@@ -495,6 +498,7 @@ func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licens
 			OriginId:    &originID,
 			DisplayName: &displayName,
 			SubjectKind: &subjectKind,
+			Descriptor:  &descriptor,
 		},
 	}
 }
@@ -510,29 +514,33 @@ func MatchAddServicePrincipalEntitlementArgs(t *testing.T, x memberentitlementma
 
 func (m *matchAddServicePrincipalEntitlementArgs) Matches(x interface{}) bool {
 	args := x.(memberentitlementmanagement.AddServicePrincipalEntitlementArgs)
-	m.t.Logf("MatchAddServicePrincipalEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s]\n",
+	m.t.Logf("MatchAddServicePrincipalEntitlementArgs:\nVALUE: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], descriptor: [%s]\n  REF: account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], descriptor: [%s]\n",
 		*args.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*args.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*args.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*args.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
 		*args.ServicePrincipalEntitlement.ServicePrincipal.DisplayName,
+		*args.ServicePrincipalEntitlement.ServicePrincipal.Descriptor,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
-		*m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName)
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName,
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Descriptor)
 
 	return *args.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType == *m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType &&
 		*args.ServicePrincipalEntitlement.ServicePrincipal.Origin == *m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin &&
 		*args.ServicePrincipalEntitlement.ServicePrincipal.OriginId == *m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId &&
-		*args.ServicePrincipalEntitlement.ServicePrincipal.DisplayName == *m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName
+		*args.ServicePrincipalEntitlement.ServicePrincipal.DisplayName == *m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName &&
+		*args.ServicePrincipalEntitlement.ServicePrincipal.Descriptor == *m.x.ServicePrincipalEntitlement.ServicePrincipal.Descriptor
 }
 
 func (m *matchAddServicePrincipalEntitlementArgs) String() string {
-	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s]",
+	return fmt.Sprintf("account_license_type: [%s], licensing_source: [%s], origin: [%s], origin_id: [%s], display_name: [%s], descriptor: [%s]",
 		*m.x.ServicePrincipalEntitlement.AccessLevel.AccountLicenseType,
 		*m.x.ServicePrincipalEntitlement.AccessLevel.LicensingSource,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Origin,
 		*m.x.ServicePrincipalEntitlement.ServicePrincipal.OriginId,
-		*m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName)
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.DisplayName,
+		*m.x.ServicePrincipalEntitlement.ServicePrincipal.Descriptor)
 }

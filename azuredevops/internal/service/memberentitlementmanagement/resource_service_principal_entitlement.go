@@ -102,6 +102,10 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"descriptor": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -228,6 +232,7 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 	origin := d.Get("origin").(string)
 	originID := d.Get("origin_id").(string)
 	displayName := d.Get("display_name").(string)
+	descriptor := d.Get("descriptor").(string)
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
 	if err != nil {
@@ -247,6 +252,7 @@ func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitleme
 			Origin:      &origin,
 			OriginId:    &originID,
 			DisplayName: &displayName,
+			Descriptor:  &descriptor,
 			SubjectKind: converter.String("servicePrincipal"),
 		},
 	}, nil
@@ -260,6 +266,7 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
 	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
 	d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
+	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
 }
 
 func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
