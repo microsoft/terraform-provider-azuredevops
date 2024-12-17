@@ -51,7 +51,7 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	flattenUser, err := flattenIdentityUsers(filterUser)
 	if err != nil {
-		return fmt.Errorf(" Fatten user. Error: %v", err)
+		return fmt.Errorf(" Flatten user. Error: %v", err)
 	}
 
 	// Filter for the desired user in the FilterUsers results
