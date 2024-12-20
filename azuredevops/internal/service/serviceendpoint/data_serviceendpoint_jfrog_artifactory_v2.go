@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
@@ -19,8 +18,7 @@ func DataSourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(1 * time.Minute),
 		},
-		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
-		Schema:   baseSchema(),
+		Schema: dataSourceGenBaseSchema(),
 	}
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
@@ -28,14 +26,10 @@ func DataSourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validate.Url,
-			Description:  "Url for the JFrog Artifactory Server",
-		},
-
-		"authentication_token": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MinItems: 1,
-			MaxItems: 1,
+			Computed:     true,
+			Optional:     true,
+			MinItems:     1,
+			MaxItems:     1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"token": {
@@ -47,29 +41,6 @@ func DataSourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 				},
 			},
 			ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
-		},
-
-		"authentication_basic": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"username": {
-						Description: "The JFrog Artifactory user name.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-					"password": {
-						Description: "The JFrog Artifactory password.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-				},
-			},
 		},
 	})
 

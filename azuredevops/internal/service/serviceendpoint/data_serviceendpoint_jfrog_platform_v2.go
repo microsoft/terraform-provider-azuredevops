@@ -2,21 +2,36 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
+// DataSourceServiceEndpointJFrogPlatformV2 schema and implementation for JFrog Platform service endpoint resource
 func DataSourceServiceEndpointJFrogPlatformV2() *schema.Resource {
-	return &schema.Resource{
+	r := &schema.Resource{
 		Read: DataSourceServiceEndpointJFrogPlatformV2Read,
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(5 * time.Minute),
+			Read: schema.DefaultTimeout(1 * time.Minute),
 		},
 		Schema: dataSourceGenBaseSchema(),
 	}
+
+	maps.Copy(r.Schema, map[string]*schema.Schema{
+		"url": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.Url,
+			Description:  "Url for the JFrog Artifactory Server",
+			Computed:     true,
+		},
+	})
+
+	return r
 }
 
 func DataSourceServiceEndpointJFrogPlatformV2Read(d *schema.ResourceData, m interface{}) error {
