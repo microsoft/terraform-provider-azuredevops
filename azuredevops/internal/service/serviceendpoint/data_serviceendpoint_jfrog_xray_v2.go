@@ -8,19 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
-// DataSourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog Artifactory service endpoint resource
+// DataSourceServiceEndpointJFrogXRayV2 schema and implementation for JFrog XRay service endpoint resource
 func DataSourceServiceEndpointJFrogXRayV2() *schema.Resource {
 	r := &schema.Resource{
 		Read: DataSourceServiceEndpointJFrogXRayV2Read,
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(1 * time.Minute),
 		},
-		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
-		Schema:   baseSchema(),
+		Schema: dataSourceGenBaseSchema(),
 	}
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
@@ -29,47 +27,7 @@ func DataSourceServiceEndpointJFrogXRayV2() *schema.Resource {
 			Required:     true,
 			ValidateFunc: validate.Url,
 			Description:  "Url for the JFrog Artifactory Server",
-		},
-
-		"authentication_token": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"token": {
-						Description: "The JFrog Artifactory access token.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-				},
-			},
-			ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
-		},
-
-		"authentication_basic": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"username": {
-						Description: "The JFrog Artifactory user name.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-					"password": {
-						Description: "The JFrog Artifactory password.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-				},
-			},
+			Computed:     true,
 		},
 	})
 
