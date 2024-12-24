@@ -126,6 +126,7 @@ func TestTeam_Create_EnsureTeamDeletedOnAddAdministratorsError(t *testing.T) {
 			{
 				Descriptor:        converter.String(adminID.String()),
 				SubjectDescriptor: &adminSubjectDescriptor,
+				IsActive:          converter.Bool(true),
 			},
 		}, nil).
 		Times(1)
@@ -227,6 +228,7 @@ func TestTeam_Create_EnsureTeamDeletedOnAddMembersError(t *testing.T) {
 				Id:                &memberID,
 				Descriptor:        converter.String(memberID.String()),
 				SubjectDescriptor: &memberSubjectDescriptor,
+				IsActive:          converter.Bool(true),
 			},
 		}, nil).
 		Times(1)
