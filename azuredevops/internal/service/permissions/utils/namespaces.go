@@ -293,6 +293,10 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 		return nil, err
 	}
 
+	if idlist == nil || len(*idlist) <= 0 {
+		return nil, fmt.Errorf(" No identity information for defined principals [%s]", descriptors)
+	}
+
 	linq.From(*idlist).Where(func(ele interface{}) bool {
 		if val, ok := ele.(identity.Identity); ok {
 			if val.IsActive != nil && *val.IsActive {
@@ -302,7 +306,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 		return false
 	}).ToSlice(idlist)
 
-	if idlist == nil || len(*idlist) != len(*principal) {
+	if len(*idlist) != len(*principal) {
 		return nil, fmt.Errorf(" Failed to load identity information for defined principals [%s]", descriptors)
 	}
 	return idlist, nil
