@@ -163,6 +163,9 @@ func getSecurityRoleAssignment(clients client.AggregatedClient, scope, roleName,
 		})
 
 		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return "", "syncing", nil
+			}
 			return "", "failed", nil
 		}
 
