@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_feed) && (!data_sources || !exclude_feed)
-// +build all core data_sources data_feed
-// +build !data_sources !exclude_feed
-
 package acceptancetests
 
 import (
@@ -12,7 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccFeed_DataSource_Feed_By_Name(t *testing.T) {
+func TestAccFeedDataSource_byName(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
 	tfNode := "data.azuredevops_feed.test"
@@ -31,7 +27,7 @@ func TestAccFeed_DataSource_Feed_By_Name(t *testing.T) {
 	})
 }
 
-func TestAccFeed_DataSource_Feed_By_Feed_Id(t *testing.T) {
+func TestAccFeedDataSource_byId(t *testing.T) {
 	name := testutils.GenerateResourceName()
 
 	tfNode := "data.azuredevops_feed.test"
