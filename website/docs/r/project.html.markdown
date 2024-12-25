@@ -70,3 +70,4 @@ terraform import azuredevops_project.example 00000000-0000-0000-0000-00000000000
 ## PAT Permissions Required
 
 - **Project & Team**: Read, Write, & Manage
+- **Work Items**: Read
