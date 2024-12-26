@@ -2,12 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_feed"
 description: |-
-  Manages creation of the Feed within Azure DevOps organization.
+  Manages Feed within Azure DevOps organization.
 ---
 
 # azuredevops_feed
 
-Manages creation of the Feed within Azure DevOps organization.
+Manages Feed within Azure DevOps organization.
 
 ## Example Usage
 

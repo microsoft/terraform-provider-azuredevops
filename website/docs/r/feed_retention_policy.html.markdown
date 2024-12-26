@@ -38,7 +38,7 @@ The following arguments are supported:
 
 * `feed_id` - (Required) The ID of the Feed. Changing this forces a new resource to be created.
 
-* `project_id` - (Required) The ID of the Project Feed is created in. Changing this forces a new resource to be created.
+* `project_id` - (Required) The ID of the Project. Changing this forces a new resource to be created.
 
 * `count_limit`- (Required) The maximum number of versions per package.
 
