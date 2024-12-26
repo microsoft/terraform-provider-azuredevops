@@ -5,7 +5,7 @@ description: |-
   Manages the Feed Retention Policy within Azure DevOps organization.
 ---
 
-# Data Source: azuredevops_feed_retention_policy
+# azuredevops_feed_retention_policy
 
 Manages the Feed Retention Policy within Azure DevOps.
 

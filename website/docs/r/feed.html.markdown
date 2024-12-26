@@ -5,7 +5,7 @@ description: |-
   Manages creation of the Feed within Azure DevOps organization.
 ---
 
-# Data Source: azuredevops_feed
+# azuredevops_feed
 
 Manages creation of the Feed within Azure DevOps organization.
 
