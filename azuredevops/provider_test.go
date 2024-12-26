@@ -44,6 +44,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_branch_policy_merge_types",
 		"azuredevops_branch_policy_status_check",
 		"azuredevops_project",
+		"azuredevops_project_tags",
 		"azuredevops_project_features",
 		"azuredevops_project_pipeline_settings",
 		"azuredevops_check_approval",

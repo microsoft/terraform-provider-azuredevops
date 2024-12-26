@@ -149,7 +149,7 @@ func CheckFeedExist(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_feed.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a Feed in the TF state")
+			return fmt.Errorf(" Did not find `azuredevops_feed` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)

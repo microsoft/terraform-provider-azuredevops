@@ -112,7 +112,7 @@ func CheckFeedRetentionPolicyExist(expectedCountLimit int) resource.TestCheckFun
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_feed_retention_policy.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a Feed Retention Policy in the TF state")
+			return fmt.Errorf(" Did not find a `azuredevops_feed_retention_policy` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
