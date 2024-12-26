@@ -2,7 +2,6 @@ package acceptancetests
 
 import (
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 func TestAccProjectTags_basic(t *testing.T) {
