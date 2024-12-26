@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			"azuredevops_build_definition":                            build.ResourceBuildDefinition(),
 			"azuredevops_build_folder":                                build.ResourceBuildFolder(),
 			"azuredevops_project":                                     core.ResourceProject(),
+			"azuredevops_project_tags":                                core.ResourceProjectTag(),
 			"azuredevops_project_features":                            core.ResourceProjectFeatures(),
 			"azuredevops_project_pipeline_settings":                   core.ResourceProjectPipelineSettings(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),

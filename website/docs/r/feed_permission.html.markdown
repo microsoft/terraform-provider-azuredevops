@@ -5,7 +5,7 @@ description: |-
   Manages creation of the Feed Permission within Azure DevOps organization.
 ---
 
-# Data Source: azuredevops_feed_permission
+# azuredevops_feed_permission
 
 Manages creation of the Feed Permission within Azure DevOps organization.
 
