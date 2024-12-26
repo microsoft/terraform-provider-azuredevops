@@ -2,6 +2,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"testing"
 
 	"github.com/google/uuid"
@@ -112,6 +113,9 @@ func checkProjectTagsDestroyed(s *terraform.State) error {
 		})
 
 		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return nil
+			}
 			return fmt.Errorf(" Get project Tags (Project ID: %s). Error: %+v", id, err)
 		}
 
