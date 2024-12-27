@@ -35,7 +35,7 @@ resource "azuredevops_feed_retention_policy" "example" {
 ## Example Usage - Organization Feed
 ```hcl
 resource "azuredevops_feed" "example" {
-  name       = "examplefeed"
+  name = "examplefeed"
 }
 
 resource "azuredevops_feed_retention_policy" "example" {
