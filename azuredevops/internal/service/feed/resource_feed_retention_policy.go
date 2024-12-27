@@ -52,12 +52,6 @@ func ResourceFeedRetentionPolicy() *schema.Resource {
 			},
 		},
 		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IsUUID,
-			},
 			"feed_id": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -73,6 +67,12 @@ func ResourceFeedRetentionPolicy() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 4000),
+			},
+			"project_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 		},
 	}
@@ -105,7 +105,6 @@ func resourceFeedRetentionPolicyRead(ctx context.Context, d *schema.ResourceData
 
 	feedID := d.Id()
 	projectId := d.Get("project_id").(string)
-
 	policy, err := clients.FeedClient.GetFeedRetentionPolicies(clients.Ctx, feed.GetFeedRetentionPoliciesArgs{
 		FeedId:  &feedID,
 		Project: &projectId,
