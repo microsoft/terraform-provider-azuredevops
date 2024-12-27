@@ -14,7 +14,7 @@ Manages Feed within Azure DevOps organization.
 ### Create Feed in the scope of whole Organization
 ```hcl
 resource "azuredevops_feed" "example" {
-  name = "releases"
+  name = "examplefeed"
 }
 ```
 
@@ -29,7 +29,7 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_feed" "example" {
-  name       = "releases"
+  name       = "examplefeed"
   project_id = azuredevops_project.example.id
 }
 ```
@@ -37,7 +37,7 @@ resource "azuredevops_feed" "example" {
 ### Create Feed with Soft Delete
 ```hcl
 resource "azuredevops_feed" "example" {
-  name = "releases"
+  name = "examplefeed"
   features {
     permanent_delete = false
   }
@@ -49,17 +49,19 @@ resource "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the Feed.
-- `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
-- `features`- (Optional) A `features` blocks as documented below.
+* `name` - (Required) The name of the Feed.
+
+* `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
+
+* `features`- (Optional) A `features` blocks as documented below.
 
 ~> **Note** *Because of ADO limitations feed name can be **reserved** for up to 15 minutes after permanent delete of the feed*
 
 ---
 `features` block supports the following:
 
-- `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, Defaults to `false`
-- `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), Defaults to `false`
+* `permanent_delete` - (Optional) Determines if Feed should be Permanently removed, Defaults to `false`
+* `restore` - (Optional) Determines if Feed should be Restored during creation (if possible), Defaults to `false`
 
 ## Attributes Reference
 
