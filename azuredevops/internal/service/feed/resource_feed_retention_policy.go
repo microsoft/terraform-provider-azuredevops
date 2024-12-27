@@ -118,6 +118,7 @@ func resourceFeedRetentionPolicyRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf(" Failed get Feed Retention Policy. Projecct ID: %s , Feed ID: %s. Error: %+v", projectId, feedID, err))
 	}
 
+	d.Set("feed_id", feedID)
 	if policy != nil {
 		if policy.CountLimit != nil {
 			d.Set("count_limit", policy.CountLimit)
