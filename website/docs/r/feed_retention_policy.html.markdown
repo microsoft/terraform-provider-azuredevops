@@ -9,7 +9,7 @@ description: |-
 
 Manages the Feed Retention Policy within Azure DevOps.
 
-## Example Usage
+## Example Usage - Project Feed
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -20,12 +20,25 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_feed" "example" {
-  name       = "releases"
+  name       = "ExampleFeed"
   project_id = azuredevops_project.example.id
 }
 
 resource "azuredevops_feed_retention_policy" "example" {
   project_id                                = azuredevops_project.example.id
+  feed_id                                   = azuredevops_feed.example.id
+  count_limit                               = 20
+  days_to_keep_recently_downloaded_packages = 30
+}
+```
+
+## Example Usage - Organization Feed
+```hcl
+resource "azuredevops_feed" "example" {
+  name       = "examplefeed"
+}
+
+resource "azuredevops_feed_retention_policy" "example" {
   feed_id                                   = azuredevops_feed.example.id
   count_limit                               = 20
   days_to_keep_recently_downloaded_packages = 30
@@ -38,18 +51,17 @@ The following arguments are supported:
 
 * `feed_id` - (Required) The ID of the Feed. Changing this forces a new resource to be created.
 
-* `project_id` - (Required) The ID of the Project. Changing this forces a new resource to be created.
-
 * `count_limit`- (Required) The maximum number of versions per package.
 
 * `days_to_keep_recently_downloaded_packages`- (Required) The days to keep recently downloaded packages.
+
+* `project_id` - (Optional) The ID of the Project. If not specified, Feed will be created at the organization level. Changing this forces a new resource to be created.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `feed_id` - The ID of the Feed.
-
 * `project_id` - The ID of the Project.
 
 ## Relevant Links
@@ -67,6 +79,6 @@ terraform import azuredevops_feed_retention_policy.example 00000000-0000-0000-00
 or 
 
 ```sh
-terraform import azuredevops_feed.example 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_feed_retention_policy.example 00000000-0000-0000-0000-000000000000
 ```
 
