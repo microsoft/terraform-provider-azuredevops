@@ -17,8 +17,8 @@ resource "azuredevops_project" "example" {
   version_control    = "Git"
   work_item_template = "Agile"
   features = {
-    "testplans" = "disabled"
-    "artifacts" = "disabled"
+    testplans = "disabled"
+    artifacts = "disabled"
   }
   description = "Managed by Terraform"
 }
