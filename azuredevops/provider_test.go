@@ -89,7 +89,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_azuredevops",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_bitbucket",
-		"azuredevops_serviceendpoint_checkmax_sca",
+		"azuredevops_serviceendpoint_checkmarx_sca",
 		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_dynamics_lifecycle_services",
 		"azuredevops_serviceendpoint_externaltfs",
@@ -137,7 +137,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 	resources := azuredevops.Provider().ResourcesMap
 
 	for _, resource := range expectedResources {
-		require.Contains(t, resources, resource, "An expected resource was not registered")
+		require.Contains(t, resources, resource, fmt.Sprintf("An expected resource (%s) was not registered", resource))
 		require.NotNil(t, resources[resource], "A resource cannot have a nil schema")
 	}
 	require.Equal(t, len(expectedResources), len(resources), "There are an unexpected number of registered resources")
