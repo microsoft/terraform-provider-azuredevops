@@ -37,7 +37,7 @@ resource "azuredevops_wiki" "example2" {
   repository_id = azuredevops_git_repository.example.id
   version       = "main"
   type          = "codeWiki"
-  mappedpath    = "/"
+  mapped_path   = "/"
 }
 ```
 
@@ -55,7 +55,7 @@ The following arguments are supported:
 
 * `version` - (Optional) Version of the wiki.
 
-* `mappedpath` - (Optional) Folder path inside repository which is shown as Wiki.
+* `mapped_path` - (Optional) Folder path inside repository which is shown as Wiki.
 
 ## Attributes Reference
 
