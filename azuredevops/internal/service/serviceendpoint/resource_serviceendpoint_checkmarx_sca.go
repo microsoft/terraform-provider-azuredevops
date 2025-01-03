@@ -167,17 +167,14 @@ func flattenServiceEndpointCheckMarxSCA(d *schema.ResourceData, serviceEndpoint 
 	if serviceEndpoint.Data != nil {
 		if v, ok := (*serviceEndpoint.Data)["dependencyAccessControlURL"]; ok {
 			d.Set("access_control_url", v)
-
 		}
 
 		if v, ok := (*serviceEndpoint.Data)["dependencyWebAppURL"]; ok {
 			d.Set("web_app_url", v)
-
 		}
 
 		if v, ok := (*serviceEndpoint.Data)["dependencyTenant"]; ok {
 			d.Set("account", v)
-
 		}
 
 		if v, ok := (*serviceEndpoint.Data)["teams"]; ok {
