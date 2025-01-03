@@ -123,12 +123,12 @@ func TestAccServiceEndpointGitLab_requiresImportErrorStep(t *testing.T) {
 
 func hclSvcEndpointGitLabResourceBasic(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_gitlab" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   url                   = "https://gitlab.com"
   username              = "username"
@@ -138,12 +138,12 @@ resource "azuredevops_serviceendpoint_gitlab" "test" {
 
 func hclSvcEndpointGitLabResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_gitlab" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   url                   = "https://gitlab.com"
@@ -154,12 +154,12 @@ resource "azuredevops_serviceendpoint_gitlab" "test" {
 
 func hclSvcEndpointGitLabResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_gitlab" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   url                   = "https://gitlab.com/update"
