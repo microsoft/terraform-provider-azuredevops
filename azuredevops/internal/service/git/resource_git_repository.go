@@ -402,6 +402,11 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	clients := m.(*client.AggregatedClient)
 
+	_, err := uuid.Parse(repoID)
+	if err != nil {
+		return fmt.Errorf(" Invalid repository ID: %s", repoID)
+	}
+
 	// you cannot delete a disabled repo
 	repoActual, err := gitRepositoryRead(clients, repoID, repoName, projectID)
 	if err != nil {

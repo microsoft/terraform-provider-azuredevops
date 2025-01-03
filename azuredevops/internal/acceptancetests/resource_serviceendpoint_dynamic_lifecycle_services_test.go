@@ -122,12 +122,12 @@ func TestAccServiceEndpointDynamicLifecycleServices_requiresImportErrorStep(t *t
 
 func hclSvcEndpointDynamicLifecycleServicesResourceBasic(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_dynamics_lifecycle_services" "test" {
-  project_id                      = azuredevops_project.project.id
+  project_id                      = azuredevops_project.test.id
   service_endpoint_name           = "%s"
   authorization_endpoint          = "https://login.microsoftonline.com/organization"
   lifecycle_services_api_endpoint = "https://lcsapi.lcs.dynamics.com"
@@ -139,12 +139,12 @@ resource "azuredevops_serviceendpoint_dynamics_lifecycle_services" "test" {
 
 func hclSvcEndpointDynamicLifecycleServicesResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_dynamics_lifecycle_services" "test" {
-  project_id                      = azuredevops_project.project.id
+  project_id                      = azuredevops_project.test.id
   service_endpoint_name           = "%s"
   description                     = "%s"
   authorization_endpoint          = "https://login.microsoftonline.com/organization"
@@ -157,12 +157,12 @@ resource "azuredevops_serviceendpoint_dynamics_lifecycle_services" "test" {
 
 func hclSvcEndpointDynamicLifecycleServicesResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_dynamics_lifecycle_services" "test" {
-  project_id                      = azuredevops_project.project.id
+  project_id                      = azuredevops_project.test.id
   service_endpoint_name           = "%s"
   description                     = "%s"
   authorization_endpoint          = "https://login.microsoftonline.com/organization/update/"

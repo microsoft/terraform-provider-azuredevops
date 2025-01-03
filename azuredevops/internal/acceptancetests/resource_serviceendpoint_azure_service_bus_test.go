@@ -123,12 +123,12 @@ func TestAccServiceEndpointAzureServiceBus_requiresImportErrorStep(t *testing.T)
 
 func hclSvcEndpointAzureServiceBusResourceBasic(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_azure_service_bus" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   connection_string     = "connectionstring"
   queue_name            = "testqueue"
@@ -137,12 +137,12 @@ resource "azuredevops_serviceendpoint_azure_service_bus" "test" {
 
 func hclSvcEndpointAzureServiceBusResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_azure_service_bus" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   connection_string     = "connectionstring"
@@ -152,12 +152,12 @@ resource "azuredevops_serviceendpoint_azure_service_bus" "test" {
 
 func hclSvcEndpointAzureServiceBusResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_azure_service_bus" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   connection_string     = "connectionstringupdate"

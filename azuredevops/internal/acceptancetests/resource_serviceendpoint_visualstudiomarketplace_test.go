@@ -122,12 +122,12 @@ func TestAccServiceEndpointVisualStudioMarketplace_requiresImportErrorStep(t *te
 
 func hclSvcEndpointVisualStudioMarketplaceResourceBasicToken(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   url                   = "https://marketplace.com"
   authentication_token {
@@ -138,12 +138,12 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
 
 func hclSvcEndpointVisualStudioMarketplaceResourceBasicUsernamePasword(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   url                   = "https://marketplace.com"
   authentication_basic {
@@ -155,12 +155,12 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
 
 func hclSvcEndpointVisualStudioMarketplaceResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_visualstudiomarketplace" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   url                   = "https://marketplace.com/update"

@@ -250,7 +250,7 @@ func TestGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
 
 	err := resourceGitRepositoryDelete(resourceData, &client.AggregatedClient{})
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid repositoryId UUID")
+	require.Contains(t, err.Error(), "Invalid repository ID")
 }
 
 func TestGitRepo_Delete_DoesNotSwallowErrorFromFailedDeleteCall(t *testing.T) {

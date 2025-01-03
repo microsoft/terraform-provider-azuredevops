@@ -73,7 +73,8 @@ func TestAccServiceEndpointSnyk_update(t *testing.T) {
 			{
 				Config: hclSvcEndpointSnykResourceBasic(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 				),
 			},
@@ -118,12 +119,12 @@ func TestAccServiceEndpointSnyk_requiresImportErrorStep(t *testing.T) {
 
 func hclSvcEndpointSnykResourceBasic(projectName string, serviceEndpointName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_snyk" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   server_url            = "https://snyk.io/"
   api_token             = "00000000-0000-0000-0000-000000000001"
@@ -132,12 +133,12 @@ resource "azuredevops_serviceendpoint_snyk" "test" {
 
 func hclSvcEndpointSnykResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_snyk" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   server_url            = "https://snyk.io/"
@@ -147,12 +148,12 @@ resource "azuredevops_serviceendpoint_snyk" "test" {
 
 func hclSvcEndpointSnykResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
+resource "azuredevops_project" "test" {
   name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_snyk" "test" {
-  project_id            = azuredevops_project.project.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = "%s"
   description           = "%s"
   server_url            = "https://snyk.io/update/"
