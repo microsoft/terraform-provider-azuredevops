@@ -16,7 +16,7 @@ func CheckServiceEndpointExistsWithName(tfNode string, expectedName string) reso
 	return func(s *terraform.State) error {
 		resourceState, ok := s.RootModule().Resources[tfNode]
 		if !ok {
-			return fmt.Errorf("Did not find a service endpoint in the state")
+			return fmt.Errorf(" Did not find a service endpoint in the state")
 		}
 
 		serviceEndpoint, err := getSvcEndpointFromState(resourceState)
@@ -25,7 +25,7 @@ func CheckServiceEndpointExistsWithName(tfNode string, expectedName string) reso
 		}
 
 		if *serviceEndpoint.Name != expectedName {
-			return fmt.Errorf("Service Endpoint has Name=%s, but expected Name=%s", *serviceEndpoint.Name, expectedName)
+			return fmt.Errorf(" Service Endpoint has Name=%s, but expected Name=%s", *serviceEndpoint.Name, expectedName)
 		}
 
 		return nil
