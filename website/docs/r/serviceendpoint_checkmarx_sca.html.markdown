@@ -32,7 +32,6 @@ resource "azuredevops_serviceendpoint_checkmarx_sca" "example" {
 }
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
