@@ -116,7 +116,7 @@ resource "azuredevops_git_repository" "example-fork" {
   name                 = "Example Fork Repository"
   parent_repository_id = azuredevops_git_repository.example.id
   initialization {
-    init_type = "Clean"
+    init_type = "Fork"
   }
 }
 ```

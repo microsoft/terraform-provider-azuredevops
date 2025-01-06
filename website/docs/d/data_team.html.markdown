@@ -30,9 +30,11 @@ data "azuredevops_team" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project ID.
-- `name` - (Required) The name of the Team.
-- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
+* `project_id` - (Required) The Project ID.
+
+*`name` - (Required) The name of the Team.
+
+*`top` - (Optional) The maximum number of teams to return. Defaults to `100`. This property is deprecated and will be removed in the feature
 
 ## Attributes Reference
 

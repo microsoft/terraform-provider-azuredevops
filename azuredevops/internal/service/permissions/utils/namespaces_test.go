@@ -268,30 +268,35 @@ var projectIdentityList = []identity.Identity{
 		Id:                  testhelper.ToUUID("79b8298b-7101-4a53-ad6d-1d3de0b495f1"),
 		ProviderDisplayName: converter.String("f609b046-3e4a-419a-a5d7-a0840414dc74"),
 		SubjectDescriptor:   converter.String("svc.Nzc3NGFjMDMtOGEyOS00NGFjLTg2ZjEtZmE0YmRlZDc4ZGUyOkJ1aWxkOmY2MDliMDQ2LTNlNGEtNDE5YS1hNWQ3LWEwODQwNDE0ZGM3NA"),
+		IsActive:            converter.Bool(true),
 	},
 	{
 		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1"),
 		Id:                  testhelper.ToUUID("b555cec9-60cf-4f6e-9626-670f964945c5"),
 		ProviderDisplayName: converter.String("[dev]\\Project Collection Administrators"),
 		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTAtMQ"),
+		IsActive:            converter.Bool(true),
 	},
 	{
 		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1"),
 		Id:                  testhelper.ToUUID("3e0ea031-f36c-4c43-ab70-34769dc5ba3a"),
 		ProviderDisplayName: converter.String("[dev]\\Project Collection Build Service Accounts"),
 		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMQ"),
+		IsActive:            converter.Bool(true),
 	},
 	{
 		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2"),
 		Id:                  testhelper.ToUUID("e1c911d1-592e-451b-84d2-6c81dbb895c0"),
 		ProviderDisplayName: converter.String("[dev]\\Project Collection Build Administrators"),
 		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMg"),
+		IsActive:            converter.Bool(true),
 	},
 	{
 		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1"),
 		Id:                  testhelper.ToUUID("b167c23a-27eb-4c59-aa7c-09794f38a556"),
 		ProviderDisplayName: converter.String("[dev]\\Project Collection Test Service Accounts"),
 		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTQtMQ"),
+		IsActive:            converter.Bool(true),
 	},
 }
 

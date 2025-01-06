@@ -1,3 +1,51 @@
+## 1.5.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_serviceendpoint_snyk` [#1224](https://github.com/microsoft/terraform-provider-azuredevops/pull/1224)
+* **New Resource** `azuredevops_serviceendpoint_dynamics_lifecycle_services` [#1240](https://github.com/microsoft/terraform-provider-azuredevops/pull/1240)
+* **New Resource** `azuredevops_serviceendpoint_azure_service_bus` [#1242](https://github.com/microsoft/terraform-provider-azuredevops/pull/1242)
+* **New Resource** `azuredevops_serviceendpoint_gitlab` [#1243](https://github.com/microsoft/terraform-provider-azuredevops/pull/1243)
+* **New Resource** `azuredevops_serviceendpoint_visualstudiomarketplace` [#1246](https://github.com/microsoft/terraform-provider-azuredevops/pull/1246)
+* **New Data Resource** `azuredevops_serviceendpoint_bitbucket` [#1200](https://github.com/microsoft/terraform-provider-azuredevops/pull/1200)
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_github_enterprise` - Add `nil` check.  [#1209](https://github.com/microsoft/terraform-provider-azuredevops/pull/1209)
+* `azuredevops_serviceendpoint_generic` - Relax `server_url` restrictions.  [#1210](https://github.com/microsoft/terraform-provider-azuredevops/pull/1210)
+* All service connection resources - Fix import share service connection not point to the right project.  [#1211](https://github.com/microsoft/terraform-provider-azuredevops/pull/1211)
+* `azuredevops_group_entitlement` 
+  - Detect group deleted.  [#1212](https://github.com/microsoft/terraform-provider-azuredevops/pull/1212)  
+  - Fix group import crash bug.  [#1220](https://github.com/microsoft/terraform-provider-azuredevops/pull/1220)
+* `azuredevops_check_branch_control` - Remove the required check for `ignore_unknown_protection_status`. [#1222](https://github.com/microsoft/terraform-provider-azuredevops/pull/1222)
+* `azuredevops_serviceendpoint_kubernetes` - Fix crash bug. [#1228](https://github.com/microsoft/terraform-provider-azuredevops/pull/1228)
+
+IMPROVEMENTS:
+
+* SDK update - Update `resource.StateChangeConf to` `retry.StateChangeConf` [#1204](https://github.com/microsoft/terraform-provider-azuredevops/pull/1204)
+* `azuredevops_securityrole_assignment` - Change `resource_id` to `forceNew=true`  [#1205](https://github.com/microsoft/terraform-provider-azuredevops/pull/1205)
+* Add client initialization error handle  [#1207](https://github.com/microsoft/terraform-provider-azuredevops/pull/1207)
+* `azuredevops_user_entitlement` - Update documentation  [#1208](https://github.com/microsoft/terraform-provider-azuredevops/pull/1208)
+* `azuredevops_serviceendpoint_azurerm`
+  - Add support `server_url` and cloud environment`AzureStack` [#1213](https://github.com/microsoft/terraform-provider-azuredevops/pull/1213) 
+  - Add support for `credentials.serviceprincipalcertificate`[#1225](https://github.com/microsoft/terraform-provider-azuredevops/pull/1225)
+  - Add support for `credentials.serviceprincipalcertificate`[#1225](https://github.com/microsoft/terraform-provider-azuredevops/pull/1225)
+* `azuredevops_git_repository` 
+  - Add support for initialize of uninitialized repository [#1218](https://github.com/microsoft/terraform-provider-azuredevops/pull/1218)
+  - Update document [#1221](https://github.com/microsoft/terraform-provider-azuredevops/pull/1221)
+  - Support importing repository via username/password [#1223](https://github.com/microsoft/terraform-provider-azuredevops/pull/1223)
+* `azuredevops_build_definition` - Add support for `build_completion_trigger` [#1226](https://github.com/microsoft/terraform-provider-azuredevops/pull/1226)
+* `azuredevops_serviceendpoint_kubernetes` - Add support for `service_account.accept_untrusted_certs` [#1229](https://github.com/microsoft/terraform-provider-azuredevops/pull/1229)
+* All service connections - Remove `forceNew` for `service_endpoint_name` [#1238](https://github.com/microsoft/terraform-provider-azuredevops/pull/1238)
+* `azuredevops_serviceendpoint_aws` - Add `nil` check in resource read [#1239](https://github.com/microsoft/terraform-provider-azuredevops/pull/1239)
+* `azuredevops_serviceendpoint_azurecr` - Change `serviceprincipalid` to `forceNew=true` [#1247](https://github.com/microsoft/terraform-provider-azuredevops/pull/1247)
+* go.mod - Bump `golang.org/x/crypto` from `v0.24.0` to `v0.31.0` [#1252](https://github.com/microsoft/terraform-provider-azuredevops/pull/1252)
+
+BREAKING CHANGE:
+
+* `azuredevops_build_definition` - Change `name` from optional to required. [#1185](https://github.com/microsoft/terraform-provider-azuredevops/pull/1185)
+
+
 ## 1.4.0
 
 FEATURES:

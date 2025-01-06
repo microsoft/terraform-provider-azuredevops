@@ -19,8 +19,8 @@ resource "azuredevops_project" "example" {
   work_item_template = "Agile"
   description        = "Managed by Terraform"
   features = {
-    "testplans" = "disabled"
-    "artifacts" = "disabled"
+     testplans = "disabled"
+     artifacts = "disabled"
   }
 }
 ```
@@ -70,3 +70,4 @@ terraform import azuredevops_project.example 00000000-0000-0000-0000-00000000000
 ## PAT Permissions Required
 
 - **Project & Team**: Read, Write, & Manage
+- **Work Items**: Read

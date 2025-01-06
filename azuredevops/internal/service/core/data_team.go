@@ -1,11 +1,11 @@
 package core
 
 import (
+	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/ahmetb/go-linq"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
@@ -16,7 +16,7 @@ import (
 
 func DataTeam() *schema.Resource {
 	return &schema.Resource{
-		Read: dataTeamRead,
+		ReadContext: dataTeamRead,
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
@@ -64,28 +64,42 @@ func DataTeam() *schema.Resource {
 				Optional:     true,
 				Default:      100,
 				ValidateFunc: validation.IntAtLeast(1),
+				Deprecated:   "This property is deprecated and will be removed in the feature", // TODO remove
 			},
 		},
 	}
 }
 
-func dataTeamRead(d *schema.ResourceData, m interface{}) error {
+func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
 	teamName := d.Get("name").(string)
-	top := d.Get("top").(int)
 
-	team, members, administrators, err := getTeamByName(d, clients, projectID, teamName, top)
+	team, err := clients.CoreClient.GetTeam(clients.Ctx, core.GetTeamArgs{
+		ProjectId: converter.String(projectID),
+		TeamId:    converter.String(teamName),
+	})
+
 	if err != nil {
-		return err
+		return diag.FromErr(fmt.Errorf(" Get Team (Team Name: %s). Error: %+v", teamName, err))
+	}
+
+	members, err := getTeamMembers(clients, team)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(" Get Team members (Team Name: %s). Error: %+v", teamName, err))
+	}
+
+	administrators, err := getTeamAdministrators(d, clients, team)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(" Get Team administrators (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
 		StorageKey: team.Id,
 	})
 	if err != nil {
-		return fmt.Errorf(" get team descriptor. Error: %+v", err)
+		return diag.FromErr(fmt.Errorf(" Get Team descriptor (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	d.SetId(team.Id.String())
@@ -95,42 +109,4 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("members", members)
 	d.Set("descriptor", descriptor.Value)
 	return nil
-}
-
-func getTeamByName(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamName string, top int) (*core.WebApiTeam, *schema.Set, *schema.Set, error) {
-	teamList, err := clients.CoreClient.GetTeams(clients.Ctx, core.GetTeamsArgs{
-		ProjectId:      converter.String(projectID),
-		Mine:           converter.Bool(false),
-		Top:            converter.Int(top),
-		ExpandIdentity: converter.Bool(false),
-	})
-
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	if teamList == nil || len(*teamList) <= 0 {
-		return nil, nil, nil, fmt.Errorf(" Project [%s] does not contain any teams", projectID)
-	}
-
-	iTeam := linq.From(*teamList).
-		FirstWith(func(v interface{}) bool {
-			item := v.(core.WebApiTeam)
-			return strings.EqualFold(*item.Name, teamName)
-		})
-	if iTeam == nil {
-		return nil, nil, nil, fmt.Errorf(" Unable to find Team with name [%s] in project with ID [%s]", teamName, projectID)
-	}
-
-	team := iTeam.(core.WebApiTeam)
-	members, err := getTeamMembers(clients, &team)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	administrators, err := getTeamAdministrators(d, clients, &team)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return &team, members, administrators, nil
 }

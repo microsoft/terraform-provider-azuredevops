@@ -240,7 +240,7 @@ func TestAccGitRepository_forkBranchNotEmpty(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: hclGitRepositoryForkBranchNotEmpty(projectName, gitRepoName, gitForkedRepoName, "Uninitialized"),
+				Config: hclGitRepositoryForkBranchNotEmpty(projectName, gitRepoName, gitForkedRepoName),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -437,7 +437,7 @@ resource "azuredevops_git_repository" "test" {
 `, projectName, repoName)
 }
 
-func hclGitRepositoryForkBranchNotEmpty(projectName, repoName, forkRepoName, forkInitType string) string {
+func hclGitRepositoryForkBranchNotEmpty(projectName, repoName, forkRepoName string) string {
 	repoInit := hclGitRepositoryBasic(projectName, repoName, "Clean")
 	return fmt.Sprintf(`
 %s
@@ -447,9 +447,9 @@ resource "azuredevops_git_repository" "fork" {
   parent_repository_id = azuredevops_git_repository.test.id
   name                 = "%s"
   initialization {
-    init_type = "%s"
+    init_type = "Fork"
   }
-}`, repoInit, forkRepoName, forkInitType)
+}`, repoInit, forkRepoName)
 }
 
 func hclGitRepositoryImportPrivate(projectName, repoName, importRepoName, serviceEndpointName string) string {
