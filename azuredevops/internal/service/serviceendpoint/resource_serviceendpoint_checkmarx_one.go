@@ -146,7 +146,6 @@ func expandServiceEndpointCheckMarxOneService(d *schema.ResourceData) (*servicee
 			},
 			Scheme: converter.String("Token"),
 		}
-
 	} else if _, ok := d.GetOk("client_id"); ok {
 		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
