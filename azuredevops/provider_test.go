@@ -89,6 +89,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_azuredevops",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_bitbucket",
+		"azuredevops_serviceendpoint_checkmarx_one",
 		"azuredevops_serviceendpoint_checkmarx_sca",
 		"azuredevops_serviceendpoint_checkmarx_sast",
 		"azuredevops_serviceendpoint_dockerregistry",
