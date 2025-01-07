@@ -422,8 +422,8 @@ resource "azuredevops_project" "test" {
 }
 
 resource "azuredevops_git_repository" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "%s"
+  project_id     = azuredevops_project.test.id
+  name           = "%s"
   default_branch = "refs/heads/main"
   initialization {
     init_type = "%s"
