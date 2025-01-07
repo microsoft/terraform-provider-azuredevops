@@ -83,6 +83,7 @@ func Provider() *schema.Provider {
 			"azuredevops_repository_policy_max_file_size":             repository.ResourceRepositoryMaxFileSize(),
 			"azuredevops_repository_policy_max_path_length":           repository.ResourceRepositoryMaxPathLength(),
 			"azuredevops_repository_policy_reserved_names":            repository.ResourceRepositoryReservedNames(),
+			"azuredevops_repository_policy_searchable_branches":       repository.ResourceRepositorySearchableBranches(),
 			"azuredevops_resource_authorization":                      build.ResourceResourceAuthorization(),
 			"azuredevops_securityrole_assignment":                     securityroles.ResourceSecurityRoleAssignment(),
 			"azuredevops_serviceendpoint_argocd":                      serviceendpoint.ResourceServiceEndpointArgoCD(),

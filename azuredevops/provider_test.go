@@ -79,6 +79,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_repository_policy_max_file_size",
 		"azuredevops_repository_policy_max_path_length",
 		"azuredevops_repository_policy_reserved_names",
+		"azuredevops_repository_policy_searchable_branches",
 		"azuredevops_resource_authorization",
 		"azuredevops_securityrole_assignment",
 		"azuredevops_serviceendpoint_argocd",
