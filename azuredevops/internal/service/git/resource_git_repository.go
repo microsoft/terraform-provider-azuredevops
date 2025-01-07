@@ -275,6 +275,9 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(createdRepo.Id.String())
 
+	if repo.DefaultBranch != nil && *repo.DefaultBranch != "" {
+		createdRepo.DefaultBranch = repo.DefaultBranch
+	}
 	if err = initializeRepository(clients, initialization, createdRepo, projectID.String()); err != nil {
 		return err
 	}
