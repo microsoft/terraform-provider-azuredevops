@@ -79,6 +79,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Groups](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/groups?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the Group.
+* `read` - (Defaults to 5 minute) Used when retrieving the Group.
+* `update` - (Defaults to 30 minutes) Used when updating the Group.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Group.
+
 ## Import
 
 Azure DevOps groups can be imported using the group identity descriptor, e.g.

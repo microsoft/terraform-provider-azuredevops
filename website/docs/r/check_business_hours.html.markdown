@@ -196,6 +196,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Define approvals and checks](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Business Hours Check.
+* `read` - (Defaults to 1 minute) Used when retrieving the Business Hours Check.
+* `update` - (Defaults to 2 minutes) Used when updating the Business Hours Check.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Business Hours Check.
+
 ## Import
 
 Importing this resource is not supported.

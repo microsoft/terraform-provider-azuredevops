@@ -88,9 +88,18 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `id` - The ID of the service endpoint.
 * `project_id` - The ID of the project.
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Maven Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Maven Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Maven Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Maven Service Endpoint.
+
 ## Import
 
-Service Connection Maven can be imported using the `projectId/id` or or `projectName/id`, e.g.
+Azure DevOps Maven Service Connection can be imported using the `projectId/id` or `projectName/id`, e.g.
 
 ```shell
 terraform import azuredevops_serviceendpoint_maven.example projectName/00000000-0000-0000-0000-000000000000

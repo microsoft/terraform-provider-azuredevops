@@ -2,12 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_servicehook_permissions"
 description: |-
-  Manages permissions for AzureDevOps service hooks
+  Manages permissions for AzureDevOps Service Hook permissions.
 ---
 
 # azuredevops_servicehook_permissions
 
-Manages permissions for service hooks
+Manages permissions for Service Hook permissions.
 
 ## Permission levels
 
@@ -61,6 +61,15 @@ The following arguments are supported:
 ## Relevant Links
 
 * [Azure DevOps Service REST API 7.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-7.0)
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Service Hook Permissions.
+* `read` - (Defaults to 5 minute) Used when retrieving the Service Hook Permissions.
+* `update` - (Defaults to 10 minutes) Used when updating the Service Hook Permissions.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Service Hook Permissions.
 
 ## Import
 

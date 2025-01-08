@@ -96,6 +96,15 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Visual Studio Marketplace Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Visual Studio Marketplace Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Visual Studio Marketplace Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Visual Studio Marketplace Service Endpoint.
+
 ## Import
 
 Azure DevOps Visual Studio Marketplace Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**

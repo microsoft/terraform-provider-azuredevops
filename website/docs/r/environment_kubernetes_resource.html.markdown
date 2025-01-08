@@ -83,6 +83,14 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * [Azure DevOps Service REST API 6.0 - Kubernetes](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/kubernetes?view=azure-devops-rest-6.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the Environment Kubernetes Resource.
+* `read` - (Defaults to 5 minute) Used when retrieving the Environment Kubernetes Resource.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Environment Kubernetes Resource.
+
 ## Import
 
 The resource does not support import.

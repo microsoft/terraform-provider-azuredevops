@@ -50,5 +50,9 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `az_spn_role_assignment_id` - The ID of Service Principal Role Assignment. 
 * `az_spn_role_permissions` - The Service Principal Role Permissions.
 * `service_principal_id` - The Application(Client) ID of the Service Principal.
-  
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the Azure Container Registry Service Endpoint.

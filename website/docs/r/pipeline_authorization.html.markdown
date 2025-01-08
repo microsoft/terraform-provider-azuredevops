@@ -113,6 +113,15 @@ The following arguments are supported:
 
 No attributes are exported
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Pipeline Authorization.
+* `read` - (Defaults to 1 minute) Used when retrieving the Pipeline Authorization.
+* `update` - (Defaults to 2 minutes) Used when updating the Pipeline Authorization.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Pipeline Authorization.
+
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.1 - Pipeline Permissions](https://learn.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions?view=azure-devops-rest-7.1)

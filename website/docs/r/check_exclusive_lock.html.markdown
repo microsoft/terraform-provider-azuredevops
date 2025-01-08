@@ -105,12 +105,12 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Timeouts
 
-The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeout) for certain actions:
 
-* `create` - (Defaults to 2 minutes) Used when creating the Exclusive Lock.
-* `read` - (Defaults to 1 minute) Used when retrieving the Exclusive Lock.
-* `update` - (Defaults to 2 minutes) Used when updating the Exclusive Lock.
-* `delete` - (Defaults to 2 minutes) Used when deleting the Exclusive Lock.
+* `create` - (Defaults to 2 minutes) Used when creating the Exclusive Lock Check.
+* `read` - (Defaults to 1 minute) Used when retrieving the Exclusive Lock Check.
+* `update` - (Defaults to 2 minutes) Used when updating the Exclusive Lock Check.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Exclusive Lock Check.
 
 ## Import
 

@@ -55,8 +55,17 @@ The following attributes are exported:
 * [aws-toolkit-azure-devops](https://github.com/aws/aws-toolkit-azure-devops)
 * [Azure DevOps Service REST API 7.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the AWS Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the AWS Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the AWS Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the AWS Service Endpoint.
+
 ## Import
-Azure DevOps Service Endpoint AWS can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps AWS Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
  terraform import azuredevops_serviceendpoint_aws.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

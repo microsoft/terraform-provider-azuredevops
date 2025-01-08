@@ -74,6 +74,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Author Email Pattern Repository Policy.
+* `read` - (Defaults to 5 minute) Used when retrieving the Author Email Pattern Repository Policy.
+* `update` - (Defaults to 10 minutes) Used when updating the Author Email Pattern Repository Policy.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Author Email Pattern Repository Policy.
+
 ## Import
 
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:

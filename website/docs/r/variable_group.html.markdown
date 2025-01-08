@@ -125,6 +125,15 @@ In addition to all arguments above, the following attributes are exported:
 - [Azure DevOps Service REST API 7.0 - Variable Groups](https://docs.microsoft.com/en-us/rest/api/azure/devops/distributedtask/variablegroups?view=azure-devops-rest-7.0)
 - [Azure DevOps Service REST API 7.0 - Authorized Resources](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/authorizedresources?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Variable Group.
+* `read` - (Defaults to 5 minute) Used when retrieving the Variable Group.
+* `update` - (Defaults to 10 minutes) Used when updating the Variable Group.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Variable Group.
+
 ## Import
 **Variable groups containing secret values cannot be imported.**
 

@@ -34,6 +34,15 @@ The following arguments are supported:
 * `path` - (Required) The folder path.
 * `description` - (Optional) Folder Description.
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the Build Folder.
+* `read` - (Defaults to 5 minute) Used when retrieving the Build Folder.
+* `update` - (Defaults to 30 minutes) Used when updating the Build Folder.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Build Folder.
+
 ## Import
 
 Build Folders can be imported using the `project name/path` or `project id/path`, e.g.

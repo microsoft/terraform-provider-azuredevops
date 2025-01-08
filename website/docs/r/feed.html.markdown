@@ -74,6 +74,15 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Feed Management](https://learn.microsoft.com/en-us/rest/api/azure/devops/artifacts/feed-management?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Feed.
+* `read` - (Defaults to 5 minute) Used when retrieving the Feed.
+* `update` - (Defaults to 10 minutes) Used when updating the Feed.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Feed.
+
 ## Import
 
 Azure DevOps Feed can be imported using the Project ID and Feed ID or Feed ID e.g.:

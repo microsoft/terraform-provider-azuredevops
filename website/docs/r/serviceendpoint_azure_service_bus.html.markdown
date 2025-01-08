@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_serviceendpoint_azure_service_bus
 
-Manages an Azure Service Bus endpoint within Azure DevOps.
+Manages an Azure Service Bus service endpoint within Azure DevOps.
 
 ## Example Usage
 
@@ -56,6 +56,15 @@ The following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.0 - Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Service Bus Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Service Bus Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Service Bus Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Service Bus Service Endpoint.
 
 ## Import
 

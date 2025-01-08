@@ -98,6 +98,15 @@ In addition to the Arguments listed above - the following attribute are exported
 * `id` - The ID of the check.
 * `version` - The version of the check.
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeout) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Required Template Check.
+* `read` - (Defaults to 1 minute) Used when retrieving the Required Template Check.
+* `update` - (Defaults to 2 minutes) Used when updating the Required Template Check.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Required Template Check.
+
 ## Import
 
 Importing this resource is not supported.

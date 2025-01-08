@@ -74,6 +74,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Teams - Create](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/create?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Team.
+* `read` - (Defaults to 5 minute) Used when retrieving the Team.
+* `update` - (Defaults to 10 minutes) Used when updating the Team.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Team.
+
 ## Import
 
 Azure DevOps teams can be imported using the complete resource id `<project_id>/<team_id>` e.g.

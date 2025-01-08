@@ -265,6 +265,15 @@ In addition to all arguments above, except `initialization`, the following attri
 
 - [Azure DevOps Service REST API 7.0 - Git Repositories](https://docs.microsoft.com/en-us/rest/api/azure/devops/git/repositories?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Git Repository.
+* `read` - (Defaults to 5 minute) Used when retrieving the Git Repository.
+* `update` - (Defaults to 10 minutes) Used when updating the Git Repository.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Git Repository.
+
 ## Import
 
 Azure DevOps Repositories can be imported using the repo name or by the repo Guid e.g.

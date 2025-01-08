@@ -40,20 +40,20 @@ resource "azuredevops_build_folder_permissions" "example" {
   principal  = data.azuredevops_group.example-readers.id
 
   permissions = {
-    "ViewBuilds":                 "Allow",
-    "EditBuildQuality":           "Allow",
-    "RetainIndefinitely":         "Allow",
-    "DeleteBuilds":               "Deny",
-    "ManageBuildQualities":       "Deny",
-    "DestroyBuilds":              "Deny",
-    "UpdateBuildInformation":     "Deny",
-    "QueueBuilds":                "Allow",
-    "ManageBuildQueue":           "Deny",
-    "StopBuilds":                 "Allow",
-    "ViewBuildDefinition":        "Allow",
-    "EditBuildDefinition":        "Deny",
-    "DeleteBuildDefinition":      "Deny",
-    "AdministerBuildPermissions": "NotSet"
+    "ViewBuilds" : "Allow",
+    "EditBuildQuality" : "Allow",
+    "RetainIndefinitely" : "Allow",
+    "DeleteBuilds" : "Deny",
+    "ManageBuildQualities" : "Deny",
+    "DestroyBuilds" : "Deny",
+    "UpdateBuildInformation" : "Deny",
+    "QueueBuilds" : "Allow",
+    "ManageBuildQueue" : "Deny",
+    "StopBuilds" : "Allow",
+    "ViewBuildDefinition" : "Allow",
+    "EditBuildDefinition" : "Deny",
+    "DeleteBuildDefinition" : "Deny",
+    "AdministerBuildPermissions" : "NotSet"
   }
 }
 ```
@@ -78,7 +78,7 @@ resource "azuredevops_build_folder_permissions" "example" {
   principal  = data.azuredevops_group.example-readers.id
 
   permissions = {
-    "RetainIndefinitely": "Allow"
+    "RetainIndefinitely" : "Allow"
   }
 }
 ```
@@ -114,6 +114,15 @@ The following arguments are supported:
 ## Relevant Links
 
 * [Azure DevOps Service REST API 7.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-7.0)
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Build Folder Permission.
+* `read` - (Defaults to 5 minute) Used when retrieving the Build Folder Permission.
+* `update` - (Defaults to 10 minutes) Used when updating the Build Folder Permission.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Build Folder Permission.
 
 ## Import
 

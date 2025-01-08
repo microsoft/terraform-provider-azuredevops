@@ -58,6 +58,15 @@ In addition to all arguments above, the following attributes are exported:
 
 No official documentation available
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Project Pipeline Settings.
+* `read` - (Defaults to 5 minute) Used when retrieving the Project Pipeline Settings.
+* `update` - (Defaults to 10 minutes) Used when updating the Project Pipeline Settings.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Project Pipeline Settings.
+
 ## Import
 
 Azure DevOps feature settings can be imported using the project id, e.g.

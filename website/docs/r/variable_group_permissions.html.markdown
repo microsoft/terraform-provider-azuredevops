@@ -82,7 +82,16 @@ The following arguments are supported:
 
 ## Relevant Links
 
-* [Azure DevOps Service REST API 6.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-6.0)
+* [Azure DevOps Service REST API 7.1 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-7.1)
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Variable Group Permissions.
+* `read` - (Defaults to 5 minute) Used when retrieving the Variable Group Permissions.
+* `update` - (Defaults to 10 minutes) Used when updating the Variable Group Permissions.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Variable Group Permissions.
 
 ## Import
 

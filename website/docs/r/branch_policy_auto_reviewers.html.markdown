@@ -87,6 +87,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/create?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 5 minutes) Used when creating the Auto Reviewers Branch Policy.
+* `read` - (Defaults to 2 minute) Used when retrieving the Auto Reviewers Branch Policy.
+* `update` - (Defaults to 5 minutes) Used when updating the Auto Reviewers Branch Policy.
+* `delete` - (Defaults to 5 minutes) Used when deleting the Auto Reviewers Branch Policy.
+
 ## Import
 
 Azure DevOps Branch Policies can be imported using the project ID and policy configuration ID:
