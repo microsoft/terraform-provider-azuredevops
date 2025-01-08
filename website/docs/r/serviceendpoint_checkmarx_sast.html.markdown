@@ -75,7 +75,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Azure DevOps Checkmarx SAST Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps Service Endpoint Check Marx SAST can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 terraform import azuredevops_serviceendpoint_checkmarx_sast.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

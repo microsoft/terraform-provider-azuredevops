@@ -20,6 +20,32 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+func TestAccGitRepository_withDefaultBranch(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	tfRepoNode := "azuredevops_git_repository.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryWithDefaultBranch(projectName, gitRepoName, "Clean"),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "is_fork"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "url"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "web_url"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/main"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccGitRepository_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoNameFirst := testutils.GenerateResourceName()
@@ -382,6 +408,23 @@ resource "azuredevops_project" "test" {
 resource "azuredevops_git_repository" "test" {
   project_id = azuredevops_project.test.id
   name       = "%s"
+  initialization {
+    init_type = "%s"
+  }
+}
+`, projectName, repoName, initType)
+}
+
+func hclGitRepositoryWithDefaultBranch(projectName, repoName, initType string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id     = azuredevops_project.test.id
+  name           = "%s"
+  default_branch = "refs/heads/main"
   initialization {
     init_type = "%s"
   }
