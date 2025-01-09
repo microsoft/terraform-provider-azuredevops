@@ -27,6 +27,7 @@ var (
 	PathLength         = uuid.MustParse("001a79cf-fda1-4c4e-9e7c-bac40ee5ead8")
 	FileSize           = uuid.MustParse("2e26e725-8201-4edd-8bf5-978563c34a80")
 	CheckCredentials   = uuid.MustParse("e67ae10f-cf9a-40bc-8e66-6b3a8216956e")
+	SearchableBranches = uuid.MustParse("0517f88d-4ec5-4343-9d26-9930ebd53069")
 )
 
 // policyCrudArgs arguments for genBasePolicyResource
