@@ -19,7 +19,7 @@ func DataServicePrincipal() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceServicePrincipalRead,
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(30 * time.Minute),
+			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"display_name": {
@@ -56,7 +56,7 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 
 	// Query ADO for list of identity user with filter
 	filteredServicePrincipals, err := getIdentityServicePrincipalsWithFilterValue(clients, searchFilter, displayName)
-	if err != nil {
+	if err != nil || filteredServicePrincipals == nil || len(*filteredServicePrincipals) == 0 {
 		return fmt.Errorf(" Finding service principal with filter %s. Error: %v", *searchFilter, err)
 	}
 
@@ -75,11 +75,10 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 
 	servicePrincipal, err := getServicePrincipal(clients, servicePrincipalDescriptor)
 	if err != nil {
-		errMsg := "Error finding service principal"
 		if servicePrincipalDescriptor != nil {
-			errMsg = fmt.Sprintf("%s with Descriptor %s", errMsg, *servicePrincipalDescriptor)
+			return fmt.Errorf(" Finding service principal with Descriptor %s", *servicePrincipalDescriptor)
 		}
-		return fmt.Errorf("%s. Error: %v", errMsg, err)
+		return fmt.Errorf(" Finding service principal. Error: %v", err)
 	}
 
 	d.SetId(*servicePrincipal.Descriptor)
@@ -88,59 +87,43 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 	d.Set("origin_id", servicePrincipal.OriginId)
 	d.Set("origin", servicePrincipal.Origin)
 
-	/*
-		storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
-			SubjectDescriptor: servicePrincipal.Descriptor,
-		})
-		if err != nil {
-			return err
-		}
-
-		if storageKey.Value != nil {
-			d.Set("service_principal_id", storageKey.Value.String())
-		}
-	*/
 	return nil
 }
 
 // Query AZDO for service principals with matching filter and search string
 func getIdentityServicePrincipalsWithFilterValue(clients *client.AggregatedClient, searchFilter *string, filterValue string) (*[]identity.Identity, error) {
 	// Get list of user with search filter and filter value provided at data source invocation.
-	response, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+	return clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 		SearchFilter: searchFilter, // Filter to get users
 		FilterValue:  &filterValue,
 	})
-
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
 }
 
 // Flatten Query Results
 func flattenIdentityServicePrincipals(servicePrincipals *[]identity.Identity) (*[]identity.Identity, error) {
-	if servicePrincipals == nil {
+	if servicePrincipals == nil || len(*servicePrincipals) == 0 {
 		return nil, fmt.Errorf(" Input Service Principals Parameter is nil")
 	}
 	results := make([]identity.Identity, len(*servicePrincipals))
-	for i, servicePrincipal := range *servicePrincipals {
+	for _, servicePrincipal := range *servicePrincipals {
 		if servicePrincipal.Descriptor == nil {
 			return nil, fmt.Errorf(" User Object does not contain an id")
 		}
-		newUser := identity.Identity{
+		results = append(results, identity.Identity{
 			Id:                  servicePrincipal.Id,
 			Descriptor:          servicePrincipal.Descriptor,
 			ProviderDisplayName: servicePrincipal.ProviderDisplayName,
 			SubjectDescriptor:   servicePrincipal.SubjectDescriptor,
-			// Add other fields here if needed
-		}
-		results[i] = newUser
+		})
 	}
 	return &results, nil
 }
 
 // Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter.
 func validateIdentityServicePrincipal(servicePrincipals *[]identity.Identity, displayName string) *identity.Identity {
+	if servicePrincipals == nil || len(*servicePrincipals) == 0 {
+		return nil
+	}
 	for _, servicePrincipal := range *servicePrincipals {
 		if strings.Contains(strings.ToLower(*servicePrincipal.ProviderDisplayName), strings.ToLower(displayName)) {
 			return &servicePrincipal
@@ -150,13 +133,7 @@ func validateIdentityServicePrincipal(servicePrincipals *[]identity.Identity, di
 }
 
 func getServicePrincipal(clients *client.AggregatedClient, servicePrincipalDescriptor *string) (*graph.GraphServicePrincipal, error) {
-	args := graph.GetServicePrincipalArgs{}
-	if servicePrincipalDescriptor != nil {
-		args.ServicePrincipalDescriptor = servicePrincipalDescriptor
-	}
-	response, err := clients.GraphClient.GetServicePrincipal(clients.Ctx, args)
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
+	return clients.GraphClient.GetServicePrincipal(clients.Ctx, graph.GetServicePrincipalArgs{
+		ServicePrincipalDescriptor: servicePrincipalDescriptor,
+	})
 }

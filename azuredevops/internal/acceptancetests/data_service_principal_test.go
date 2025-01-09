@@ -40,10 +40,9 @@ func TestAccServicePrincipalDataSource_Read_HappyPath(t *testing.T) {
 }
 
 func hclServicePrincipalDataBasic(servicePrincipalObjectId string) string {
-	servicePrincipalData := fmt.Sprint(`
+	return fmt.Sprintf(`
+%s
 data "azuredevops_service_principal" "test" {
   display_name = azuredevops_service_principal_entitlement.test.display_name
-}`)
-	servicePrincipalEntitlementResource := testutils.HclServicePrincipleEntitlementResource(servicePrincipalObjectId)
-	return fmt.Sprintf("%s\n%s", servicePrincipalEntitlementResource, servicePrincipalData)
+}`, testutils.HclServicePrincipleEntitlementResource(servicePrincipalObjectId))
 }

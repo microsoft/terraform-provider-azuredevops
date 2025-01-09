@@ -244,7 +244,7 @@ func TestServicePrincipalEntitlement_CreateUpdate_TestBasicEntitlement(t *testin
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceServicePrincipalEntitlement().Schema, nil)
 	resourceData.Set("origin_id", originID)
-	resourceData.Set("account_license_type", "basic")
+	resourceData.Set("account_license_type", "express")
 	resourceData.Set("display_name", displayName)
 
 	err := resourceServicePrincipalEntitlementCreate(resourceData, clients)

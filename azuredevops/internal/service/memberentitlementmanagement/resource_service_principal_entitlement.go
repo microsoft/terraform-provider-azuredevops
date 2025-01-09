@@ -30,10 +30,10 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 		Delete: resourceServicePrincipalEntitlementDelete,
 		Update: resourceServicePrincipalEntitlementUpdate,
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
-			Delete: schema.DefaultTimeout(30 * time.Minute),
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Read:   schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
 			State: importServicePrincipalEntitlement,
@@ -43,7 +43,6 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				RequiredWith: []string{"origin"},
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
@@ -164,14 +163,8 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf(" Parsing ServicePrincipalEntitlement ID. ServicePrincipalEntitlementID: %s. %v", servicePrincipalEntitlementID, err)
 	}
 
-	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
-	if err != nil {
-		return err
-	}
-	licensingSource, ok := d.GetOk("licensing_source")
-	if !ok {
-		return fmt.Errorf(" Reading account licensing source for ServicePrincipalEntitlementID: %s", servicePrincipalEntitlementID)
-	}
+	accountLicenseType, _ := converter.AccountLicenseType(d.Get("account_license_type").(string))
+	licensingSource, _ := d.GetOk("licensing_source")
 
 	clients := m.(*client.AggregatedClient)
 
@@ -198,7 +191,7 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf(" Updating service principal entitlement: %v", err)
 	}
 
-	if !*patchResponse.IsSuccess {
+	if patchResponse != nil && patchResponse.IsSuccess != nil && !*patchResponse.IsSuccess {
 		return fmt.Errorf(" Updating service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(patchResponse.OperationResults))
 	}
 	return resourceServicePrincipalEntitlementRead(d, m)
@@ -229,44 +222,36 @@ func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interfa
 }
 
 func expandServicePrincipalEntitlement(d *schema.ResourceData) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
-	origin := d.Get("origin").(string)
-	originID := d.Get("origin_id").(string)
-	displayName := d.Get("display_name").(string)
-	descriptor := d.Get("descriptor").(string)
-
-	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
-	if err != nil {
-		return nil, err
-	}
-	licensingSource, err := converter.AccountLicensingSource(d.Get("licensing_source").(string))
-	if err != nil {
-		return nil, err
-	}
-
 	return &memberentitlementmanagement.ServicePrincipalEntitlement{
 		AccessLevel: &licensing.AccessLevel{
-			AccountLicenseType: accountLicenseType,
-			LicensingSource:    licensingSource,
+			AccountLicenseType: converter.ToPtr(licensing.AccountLicenseType(d.Get("account_license_type").(string))),
+			LicensingSource:    converter.ToPtr(licensing.LicensingSource(d.Get("licensing_source").(string))),
 		},
 		ServicePrincipal: &graph.GraphServicePrincipal{
-			Origin:      &origin,
-			OriginId:    &originID,
-			DisplayName: &displayName,
-			Descriptor:  &descriptor,
+			Origin:      converter.ToPtr(d.Get("origin").(string)),
+			OriginId:    converter.ToPtr(d.Get("origin_id").(string)),
+			DisplayName: converter.ToPtr(d.Get("display_name").(string)),
+			Descriptor:  converter.ToPtr(d.Get("descriptor").(string)),
 			SubjectKind: converter.String("servicePrincipal"),
 		},
 	}, nil
 }
 
 func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) {
-	d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
-	if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
-		d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
+	if servicePrincipalEntitlement != nil {
+		if servicePrincipalEntitlement.ServicePrincipal != nil {
+			d.Set("origin", *servicePrincipalEntitlement.ServicePrincipal.Origin)
+			if servicePrincipalEntitlement.ServicePrincipal.OriginId != nil {
+				d.Set("origin_id", *servicePrincipalEntitlement.ServicePrincipal.OriginId)
+			}
+			d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
+			d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
+		}
+		if servicePrincipalEntitlement.AccessLevel != nil {
+			d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
+			d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
+		}
 	}
-	d.Set("account_license_type", string(*servicePrincipalEntitlement.AccessLevel.AccountLicenseType))
-	d.Set("licensing_source", *servicePrincipalEntitlement.AccessLevel.LicensingSource)
-	d.Set("display_name", *servicePrincipalEntitlement.ServicePrincipal.DisplayName)
-	d.Set("descriptor", *servicePrincipalEntitlement.ServicePrincipal.Descriptor)
 }
 
 func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
