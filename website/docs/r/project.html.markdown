@@ -53,6 +53,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Projects](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/projects?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Project.
+* `read` - (Defaults to 5 minute) Used when retrieving the Project.
+* `update` - (Defaults to 10 minutes) Used when updating the Project.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Project.
+
 ## Import
 
 Azure DevOps Projects can be imported using the project name or by the project Guid, e.g.

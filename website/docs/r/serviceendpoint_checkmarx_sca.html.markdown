@@ -73,10 +73,10 @@ The following attributes are exported:
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `create` - (Defaults to 2 minutes) Used when creating the Checkmarx SCA.
-* `read` - (Defaults to 1 minute) Used when retrieving the Checkmarx SCA.
-* `update` - (Defaults to 2 minutes) Used when updating the Checkmarx SCA.
-* `delete` - (Defaults to 2 minutes) Used when deleting the Checkmarx SCA.
+* `create` - (Defaults to 2 minutes) Used when creating the Checkmarx SCA Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Checkmarx SCA Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Checkmarx SCA Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Checkmarx SCA Service Endpoint.
 
 ## Import
 

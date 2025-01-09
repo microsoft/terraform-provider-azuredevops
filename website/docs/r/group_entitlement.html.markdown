@@ -49,11 +49,18 @@ The following attributes are exported:
 - [Azure DevOps Service REST API 7.0 - Group Entitlements](https://learn.microsoft.com/en-us/rest/api/azure/devops/memberentitlementmanagement/group-entitlements?view=azure-devops-rest-7.1)
 - [Programmatic mapping of access levels](https://docs.microsoft.com/en-us/azure/devops/organizations/security/access-levels?view=azure-devops#programmatic-mapping-of-access-levels)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the Group Entitlement.
+* `read` - (Defaults to 5 minute) Used when retrieving the Group Entitlement.
+* `update` - (Defaults to 30 minutes) Used when updating the Group Entitlement.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Group Entitlement.
+
 ## Import
 
-The resource allows the import via the ID of a group entitlement, which is a
-UUID.
-
+The resource allows the import via the ID of a group entitlement, which is a UUID.
 
 ```
 terraform import azuredevops_group_entitlement.example 00000000-0000-0000-0000-000000000000

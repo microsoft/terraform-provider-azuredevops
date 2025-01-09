@@ -61,3 +61,11 @@ In addition to the Arguments listed above - the following Attributes are exporte
 - `id` - The ID of the Git Repository Branch, in the format `<repository_id>:<name>`.
 
 - `last_commit_id` - The commit object ID of last commit on the branch.
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Git Branch.
+* `read` - (Defaults to 5 minute) Used when retrieving the Git Branch.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Git Branch.

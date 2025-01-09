@@ -66,6 +66,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Teams - Update](https://docs.microsoft.com/en-us/rest/api/azure/devops/core/teams/update?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Team Members.
+* `read` - (Defaults to 5 minute) Used when retrieving the Team Members.
+* `update` - (Defaults to 10 minutes) Used when updating the Team Members.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Team Members.
+
 ## Import
 
 The resource does not support import.

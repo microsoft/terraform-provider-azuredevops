@@ -80,7 +80,14 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Work Item.
 
+## Timeouts
 
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Work Item.
+* `read` - (Defaults to 5 minute) Used when retrieving the Work Item.
+* `update` - (Defaults to 10 minutes) Used when updating the Work Item.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Work Item.
 
 ## Import
 

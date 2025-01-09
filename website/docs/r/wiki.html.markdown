@@ -69,6 +69,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.1 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/wikis?view=azure-devops-rest-7.1)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Wiki.
+* `read` - (Defaults to 5 minute) Used when retrieving the Wiki.
+* `update` - (Defaults to 10 minutes) Used when updating the Wiki.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Wiki.
+
 ## Import
 
 Azure DevOps Wiki can be imported using the `id`

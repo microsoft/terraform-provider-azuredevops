@@ -18,16 +18,16 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_wiki" "example" {
-  name       = "Example project wiki "
   project_id = azuredevops_project.example.id
+  name       = "Example project wiki "
   type       = "projectWiki"
 }
 
 resource "azuredevops_wiki_page" "example" {
   project_id = azuredevops_project.example.id
-  wiki_id = azuredevops_wiki.example.id
-  path = "/page"
-  content = "content"
+  wiki_id    = azuredevops_wiki.example.id
+  path       = "/page"
+  content    = "content"
 }
 
 ```
@@ -53,3 +53,12 @@ In addition to all arguments above, the following attributes are exported:
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.1 - Wiki Page](https://learn.microsoft.com/en-us/rest/api/azure/devops/wiki/pages?view=azure-devops-rest-7.1)
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 5 minutes) Used when creating the Wiki Page.
+* `read` - (Defaults to 2 minute) Used when retrieving the Wiki Page.
+* `update` - (Defaults to 5 minutes) Used when updating the Wiki Page.
+* `delete` - (Defaults to 5 minutes) Used when deleting the Wiki Page.

@@ -75,6 +75,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Policy Configurations](https://docs.microsoft.com/en-us/rest/api/azure/devops/policy/configurations?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the File Path Pattern Repository Policy.
+* `read` - (Defaults to 5 minute) Used when retrieving the File Path Pattern Repository Policy.
+* `update` - (Defaults to 30 minutes) Used when updating the File Path Pattern Repository Policy.
+* `delete` - (Defaults to 30 minutes) Used when deleting the File Path Pattern Repository Policy.
+
 ## Import
 
 Azure DevOps repository policies can be imported using the projectID/policyID or projectName/policyID:

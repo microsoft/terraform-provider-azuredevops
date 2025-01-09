@@ -53,10 +53,10 @@ func genBasePolicyResource(crudArgs *policyCrudArgs) *schema.Resource {
 		Delete:   genPolicyDeleteFunc(crudArgs),
 		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Read:   schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {

@@ -83,6 +83,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Elastic Pools](https://learn.microsoft.com/en-us/rest/api/azure/devops/distributedtask/elasticpools/create?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeout) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Elastic Pool.
+* `read` - (Defaults to 1 minute) Used when retrieving the Elastic Pool.
+* `update` - (Defaults to 2 minutes) Used when updating the Elastic Pool.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Elastic Pool.
+
 ## Import
 
 Azure DevOps Agent Pools can be imported using the Elastic pool ID, e.g.

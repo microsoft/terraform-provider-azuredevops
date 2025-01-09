@@ -2,11 +2,11 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_serviceendpoint_sonarqube"
 description: |-
-  Manages a SonarQube server endpoint within Azure DevOps organization.
+  Manages a SonarQube Server service endpoint within Azure DevOps organization.
 ---
 
 # azuredevops_serviceendpoint_sonarqube
-Manages a SonarQube service endpoint within Azure DevOps. 
+Manages a SonarQube Server service endpoint within Azure DevOps. 
 
 ## Example Usage
 
@@ -52,8 +52,17 @@ The following attributes are exported:
 - [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
 - [SonarQube User Token](https://docs.sonarqube.org/latest/user-guide/user-token/)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the SonarQube Server Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the SonarQube Server Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the SonarQube Server Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the SonarQube Server Service Endpoint.
+
 ## Import
-Azure DevOps Service Endpoint SonarQube can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps SonarQube Server Service Endpoint can be imported using the **projectID/serviceEndpointID**, e.g.
 
 ```sh
 terraform import azuredevops_serviceendpoint_sonarqube.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

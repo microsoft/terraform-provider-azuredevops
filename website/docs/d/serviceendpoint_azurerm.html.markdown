@@ -76,3 +76,9 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `service_endpoint_authentication_scheme` - The authentication scheme of Azure Resource Management Endpoint 
 * `workload_identity_federation_issuer` - The issuer if `of the Workload Identity Federation Subject 
 * `workload_identity_federation_subject` - The subject of the Workload Identity Federation Subject.
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the Azure Resource Manager Service Endpoint.

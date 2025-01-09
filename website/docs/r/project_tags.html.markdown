@@ -43,6 +43,15 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Project Properties](https://learn.microsoft.com/en-us/rest/api/azure/devops/core/projects/get-project-properties?view=azure-devops-rest-7.1&tabs=HTTP)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 5 minutes) Used when creating the Project Tags.
+* `read` - (Defaults to 2 minute) Used when retrieving the Project Tags.
+* `update` - (Defaults to 5 minutes) Used when updating the Project Tags.
+* `delete` - (Defaults to 5 minutes) Used when deleting the Project Tags.
+
 ## Import
 
 Azure DevOps Project Tags can be imported using the Project ID e.g.:
@@ -50,4 +59,3 @@ Azure DevOps Project Tags can be imported using the Project ID e.g.:
 ```sh
 terraform import azuredevops_project_tags.example 00000000-0000-0000-0000-000000000000
 ```
-

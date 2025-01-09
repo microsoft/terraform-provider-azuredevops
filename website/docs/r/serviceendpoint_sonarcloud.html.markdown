@@ -2,11 +2,11 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_serviceendpoint_sonarcloud"
 description: |-
-  Manages the SonarCloud service endpoint within an Azure DevOps organization.
+  Manages the SonarQube Cloud service endpoint within an Azure DevOps organization.
 ---
 
 # azuredevops_serviceendpoint_sonarcloud
-Manages a SonarCloud service endpoint within Azure DevOps. 
+Manages a SonarQube Cloud service endpoint within Azure DevOps. 
 
 ## Example Usage
 
@@ -32,8 +32,11 @@ resource "azuredevops_serviceendpoint_sonarcloud" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
+
 * `service_endpoint_name` - (Required) The Service Endpoint name.
+
 * `token` - (Required) Authentication Token generated through SonarCloud (go to `My Account > Security > Generate Tokens`).
+
 * `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference
@@ -50,8 +53,17 @@ The following attributes are exported:
 - [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
 - [SonarCloud User Token](https://docs.sonarcloud.io/advanced-setup/user-accounts/)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the SonarQube Cloud Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the SonarQube Cloud Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the SonarQube Cloud Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the SonarQube Cloud Service Endpoint.
+
 ## Import
-Azure DevOps Service Endpoint SonarCloud can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps SonarQube Cloud Service Endpoint can be imported using the **projectID/serviceEndpointID**, e.g.
 
 ```sh
 terraform import azuredevops_serviceendpoint_sonarcloud.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

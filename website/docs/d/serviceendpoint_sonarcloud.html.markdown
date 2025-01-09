@@ -42,3 +42,8 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `authorization` - Specifies the Authorization Scheme Map.
 * `description` - Specifies the description of the Service Endpoint.
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the SonarQube Cloud Service Endpoint.

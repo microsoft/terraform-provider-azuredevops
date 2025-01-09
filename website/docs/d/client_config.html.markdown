@@ -28,3 +28,9 @@ This data source has no arguments
 The following attributes are exported:
 
 `organization_url` - The organization configured for the provider
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the Client Config.

@@ -39,6 +39,15 @@ The following attributes are exported:
 - [Azure DevOps Service REST API 7.0 - User Entitlements - Add](https://docs.microsoft.com/en-us/rest/api/azure/devops/memberentitlementmanagement/user-entitlements/add?view=azure-devops-rest-7.0)
 - [Programmatic mapping of access levels](https://docs.microsoft.com/en-us/azure/devops/organizations/security/access-levels?view=azure-devops#programmatic-mapping-of-access-levels)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the User Entitlement.
+* `read` - (Defaults to 5 minute) Used when retrieving the User Entitlement.
+* `update` - (Defaults to 10 minutes) Used when updating the User Entitlement.
+* `delete` - (Defaults to 10 minutes) Used when deleting the User Entitlement.
+
 ## Import
 
 This resource allows importing by the UUID of a user entitlement or by using the principal name of a user who owns the entitlement.

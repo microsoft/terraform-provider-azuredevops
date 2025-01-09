@@ -68,6 +68,15 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Feed Management](https://learn.microsoft.com/en-us/rest/api/azure/devops/artifacts/feed-management?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Feed Retention Policy.
+* `read` - (Defaults to 5 minute) Used when retrieving the Feed Retention Policy.
+* `update` - (Defaults to 10 minutes) Used when updating the Feed Retention Policy.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Feed Retention Policy.
+
 ## Import
 
 Azure DevOps Feed Retention Policy can be imported using the Project ID and Feed ID or Feed ID e.g.:

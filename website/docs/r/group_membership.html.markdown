@@ -60,9 +60,14 @@ In addition to all arguments above, the following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Memberships](https://docs.microsoft.com/en-us/rest/api/azure/devops/graph/memberships?view=azure-devops-rest-7.0)
 
-## Import
+## Timeouts
 
-Not supported.
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Group membership.
+* `read` - (Defaults to 5 minute) Used when retrieving the Group membership.
+* `update` - (Defaults to 10 minutes) Used when updating the Group membership.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Group membership.
 
 ## PAT Permissions Required
 

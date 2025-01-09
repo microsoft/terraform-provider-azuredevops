@@ -52,9 +52,18 @@ The following attributes are exported:
 
 - [Azure DevOps Service REST API 7.0 - Agent Pools](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Octopus Deploy Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Octopus Deploy Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Octopus Deploy Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Octopus Deploy Service Endpoint.
+
 ## Import
 
-Azure DevOps Service Endpoint Octopus Deploy can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps Octopus Deploy Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 terraform import azuredevops_serviceendpoint_octopusdeploy.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

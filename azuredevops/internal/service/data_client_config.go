@@ -11,6 +11,9 @@ import (
 func DataClientConfig() *schema.Resource {
 	return &schema.Resource{
 		Read: clientConfigRead,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"organization_url": {
 				Type:     schema.TypeString,

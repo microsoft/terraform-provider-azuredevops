@@ -67,9 +67,18 @@ The following attributes are exported:
 - [Azure DevOps Service REST API 7.0 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.0)
 - [Docker Registry Service Connection](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#sep-docreg)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Docker Registry Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Docker Registry Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Docker Registry Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Docker Registry Service Endpoint.
+
 ## Import
 
-Azure DevOps Service Endpoint Docker Registry can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps Docker Registry Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
 terraform import azuredevops_serviceendpoint_dockerregistry.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

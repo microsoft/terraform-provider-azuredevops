@@ -2,12 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_servicehook_storage_queue_pipelines"
 description: |-
-  Manages a Service Hook Storage Queue Pipelines.
+  Manages a Storage Queue Pipelines Service Hook.
 ---
 
 # azuredevops_servicehook_storage_queue_pipelines
 
-Manages a Service Hook Storage Queue Pipelines.
+Manages a Storage Queue Pipelines Service Hook .
 
 ## Example Usage
 
@@ -113,11 +113,18 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Service Hook Storage Queue Pipelines.
 
+## Timeouts
 
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Storage Queue Pipelines Service Hook.
+* `read` - (Defaults to 5 minute) Used when retrieving the Storage Queue Pipelines Service Hook.
+* `update` - (Defaults to 10 minutes) Used when updating the Storage Queue Pipelines Service Hook.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Storage Queue Pipelines Service Hook.
 
 ## Import
 
-Service Hook Storage Queue Pipeliness can be imported using the `resource id`, e.g.
+Storage Queue Pipelines Service Hook can be imported using the `resource id`, e.g.
 
 ```shell
 terraform import azuredevops_servicehook_storage_queue_pipelines.example 00000000-0000-0000-0000-000000000000

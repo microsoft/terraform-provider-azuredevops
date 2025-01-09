@@ -75,6 +75,15 @@ The following arguments are supported:
 
 * [Azure DevOps Service REST API 7.0 - Security](https://docs.microsoft.com/en-us/rest/api/azure/devops/security/?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Iteration Permission.
+* `read` - (Defaults to 5 minute) Used when retrieving the Iteration Permission.
+* `update` - (Defaults to 10 minutes) Used when updating the Iteration Permission.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Iteration Permission.
+
 ## Import
 
 The resource does not support import.

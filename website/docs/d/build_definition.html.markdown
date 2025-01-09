@@ -187,3 +187,10 @@ A `variable` block exports the following:
 * `secret_value` - The secret value of the variable.
 
 * `value` - The value of the variable.
+
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the Build Definition.

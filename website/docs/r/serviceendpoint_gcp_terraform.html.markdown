@@ -2,11 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_serviceendpoint_gcp_terraform"
 description: |-
-  Manages a GCP service endpoint within Azure DevOps organization.
+  Manages a GCP for Terraform service endpoint within Azure DevOps organization.
 ---
 
 # azuredevops_serviceendpoint_gcp_terraform
-Manages a GCP service endpoint for Terraform within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks).
+
+Manages a GCP for Terraform service endpoint for Terraform within Azure DevOps. Using this service endpoint requires you to first install the [Azure Terraform Extension for Azure DevOps from Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks).
 
 ## Example Usage
 
@@ -63,8 +64,17 @@ The following attributes are exported:
 ## Relevant Links
 - [Azure DevOps Service REST API 7.1 - Service Endpoints](https://docs.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints?view=azure-devops-rest-7.1)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the GCP for Terraform Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the GCP for Terraform Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the GCP for Terraform Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the GCP for Terraform Service Endpoint.
+
 ## Import
-Azure DevOps Service Endpoint GCP can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
+Azure DevOps GCP for Terraform Service Endpoint can be imported using **projectID/serviceEndpointID** or **projectName/serviceEndpointID**
 
 ```sh
  terraform import azuredevops_serviceendpoint_gcp_terraform.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000

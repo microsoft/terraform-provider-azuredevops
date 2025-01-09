@@ -48,6 +48,15 @@ The following arguments are supported:
 - `commit_message` - (Optional) Commit message when adding or updating the managed file.
 - `overwrite_on_create` - (Optional) Enable overwriting existing files (defaults to `false`).
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Git Repository File.
+* `read` - (Defaults to 5 minute) Used when retrieving the Git Repository File.
+* `update` - (Defaults to 10 minutes) Used when updating the Git Repository File.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Git Repository File.
+
 ## Import
 
 Repository files can be imported using a combination of the `repository ID` and `file`, e.g.

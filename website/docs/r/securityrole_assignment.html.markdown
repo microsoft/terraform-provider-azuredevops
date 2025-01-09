@@ -56,6 +56,15 @@ The following arguments are supported:
 
 No attributes are exported
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Security Role Assignment.
+* `read` - (Defaults to 5 minute) Used when retrieving the Security Role Assignment.
+* `update` - (Defaults to 10 minutes) Used when updating the Security Role Assignment.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Security Role Assignment.
+
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.0 - Authorize Definition Resource](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/resources/authorize%20definition%20resources?view=azure-devops-rest-7.0)

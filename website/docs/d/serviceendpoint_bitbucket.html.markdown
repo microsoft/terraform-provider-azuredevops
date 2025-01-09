@@ -65,6 +65,12 @@ In addition to the Arguments list above - the following Attributes are exported:
 * `authorization` - Specifies the Authorization Scheme Map.
 * `description` - Specifies the description of the Service Endpoint.
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minute) Used when retrieving the Bitbucket Service Endpoint.
+
 ## PAT Permissions Required
 
 - **vso.serviceendpoint**: Grants the ability to read service endpoints.

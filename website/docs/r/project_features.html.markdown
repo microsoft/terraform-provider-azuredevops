@@ -50,6 +50,15 @@ No attributes are exported
 
 No official documentation available
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 10 minutes) Used when creating the Project Features.
+* `read` - (Defaults to 5 minute) Used when retrieving the Project Features.
+* `update` - (Defaults to 10 minutes) Used when updating the Project Features.
+* `delete` - (Defaults to 10 minutes) Used when deleting the Project Features.
+ 
 ## Import
 
 Azure DevOps feature settings can be imported using the project id, e.g.

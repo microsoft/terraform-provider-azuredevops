@@ -104,7 +104,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 ## Timeouts
 
-The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeout) for certain actions:
 
 * `create` - (Defaults to 2 minutes) Used when creating the Approval Check.
 * `read` - (Defaults to 1 minute) Used when retrieving the Approval Check.

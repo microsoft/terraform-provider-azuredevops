@@ -86,8 +86,17 @@ The following attributes are exported:
 - [ArgoCD Project/User Token](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_account_generate-token/)
 - [Argo CD Extension](https://marketplace.visualstudio.com/items?itemName=scb-tomasmortensen.vsix-argocd)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 2 minutes) Used when creating the Argo CD Service Endpoint.
+* `read` - (Defaults to 1 minute) Used when retrieving the Argo CD Service Endpoint.
+* `update` - (Defaults to 2 minutes) Used when updating the Argo CD Service Endpoint.
+* `delete` - (Defaults to 2 minutes) Used when deleting the Argo CD Service Endpoint.
+
 ## Import
-Azure DevOps Service Endpoint ArgoCD can be imported using the **projectID/serviceEndpointID**, e.g.
+Azure DevOps Argo CD Service Endpoint can be imported using the **projectID/serviceEndpointID**, e.g.
 
 
 ```sh

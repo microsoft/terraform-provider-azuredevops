@@ -489,6 +489,15 @@ The value of `\\ExampleFolder\\` would be invalid.
 
 - [Azure DevOps Service REST API 7.0 - Build Definitions](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/definitions?view=azure-devops-rest-7.0)
 
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 30 minutes) Used when creating the Build Definition.
+* `read` - (Defaults to 5 minute) Used when retrieving the Build Definition.
+* `update` - (Defaults to 30 minutes) Used when updating the Build Definition.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Build Definition.
+
 ## Import
 
 Azure DevOps Build Definitions can be imported using the project name/definitions Id or by the project Guid/definitions Id, e.g.
