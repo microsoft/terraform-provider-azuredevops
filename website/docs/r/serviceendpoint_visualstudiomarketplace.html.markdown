@@ -9,8 +9,9 @@ description: |-
 
 Manages a Visual Studio Marketplace service endpoint within Azure DevOps. Using this service endpoint requires you to install: [Azure DevOps Extension Tasks](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.vsts-developer-tools-build-tasks)
 
-## Example Usage with token
+## Example Usage
 
+###  Authorize with token
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -31,7 +32,7 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "example" {
 }
 ```
 
-## Example Usage with username and password
+### Authorize with username and password
 
 ```hcl
 resource "azuredevops_project" "example" {

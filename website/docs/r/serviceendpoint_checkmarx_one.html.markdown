@@ -9,7 +9,9 @@ description: |-
 
 Manages a Checkmarx One service endpoint within Azure DevOps. Using this service endpoint requires you to install: [Checkmarx AST](https://marketplace.visualstudio.com/items?itemName=checkmarx.checkmarx-ast-azure-plugin)
 
-## Example Usage - API Key
+## Example Usage
+
+### Authorize with API Key
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -28,7 +30,7 @@ resource "azuredevops_serviceendpoint_checkmarx_one" "example" {
 }
 ```
 
-## Example Usage - Client ID and Secret
+### Authorize with Client ID and Secret
 
 ```hcl
 resource "azuredevops_project" "example" {

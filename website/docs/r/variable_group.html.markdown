@@ -15,6 +15,7 @@ we can only read the secrets and do filter in Terraform.
 
 ## Example Usage
 
+### Basic usage
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -43,7 +44,7 @@ resource "azuredevops_variable_group" "example" {
 }
 ```
 
-## Example Usage With AzureRM Key Vault
+### Link to AzureRM Key Vault
 
 ```hcl
 resource "azuredevops_project" "example" {

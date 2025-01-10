@@ -9,8 +9,9 @@ description: |-
 
 Manages a Azure Container Registry service endpoint within Azure DevOps.
 
-## Example Usage for Service Principal
+## Example Usage
 
+### Authorize with Service Principal
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -32,7 +33,7 @@ resource "azuredevops_serviceendpoint_azurecr" "example" {
 }
 ```
 
-## Example Usage for WorkloadIdentityFederation
+### Authorize with WorkloadIdentityFederation
 
 ```hcl
 resource "azuredevops_project" "example" {
