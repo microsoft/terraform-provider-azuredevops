@@ -23,24 +23,9 @@ func DataSourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"url": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validate.Url,
-			Computed:     true,
-			Optional:     true,
-			MinItems:     1,
-			MaxItems:     1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"token": {
-						Description: "The JFrog Artifactory access token.",
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-					},
-				},
-			},
-			ExactlyOneOf: []string{"authentication_basic", "authentication_token"},
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		},
 	})
 
