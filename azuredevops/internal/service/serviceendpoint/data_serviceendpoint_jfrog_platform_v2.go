@@ -23,11 +23,8 @@ func DataSourceServiceEndpointJFrogPlatformV2() *schema.Resource {
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"url": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validate.Url,
-			Description:  "Url for the JFrog Artifactory Server",
-			Computed:     true,
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	})
 
