@@ -50,6 +50,6 @@ func DataSourceServiceEndpointJFrogXRayV2Read(d *schema.ResourceData, m interfac
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return err
 	}
-	flattenServiceEndpointArtifactoryV2(d, serviceEndpoint)
+	d.Set("url", serviceEndpoint.Url)
 	return nil
 }
