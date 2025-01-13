@@ -42,5 +42,5 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - Specifies the Authorization Scheme Map.
+* `url` - The URL of the Artifactory server to connect with.
 * `description` - Specifies the description of the Service Endpoint.
