@@ -55,6 +55,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_business_hours":                        approvalsandchecks.ResourceCheckBusinessHours(),
 			"azuredevops_check_exclusive_lock":                        approvalsandchecks.ResourceCheckExclusiveLock(),
 			"azuredevops_check_required_template":                     approvalsandchecks.ResourceCheckRequiredTemplate(),
+			"azuredevops_check_rest_api":                              approvalsandchecks.ResourceCheckRestAPI(),
 			"azuredevops_elastic_pool":                                taskagent.ResourceAgentPoolVMSS(),
 			"azuredevops_environment":                                 taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":             taskagent.ResourceEnvironmentKubernetes(),
