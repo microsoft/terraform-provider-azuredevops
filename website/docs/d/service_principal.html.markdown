@@ -25,7 +25,7 @@ output "id" {
 
 The following arguments are supported:
 
-* `display_name` - (Required) TODO. Changing this forces a new Service Principal to be created.
+* `display_name` - (Required) The Display Name of the Service Principal. Changing this forces a new Service Principal to be created.
 
 ## Attributes Reference
 
@@ -33,11 +33,11 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Service Principal.
 
-* `descriptor` - TODO.
+* `descriptor` - The descriptor of the Service Principal.
 
-* `origin` - TODO.
+* `origin` - The origin of the Service Principal.
 
-* `origin_id` - The ID of the TODO.
+* `origin_id` - The origin ID of the Service Principal..
 
 ## Timeouts
 
