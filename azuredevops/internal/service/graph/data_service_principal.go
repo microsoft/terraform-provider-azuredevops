@@ -104,7 +104,7 @@ func flattenIdentityServicePrincipals(servicePrincipals *[]identity.Identity) (*
 	if servicePrincipals == nil || len(*servicePrincipals) == 0 {
 		return nil, fmt.Errorf(" Input Service Principals Parameter is nil")
 	}
-	results := make([]identity.Identity, len(*servicePrincipals))
+	results := make([]identity.Identity, 0)
 	for _, servicePrincipal := range *servicePrincipals {
 		if servicePrincipal.Descriptor == nil {
 			return nil, fmt.Errorf(" User Object does not contain an id")
