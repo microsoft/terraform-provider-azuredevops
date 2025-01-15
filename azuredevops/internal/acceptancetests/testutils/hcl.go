@@ -67,6 +67,18 @@ resource "azuredevops_project" "project" {
 }`, projectName)
 }
 
+// HclServicePrincipleEntitlementResource HCL describing an AzDO service principal entitlement
+func HclServicePrincipleEntitlementResource(servicePrincipalObjectId string) string {
+	if servicePrincipalObjectId == "" {
+		panic("Parameter: servicePrincipalObjectId cannot be empty")
+	}
+	return fmt.Sprintf(`
+resource "azuredevops_service_principal_entitlement" "test" {
+	origin_id = "%[1]s"
+	origin	  = "aad"
+}`, servicePrincipalObjectId)
+}
+
 // HclProjectResourceWithFeature HCL describing an AzDO project including internal feature setup
 func HclProjectResourceWithFeature(projectName string, featureStateTestplans string, featureStateArtifacts string) string {
 	if projectName == "" {
