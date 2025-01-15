@@ -80,11 +80,10 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	targetGroup := selectGroup(projectGroups, groupName)
 	if targetGroup == nil {
-		errMsg := fmt.Sprintf("Could not find group with name %s", groupName)
 		if projectID != "" {
-			errMsg = fmt.Sprintf("%s in project with ID %s", errMsg, projectID)
+			return fmt.Errorf(" Could not find Group with Name: %s in project with ID: %s", groupName, projectID)
 		}
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf(" Could not find group with name %s", groupName)
 	}
 
 	d.SetId(*targetGroup.Descriptor)
