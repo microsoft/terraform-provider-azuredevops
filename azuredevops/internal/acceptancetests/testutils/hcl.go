@@ -125,8 +125,7 @@ func HclSecurityroleDefinitionsDataSource() string {
 	return `
 data "azuredevops_securityrole_definitions" "definitions-list" {
 	scope = "distributedtask.environmentreferencerole"
-}
-`
+}`
 }
 
 // HclServiceEndpointGitHubResource HCL describing an AzDO service endpoint
@@ -149,8 +148,7 @@ func HclServiceEndpointGitHubDataSourceWithServiceEndpointID() string {
 data "azuredevops_serviceendpoint_github" "serviceendpoint" {
   project_id = azuredevops_project.project.id
   service_endpoint_id         = azuredevops_serviceendpoint_github.serviceendpoint.id
-}
-`
+}`
 }
 
 // HclServiceEndpointGitHubDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
@@ -230,8 +228,7 @@ func HclServiceEndpointAzureRMDataSourceWithServiceEndpointID() string {
 data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
   project_id = azuredevops_project.project.id
   service_endpoint_id         = azuredevops_serviceendpoint_azurerm.serviceendpointrm.id
-}
-`
+}`
 }
 
 // HclServiceEndpointAzureRMDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
