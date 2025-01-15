@@ -9,7 +9,9 @@ description: |-
 
 Manages the Feed Retention Policy within Azure DevOps.
 
-## Example Usage - Project Feed
+## Example Usage
+
+### Project Feed
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -32,7 +34,7 @@ resource "azuredevops_feed_retention_policy" "example" {
 }
 ```
 
-## Example Usage - Organization Feed
+### Organization Feed
 ```hcl
 resource "azuredevops_feed" "example" {
   name = "examplefeed"
