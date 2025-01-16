@@ -350,7 +350,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		}
 		clusterAdmin, err := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
 		if err != nil {
-			return fmt.Errorf(" Parsing `cluster_admin` value: %+v", err)
+			return fmt.Errorf(" Parsing `cluster_admin` value. Error: %+v", err)
 		}
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
@@ -416,7 +416,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
 				acceptUntrustedCerts, err := strconv.ParseBool(v)
 				if err != nil {
-					return fmt.Errorf(" Pparse `accept_untrusted_certs`: %+v ", err)
+					return fmt.Errorf(" Pparse `accept_untrusted_certs`. Error: %+v ", err)
 				}
 				serviceAccount["accept_untrusted_certs"] = acceptUntrustedCerts
 			}

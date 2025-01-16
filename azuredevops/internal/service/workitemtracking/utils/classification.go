@@ -100,7 +100,7 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 		d.SetId("")
 		js, parseErr := json.Marshal(params)
 		if parseErr != nil {
-			return fmt.Errorf(" Marshalling JSON: %+v", parseErr)
+			return fmt.Errorf(" Marshalling JSON. Error: %+v", parseErr)
 		}
 		return fmt.Errorf(" getting ClassificationNode failed. %s. Error: %w", js, err)
 	}
