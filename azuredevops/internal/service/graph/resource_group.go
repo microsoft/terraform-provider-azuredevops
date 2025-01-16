@@ -126,7 +126,10 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 
 	var scopeDescriptor *string
 	if val, ok := d.GetOk("scope"); ok {
-		scopeUid, _ := uuid.Parse(val.(string))
+		scopeUid, err := uuid.Parse(val.(string))
+		if err != nil {
+			return fmt.Errorf(" Parsing scope: %+v", err)
+		}
 		desc, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
 			StorageKey: &scopeUid,
 		})

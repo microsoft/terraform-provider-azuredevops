@@ -69,13 +69,13 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		if err != nil {
 			return fmt.Errorf(" Reading group memberships during read: %+v", err)
 		}
-		actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
+		actualMembershipsSet := getGroupMembershipSet(actualMemberships)
 		if err != nil {
 			return fmt.Errorf(" Converting membership list to set: %+v", err)
 		}
 		membersToRemove = membersToAdd.Difference(actualMembershipsSet)
 	} else {
-		membersToRemove, _ = getGroupMembershipSet(nil)
+		membersToRemove = getGroupMembershipSet(nil)
 	}
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
@@ -95,7 +95,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", fmt.Errorf(" Reading group memberships: %+v", err)
 			}
-			actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
+			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
 			if err != nil {
 				return nil, "", fmt.Errorf(" Converting membership list to set: %+v", err)
 			}
@@ -177,10 +177,7 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", fmt.Errorf(" Reading group memberships: %+v", err)
 			}
-			actualMembershipsSet, err := getGroupMembershipSet(actualMemberships)
-			if err != nil {
-				return nil, "", fmt.Errorf(" Converting membership list to set: %+v", err)
-			}
+			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
 			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
 				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
 				state = "Synched"
@@ -291,12 +288,12 @@ func getGroupMemberships(clients *client.AggregatedClient, groupDescriptor strin
 	})
 }
 
-func getGroupMembershipSet(members *[]graph.GraphMembership) (*schema.Set, error) {
+func getGroupMembershipSet(members *[]graph.GraphMembership) *schema.Set {
 	set := schema.NewSet(schema.HashString, nil)
 	if nil != members {
 		for _, member := range *members {
 			set.Add(*member.MemberDescriptor)
 		}
 	}
-	return set, nil
+	return set
 }

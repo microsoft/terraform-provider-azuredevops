@@ -17,7 +17,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 )
 
-var ResourceAreaId, _ = uuid.Parse("4a933897-0488-45af-bd82-6fd3ad33f46a")
+var ResourceAreaId, _ = uuid.Parse("4a933897-0488-45af-bd82-6fd3ad33f46a") //nolint:errcheck
 
 type Client interface {
 	// [Preview API] Add a check configuration
@@ -67,7 +67,7 @@ func (client *ClientImpl) AddCheckConfiguration(ctx context.Context, args AddChe
 	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
+	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodPost, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (client *ClientImpl) DeleteCheckConfiguration(ctx context.Context, args Del
 	}
 	routeValues["id"] = strconv.Itoa(*args.Id)
 
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
+	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea") //nolint:errcheck
 	_, err := client.Client.Send(ctx, http.MethodDelete, locationId, "7.1-preview.1", routeValues, nil, nil, "", "application/json", nil)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (client *ClientImpl) EvaluateCheckSuite(ctx context.Context, args EvaluateC
 	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	locationId, _ := uuid.Parse("91282c1d-c183-444f-9554-1485bfb3879d")
+	locationId, _ := uuid.Parse("91282c1d-c183-444f-9554-1485bfb3879d") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodPost, locationId, "7.1-preview.1", routeValues, queryParams, bytes.NewReader(body), "application/json", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -171,7 +171,7 @@ func (client *ClientImpl) GetCheckConfiguration(ctx context.Context, args GetChe
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
 	}
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
+	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "7.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -210,7 +210,7 @@ func (client *ClientImpl) GetCheckConfigurationsOnResource(ctx context.Context, 
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
 	}
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
+	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "7.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -249,7 +249,7 @@ func (client *ClientImpl) GetCheckSuite(ctx context.Context, args GetCheckSuiteA
 	if args.Expand != nil {
 		queryParams.Add("$expand", string(*args.Expand))
 	}
-	locationId, _ := uuid.Parse("91282c1d-c183-444f-9554-1485bfb3879d")
+	locationId, _ := uuid.Parse("91282c1d-c183-444f-9554-1485bfb3879d") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "7.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -289,7 +289,7 @@ func (client *ClientImpl) UpdateCheckConfiguration(ctx context.Context, args Upd
 	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea")
+	locationId, _ := uuid.Parse("86c8381e-5aee-4cde-8ae4-25c0c7f5eaea") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodPatch, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -329,7 +329,7 @@ func (client *ClientImpl) QueryCheckConfigurationsOnResources(ctx context.Contex
 	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	locationId, _ := uuid.Parse("5f3d0e64-f943-4584-8811-77eb495e831e")
+	locationId, _ := uuid.Parse("5f3d0e64-f943-4584-8811-77eb495e831e") //nolint:errcheck
 	resp, err := client.Client.Send(ctx, http.MethodPost, locationId, "7.1-preview.1", routeValues, queryParams, bytes.NewReader(body), "application/json", "application/json", nil)
 	if err != nil {
 		return nil, err

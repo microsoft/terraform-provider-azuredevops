@@ -27,7 +27,10 @@ func main() {
 	resourceType := f.String("type", "", "Whether this is a Data Source (data) or a Resource (resource)")
 	websitePath := f.String("website-path", "", "The relative path to the website folder")
 
-	_ = f.Parse(os.Args[1:])
+	err := f.Parse(os.Args[1:])
+	if err != nil {
+		panic(err)
+	}
 
 	quitWithError := func(message string) {
 		log.Print(message)
@@ -140,7 +143,10 @@ func saveContent(resourceName string, websitePath string, content string, isReso
 	defer file.Close()
 
 	content = strings.TrimSpace(content)
-	_, _ = file.WriteString(content)
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
 	return file.Sync()
 }
 

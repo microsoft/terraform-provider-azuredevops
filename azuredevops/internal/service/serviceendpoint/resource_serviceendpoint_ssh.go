@@ -104,8 +104,7 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return err
 	}
-	flattenServiceEndpointSSH(d, serviceEndpoint)
-	return nil
+	return flattenServiceEndpointSSH(d, serviceEndpoint)
 }
 
 func resourceServiceEndpointSSHUpdate(d *schema.ResourceData, m interface{}) error {
@@ -158,12 +157,16 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
 	doBaseFlattening(d, serviceEndpoint)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
-		port, _ := strconv.ParseInt(portStr, 10, 64)
+		port, err := strconv.ParseInt(portStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf(" Parse SSH port: %s. Error: %+v ", portStr, err)
+		}
 		d.Set("port", port)
 	}
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	return nil
 }

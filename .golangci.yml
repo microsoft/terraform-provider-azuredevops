@@ -30,5 +30,9 @@ linters-settings:
     check-blank: true
     exclude-functions:
       - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).ForceNew
+      - strconv.*
+      - fmt.*
+
   tagalign:
     sort: true
