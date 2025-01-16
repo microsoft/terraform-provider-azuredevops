@@ -479,9 +479,7 @@ func resourceBuildDefinitionRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 		return diag.FromErr(err)
 	}
-
-	flattenBuildDefinition(d, buildDefinition, projectID)
-	return nil
+	return diag.FromErr(flattenBuildDefinition(d, buildDefinition, projectID))
 }
 
 func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -522,11 +520,16 @@ func resourceBuildDefinitionDelete(ctx context.Context, d *schema.ResourceData, 
 	return diag.FromErr(err)
 }
 
-func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) {
+func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.BuildDefinition, projectID string) error {
 	d.Set("project_id", projectID)
 	d.Set("name", *buildDefinition.Name)
 	d.Set("path", *buildDefinition.Path)
-	d.Set("repository", flattenRepository(buildDefinition))
+
+	repo, err := flattenRepository(buildDefinition)
+	if err != nil {
+		return err
+	}
+	d.Set("repository", repo)
 
 	if buildDefinition.Queue != nil && buildDefinition.Queue.Pool != nil {
 		d.Set("agent_pool_name", *buildDefinition.Queue.Pool.Name)
@@ -561,8 +564,8 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	}
 
 	d.Set("revision", revision)
-
 	d.Set("queue_status", *buildDefinition.QueueStatus)
+	return nil
 }
 
 func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildDefinition) interface{} {
@@ -610,7 +613,7 @@ func flattenVariableGroups(buildDefinition *build.BuildDefinition) []int {
 	return variableGroups
 }
 
-func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
+func flattenRepository(buildDefinition *build.BuildDefinition) (interface{}, error) {
 	yamlFilePath := ""
 	githubEnterpriseUrl := ""
 
@@ -628,7 +631,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
 		repoUrl, err := url.Parse(*buildDefinition.Repository.Url)
 		if err != nil {
-			return fmt.Errorf("Unable to parse repository URL: %+v ", err)
+			return nil, fmt.Errorf(" Unable to parse repository URL: %+v ", err)
 		}
 		githubEnterpriseUrl = fmt.Sprintf("%s://%s", repoUrl.Scheme, repoUrl.Host)
 	}
@@ -647,11 +650,14 @@ func flattenRepository(buildDefinition *build.BuildDefinition) interface{} {
 		}
 
 		if buildStatus, ok := (*buildDefinition.Repository.Properties)["reportBuildStatus"]; ok {
-			reportBuildStatus, _ := strconv.ParseBool(buildStatus)
+			reportBuildStatus, err := strconv.ParseBool(buildStatus)
+			if err != nil {
+				return nil, fmt.Errorf(" Unable parse Repository build status. Error: %+v", err)
+			}
 			repo[0]["report_build_status"] = reportBuildStatus
 		}
 	}
-	return repo
+	return repo, nil
 }
 
 func flattenBuildDefinitionBranchOrPathFilter(m []interface{}) []interface{} {

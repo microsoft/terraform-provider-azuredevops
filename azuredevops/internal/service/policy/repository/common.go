@@ -205,7 +205,10 @@ func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, e
 		return nil, fmt.Errorf(" Unable to marshal policy settings into JSON: %+v", err)
 	}
 
-	_ = json.Unmarshal(policyAsJSON, &policySettings)
+	err = json.Unmarshal(policyAsJSON, &policySettings)
+	if err != nil {
+		return nil, fmt.Errorf(" Unable to unmarshal policy settings. Error: %+v", err)
+	}
 	var repoIds []interface{}
 	for _, scope := range policySettings.Scopes {
 		if scope.RepositoryID != "" {

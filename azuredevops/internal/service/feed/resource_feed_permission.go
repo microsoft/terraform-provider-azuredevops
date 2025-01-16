@@ -119,7 +119,10 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
 	}
 
-	id, _ := uuid.NewUUID()
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf(" Creating Permission for Feed failed: %+v", err)
+	}
 	d.SetId(fmt.Sprintf("fp-%s", id.String()))
 
 	return resourceFeedPermissionRead(d, m)

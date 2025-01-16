@@ -163,7 +163,10 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf(" Parsing ServicePrincipalEntitlement ID. ServicePrincipalEntitlementID: %s. %v", servicePrincipalEntitlementID, err)
 	}
 
-	accountLicenseType, _ := converter.AccountLicenseType(d.Get("account_license_type").(string))
+	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
+	if err != nil {
+		return fmt.Errorf(" Convert AccountLicenseType: %v", err)
+	}
 	licensingSource, _ := d.GetOk("licensing_source")
 
 	clients := m.(*client.AggregatedClient)
