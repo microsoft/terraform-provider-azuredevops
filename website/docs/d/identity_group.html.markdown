@@ -23,15 +23,19 @@ data "azuredevops_identity_group" "example-project-group" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the group.
-- `project_id` - (Required) The Project ID.
+* `name` - (Required) The name of the group.
+
+* `project_id` - (Required) The Project ID.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-  - `id` - The ID is the primary way to reference the identity subject. This field will uniquely identify the same identity subject across both Accounts and Organizations.
-  - `name` - This is the non-unique display name of the identity subject. To change this field, you must alter its value in the source provider.
+* `id` - The ID is the primary way to reference the identity subject. This field will uniquely identify the same identity subject across both Accounts and Organizations.
+
+* `name` - This is the non-unique display name of the identity subject. To change this field, you must alter its value in the source provider.
+
+* `descriptor` - The descriptor of the identity group.
 
 ## Relevant Links
 

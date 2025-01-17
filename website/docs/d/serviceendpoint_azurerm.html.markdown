@@ -55,26 +55,39 @@ The following arguments are supported:
 
 * `service_endpoint_name` - (Optional) the Name of the Service Endpoint.
 
-~> **NOTE:** One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
-~> **NOTE:** When supplying `service_endpoint_name`, take care to ensure that this is a unique name.
+~> **NOTE:** 1. One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
+    <br>2. When supplying `service_endpoint_name`, take care to ensure that this is a unique name.
 
 ## Attributes Reference
 
 In addition to the Arguments list above - the following Attributes are exported:
 
 * `authorization` - The Authorization Scheme Map.
+
 * `azurerm_management_group_id` - The Management Group ID of the Service Endpoint is target, if available.
+
 * `azurerm_management_group_name` - The Management Group Name of the Service Endpoint target, if available.
+
 * `azurerm_subscription_id` - The Subscription ID of the Service Endpoint target, if available.
+
 * `azurerm_subscription_name` - The Subscription Name of the Service Endpoint target, if available.
+
 * `resource_group` - The Resource Group of the Service Endpoint target, if available.
+
 * `azurerm_spn_tenantid` - The Tenant ID of the Azure targets.
+
 * `service_principal_id` - The Application(Client) ID of the Service Principal.
+
 * `description` - The description of the Service Endpoint.
+
 * `server_url` - The server URL of the service Endpoint.
+
 * `environment` - The Cloud Environment.
-* `service_endpoint_authentication_scheme` - The authentication scheme of Azure Resource Management Endpoint 
-* `workload_identity_federation_issuer` - The issuer if `of the Workload Identity Federation Subject 
+
+* `service_endpoint_authentication_scheme` - The authentication scheme of Azure Resource Management Endpoint
+
+* `workload_identity_federation_issuer` - The issuer if `of the Workload Identity Federation Subject
+
 * `workload_identity_federation_subject` - The subject of the Workload Identity Federation Subject.
 
 ## Timeouts

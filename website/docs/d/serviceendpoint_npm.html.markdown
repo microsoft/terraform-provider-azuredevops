@@ -28,19 +28,22 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
 
+---
+
 * `service_endpoint_id` - (Optional) the ID of the Service Endpoint.
 
 * `service_endpoint_name` - (Optional) the Name of the Service Endpoint.
 
 ~> **NOTE:** One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
 
-
 ## Attributes Reference
 
 In addition to the Arguments list above - the following Attributes are exported:
 
 * `authorization` - Specifies the Authorization Scheme Map.
+
 * `url` - Specifies the URL of the npm registry to connect with.
+
 * `description` - Specifies the description of the Service Endpoint.
 
 ## Timeouts

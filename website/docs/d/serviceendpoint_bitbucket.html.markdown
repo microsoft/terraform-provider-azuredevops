@@ -51,18 +51,21 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
 
+---
+
 * `service_endpoint_id` - (Optional) the ID of the Service Endpoint.
 
 * `service_endpoint_name` - (Optional) the Name of the Service Endpoint.
 
-~> **NOTE:** One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
-~> **NOTE:** When supplying `service_endpoint_name`, take care to ensure that this is a unique name.
+~> **NOTE:** 1. One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
+    <br>2. When supplying `service_endpoint_name`, take care to ensure that this is a unique name.
 
 ## Attributes Reference
 
 In addition to the Arguments list above - the following Attributes are exported:
 
 * `authorization` - Specifies the Authorization Scheme Map.
+
 * `description` - Specifies the description of the Service Endpoint.
 
 ## Timeouts

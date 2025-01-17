@@ -34,12 +34,12 @@ The following arguments are supported:
 
 ~> **NOTE:** One of either `service_endpoint_id` or `service_endpoint_name` must be specified.
 
-
 ## Attributes Reference
 
 In addition to the Arguments list above - the following Attributes are exported:
 
 * `authorization` - Specifies the Authorization Scheme Map.
+
 * `description` - Specifies the description of the Service Endpoint.
 
 ## Timeouts

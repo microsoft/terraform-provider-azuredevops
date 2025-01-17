@@ -83,22 +83,33 @@ A `ci_trigger` block exports the following:
 A `ci_trigger` `override` block supports the following:
 
 * `batch` - If batch is true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built.
+
 * `branch_filter` - The branches to include and exclude from the trigger.
+
 * `path_filter` - Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+
 * `max_concurrent_builds_per_branch` - The number of max builds per branch.
+
 * `polling_interval` - How often the external repository is polled.
+
 * `polling_job_id` - This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
 
-* `branch_filter` block supports the following:
+---
 
-  * `include` - (Optional) List of branch patterns to include.
-  * `exclude` - (Optional) List of branch patterns to exclude.
+A `branch_filter` block supports the following:
 
-* `path_filter` block supports the following:
+* `include` - (Optional) List of branch patterns to include.
 
-  * `include` - (Optional) List of path patterns to include.
-  * `exclude` - (Optional) List of path patterns to exclude.
+* `exclude` - (Optional) List of branch patterns to exclude.
 
+---
+
+A `path_filter` block supports the following:
+
+* `include` - (Optional) List of path patterns to include.
+ 
+* `exclude` - (Optional) List of path patterns to exclude.
+ 
 ---
 
 A `pull_request_trigger` block exports the following:
@@ -118,6 +129,7 @@ A `pull_request_trigger` block exports the following:
 A `forks` block exports the following:
 
 * `enabled` - Build pull requests from forks of this repository.
+
 * `share_secrets` - Make secrets available to builds of forks.
 
 ---
@@ -125,18 +137,10 @@ A `forks` block exports the following:
 A `pull_request_trigger` `override` block supports the following:
 
 * `auto_cancel` -Should further updates to a PR cancel an in progress validation?
-* `branch_filter` - The branches to include and exclude from the trigger.
-* `path_filter` - The file paths to include or exclude.
 
-* `branch_filter` block supports the following:
+* `branch_filter` - The branches to include and exclude from the trigger. A `branch_filter` block as defined above.
 
-  * `include` - (Optional) List of branch patterns to include.
-  * `exclude` - (Optional) List of branch patterns to exclude.
-
-* `path_filter` block supports the following:
-
-  * `include` - (Optional) List of path patterns to include.
-  * `exclude` - (Optional) List of path patterns to exclude.
+* `path_filter` - The file paths to include or exclude. A `path_filter` block as defined above.
 
 ---
 

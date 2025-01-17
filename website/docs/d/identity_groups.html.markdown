@@ -30,16 +30,21 @@ data "azuredevops_identity_groups" "example-project-groups" {
 
 The following arguments are supported:
 
-- `project_id` - (Optional) The Project ID. If no project ID is specified all groups of an organization will be returned
+* `project_id` - (Optional) The Project ID. If no project ID is specified all groups of an organization will be returned
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `groups` - A set of existing groups in your Azure DevOps Organization or project with details about every single group which includes:
+* `groups` - A `groups` blocks as documented below. A set of existing groups in your Azure DevOps Organization or project with details about every single group.
 
-  - `descriptor` - The descriptor is the primary way to reference the identity subject while the system is running. This field will uniquely identify the same identity subject across both Accounts and Organizations.
-  - `name` - This is the non-unique display name of the identity subject. To change this field, you must alter its value in the source provider.
+---
+
+A `groups` block supports the following:
+
+* `id` - The ID of the Identity Group.
+
+* `name` - This is the non-unique display name of the identity subject. To change this field, you must alter its value in the source provider.
 
 ## Relevant Links
 
