@@ -62,7 +62,9 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - The Authorization Scheme Map.
+* `id` - The ID of the Azure Resource Manager Service Endpoint.
+
+* `authorization` - The Authorization scheme.
 
 * `azurerm_management_group_id` - The Management Group ID of the Service Endpoint is target, if available.
 

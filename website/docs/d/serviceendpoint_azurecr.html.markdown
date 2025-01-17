@@ -38,7 +38,9 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - Specifies the Authorization Scheme Map.
+* `id` - The ID of the Azure Container Registry Service Endpoint.
+
+* `authorization` - The Authorization scheme.
 
 * `description` - The Service Endpoint description.
 
