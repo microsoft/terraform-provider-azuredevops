@@ -40,13 +40,19 @@ resource "azuredevops_git_repository_file" "example" {
 
 The following arguments are supported:
 
-- `repository_id` - (Required) The ID of the Git repository.
-- `file` - (Required) The path of the file to manage.
-- `content` - (Required) The file content.
-- `branch` - (Optional) Git branch (defaults to `refs/heads/master`). The branch must already exist, it will not be created if it
-  does not already exist.
-- `commit_message` - (Optional) Commit message when adding or updating the managed file.
-- `overwrite_on_create` - (Optional) Enable overwriting existing files (defaults to `false`).
+* `repository_id` - (Required) The ID of the Git repository.
+
+* `file` - (Required) The path of the file to manage.
+ 
+* `content` - (Required) The file content.
+
+---
+
+* `branch` - (Optional) Git branch (defaults to `refs/heads/master`). The branch must already exist, it will not be created if it does not already exist.
+
+* `commit_message` - (Optional) Commit message when adding or updating the managed file.
+
+* `overwrite_on_create` - (Optional) Enable overwriting existing files (defaults to `false`).
 
 ## Timeouts
 

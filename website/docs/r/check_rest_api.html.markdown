@@ -82,14 +82,15 @@ The following arguments are supported:
 * `method` - (Required) The HTTP method of the request. Possible values: `OPTIONS`, `GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `TRACE`, `PATCH`
 
 ---
+
 * `body` - (Optional) The Rest API request body.
 
 * `headers` - (Optional) The headers of the request in JSON format.
   
 * `retry_interval` - (Optional) The time between evaluations (minutes). 
   
-    ~>**NOTE** 1) The retry times should less them 10 based on the timeout. For example: `timeout` is `4000` then `retry_interval` should be `0` or no less then `400`.
-    <br>2) `retry_interval` is not required when `completion_event=Callback`.
+    ~>**NOTE** 1. The retry times should less them 10 based on the timeout. For example: `timeout` is `4000` then `retry_interval` should be `0` or no less then `400`.
+    <br>2. `retry_interval` is not required when `completion_event=Callback`.
 
 * `success_criteria` - (Optional) The Criteria which defines when to pass the task. No criteria means response content does not influence the result.
 

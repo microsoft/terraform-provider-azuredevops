@@ -54,12 +54,19 @@ resource "azuredevops_serviceendpoint_argocd" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `url` - (Required) URL of the ArgoCD server to connect with.
-- `description` - (Optional) The Service Endpoint description.
-- `authentication_token` - (Optional) An `authentication_token` block for the ArgoCD as documented below.
-- `authentication_basic` - (Optional) An `authentication_basic` block for the ArgoCD as documented below.
+* `project_id` - (Required) The ID of the project.
+
+* `service_endpoint_name` - (Required) The Service Endpoint name.
+
+* `url` - (Required) URL of the ArgoCD server to connect with.
+
+---
+
+* `description` - (Optional) The Service Endpoint description.
+
+* `authentication_token` - (Optional) An `authentication_token` block for the ArgoCD as documented below.
+
+* `authentication_basic` - (Optional) An `authentication_basic` block for the ArgoCD as documented below.
 
 ~> **NOTE:** `authentication_basic` and `authentication_token` conflict with each other, only one is required.
 
@@ -67,19 +74,23 @@ The following arguments are supported:
 
 A `authentication_token` block supports the following:
 
-  - `token` - Authentication Token generated through ArgoCD.
+* `token` - (Required)  Authentication Token generated through ArgoCD.
+
+---
 
 A `authentication_basic` block supports the following:
-  - `username` - ArgoCD Username. 
-  - `password` - ArgoCD Password.
+
+* `username` - (Required) The Username of the ArgoCD.
+
+* `password` - (Required) The Password of the ArgoCD.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 - [Azure DevOps Service Connections](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)

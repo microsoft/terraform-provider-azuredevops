@@ -1,9 +1,10 @@
----
+*---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_team"
 description: |-
   Manages a team within a project in a Azure DevOps organization.
 ---
+
 
 # azuredevops_team
 
@@ -46,29 +47,36 @@ resource "azuredevops_team" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project ID.
-- `name` - (Required) The name of the Team.
-- `description`- (Optional) The description of the Team.
-- `administrators` - (Optional) List of subject descriptors to define administrators of the team.
+* `project_id` - (Required) The Project ID.
 
-  > NOTE: It's possible to define team administrators both within the
-  > `azuredevops_team` resource via the `administrators` block and by using the
-  > `azuredevops_team_administrators` resource. However it's not possible to use
-  > both methods to manage team administrators, since there'll be conflicts.
+* `name` - (Required) The name of the Team.
 
-- `members` - (Optional) List of subject descriptors to define members of the team.
+---
 
-  > NOTE: It's possible to define team members both within the
-  > `azuredevops_team` resource via the `members` block and by using the
-  > `azuredevops_team_members` resource. However it's not possible to use
-  > both methods to manage team members, since there'll be conflicts.
+* `description`- (Optional) The description of the Team.
+
+* `administrators` - (Optional) List of subject descriptors to define administrators of the team.
+
+  ~> **NOTE:** It's possible to define team administrators both within the
+   `azuredevops_team` resource via the `administrators` block and by using the
+   `azuredevops_team_administrators` resource. However it's not possible to use
+   both methods to manage team administrators, since there'll be conflicts.
+
+---
+
+* `members` - (Optional) List of subject descriptors to define members of the team.
+
+  ~> **NOTE:** It's possible to define team members both within the
+   `azuredevops_team` resource via the `members` block and by using the
+   `azuredevops_team_members` resource. However it's not possible to use
+   both methods to manage team members, since there'll be conflicts.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the Team.
-- `descriptor` - The descriptor of the Team.
+* `id` - The ID of the Team.
+* `descriptor` - The descriptor of the Team.
 
 ## Relevant Links
 

@@ -229,37 +229,48 @@ resource "azuredevops_git_repository" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
-- `name` - (Required) The name of the git repository.
-- `parent_repository_id` - (Optional) The ID of a Git project from which a fork is to be created.
-- `disabled` - (Optional) The ability to disable or enable the repository. Defaults to `false`.
-- `initialization` - (Required) An `initialization` block as documented below.
+* `project_id` - (Required) The project ID or project name.
 
-`initialization` - (Required) block supports the following:
+* `name` - (Required) The name of the git repository.
 
-- `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`.
-- `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
-- `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
-- `service_connection_id` (Optional) The ID of service connection used to authenticate to a private repository for import initialization. Conflicts with `username` and `password`. 
-- `username` (Optional) The username used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
-- `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
+* `initialization` - (Required) A `initialization` block as documented below.
+---
 
-    ~>**Note**
-    At least `service_connection_id` or `username/password` needs to be set to import private repository.
+* `parent_repository_id` - (Optional) The ID of a Git project from which a fork is to be created.
+
+* `disabled` - (Optional) The ability to disable or enable the repository. Defaults to `false`.
+
+
+---
+
+A `initialization` - block supports the following:
+
+* `init_type` - (Required) The type of repository to create. Valid values: `Uninitialized`, `Clean` or `Import`.
+
+* `source_type` - (Optional) Type of the source repository. Used if the `init_type` is `Import`. Valid values: `Git`.
+
+* `source_url` - (Optional) The URL of the source repository. Used if the `init_type` is `Import`.
+
+* `service_connection_id` (Optional) The ID of service connection used to authenticate to a private repository for import initialization. Conflicts with `username` and `password`.
+
+* `username` (Optional) The username used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
+
+* `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
+
+    ~>**Note** At least `service_connection_id` or `username/password` needs to be set to import private repository.
 
 ## Attributes Reference
 
 In addition to all arguments above, except `initialization`, the following attributes are exported:
 
-- `id` - The ID of the Git repository.
-
-- `default_branch` - The ref of the default branch. Will be used as the branch name for initialized repositories.
-- `is_fork` - True if the repository was created as a fork.
-- `remote_url` - Git HTTPS URL of the repository
-- `size` - Size in bytes.
-- `ssh_url` - Git SSH URL of the repository.
-- `url` - REST API URL of the repository.
-- `web_url` - Web link to the repository.
+* `id` - The ID of the Git repository.
+* `default_branch` - The ref of the default branch. Will be used as the branch name for initialized repositories.
+* `is_fork` - True if the repository was created as a fork.
+* `remote_url` - Git HTTPS URL of the repository
+* `size` - Size in bytes.
+* `ssh_url` - Git SSH URL of the repository.
+* `url` - REST API URL of the repository.
+* `web_url` - Web link to the repository.
 
 ## Relevant Links
 

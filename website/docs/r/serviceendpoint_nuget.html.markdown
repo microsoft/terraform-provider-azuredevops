@@ -32,27 +32,33 @@ resource "azuredevops_serviceendpoint_nuget" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `feed_url` - (Required) The URL for the feed. This will generally end with `index.json`.
+* `project_id` - (Required) The ID of the project.
+
+* `service_endpoint_name` - (Required) The Service Endpoint name.
+
+* `feed_url` - (Required) The URL for the feed. This will generally end with `index.json`.
 
 ---
-- `api_key` - (Optional) The API Key used to connect to the endpoint.
-- `personal_access_token` - (Optional) The Personal access token used to  connect to the endpoint. Personal access tokens are applicable only for NuGet feeds hosted on other Azure DevOps Services organizations or Azure DevOps Server 2019 (or later).
-- `username` - (Optional) The account username used to connect to the endpoint.
-- `password` - (Optional) The account password used to connect to the endpoint
+
+* `api_key` - (Optional) The API Key used to connect to the endpoint.
+
+* `personal_access_token` - (Optional) The Personal access token used to  connect to the endpoint. Personal access tokens are applicable only for NuGet feeds hosted on other Azure DevOps Services organizations or Azure DevOps Server 2019 (or later).
+
+* `username` - (Optional) The account username used to connect to the endpoint.
+
+* `password` - (Optional) The account password used to connect to the endpoint
 
 ~> **Note** Only one of `api_key` or `personal_access_token` or  `username`, `password` can be set at the same time.
 
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 

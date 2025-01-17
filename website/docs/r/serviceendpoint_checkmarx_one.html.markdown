@@ -61,6 +61,8 @@ The following arguments are supported:
 
 * `server_url` - (Required) The Server URL of the Checkmarx One Service.
 
+---
+
 * `authorization_url` - (Optional) The URL of Checkmarx Authorization. Used when using `client_id` and `client_secret` authorization.
 
 * `api_key` - (Optional) The account of the Checkmarx One. Conflict with `client_id` and `client_secret`.

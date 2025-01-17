@@ -57,12 +57,15 @@ The following arguments are supported:
 
 * `days_to_keep_recently_downloaded_packages`- (Required) The days to keep recently downloaded packages.
 
+---
+
 * `project_id` - (Optional) The ID of the Project. If not specified, Feed will be created at the organization level. Changing this forces a new resource to be created.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
+* `id` - The ID of the Feed
 * `feed_id` - The ID of the Feed.
 * `project_id` - The ID of the Project.
 

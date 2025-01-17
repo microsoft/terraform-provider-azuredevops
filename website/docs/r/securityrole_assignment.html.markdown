@@ -44,13 +44,13 @@ resource "azuredevops_securityrole_assignment" "example" {
 
 The following arguments are supported:
 
-- `scope` - (Required) The scope in which this assignment should exist.
+* `scope` - (Required) The scope in which this assignment should exist.
 
-- `resource_id` - (Required) The ID of the resource on which the role is to be assigned. Changing this forces a new resource to be created.
+* `resource_id` - (Required) The ID of the resource on which the role is to be assigned. Changing this forces a new resource to be created.
 
-- `identity_id` - (Required) The ID of the identity to authorize.
+* `identity_id` - (Required) The ID of the identity to authorize.
 
-- `role_name` - (Required) Name of the role to assign.
+* `role_name` - (Required) Name of the role to assign.
 
 ## Attributes Reference
 

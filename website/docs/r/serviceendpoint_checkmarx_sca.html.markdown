@@ -52,6 +52,8 @@ The following arguments are supported:
 
 * `password` - (Required) The password of the Checkmarx SCA.
 
+---
+
 * `team` - (Optional) The full team name of the Checkmarx.
 
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.

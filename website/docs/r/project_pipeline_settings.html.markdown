@@ -35,24 +35,31 @@ resource "azuredevops_project_pipeline_settings" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The `id` of the project for which the project pipeline settings will be managed.
-- `enforce_job_scope` - (Optional) Limit job authorization scope to current project for non-release pipelines.
-- `enforce_referenced_repo_scoped_token` - (Optional) Protect access to repositories in YAML pipelines.
-- `enforce_settable_var` - (Optional) Limit variables that can be set at queue time.
-- `publish_pipeline_metadata` - (Optional) Publish metadata from pipelines.
-- `status_badges_are_private` - (Optional) Disable anonymous access to badges.
-- `enforce_job_scope_for_release` - (Optional) Limit job authorization scope to current project for release pipelines.
+* `project_id` - (Required) The ID of the project for which the project pipeline settings will be managed.
 
-> **NOTE:**  
-> The settings at the organization will override settings specified on the project.
-> For example, if `enforce_job_scope` is true at the organization, the `azuredevops_project_pipeline_settings` resource cannot set it to false.
-> In this scenario, the plan will always show that the resource is trying to change `enforce_job_scope` from `true` to `false`.
+---
+
+* `enforce_job_scope` - (Optional) Limit job authorization scope to current project for non-release pipelines.
+
+* `enforce_referenced_repo_scoped_token` - (Optional) Protect access to repositories in YAML pipelines.
+
+* `enforce_settable_var` - (Optional) Limit variables that can be set at queue time.
+
+* `publish_pipeline_metadata` - (Optional) Publish metadata from pipelines.
+
+* `status_badges_are_private` - (Optional) Disable anonymous access to badges.
+
+* `enforce_job_scope_for_release` - (Optional) Limit job authorization scope to current project for release pipelines.
+
+~> **NOTE:** The settings at the organization will override settings specified on the project. 
+  For example, if `enforce_job_scope` is true at the organization, the `azuredevops_project_pipeline_settings` resource cannot set it to false. 
+  In this scenario, the plan will always show that the resource is trying to change `enforce_job_scope` from `true` to `false`.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the project.
+* `id` - The ID of the project.
 
 ## Relevant Links
 

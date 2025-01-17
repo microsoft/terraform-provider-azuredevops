@@ -25,9 +25,9 @@ The following arguments are supported:
 
 ---
 
-* `account_license_type` - (Optional) Type of Account License. Valid values: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`. In addition the value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
+* `account_license_type` - (Optional) Type of Account License. Possible values are: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`. In addition the value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
 
-* `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Valid values: `account` (Default), `auto`, `msdn`, `none`, `profile`, `trial`
+* `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Possible values are: `account` (Default), `auto`, `msdn`, `none`, `profile`, `trial`
 
 * `origin` - (Optional) The type of source provider for the origin identifier.
 

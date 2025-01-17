@@ -26,7 +26,6 @@ resource "azuredevops_serviceendpoint_jenkins" "example" {
   description           = "Service Endpoint for 'Jenkins' (Managed by Terraform)"
   url                   = "https://example.com"
   accept_untrusted_certs  = false
-
   username              = "username"
   password              = "password"
   
@@ -38,13 +37,21 @@ resource "azuredevops_serviceendpoint_jenkins" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project. Changing this forces a new Service Connection Jenkins to be created.
+
 * `service_endpoint_name` - (Required) The name of the service endpoint. Changing this forces a new Service Connection Jenkins to be created.
+
 * `url` - (Required) The Service Endpoint url.
+
 * `username` - (Required) The Service Endpoint username to authenticate at the Jenkins Instance.
+
 * `password` - (Required) The Service Endpoint password to authenticate at the Jenkins Instance.
---- 
+
+---
+
 * `description` - (Optional) The Service Endpoint description. Defaults to Managed by Terraform.
+
 * `accept_untrusted_certs` - (Optional) Allows the Jenkins clients to accept self-signed SSL server certificates. Defaults to `false.`
+
 
 ## Attributes Reference
 

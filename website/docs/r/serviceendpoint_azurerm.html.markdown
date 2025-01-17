@@ -195,51 +195,66 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint Name.
-- `azurerm_spn_tenantid` - (Required) The Tenant ID of the service principal.
-- `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
+* `project_id` - (Required) The ID of the project.
 
-~> **NOTE:** The `WorkloadIdentityFederation` authentication scheme is currently in private preview. Your organisation must be part of the preview and the feature toggle must be turned on to use it. More details can be found [here](https://aka.ms/azdo-rm-workload-identity).
+* `service_endpoint_name` - (Required) The Service Endpoint Name.
 
-- `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
-- `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
-- `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
-- `azurerm_subscription_name` - (Optional) The Subscription Name of the targets.
-- `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, `AzureGermanCloud` and `AzureStack`. Changing this forces a new resource to be created.
-- `server_url` - (Optional) The server URL of the service endpoint. Changing this forces a new resource to be created.
+* `azurerm_spn_tenantid` - (Required) The Tenant ID of the service principal.
+
+---
+
+* `service_endpoint_authentication_scheme` - (Optional) Specifies the type of Azure Resource Manager Service Endpoint. Possible values are `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility.
+
+    ~> **NOTE:** The `WorkloadIdentityFederation` authentication scheme is currently in private preview. Your organisation must be part of the preview and the feature toggle must be turned on to use it. More details can be found [here](https://aka.ms/azdo-rm-workload-identity).
+
+* `azurerm_management_group_id` - (Optional) The Management group ID of the Azure targets.
+
+* `azurerm_management_group_name` - (Optional) The Management group Name of the targets.
+
+* `azurerm_subscription_id` - (Optional) The Subscription ID of the Azure targets.
+
+* `azurerm_subscription_name` - (Optional) The Subscription Name of the targets.
+
+* `environment` - (Optional) The Cloud Environment to use. Defaults to `AzureCloud`. Possible values are `AzureCloud`, `AzureChinaCloud`, `AzureUSGovernment`, `AzureGermanCloud` and `AzureStack`. Changing this forces a new resource to be created.
+
+* `server_url` - (Optional) The server URL of the service endpoint. Changing this forces a new resource to be created.
 
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 
-- `description` - (Optional) Service connection description.
-- `credentials` - (Optional) A `credentials` block.
-- `resource_group` - (Optional) The resource group used for scope of automatic service endpoint.
-- `features` - (Optional) A `features` block.
+* `credentials` - (Optional) A `credentials` block as defined below.
+
+* `description` - (Optional) Service connection description.
+
+* `resource_group` - (Optional) The resource group used for scope of automatic service endpoint.
+
+* `features` - (Optional) A `features` block as defined below.
 
 ---
 
 A `credentials` block supports the following:
 
-- `serviceprincipalid` - (Required) The service principal application ID
-- `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
-- `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+* `serviceprincipalid` - (Required) The service principal application ID
+
+* `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+
+* `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
 
 ---
 
 A `features` block supports the following:
 
-- `validate` - (Optional) Whether or not to validate connection with Azure after create or update operations. Defaults to `false`
+* `validate` - (Optional) Whether or not to validate connection with Azure after create or update operations. Defaults to `false`
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
-- `service_principal_id` - The Application(Client) ID of the Service Principal.
-- `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/00000000-0000-0000-0000-000000000000`, where the GUID is the Organization ID of your Azure DevOps Organisation.
-- `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://<organisation>/<project>/<service-connection-name>`.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
+* `service_principal_id` - The Application(Client) ID of the Service Principal.
+* `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/00000000-0000-0000-0000-000000000000`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+* `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://<organisation>/<project>/<service-connection-name>`.
 
 ## Relevant Links
 

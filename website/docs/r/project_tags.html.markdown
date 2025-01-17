@@ -29,9 +29,9 @@ resource "azuredevops_project_tags" "example" {
 
 The following arguments are supported:
 
-* `project_id` - (Optional) The ID of the Project. Changing this forces a new resource to be created.
+* `project_id` - (Required) The ID of the Project. Changing this forces a new resource to be created.
 
-* `tags` - A mapping of tags assigned to the Project.
+* `tags` - (Required) A mapping of tags assigned to the Project.
 
 ## Attributes Reference
 

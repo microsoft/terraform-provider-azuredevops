@@ -51,6 +51,8 @@ The following arguments are supported:
 
 * `type` -  (Required) The type of the wiki. Possible values are `codeWiki`, `projectWiki`.
 
+---
+
 * `repository_id` - (Optional) The ID of the repository.
 
 * `version` - (Optional) Version of the wiki.

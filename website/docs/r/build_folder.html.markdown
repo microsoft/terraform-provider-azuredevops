@@ -31,7 +31,11 @@ resource "azuredevops_build_folder" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project in which the folder will be created.
+
 * `path` - (Required) The folder path.
+
+---
+
 * `description` - (Optional) Folder Description.
 
 ## Timeouts

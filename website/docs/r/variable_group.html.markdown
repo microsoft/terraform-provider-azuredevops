@@ -93,33 +93,49 @@ resource "azuredevops_variable_group" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `name` - (Required) The name of the Variable Group.
-- `description` - (Optional) The description of the Variable Group.
-- `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
-- `variable` - (Required) One or more `variable` blocks as documented below.
-- `key_vault` -(Optional) A list of `key_vault` blocks as documented below.
+* `project_id` - (Required) The ID of the project.
+
+* `name` - (Required) The name of the Variable Group.
+
+* `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
+
+* `variable` - (Required) One or more `variable` blocks as documented below.
+
+---
+
+* `description` - (Optional) The description of the Variable Group.
+
+* `key_vault` -(Optional) A list of `key_vault` blocks as documented below.
+
+---
 
 A `variable` block supports the following:
 
 !> **Warning** variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes
 
-- `name` - (Required) The key value used for the variable. Must be unique within the Variable Group.
-- `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
-- `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
-- `is_secret` - (Optional) A boolean flag describing if the variable value is sensitive. Defaults to `false`.
+* `name` - (Required) The key value used for the variable. Must be unique within the Variable Group.
+
+* `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
+
+* `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
+
+* `is_secret` - (Optional) A boolean flag describing if the variable value is sensitive. Defaults to `false`.
+
+---
 
 A `key_vault` block supports the following:
 
-- `name` - The name of the Azure key vault to link secrets from as variables.
-- `service_endpoint_id` - The id of the Azure subscription endpoint to access the key vault.
-- `search_depth` - Set the Azure Key Vault Secret search depth. Defaults to `20`. 
+* `name` - (Required) The name of the Azure key vault to link secrets from as variables.
+
+* `service_endpoint_id` - (Required) The id of the Azure subscription endpoint to access the key vault.
+
+* `search_depth` - (Optional) Set the Azure Key Vault Secret search depth. Defaults to `20`. 
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the Variable Group returned after creation in Azure DevOps.
+* `id` - The ID of the Variable Group returned after creation in Azure DevOps.
 
 ## Relevant Links
 
