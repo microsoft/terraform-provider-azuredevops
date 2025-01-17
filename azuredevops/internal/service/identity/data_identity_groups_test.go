@@ -55,7 +55,7 @@ func TestIdentityGroupsDataSource_DoesNotSwallowProjectDescriptorLookupError_Not
 		})
 
 	err := dataSourceIdentityGroupsRead(resourceData, clients)
-	require.Contains(t, err.Error(), "Error getting group")
+	require.Contains(t, err.Error(), " Getting group")
 }
 
 func createIdentityGroupsDataSource(t *testing.T, projectID string) *schema.ResourceData {
