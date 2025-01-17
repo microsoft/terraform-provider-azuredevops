@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
@@ -46,6 +47,7 @@ type AggregatedClient struct {
 	OrganizationURL               string
 	CoreClient                    core.Client
 	BuildClient                   build.Client
+	DashboardClient               dashboard.Client
 	PipelinesClient               pipelines.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
@@ -99,6 +101,12 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 	operationsClient := operations.NewClient(ctx, connection)
 
 	elasticClient := elastic.NewClient(ctx, connection)
+
+	dashboardClient, err := dashboard.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): dashboardClient.NewClient failed.")
+		return nil, err
+	}
 
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
@@ -197,6 +205,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
+		DashboardClient:               dashboardClient,
 		ElasticClient:                 elasticClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
