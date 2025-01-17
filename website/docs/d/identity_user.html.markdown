@@ -17,21 +17,20 @@ data "azuredevops_identity_user" "contoso-user" {
   name = "contoso-user"
 }
 
-# Use MailAddress instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use MailAddress
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "contoso-user@contoso.onmicrosoft.com"
   search_filter = "MailAddress"
 }
 
-
-# Use MailAddress instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use AccountName
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "contoso-user@contoso.onmicrosoft.com"
-  search_filter = "MailAddress"
+  search_filter = "AccountName"
 }
 
-# Use DisplayName instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use DisplayName
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "Contoso User"
   search_filter = "DisplayName"
 }
