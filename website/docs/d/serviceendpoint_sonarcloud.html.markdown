@@ -38,9 +38,11 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - Specifies the Authorization Scheme Map.
+* `id` - The ID of the Sonar Cloud Service Endpoint.
 
-* `description` - Specifies the description of the Service Endpoint.
+* `authorization` - The Authorization scheme.
+
+* `description` - The description of the Service Endpoint.
 
 ## Timeouts
 

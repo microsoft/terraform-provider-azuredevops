@@ -40,11 +40,13 @@ The following arguments are supported:
 
 In addition to the Arguments list above - the following Attributes are exported:
 
-* `authorization` - Specifies the Authorization Scheme Map.
+* `id` - The ID of the NPM Service Endpoint.
 
-* `url` - Specifies the URL of the npm registry to connect with.
+* `authorization` - The Authorization scheme.
 
-* `description` - Specifies the description of the Service Endpoint.
+* `url` - The URL of the NPM registry to connect with.
+
+* `description` - The description of the Service Endpoint.
 
 ## Timeouts
 
