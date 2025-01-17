@@ -43,12 +43,13 @@ The following arguments are supported:
 
 * `identity_descriptor` - (Required) The Descriptor of identity you want to assign a role.
 
-* `role` - (Required) The role to be assigned, possible values : `reader`, `contributor`, `collaborator`, `administrator`
+* `role` - (Required) The role to be assigned. Possible values are: `reader`, `contributor`, `collaborator`, `administrator`
+
+---
 
 * `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
 
 * `display_name` - (Optional) The display name of the assignment
-
 
 ## Attributes Reference
 

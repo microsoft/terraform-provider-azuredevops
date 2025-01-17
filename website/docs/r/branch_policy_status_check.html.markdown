@@ -66,36 +66,60 @@ resource "azuredevops_branch_policy_status_check" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project in which the policy will be created.
-- `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
-- `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
-- `settings` - (Required) Configuration for the policy. This block must be defined exactly once.
+* `project_id` - (Required) The ID of the project in which the policy will be created.
 
-`settings` block supports the following:
+* `settings` - (Required) A `settings` block as defined below. Configuration for the policy. This block must be defined exactly once. 
 
-- `name` - (Required) The status name to check.
-- `genre` - (Optional) The genre of the status to check (see [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/devops/repos/git/pull-request-status?view=azure-devops#status-policy))
-- `author_id` - (Optional) The authorized user can post the status.
-- `invalidate_on_update` - (Optional) Reset status whenever there are new changes.
-- `applicability` - (Optional) Policy applicability. If policy `applicability` is `default`, apply unless "Not Applicable" 
-  status is posted to the pull request. If policy `applicability` is `conditional`, policy is applied only after a status 
-  is posted to the pull request.
-- `filename_patterns` - (Optional) If a path filter is set, the policy will only apply when files which match the filter are changes. Not setting this field means that the policy will always apply. You can specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
-- `display_name` - (Optional) The display name.
-- `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
+* `scope` (Required) Controls which repositories and branches the policy will be enabled for. This block must be defined
   at least once.
 
-  `scope` block supports the following:
+---
 
-    - `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type` is `DefaultBranch`, this should not be defined.
-    - `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type` is `Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type` is `Prefix`, this should be a ref path such as `refs/heads/releases`.
-    - `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
+* `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
+
+* `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
+
+---
+
+A `settings` block supports the following:
+
+* `name` - (Required) The status name to check.
+
+* `scope` - (Required) A `scope` block as defined below.
+
+* `genre` - (Optional) The genre of the status to check (see [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/devops/repos/git/pull-request-status?view=azure-devops#status-policy))
+
+* `author_id` - (Optional) The authorized user can post the status.
+
+* `invalidate_on_update` - (Optional) Reset status whenever there are new changes.
+
+* `applicability` - (Optional) Policy applicability. If policy `applicability=default`, apply unless "Not Applicable"
+  status is posted to the pull request. If policy `applicability=conditional`, policy is applied only after a status 
+  is posted to the pull request. Possible values `default`, `conditional`. Defaults to `default`.
+
+* `filename_patterns` - (Optional) If a path filter is set, the policy will only apply when files which match the filter are changed. Not setting this field means that the policy is always applied.
+  
+  ~>**NOTE** 1. Specify absolute paths and wildcards. Example: `["/WebApp/Models/Data.cs", "/WebApp/*", "*.cs"]`. 
+  <br> 2. Paths prefixed with "!" are excluded. Example: `["/WebApp/*", "!/WebApp/Tests/*"]`. Order is significant.
+
+* `display_name` - (Optional) The display name.
+
+---
+
+A `scope` block supports the following:
+
+* `repository_id` - (Optional) The repository ID. Needed only if the scope of the policy will be limited to a single repository. If `match_type=DefaultBranch`, this should not be defined.
+
+* `repository_ref` - (Optional) The ref pattern to use for the match when `match_type` other than `DefaultBranch`. If `match_type=Exact`, this should be a qualified ref such as `refs/heads/master`. If `match_type=Prefix`, this should be a ref path such as `refs/heads/releases`.
+
+* `match_type` (Optional) The match type to use when applying the policy. Supported values are `Exact` (default), `Prefix` or `DefaultBranch`.
+    
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of branch policy configuration.
+* `id` - The ID of branch policy configuration.
 
 ## Relevant Links
 

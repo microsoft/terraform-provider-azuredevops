@@ -44,23 +44,24 @@ resource "azuredevops_git_repository_branch" "example_from_commit_id" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the branch in short format not prefixed with `refs/heads/`.
+* `name` - (Required) The name of the branch in short format not prefixed with `refs/heads/`.
 
-- `repository_id` - (Required) The ID of the repository the branch is created against.
+* `repository_id` - (Required) The ID of the repository the branch is created against.
 
-- `ref_branch` - (Optional) The reference to the source branch to create the branch from, in `<name>` or `refs/heads/<name>` format. Conflict with `ref_tag`, `ref_commit_id`.
+---
 
-- `ref_tag` - (Optional) The reference to the tag to create the branch from, in `<name>` or `refs/tags/<name>` format. Conflict with `ref_branch`, `ref_commit_id`.
+* `ref_branch` - (Optional) The reference to the source branch to create the branch from, in `<name>` or `refs/heads/<name>` format. Conflict with `ref_tag`, `ref_commit_id`.
 
-- `ref_commit_id` - (Optional) The commit object ID to create the branch from. Conflict with `ref_branch`, `ref_tag`.
+* `ref_tag` - (Optional) The reference to the tag to create the branch from, in `<name>` or `refs/tags/<name>` format. Conflict with `ref_branch`, `ref_commit_id`.
+
+* `ref_commit_id` - (Optional) The commit object ID to create the branch from. Conflict with `ref_branch`, `ref_tag`.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
-- `id` - The ID of the Git Repository Branch, in the format `<repository_id>:<name>`.
-
-- `last_commit_id` - The commit object ID of last commit on the branch.
+* `id` - The ID of the Git Repository Branch, in the format `<repository_id>:<name>`.
+* `last_commit_id` - The commit object ID of last commit on the branch.
 
 ## Timeouts
 

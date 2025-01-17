@@ -84,12 +84,17 @@ The following arguments are supported:
 
 * `required_template` - (Required) One or more `required_template` blocks documented below.
 
+---
+
 A `required_template` block supports the following:
 
-- `repository_type` - (Optional) The type of the repository storing the template. Valid values: `azuregit`, `github`, `githubenterprise`, `bitbucket`. Defaults to `azuregit`.
-- `repository_name` - (Required) The name of the repository storing the template.
-- `repository_ref` - (Required) The branch in which the template will be referenced.
-- `template_path` - (Required) The path to the template yaml.
+* `template_path` - (Required) The path to the template yaml.
+
+* `repository_name` - (Required) The name of the repository storing the template.
+
+* `repository_ref` - (Required) The branch in which the template will be referenced.
+
+* `repository_type` - (Optional) The type of the repository storing the template. Possible values are: `azuregit`, `github`, `githubenterprise`, `bitbucket`. Defaults to `azuregit`.
 
 ## Attributes Reference
 

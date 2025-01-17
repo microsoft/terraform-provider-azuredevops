@@ -37,23 +37,31 @@ resource "azuredevops_serviceendpoint_externaltfs" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `connection_url` - (Required) Azure DevOps Organization or TFS Project Collection Url.
-- `auth_personal` - (Required) An `auth_personal` block as documented below. Allows connecting using a personal access token.
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+* `project_id` - (Required) The ID of the project.
 
-`auth_personal` block supports the following:
+* `service_endpoint_name` - (Required) The Service Endpoint name.
 
-- `personal_access_token` - (Required) The Personal Access Token for Azure DevOps Organization.
+* `connection_url` - (Required) Azure DevOps Organization or TFS Project Collection Url.
+
+* `auth_personal` - (Required) An `auth_personal` block as documented below. Allows connecting using a personal access token.
+
+---
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+
+---
+
+A `auth_personal` block supports the following:
+
+* `personal_access_token` - (Required) The Personal Access Token for Azure DevOps Organization.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 

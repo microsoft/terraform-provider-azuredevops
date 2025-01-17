@@ -48,36 +48,37 @@ resource "azuredevops_elastic_pool" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the Elastic pool.
+* `name` - (Required) The name of the Elastic pool.
 
-- `azure_resource_id` - (Required) The ID of the Azure resource.
+* `azure_resource_id` - (Required) The ID of the Azure resource.
 
-- `service_endpoint_id` - (Required) The ID of Service Endpoint used to connect to Azure.
+* `service_endpoint_id` - (Required) The ID of Service Endpoint used to connect to Azure.
 
-- `service_endpoint_scope` - (Required) The Project ID of Service Endpoint belongs to.
+* `service_endpoint_scope` - (Required) The Project ID of Service Endpoint belongs to.
 
-- `desired_idle` - (Required) Number of agents to keep on standby.
+* `desired_idle` - (Required) Number of agents to keep on standby.
 
-- `max_capacity` - (Required) Maximum number of virtual machines in the scale set.
+* `max_capacity` - (Required) Maximum number of virtual machines in the scale set.
 
 ---
-- `recycle_after_each_use` - (Optional) Tear down virtual machines after every use. Defaults to `false`.
 
-- `time_to_live_minutes` - (Optional) Delay in minutes before deleting excess idle agents. Defaults to `30`.
+* `recycle_after_each_use` - (Optional) Tear down virtual machines after every use. Defaults to `false`.
 
-- `agent_interactive_ui` - (Optional) Set whether agents should be configured to run with interactive UI. Defaults to `false`.
+* `time_to_live_minutes` - (Optional) Delay in minutes before deleting excess idle agents. Defaults to `30`.
 
-- `auto_provision` - (Optional) Specifies whether a queue should be automatically provisioned for each project collection. Defaults to `false`.
+* `agent_interactive_ui` - (Optional) Set whether agents should be configured to run with interactive UI. Defaults to `false`.
 
-- `auto_update` - (Optional) Specifies whether or not agents within the pool should be automatically updated. Defaults to `true`.
+* `auto_provision` - (Optional) Specifies whether a queue should be automatically provisioned for each project collection. Defaults to `false`.
 
-- `project_id` - (Optional) The ID of the project where a new Elastic Pool will be created.
+* `auto_update` - (Optional) Specifies whether or not agents within the pool should be automatically updated. Defaults to `true`.
+
+* `project_id` - (Optional) The ID of the project where a new Elastic Pool will be created.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the Elastic pool.
+* `id` - The ID of the Elastic pool.
 
 ## Relevant Links
 

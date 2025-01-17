@@ -96,7 +96,6 @@ func flattenAgentPoolReferences(input *[]taskagent.TaskAgentPool) []interface{} 
 		if element.AutoUpdate != nil {
 			output["auto_update"] = *element.AutoUpdate
 		}
-
 		results = append(results, output)
 	}
 

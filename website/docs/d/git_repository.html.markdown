@@ -28,23 +28,33 @@ data "azuredevops_git_repository" "example-single-repo" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) ID of project to list Git repositories
-- `name` - (Required) Name of the Git repository to retrieve
+* `project_id` - (Required) The ID of project to list Git repositories
+
+* `name` - (Required) The Name of the Git repository to retrieve
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - Git repository identifier.
-- `name` - Git repository name.
-- `url` - Details REST API endpoint for the Git Repository.
-- `ssh_url` - SSH Url to clone the Git repository
-- `web_url` - Url of the Git repository web view
-- `remote_url` - HTTPS Url to clone the Git repository
-- `project_id` - Project identifier to which the Git repository belongs.
-- `size` - Compressed size (bytes) of the repository.
-- `default_branch` - The ref of the default branch.
-- `disabled` - Is the repository disabled?
+* `id` - The ID of the Git repository.
+
+* `name` - The name of the Git repository.
+
+* `url` - The details REST API endpoint for the Git Repository.
+
+* `ssh_url` - SSH Url to clone the Git repository
+
+* `web_url` - The Url of the Git repository web view
+
+* `remote_url` - HTTPS Url to clone the Git repository
+
+* `project_id` - Project identifier to which the Git repository belongs.
+
+* `size` - Compressed size (bytes) of the repository.
+
+* `default_branch` - The ref of the default branch.
+
+* `disabled` - Indicates whether the repository is disabled.
 
 ## Relevant Links
 

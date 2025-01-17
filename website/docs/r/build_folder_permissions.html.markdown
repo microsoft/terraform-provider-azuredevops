@@ -88,28 +88,34 @@ resource "azuredevops_build_folder_permissions" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
+
 * `principal` - (Required) The **group** principal to assign the permissions.
+
 * `path` - (Required) The folder path to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`.
+
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
 
-| Permission                     | Description                           |
-|--------------------------------|---------------------------------------|
-| ViewBuilds                     | View builds                           |
-| EditBuildQuality               | Edit build quality                    |
-| RetainIndefinitely             | Retain indefinitely                   |
-| DeleteBuilds                   | Delete builds                         |
-| ManageBuildQualities           | Manage build qualities                |
-| DestroyBuilds                  | Destroy builds                        |
-| UpdateBuildInformation         | Update build information              |
-| QueueBuilds                    | Queue builds                          |
-| ManageBuildQueue               | Manage build queue                    |
-| StopBuilds                     | Stop builds                           |
-| ViewBuildDefinition            | View build pipeline                   |
-| EditBuildDefinition            | Edit build pipeline                   |
-| DeleteBuildDefinition          | Delete build pipeline                 |
-| OverrideBuildCheckInValidation | Override check-in validation by build |
-| AdministerBuildPermissions     | Administer build permissions          |
+    | Permission                     | Description                           |
+    |--------------------------------|---------------------------------------|
+    | ViewBuilds                     | View builds                           |
+    | EditBuildQuality               | Edit build quality                    |
+    | RetainIndefinitely             | Retain indefinitely                   |
+    | DeleteBuilds                   | Delete builds                         |
+    | ManageBuildQualities           | Manage build qualities                |
+    | DestroyBuilds                  | Destroy builds                        |
+    | UpdateBuildInformation         | Update build information              |
+    | QueueBuilds                    | Queue builds                          |
+    | ManageBuildQueue               | Manage build queue                    |
+    | StopBuilds                     | Stop builds                           |
+    | ViewBuildDefinition            | View build pipeline                   |
+    | EditBuildDefinition            | Edit build pipeline                   |
+    | DeleteBuildDefinition          | Delete build pipeline                 |
+    | OverrideBuildCheckInValidation | Override check-in validation by build |
+    | AdministerBuildPermissions     | Administer build permissions          |
+
+---
+
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`.
 
 ## Relevant Links
 

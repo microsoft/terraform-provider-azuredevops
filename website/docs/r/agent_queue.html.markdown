@@ -57,19 +57,22 @@ resource "azuredevops_agent_queue" "example" {
 
 The following arguments are supported:
 
-- `name` - (Optional) The name of the agent queue. Defaults to the ID of the agent pool. Conflicts with `agent_pool_id`.
-- `project_id` - (Required) The ID of the project in which to create the resource.
-- `agent_pool_id` - (Optional) The ID of the organization agent pool. Conflicts with `name`.
+* `project_id` - (Required) The ID of the project in which to create the resource.
 
-~> **NOTE:**
-    One of `name` or `agent_pool_id` must be specified, but not both.
-    When `agent_pool_id` is specified, the agent queue name will be derived from the agent pool name.
+* `name` - (Optional) The name of the agent queue. Defaults to the ID of the agent pool. Conflicts with `agent_pool_id`.
+
+---
+
+* `agent_pool_id` - (Optional) The ID of the organization agent pool. Conflicts with `name`.
+
+    ~> **NOTE:** One of `name` or `agent_pool_id` must be specified, but not both. 
+        When `agent_pool_id` is specified, the agent queue name will be derived from the agent pool name.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the agent queue reference.
+* `id` - The ID of the agent queue reference.
 
 ## Relevant Links
 

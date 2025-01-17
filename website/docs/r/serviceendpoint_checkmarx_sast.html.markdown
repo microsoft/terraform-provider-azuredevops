@@ -45,12 +45,13 @@ The following arguments are supported:
 
 * `password` - (Required) The password of the Checkmarx SAST.
 
+---
+
 * `team` - (Optional) The full team name of the Checkmarx.
 
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 * `preset` - (Optional) Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).In Service Connection if preset(optional) value is added, then it will igonres Preset available in pipeline and uses preset available in service connection only.If Preset is blank in service connection then it will use pipelines preset.
-
 
 ## Attributes Reference
 

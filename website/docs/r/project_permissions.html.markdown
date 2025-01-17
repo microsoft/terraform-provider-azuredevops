@@ -44,37 +44,42 @@ resource "azuredevops_project_permissions" "example-permission" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
-* `principal` - (Required) The **group** principal to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
-* `permissions` - (Required) the permissions to assign. The following permissions are available
 
-| Permission                   | Description                                  |
-|------------------------------|----------------------------------------------|
-| GENERIC_READ                 | View project-level information               |
-| GENERIC_WRITE                | Edit project-level information               |
-| DELETE                       | Delete team project                          |
-| PUBLISH_TEST_RESULTS         | Create test runs                             |
-| ADMINISTER_BUILD             | Administer a build                           |
-| START_BUILD                  | Start a build                                |
-| EDIT_BUILD_STATUS            | Edit build quality                           |
-| UPDATE_BUILD                 | Write to build operational store             |
-| DELETE_TEST_RESULTS          | Delete test runs                             |
-| VIEW_TEST_RESULTS            | View test runs                               |
-| MANAGE_TEST_ENVIRONMENTS     | Manage test environments                     |
-| MANAGE_TEST_CONFIGURATIONS   | Manage test configurations                   |
-| WORK_ITEM_DELETE             | Delete and restore work items                |
-| WORK_ITEM_MOVE               | Move work items out of this project          |
-| WORK_ITEM_PERMANENTLY_DELETE | Permanently delete work items                |
-| RENAME                       | Rename team project                          |
-| MANAGE_PROPERTIES            | Manage project properties                    |
-| MANAGE_SYSTEM_PROPERTIES     | Manage system project properties             |
-| BYPASS_PROPERTY_CACHE        | Bypass project property cache                |
-| BYPASS_RULES                 | Bypass rules on work item updates            |
-| SUPPRESS_NOTIFICATIONS       | Suppress notifications for work item updates |
-| UPDATE_VISIBILITY            | Update project visibility                    |
-| CHANGE_PROCESS               | Change process of team project.              |
-| AGILETOOLS_BACKLOG           | Agile backlog management.                    |
-| AGILETOOLS_PLANS             | Agile plans.                                 |
+* `principal` - (Required) The `group` principal to assign the permissions.
+
+* `permissions` - (Required) the permissions to assign. The following permissions are available
+    
+    | Permission                   | Description                                  |
+    |------------------------------|----------------------------------------------|
+    | GENERIC_READ                 | View project-level information               |
+    | GENERIC_WRITE                | Edit project-level information               |
+    | DELETE                       | Delete team project                          |
+    | PUBLISH_TEST_RESULTS         | Create test runs                             |
+    | ADMINISTER_BUILD             | Administer a build                           |
+    | START_BUILD                  | Start a build                                |
+    | EDIT_BUILD_STATUS            | Edit build quality                           |
+    | UPDATE_BUILD                 | Write to build operational store             |
+    | DELETE_TEST_RESULTS          | Delete test runs                             |
+    | VIEW_TEST_RESULTS            | View test runs                               |
+    | MANAGE_TEST_ENVIRONMENTS     | Manage test environments                     |
+    | MANAGE_TEST_CONFIGURATIONS   | Manage test configurations                   |
+    | WORK_ITEM_DELETE             | Delete and restore work items                |
+    | WORK_ITEM_MOVE               | Move work items out of this project          |
+    | WORK_ITEM_PERMANENTLY_DELETE | Permanently delete work items                |
+    | RENAME                       | Rename team project                          |
+    | MANAGE_PROPERTIES            | Manage project properties                    |
+    | MANAGE_SYSTEM_PROPERTIES     | Manage system project properties             |
+    | BYPASS_PROPERTY_CACHE        | Bypass project property cache                |
+    | BYPASS_RULES                 | Bypass rules on work item updates            |
+    | SUPPRESS_NOTIFICATIONS       | Suppress notifications for work item updates |
+    | UPDATE_VISIBILITY            | Update project visibility                    |
+    | CHANGE_PROCESS               | Change process of team project.              |
+    | AGILETOOLS_BACKLOG           | Agile backlog management.                    |
+    | AGILETOOLS_PLANS             | Agile plans.                                 |
+
+---
+
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
 ## Relevant Links
 

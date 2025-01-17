@@ -36,21 +36,31 @@ output "administrators" {
 
 The following arguments are supported:
 
-- `project_id` - (Optional) The Project ID. If no project ID all teams of the organization will be returned.
-- `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
+* `project_id` - (Optional) The Project ID. If no project ID all teams of the organization will be returned.
+
+* `top` - (Optional) The maximum number of teams to return. Defaults to `100`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `teams` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
+* `teams` - A list of `teams` blocks as documented below. A list of existing projects in your Azure DevOps Organization with details about every project which includes:
 
-  - `project_id` - Project identifier.
-  - `id - Team identifier
-  - `name` - Team name.
-  - `description` - Team description.
-  - `administrators` - List of subject descriptors for `administrators` of the team.
-  - `members` - List of subject descriptors for `members` of the team.
+---
+
+A `teams` block supports the following:
+
+* `project_id` - The ID of the Project.
+
+* `id` - The ID of the Team.
+
+* `name` - The name of the team.
+
+* `description` - Team description.
+
+* `administrators` - List of subject descriptors for `administrators` of the team.
+
+* `members` - List of subject descriptors for `members` of the team.
 
 ## Relevant Links
 

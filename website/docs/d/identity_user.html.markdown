@@ -17,21 +17,20 @@ data "azuredevops_identity_user" "contoso-user" {
   name = "contoso-user"
 }
 
-# Use MailAddress instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use MailAddress
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "contoso-user@contoso.onmicrosoft.com"
   search_filter = "MailAddress"
 }
 
-
-# Use MailAddress instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use AccountName
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "contoso-user@contoso.onmicrosoft.com"
-  search_filter = "MailAddress"
+  search_filter = "AccountName"
 }
 
-# Use DisplayName instead of principal name.
-data "azuredevops_user" "contoso-user-upn" {
+# Use DisplayName
+data "azuredevops_identity_user" "contoso-user-upn" {
   name = "Contoso User"
   search_filter = "DisplayName"
 }
@@ -42,19 +41,17 @@ data "azuredevops_user" "contoso-user-upn" {
 
 The following arguments are supported:
 
-- `name` - (required) The PrincipalName of this identity member from the source provider.
-- `search_filter` - (Optional) The type of search to perform. Default is `General`. Possible values are `AccountName`, `DisplayName`, and `MailAddress`.
+* `name` - (required) The PrincipalName of this identity member from the source provider.
 
+* `search_filter` - (Optional) The type of search to perform. Possible values are: `AccountName`, `DisplayName`, and `MailAddress`. Default is `General`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-  - `user` - A set of existing users in your Azure DevOps Organization with details about every single user which includes:
+* `id` - The ID of the user.
 
-  - `id` - The ID is the primary way to reference the identity subject while the system is running. This field will uniquely identify the same identity subject across both Accounts and Organizations.
-  - `name` - This is the PrincipalName of this identity member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the identity member.
-
+* `descriptor` - The descriptor of the user.
 
 ## Relevant Links
 

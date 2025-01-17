@@ -25,20 +25,29 @@ output "project" {
 
 The following arguments are supported:
 
-- `name` - (Required if `project_id` not set) Name of the Project.
-- `project_id` - (Required if `name` not set) ID of the Project.
+* `name` - (Required) Name of the Project.
+
+* `project_id` - (Required) ID of the Project.
+
+~> **NOTE:** One of either `project_id` or `name` must be specified.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-`id` - The ID of the project
-`name` - The name of the project
-`description` - The description of the project
-`visibility` - The visibility of the project
-`version_control` - The version control of the project
-`work_item_template` - The work item template for the project
-`process_template_id` - The process template ID for the project
+* `id` - The ID of the project.
+
+* `name` - The name of the project.
+
+* `description` - The description of the project.
+
+* `visibility` - The visibility of the project.
+
+* `version_control` - The version control of the project.
+
+* `work_item_template` - The work item template for the project.
+
+* `process_template_id` - The process template ID for the project.
 
 ## Relevant Links
 

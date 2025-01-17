@@ -33,9 +33,15 @@ resource "azuredevops_serviceendpoint_sonarqube" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
+
 * `service_endpoint_name` - (Required) The Service Endpoint name.
+
 * `url` - (Required) URL of the SonarQube server to connect with.
-* `token` - (Required) Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens).
+
+* `token` - (Required) The Authentication Token generated through SonarQube (go to My Account > Security > Generate Tokens).
+
+---
+
 * `description` - (Optional) The Service Endpoint description.
 
 ## Attributes Reference

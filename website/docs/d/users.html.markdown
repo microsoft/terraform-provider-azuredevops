@@ -49,54 +49,58 @@ data "azuredevops_users" "example-all-from-origin-id" {
 
 The following arguments are supported:
 
-- `principal_name` - (Optional) The PrincipalName of this graph member from the source provider.
-- `subject_types` - (Optional) A list of user subject subtypes to reduce the retrieved results, e.g. `msa`, `aad`, `svc` (service identity), `imp` (imported identity), etc. The supported subject types are listed below.
-- `origin` - (Optional) The type of source provider for the `origin_id` parameter (ex:AD, AAD, MSA) The supported origins are listed below.
-- `origin_id` - (Optional) The unique identifier from the system of origin.
-- `features` - (Optional) A `features` block as defined below.
+~> **NOTE:** DataSource without specifying any arguments will return all users inside an organization.
 
-DataSource without specifying any arguments will return all users inside an organization.
 
-List of possible subject types
+* `principal_name` - (Optional) The PrincipalName of this graph member from the source provider.
 
-```hcl
-AadUser                 = "aad" # Azure Active Directory Tenant
-MsaUser                 = "msa" # Windows Live
-UnknownUser             = "unusr"
-BindPendingUser         = "bnd" # Invited user with pending redeem status
-WindowsIdentity         = "win" # Windows Active Directory user
-UnauthenticatedIdentity = "uauth"
-ServiceIdentity         = "svc"
-AggregateIdentity       = "agg"
-ImportedIdentity        = "imp"
-ServerTestIdentity      = "tst"
-GroupScopeType          = "scp"
-CspPartnerIdentity      = "csp"
-SystemServicePrincipal  = "s2s"
-SystemLicense           = "slic"
-SystemScope             = "sscp"
-SystemCspPartner        = "scsp"
-SystemPublicAccess      = "spa"
-SystemAccessControl     = "sace"
-AcsServiceIdentity      = "acs"
-Unknown                 = "ukn"
-```
+* `subject_types` - (Optional) A list of user subject subtypes to reduce the retrieved results, e.g. `msa`, `aad`, `svc` (service identity), `imp` (imported identity), etc. The supported subject types are listed below.
+  <pre>List of possible subject types
+  ```hcl
+  AadUser                 = "aad" # Azure Active Directory Tenant
+  MsaUser                 = "msa" # Windows Live
+  UnknownUser             = "unusr"
+  BindPendingUser         = "bnd" # Invited user with pending redeem status
+  WindowsIdentity         = "win" # Windows Active Directory user
+  UnauthenticatedIdentity = "uauth"
+  ServiceIdentity         = "svc"
+  AggregateIdentity       = "agg"
+  ImportedIdentity        = "imp"
+  ServerTestIdentity      = "tst"
+  GroupScopeType          = "scp"
+  CspPartnerIdentity      = "csp"
+  SystemServicePrincipal  = "s2s"
+  SystemLicense           = "slic"
+  SystemScope             = "sscp"
+  SystemCspPartner        = "scsp"
+  SystemPublicAccess      = "spa"
+  SystemAccessControl     = "sace"
+  AcsServiceIdentity      = "acs"
+  Unknown                 = "ukn"
+  ```
+  </pre>
 
-List of possible origins
+* `origin` - (Optional) The type of source provider for the `origin_id` parameter (ex:AD, AAD, MSA) The supported origins are listed below.
+  <pre>List of possible origins
+  ```hcl
+  ActiveDirectory          = "ad"   # Windows Active Directory
+  AzureActiveDirectory     = "aad"  # Azure Active Directory
+  MicrosoftAccount         = "msa"  # Windows Live Account
+  VisualStudioTeamServices = "vsts" # DevOps
+  GitHubDirectory          = "ghb"  # GitHub
+  ```
+  </pre>
+  
 
-```hcl
-ActiveDirectory          = "ad"   # Windows Active Directory
-AzureActiveDirectory     = "aad"  # Azure Active Directory
-MicrosoftAccount         = "msa"  # Windows Live Account
-VisualStudioTeamServices = "vsts" # DevOps
-GitHubDirectory          = "ghb"  # GitHub
-```
+* `origin_id` - (Optional) The unique identifier from the system of origin.
+
+* `features` - (Optional) A `features` block as defined below.
 
 ---
 
 A `features` block supports the following:
 
-- `concurrent_workers` - (Optional) Number of workers to process user data concurrently.
+* `concurrent_workers` - (Optional) Number of workers to process user data concurrently.
 
 -> **Note** Setting `concurrent_workers` to a value greater than 1 can greatly decrease the time it takes to read the data source.
 
@@ -105,15 +109,26 @@ A `features` block supports the following:
 
 The following attributes are exported:
 
-- `users` - A set of existing users in your Azure DevOps Organization with details about every single user which includes:
+* `users` - A `users` block as defined below. A set of existing users in your Azure DevOps Organization with details about every single user.
 
-  - `id` - The user ID.
-  - `descriptor` - The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
-  - `principal_name` - This is the PrincipalName of this graph member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the graph member by VSTS.
-  - `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
-  - `origin_id` - The unique identifier from the system of origin. Typically a sid, object id or Guid. Linking and unlinking operations can cause this value to change for a user because the user is not backed by a different provider and has a different unique id in the new provider.
-  - `display_name` - This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
-  - `mail_address` - The email address of record for a given graph member. This may be different than the principal name.
+
+---
+
+A `users` block supports the following:
+
+* `id` - The ID of the User.
+
+* `descriptor` - The descriptor is the primary way to reference the graph subject while the system is running. This field will uniquely identify the same graph subject across both Accounts and Organizations.
+
+* `principal_name` - This is the PrincipalName of this graph member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the graph member by VSTS.
+
+* `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
+
+* `origin_id` - The unique identifier from the system of origin. Typically a sid, object id or Guid. Linking and unlinking operations can cause this value to change for a user because the user is not backed by a different provider and has a different unique id in the new provider.
+
+* `display_name` - This is the non-unique display name of the graph subject. To change this field, you must alter its value in the source provider.
+
+* `mail_address` - The email address of record for a given graph member. This may be different than the principal name.
 
 ## Relevant Links
 

@@ -26,9 +26,9 @@ output "securityrole_definitions" {
 
 The following arguments are supported:
 
-- `scope` - (Required) Name of the Scope for which Security Role Definitions will be returned.
+* `scope` - (Required) Name of the Scope for which Security Role Definitions will be returned.
 
-DataSource without specifying any arguments will return all projects.
+~> **NOTE:** DataSource without specifying any arguments will return all projects.
 
 ## Attributes Reference
 
@@ -40,19 +40,19 @@ The following attributes are exported:
 
 A `definitions` block exports the following:
 
-  - `name` - The name of the Security Role Definition.
-  
-  - `display_name` - The display name of the Security Role Definition.
-  
-  - `allow_permissions` - The mask of allowed permissions of the Security Role Definition.
-  
-  - `deny_permissions` - The mask of the denied permissions of the Security Role Definition.
-  
-  - `identifier` - The identifier of the Security Role Definition.
-  
-  - `description` - The description of the Security Role Definition.
-  
-  - `scope` - The scope of the Security Role Definition.
+* `name` - The name of the Security Role Definition.
+
+* `display_name` - The display name of the Security Role Definition.
+
+* `allow_permissions` - The mask of allowed permissions of the Security Role Definition.
+
+* `deny_permissions` - The mask of the denied permissions of the Security Role Definition.
+
+* `identifier` - The identifier of the Security Role Definition.
+
+* `description` - The description of the Security Role Definition.
+
+* `scope` - The scope of the Security Role Definition.
 
 ## Relevant Links
 

@@ -46,17 +46,23 @@ resource "azuredevops_tagging_permissions" "example-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (Optional) The ID of the project to assign the permissions. If omitted, organization wide permissions for tagging are managed.
-* `principal` - (Required) The **group or user** principal to assign the permissions.
-* `permissions` - (Required) the permissions to assign. The following permissions are available.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
-| Name               | Permission Description     |
-| ------------------ | -------------------------- |
-| Enumerate          | Enumerate tag definitions  |
-| Create             | Create tag definition      | 
-| Update             | Update tag definition      | 
-| Delete             | Delete tag definition      |  
+* `principal` - (Required) The **group or user** principal to assign the permissions.
+
+* `permissions` - (Required) the permissions to assign. The following permissions are available.
+
+    | Name      | Permission Description    |
+    |-----------|---------------------------|
+    | Enumerate | Enumerate tag definitions |
+    | Create    | Create tag definition     | 
+    | Update    | Update tag definition     | 
+    | Delete    | Delete tag definition     |  
+
+---
+
+* `project_id` - (Optional) The ID of the project to assign the permissions. If omitted, organization wide permissions for tagging are managed.
+
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
 ## Relevant Links
 

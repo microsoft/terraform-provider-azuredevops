@@ -27,7 +27,7 @@ This data source has no arguments
 
 The following attributes are exported:
 
-`organization_url` - The organization configured for the provider
+* `organization_url` - The organization configured for the provider.
 
 ## Timeouts
 

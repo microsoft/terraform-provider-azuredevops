@@ -33,20 +33,27 @@ resource "azuredevops_serviceendpoint_octopusdeploy" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `url` - (Required) Octopus Server url.
-- `api_key` - (Required) API key to connect to Octopus Deploy.
-- `ignore_ssl_error` - (Optional) Whether to ignore SSL errors when connecting to the Octopus server from the agent. Default to `false`.
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+* `project_id` - (Required) The ID of the project.
+
+* `service_endpoint_name` - (Required) The Service Endpoint name.
+
+* `url` - (Required) Octopus Server url.
+
+* `api_key` - (Required) API key to connect to Octopus Deploy.
+
+---
+
+* `ignore_ssl_error` - (Optional) Whether to ignore SSL errors when connecting to the Octopus server from the agent. Default to `false`.
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 

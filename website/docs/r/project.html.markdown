@@ -29,25 +29,38 @@ resource "azuredevops_project" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The Project Name.
-- `description` - (Optional) The Description of the Project.
-- `visibility` - (Optional) Specifies the visibility of the Project. Valid values: `private` or `public`. Defaults to `private`.
-- `version_control` - (Optional) Specifies the version control system. Valid values: `Git` or `Tfvc`. Defaults to `Git`.
-- `work_item_template` - (Optional) Specifies the work item template. Valid values: `Agile`, `Basic`, `CMMI`, `Scrum` or a custom, pre-existing one. Defaults to `Agile`. An empty string will use the parent organization default.
-- `features` - (Optional) Defines the status (`enabled`, `disabled`) of the project features.
-   Valid features are `boards`, `repositories`, `pipelines`, `testplans`, `artifacts`
+* `name` - (Required) The Project Name.
 
-> **NOTE:**
-> It's possible to define project features both within the [`azuredevops_project_features` resource](project_features.html) and
-> via the `features` block by using the [`azuredevops_project` resource](project.html).
-> However it's not possible to use both methods to manage features, since there'll be conflicts.
+---
+
+* `description` - (Optional) The Description of the Project.
+*
+* `visibility` - (Optional) Specifies the visibility of the Project. Possible values are: `private` or `public`. Defaults to `private`.
+
+* `version_control` - (Optional) Specifies the version control system. Possbile values are: `Git` or `Tfvc`. Defaults to `Git`.
+
+* `work_item_template` - (Optional) Specifies the work item template. Possible values are: `Agile`, `Basic`, `CMMI`, `Scrum` or a custom, pre-existing one. Defaults to `Agile`. An empty string will use the parent organization default.
+
+* `features` - (Optional) Defines the status (`enabled`, `disabled`) of the project features. Valid features are `boards`, `repositories`, `pipelines`, `testplans`, `artifacts`
+
+  | Features     | Possible Values   |
+  |--------------|-------------------|
+  | boards       | enabled, disabled |
+  | repositories | enabled, disabled |
+  | pipelines    | enabled, disabled |
+  | testplans    | enabled, disabled |
+  | artifacts    | enabled, disabled |
+
+  ~> **NOTE:** It's possible to define project features both within the [`azuredevops_project_features` resource](project_features.html) and 
+    via the `features` block by using the [`azuredevops_project` resource](project.html). 
+    However it's not possible to use both methods to manage features, since there'll be conflicts.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The Project ID of the Project.
-- `process_template_id` - The Process Template ID used by the Project.
+* `id` - The Project ID of the Project.
+* `process_template_id` - The Process Template ID used by the Project.
 
 ## Relevant Links
 
