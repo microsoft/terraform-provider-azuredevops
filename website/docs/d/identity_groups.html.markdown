@@ -44,7 +44,9 @@ A `groups` block supports the following:
 
 * `id` - The ID of the Identity Group.
 
-* `name` - This is the non-unique display name of the identity subject. To change this field, you must alter its value in the source provider.
+* `descriptor` - The descriptor of the Identity Group.
+
+* `name` - This is the non-unique display name of the identity subject.
 
 ## Relevant Links
 
