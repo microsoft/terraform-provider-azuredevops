@@ -43,6 +43,8 @@ The following arguments are supported:
 
 * `name` - (required) The PrincipalName of this identity member from the source provider.
 
+---
+
 * `search_filter` - (Optional) The type of search to perform. Possible values are: `AccountName`, `DisplayName`, and `MailAddress`. Default is `General`.
 
 ## Attributes Reference

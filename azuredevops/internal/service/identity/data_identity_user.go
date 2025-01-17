@@ -24,15 +24,15 @@ func DataIdentityUser() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
-			"descriptor": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"search_filter": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "General",
 				ValidateFunc: validation.StringInSlice([]string{"AccountName", "DisplayName", "MailAddress", "General"}, false),
+			},
+			"descriptor": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -57,7 +57,7 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Filter for the desired user in the FilterUsers results
 	targetUser := validateIdentityUser(flattenUser, userName, searchFilter)
 	if targetUser == nil {
-		return fmt.Errorf(" Could not find user with name: %s with filter: %s", userName, searchFilter)
+		return fmt.Errorf(" Could not find user with name: %s, with filter: %s", userName, searchFilter)
 	}
 
 	// Set id and user list for users data resource

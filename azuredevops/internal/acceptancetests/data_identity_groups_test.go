@@ -24,6 +24,7 @@ func TestAccIdentityGroupsDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "groups.0.descriptor"),
 				),
 			},
 		},
