@@ -6,6 +6,8 @@ issues:
   max-per-linter: 0
   max-same-issues: 0
 
+timeout: 10m
+
 linters:
   disable-all: true
   enable:
