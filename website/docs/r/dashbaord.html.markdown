@@ -52,7 +52,7 @@ resource "azuredevops_dashboard" "example" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the Wiki.
+* `name` - (Required) The name of the Dashboard.
 
 * `project_id` - (Required) The ID of the Project. Changing this forces a new resource to be created.
 
@@ -73,7 +73,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Relevant Links
 
-- [Azure DevOps dashboards REST API 7.1 - Wiki ](https://learn.microsoft.com/en-us/rest/api/azure/devops/dashboard/dashboards?view=azure-devops-rest-7.1)
+- [Azure DevOps dashboards REST API 7.1 - Dashboard ](https://learn.microsoft.com/en-us/rest/api/azure/devops/dashboard/dashboards?view=azure-devops-rest-7.1)
 
 ## Timeouts
 

@@ -115,7 +115,7 @@ func resourceDashboardCreate(ctx context.Context, d *schema.ResourceData, m inte
 	resp, err := clients.DashboardClient.CreateDashboard(clients.Ctx, params)
 
 	if err != nil {
-		return diag.Errorf(" Creating dashboard in Azure DevOps: %s", err)
+		return diag.Errorf(" Creating dashboard. Error: %s", err)
 	}
 
 	d.SetId(resp.Id.String())
@@ -128,7 +128,7 @@ func resourceDashboardRead(ctx context.Context, d *schema.ResourceData, m interf
 	id := d.Id()
 	dashboardId, err := uuid.Parse(id)
 	if err != nil {
-		return diag.Errorf(" Parsing dashboard ID: %+v", err)
+		return diag.Errorf(" Parsing dashboard ID. Error: %+v", err)
 	}
 
 	params := dashboard.GetDashboardArgs{
@@ -146,7 +146,7 @@ func resourceDashboardRead(ctx context.Context, d *schema.ResourceData, m interf
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf(" Getting dashboard with id: %s, %+v", id, err)
+		return diag.Errorf(" Getting dashboard with id: %s. Error: %+v", id, err)
 	}
 
 	if resp != nil {
@@ -173,7 +173,7 @@ func resourceDashboardRead(ctx context.Context, d *schema.ResourceData, m interf
 			})
 
 			if err != nil {
-				diag.Errorf(" Getting Dashboard Team ID: %s, %+v", resp.GroupId.String(), err)
+				diag.Errorf(" Getting Dashboard with Team ID: %s. Error: %+v", resp.GroupId.String(), err)
 			}
 
 			if team != nil && team.Name != nil {
@@ -265,7 +265,5 @@ func resourceDashboardDelete(ctx context.Context, d *schema.ResourceData, m inte
 		}
 		return diag.Errorf(" Deleting dashboard with id %s: %+v", id, err)
 	}
-
-	d.SetId("")
 	return nil
 }
