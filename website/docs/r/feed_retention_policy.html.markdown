@@ -1,5 +1,5 @@
-layout: "azuredevops"
 ---
+layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_feed_retention_policy"
 description: |-
   Manages the Feed Retention Policy within Azure DevOps organization.
