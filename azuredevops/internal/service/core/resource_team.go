@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -97,7 +98,7 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf(" Creating Team: %+v", err)
 	}
 
 	teamID := team.Id.String()
@@ -301,7 +302,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				ExpandIdentity: converter.Bool(false),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf("Error reading team data: %+v", err)
+				return nil, "", fmt.Errorf(" Reading team data: %+v", err)
 			}
 
 			bDescriptionUpdated := nil == description || *team.Description == *description
@@ -311,21 +312,33 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if administratorSet != nil {
 				actualAdministrators, err := getTeamAdministrators(d, clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf("Error reading team administrators: %+v", err)
+					return nil, "", fmt.Errorf(" Reading team administrators: %+v", err)
 				}
 				bAdministratorsUpdated = actualAdministrators.Len() == administratorSet.Len()
+			}
+
+			dashboards, err := clients.DashboardClient.GetDashboardsByProject(clients.Ctx, dashboard.GetDashboardsByProjectArgs{
+				Project: converter.String(projectID),
+				Team:    converter.String(teamID),
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf(" Reading Team dashboard: %+v", err)
+			}
+			dashboardUpdate := true
+			if dashboards == nil && len(*dashboards) == 0 {
+				dashboardUpdate = false
 			}
 
 			bMembersUpdated := true
 			if memberSet != nil {
 				actualMemberships, err := getTeamMembers(clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf("Error reading team memberships: %+v", err)
+					return nil, "", fmt.Errorf(" Reading team memberships: %+v", err)
 				}
 				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
 			}
 
-			if bNameUpdated && bDescriptionUpdated && bAdministratorsUpdated && bMembersUpdated {
+			if bNameUpdated && bDescriptionUpdated && bAdministratorsUpdated && bMembersUpdated && dashboardUpdate {
 				state = "Synched"
 			}
 			return state, state, nil
@@ -333,6 +346,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 		Timeout:                   30 * time.Minute,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
+		PollInterval:              10 * time.Second,
 		ContinuousTargetOccurence: 2,
 	}
 
