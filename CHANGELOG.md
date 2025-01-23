@@ -1,3 +1,35 @@
+## 1.6.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_service_principal_entitlement` [#1253](https://github.com/microsoft/terraform-provider-azuredevops/pull/1253)
+* **New Resource** `azuredevops_feed_retention_policy` [#1257](https://github.com/microsoft/terraform-provider-azuredevops/pull/1257)
+* **New Resource** `azuredevops_project_tags` [#1259](https://github.com/microsoft/terraform-provider-azuredevops/pull/1259)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_sca` [#1267](https://github.com/microsoft/terraform-provider-azuredevops/pull/1267)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_sast` [#1268](https://github.com/microsoft/terraform-provider-azuredevops/pull/1268)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_one` [#1269](https://github.com/microsoft/terraform-provider-azuredevops/pull/1269)
+* **New Resource** `azuredevops_check_rest_api` [#1274](https://github.com/microsoft/terraform-provider-azuredevops/pull/1274)
+* **New Data Resource** `azuredevops_service_principal` [#1253](https://github.com/microsoft/terraform-provider-azuredevops/pull/1253)
+
+BUG FIX:
+
+* `azuredevops_securityrole_assignment` - Fix inconsistent result after apply.  [#1255](https://github.com/microsoft/terraform-provider-azuredevops/pull/1255)
+* `azuredevops_wiki` - Fix documentation typos.  [#1264](https://github.com/microsoft/terraform-provider-azuredevops/pull/1264)
+* `azuredevops_git_repository` - Fix branch not found bug.  [#1270](https://github.com/microsoft/terraform-provider-azuredevops/pull/1270)
+* Permission resources - Add support for identity filtering.  [#1256](https://github.com/microsoft/terraform-provider-azuredevops/pull/1256)
+
+IMPROVEMENTS:
+
+
+* `azuredevops_project` - Update documentation. [#1258](https://github.com/microsoft/terraform-provider-azuredevops/pull/1258)
+* `azuredevops_feed_retention_policy` - Add support for organization level feed retention policy. [#1261](https://github.com/microsoft/terraform-provider-azuredevops/pull/1261)
+* **Data Resource** `azuredevops_team` - Optimize the read operation, use `GetTeam` instead of `GetTeams` [#1262](https://github.com/microsoft/terraform-provider-azuredevops/pull/1262)
+* All resource documentation - Add timeout documentation. [#1273](https://github.com/microsoft/terraform-provider-azuredevops/pull/1273)
+* Update dependencies and bump go to `v1.23` [#1277](https://github.com/microsoft/terraform-provider-azuredevops/pull/1277)
+* Documentation
+  - Update document format [#1278](https://github.com/microsoft/terraform-provider-azuredevops/pull/1278)
+  - Fix documentation errors and add missing properties. [#1280](https://github.com/microsoft/terraform-provider-azuredevops/pull/1280)
+
 ## 1.5.0
 
 FEATURES:
