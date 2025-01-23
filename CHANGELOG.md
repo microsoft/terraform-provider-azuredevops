@@ -20,7 +20,6 @@ BUG FIX:
 
 IMPROVEMENTS:
 
-
 * `azuredevops_project` - Update documentation. [#1258](https://github.com/microsoft/terraform-provider-azuredevops/pull/1258)
 * `azuredevops_feed_retention_policy` - Add support for organization level feed retention policy. [#1261](https://github.com/microsoft/terraform-provider-azuredevops/pull/1261)
 * **Data Resource** `azuredevops_team` - Optimize the read operation, use `GetTeam` instead of `GetTeams` [#1262](https://github.com/microsoft/terraform-provider-azuredevops/pull/1262)

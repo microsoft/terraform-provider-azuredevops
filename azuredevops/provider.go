@@ -15,6 +15,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/dashboard"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/feed"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/git"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/graph"
@@ -56,6 +57,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_exclusive_lock":                        approvalsandchecks.ResourceCheckExclusiveLock(),
 			"azuredevops_check_required_template":                     approvalsandchecks.ResourceCheckRequiredTemplate(),
 			"azuredevops_check_rest_api":                              approvalsandchecks.ResourceCheckRestAPI(),
+			"azuredevops_dashboard":                                   dashboard.ResourceDashboard(),
 			"azuredevops_elastic_pool":                                taskagent.ResourceAgentPoolVMSS(),
 			"azuredevops_environment":                                 taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":             taskagent.ResourceEnvironmentKubernetes(),

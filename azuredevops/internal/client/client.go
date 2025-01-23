@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
@@ -29,6 +30,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
+	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/dashboardextra"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
@@ -46,6 +48,8 @@ type AggregatedClient struct {
 	OrganizationURL               string
 	CoreClient                    core.Client
 	BuildClient                   build.Client
+	DashboardClient               dashboard.Client
+	DashboardClientExtra          dashboardextras.Client
 	PipelinesClient               pipelines.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
@@ -99,6 +103,18 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 	operationsClient := operations.NewClient(ctx, connection)
 
 	elasticClient := elastic.NewClient(ctx, connection)
+
+	dashboardClient, err := dashboard.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): dashboardClient.NewClient failed.")
+		return nil, err
+	}
+
+	dashboardClientExtra, err := dashboardextras.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): dashboardClientExtra.NewClient failed.")
+		return nil, err
+	}
 
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
@@ -197,6 +213,8 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
+		DashboardClient:               dashboardClient,
+		DashboardClientExtra:          dashboardClientExtra,
 		ElasticClient:                 elasticClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
