@@ -177,29 +177,29 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(fmt.Errorf(" converting terraform data model to AzDO project reference: %+v", err))
 	}
-	//
-	//requiresUpdate := false
-	//if !d.HasChange("name") {
-	//	project.Name = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
-	//if !d.HasChange("description") {
-	//	project.Description = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
-	//if !d.HasChange("visibility") {
-	//	project.Visibility = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
 
-	//if requiresUpdate {
-	if err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate)); err != nil {
-		return diag.FromErr(fmt.Errorf(" updating project: %v", err))
+	requiresUpdate := false
+	if !d.HasChange("name") {
+		project.Name = nil
+	} else {
+		requiresUpdate = true
 	}
-	//}
+	if !d.HasChange("description") {
+		project.Description = nil
+	} else {
+		requiresUpdate = true
+	}
+	if !d.HasChange("visibility") {
+		project.Visibility = nil
+	} else {
+		requiresUpdate = true
+	}
+
+	if requiresUpdate {
+		if err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate)); err != nil {
+			return diag.FromErr(fmt.Errorf(" updating project: %v", err))
+		}
+	}
 
 	if d.HasChange("features") {
 		var featureStates map[string]interface{}
