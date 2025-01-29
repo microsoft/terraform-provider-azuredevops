@@ -67,6 +67,7 @@ func Provider() *schema.Provider {
 			"azuredevops_git_permissions":                             permissions.ResourceGitPermissions(),
 			"azuredevops_git_repository":                              git.ResourceGitRepository(),
 			"azuredevops_git_repository_branch":                       git.ResourceGitRepositoryBranch(),
+			"azuredevops_git_repository_branch_lock":                  git.ResourceGitRepositoryBranchLock(),
 			"azuredevops_git_repository_file":                         git.ResourceGitRepositoryFile(),
 			"azuredevops_group":                                       graph.ResourceGroup(),
 			"azuredevops_group_entitlement":                           memberentitlementmanagement.ResourceGroupEntitlement(),
