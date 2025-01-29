@@ -25,7 +25,7 @@ $script:PSDefaultParameterValues = @{
 
 . (Join-Path -Path $PSScriptRoot -ChildPath 'commons.ps1' -Resolve)
 
-function clean() {
+function clean_build_directory() {
     Write-Host "Cleaning $BUILD_DIR"
     if (Test-Path -Path $BUILD_DIR) {
         Remove-Item -Recurse -Force -Path $BUILD_DIR
@@ -60,20 +60,20 @@ function compile() {
         if ($DebugBuild) {
             $argv += @( '-gcflags="all=-N -l"' )
         }
-        go @argv 
+        go @argv
         if ($LASTEXITCODE) {
             throw "Build failed"
         }
     }
     finally {
         'GO111MODULE' `
-        | ForEach-Object -Process {Remove-Item -Path "Env:$_" }    
+        | ForEach-Object -Process {Remove-Item -Path "Env:$_" }
         Pop-Location
     }
 }
 
 function clean_and_build() {
-    clean
+    clean_build_directory
     compile
     if (-not $SkipTests) {
         & (Join-Path -Path $PSScriptRoot -ChildPath 'unittest.ps1' -Resolve) -GoMod $GoMod
