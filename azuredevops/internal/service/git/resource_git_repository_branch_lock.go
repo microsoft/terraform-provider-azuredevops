@@ -40,7 +40,7 @@ func ResourceGitRepositoryBranchLock() *schema.Resource {
 			},
 			"is_locked": {
 				Type:     schema.TypeBool,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 				Default:  true,
 			},
