@@ -46,11 +46,13 @@ A `groups` block supports the following:
 
 * `descriptor` - The descriptor of the Identity Group.
 
+* `subject_descriptor` - The subject descriptor of the identity group.
+
 * `name` - This is the non-unique display name of the identity subject.
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 7.0 - Identities](https://docs.microsoft.com/en-us/rest/api/azure/devops/ims/?view=azure-devops-rest-7.2)
+- [Azure DevOps Service REST API 7.1 - Identities](https://docs.microsoft.com/en-us/rest/api/azure/devops/ims/?view=azure-devops-rest-7.2)
 
 ## Timeouts
 

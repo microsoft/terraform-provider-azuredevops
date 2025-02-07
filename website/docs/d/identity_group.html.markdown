@@ -37,9 +37,11 @@ The following attributes are exported:
 
 * `descriptor` - The descriptor of the identity group.
 
+* `subject_descriptor` - The subject descriptor of the identity group.
+
 ## Relevant Links
 
-- [Azure DevOps Service REST API 7.0 - Identities](https://docs.microsoft.com/en-us/rest/api/azure/devops/ims/?view=azure-devops-rest-7.2)
+- [Azure DevOps Service REST API 7.1 - Identities](https://docs.microsoft.com/en-us/rest/api/azure/devops/ims/?view=azure-devops-rest-7.2)
 
 ## Timeouts
 
