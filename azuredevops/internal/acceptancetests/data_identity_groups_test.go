@@ -25,6 +25,7 @@ func TestAccIdentityGroupsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "groups.#"),
 					resource.TestCheckResourceAttrSet(tfNode, "groups.0.descriptor"),
+					resource.TestCheckResourceAttrSet(tfNode, "groups.0.subject_descriptor"),
 				),
 			},
 		},

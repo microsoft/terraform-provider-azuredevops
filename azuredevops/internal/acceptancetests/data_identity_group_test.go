@@ -23,7 +23,8 @@ func TestAccIdentityGroupDataSource(t *testing.T) {
 			{
 				Config: hclIdentityGroupConfig(groupName, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfNode, "subject_descriptor"),
 					resource.TestCheckResourceAttr(tfNode, "name", fmt.Sprintf("[%s]\\%s", projectName, groupName)),
 				),
 			},
