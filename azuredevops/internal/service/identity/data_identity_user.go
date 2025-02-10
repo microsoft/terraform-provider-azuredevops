@@ -81,21 +81,6 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 	return response, nil
 }
 
-// Flatten Query Results
-func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, error) {
-	if users == nil {
-		return nil, fmt.Errorf(" Input Users Parameter is nil")
-	}
-	results := make([]identity.Identity, 0)
-	for _, user := range *users {
-		if user.Descriptor == nil {
-			return nil, fmt.Errorf(" User Object does not contain an id")
-		}
-		results = append(results, user)
-	}
-	return &results, nil
-}
-
 // Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter.
 func validateIdentityUser(users *[]identity.Identity, userName string, searchFilter string) *identity.Identity {
 	for _, user := range *users {
