@@ -19,19 +19,19 @@ data "azuredevops_identity_user" "contoso-user" {
 
 # Use MailAddress
 data "azuredevops_identity_user" "contoso-user-upn" {
-  name = "contoso-user@contoso.onmicrosoft.com"
+  name          = "contoso-user@contoso.onmicrosoft.com"
   search_filter = "MailAddress"
 }
 
 # Use AccountName
 data "azuredevops_identity_user" "contoso-user-upn" {
-  name = "contoso-user@contoso.onmicrosoft.com"
+  name          = "contoso-user@contoso.onmicrosoft.com"
   search_filter = "AccountName"
 }
 
 # Use DisplayName
 data "azuredevops_identity_user" "contoso-user-upn" {
-  name = "Contoso User"
+  name          = "Contoso User"
   search_filter = "DisplayName"
 }
 
@@ -53,7 +53,9 @@ The following attributes are exported:
 
 * `id` - The ID of the user.
 
-* `descriptor` - The descriptor of the user.
+* `descriptor` - The Descriptor of the user.
+
+* `subject_descriptor` - The Subject Descriptor of the user.
 
 ## Relevant Links
 

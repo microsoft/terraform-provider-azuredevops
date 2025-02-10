@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// DataIdentityUserResource returns the user data source resource
+// DataIdentityUser DataIdentityUserResource returns the user data source resource
 func DataIdentityUser() *schema.Resource {
 	return &schema.Resource{
 		Read: dataIdentitySourceUserRead,
@@ -34,6 +34,10 @@ func DataIdentityUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"subject_descriptor": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -49,13 +53,8 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" Finding user with filter %s. Error: %v", searchFilter, err)
 	}
 
-	flattenUser, err := flattenIdentityUsers(filterUser)
-	if err != nil {
-		return fmt.Errorf(" Flatten user. Error: %v", err)
-	}
-
 	// Filter for the desired user in the FilterUsers results
-	targetUser := validateIdentityUser(flattenUser, userName, searchFilter)
+	targetUser := validateIdentityUser(filterUser, userName, searchFilter)
 	if targetUser == nil {
 		return fmt.Errorf(" Could not find user with name: %s, with filter: %s", userName, searchFilter)
 	}
@@ -64,6 +63,7 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	targetUserID := targetUser.Id.String()
 	d.SetId(targetUserID)
 	d.Set("descriptor", targetUser.Descriptor)
+	d.Set("subject_descriptor", targetUser.SubjectDescriptor)
 	return nil
 }
 
@@ -86,18 +86,12 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 	if users == nil {
 		return nil, fmt.Errorf(" Input Users Parameter is nil")
 	}
-	results := make([]identity.Identity, len(*users))
-	for i, user := range *users {
+	results := make([]identity.Identity, 0)
+	for _, user := range *users {
 		if user.Descriptor == nil {
 			return nil, fmt.Errorf(" User Object does not contain an id")
 		}
-		newUser := identity.Identity{
-			Descriptor:          user.Descriptor,
-			Id:                  user.Id,
-			ProviderDisplayName: user.ProviderDisplayName,
-			// Add other fields here if needed
-		}
-		results[i] = newUser
+		results = append(results, user)
 	}
 	return &results, nil
 }
@@ -105,8 +99,33 @@ func flattenIdentityUsers(users *[]identity.Identity) (*[]identity.Identity, err
 // Filter results to validate user is correct. Occurs post-flatten due to missing properties based on search-filter.
 func validateIdentityUser(users *[]identity.Identity, userName string, searchFilter string) *identity.Identity {
 	for _, user := range *users {
-		if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) {
+		prop := user.Properties.(map[string]interface{})
+
+		switch searchFilter {
+		case "General":
 			return &user
+		case "DisplayName":
+			if strings.Contains(strings.ToLower(*user.ProviderDisplayName), strings.ToLower(userName)) {
+				return &user
+			}
+		case "MailAddress":
+			if v, ok := prop["Mail"]; ok && v != nil {
+				mailProp := v.(map[string]interface{})
+				if emailAddress, ok := mailProp["$value"].(string); ok {
+					if strings.Contains(strings.ToLower(emailAddress), strings.ToLower(userName)) {
+						return &user
+					}
+				}
+			}
+		case "AccountName":
+			if v, ok := prop["Account"]; ok && v != nil {
+				mailProp := v.(map[string]interface{})
+				if emailAddress, ok := mailProp["$value"].(string); ok {
+					if strings.Contains(strings.ToLower(emailAddress), strings.ToLower(userName)) {
+						return &user
+					}
+				}
+			}
 		}
 	}
 	return nil
