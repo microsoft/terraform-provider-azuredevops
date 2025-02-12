@@ -31,17 +31,17 @@ The following attributes are exported:
 
 * `id` - The ID of the User.
 
-* `display_name` - This is the non-unique display name of the graph subject.
+* `display_name` - The display name of the User.
 
-* `domain` - This is the non-unique display name of the graph subject.
+* `domain` - The domain of the user.
 
-* `mail_address` - The email address of record for a given graph member. This may be different than the principal name.
+* `mail_address` - The email address of the user.
 
 * `origin` - The type of source provider for the origin identifier (ex:`AD`, `AAD`, `MSA`).
 
-* `origin_id` - The unique identifier from the system of origin. Typically a sid, object id or Guid. Linking and unlinking operations can cause this value to change for a user because the user is not backed by a different provider and has a different unique id in the new provider.
+* `origin_id` - The origin ID of the user.
 
-* `principal_name` - This is the PrincipalName of this graph member from the source provider. The source provider may change this field over time and it is not guaranteed to be immutable for the life of the graph member by VSTS.
+* `principal_name` - The principal name of the user.
 
 * `subject_kind` - The subject kind of the user (ex: `Group`, `Scope`, `User`).
 
