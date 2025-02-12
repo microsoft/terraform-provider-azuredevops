@@ -299,7 +299,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 
 	linq.From(*idlist).Where(func(ele interface{}) bool {
 		if val, ok := ele.(identity.Identity); ok {
-			if val.IsActive != nil && *val.IsActive {
+			if val.IsActive == nil || val.IsActive != nil && *val.IsActive {
 				return true
 			}
 		}
