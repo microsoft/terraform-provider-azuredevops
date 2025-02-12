@@ -180,6 +180,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_service_principal",
 		"azuredevops_team",
 		"azuredevops_teams",
+		"azuredevops_user",
 		"azuredevops_users",
 		"azuredevops_variable_group",
 	}

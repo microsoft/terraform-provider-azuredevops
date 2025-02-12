@@ -174,6 +174,7 @@ func Provider() *schema.Provider {
 			"azuredevops_storage_key":                graph.DataStorageKey(),
 			"azuredevops_team":                       core.DataTeam(),
 			"azuredevops_teams":                      core.DataTeams(),
+			"azuredevops_user":                       graph.DataUser(),
 			"azuredevops_users":                      graph.DataUsers(),
 			"azuredevops_variable_group":             taskagent.DataVariableGroup(),
 		},
