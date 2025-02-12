@@ -2,6 +2,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -75,7 +76,7 @@ func dataIdentitySourceUserRead(ctx context.Context, d *schema.ResourceData, m i
 		if utils.ResponseWasNotFound(err) {
 			return diag.Errorf(" User does not exist with descriptor: %s", descriptor)
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf(" Reading User: %+v", err))
 	}
 
 	if user == nil {
