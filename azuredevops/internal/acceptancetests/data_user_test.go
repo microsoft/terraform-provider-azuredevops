@@ -40,6 +40,6 @@ resource "azuredevops_user_entitlement" "test" {
 
 data "azuredevops_user" "test" {
   descriptor = azuredevops_user_entitlement.test.descriptor
-  depends_on     = [azuredevops_user_entitlement.test]
+  depends_on = [azuredevops_user_entitlement.test]
 }`, uname)
 }
