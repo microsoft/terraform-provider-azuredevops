@@ -52,10 +52,8 @@ func baseSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(0, 1024),
 		},
 		"authorization": {
-			Type:         schema.TypeMap,
-			Optional:     true,
-			Computed:     true,
-			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Type:     schema.TypeMap,
+			Computed: true,
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
