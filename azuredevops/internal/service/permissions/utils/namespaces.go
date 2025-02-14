@@ -478,7 +478,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 				Descriptors: converter.String(descriptor),
 			})
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf(" Unable to get identity details for descriptor [%s]", descriptor)
 			}
 			idMap[descriptor] = (*identityDetails)[0]
 		}

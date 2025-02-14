@@ -213,7 +213,7 @@ resource "azuredevops_git_permissions" "test" {
   principal  = data.azuredevops_identity_user.test.subject_descriptor
   permissions = {
     CreateRepository = "Deny"
-    DeleteRepository = "Deny"
+    DeleteRepository = "Allow"
     RenameRepository = "NotSet"
   }
 }`, projectName)
