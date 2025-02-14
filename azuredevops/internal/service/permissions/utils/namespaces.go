@@ -469,14 +469,29 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 			func(item interface{}) interface{} { return *item.(identity.Identity).Descriptor },
 			func(item interface{}) interface{} { return item })
 
-	permissions := []PrincipalPermission{}
-	for id, ace := range *acl.AcesDictionary {
-		subject, ok := idMap[id]
+	// The descriptor from the ACL may be different from the original descriptor
+	// Try to get the ACL using the descriptor from the ACL and add it to the collection
+	for descriptor := range *acl.AcesDictionary {
+		_, ok := idMap[descriptor]
 		if !ok {
-			return nil, fmt.Errorf("INTERAL ERROR: identity map does not contain an item with key [%s]", id)
+			identityDetails, err := sn.identityClient.ReadIdentities(sn.context, identity.ReadIdentitiesArgs{
+				Descriptors: converter.String(descriptor),
+			})
+			if err != nil {
+				return nil, fmt.Errorf(" Unable to get identity details for descriptor [%s]", descriptor)
+			}
+			idMap[descriptor] = (*identityDetails)[0]
+		}
+	}
+
+	var permissions []PrincipalPermission
+	for descriptor, ace := range *acl.AcesDictionary {
+		subject, ok := idMap[descriptor]
+		if !ok {
+			return nil, fmt.Errorf("INTERAL ERROR: identity map does not contain an item with key [%s]", descriptor)
 		}
 		if subject.SubjectDescriptor == nil {
-			return nil, fmt.Errorf("Identity %s does not contain a subject descriptor value", id)
+			return nil, fmt.Errorf(" Identity %s does not contain a subject descriptor value", descriptor)
 		}
 
 		subjectPerm := PrincipalPermission{
