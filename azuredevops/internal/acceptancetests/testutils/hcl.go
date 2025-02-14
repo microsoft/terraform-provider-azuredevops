@@ -780,29 +780,6 @@ resource "azuredevops_build_folder" "test_folder" {
 `, projectResource, escapedBuildPath, description)
 }
 
-// HclGitPermissions creates HCl for testing to set permissions for a the all Git repositories of AzDO project
-func HclGitPermissions(projectName string) string {
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-data "azuredevops_group" "project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
-}
-
-resource "azuredevops_git_permissions" "git-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-readers.id
-	permissions = {
-		CreateRepository = "Deny"
-		DeleteRepository = "Deny"
-		RenameRepository = "NotSet"
-	}
-}
-`, projectResource)
-}
-
 func HclTeamConfiguration(projectName string, teamName string, teamDescription string, teamAdministrators *[]string, teamMembers *[]string) string {
 	var teamResource string
 	projectResource := HclProjectResource(projectName)
