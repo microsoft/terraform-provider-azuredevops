@@ -1,3 +1,31 @@
+## 1.7.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_dashboard` [#1284](https://github.com/microsoft/terraform-provider-azuredevops/pull/1284)
+* **New Data Resource** `azuredevops_descriptor` [#1294](https://github.com/microsoft/terraform-provider-azuredevops/pull/1294)
+* **New Data Resource** `azuredevops_storage_key` [#1294](https://github.com/microsoft/terraform-provider-azuredevops/pull/1294)
+* **New Data Resource** `azuredevops_user` [#1296](https://github.com/microsoft/terraform-provider-azuredevops/pull/1296)
+
+BUG FIX:
+
+* `azuredevops_project` - Fix name unchanged but updated.  [#1285](https://github.com/microsoft/terraform-provider-azuredevops/pull/1285)
+* Permission resources 
+  - Fix `descriptor` filter bug, cannot set permission for AAD groups. [#1297](https://github.com/microsoft/terraform-provider-azuredevops/pull/1297)
+  - Fix collection level groups/users cannot set permission bug. [#1299](https://github.com/microsoft/terraform-provider-azuredevops/pull/1299)
+
+IMPROVEMENTS:
+
+* `azuredevops_identity_groups`  
+  - Add support for `descriptor`. [#1279](https://github.com/microsoft/terraform-provider-azuredevops/pull/1279)
+  - Add support for `subject_descriptor`. [#1292](https://github.com/microsoft/terraform-provider-azuredevops/pull/1292)
+* `azuredevops_identity_group` - Add support for `subject_descriptor`. [#1292](https://github.com/microsoft/terraform-provider-azuredevops/pull/1292)
+* `azuredevops_identity_user` - Add support for `subject_descriptor`. [#1293](https://github.com/microsoft/terraform-provider-azuredevops/pull/1293)
+
+BREAKING CHANGE:
+
+* All service endpoint resources - Change `authorization` to compute only, not configurable. [#1298](https://github.com/microsoft/terraform-provider-azuredevops/pull/1298)
+
 ## 1.6.0
 
 FEATURES:
