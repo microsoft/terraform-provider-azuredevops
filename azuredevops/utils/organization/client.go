@@ -14,7 +14,7 @@ import (
 const baseUrl = "https://%s.vssps.visualstudio.com/_apis/Organization/Collections/me"
 
 type Client interface {
-	GetOrganizationMeta(ctx context.Context, organizationName string) (*OrganizationMeta, error)
+	GetOrganization(ctx context.Context, organizationName string) (*Organization, error)
 }
 
 type ClientImpl struct {
@@ -28,7 +28,7 @@ func NewClient(ctx context.Context, connection *azuredevops.Connection) Client {
 	}
 }
 
-func (c ClientImpl) GetOrganizationMeta(ctx context.Context, organizationName string) (*OrganizationMeta, error) {
+func (c ClientImpl) GetOrganization(ctx context.Context, organizationName string) (*Organization, error) {
 	fullUrl := fmt.Sprintf(baseUrl, organizationName)
 	req, err := c.Client.CreateRequestMessage(ctx, http.MethodGet, fullUrl, "", nil, "application/json", "", nil)
 	if err != nil {
@@ -40,7 +40,7 @@ func (c ClientImpl) GetOrganizationMeta(ctx context.Context, organizationName st
 		return nil, err
 	}
 
-	var responseValue OrganizationMeta
+	var responseValue Organization
 	err = c.Client.UnmarshalBody(resp, &responseValue)
 	return &responseValue, err
 }

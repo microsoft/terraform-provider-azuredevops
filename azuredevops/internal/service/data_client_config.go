@@ -51,7 +51,7 @@ func clientConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	parts := strings.Split(m.(*client.AggregatedClient).OrganizationURL, "/")
 
-	orgMeta, err := clients.OrganizationClient.GetOrganizationMeta(clients.Ctx, parts[3])
+	orgMeta, err := clients.OrganizationClient.GetOrganization(clients.Ctx, parts[3])
 	if err != nil {
 		return diag.Errorf(" Getting organization metadata: %s", err)
 	}
