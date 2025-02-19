@@ -11,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-// Verifies that the client config data source loads the configured AzDO org
 func TestAccClientConfig_LoadsCorrectProperties(t *testing.T) {
 	tfNode := "data.azuredevops_client_config.test"
 	resource.ParallelTest(t, resource.TestCase{
@@ -25,6 +24,7 @@ func TestAccClientConfig_LoadsCorrectProperties(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "organization_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "status"),
 					resource.TestCheckResourceAttrSet(tfNode, "tenant_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "owner_id"),
 					resource.TestCheckResourceAttr(tfNode, "organization_url", os.Getenv("AZDO_ORG_SERVICE_URL")),
 				),
 			},
