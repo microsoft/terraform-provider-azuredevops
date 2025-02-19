@@ -29,6 +29,8 @@ The following attributes are exported:
 
 * `id` - The ID of the organization.
 
+* `name` - The name of the organization.
+
 * `organization_url` - The URL of the organization.
 
 * `owner_id` - The owner ID of the organization.
