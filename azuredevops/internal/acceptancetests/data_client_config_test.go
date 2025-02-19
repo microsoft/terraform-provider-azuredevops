@@ -21,7 +21,6 @@ func TestAccClientConfig_LoadsCorrectProperties(t *testing.T) {
 				Config: `data "azuredevops_client_config" "test" {}`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "name"),
-					resource.TestCheckResourceAttrSet(tfNode, "organization_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "status"),
 					resource.TestCheckResourceAttrSet(tfNode, "tenant_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "owner_id"),

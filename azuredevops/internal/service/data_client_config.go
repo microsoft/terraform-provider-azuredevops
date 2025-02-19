@@ -23,11 +23,6 @@ func DataClientConfig() *schema.Resource {
 				Computed: true,
 			},
 
-			"organization_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"organization_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -63,7 +58,6 @@ func clientConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	d.SetId(*orgMeta.Id)
 	d.Set("organization_url", m.(*client.AggregatedClient).OrganizationURL)
-	d.Set("organization_id", orgMeta.Id)
 	d.Set("status", orgMeta.Status)
 	d.Set("name", orgMeta.Name)
 	d.Set("tenant_id", orgMeta.TenantId)
