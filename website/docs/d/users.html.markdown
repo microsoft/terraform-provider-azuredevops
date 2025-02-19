@@ -9,6 +9,9 @@ description: |-
 
 Use this data source to access information about an existing users within Azure DevOps.
 
+~> **NOTE:** This resource will try to get all the users within the organization which may result in poor performance. `azuredevops_identity_user`, `azuredevops_user` can be used to replace this resource.
+
+
 ## Example Usage
 
 ```hcl
