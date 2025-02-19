@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/organization"
 	"log"
 	"os"
 	"strings"
@@ -54,6 +55,7 @@ type AggregatedClient struct {
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
 	OperationsClient              operations.Client
+	OrganizationClient            organization.Client
 	PipelinesChecksClient         pipelineschecks.Client
 	PipelinePermissionsClient     pipelinepermissions.Client
 	PipelinesChecksClientExtras   pipelineschecksextras.Client
@@ -101,6 +103,8 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 	}
 
 	operationsClient := operations.NewClient(ctx, connection)
+
+	organizationClient := organization.NewClient(ctx, connection)
 
 	elasticClient := elastic.NewClient(ctx, connection)
 
@@ -219,6 +223,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
 		OperationsClient:              operationsClient,
+		OrganizationClient:            organizationClient,
 		PipelinesClient:               pipelines,
 		PipelinesChecksClient:         pipelinesChecksClient,
 		PipelinePermissionsClient:     pipelinepermissionsClient,
