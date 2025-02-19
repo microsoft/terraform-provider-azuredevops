@@ -27,7 +27,17 @@ This data source has no arguments
 
 The following attributes are exported:
 
-* `organization_url` - The organization configured for the provider.
+* `id` - The ID of the organization.
+
+* `name` - The name of the organization.
+
+* `organization_url` - The URL of the organization.
+
+* `owner_id` - The owner ID of the organization.
+
+* `status` - The status of the organization.
+
+* `tenant_id` - The Tenant ID of the connected Azure Directory.
 
 ## Timeouts
 
