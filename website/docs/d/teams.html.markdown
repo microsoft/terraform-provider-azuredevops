@@ -5,7 +5,7 @@ description: |-
   Use this data source to access information about existing Teams in a Project or globally within an Azure DevOps organization
 ---
 
-# Data Source: azuredevops_team
+# Data Source: azuredevops_teams
 
 Use this data source to access information about existing Teams in a Project or globally within an Azure DevOps organization
 
@@ -23,7 +23,7 @@ output "name" {
   value = data.azuredevops_teams.example.teams.*.name
 }
 
-output "alladministrators" {
+output "all_administrators" {
   value = data.azuredevops_teams.example.teams.*.administrators
 }
 
