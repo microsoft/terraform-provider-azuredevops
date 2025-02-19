@@ -46,11 +46,12 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"origin": {
-				Type:         schema.TypeString,
-				Computed:     true,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppress.CaseDifference,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
 			},
 			"account_license_type": {
 				Type:     schema.TypeString,

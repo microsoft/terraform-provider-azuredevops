@@ -19,7 +19,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
-func TestAccServicePrincipalEntitlement_Create(t *testing.T) {
+func TestAccServicePrincipalEntitlement_create(t *testing.T) {
 	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID") == "" {
 		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID` not set")
 	}
@@ -111,8 +111,8 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 func hclServicePrincipalEntitlementResource(servicePrincipalId string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_service_principal_entitlement" "service_principal" {
-  origin_id       = "%s"
-  origin          = "aad"
+  origin_id            = "%s"
+  origin               = "aad"
   account_license_type = "express"
 }`, servicePrincipalId)
 }
