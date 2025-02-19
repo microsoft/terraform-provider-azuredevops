@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/organization"
 	"log"
 	"os"
 	"strings"
@@ -32,6 +31,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/dashboardextra"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
