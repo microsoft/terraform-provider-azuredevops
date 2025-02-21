@@ -156,6 +156,7 @@ func Provider() *schema.Provider {
 			"azuredevops_git_repositories":           git.DataGitRepositories(),
 			"azuredevops_git_repository":             git.DataGitRepository(),
 			"azuredevops_group":                      graph.DataGroup(),
+			"azuredevops_group_membership":           graph.DataGroupMembership(),
 			"azuredevops_groups":                     graph.DataGroups(),
 			"azuredevops_identity_group":             identity.DataIdentityGroup(),
 			"azuredevops_identity_groups":            identity.DataIdentityGroups(),
