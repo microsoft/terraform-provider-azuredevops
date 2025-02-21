@@ -119,7 +119,9 @@ The following attributes are exported:
 * `id` - The ID of the service endpoint.
 * `project_id` - The ID of the project.
 * `service_endpoint_name` - The Service Endpoint name.
-* `service_principal_id` - The service principal ID.
+* `service_principal_id` - The Application(Client) ID of the Service Principal.
+* `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/00000000-0000-0000-0000-000000000000`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+* `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://<organisation>/<project>/<service-connection-name>`.
 
 ## Relevant Links
 
