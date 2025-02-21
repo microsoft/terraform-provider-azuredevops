@@ -47,7 +47,7 @@ func dataSourceGroupMembershipRead(ctx context.Context, d *schema.ResourceData, 
 	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return diag.Errorf(" Group with with descriptor: %s not found. Error: %v", groupDescriptor, err)
+			return diag.Errorf(" Group memberships with descriptor: %s not found. Error: %v", groupDescriptor, err)
 		}
 		return diag.Errorf(" Reading group memberships during read. Group descriptor: %s . Error: %+v", groupDescriptor, err)
 	}
