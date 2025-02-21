@@ -34,6 +34,15 @@ func TestGroupMembership_Create_DoesNotSwallowErrors(t *testing.T) {
 		AddMembership(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("AddMembership() Failed"))
 
+	graphClient.
+		EXPECT().
+		ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
+			SubjectDescriptor: converter.String("TEST_GROUP"),
+			Direction:         &graph.GraphTraversalDirectionValues.Down,
+			Depth:             converter.Int(1),
+		}).
+		Return(&[]graph.GraphMembership{}, nil)
+
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
 	err := resourceGroupMembershipCreate(resourceData, clients)
 	require.Contains(t, err.Error(), "AddMembership() Failed")
