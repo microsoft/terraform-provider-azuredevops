@@ -70,15 +70,12 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			return fmt.Errorf(" Reading group memberships during read: %+v", err)
 		}
 		actualMembershipsSet := getGroupMembershipSet(actualMemberships)
+		if err != nil {
+			return fmt.Errorf(" Converting membership list to set: %+v", err)
+		}
 		membersToRemove = membersToAdd.Difference(actualMembershipsSet)
 	} else {
 		membersToRemove = getGroupMembershipSet(nil)
-	}
-
-	if strings.EqualFold(mode, "add") {
-		if err := checkExistedMembers(clients, membersToAdd.List(), group); err != nil {
-			return fmt.Errorf(" Adding group memberships during create: %+v", err)
-		}
 	}
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
@@ -112,7 +109,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		Timeout:                   60 * time.Minute,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
-		ContinuousTargetOccurence: 2,
+		ContinuousTargetOccurence: 3,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
@@ -158,18 +155,11 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	group := d.Get("group").(string)
-	mode := d.Get("mode").(string)
 	oldData, newData := d.GetChange("members")
 	// members that need to be added will be missing from the old data, but present in the new data
 	membersToAdd := newData.(*schema.Set).Difference(oldData.(*schema.Set))
 	// members that need to be removed will be missing from the new data, but present in the old data
 	membersToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
-
-	if strings.EqualFold(mode, "add") {
-		if err := checkExistedMembers(clients, membersToAdd.List(), group); err != nil {
-			return fmt.Errorf(" Adding group memberships during update: %+v", err)
-		}
-	}
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
 		expandGroupMembers(group, membersToAdd),
@@ -198,7 +188,7 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 		Timeout:                   60 * time.Minute,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
-		ContinuousTargetOccurence: 2,
+		ContinuousTargetOccurence: 3,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf(" Waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
@@ -209,38 +199,9 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 
 func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-
-	group := d.Get("group").(string)
-	membersToRemove := d.Get("members").(*schema.Set)
-	memberships := expandGroupMembers(group, membersToRemove)
+	memberships := expandGroupMembers(d.Get("group").(string), d.Get("members").(*schema.Set))
 
 	err := removeMembers(clients, memberships)
-
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"Waiting"},
-		Target:  []string{"Synched"},
-		Refresh: func() (interface{}, string, error) {
-			state := "Waiting"
-			actualMemberships, err := getGroupMemberships(clients, group)
-			if err != nil {
-				return nil, "", fmt.Errorf(" Reading group memberships: %+v", err)
-			}
-			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
-				state = "Synched"
-			}
-
-			return state, state, nil
-		},
-		Timeout:                   60 * time.Minute,
-		MinTimeout:                5 * time.Second,
-		Delay:                     5 * time.Second,
-		ContinuousTargetOccurence: 2,
-	}
-	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" Waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
-	}
-
 	if err != nil {
 		return fmt.Errorf(" Removing group memberships during delete: %+v", err)
 	}
@@ -295,7 +256,7 @@ func removeMembers(clients *client.AggregatedClient, memberships *[]graph.GraphM
 			})
 
 			if err != nil {
-				return fmt.Errorf(" Removing member from group: %+v", err)
+				return fmt.Errorf("Error removing member from group: %+v", err)
 			}
 		}
 	}
@@ -335,32 +296,4 @@ func getGroupMembershipSet(members *[]graph.GraphMembership) *schema.Set {
 		}
 	}
 	return set
-}
-
-func checkExistedMembers(clients *client.AggregatedClient, membersToAdd []interface{}, groupDescriptor string) error {
-	existedMembers, err := clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
-		SubjectDescriptor: &groupDescriptor,
-		Direction:         &graph.GraphTraversalDirectionValues.Down,
-		Depth:             converter.Int(1),
-	})
-	if err != nil {
-		return fmt.Errorf(" Listing group memberships with group: %s . Error: %+v", groupDescriptor, err)
-	}
-
-	currentMemberMap := map[string]graph.GraphMembership{}
-	for _, member := range *existedMembers {
-		currentMemberMap[*member.MemberDescriptor] = member
-	}
-
-	var existingMembers []string
-	for _, member := range membersToAdd {
-		memberDescriptor := member.(string)
-		if _, ok := currentMemberMap[memberDescriptor]; ok {
-			existingMembers = append(existingMembers, memberDescriptor)
-		}
-	}
-	if len(existingMembers) > 0 {
-		return fmt.Errorf("Adding group membership error, member already existed: %+v", strings.Join(existingMembers, ","))
-	}
-	return nil
 }

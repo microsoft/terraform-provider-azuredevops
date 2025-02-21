@@ -681,6 +681,42 @@ func HclBuildDefinitionWithVariables(varValue, secretVarValue, name string) stri
 	return fmt.Sprintf("%s\n%s", repoAndProjectResource, buildDefinitionResource)
 }
 
+// HclGroupMembershipResource full terraform stanza to standup a group membership
+func HclGroupMembershipResource(projectName, groupName, userPrincipalName string) string {
+	membershipDependenciesStanza := HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
+	membershipStanza := `
+resource "azuredevops_group_membership" "membership" {
+	group = data.azuredevops_group.group.descriptor
+	members = [azuredevops_user_entitlement.user.descriptor]
+}`
+
+	return membershipDependenciesStanza + "\n" + membershipStanza
+}
+
+// HclGroupMembershipDependencies all the dependencies needed to configure a group membership
+func HclGroupMembershipDependencies(projectName, groupName, userPrincipalName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "project" {
+  name = "%s"
+}
+data "azuredevops_group" "group" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+}
+resource "azuredevops_user_entitlement" "user" {
+  principal_name       = "%s"
+  account_license_type = "express"
+}
+
+output "group_descriptor" {
+  value = data.azuredevops_group.group.descriptor
+}
+output "user_descriptor" {
+  value = azuredevops_user_entitlement.user.descriptor
+}
+`, projectName, groupName, userPrincipalName)
+}
+
 // HclResourceAuthorization HCL describing a resource authorization
 func HclResourceAuthorization(resourceID string, authorized bool) string {
 	return fmt.Sprintf(`

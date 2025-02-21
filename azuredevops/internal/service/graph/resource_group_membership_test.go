@@ -34,15 +34,6 @@ func TestGroupMembership_Create_DoesNotSwallowErrors(t *testing.T) {
 		AddMembership(clients.Ctx, expectedArgs).
 		Return(nil, errors.New("AddMembership() Failed"))
 
-	graphClient.
-		EXPECT().
-		ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
-			SubjectDescriptor: converter.String("TEST_GROUP"),
-			Direction:         &graph.GraphTraversalDirectionValues.Down,
-			Depth:             converter.Int(1),
-		}).
-		Return(&[]graph.GraphMembership{}, nil)
-
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
 	err := resourceGroupMembershipCreate(resourceData, clients)
 	require.Contains(t, err.Error(), "AddMembership() Failed")
@@ -63,15 +54,6 @@ func TestGroupMembership_Destroy_DoesNotSwallowErrors(t *testing.T) {
 		EXPECT().
 		RemoveMembership(clients.Ctx, expectedArgs).
 		Return(errors.New("RemoveMembership() Failed"))
-
-	graphClient.
-		EXPECT().
-		ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
-			SubjectDescriptor: converter.String("TEST_GROUP"),
-			Direction:         &graph.GraphTraversalDirectionValues.Down,
-			Depth:             converter.Int(1),
-		}).
-		Return(&[]graph.GraphMembership{}, nil).Times(2)
 
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
 	err := resourceGroupMembershipDelete(resourceData, clients)

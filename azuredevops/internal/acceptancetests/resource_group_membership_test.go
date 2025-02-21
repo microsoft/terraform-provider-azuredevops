@@ -6,7 +6,7 @@ package acceptancetests
 
 import (
 	"fmt"
-	"regexp"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -19,85 +19,44 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func TestAccGroupMembership_createAndRemove(t *testing.T) {
+// Verifies that the following sequence of events occurs without error:
+//
+//	(1) TF apply creates resource
+//	(2) TF state values are set
+//	(3) Group membership exists and can be queried for
+//	(4) TF destroy removes group memberships
+//
+// Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
+func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
+	t.Skip("Skipping test TestAccGroupMembership_CreateAndRemove due to service inconsistent")
 	projectName := testutils.GenerateResourceName()
-	userPrincipalName := testutils.GenerateResourceName() + "@msaztest.com"
-	tfNode := "azuredevops_group_membership.test"
+	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
+	groupName := "Build Administrators"
+	tfNode := "azuredevops_group_membership.membership"
 
+	tfStanzaWithMembership := testutils.HclGroupMembershipResource(projectName, groupName, userPrincipalName)
+	tfStanzaWithoutMembership := testutils.HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
+
+	// This test differs from most other acceptance tests in the following ways:
+	//	- The second step is the same as the first except it omits the group membership.
+	//	  This lets us test that the membership is removed in isolation of the project being deleted
+	//	- There is no CheckDestroy function because that is covered based on the above point
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: hclMemberShipBasic(projectName, userPrincipalName),
+				Config: tfStanzaWithMembership,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "group"),
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
+					checkGroupMembershipMatchesState(),
 				),
 			}, {
-				Config: hclMemberShipRemove(projectName, userPrincipalName),
+				// remove the group membership
+				Config: tfStanzaWithoutMembership,
 				Check:  checkGroupMembershipMatchesState(),
-			},
-		},
-	})
-}
-
-func TestAccGroupMembership_rejectExistedMembersOnCreate(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	userPrincipalName := testutils.GenerateResourceName() + "@msaztest.com"
-	tfNode := "azuredevops_group_membership.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
-		Steps: []resource.TestStep{
-			{
-				Config: hclMemberShipBasic(projectName, userPrincipalName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "group"),
-					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
-				),
-			}, {
-				Config:      hclMemberShipRejectExistedOnCreate(projectName, userPrincipalName),
-				ExpectError: regexp.MustCompile("Adding group memberships during create: Adding group membership error, member already existed"),
-			},
-		},
-	})
-}
-
-func TestAccGroupMembership_rejectExistedMembersOnUpdate(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	userPrincipalName := testutils.GenerateResourceName() + "@msaztest.com"
-	userPrincipalName2 := testutils.GenerateResourceName() + "2@msaztest.com"
-	tfNode := "azuredevops_group_membership.test"
-	tfNode2 := "azuredevops_group_membership.test2"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testutils.PreCheck(t, nil) },
-		Providers: testutils.GetProviders(),
-		Steps: []resource.TestStep{
-			{
-				Config: hclMemberShipBasic(projectName, userPrincipalName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "group"),
-					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
-				),
-			},
-			{
-				Config: hclMemberShipRejectExistedOnUpdate(projectName, userPrincipalName, userPrincipalName2),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "group"),
-					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
-					resource.TestCheckResourceAttr(tfNode2, "members.#", "1"),
-				),
-			},
-			{
-				Config:      hclMemberShipRejectExistedOnUpdate2(projectName, userPrincipalName, userPrincipalName2),
-				ExpectError: regexp.MustCompile("Adding group memberships during update: Adding group membership error, member already existed"),
 			},
 		},
 	})
@@ -108,7 +67,7 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		memberDescriptor := s.RootModule().Outputs["user_descriptor"].Value.(string)
 		groupDescriptor := s.RootModule().Outputs["group_descriptor"].Value.(string)
-		_, expectingMembership := s.RootModule().Resources["azuredevops_group_membership.test"]
+		_, expectingMembership := s.RootModule().Resources["azuredevops_group_membership.membership"]
 
 		// The sleep here is to take into account some propagation delay that can happen with Group Membership APIs.
 		// If we want to go inspect the behavior of the service after a Terraform Apply, we'll need to wait a little bit
@@ -123,6 +82,10 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 			return err
 		}
 
+		if !expectingMembership && len(*memberships) == 0 {
+			return nil
+		}
+
 		if !expectingMembership && len(*memberships) > 0 {
 			return fmt.Errorf("unexpectedly found group members: %+v", memberships)
 		}
@@ -131,12 +94,11 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 			return fmt.Errorf("unexpectedly did not find memberships")
 		}
 
-		if len(*memberships) > 0 {
-			actualMemberDescriptor := *(*memberships)[0].MemberDescriptor
-			if !strings.EqualFold(strings.ToLower(actualMemberDescriptor), strings.ToLower(memberDescriptor)) {
-				return fmt.Errorf("expected member with descriptor %s but member had descriptor %s", memberDescriptor, actualMemberDescriptor)
-			}
+		actualMemberDescriptor := *(*memberships)[0].MemberDescriptor
+		if !strings.EqualFold(strings.ToLower(actualMemberDescriptor), strings.ToLower(memberDescriptor)) {
+			return fmt.Errorf("expected member with descriptor %s but member had descriptor %s", memberDescriptor, actualMemberDescriptor)
 		}
+
 		return nil
 	}
 }
@@ -149,112 +111,4 @@ func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error)
 		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),
 	})
-}
-
-func hclMemberShipTemplate(projectName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name = "%s"
-}
-
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Build Administrators"
-}
-
-resource "azuredevops_user_entitlement" "test" {
-  principal_name       = "%s"
-  account_license_type = "express"
-}`, projectName, userPrincipalName)
-}
-
-func hclMemberShipBasic(projectName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-%s
-
-output "group_descriptor" {
-  value = data.azuredevops_group.test.descriptor
-}
-
-output "user_descriptor" {
-  value = azuredevops_user_entitlement.test.descriptor
-}
-
-resource "azuredevops_group_membership" "test" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test.descriptor]
-}`, hclMemberShipTemplate(projectName, userPrincipalName))
-}
-
-func hclMemberShipRemove(projectName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-%s
-
-output "group_descriptor" {
-  value = data.azuredevops_group.test.descriptor
-}
-
-output "user_descriptor" {
-  value = azuredevops_user_entitlement.test.descriptor
-}`, hclMemberShipTemplate(projectName, userPrincipalName))
-}
-
-func hclMemberShipRejectExistedOnCreate(projectName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_group_membership" "test" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test.descriptor]
-}
-
-resource "azuredevops_group_membership" "test2" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test.descriptor]
-}
-`, hclMemberShipTemplate(projectName, userPrincipalName))
-}
-
-func hclMemberShipRejectExistedOnUpdate(projectName, userPrincipalName, userPrincipalName2 string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_group_membership" "test" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test.descriptor]
-}
-
-resource "azuredevops_user_entitlement" "test2" {
-  principal_name       = "%s"
-  account_license_type = "express"
-}
-
-resource "azuredevops_group_membership" "test2" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test2.descriptor]
-}
-`, hclMemberShipTemplate(projectName, userPrincipalName), userPrincipalName2)
-}
-
-func hclMemberShipRejectExistedOnUpdate2(projectName, userPrincipalName, userPrincipalName2 string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_group_membership" "test" {
-  group = data.azuredevops_group.test.descriptor
-  members = [
-    azuredevops_user_entitlement.test.descriptor,
-    azuredevops_user_entitlement.test2.descriptor
-  ]
-}
-
-resource "azuredevops_user_entitlement" "test2" {
-  principal_name       = "%s"
-  account_license_type = "express"
-}
-
-resource "azuredevops_group_membership" "test2" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test2.descriptor]
-}`, hclMemberShipTemplate(projectName, userPrincipalName), userPrincipalName2)
 }
