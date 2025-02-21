@@ -34,7 +34,7 @@ func ResourceGroupMembership() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.NoZeroValues,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"mode": {
 				Type:             schema.TypeString,
@@ -50,7 +50,7 @@ func ResourceGroupMembership() *schema.Resource {
 				Required: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.NoZeroValues,
+					ValidateFunc: validation.StringIsNotEmpty,
 				},
 			},
 		},
@@ -109,7 +109,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		Timeout:                   60 * time.Minute,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
-		ContinuousTargetOccurence: 3,
+		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf("Error waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
@@ -199,9 +199,36 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 
 func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	memberships := expandGroupMembers(d.Get("group").(string), d.Get("members").(*schema.Set))
+
+	group := d.Get("group").(string)
+	membersToRemove := d.Get("members").(*schema.Set)
+	memberships := expandGroupMembers(group, membersToRemove)
 
 	err := removeMembers(clients, memberships)
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synched"},
+		Refresh: func() (interface{}, string, error) {
+			state := "Waiting"
+			actualMemberships, err := getGroupMemberships(clients, group)
+			if err != nil {
+				return nil, "", fmt.Errorf(" Reading group memberships: %+v", err)
+			}
+			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
+			if actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+				state = "Synched"
+			}
+
+			return state, state, nil
+		},
+		Timeout:                   60 * time.Minute,
+		MinTimeout:                5 * time.Second,
+		Delay:                     5 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
+		return fmt.Errorf(" Waiting for DevOps synching memberships for group  [%s]: %+v", group, err)
+	}
 	if err != nil {
 		return fmt.Errorf(" Removing group memberships during delete: %+v", err)
 	}

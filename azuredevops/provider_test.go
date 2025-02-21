@@ -162,6 +162,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_git_repositories",
 		"azuredevops_git_repository",
 		"azuredevops_group",
+		"azuredevops_group_membership",
 		"azuredevops_groups",
 		"azuredevops_identity_group",
 		"azuredevops_identity_groups",
