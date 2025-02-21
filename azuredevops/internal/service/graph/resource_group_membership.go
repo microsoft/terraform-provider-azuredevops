@@ -75,7 +75,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 		membersToRemove = getGroupMembershipSet(nil)
 	}
 
-	if mode == "add" {
+	if strings.EqualFold(mode, "add") {
 		if err := checkExistedMembers(clients, membersToAdd.List(), group); err != nil {
 			return fmt.Errorf(" Adding group memberships during create: %+v", err)
 		}
@@ -165,7 +165,7 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	// members that need to be removed will be missing from the new data, but present in the old data
 	membersToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
 
-	if mode == "add" {
+	if strings.EqualFold(mode, "add") {
 		if err := checkExistedMembers(clients, membersToAdd.List(), group); err != nil {
 			return fmt.Errorf(" Adding group memberships during update: %+v", err)
 		}
