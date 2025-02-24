@@ -39,10 +39,8 @@ const (
 )
 
 const (
-	azureKeyVaultType                         = "AzureKeyVault"
-	invalidVariableGroupIDErrorMessageFormat  = "Error parsing the variable group ID from the Terraform resource data: %v"
-	flatteningVariableGroupErrorMessageFormat = "Error flattening variable group: %v"
-	expandingVariableGroupErrorMessageFormat  = "Expanding variable group resource data: %+v"
+	azureKeyVaultType                        = "AzureKeyVault"
+	invalidVariableGroupIDErrorMessageFormat = "Error parsing the variable group ID from the Terraform resource data: %+v"
 )
 
 type KeyVaultSecretAttributes struct {
@@ -176,7 +174,7 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	variableGroupParameters, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
-		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Expanding variable group resource data: %+v", err)
 	}
 
 	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID, d.Timeout(schema.TimeoutCreate))
@@ -187,14 +185,14 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	err = flattenVariableGroup(d, addedVariableGroup, projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	// Update Allow Access with definition Reference
 	definitionResourceReferenceArgs := expandAllowAccess(d, addedVariableGroup)
 	definitionResourceReference, err := updateDefinitionResourceAuth(clients, definitionResourceReferenceArgs, projectID)
 	if err != nil {
-		return fmt.Errorf("Error creating definitionResourceReference Azure DevOps object: %+v", err)
+		return fmt.Errorf(" Creating definitionResourceReference Azure DevOps object: %+v", err)
 	}
 
 	flattenAllowAccess(d, definitionResourceReference)
@@ -207,7 +205,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
 	variableGroup, err := clients.TaskAgentClient.GetVariableGroup(
@@ -222,7 +220,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error looking up variable group given ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Looking up variable group given ID (*%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 	if variableGroup.Id == nil {
 		d.SetId("")
@@ -232,7 +230,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	err = flattenVariableGroup(d, variableGroup, &projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	//Read the Authorization Resource for get allow access property
@@ -249,7 +247,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("Error looking up project resources given ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Looking up project resources given ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 
 	flattenAllowAccess(d, projectResources)
@@ -261,30 +259,30 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 
 	variableGroupParams, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
-		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Expanding variable group resource data: %+v", err)
 	}
 
 	_, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
 	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
 	if err != nil {
-		return fmt.Errorf("Error updating variable group in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Updating variable group in Azure DevOps: %+v", err)
 	}
 
 	err = flattenVariableGroup(d, updatedVariableGroup, projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	// Update Allow Access
 	definitionResourceReferenceArgs := expandAllowAccess(d, updatedVariableGroup)
 	definitionResourceReference, err := updateDefinitionResourceAuth(clients, definitionResourceReferenceArgs, projectID)
 	if err != nil {
-		return fmt.Errorf("Error updating definitionResourceReference Azure DevOps object: %+v", err)
+		return fmt.Errorf(" Updating definitionResourceReference Azure DevOps object: %+v", err)
 	}
 
 	flattenAllowAccess(d, definitionResourceReference)
@@ -296,13 +294,13 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 	//delete the definition resource (allow access)
 	varGroupID := strconv.Itoa(variableGroupID)
 	_, err = deleteDefinitionResourceAuth(clients, &varGroupID, &projectID)
 	if err != nil {
-		return fmt.Errorf("Error deleting the allow access definitionResource for variable group ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 	//delete the variable group
 	return deleteVariableGroup(clients, &projectID, &variableGroupID)
@@ -334,7 +332,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 				},
 			)
 			if err != nil {
-				return createdVG, "failed", fmt.Errorf(" fail to get Variable Group. %v ", err)
+				return createdVG, "failed", fmt.Errorf(" fail to get Variable Group. %+v ", err)
 			}
 			if createdVG != nil && createdVG.Variables != nil && (len(*variableGroupParams.Variables) == len(*createdVG.Variables)) {
 				return createdVG, "succeeded", nil
@@ -345,7 +343,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	}
 
 	if _, err = stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return nil, fmt.Errorf(" waiting for Variable Group ready. %v ", err)
+		return nil, fmt.Errorf(" waiting for Variable Group ready. %+v ", err)
 	}
 	return createdVG, nil
 }
@@ -735,7 +733,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 			}
 			loop++
 		} else {
-			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
+			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %+v ", err)
 		}
 	}
 }
@@ -745,7 +743,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		var kvSecrets KeyVaultSecretResult
 		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
 		if err := json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
-			return nil, "", fmt.Errorf("Failed to parse the Azure Key value secrets. Service response: %s . %v ", secretJson, err)
+			return nil, "", fmt.Errorf("Failed to parse the Azure Key value secrets. Service response: %s . %+v ", secretJson, err)
 		}
 
 		token, err := getSkipToken(kvSecrets.NextLink)
@@ -754,7 +752,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		}
 		return &kvSecrets, token, nil
 	}
-	return nil, "", fmt.Errorf("Failed to get the Azure Key value. Error: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
+	return nil, "", fmt.Errorf(" Failed to get the Azure Key value. Error: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
 }
 
 func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName string, projectID string, serviceEndpointID string, token string) (*serviceendpoint.ServiceEndpointRequestResult, error) {
