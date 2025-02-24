@@ -39,10 +39,8 @@ const (
 )
 
 const (
-	azureKeyVaultType                         = "AzureKeyVault"
-	invalidVariableGroupIDErrorMessageFormat  = "Error parsing the variable group ID from the Terraform resource data: %v"
-	flatteningVariableGroupErrorMessageFormat = "Error flattening variable group: %v"
-	expandingVariableGroupErrorMessageFormat  = "Expanding variable group resource data: %+v"
+	azureKeyVaultType                        = "AzureKeyVault"
+	invalidVariableGroupIDErrorMessageFormat = "Error parsing the variable group ID from the Terraform resource data: %v"
 )
 
 type KeyVaultSecretAttributes struct {
@@ -176,7 +174,7 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	variableGroupParameters, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
-		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Expanding variable group resource data: %+v", err)
 	}
 
 	addedVariableGroup, err := createVariableGroup(clients, variableGroupParameters, projectID, d.Timeout(schema.TimeoutCreate))
@@ -187,14 +185,14 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	err = flattenVariableGroup(d, addedVariableGroup, projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	// Update Allow Access with definition Reference
 	definitionResourceReferenceArgs := expandAllowAccess(d, addedVariableGroup)
 	definitionResourceReference, err := updateDefinitionResourceAuth(clients, definitionResourceReferenceArgs, projectID)
 	if err != nil {
-		return fmt.Errorf("Error creating definitionResourceReference Azure DevOps object: %+v", err)
+		return fmt.Errorf(" Creating definitionResourceReference Azure DevOps object: %+v", err)
 	}
 
 	flattenAllowAccess(d, definitionResourceReference)
@@ -207,7 +205,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
 	variableGroup, err := clients.TaskAgentClient.GetVariableGroup(
@@ -232,7 +230,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	err = flattenVariableGroup(d, variableGroup, &projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %v", err)
 	}
 
 	//Read the Authorization Resource for get allow access property
@@ -261,30 +259,30 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 
 	variableGroupParams, projectID, err := expandVariableGroupParameters(clients, d)
 	if err != nil {
-		return fmt.Errorf(expandingVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Expanding variable group resource data: %+v", err)
 	}
 
 	_, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
 	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
 	if err != nil {
-		return fmt.Errorf("Error updating variable group in Azure DevOps: %+v", err)
+		return fmt.Errorf(" Updating variable group in Azure DevOps: %+v", err)
 	}
 
 	err = flattenVariableGroup(d, updatedVariableGroup, projectID)
 
 	if err != nil {
-		return fmt.Errorf(flatteningVariableGroupErrorMessageFormat, err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	// Update Allow Access
 	definitionResourceReferenceArgs := expandAllowAccess(d, updatedVariableGroup)
 	definitionResourceReference, err := updateDefinitionResourceAuth(clients, definitionResourceReferenceArgs, projectID)
 	if err != nil {
-		return fmt.Errorf("Error updating definitionResourceReference Azure DevOps object: %+v", err)
+		return fmt.Errorf(" Updating definitionResourceReference Azure DevOps object: %+v", err)
 	}
 
 	flattenAllowAccess(d, definitionResourceReference)
@@ -296,13 +294,13 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID, variableGroupID, err := tfhelper.ParseProjectIDAndResourceID(d)
 	if err != nil {
-		return fmt.Errorf(invalidVariableGroupIDErrorMessageFormat, err)
+		return fmt.Errorf(" Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 	//delete the definition resource (allow access)
 	varGroupID := strconv.Itoa(variableGroupID)
 	_, err = deleteDefinitionResourceAuth(clients, &varGroupID, &projectID)
 	if err != nil {
-		return fmt.Errorf("Error deleting the allow access definitionResource for variable group ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%v): %v", variableGroupID, projectID, err)
 	}
 	//delete the variable group
 	return deleteVariableGroup(clients, &projectID, &variableGroupID)
