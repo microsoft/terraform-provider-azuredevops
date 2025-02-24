@@ -40,7 +40,7 @@ const (
 
 const (
 	azureKeyVaultType                        = "AzureKeyVault"
-	invalidVariableGroupIDErrorMessageFormat = "Error parsing the variable group ID from the Terraform resource data: %v"
+	invalidVariableGroupIDErrorMessageFormat = "Error parsing the variable group ID from the Terraform resource data: %+v"
 )
 
 type KeyVaultSecretAttributes struct {
@@ -220,7 +220,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error looking up variable group given ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Looking up variable group given ID (*%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 	if variableGroup.Id == nil {
 		d.SetId("")
@@ -230,7 +230,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	err = flattenVariableGroup(d, variableGroup, &projectID)
 
 	if err != nil {
-		return fmt.Errorf(" Flattening variable group: %v", err)
+		return fmt.Errorf(" Flattening variable group: %+v", err)
 	}
 
 	//Read the Authorization Resource for get allow access property
@@ -247,7 +247,7 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("Error looking up project resources given ID (%v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Looking up project resources given ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 
 	flattenAllowAccess(d, projectResources)
@@ -300,7 +300,7 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	varGroupID := strconv.Itoa(variableGroupID)
 	_, err = deleteDefinitionResourceAuth(clients, &varGroupID, &projectID)
 	if err != nil {
-		return fmt.Errorf(" Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%v): %v", variableGroupID, projectID, err)
+		return fmt.Errorf(" Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
 	//delete the variable group
 	return deleteVariableGroup(clients, &projectID, &variableGroupID)
@@ -332,7 +332,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 				},
 			)
 			if err != nil {
-				return createdVG, "failed", fmt.Errorf(" fail to get Variable Group. %v ", err)
+				return createdVG, "failed", fmt.Errorf(" fail to get Variable Group. %+v ", err)
 			}
 			if createdVG != nil && createdVG.Variables != nil && (len(*variableGroupParams.Variables) == len(*createdVG.Variables)) {
 				return createdVG, "succeeded", nil
@@ -343,7 +343,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 	}
 
 	if _, err = stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return nil, fmt.Errorf(" waiting for Variable Group ready. %v ", err)
+		return nil, fmt.Errorf(" waiting for Variable Group ready. %+v ", err)
 	}
 	return createdVG, nil
 }
@@ -733,7 +733,7 @@ func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, s
 			}
 			loop++
 		} else {
-			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %v ", err)
+			return nil, nil, fmt.Errorf("Failed to get the Azure Key vault secrets. %+v ", err)
 		}
 	}
 }
@@ -743,7 +743,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		var kvSecrets KeyVaultSecretResult
 		secretJson := azKVSecrets.Result.([]interface{})[0].(string)
 		if err := json.Unmarshal([]byte(secretJson), &kvSecrets); err != nil {
-			return nil, "", fmt.Errorf("Failed to parse the Azure Key value secrets. Service response: %s . %v ", secretJson, err)
+			return nil, "", fmt.Errorf("Failed to parse the Azure Key value secrets. Service response: %s . %+v ", secretJson, err)
 		}
 
 		token, err := getSkipToken(kvSecrets.NextLink)
@@ -752,7 +752,7 @@ func parseKVSecretResp(azKVSecrets *serviceendpoint.ServiceEndpointRequestResult
 		}
 		return &kvSecrets, token, nil
 	}
-	return nil, "", fmt.Errorf("Failed to get the Azure Key value. Error: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
+	return nil, "", fmt.Errorf(" Failed to get the Azure Key value. Error: ( code: %s, messge: %s )", *azKVSecrets.StatusCode, *azKVSecrets.ErrorMessage)
 }
 
 func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName string, projectID string, serviceEndpointID string, token string) (*serviceendpoint.ServiceEndpointRequestResult, error) {
