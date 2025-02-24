@@ -9,6 +9,10 @@ description: |-
 
 Manages Manual or Automatic Azure Resource Manager service endpoint within Azure DevOps.
 
+~>**NOTE:**
+If you receive an error message like:```Failed to obtain the Json Web Token(JWT) using service principal client ID. Exception message: A configuration issue is preventing authentication - check the error message from the server for details.```
+You should check the secret of this Application or if you recently rotate the secret, wait a few minutes for Azure to propagate the secret.
+
 ## Requirements (Manual AzureRM Service Endpoint)
 
 Before to create a service end point in Azure DevOps, you need to create a Service Principal in your Azure subscription.
