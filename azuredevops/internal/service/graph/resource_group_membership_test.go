@@ -55,6 +55,16 @@ func TestGroupMembership_Destroy_DoesNotSwallowErrors(t *testing.T) {
 		RemoveMembership(clients.Ctx, expectedArgs).
 		Return(errors.New("RemoveMembership() Failed"))
 
+	graphClient.
+		EXPECT().
+		ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
+			SubjectDescriptor: converter.String("TEST_GROUP"),
+			Direction:         &graph.GraphTraversalDirectionValues.Down,
+			Depth:             converter.Int(1),
+		}).
+		Return(&[]graph.GraphMembership{}, nil).
+		Times(2)
+
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
 	err := resourceGroupMembershipDelete(resourceData, clients)
 	require.Contains(t, err.Error(), "RemoveMembership() Failed")
