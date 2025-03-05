@@ -715,10 +715,12 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 		}
 
 		// set agent identifier
-		if target, ok := buildDefinition.Process.(map[string]interface{})["target"]; ok {
-			if spec, ok := target.(map[string]interface{})["agentSpecification"]; ok {
-				if agentIdentifier, ok := spec.(map[string]interface{})["identifier"]; ok {
-					d.Set("agent_specification", agentIdentifier.(string))
+		if processMap, ok := buildDefinition.Process.(map[string]interface{}); ok {
+			if target, ok := processMap["target"]; ok {
+				if spec, ok := target.(map[string]interface{})["agentSpecification"]; ok {
+					if agentIdentifier, ok := spec.(map[string]interface{})["identifier"]; ok {
+						d.Set("agent_specification", agentIdentifier.(string))
+					}
 				}
 			}
 		}
