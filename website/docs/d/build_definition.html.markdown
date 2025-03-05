@@ -62,6 +62,63 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `queue_status` - The queue status of the build definition.
 
+* `agent_specification`- The Agent Specification to run the pipelines. Example: `windows-2019`, `windows-latest`, `macos-13` etc.
+
+* `job_authorization_scope`- The job authorization scope for builds queued against this definition.
+
+* `jobs`- A `jobs` blocks as documented below.
+
+---
+
+`jobs` block supports the following:
+
+* `name` - The name of the job.
+
+* `ref_name` - The reference name of the job, can be used to define the job dependencies.
+
+* `condition` - Specifies when this job should run. Can **Custom conditions** to specify more complex conditions. More details: [Pipeline conditions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops)
+
+* `target`- A `target` blocks as documented below.
+
+* `job_timeout_in_minutes` - The job execution timeout (in minutes) for builds queued against this definition.
+
+* `job_cancel_timeout_in_minutes` - The job cancel timeout (in minutes) for builds cancelled by user for this definition.
+
+* `job_authorization_scope`- The job authorization scope for builds queued against this definition.
+
+* `allow_scripts_auth_access_option`- Enables scripts and other processes launched by tasks to access the OAuth token through the `System.AccessToken` variable.
+
+* `dependencies`- A `dependencies` blocks as documented below. Define the job dependencies.
+
+---
+
+`dependencies` block supports the following:
+
+* `scope` The job reference name that depends on. Reference to `jobs.ref_name`
+
+---
+
+`target` block supports the following:
+
+* `type`  The job type.
+
+* `execution_options`- A `execution_options` blocks as documented below.
+
+* `demands` - A list of demands that represents the agent capabilities required by this build. Example: `git`
+
+---
+
+`execution_options` block supports the following:
+
+* `type`- The execution type of the Job.
+
+* `multipliers` -  A list of comma separated configuration variables to use. These are defined on the Variables tab. For example, OperatingSystem, Browser will run the tasks for both variables.
+
+* `max_concurrency` - Limit the number of agents to be used. If job type is `AgentlessJob`, the concurrency is not configurable and is fixed to 50.
+
+* `continue_on_error` - Whether to continue the job when an error occurs.
+
+
 ---
 
 A `branch_filter` block exports the following:

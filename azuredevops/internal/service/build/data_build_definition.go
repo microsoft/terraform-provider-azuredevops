@@ -145,6 +145,10 @@ func DataBuildDefinition() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"url": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"report_build_status": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -235,6 +239,104 @@ func DataBuildDefinition() *schema.Resource {
 						},
 						"comment_required": {
 							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"agent_specification": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"job_authorization_scope": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"jobs": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ref_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"condition": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"dependencies": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"scope": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"target": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"execution_options": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"type": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"max_concurrency": {
+													Type:     schema.TypeInt,
+													Computed: true,
+												},
+												"multipliers": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"continue_on_error": {
+													Type:     schema.TypeBool,
+													Computed: true},
+											},
+										},
+									},
+									"demands": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"job_timeout_in_minutes": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"job_cancel_timeout_in_minutes": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"job_authorization_scope": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"allow_scripts_auth_access_option": {
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 					},
