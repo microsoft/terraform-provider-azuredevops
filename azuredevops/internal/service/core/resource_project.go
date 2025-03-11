@@ -164,6 +164,8 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(fmt.Errorf(" looking up project with (ID: %s or Name: %s). Error: %+v", projectID, name, err))
 	}
 
+	// Set ID to the project UUID in case the project is imported by name
+	d.SetId(project.Id.String())
 	err = flattenProject(clients, d, project)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
