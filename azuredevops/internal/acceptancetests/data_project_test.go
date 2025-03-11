@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccProject_DataSource_withID(t *testing.T) {
+func TestAccProject_dataSource_withID(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	tfNode := "data.azuredevops_project.test"
 	resource.ParallelTest(t, resource.TestCase{
@@ -34,7 +34,7 @@ func TestAccProject_DataSource_withID(t *testing.T) {
 	})
 }
 
-func TestAccProject_DataSource_withName(t *testing.T) {
+func TestAccProject_dataSource_withName(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	tfNode := "data.azuredevops_project.test"
 	resource.ParallelTest(t, resource.TestCase{
@@ -86,16 +86,4 @@ data "azuredevops_project" "test" {
   name = azuredevops_project.test.name
 }
 `, name)
-}
-
-func errorWithNameAndIdSet() string {
-	return `data "azuredevops_project" "project" {}`
-}
-
-func errorWhenDescriptionSet(projectName string) string {
-	return fmt.Sprintf(`
-data "azuredevops_project" "project" {
-  name        = "%s"
-  description = "A project description"
-}`, projectName)
 }
