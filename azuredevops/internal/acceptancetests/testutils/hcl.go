@@ -79,47 +79,6 @@ resource "azuredevops_service_principal_entitlement" "test" {
 }`, servicePrincipalObjectId)
 }
 
-// HclProjectResourceWithFeature HCL describing an AzDO project including internal feature setup
-func HclProjectResourceWithFeature(projectName string, featureStateTestplans string, featureStateArtifacts string) string {
-	if projectName == "" {
-		panic("Parameter: projectName cannot be empty")
-	}
-	if featureStateTestplans == "" {
-		panic("Parameter: featureStateTestplans cannot be empty")
-	}
-	if featureStateArtifacts == "" {
-		panic("Parameter: featureStateArtifacts cannot be empty")
-	}
-	return fmt.Sprintf(`
-resource "azuredevops_project" "project" {
-	name       = "%s"
-	description        = "%s-description"
-	visibility         = "private"
-	version_control    = "Git"
-	work_item_template = "Agile"
-
-	features = {
-		"testplans" = "%s"
-		"artifacts" = "%s"
-	}
-}`, projectName, projectName, featureStateTestplans, featureStateArtifacts)
-}
-
-func HclProjectGitRepositoryImport(gitRepoName string, projectName string) string {
-	azureGitRepoResource := fmt.Sprintf(`
-	resource "azuredevops_git_repository" "repository" {
-		project_id      = azuredevops_project.project.id
-		name            = "%s"
-		initialization {
-		   init_type = "Import"
-		   source_type = "Git"
-		   source_url = "https://github.com/microsoft/terraform-provider-azuredevops.git"
-		 }
-	}`, gitRepoName)
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, azureGitRepoResource)
-}
-
 // HclSecurityroleDefinitionsDataSource HCL describing a data source for securityrole definitions
 func HclSecurityroleDefinitionsDataSource() string {
 	return `
