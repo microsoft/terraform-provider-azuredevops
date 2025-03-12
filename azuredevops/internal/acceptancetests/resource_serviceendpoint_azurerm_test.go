@@ -397,21 +397,21 @@ func TestAccServiceEndpointAzureRm_azureStack(t *testing.T) {
 func hclAzureRMServiceEndpointEnvironmentAzureStack(projectName, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-	name       = "%s"
+  name = "%s"
 }
 
 resource "azuredevops_serviceendpoint_azurerm" "test" {
-  project_id                             = azuredevops_project.test.id
-  service_endpoint_name                  = "%s"
-  environment = "AzureStack"
-  server_url = "https://www.azuredevops.com"
-  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
-  azurerm_subscription_name              = "Test Sub"
+  project_id                = azuredevops_project.test.id
+  service_endpoint_name     = "%s"
+  environment               = "AzureStack"
+  server_url                = "https://www.azuredevops.com"
+  azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name = "Test Sub"
   credentials {
-     serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
-     serviceprincipalkey = "00000000-0000-0000-0000-000000000000"
-   }
+    serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
+    serviceprincipalkey = "00000000-0000-0000-0000-000000000000"
+  }
 }
 `, projectName, serviceEndpointName)
 }
