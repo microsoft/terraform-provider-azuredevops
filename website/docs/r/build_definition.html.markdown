@@ -205,6 +205,99 @@ resource "azuredevops_build_definition" "example" {
 }
 ```
 
+### Using Other Git and Agent Jobs
+```hcl
+resource "azuredevops_serviceendpoint_generic_git" "example" {
+  project_id            = data.azuredevops_project.example.id
+  repository_url        = "https://gitlab.com/example/example.git"
+  password              = "token"
+  service_endpoint_name = "Example Generic Git"
+}
+
+
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = false
+  }
+
+  repository {
+    repo_type             = "Git"
+    repo_id               = azuredevops_serviceendpoint_generic_git.example.repository_url
+    branch_name           = "refs/heads/main"
+    url                   = azuredevops_serviceendpoint_generic_git.example.repository_url
+    service_connection_id = azuredevops_serviceendpoint_generic_git.example.id
+  }
+
+  jobs {
+    name      = "Agent Job1"
+    ref_name  = "agent_job1"
+    condition = "succeededOrFailed()"
+    target {
+      type = "AgentJob"
+      execution_options {
+        type = "None"
+      }
+    }
+  }
+
+  jobs {
+    name      = "Agent Job2"
+    ref_name  = "agent_job2"
+    condition = "succeededOrFailed()"
+    dependencies {
+      scope = "agent_job1"
+    }
+    target {
+      type    = "AgentJob"
+      demands = ["git"]
+      execution_options {
+        type              = "Multi-Configuration"
+        continue_on_error = true
+        multipliers       = "multipliers"
+        max_concurrency   = 2
+      }
+    }
+  }
+
+  jobs {
+    name      = "Agentless Job1"
+    ref_name  = "agentless_job1"
+    condition = "succeeded()"
+    target {
+      type = "AgentlessJob"
+      execution_options {
+        type = "None"
+      }
+    }
+  }
+
+  jobs {
+    name                    = "Agentless Job2"
+    ref_name                = "agentless_job2"
+    condition               = "succeeded()"
+    job_authorization_scope = "project"
+    dependencies {
+      scope = "agent_job2"
+    }
+    dependencies {
+      scope = "agentless_job1"
+    }
+    target {
+      type = "AgentlessJob"
+      execution_options {
+        type              = "Multi-Configuration"
+        continue_on_error = true
+        multipliers       = "multipliers"
+      }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -234,6 +327,64 @@ The following arguments are supported:
 
 * `queue_status`- (Optional) The queue status of the build definition. Possible values are: `enabled` or `paused` or `disabled`. Defaults to `enabled`.
 
+* `agent_specification`- (Optional) The Agent Specification to run the pipelines. Required when `repo_type` is `Git`. Example: `windows-2019`, `windows-latest`, `macos-13` etc.
+
+* `job_authorization_scope`- (Optional) The job authorization scope for builds queued against this definition. Possible values are: `project`, `projectCollection`. Defaults to `projectCollection`.
+
+* `jobs`- (Optional) A `jobs` blocks as documented below.
+
+  ~> **NOTE:** The `jobs` are classic pipelines, you need to enable the classic pipeline feature for your organization to use this feature.
+
+---
+
+`jobs` block supports the following:
+
+* `name` - (Required) The name of the job.
+
+* `ref_name` - (Required) The reference name of the job, can be used to define the job dependencies.
+
+* `condition` - (Required) Specifies when this job should run. Can **Custom conditions** to specify more complex conditions. Possible values: `succeeded()`, `succeededOrFailed()`, `always()`, `failed()` etc. More details: [Pipeline conditions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops)
+
+* `target`- (Required) A `target` blocks as documented below.
+
+* `job_timeout_in_minutes` - (Optional) The job execution timeout (in minutes) for builds queued against this definition. Possible values are between `0` and `1000000000`. Defaults to `0`.
+
+* `job_cancel_timeout_in_minutes` - (Optional) The job cancel timeout (in minutes) for builds cancelled by user for this definition. Possible values are between `0` and `60`. Defaults to `0`.
+
+* `job_authorization_scope`- (Optional) The job authorization scope for builds queued against this definition. Possible values are: `project`, `projectCollection`. Defaults to `projectCollection`.
+ 
+* `allow_scripts_auth_access_option`- (Optional) Enables scripts and other processes launched by tasks to access the OAuth token through the `System.AccessToken` variable. Possible values: `true`, `false`. Defaults to `false`. Available when Job type is `AgentJob`
+
+* `dependencies`- (Optional) A `dependencies` blocks as documented below. Define the job dependencies.
+
+---
+
+`dependencies` block supports the following:
+
+* `scope` (Required) The job reference name that depends on. Reference to `jobs.ref_name`
+
+---
+
+`target` block supports the following:
+
+* `type` (Required) The job type. Possible values: `AgentJob`, `AgentlessJob`
+
+* `execution_options`- (Required) A `execution_options` blocks as documented below.
+
+* `demands` - (Optional) A list of demands that represents the agent capabilities required by this build. Example: `git`
+
+---
+
+`execution_options` block supports the following:
+
+* `type`- (Required) The execution type of the Job. Possible values are: `None`, `Multi-Configuration`, `Multi-Agent`.
+
+* `multipliers` - (Optional) A list of comma separated configuration variables to use. These are defined on the Variables tab. For example, OperatingSystem, Browser will run the tasks for both variables. Available when `execution_options.type` is `Multi-Configuration`.  
+
+* `max_concurrency` - (Optional) Limit the number of agents to be used. If job type is `AgentlessJob`, the concurrency is not configurable and is fixed to 50.
+
+* `continue_on_error` - (Optional) Whether to continue the job when an error occurs. Possible values are: `true`, `false`.
+
 ---
 
 `features` block supports the following:
@@ -260,17 +411,19 @@ The following arguments are supported:
 
 `repository` block supports the following:
 
-* `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
-
 * `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
 
-* `repo_type` - (Optional) The repository type. Possible values are: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise`. Defaults to `GitHub`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
+* `repo_type` - (Required) The repository type. Possible values are: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise` or `Git`. Defaults to `GitHub`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
+
+* `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
 
 * `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
 
-* `yml_path` - (Required) The path of the Yaml file describing the build definition.
+* `yml_path` - (Optional) The path of the Yaml file describing the build definition.
 
-* `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
+* `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`. Conflict with `url`
+
+* `url` - (Optional) The URL of the Git repository. Used if `repo_type` is `Git`. Conflict with `github_enterprise_url`
 
 * `report_build_status` - (Optional) Report build status. Default is true.
 
