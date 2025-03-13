@@ -9,6 +9,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -21,14 +22,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
+func TestAccVariableGroup_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-
-	vargroupNameFirst := testutils.GenerateResourceName()
-	vargroupNameSecond := testutils.GenerateResourceName()
-	vargroupNameNoSecret := testutils.GenerateResourceName()
-
-	tfVarGroupNode := "azuredevops_variable_group.vg"
+	vgName := testutils.GenerateResourceName()
+	tfVarGroupNode := "azuredevops_variable_group.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -36,28 +33,16 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameFirst, true),
+				Config: hclVariableGroupBasic(projectName, vgName),
 				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName, false),
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
-					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameFirst),
-					checkVariableGroupExists(vargroupNameFirst, true),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "test description"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
 				),
-			}, {
-				Config: testutils.HclVariableGroupResourceWithProject(projectName, vargroupNameSecond, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
-					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameSecond),
-					checkVariableGroupExists(vargroupNameSecond, false),
-				),
-			}, {
-				Config: testutils.HclVariableGroupResourceNoSecretsWithProject(projectName, vargroupNameNoSecret, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
-					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupNameNoSecret),
-					checkVariableGroupExists(vargroupNameNoSecret, false),
-				),
-			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
+			},
+			{
 				ResourceName:      tfVarGroupNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:       true,
@@ -67,14 +52,11 @@ func TestAccVariableGroup_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
-	t.Skip("Skipping test TestAccVariableGroupKeyVault_CreateAndUpdate: azure key vault not provisioned on test infrastructure")
+func TestAccVariableGroup_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-
-	vargroupKeyvault := testutils.GenerateResourceName()
-	keyVaultName := "key-vault-name"
-	allowAccessFalse := false
-	tfVarGroupNode := "azuredevops_variable_group.vg"
+	vgName := testutils.GenerateResourceName()
+	vgName2 := testutils.GenerateResourceName()
+	tfVarGroupNode := "azuredevops_variable_group.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testutils.PreCheck(t, nil) },
@@ -82,14 +64,113 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 		CheckDestroy: checkVariableGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testutils.HclVariableGroupResourceKeyVaultWithProject(projectName, vargroupKeyvault, allowAccessFalse, keyVaultName),
+				Config: hclVariableGroupBasic(projectName, vgName),
+				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName, false),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
+				),
+			},
+			{
+				ResourceName:      tfVarGroupNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: hclVariableGroupUpdate(projectName, vgName2),
+				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName2, true),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName2),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "3"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "update description"),
+				),
+			},
+			{
+				ResourceName:            tfVarGroupNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"variable.2.secret_value"},
+			},
+			{
+				Config: hclVariableGroupBasic(projectName, vgName),
+				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName, false),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
+				),
+			},
+			{
+				ResourceName:      tfVarGroupNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccVariableGroup_secretValue(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	vgName := testutils.GenerateResourceName()
+	tfVarGroupNode := "azuredevops_variable_group.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclVariableGroupSecretValue(projectName, vgName),
+				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName, true),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "test description"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.0.is_secret", "true"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.0.secret_value", "value1"),
+				),
+			},
+			{
+				ResourceName:            tfVarGroupNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"variable.0.secret_value"},
+			},
+		},
+	})
+}
+
+func TestAccVariableGroup_keyVault_basic(t *testing.T) {
+	if os.Getenv("TEST_SERVICE_PRINCIPAL_ID") == "" || os.Getenv("TEST_SERVICE_PRINCIPAL_KEY") == "" ||
+		os.Getenv("TEST_ARM_TENANT_ID") == "" || os.Getenv("TEST_ARM_SUBSCRIPTION_ID") == "" ||
+		os.Getenv("TEST_ARM_SUBSCRIPTION_NAME") == "" || os.Getenv("TEST_ARM_KV_NAME") == "" {
+		t.Skip("Skip test as `TEST_SERVICE_PRINCIPAL_ID` or `TEST_SERVICE_PRINCIPAL_KEY` or `TEST_ARM_TENANT_ID` or `TEST_ARM_SUBSCRIPTION_ID` or `TEST_ARM_SUBSCRIPTION_NAME` or `TEST_ARM_KV_NAME` is not set")
+	}
+	projectName := testutils.GenerateResourceName()
+
+	vgKeyVault := testutils.GenerateResourceName()
+	tfVarGroupNode := "azuredevops_variable_group.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclVariableGroupAzureKeyVault(projectName, vgKeyVault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
-					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vargroupKeyvault),
-					checkVariableGroupExists(vargroupKeyvault, allowAccessFalse),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgKeyVault),
+					checkVariableGroupExists(vgKeyVault, false),
 				),
 			}, {
-				// Resource Acceptance Testing https://www.terraform.io/docs/extend/resources/import.html#resource-acceptance-testing-implementation
 				ResourceName:            tfVarGroupNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:             true,
@@ -100,14 +181,11 @@ func TestAccVariableGroupKeyVault_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-// Given an AzDO variable group name, this will return a function that will check whether
-// or not the definition (1) exists in the state, (2) exists in AzDO, and (3) has the correct
-// or expected name
 func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		varGroup, ok := s.RootModule().Resources["azuredevops_variable_group.vg"]
+		varGroup, ok := s.RootModule().Resources["azuredevops_variable_group.test"]
 		if !ok {
-			return fmt.Errorf("Did not find a variable group in the TF state")
+			return fmt.Errorf(" Did not find a variable group in the TF state")
 		}
 
 		variableGroup, err := getVariableGroupFromResource(varGroup)
@@ -116,7 +194,7 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 		}
 
 		if *variableGroup.Name != expectedName {
-			return fmt.Errorf("Variable Group has Name=%s, but expected %s", *variableGroup.Name, expectedName)
+			return fmt.Errorf(" Variable Group has Name=%s, but expected %s", *variableGroup.Name, expectedName)
 		}
 
 		// testing Allow access with definition reference AzDo object
@@ -127,14 +205,14 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 
 		if expectedAllowAccess {
 			if len(*definitionReference) == 0 {
-				return fmt.Errorf("Definition reference should be not empty for allow access true")
+				return fmt.Errorf("  reference should be not empty for allow access true")
 			}
 			if len(*definitionReference) > 0 && *(*definitionReference)[0].Authorized != expectedAllowAccess {
-				return fmt.Errorf("Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
+				return fmt.Errorf(" Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
 			}
 		} else {
 			if len(*definitionReference) > 0 {
-				return fmt.Errorf("Definition reference should be empty for allow access false")
+				return fmt.Errorf(" Definition reference should be empty for allow access false")
 			}
 		}
 		return nil
@@ -144,19 +222,19 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 // Verifies that all variable groups referenced in the state are destroyed. This will be
 // invoked *after* Terraform destroys the resource but *before* the state is wiped clean.
 func checkVariableGroupDestroyed(s *terraform.State) error {
-	for _, resource := range s.RootModule().Resources {
-		if resource.Type != "azuredevops_variable_group" {
+	for _, res := range s.RootModule().Resources {
+		if res.Type != "azuredevops_variable_group" {
 			continue
 		}
 
 		// Indicates the variable group still exists -- this should fail the test
-		if _, err := getVariableGroupFromResource(resource); err == nil {
-			return fmt.Errorf("Unexpectedly found a variable group that should be deleted")
+		if _, err := getVariableGroupFromResource(res); err == nil {
+			return fmt.Errorf(" Unexpectedly found a variable group that should be deleted")
 		}
 
 		// Indicates the definition reference still exists -- this should fail the test
-		if _, err := getDefinitionResourceFromVariableGroupResource(resource); err == nil {
-			return fmt.Errorf("Unexpectedly found a definition reference for allow access that should be deleted")
+		if _, err := getDefinitionResourceFromVariableGroupResource(res); err == nil {
+			return fmt.Errorf(" Unexpectedly found a definition reference for allow access that should be deleted")
 		}
 	}
 
@@ -194,4 +272,105 @@ func getDefinitionResourceFromVariableGroupResource(resource *terraform.Resource
 			Id:      &resource.Primary.ID,
 		},
 	)
+}
+
+func hclVariableGroupBasic(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "test description"
+  allow_access = false
+  variable {
+    name  = "key1"
+    value = "value1"
+  }
+}`, projectName, variableGroupName)
+}
+
+func hclVariableGroupUpdate(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "update description"
+  allow_access = true
+  variable {
+    name         = "key1"
+    secret_value = "value1"
+    is_secret    = true
+  }
+
+  variable {
+    name  = "key2"
+    value = "value2"
+  }
+
+  variable {
+    name = "key3"
+  }
+}`, projectName, variableGroupName)
+}
+
+func hclVariableGroupSecretValue(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "test description"
+  allow_access = true
+  variable {
+    name         = "key1"
+    secret_value = "value1"
+    is_secret    = true
+  }
+}`, projectName, variableGroupName)
+}
+
+func hclVariableGroupAzureKeyVault(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "test" {
+  project_id            = azuredevops_project.test.id
+  service_endpoint_name = "%sAzureRM"
+  credentials {
+    serviceprincipalid  = "%s"
+    serviceprincipalkey = "%s"
+  }
+  azurerm_spn_tenantid                   = "%s"
+  azurerm_subscription_id                = "%s"
+  azurerm_subscription_name              = "%s"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
+}
+
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "A sample variable group."
+  allow_access = false
+  key_vault {
+    name                = "%s"
+    service_endpoint_id = azuredevops_serviceendpoint_azurerm.test.id
+  }
+  variable {
+    name = "key1"
+  }
+}
+`, projectName, projectName, os.Getenv("TEST_SERVICE_PRINCIPAL_ID"), os.Getenv("TEST_SERVICE_PRINCIPAL_KEY"),
+		os.Getenv("TEST_ARM_TENANT_ID"), os.Getenv("TEST_ARM_SUBSCRIPTION_ID"), os.Getenv("TEST_ARM_SUBSCRIPTION_NAME"),
+		variableGroupName, os.Getenv("TEST_ARM_KV_NAME"))
 }

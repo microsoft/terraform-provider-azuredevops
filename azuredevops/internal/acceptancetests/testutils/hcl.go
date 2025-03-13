@@ -390,38 +390,6 @@ resource "azuredevops_variable_group" "vg" {
 }`, variableGroupName, allowAccess)
 }
 
-// HclVariableGroupResourceWithProject HCL describing an AzDO variable group
-func HclVariableGroupResourceWithProject(projectName string, variableGroupName string, allowAccess bool) string {
-	variableGroupResource := HclVariableGroupResource(variableGroupName, allowAccess)
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
-}
-
-// HclVariableGroupResourceNoSecretsWithProject Similar to HclVariableGroupResource, but without a secret variable
-func HclVariableGroupResourceNoSecretsWithProject(projectName string, variableGroupName string, allowAccess bool) string {
-	variableGroupResource := fmt.Sprintf(`
-resource "azuredevops_variable_group" "vg" {
-	project_id  = azuredevops_project.project.id
-	name        = "%s"
-	description = "A sample variable group."
-	allow_access = %t
-	variable {
-		name      = "key1"
-		value     = "value1"
-	}
-}`, variableGroupName, allowAccess)
-
-	projectResource := HclProjectResource(projectName)
-	return fmt.Sprintf("%s\n%s", projectResource, variableGroupResource)
-}
-
-// HclVariableGroupResourceKeyVaultWithProject HCL describing an AzDO project and variable group with key vault
-func HclVariableGroupResourceKeyVaultWithProject(projectName string, variableGroupName string, allowAccess bool, keyVaultName string) string {
-	projectAndServiceEndpoint := HclServiceEndpointAzureRMResource(projectName, "test-service-connection", "e318e66b-ec4b-4dff-9124-41129b9d7150", "d9d210dd-f9f0-4176-afb8-a4df60e1ae72", "ServicePrincipal")
-
-	return fmt.Sprintf("%s\n%s", projectAndServiceEndpoint, HclVariableGroupResourceKeyVault(variableGroupName, allowAccess, keyVaultName))
-}
-
 // HclVariableGroupResourceKeyVault HCL describing an AzDO variable group with key vault
 func HclVariableGroupResourceKeyVault(variableGroupName string, allowAccess bool, keyVaultName string) string {
 	return fmt.Sprintf(`
