@@ -16,15 +16,50 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// Verifies that the following sequence of events occurs without error:
-//
-//	(1) TF apply creates resource
-//	(2) TF state values are set
-//	(3) Resource can be queried by ID and has expected information
-//	(4) TF apply updates resource with new name
-//	(5) Resource can be queried by ID and has expected name
-//	(6) TF destroy deletes resource
-//	(7) Resource can no longer be queried by ID
+var config = `
+data  azuredevops_project test {
+  name = "ADDTest"
+}
+
+resource "azuredevops_serviceendpoint_kubernetes" "adoToAks" {
+  project_id            = data.azuredevops_project.test.id
+  service_endpoint_name = "azure-aks"
+  apiserver_url            = "https://akstest-dns-ms0twqpk.hcp.eastus.azmk8s.io"
+  authorization_type       = "AzureSubscription"
+  azure_subscription {
+    subscription_id     = "e393adb3-b5be-4789-bdc9-848367f0d152"
+    subscription_name   = "Visual Studio Enterprise"
+    tenant_id           = "8c08a505-9ab1-4f32-910c-8a8639e53c4f"
+    resourcegroup_id    = "xz3aks"
+    cluster_name        = "akstest"
+  }
+}
+`
+
+func TestAccEnvironmentKubernetes_DDDDD(t *testing.T) {
+	resourceNameFirst := testutils.GenerateResourceName()
+
+	tfNode := "azuredevops_environment_resource_kubernetes.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkEnvironmentKubernetesDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", resourceNameFirst),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "environment_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
+					checkEnvironmentKubernetesExists(tfNode, resourceNameFirst),
+				),
+			},
+		},
+	})
+}
+
 func TestAccEnvironmentKubernetes_createUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	environmentName := testutils.GenerateResourceName()

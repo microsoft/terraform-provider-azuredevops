@@ -123,12 +123,12 @@ func personTokenConfigBasicGithubEnterprise(projectName string, serviceEndpointN
 
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%[1]s"
-	url                    = "https://github.contoso.com"
-	auth_personal {
-		personal_access_token= "test_token_basic"
-	}
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  url                   = "https://github.contoso.com"
+  auth_personal {
+    personal_access_token = "test_token_basic"
+  }
 }`, serviceEndpointName)
 
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -139,13 +139,13 @@ func personTokenConfigUpdateGithubEnterprise(projectName string, serviceEndpoint
 
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%[1]s"
-	url                    = "https://github.contoso.com"
-	auth_personal {
-		personal_access_token= "test_token_update"
-	}
-	description = "%[2]s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  url                   = "https://github.contoso.com"
+  auth_personal {
+    personal_access_token = "test_token_update"
+  }
+  description = "%[2]s"
 }`, serviceEndpointName, description)
 
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
