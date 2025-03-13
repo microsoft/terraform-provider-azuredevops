@@ -1,3 +1,31 @@
+## 1.8.0
+
+FEATURES:
+
+* **New Data Resource** `azuredevops_group_membership` [#1307](https://github.com/microsoft/terraform-provider-azuredevops/pull/1307)
+
+BUG FIX:
+
+* `azuredevops_project` - Fix the bug where `id` was set to the project name. [#1316](https://github.com/microsoft/terraform-provider-azuredevops/pull/1316)
+* All service connection resources - Check if service connection has been deleted. [#1318](https://github.com/microsoft/terraform-provider-azuredevops/pull/1318)
+
+IMPROVEMENTS:
+
+* `azuredevops_client_config` - Add support for export organization ID. [#1301](https://github.com/microsoft/terraform-provider-azuredevops/pull/1301)
+* `azuredevops_service_principal_entitlement` - Suppress case difference for `origin`. [#1303](https://github.com/microsoft/terraform-provider-azuredevops/pull/1303)
+* Bump `terraform-plugin-sdk/v2` sdk to `v2.36.1` and `azidentity` to `v1.8.2`. [#1310](https://github.com/microsoft/terraform-provider-azuredevops/pull/1310)
+* `azuredevops_build_definition` 
+  - Add support for other Git(`Git`) to `repository.repo_type`. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+  - Add support for create classic agent jobs. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+* **Data source** `azuredevops_build_definition`
+  - Add support for exporting other Git(`Git`). [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+  - Add support for exporting classic agent jobs. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+* `azuredevops_variable_group` - Check secret variables during plan. [#1321](https://github.com/microsoft/terraform-provider-azuredevops/pull/1321)
+* `azuredevops_users` - Update documentation. [#1302](https://github.com/microsoft/terraform-provider-azuredevops/pull/1302)
+* `azuredevops_team` - Fix incorrect name in Terraform registry. [#1304](https://github.com/microsoft/terraform-provider-azuredevops/pull/1304)
+* `azuredevops_teams` - Fix incorrect name in Terraform registry. [#1304](https://github.com/microsoft/terraform-provider-azuredevops/pull/1304)
+* `serviceendpoint_azurecr` - Documentation update. [#1308](https://github.com/microsoft/terraform-provider-azuredevops/pull/1308)
+
 ## 1.7.0
 
 FEATURES:
