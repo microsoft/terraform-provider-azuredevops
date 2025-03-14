@@ -1,7 +1,6 @@
 package taskagent
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -150,21 +149,6 @@ func ResourceVariableGroup() *schema.Resource {
 					},
 				},
 			},
-		},
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-			for it := diff.GetRawConfig().AsValueMap()["variable"].ElementIterator(); it.Next(); {
-				_, ctyVariable := it.Element()
-				ctyVariableAsMap := ctyVariable.AsValueMap()
-				name := ctyVariableAsMap["name"].AsString()
-				valueSet := !ctyVariableAsMap["value"].IsNull()
-				secretValueSet := !ctyVariableAsMap["secret_value"].IsNull()
-				isSecret := !ctyVariableAsMap["is_secret"].IsNull()
-
-				if valueSet && (secretValueSet || isSecret) || secretValueSet != isSecret {
-					return fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
-				}
-			}
-			return nil
 		},
 	}
 }
@@ -377,6 +361,21 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 	name := converter.String(d.Get("name").(string))
 	description := converter.String(d.Get("description").(string))
 	variables := d.Get("variable").(*schema.Set).List()
+
+	// needed to detect if the secret_value attribute is set in the config
+	// see https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+	for it := d.GetRawConfig().AsValueMap()["variable"].ElementIterator(); it.Next(); {
+		_, ctyVariable := it.Element()
+		ctyVariableAsMap := ctyVariable.AsValueMap()
+		name := ctyVariableAsMap["name"].AsString()
+		valueSet := !ctyVariableAsMap["value"].IsNull()
+		secretValueSet := !ctyVariableAsMap["secret_value"].IsNull()
+		isSecret := !ctyVariableAsMap["is_secret"].IsNull()
+
+		if valueSet && (secretValueSet || isSecret) || secretValueSet != isSecret {
+			return nil, nil, fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
+		}
+	}
 
 	variableMap := make(map[string]interface{})
 
