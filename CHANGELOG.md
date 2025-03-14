@@ -1,3 +1,9 @@
+## 1.8.1
+
+BUG FIX:
+
+* `azuredevops_variable_group` - Fix validation conflict with `ignore_changes`. [#1325](https://github.com/microsoft/terraform-provider-azuredevops/pull/1325)
+
 ## 1.8.0
 
 FEATURES:
