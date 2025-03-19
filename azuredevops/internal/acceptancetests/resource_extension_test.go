@@ -141,6 +141,42 @@ func TestAccExtension_update(t *testing.T) {
 	})
 }
 
+func TestAccExtension_requireImportError(t *testing.T) {
+	publisherId := "ms-securitydevops"
+	extensionId := "microsoft-security-devops-azdevops"
+	tfNode := "azuredevops_extension.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkExtensionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclExtensionBasic(publisherId, extensionId),
+				Check: resource.ComposeTestCheckFunc(
+					checkExtensionExist(extensionId),
+					resource.TestCheckResourceAttrSet(tfNode, "extension_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "publisher_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "publisher_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "extension_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "scope.#"),
+					resource.TestCheckResourceAttrSet(tfNode, "version"),
+					resource.TestCheckResourceAttrSet(tfNode, "disabled"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s", publisherId, extensionId),
+				ImportStateVerify: true,
+			},
+			{
+				Config:      hclExtensionImportError(publisherId, extensionId),
+				ExpectError: requiresExtensionImportError(publisherId, extensionId),
+			},
+		},
+	})
+}
+
 func checkExtensionDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 	for _, res := range s.RootModule().Resources {
@@ -187,9 +223,9 @@ func checkExtensionExist(expectedExtensionId string) resource.TestCheckFunc {
 	}
 }
 
-func requiresExtensionImportError(resourceName string) *regexp.Regexp {
-	message := "creating new Extension. Name: %[1]s, Error: A Extension named '%[1]s' already exists"
-	return regexp.MustCompile(fmt.Sprintf(message, resourceName))
+func requiresExtensionImportError(publisherId, extensionId string) *regexp.Regexp {
+	message := "Installing extension for Publisher: %s, Name: %s. Error: TF1590010: Extension %s.%s is already installed in this organization"
+	return regexp.MustCompile(fmt.Sprintf(message, publisherId, extensionId, publisherId, extensionId))
 }
 
 func hclExtensionBasic(publisherId, extensionId string) string {
@@ -216,4 +252,14 @@ resource "azuredevops_extension" "test" {
   extension_id = "%s"
   disabled     = %t
 }`, publisherId, extensionId, disabled)
+}
+
+func hclExtensionImportError(publisherId, extensionId string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_extension" "import" {
+  publisher_id = azuredevops_extension.test.publisher_id
+  extension_id = azuredevops_extension.test.extension_id
+}`, hclExtensionBasic(publisherId, extensionId))
 }
