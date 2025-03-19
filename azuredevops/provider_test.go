@@ -56,6 +56,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_elastic_pool",
 		"azuredevops_environment",
 		"azuredevops_environment_resource_kubernetes",
+		"azuredevops_extension",
 		"azuredevops_feed",
 		"azuredevops_feed_permission",
 		"azuredevops_feed_retention_policy",
