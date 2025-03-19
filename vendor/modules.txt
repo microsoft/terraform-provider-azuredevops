@@ -283,9 +283,11 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/delegatedauthorization
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/distributedtaskcommon
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/extensionmanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/forminput
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/gallery
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/git
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity
