@@ -155,7 +155,7 @@ func checkExtensionDestroyed(s *terraform.State) error {
 		})
 
 		if err == nil {
-			return fmt.Errorf(" Extention with Publisher ID=%s , Extension ID: %s should not exist", ids[0], ids[1])
+			return fmt.Errorf(" Extension with Publisher ID=%s , Extension ID: %s should not exist", ids[0], ids[1])
 		}
 	}
 	return nil
@@ -177,11 +177,11 @@ func checkExtensionExist(expectedExtensionId string) resource.TestCheckFunc {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Extention with Publisher ID=%s , Extension ID: %s cannot be found!. Error=%v", ids[0], ids[1], err)
+			return fmt.Errorf(" Extension with Publisher ID=%s , Extension ID: %s cannot be found!. Error=%v", ids[0], ids[1], err)
 		}
 
 		if *extension.ExtensionId != expectedExtensionId {
-			return fmt.Errorf(" Extention with Publisher ID=%s has Extension ID=%s, but expected Extension ID=%s", *extension.PublisherId, *extension.ExtensionId, expectedExtensionId)
+			return fmt.Errorf(" Extension with Publisher ID=%s has Extension ID=%s, but expected Extension ID=%s", *extension.PublisherId, *extension.ExtensionId, expectedExtensionId)
 		}
 		return nil
 	}

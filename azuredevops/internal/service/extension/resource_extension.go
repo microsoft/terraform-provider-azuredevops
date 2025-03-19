@@ -134,7 +134,6 @@ func resourceExtensionRead(ctx context.Context, d *schema.ResourceData, m interf
 				return diag.Errorf(" Extension is in an unexpected state. Status: %s", *extension.InstallState.Flags)
 			}
 		}
-
 	}
 	return nil
 }
@@ -167,9 +166,7 @@ func resourceExtensionUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.Errorf(" Update extension for Publisher: %s, Name: %s. Error: %v", publisherId, extensionId, err)
 		}
-
 	}
-
 	return resourceExtensionRead(ctx, d, m)
 }
 
