@@ -8,15 +8,16 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	graph "github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	profile "github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGraphClient is a mock of Client interface.
 type MockGraphClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockGraphClientMockRecorder
+	isgomock struct{}
 }
 
 // MockGraphClientMockRecorder is the mock recorder for MockGraphClient.
@@ -46,7 +47,7 @@ func (m *MockGraphClient) AddMembership(arg0 context.Context, arg1 graph.AddMemb
 }
 
 // AddMembership indicates an expected call of AddMembership.
-func (mr *MockGraphClientMockRecorder) AddMembership(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) AddMembership(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMembership", reflect.TypeOf((*MockGraphClient)(nil).AddMembership), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockGraphClient) CheckMembershipExistence(arg0 context.Context, arg1 gr
 }
 
 // CheckMembershipExistence indicates an expected call of CheckMembershipExistence.
-func (mr *MockGraphClientMockRecorder) CheckMembershipExistence(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CheckMembershipExistence(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMembershipExistence", reflect.TypeOf((*MockGraphClient)(nil).CheckMembershipExistence), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockGraphClient) CreateGroupMailAddress(arg0 context.Context, arg1 grap
 }
 
 // CreateGroupMailAddress indicates an expected call of CreateGroupMailAddress.
-func (mr *MockGraphClientMockRecorder) CreateGroupMailAddress(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateGroupMailAddress(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupMailAddress", reflect.TypeOf((*MockGraphClient)(nil).CreateGroupMailAddress), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockGraphClient) CreateGroupOriginId(arg0 context.Context, arg1 graph.C
 }
 
 // CreateGroupOriginId indicates an expected call of CreateGroupOriginId.
-func (mr *MockGraphClientMockRecorder) CreateGroupOriginId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateGroupOriginId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupOriginId", reflect.TypeOf((*MockGraphClient)(nil).CreateGroupOriginId), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockGraphClient) CreateGroupVsts(arg0 context.Context, arg1 graph.Creat
 }
 
 // CreateGroupVsts indicates an expected call of CreateGroupVsts.
-func (mr *MockGraphClientMockRecorder) CreateGroupVsts(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateGroupVsts(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupVsts", reflect.TypeOf((*MockGraphClient)(nil).CreateGroupVsts), arg0, arg1)
 }
@@ -120,54 +121,54 @@ func (m *MockGraphClient) CreateServicePrincipal(arg0 context.Context, arg1 grap
 }
 
 // CreateServicePrincipal indicates an expected call of CreateServicePrincipal.
-func (mr *MockGraphClientMockRecorder) CreateServicePrincipal(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateServicePrincipal(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateServicePrincipal", reflect.TypeOf((*MockGraphClient)(nil).CreateServicePrincipal), arg0, arg1)
 }
 
 // CreateUserMailAddress mocks base method.
-func (m *MockGraphClient) CreateUserMailAddress(arg0 context.Context, arg1 graph.CreateUserMailAddressArgs) (*graph.GraphUser, error) {
+func (m *MockGraphClient) CreateUserMailAddress(ctx context.Context, args graph.CreateUserMailAddressArgs) (*graph.GraphUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserMailAddress", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateUserMailAddress", ctx, args)
 	ret0, _ := ret[0].(*graph.GraphUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUserMailAddress indicates an expected call of CreateUserMailAddress.
-func (mr *MockGraphClientMockRecorder) CreateUserMailAddress(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateUserMailAddress(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserMailAddress", reflect.TypeOf((*MockGraphClient)(nil).CreateUserMailAddress), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserMailAddress", reflect.TypeOf((*MockGraphClient)(nil).CreateUserMailAddress), ctx, args)
 }
 
 // CreateUserOriginId mocks base method.
-func (m *MockGraphClient) CreateUserOriginId(arg0 context.Context, arg1 graph.CreateUserOriginIdArgs) (*graph.GraphUser, error) {
+func (m *MockGraphClient) CreateUserOriginId(ctx context.Context, args graph.CreateUserOriginIdArgs) (*graph.GraphUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserOriginId", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateUserOriginId", ctx, args)
 	ret0, _ := ret[0].(*graph.GraphUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUserOriginId indicates an expected call of CreateUserOriginId.
-func (mr *MockGraphClientMockRecorder) CreateUserOriginId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateUserOriginId(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserOriginId", reflect.TypeOf((*MockGraphClient)(nil).CreateUserOriginId), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserOriginId", reflect.TypeOf((*MockGraphClient)(nil).CreateUserOriginId), ctx, args)
 }
 
 // CreateUserUserPrincipalName mocks base method.
-func (m *MockGraphClient) CreateUserUserPrincipalName(arg0 context.Context, arg1 graph.CreateUserUserPrincipalNameArgs) (*graph.GraphUser, error) {
+func (m *MockGraphClient) CreateUserUserPrincipalName(ctx context.Context, args graph.CreateUserUserPrincipalNameArgs) (*graph.GraphUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserUserPrincipalName", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateUserUserPrincipalName", ctx, args)
 	ret0, _ := ret[0].(*graph.GraphUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUserUserPrincipalName indicates an expected call of CreateUserUserPrincipalName.
-func (mr *MockGraphClientMockRecorder) CreateUserUserPrincipalName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) CreateUserUserPrincipalName(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserUserPrincipalName", reflect.TypeOf((*MockGraphClient)(nil).CreateUserUserPrincipalName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserUserPrincipalName", reflect.TypeOf((*MockGraphClient)(nil).CreateUserUserPrincipalName), ctx, args)
 }
 
 // DeleteAvatar mocks base method.
@@ -179,7 +180,7 @@ func (m *MockGraphClient) DeleteAvatar(arg0 context.Context, arg1 graph.DeleteAv
 }
 
 // DeleteAvatar indicates an expected call of DeleteAvatar.
-func (mr *MockGraphClientMockRecorder) DeleteAvatar(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) DeleteAvatar(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvatar", reflect.TypeOf((*MockGraphClient)(nil).DeleteAvatar), arg0, arg1)
 }
@@ -193,7 +194,7 @@ func (m *MockGraphClient) DeleteGroup(arg0 context.Context, arg1 graph.DeleteGro
 }
 
 // DeleteGroup indicates an expected call of DeleteGroup.
-func (mr *MockGraphClientMockRecorder) DeleteGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) DeleteGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroup", reflect.TypeOf((*MockGraphClient)(nil).DeleteGroup), arg0, arg1)
 }
@@ -207,7 +208,7 @@ func (m *MockGraphClient) DeleteServicePrincipal(arg0 context.Context, arg1 grap
 }
 
 // DeleteServicePrincipal indicates an expected call of DeleteServicePrincipal.
-func (mr *MockGraphClientMockRecorder) DeleteServicePrincipal(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) DeleteServicePrincipal(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServicePrincipal", reflect.TypeOf((*MockGraphClient)(nil).DeleteServicePrincipal), arg0, arg1)
 }
@@ -221,7 +222,7 @@ func (m *MockGraphClient) DeleteUser(arg0 context.Context, arg1 graph.DeleteUser
 }
 
 // DeleteUser indicates an expected call of DeleteUser.
-func (mr *MockGraphClientMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) DeleteUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockGraphClient)(nil).DeleteUser), arg0, arg1)
 }
@@ -236,7 +237,7 @@ func (m *MockGraphClient) GetAvatar(arg0 context.Context, arg1 graph.GetAvatarAr
 }
 
 // GetAvatar indicates an expected call of GetAvatar.
-func (mr *MockGraphClientMockRecorder) GetAvatar(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetAvatar(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvatar", reflect.TypeOf((*MockGraphClient)(nil).GetAvatar), arg0, arg1)
 }
@@ -251,7 +252,7 @@ func (m *MockGraphClient) GetDescriptor(arg0 context.Context, arg1 graph.GetDesc
 }
 
 // GetDescriptor indicates an expected call of GetDescriptor.
-func (mr *MockGraphClientMockRecorder) GetDescriptor(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetDescriptor(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDescriptor", reflect.TypeOf((*MockGraphClient)(nil).GetDescriptor), arg0, arg1)
 }
@@ -266,7 +267,7 @@ func (m *MockGraphClient) GetGroup(arg0 context.Context, arg1 graph.GetGroupArgs
 }
 
 // GetGroup indicates an expected call of GetGroup.
-func (mr *MockGraphClientMockRecorder) GetGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroup", reflect.TypeOf((*MockGraphClient)(nil).GetGroup), arg0, arg1)
 }
@@ -281,7 +282,7 @@ func (m *MockGraphClient) GetMembership(arg0 context.Context, arg1 graph.GetMemb
 }
 
 // GetMembership indicates an expected call of GetMembership.
-func (mr *MockGraphClientMockRecorder) GetMembership(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetMembership(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMembership", reflect.TypeOf((*MockGraphClient)(nil).GetMembership), arg0, arg1)
 }
@@ -296,7 +297,7 @@ func (m *MockGraphClient) GetMembershipState(arg0 context.Context, arg1 graph.Ge
 }
 
 // GetMembershipState indicates an expected call of GetMembershipState.
-func (mr *MockGraphClientMockRecorder) GetMembershipState(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetMembershipState(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMembershipState", reflect.TypeOf((*MockGraphClient)(nil).GetMembershipState), arg0, arg1)
 }
@@ -311,7 +312,7 @@ func (m *MockGraphClient) GetProviderInfo(arg0 context.Context, arg1 graph.GetPr
 }
 
 // GetProviderInfo indicates an expected call of GetProviderInfo.
-func (mr *MockGraphClientMockRecorder) GetProviderInfo(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetProviderInfo(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProviderInfo", reflect.TypeOf((*MockGraphClient)(nil).GetProviderInfo), arg0, arg1)
 }
@@ -326,7 +327,7 @@ func (m *MockGraphClient) GetServicePrincipal(arg0 context.Context, arg1 graph.G
 }
 
 // GetServicePrincipal indicates an expected call of GetServicePrincipal.
-func (mr *MockGraphClientMockRecorder) GetServicePrincipal(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetServicePrincipal(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicePrincipal", reflect.TypeOf((*MockGraphClient)(nil).GetServicePrincipal), arg0, arg1)
 }
@@ -341,7 +342,7 @@ func (m *MockGraphClient) GetStorageKey(arg0 context.Context, arg1 graph.GetStor
 }
 
 // GetStorageKey indicates an expected call of GetStorageKey.
-func (mr *MockGraphClientMockRecorder) GetStorageKey(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetStorageKey(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageKey", reflect.TypeOf((*MockGraphClient)(nil).GetStorageKey), arg0, arg1)
 }
@@ -356,7 +357,7 @@ func (m *MockGraphClient) GetUser(arg0 context.Context, arg1 graph.GetUserArgs) 
 }
 
 // GetUser indicates an expected call of GetUser.
-func (mr *MockGraphClientMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) GetUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockGraphClient)(nil).GetUser), arg0, arg1)
 }
@@ -371,7 +372,7 @@ func (m *MockGraphClient) ListGroups(arg0 context.Context, arg1 graph.ListGroups
 }
 
 // ListGroups indicates an expected call of ListGroups.
-func (mr *MockGraphClientMockRecorder) ListGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) ListGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGroups", reflect.TypeOf((*MockGraphClient)(nil).ListGroups), arg0, arg1)
 }
@@ -386,7 +387,7 @@ func (m *MockGraphClient) ListMemberships(arg0 context.Context, arg1 graph.ListM
 }
 
 // ListMemberships indicates an expected call of ListMemberships.
-func (mr *MockGraphClientMockRecorder) ListMemberships(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) ListMemberships(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMemberships", reflect.TypeOf((*MockGraphClient)(nil).ListMemberships), arg0, arg1)
 }
@@ -401,7 +402,7 @@ func (m *MockGraphClient) ListServicePrincipals(arg0 context.Context, arg1 graph
 }
 
 // ListServicePrincipals indicates an expected call of ListServicePrincipals.
-func (mr *MockGraphClientMockRecorder) ListServicePrincipals(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) ListServicePrincipals(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListServicePrincipals", reflect.TypeOf((*MockGraphClient)(nil).ListServicePrincipals), arg0, arg1)
 }
@@ -416,7 +417,7 @@ func (m *MockGraphClient) ListUsers(arg0 context.Context, arg1 graph.ListUsersAr
 }
 
 // ListUsers indicates an expected call of ListUsers.
-func (mr *MockGraphClientMockRecorder) ListUsers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) ListUsers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockGraphClient)(nil).ListUsers), arg0, arg1)
 }
@@ -431,7 +432,7 @@ func (m *MockGraphClient) LookupSubjects(arg0 context.Context, arg1 graph.Lookup
 }
 
 // LookupSubjects indicates an expected call of LookupSubjects.
-func (mr *MockGraphClientMockRecorder) LookupSubjects(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) LookupSubjects(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookupSubjects", reflect.TypeOf((*MockGraphClient)(nil).LookupSubjects), arg0, arg1)
 }
@@ -446,7 +447,7 @@ func (m *MockGraphClient) QuerySubjects(arg0 context.Context, arg1 graph.QuerySu
 }
 
 // QuerySubjects indicates an expected call of QuerySubjects.
-func (mr *MockGraphClientMockRecorder) QuerySubjects(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) QuerySubjects(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuerySubjects", reflect.TypeOf((*MockGraphClient)(nil).QuerySubjects), arg0, arg1)
 }
@@ -460,7 +461,7 @@ func (m *MockGraphClient) RemoveMembership(arg0 context.Context, arg1 graph.Remo
 }
 
 // RemoveMembership indicates an expected call of RemoveMembership.
-func (mr *MockGraphClientMockRecorder) RemoveMembership(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) RemoveMembership(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMembership", reflect.TypeOf((*MockGraphClient)(nil).RemoveMembership), arg0, arg1)
 }
@@ -474,7 +475,7 @@ func (m *MockGraphClient) RequestAccess(arg0 context.Context, arg1 graph.Request
 }
 
 // RequestAccess indicates an expected call of RequestAccess.
-func (mr *MockGraphClientMockRecorder) RequestAccess(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) RequestAccess(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestAccess", reflect.TypeOf((*MockGraphClient)(nil).RequestAccess), arg0, arg1)
 }
@@ -488,7 +489,7 @@ func (m *MockGraphClient) SetAvatar(arg0 context.Context, arg1 graph.SetAvatarAr
 }
 
 // SetAvatar indicates an expected call of SetAvatar.
-func (mr *MockGraphClientMockRecorder) SetAvatar(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) SetAvatar(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAvatar", reflect.TypeOf((*MockGraphClient)(nil).SetAvatar), arg0, arg1)
 }
@@ -503,7 +504,7 @@ func (m *MockGraphClient) UpdateGroup(arg0 context.Context, arg1 graph.UpdateGro
 }
 
 // UpdateGroup indicates an expected call of UpdateGroup.
-func (mr *MockGraphClientMockRecorder) UpdateGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) UpdateGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGroup", reflect.TypeOf((*MockGraphClient)(nil).UpdateGroup), arg0, arg1)
 }
@@ -518,7 +519,7 @@ func (m *MockGraphClient) UpdateUser(arg0 context.Context, arg1 graph.UpdateUser
 }
 
 // UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockGraphClientMockRecorder) UpdateUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGraphClientMockRecorder) UpdateUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockGraphClient)(nil).UpdateUser), arg0, arg1)
 }

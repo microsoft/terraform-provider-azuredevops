@@ -9,7 +9,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -17,7 +16,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 // verifies that the translation for project_id to project_descriptor has proper error handling
@@ -141,7 +142,7 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 			Value: &id,
 		}, nil).Times(2))
 
-	gomock.InOrder(calls...)
+	gomock.InOrder(testhelper.UnpackArray(calls)...)
 
 	err := dataSourceGroupsRead(resourceData, clients)
 	require.Nil(t, err)

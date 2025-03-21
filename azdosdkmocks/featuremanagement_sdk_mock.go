@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	featuremanagement "github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFeaturemanagementClient is a mock of Client interface.
 type MockFeaturemanagementClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockFeaturemanagementClientMockRecorder
+	isgomock struct{}
 }
 
 // MockFeaturemanagementClientMockRecorder is the mock recorder for MockFeaturemanagementClient.
@@ -45,7 +46,7 @@ func (m *MockFeaturemanagementClient) GetFeature(arg0 context.Context, arg1 feat
 }
 
 // GetFeature indicates an expected call of GetFeature.
-func (mr *MockFeaturemanagementClientMockRecorder) GetFeature(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) GetFeature(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeature", reflect.TypeOf((*MockFeaturemanagementClient)(nil).GetFeature), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockFeaturemanagementClient) GetFeatureState(arg0 context.Context, arg1
 }
 
 // GetFeatureState indicates an expected call of GetFeatureState.
-func (mr *MockFeaturemanagementClientMockRecorder) GetFeatureState(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) GetFeatureState(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeatureState", reflect.TypeOf((*MockFeaturemanagementClient)(nil).GetFeatureState), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockFeaturemanagementClient) GetFeatureStateForScope(arg0 context.Conte
 }
 
 // GetFeatureStateForScope indicates an expected call of GetFeatureStateForScope.
-func (mr *MockFeaturemanagementClientMockRecorder) GetFeatureStateForScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) GetFeatureStateForScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeatureStateForScope", reflect.TypeOf((*MockFeaturemanagementClient)(nil).GetFeatureStateForScope), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockFeaturemanagementClient) GetFeatures(arg0 context.Context, arg1 fea
 }
 
 // GetFeatures indicates an expected call of GetFeatures.
-func (mr *MockFeaturemanagementClientMockRecorder) GetFeatures(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) GetFeatures(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeatures", reflect.TypeOf((*MockFeaturemanagementClient)(nil).GetFeatures), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockFeaturemanagementClient) QueryFeatureStates(arg0 context.Context, a
 }
 
 // QueryFeatureStates indicates an expected call of QueryFeatureStates.
-func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFeatureStates", reflect.TypeOf((*MockFeaturemanagementClient)(nil).QueryFeatureStates), arg0, arg1)
 }
@@ -120,7 +121,7 @@ func (m *MockFeaturemanagementClient) QueryFeatureStatesForDefaultScope(arg0 con
 }
 
 // QueryFeatureStatesForDefaultScope indicates an expected call of QueryFeatureStatesForDefaultScope.
-func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStatesForDefaultScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStatesForDefaultScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFeatureStatesForDefaultScope", reflect.TypeOf((*MockFeaturemanagementClient)(nil).QueryFeatureStatesForDefaultScope), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockFeaturemanagementClient) QueryFeatureStatesForNamedScope(arg0 conte
 }
 
 // QueryFeatureStatesForNamedScope indicates an expected call of QueryFeatureStatesForNamedScope.
-func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStatesForNamedScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) QueryFeatureStatesForNamedScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFeatureStatesForNamedScope", reflect.TypeOf((*MockFeaturemanagementClient)(nil).QueryFeatureStatesForNamedScope), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockFeaturemanagementClient) SetFeatureState(arg0 context.Context, arg1
 }
 
 // SetFeatureState indicates an expected call of SetFeatureState.
-func (mr *MockFeaturemanagementClientMockRecorder) SetFeatureState(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) SetFeatureState(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFeatureState", reflect.TypeOf((*MockFeaturemanagementClient)(nil).SetFeatureState), arg0, arg1)
 }
@@ -165,7 +166,7 @@ func (m *MockFeaturemanagementClient) SetFeatureStateForScope(arg0 context.Conte
 }
 
 // SetFeatureStateForScope indicates an expected call of SetFeatureStateForScope.
-func (mr *MockFeaturemanagementClientMockRecorder) SetFeatureStateForScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeaturemanagementClientMockRecorder) SetFeatureStateForScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFeatureStateForScope", reflect.TypeOf((*MockFeaturemanagementClient)(nil).SetFeatureStateForScope), arg0, arg1)
 }

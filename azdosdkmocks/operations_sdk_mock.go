@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	operations "github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockOperationsClient is a mock of Client interface.
 type MockOperationsClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockOperationsClientMockRecorder
+	isgomock struct{}
 }
 
 // MockOperationsClientMockRecorder is the mock recorder for MockOperationsClient.
@@ -45,7 +46,7 @@ func (m *MockOperationsClient) GetOperation(arg0 context.Context, arg1 operation
 }
 
 // GetOperation indicates an expected call of GetOperation.
-func (mr *MockOperationsClientMockRecorder) GetOperation(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockOperationsClientMockRecorder) GetOperation(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOperation", reflect.TypeOf((*MockOperationsClient)(nil).GetOperation), arg0, arg1)
 }

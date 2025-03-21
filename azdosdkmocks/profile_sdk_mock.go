@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	profile "github.com/microsoft/azure-devops-go-api/azuredevops/v7/profile"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockProfileClient is a mock of Client interface.
 type MockProfileClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockProfileClientMockRecorder
+	isgomock struct{}
 }
 
 // MockProfileClientMockRecorder is the mock recorder for MockProfileClient.
@@ -45,7 +46,7 @@ func (m *MockProfileClient) GetProfile(arg0 context.Context, arg1 profile.GetPro
 }
 
 // GetProfile indicates an expected call of GetProfile.
-func (mr *MockProfileClientMockRecorder) GetProfile(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProfileClientMockRecorder) GetProfile(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockProfileClient)(nil).GetProfile), arg0, arg1)
 }

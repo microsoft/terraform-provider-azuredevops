@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	policy "github.com/microsoft/azure-devops-go-api/azuredevops/v7/policy"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPolicyClient is a mock of Client interface.
 type MockPolicyClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPolicyClientMockRecorder
+	isgomock struct{}
 }
 
 // MockPolicyClientMockRecorder is the mock recorder for MockPolicyClient.
@@ -45,7 +46,7 @@ func (m *MockPolicyClient) CreatePolicyConfiguration(arg0 context.Context, arg1 
 }
 
 // CreatePolicyConfiguration indicates an expected call of CreatePolicyConfiguration.
-func (mr *MockPolicyClientMockRecorder) CreatePolicyConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) CreatePolicyConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePolicyConfiguration", reflect.TypeOf((*MockPolicyClient)(nil).CreatePolicyConfiguration), arg0, arg1)
 }
@@ -59,7 +60,7 @@ func (m *MockPolicyClient) DeletePolicyConfiguration(arg0 context.Context, arg1 
 }
 
 // DeletePolicyConfiguration indicates an expected call of DeletePolicyConfiguration.
-func (mr *MockPolicyClientMockRecorder) DeletePolicyConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) DeletePolicyConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePolicyConfiguration", reflect.TypeOf((*MockPolicyClient)(nil).DeletePolicyConfiguration), arg0, arg1)
 }
@@ -74,7 +75,7 @@ func (m *MockPolicyClient) GetPolicyConfiguration(arg0 context.Context, arg1 pol
 }
 
 // GetPolicyConfiguration indicates an expected call of GetPolicyConfiguration.
-func (mr *MockPolicyClientMockRecorder) GetPolicyConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyConfiguration", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyConfiguration), arg0, arg1)
 }
@@ -89,7 +90,7 @@ func (m *MockPolicyClient) GetPolicyConfigurationRevision(arg0 context.Context, 
 }
 
 // GetPolicyConfigurationRevision indicates an expected call of GetPolicyConfigurationRevision.
-func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurationRevision(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurationRevision(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyConfigurationRevision", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyConfigurationRevision), arg0, arg1)
 }
@@ -104,7 +105,7 @@ func (m *MockPolicyClient) GetPolicyConfigurationRevisions(arg0 context.Context,
 }
 
 // GetPolicyConfigurationRevisions indicates an expected call of GetPolicyConfigurationRevisions.
-func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurationRevisions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurationRevisions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyConfigurationRevisions", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyConfigurationRevisions), arg0, arg1)
 }
@@ -119,7 +120,7 @@ func (m *MockPolicyClient) GetPolicyConfigurations(arg0 context.Context, arg1 po
 }
 
 // GetPolicyConfigurations indicates an expected call of GetPolicyConfigurations.
-func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurations(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyConfigurations(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyConfigurations", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyConfigurations), arg0, arg1)
 }
@@ -134,7 +135,7 @@ func (m *MockPolicyClient) GetPolicyEvaluation(arg0 context.Context, arg1 policy
 }
 
 // GetPolicyEvaluation indicates an expected call of GetPolicyEvaluation.
-func (mr *MockPolicyClientMockRecorder) GetPolicyEvaluation(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyEvaluation(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyEvaluation", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyEvaluation), arg0, arg1)
 }
@@ -149,7 +150,7 @@ func (m *MockPolicyClient) GetPolicyEvaluations(arg0 context.Context, arg1 polic
 }
 
 // GetPolicyEvaluations indicates an expected call of GetPolicyEvaluations.
-func (mr *MockPolicyClientMockRecorder) GetPolicyEvaluations(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyEvaluations(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyEvaluations", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyEvaluations), arg0, arg1)
 }
@@ -164,7 +165,7 @@ func (m *MockPolicyClient) GetPolicyType(arg0 context.Context, arg1 policy.GetPo
 }
 
 // GetPolicyType indicates an expected call of GetPolicyType.
-func (mr *MockPolicyClientMockRecorder) GetPolicyType(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyType", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyType), arg0, arg1)
 }
@@ -179,7 +180,7 @@ func (m *MockPolicyClient) GetPolicyTypes(arg0 context.Context, arg1 policy.GetP
 }
 
 // GetPolicyTypes indicates an expected call of GetPolicyTypes.
-func (mr *MockPolicyClientMockRecorder) GetPolicyTypes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) GetPolicyTypes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyTypes", reflect.TypeOf((*MockPolicyClient)(nil).GetPolicyTypes), arg0, arg1)
 }
@@ -194,7 +195,7 @@ func (m *MockPolicyClient) RequeuePolicyEvaluation(arg0 context.Context, arg1 po
 }
 
 // RequeuePolicyEvaluation indicates an expected call of RequeuePolicyEvaluation.
-func (mr *MockPolicyClientMockRecorder) RequeuePolicyEvaluation(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) RequeuePolicyEvaluation(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequeuePolicyEvaluation", reflect.TypeOf((*MockPolicyClient)(nil).RequeuePolicyEvaluation), arg0, arg1)
 }
@@ -209,7 +210,7 @@ func (m *MockPolicyClient) UpdatePolicyConfiguration(arg0 context.Context, arg1 
 }
 
 // UpdatePolicyConfiguration indicates an expected call of UpdatePolicyConfiguration.
-func (mr *MockPolicyClientMockRecorder) UpdatePolicyConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPolicyClientMockRecorder) UpdatePolicyConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePolicyConfiguration", reflect.TypeOf((*MockPolicyClient)(nil).UpdatePolicyConfiguration), arg0, arg1)
 }

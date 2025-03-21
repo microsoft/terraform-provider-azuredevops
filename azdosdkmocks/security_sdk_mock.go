@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	security "github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockSecurityClient is a mock of Client interface.
 type MockSecurityClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockSecurityClientMockRecorder
+	isgomock struct{}
 }
 
 // MockSecurityClientMockRecorder is the mock recorder for MockSecurityClient.
@@ -45,7 +46,7 @@ func (m *MockSecurityClient) HasPermissions(arg0 context.Context, arg1 security.
 }
 
 // HasPermissions indicates an expected call of HasPermissions.
-func (mr *MockSecurityClientMockRecorder) HasPermissions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) HasPermissions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermissions", reflect.TypeOf((*MockSecurityClient)(nil).HasPermissions), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockSecurityClient) HasPermissionsBatch(arg0 context.Context, arg1 secu
 }
 
 // HasPermissionsBatch indicates an expected call of HasPermissionsBatch.
-func (mr *MockSecurityClientMockRecorder) HasPermissionsBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) HasPermissionsBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermissionsBatch", reflect.TypeOf((*MockSecurityClient)(nil).HasPermissionsBatch), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockSecurityClient) QueryAccessControlLists(arg0 context.Context, arg1 
 }
 
 // QueryAccessControlLists indicates an expected call of QueryAccessControlLists.
-func (mr *MockSecurityClientMockRecorder) QueryAccessControlLists(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) QueryAccessControlLists(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryAccessControlLists", reflect.TypeOf((*MockSecurityClient)(nil).QueryAccessControlLists), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockSecurityClient) QuerySecurityNamespaces(arg0 context.Context, arg1 
 }
 
 // QuerySecurityNamespaces indicates an expected call of QuerySecurityNamespaces.
-func (mr *MockSecurityClientMockRecorder) QuerySecurityNamespaces(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) QuerySecurityNamespaces(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuerySecurityNamespaces", reflect.TypeOf((*MockSecurityClient)(nil).QuerySecurityNamespaces), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockSecurityClient) RemoveAccessControlEntries(arg0 context.Context, ar
 }
 
 // RemoveAccessControlEntries indicates an expected call of RemoveAccessControlEntries.
-func (mr *MockSecurityClientMockRecorder) RemoveAccessControlEntries(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) RemoveAccessControlEntries(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAccessControlEntries", reflect.TypeOf((*MockSecurityClient)(nil).RemoveAccessControlEntries), arg0, arg1)
 }
@@ -120,7 +121,7 @@ func (m *MockSecurityClient) RemoveAccessControlLists(arg0 context.Context, arg1
 }
 
 // RemoveAccessControlLists indicates an expected call of RemoveAccessControlLists.
-func (mr *MockSecurityClientMockRecorder) RemoveAccessControlLists(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) RemoveAccessControlLists(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAccessControlLists", reflect.TypeOf((*MockSecurityClient)(nil).RemoveAccessControlLists), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockSecurityClient) RemovePermission(arg0 context.Context, arg1 securit
 }
 
 // RemovePermission indicates an expected call of RemovePermission.
-func (mr *MockSecurityClientMockRecorder) RemovePermission(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) RemovePermission(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePermission", reflect.TypeOf((*MockSecurityClient)(nil).RemovePermission), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockSecurityClient) SetAccessControlEntries(arg0 context.Context, arg1 
 }
 
 // SetAccessControlEntries indicates an expected call of SetAccessControlEntries.
-func (mr *MockSecurityClientMockRecorder) SetAccessControlEntries(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) SetAccessControlEntries(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAccessControlEntries", reflect.TypeOf((*MockSecurityClient)(nil).SetAccessControlEntries), arg0, arg1)
 }
@@ -164,7 +165,7 @@ func (m *MockSecurityClient) SetAccessControlLists(arg0 context.Context, arg1 se
 }
 
 // SetAccessControlLists indicates an expected call of SetAccessControlLists.
-func (mr *MockSecurityClientMockRecorder) SetAccessControlLists(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityClientMockRecorder) SetAccessControlLists(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAccessControlLists", reflect.TypeOf((*MockSecurityClient)(nil).SetAccessControlLists), arg0, arg1)
 }
