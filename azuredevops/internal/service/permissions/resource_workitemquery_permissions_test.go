@@ -92,7 +92,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleError(t *testin
 			Query:   converter.String(wiqSharedQueryName),
 			Depth:   converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
@@ -140,7 +140,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleErrorInPath(t *
 			Query:   converter.String(wiqFldrID.String()),
 			Depth:   converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")

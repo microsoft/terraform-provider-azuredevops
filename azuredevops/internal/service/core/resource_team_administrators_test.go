@@ -42,7 +42,7 @@ func TestTeamAdministrators_Create_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)
@@ -76,7 +76,7 @@ func TestTeamAdministrators_Read_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)
@@ -144,7 +144,7 @@ func TestTeamAdministrators_Delete_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)

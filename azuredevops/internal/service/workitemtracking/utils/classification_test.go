@@ -92,7 +92,7 @@ func TestClassification_Read_DontSwallowError(t *testing.T) {
 			StructureGroup: &structureType,
 			Depth:          converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeSchema(map[string]*schema.Schema{}), nil)

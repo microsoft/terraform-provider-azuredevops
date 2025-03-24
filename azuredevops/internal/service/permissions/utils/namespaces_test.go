@@ -322,7 +322,7 @@ func TestSecurityNamespace_GetActionDefinitions_HandleError(t *testing.T) {
 	securityClient.
 		EXPECT().
 		QuerySecurityNamespaces(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	defs, err := sn.GetActionDefinitions()
@@ -463,7 +463,7 @@ func TestSecurityNamespace_GetAccessControlList_HandleError(t *testing.T) {
 	securityClient.
 		EXPECT().
 		QueryAccessControlLists(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	acl, err := sn.GetAccessControlList(&descriptorList)
@@ -619,7 +619,7 @@ func TestSecurityNamespaces_GetIndentitiesFromSubjects_HandleError(t *testing.T)
 	identityClient.
 		EXPECT().
 		ReadIdentities(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	idList, err := sn.getIdentitiesFromSubjects(&subjectDescriptorList)
