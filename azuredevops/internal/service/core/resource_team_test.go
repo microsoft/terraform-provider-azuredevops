@@ -289,7 +289,7 @@ func TestTeam_Read_DoesNotSwallowError(t *testing.T) {
 			TeamId:         converter.String(testTeamID.String()),
 			ExpandIdentity: converter.Bool(false),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeam().Schema, nil)

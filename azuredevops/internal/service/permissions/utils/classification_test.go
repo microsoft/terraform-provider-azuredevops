@@ -71,7 +71,7 @@ func TestClassificationNode_CreateIterationToken_HandleError(t *testing.T) {
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	token, err := CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, iterationProjectID, "/")
@@ -113,7 +113,7 @@ func TestClassificationNode_CreateIterationToken_HandleErrorInPath(t *testing.T)
 			StructureGroup: &workitemtracking.TreeStructureGroupValues.Iterations,
 			Depth:          converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	token, err := CreateClassificationNodeSecurityToken(clients.Ctx, clients.WorkItemTrackingClient, workitemtracking.TreeStructureGroupValues.Iterations, iterationProjectID, "/iteration")
