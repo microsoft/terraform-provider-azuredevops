@@ -32,7 +32,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
-	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextra"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"

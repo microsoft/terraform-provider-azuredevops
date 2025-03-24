@@ -17,7 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextra"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 )
 
 func ResourceDashboard() *schema.Resource {
