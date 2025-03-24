@@ -9,14 +9,15 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	release "github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockReleaseClient is a mock of Client interface.
 type MockReleaseClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockReleaseClientMockRecorder
+	isgomock struct{}
 }
 
 // MockReleaseClientMockRecorder is the mock recorder for MockReleaseClient.
@@ -46,7 +47,7 @@ func (m *MockReleaseClient) CreateFolder(arg0 context.Context, arg1 release.Crea
 }
 
 // CreateFolder indicates an expected call of CreateFolder.
-func (mr *MockReleaseClientMockRecorder) CreateFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) CreateFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFolder", reflect.TypeOf((*MockReleaseClient)(nil).CreateFolder), arg0, arg1)
 }
@@ -61,7 +62,7 @@ func (m *MockReleaseClient) CreateRelease(arg0 context.Context, arg1 release.Cre
 }
 
 // CreateRelease indicates an expected call of CreateRelease.
-func (mr *MockReleaseClientMockRecorder) CreateRelease(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) CreateRelease(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRelease", reflect.TypeOf((*MockReleaseClient)(nil).CreateRelease), arg0, arg1)
 }
@@ -76,7 +77,7 @@ func (m *MockReleaseClient) CreateReleaseDefinition(arg0 context.Context, arg1 r
 }
 
 // CreateReleaseDefinition indicates an expected call of CreateReleaseDefinition.
-func (mr *MockReleaseClientMockRecorder) CreateReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) CreateReleaseDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).CreateReleaseDefinition), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockReleaseClient) DeleteFolder(arg0 context.Context, arg1 release.Dele
 }
 
 // DeleteFolder indicates an expected call of DeleteFolder.
-func (mr *MockReleaseClientMockRecorder) DeleteFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) DeleteFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFolder", reflect.TypeOf((*MockReleaseClient)(nil).DeleteFolder), arg0, arg1)
 }
@@ -104,7 +105,7 @@ func (m *MockReleaseClient) DeleteReleaseDefinition(arg0 context.Context, arg1 r
 }
 
 // DeleteReleaseDefinition indicates an expected call of DeleteReleaseDefinition.
-func (mr *MockReleaseClientMockRecorder) DeleteReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) DeleteReleaseDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).DeleteReleaseDefinition), arg0, arg1)
 }
@@ -119,7 +120,7 @@ func (m *MockReleaseClient) GetApprovals(arg0 context.Context, arg1 release.GetA
 }
 
 // GetApprovals indicates an expected call of GetApprovals.
-func (mr *MockReleaseClientMockRecorder) GetApprovals(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetApprovals(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApprovals", reflect.TypeOf((*MockReleaseClient)(nil).GetApprovals), arg0, arg1)
 }
@@ -134,7 +135,7 @@ func (m *MockReleaseClient) GetDefinitionRevision(arg0 context.Context, arg1 rel
 }
 
 // GetDefinitionRevision indicates an expected call of GetDefinitionRevision.
-func (mr *MockReleaseClientMockRecorder) GetDefinitionRevision(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetDefinitionRevision(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionRevision", reflect.TypeOf((*MockReleaseClient)(nil).GetDefinitionRevision), arg0, arg1)
 }
@@ -149,7 +150,7 @@ func (m *MockReleaseClient) GetDeployments(arg0 context.Context, arg1 release.Ge
 }
 
 // GetDeployments indicates an expected call of GetDeployments.
-func (mr *MockReleaseClientMockRecorder) GetDeployments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetDeployments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployments", reflect.TypeOf((*MockReleaseClient)(nil).GetDeployments), arg0, arg1)
 }
@@ -164,7 +165,7 @@ func (m *MockReleaseClient) GetFolders(arg0 context.Context, arg1 release.GetFol
 }
 
 // GetFolders indicates an expected call of GetFolders.
-func (mr *MockReleaseClientMockRecorder) GetFolders(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetFolders(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFolders", reflect.TypeOf((*MockReleaseClient)(nil).GetFolders), arg0, arg1)
 }
@@ -179,7 +180,7 @@ func (m *MockReleaseClient) GetLogs(arg0 context.Context, arg1 release.GetLogsAr
 }
 
 // GetLogs indicates an expected call of GetLogs.
-func (mr *MockReleaseClientMockRecorder) GetLogs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetLogs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogs", reflect.TypeOf((*MockReleaseClient)(nil).GetLogs), arg0, arg1)
 }
@@ -194,7 +195,7 @@ func (m *MockReleaseClient) GetManualIntervention(arg0 context.Context, arg1 rel
 }
 
 // GetManualIntervention indicates an expected call of GetManualIntervention.
-func (mr *MockReleaseClientMockRecorder) GetManualIntervention(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetManualIntervention(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManualIntervention", reflect.TypeOf((*MockReleaseClient)(nil).GetManualIntervention), arg0, arg1)
 }
@@ -209,7 +210,7 @@ func (m *MockReleaseClient) GetManualInterventions(arg0 context.Context, arg1 re
 }
 
 // GetManualInterventions indicates an expected call of GetManualInterventions.
-func (mr *MockReleaseClientMockRecorder) GetManualInterventions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetManualInterventions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManualInterventions", reflect.TypeOf((*MockReleaseClient)(nil).GetManualInterventions), arg0, arg1)
 }
@@ -224,7 +225,7 @@ func (m *MockReleaseClient) GetRelease(arg0 context.Context, arg1 release.GetRel
 }
 
 // GetRelease indicates an expected call of GetRelease.
-func (mr *MockReleaseClientMockRecorder) GetRelease(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetRelease(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelease", reflect.TypeOf((*MockReleaseClient)(nil).GetRelease), arg0, arg1)
 }
@@ -239,7 +240,7 @@ func (m *MockReleaseClient) GetReleaseDefinition(arg0 context.Context, arg1 rele
 }
 
 // GetReleaseDefinition indicates an expected call of GetReleaseDefinition.
-func (mr *MockReleaseClientMockRecorder) GetReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinition), arg0, arg1)
 }
@@ -254,7 +255,7 @@ func (m *MockReleaseClient) GetReleaseDefinitionHistory(arg0 context.Context, ar
 }
 
 // GetReleaseDefinitionHistory indicates an expected call of GetReleaseDefinitionHistory.
-func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitionHistory(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitionHistory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinitionHistory", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinitionHistory), arg0, arg1)
 }
@@ -269,7 +270,7 @@ func (m *MockReleaseClient) GetReleaseDefinitions(arg0 context.Context, arg1 rel
 }
 
 // GetReleaseDefinitions indicates an expected call of GetReleaseDefinitions.
-func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseDefinitions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseDefinitions", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseDefinitions), arg0, arg1)
 }
@@ -284,7 +285,7 @@ func (m *MockReleaseClient) GetReleaseEnvironment(arg0 context.Context, arg1 rel
 }
 
 // GetReleaseEnvironment indicates an expected call of GetReleaseEnvironment.
-func (mr *MockReleaseClientMockRecorder) GetReleaseEnvironment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseEnvironment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseEnvironment", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseEnvironment), arg0, arg1)
 }
@@ -299,7 +300,7 @@ func (m *MockReleaseClient) GetReleaseRevision(arg0 context.Context, arg1 releas
 }
 
 // GetReleaseRevision indicates an expected call of GetReleaseRevision.
-func (mr *MockReleaseClientMockRecorder) GetReleaseRevision(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseRevision(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseRevision", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseRevision), arg0, arg1)
 }
@@ -314,7 +315,7 @@ func (m *MockReleaseClient) GetReleaseTaskAttachmentContent(arg0 context.Context
 }
 
 // GetReleaseTaskAttachmentContent indicates an expected call of GetReleaseTaskAttachmentContent.
-func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseTaskAttachmentContent", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseTaskAttachmentContent), arg0, arg1)
 }
@@ -329,7 +330,7 @@ func (m *MockReleaseClient) GetReleaseTaskAttachments(arg0 context.Context, arg1
 }
 
 // GetReleaseTaskAttachments indicates an expected call of GetReleaseTaskAttachments.
-func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleaseTaskAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleaseTaskAttachments", reflect.TypeOf((*MockReleaseClient)(nil).GetReleaseTaskAttachments), arg0, arg1)
 }
@@ -344,7 +345,7 @@ func (m *MockReleaseClient) GetReleases(arg0 context.Context, arg1 release.GetRe
 }
 
 // GetReleases indicates an expected call of GetReleases.
-func (mr *MockReleaseClientMockRecorder) GetReleases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetReleases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReleases", reflect.TypeOf((*MockReleaseClient)(nil).GetReleases), arg0, arg1)
 }
@@ -359,7 +360,7 @@ func (m *MockReleaseClient) GetTaskLog(arg0 context.Context, arg1 release.GetTas
 }
 
 // GetTaskLog indicates an expected call of GetTaskLog.
-func (mr *MockReleaseClientMockRecorder) GetTaskLog(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) GetTaskLog(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTaskLog", reflect.TypeOf((*MockReleaseClient)(nil).GetTaskLog), arg0, arg1)
 }
@@ -374,7 +375,7 @@ func (m *MockReleaseClient) UpdateFolder(arg0 context.Context, arg1 release.Upda
 }
 
 // UpdateFolder indicates an expected call of UpdateFolder.
-func (mr *MockReleaseClientMockRecorder) UpdateFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFolder", reflect.TypeOf((*MockReleaseClient)(nil).UpdateFolder), arg0, arg1)
 }
@@ -389,7 +390,7 @@ func (m *MockReleaseClient) UpdateGates(arg0 context.Context, arg1 release.Updat
 }
 
 // UpdateGates indicates an expected call of UpdateGates.
-func (mr *MockReleaseClientMockRecorder) UpdateGates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateGates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGates", reflect.TypeOf((*MockReleaseClient)(nil).UpdateGates), arg0, arg1)
 }
@@ -404,7 +405,7 @@ func (m *MockReleaseClient) UpdateManualIntervention(arg0 context.Context, arg1 
 }
 
 // UpdateManualIntervention indicates an expected call of UpdateManualIntervention.
-func (mr *MockReleaseClientMockRecorder) UpdateManualIntervention(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateManualIntervention(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateManualIntervention", reflect.TypeOf((*MockReleaseClient)(nil).UpdateManualIntervention), arg0, arg1)
 }
@@ -419,7 +420,7 @@ func (m *MockReleaseClient) UpdateRelease(arg0 context.Context, arg1 release.Upd
 }
 
 // UpdateRelease indicates an expected call of UpdateRelease.
-func (mr *MockReleaseClientMockRecorder) UpdateRelease(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateRelease(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRelease", reflect.TypeOf((*MockReleaseClient)(nil).UpdateRelease), arg0, arg1)
 }
@@ -434,7 +435,7 @@ func (m *MockReleaseClient) UpdateReleaseApproval(arg0 context.Context, arg1 rel
 }
 
 // UpdateReleaseApproval indicates an expected call of UpdateReleaseApproval.
-func (mr *MockReleaseClientMockRecorder) UpdateReleaseApproval(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateReleaseApproval(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseApproval", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseApproval), arg0, arg1)
 }
@@ -449,7 +450,7 @@ func (m *MockReleaseClient) UpdateReleaseDefinition(arg0 context.Context, arg1 r
 }
 
 // UpdateReleaseDefinition indicates an expected call of UpdateReleaseDefinition.
-func (mr *MockReleaseClientMockRecorder) UpdateReleaseDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateReleaseDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseDefinition", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseDefinition), arg0, arg1)
 }
@@ -464,7 +465,7 @@ func (m *MockReleaseClient) UpdateReleaseEnvironment(arg0 context.Context, arg1 
 }
 
 // UpdateReleaseEnvironment indicates an expected call of UpdateReleaseEnvironment.
-func (mr *MockReleaseClientMockRecorder) UpdateReleaseEnvironment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateReleaseEnvironment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseEnvironment", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseEnvironment), arg0, arg1)
 }
@@ -479,7 +480,7 @@ func (m *MockReleaseClient) UpdateReleaseResource(arg0 context.Context, arg1 rel
 }
 
 // UpdateReleaseResource indicates an expected call of UpdateReleaseResource.
-func (mr *MockReleaseClientMockRecorder) UpdateReleaseResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockReleaseClientMockRecorder) UpdateReleaseResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReleaseResource", reflect.TypeOf((*MockReleaseClient)(nil).UpdateReleaseResource), arg0, arg1)
 }

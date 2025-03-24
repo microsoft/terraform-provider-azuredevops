@@ -31,11 +31,11 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
-	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/dashboardextra"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/organization"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
+	dashboardextras "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextra"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 

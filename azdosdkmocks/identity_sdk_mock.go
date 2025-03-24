@@ -8,16 +8,17 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
 	delegatedauthorization "github.com/microsoft/azure-devops-go-api/azuredevops/v7/delegatedauthorization"
 	identity "github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockIdentityClient is a mock of Client interface.
 type MockIdentityClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockIdentityClientMockRecorder
+	isgomock struct{}
 }
 
 // MockIdentityClientMockRecorder is the mock recorder for MockIdentityClient.
@@ -47,7 +48,7 @@ func (m *MockIdentityClient) AddMember(arg0 context.Context, arg1 identity.AddMe
 }
 
 // AddMember indicates an expected call of AddMember.
-func (mr *MockIdentityClientMockRecorder) AddMember(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) AddMember(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMember", reflect.TypeOf((*MockIdentityClient)(nil).AddMember), arg0, arg1)
 }
@@ -62,7 +63,7 @@ func (m *MockIdentityClient) CreateGroups(arg0 context.Context, arg1 identity.Cr
 }
 
 // CreateGroups indicates an expected call of CreateGroups.
-func (mr *MockIdentityClientMockRecorder) CreateGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) CreateGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroups", reflect.TypeOf((*MockIdentityClient)(nil).CreateGroups), arg0, arg1)
 }
@@ -77,7 +78,7 @@ func (m *MockIdentityClient) CreateIdentity(arg0 context.Context, arg1 identity.
 }
 
 // CreateIdentity indicates an expected call of CreateIdentity.
-func (mr *MockIdentityClientMockRecorder) CreateIdentity(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) CreateIdentity(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIdentity", reflect.TypeOf((*MockIdentityClient)(nil).CreateIdentity), arg0, arg1)
 }
@@ -92,7 +93,7 @@ func (m *MockIdentityClient) CreateOrBindWithClaims(arg0 context.Context, arg1 i
 }
 
 // CreateOrBindWithClaims indicates an expected call of CreateOrBindWithClaims.
-func (mr *MockIdentityClientMockRecorder) CreateOrBindWithClaims(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) CreateOrBindWithClaims(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrBindWithClaims", reflect.TypeOf((*MockIdentityClient)(nil).CreateOrBindWithClaims), arg0, arg1)
 }
@@ -107,7 +108,7 @@ func (m *MockIdentityClient) CreateScope(arg0 context.Context, arg1 identity.Cre
 }
 
 // CreateScope indicates an expected call of CreateScope.
-func (mr *MockIdentityClientMockRecorder) CreateScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) CreateScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateScope", reflect.TypeOf((*MockIdentityClient)(nil).CreateScope), arg0, arg1)
 }
@@ -121,7 +122,7 @@ func (m *MockIdentityClient) DeleteGroup(arg0 context.Context, arg1 identity.Del
 }
 
 // DeleteGroup indicates an expected call of DeleteGroup.
-func (mr *MockIdentityClientMockRecorder) DeleteGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) DeleteGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroup", reflect.TypeOf((*MockIdentityClient)(nil).DeleteGroup), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockIdentityClient) DeleteScope(arg0 context.Context, arg1 identity.Del
 }
 
 // DeleteScope indicates an expected call of DeleteScope.
-func (mr *MockIdentityClientMockRecorder) DeleteScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) DeleteScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteScope", reflect.TypeOf((*MockIdentityClient)(nil).DeleteScope), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockIdentityClient) ForceRemoveMember(arg0 context.Context, arg1 identi
 }
 
 // ForceRemoveMember indicates an expected call of ForceRemoveMember.
-func (mr *MockIdentityClientMockRecorder) ForceRemoveMember(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ForceRemoveMember(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceRemoveMember", reflect.TypeOf((*MockIdentityClient)(nil).ForceRemoveMember), arg0, arg1)
 }
@@ -165,7 +166,7 @@ func (m *MockIdentityClient) GetDescriptorById(arg0 context.Context, arg1 identi
 }
 
 // GetDescriptorById indicates an expected call of GetDescriptorById.
-func (mr *MockIdentityClientMockRecorder) GetDescriptorById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetDescriptorById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDescriptorById", reflect.TypeOf((*MockIdentityClient)(nil).GetDescriptorById), arg0, arg1)
 }
@@ -180,7 +181,7 @@ func (m *MockIdentityClient) GetIdentityChanges(arg0 context.Context, arg1 ident
 }
 
 // GetIdentityChanges indicates an expected call of GetIdentityChanges.
-func (mr *MockIdentityClientMockRecorder) GetIdentityChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetIdentityChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIdentityChanges", reflect.TypeOf((*MockIdentityClient)(nil).GetIdentityChanges), arg0, arg1)
 }
@@ -195,7 +196,7 @@ func (m *MockIdentityClient) GetIdentitySnapshot(arg0 context.Context, arg1 iden
 }
 
 // GetIdentitySnapshot indicates an expected call of GetIdentitySnapshot.
-func (mr *MockIdentityClientMockRecorder) GetIdentitySnapshot(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetIdentitySnapshot(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIdentitySnapshot", reflect.TypeOf((*MockIdentityClient)(nil).GetIdentitySnapshot), arg0, arg1)
 }
@@ -210,7 +211,7 @@ func (m *MockIdentityClient) GetMaxSequenceId(arg0 context.Context, arg1 identit
 }
 
 // GetMaxSequenceId indicates an expected call of GetMaxSequenceId.
-func (mr *MockIdentityClientMockRecorder) GetMaxSequenceId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetMaxSequenceId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxSequenceId", reflect.TypeOf((*MockIdentityClient)(nil).GetMaxSequenceId), arg0, arg1)
 }
@@ -225,7 +226,7 @@ func (m *MockIdentityClient) GetScopeById(arg0 context.Context, arg1 identity.Ge
 }
 
 // GetScopeById indicates an expected call of GetScopeById.
-func (mr *MockIdentityClientMockRecorder) GetScopeById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetScopeById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScopeById", reflect.TypeOf((*MockIdentityClient)(nil).GetScopeById), arg0, arg1)
 }
@@ -240,7 +241,7 @@ func (m *MockIdentityClient) GetScopeByName(arg0 context.Context, arg1 identity.
 }
 
 // GetScopeByName indicates an expected call of GetScopeByName.
-func (mr *MockIdentityClientMockRecorder) GetScopeByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetScopeByName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScopeByName", reflect.TypeOf((*MockIdentityClient)(nil).GetScopeByName), arg0, arg1)
 }
@@ -255,7 +256,7 @@ func (m *MockIdentityClient) GetSelf(arg0 context.Context, arg1 identity.GetSelf
 }
 
 // GetSelf indicates an expected call of GetSelf.
-func (mr *MockIdentityClientMockRecorder) GetSelf(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetSelf(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelf", reflect.TypeOf((*MockIdentityClient)(nil).GetSelf), arg0, arg1)
 }
@@ -270,7 +271,7 @@ func (m *MockIdentityClient) GetSignedInToken(arg0 context.Context, arg1 identit
 }
 
 // GetSignedInToken indicates an expected call of GetSignedInToken.
-func (mr *MockIdentityClientMockRecorder) GetSignedInToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetSignedInToken(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSignedInToken", reflect.TypeOf((*MockIdentityClient)(nil).GetSignedInToken), arg0, arg1)
 }
@@ -285,7 +286,7 @@ func (m *MockIdentityClient) GetSignoutToken(arg0 context.Context, arg1 identity
 }
 
 // GetSignoutToken indicates an expected call of GetSignoutToken.
-func (mr *MockIdentityClientMockRecorder) GetSignoutToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetSignoutToken(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSignoutToken", reflect.TypeOf((*MockIdentityClient)(nil).GetSignoutToken), arg0, arg1)
 }
@@ -300,7 +301,7 @@ func (m *MockIdentityClient) GetTenant(arg0 context.Context, arg1 identity.GetTe
 }
 
 // GetTenant indicates an expected call of GetTenant.
-func (mr *MockIdentityClientMockRecorder) GetTenant(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetTenant(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTenant", reflect.TypeOf((*MockIdentityClient)(nil).GetTenant), arg0, arg1)
 }
@@ -315,7 +316,7 @@ func (m *MockIdentityClient) GetUserIdentityIdsByDomainId(arg0 context.Context, 
 }
 
 // GetUserIdentityIdsByDomainId indicates an expected call of GetUserIdentityIdsByDomainId.
-func (mr *MockIdentityClientMockRecorder) GetUserIdentityIdsByDomainId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) GetUserIdentityIdsByDomainId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIdentityIdsByDomainId", reflect.TypeOf((*MockIdentityClient)(nil).GetUserIdentityIdsByDomainId), arg0, arg1)
 }
@@ -330,7 +331,7 @@ func (m *MockIdentityClient) ListGroups(arg0 context.Context, arg1 identity.List
 }
 
 // ListGroups indicates an expected call of ListGroups.
-func (mr *MockIdentityClientMockRecorder) ListGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ListGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGroups", reflect.TypeOf((*MockIdentityClient)(nil).ListGroups), arg0, arg1)
 }
@@ -345,7 +346,7 @@ func (m *MockIdentityClient) ReadIdentities(arg0 context.Context, arg1 identity.
 }
 
 // ReadIdentities indicates an expected call of ReadIdentities.
-func (mr *MockIdentityClientMockRecorder) ReadIdentities(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadIdentities(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadIdentities", reflect.TypeOf((*MockIdentityClient)(nil).ReadIdentities), arg0, arg1)
 }
@@ -360,7 +361,7 @@ func (m *MockIdentityClient) ReadIdentitiesByScope(arg0 context.Context, arg1 id
 }
 
 // ReadIdentitiesByScope indicates an expected call of ReadIdentitiesByScope.
-func (mr *MockIdentityClientMockRecorder) ReadIdentitiesByScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadIdentitiesByScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadIdentitiesByScope", reflect.TypeOf((*MockIdentityClient)(nil).ReadIdentitiesByScope), arg0, arg1)
 }
@@ -375,7 +376,7 @@ func (m *MockIdentityClient) ReadIdentity(arg0 context.Context, arg1 identity.Re
 }
 
 // ReadIdentity indicates an expected call of ReadIdentity.
-func (mr *MockIdentityClientMockRecorder) ReadIdentity(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadIdentity(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadIdentity", reflect.TypeOf((*MockIdentityClient)(nil).ReadIdentity), arg0, arg1)
 }
@@ -390,7 +391,7 @@ func (m *MockIdentityClient) ReadIdentityBatch(arg0 context.Context, arg1 identi
 }
 
 // ReadIdentityBatch indicates an expected call of ReadIdentityBatch.
-func (mr *MockIdentityClientMockRecorder) ReadIdentityBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadIdentityBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadIdentityBatch", reflect.TypeOf((*MockIdentityClient)(nil).ReadIdentityBatch), arg0, arg1)
 }
@@ -405,7 +406,7 @@ func (m *MockIdentityClient) ReadMember(arg0 context.Context, arg1 identity.Read
 }
 
 // ReadMember indicates an expected call of ReadMember.
-func (mr *MockIdentityClientMockRecorder) ReadMember(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadMember(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMember", reflect.TypeOf((*MockIdentityClient)(nil).ReadMember), arg0, arg1)
 }
@@ -420,7 +421,7 @@ func (m *MockIdentityClient) ReadMemberOf(arg0 context.Context, arg1 identity.Re
 }
 
 // ReadMemberOf indicates an expected call of ReadMemberOf.
-func (mr *MockIdentityClientMockRecorder) ReadMemberOf(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadMemberOf(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMemberOf", reflect.TypeOf((*MockIdentityClient)(nil).ReadMemberOf), arg0, arg1)
 }
@@ -435,7 +436,7 @@ func (m *MockIdentityClient) ReadMembers(arg0 context.Context, arg1 identity.Rea
 }
 
 // ReadMembers indicates an expected call of ReadMembers.
-func (mr *MockIdentityClientMockRecorder) ReadMembers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadMembers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMembers", reflect.TypeOf((*MockIdentityClient)(nil).ReadMembers), arg0, arg1)
 }
@@ -450,7 +451,7 @@ func (m *MockIdentityClient) ReadMembersOf(arg0 context.Context, arg1 identity.R
 }
 
 // ReadMembersOf indicates an expected call of ReadMembersOf.
-func (mr *MockIdentityClientMockRecorder) ReadMembersOf(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) ReadMembersOf(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMembersOf", reflect.TypeOf((*MockIdentityClient)(nil).ReadMembersOf), arg0, arg1)
 }
@@ -465,7 +466,7 @@ func (m *MockIdentityClient) RefreshMembersOf(arg0 context.Context, arg1 identit
 }
 
 // RefreshMembersOf indicates an expected call of RefreshMembersOf.
-func (mr *MockIdentityClientMockRecorder) RefreshMembersOf(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) RefreshMembersOf(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshMembersOf", reflect.TypeOf((*MockIdentityClient)(nil).RefreshMembersOf), arg0, arg1)
 }
@@ -480,7 +481,7 @@ func (m *MockIdentityClient) RemoveMember(arg0 context.Context, arg1 identity.Re
 }
 
 // RemoveMember indicates an expected call of RemoveMember.
-func (mr *MockIdentityClientMockRecorder) RemoveMember(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) RemoveMember(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMember", reflect.TypeOf((*MockIdentityClient)(nil).RemoveMember), arg0, arg1)
 }
@@ -495,7 +496,7 @@ func (m *MockIdentityClient) UpdateIdentities(arg0 context.Context, arg1 identit
 }
 
 // UpdateIdentities indicates an expected call of UpdateIdentities.
-func (mr *MockIdentityClientMockRecorder) UpdateIdentities(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) UpdateIdentities(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIdentities", reflect.TypeOf((*MockIdentityClient)(nil).UpdateIdentities), arg0, arg1)
 }
@@ -509,7 +510,7 @@ func (m *MockIdentityClient) UpdateIdentity(arg0 context.Context, arg1 identity.
 }
 
 // UpdateIdentity indicates an expected call of UpdateIdentity.
-func (mr *MockIdentityClientMockRecorder) UpdateIdentity(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) UpdateIdentity(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIdentity", reflect.TypeOf((*MockIdentityClient)(nil).UpdateIdentity), arg0, arg1)
 }
@@ -523,7 +524,7 @@ func (m *MockIdentityClient) UpdateScope(arg0 context.Context, arg1 identity.Upd
 }
 
 // UpdateScope indicates an expected call of UpdateScope.
-func (mr *MockIdentityClientMockRecorder) UpdateScope(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIdentityClientMockRecorder) UpdateScope(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateScope", reflect.TypeOf((*MockIdentityClient)(nil).UpdateScope), arg0, arg1)
 }

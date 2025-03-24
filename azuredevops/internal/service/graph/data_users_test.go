@@ -14,14 +14,15 @@ import (
 	"testing"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 var id, _ = uuid.Parse("00000000-0000-0000-0000-000000000000")
@@ -148,7 +149,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 			Value: &id,
 		}, nil).Times(7))
 
-	gomock.InOrder(calls...)
+	gomock.InOrder(testhelper.UnpackArray(calls)...)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	err := dataUsersRead(resourceData, clients)

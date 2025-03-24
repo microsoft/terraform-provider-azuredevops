@@ -9,15 +9,16 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	webapi "github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
 	workitemtracking "github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockWorkitemtrackingClient is a mock of Client interface.
 type MockWorkitemtrackingClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockWorkitemtrackingClientMockRecorder
+	isgomock struct{}
 }
 
 // MockWorkitemtrackingClientMockRecorder is the mock recorder for MockWorkitemtrackingClient.
@@ -47,7 +48,7 @@ func (m *MockWorkitemtrackingClient) AddComment(arg0 context.Context, arg1 worki
 }
 
 // AddComment indicates an expected call of AddComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) AddComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) AddComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).AddComment), arg0, arg1)
 }
@@ -62,7 +63,7 @@ func (m *MockWorkitemtrackingClient) AddWorkItemComment(arg0 context.Context, ar
 }
 
 // AddWorkItemComment indicates an expected call of AddWorkItemComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) AddWorkItemComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) AddWorkItemComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkItemComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).AddWorkItemComment), arg0, arg1)
 }
@@ -77,7 +78,7 @@ func (m *MockWorkitemtrackingClient) CreateAttachment(arg0 context.Context, arg1
 }
 
 // CreateAttachment indicates an expected call of CreateAttachment.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAttachment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateAttachment), arg0, arg1)
 }
@@ -92,7 +93,7 @@ func (m *MockWorkitemtrackingClient) CreateCommentReaction(arg0 context.Context,
 }
 
 // CreateCommentReaction indicates an expected call of CreateCommentReaction.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateCommentReaction(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateCommentReaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCommentReaction", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateCommentReaction), arg0, arg1)
 }
@@ -107,7 +108,7 @@ func (m *MockWorkitemtrackingClient) CreateOrUpdateClassificationNode(arg0 conte
 }
 
 // CreateOrUpdateClassificationNode indicates an expected call of CreateOrUpdateClassificationNode.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateOrUpdateClassificationNode(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateOrUpdateClassificationNode(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateClassificationNode", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateOrUpdateClassificationNode), arg0, arg1)
 }
@@ -122,7 +123,7 @@ func (m *MockWorkitemtrackingClient) CreateQuery(arg0 context.Context, arg1 work
 }
 
 // CreateQuery indicates an expected call of CreateQuery.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateQuery", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateQuery), arg0, arg1)
 }
@@ -137,7 +138,7 @@ func (m *MockWorkitemtrackingClient) CreateTempQuery(arg0 context.Context, arg1 
 }
 
 // CreateTempQuery indicates an expected call of CreateTempQuery.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateTempQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateTempQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTempQuery", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateTempQuery), arg0, arg1)
 }
@@ -152,7 +153,7 @@ func (m *MockWorkitemtrackingClient) CreateTemplate(arg0 context.Context, arg1 w
 }
 
 // CreateTemplate indicates an expected call of CreateTemplate.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTemplate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateTemplate), arg0, arg1)
 }
@@ -167,7 +168,7 @@ func (m *MockWorkitemtrackingClient) CreateWorkItem(arg0 context.Context, arg1 w
 }
 
 // CreateWorkItem indicates an expected call of CreateWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateWorkItem), arg0, arg1)
 }
@@ -182,7 +183,7 @@ func (m *MockWorkitemtrackingClient) CreateWorkItemField(arg0 context.Context, a
 }
 
 // CreateWorkItemField indicates an expected call of CreateWorkItemField.
-func (mr *MockWorkitemtrackingClientMockRecorder) CreateWorkItemField(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) CreateWorkItemField(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkItemField", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).CreateWorkItemField), arg0, arg1)
 }
@@ -196,7 +197,7 @@ func (m *MockWorkitemtrackingClient) DeleteClassificationNode(arg0 context.Conte
 }
 
 // DeleteClassificationNode indicates an expected call of DeleteClassificationNode.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteClassificationNode(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteClassificationNode(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClassificationNode", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteClassificationNode), arg0, arg1)
 }
@@ -210,7 +211,7 @@ func (m *MockWorkitemtrackingClient) DeleteComment(arg0 context.Context, arg1 wo
 }
 
 // DeleteComment indicates an expected call of DeleteComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteComment), arg0, arg1)
 }
@@ -225,7 +226,7 @@ func (m *MockWorkitemtrackingClient) DeleteCommentReaction(arg0 context.Context,
 }
 
 // DeleteCommentReaction indicates an expected call of DeleteCommentReaction.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteCommentReaction(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteCommentReaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCommentReaction", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteCommentReaction), arg0, arg1)
 }
@@ -239,7 +240,7 @@ func (m *MockWorkitemtrackingClient) DeleteQuery(arg0 context.Context, arg1 work
 }
 
 // DeleteQuery indicates an expected call of DeleteQuery.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteQuery", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteQuery), arg0, arg1)
 }
@@ -253,7 +254,7 @@ func (m *MockWorkitemtrackingClient) DeleteTag(arg0 context.Context, arg1 workit
 }
 
 // DeleteTag indicates an expected call of DeleteTag.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteTag), arg0, arg1)
 }
@@ -267,7 +268,7 @@ func (m *MockWorkitemtrackingClient) DeleteTemplate(arg0 context.Context, arg1 w
 }
 
 // DeleteTemplate indicates an expected call of DeleteTemplate.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTemplate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteTemplate), arg0, arg1)
 }
@@ -282,7 +283,7 @@ func (m *MockWorkitemtrackingClient) DeleteWorkItem(arg0 context.Context, arg1 w
 }
 
 // DeleteWorkItem indicates an expected call of DeleteWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteWorkItem), arg0, arg1)
 }
@@ -296,7 +297,7 @@ func (m *MockWorkitemtrackingClient) DeleteWorkItemField(arg0 context.Context, a
 }
 
 // DeleteWorkItemField indicates an expected call of DeleteWorkItemField.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItemField(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItemField(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkItemField", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteWorkItemField), arg0, arg1)
 }
@@ -311,7 +312,7 @@ func (m *MockWorkitemtrackingClient) DeleteWorkItems(arg0 context.Context, arg1 
 }
 
 // DeleteWorkItems indicates an expected call of DeleteWorkItems.
-func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItems(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DeleteWorkItems(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkItems", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DeleteWorkItems), arg0, arg1)
 }
@@ -325,7 +326,7 @@ func (m *MockWorkitemtrackingClient) DestroyWorkItem(arg0 context.Context, arg1 
 }
 
 // DestroyWorkItem indicates an expected call of DestroyWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) DestroyWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) DestroyWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestroyWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).DestroyWorkItem), arg0, arg1)
 }
@@ -340,7 +341,7 @@ func (m *MockWorkitemtrackingClient) GetAttachmentContent(arg0 context.Context, 
 }
 
 // GetAttachmentContent indicates an expected call of GetAttachmentContent.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachmentContent", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetAttachmentContent), arg0, arg1)
 }
@@ -355,7 +356,7 @@ func (m *MockWorkitemtrackingClient) GetAttachmentZip(arg0 context.Context, arg1
 }
 
 // GetAttachmentZip indicates an expected call of GetAttachmentZip.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetAttachmentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetAttachmentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachmentZip", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetAttachmentZip), arg0, arg1)
 }
@@ -370,7 +371,7 @@ func (m *MockWorkitemtrackingClient) GetClassificationNode(arg0 context.Context,
 }
 
 // GetClassificationNode indicates an expected call of GetClassificationNode.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetClassificationNode(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetClassificationNode(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClassificationNode", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetClassificationNode), arg0, arg1)
 }
@@ -385,7 +386,7 @@ func (m *MockWorkitemtrackingClient) GetClassificationNodes(arg0 context.Context
 }
 
 // GetClassificationNodes indicates an expected call of GetClassificationNodes.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetClassificationNodes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetClassificationNodes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClassificationNodes", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetClassificationNodes), arg0, arg1)
 }
@@ -400,7 +401,7 @@ func (m *MockWorkitemtrackingClient) GetComment(arg0 context.Context, arg1 worki
 }
 
 // GetComment indicates an expected call of GetComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetComment), arg0, arg1)
 }
@@ -415,7 +416,7 @@ func (m *MockWorkitemtrackingClient) GetCommentReactions(arg0 context.Context, a
 }
 
 // GetCommentReactions indicates an expected call of GetCommentReactions.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentReactions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentReactions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentReactions", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetCommentReactions), arg0, arg1)
 }
@@ -430,7 +431,7 @@ func (m *MockWorkitemtrackingClient) GetCommentVersion(arg0 context.Context, arg
 }
 
 // GetCommentVersion indicates an expected call of GetCommentVersion.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentVersion(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentVersion(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentVersion", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetCommentVersion), arg0, arg1)
 }
@@ -445,7 +446,7 @@ func (m *MockWorkitemtrackingClient) GetCommentVersions(arg0 context.Context, ar
 }
 
 // GetCommentVersions indicates an expected call of GetCommentVersions.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentVersions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentVersions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentVersions", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetCommentVersions), arg0, arg1)
 }
@@ -460,7 +461,7 @@ func (m *MockWorkitemtrackingClient) GetComments(arg0 context.Context, arg1 work
 }
 
 // GetComments indicates an expected call of GetComments.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetComments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetComments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComments", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetComments), arg0, arg1)
 }
@@ -475,7 +476,7 @@ func (m *MockWorkitemtrackingClient) GetCommentsBatch(arg0 context.Context, arg1
 }
 
 // GetCommentsBatch indicates an expected call of GetCommentsBatch.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentsBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetCommentsBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsBatch", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetCommentsBatch), arg0, arg1)
 }
@@ -490,7 +491,7 @@ func (m *MockWorkitemtrackingClient) GetDeletedWorkItem(arg0 context.Context, ar
 }
 
 // GetDeletedWorkItem indicates an expected call of GetDeletedWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeletedWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetDeletedWorkItem), arg0, arg1)
 }
@@ -505,7 +506,7 @@ func (m *MockWorkitemtrackingClient) GetDeletedWorkItemShallowReferences(arg0 co
 }
 
 // GetDeletedWorkItemShallowReferences indicates an expected call of GetDeletedWorkItemShallowReferences.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItemShallowReferences(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItemShallowReferences(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeletedWorkItemShallowReferences", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetDeletedWorkItemShallowReferences), arg0, arg1)
 }
@@ -520,7 +521,7 @@ func (m *MockWorkitemtrackingClient) GetDeletedWorkItems(arg0 context.Context, a
 }
 
 // GetDeletedWorkItems indicates an expected call of GetDeletedWorkItems.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItems(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetDeletedWorkItems(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeletedWorkItems", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetDeletedWorkItems), arg0, arg1)
 }
@@ -535,7 +536,7 @@ func (m *MockWorkitemtrackingClient) GetEngagedUsers(arg0 context.Context, arg1 
 }
 
 // GetEngagedUsers indicates an expected call of GetEngagedUsers.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetEngagedUsers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetEngagedUsers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEngagedUsers", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetEngagedUsers), arg0, arg1)
 }
@@ -550,7 +551,7 @@ func (m *MockWorkitemtrackingClient) GetGithubConnectionRepositories(arg0 contex
 }
 
 // GetGithubConnectionRepositories indicates an expected call of GetGithubConnectionRepositories.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetGithubConnectionRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetGithubConnectionRepositories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGithubConnectionRepositories", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetGithubConnectionRepositories), arg0, arg1)
 }
@@ -565,7 +566,7 @@ func (m *MockWorkitemtrackingClient) GetGithubConnections(arg0 context.Context, 
 }
 
 // GetGithubConnections indicates an expected call of GetGithubConnections.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetGithubConnections(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetGithubConnections(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGithubConnections", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetGithubConnections), arg0, arg1)
 }
@@ -580,7 +581,7 @@ func (m *MockWorkitemtrackingClient) GetQueries(arg0 context.Context, arg1 worki
 }
 
 // GetQueries indicates an expected call of GetQueries.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetQueries(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetQueries(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQueries", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetQueries), arg0, arg1)
 }
@@ -595,7 +596,7 @@ func (m *MockWorkitemtrackingClient) GetQueriesBatch(arg0 context.Context, arg1 
 }
 
 // GetQueriesBatch indicates an expected call of GetQueriesBatch.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetQueriesBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetQueriesBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQueriesBatch", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetQueriesBatch), arg0, arg1)
 }
@@ -610,7 +611,7 @@ func (m *MockWorkitemtrackingClient) GetQuery(arg0 context.Context, arg1 workite
 }
 
 // GetQuery indicates an expected call of GetQuery.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuery", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetQuery), arg0, arg1)
 }
@@ -625,7 +626,7 @@ func (m *MockWorkitemtrackingClient) GetQueryResultCount(arg0 context.Context, a
 }
 
 // GetQueryResultCount indicates an expected call of GetQueryResultCount.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetQueryResultCount(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetQueryResultCount(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQueryResultCount", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetQueryResultCount), arg0, arg1)
 }
@@ -640,7 +641,7 @@ func (m *MockWorkitemtrackingClient) GetRecentActivityData(arg0 context.Context,
 }
 
 // GetRecentActivityData indicates an expected call of GetRecentActivityData.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRecentActivityData(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRecentActivityData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecentActivityData", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRecentActivityData), arg0, arg1)
 }
@@ -655,7 +656,7 @@ func (m *MockWorkitemtrackingClient) GetRelationType(arg0 context.Context, arg1 
 }
 
 // GetRelationType indicates an expected call of GetRelationType.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRelationType(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRelationType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelationType", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRelationType), arg0, arg1)
 }
@@ -670,7 +671,7 @@ func (m *MockWorkitemtrackingClient) GetRelationTypes(arg0 context.Context, arg1
 }
 
 // GetRelationTypes indicates an expected call of GetRelationTypes.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRelationTypes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRelationTypes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelationTypes", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRelationTypes), arg0, arg1)
 }
@@ -685,7 +686,7 @@ func (m *MockWorkitemtrackingClient) GetReportingLinksByLinkType(arg0 context.Co
 }
 
 // GetReportingLinksByLinkType indicates an expected call of GetReportingLinksByLinkType.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetReportingLinksByLinkType(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetReportingLinksByLinkType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReportingLinksByLinkType", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetReportingLinksByLinkType), arg0, arg1)
 }
@@ -700,7 +701,7 @@ func (m *MockWorkitemtrackingClient) GetRevision(arg0 context.Context, arg1 work
 }
 
 // GetRevision indicates an expected call of GetRevision.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRevision(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRevision(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevision", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRevision), arg0, arg1)
 }
@@ -715,7 +716,7 @@ func (m *MockWorkitemtrackingClient) GetRevisions(arg0 context.Context, arg1 wor
 }
 
 // GetRevisions indicates an expected call of GetRevisions.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRevisions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRevisions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevisions", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRevisions), arg0, arg1)
 }
@@ -730,7 +731,7 @@ func (m *MockWorkitemtrackingClient) GetRootNodes(arg0 context.Context, arg1 wor
 }
 
 // GetRootNodes indicates an expected call of GetRootNodes.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetRootNodes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetRootNodes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRootNodes", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetRootNodes), arg0, arg1)
 }
@@ -745,7 +746,7 @@ func (m *MockWorkitemtrackingClient) GetTag(arg0 context.Context, arg1 workitemt
 }
 
 // GetTag indicates an expected call of GetTag.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTag", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetTag), arg0, arg1)
 }
@@ -760,7 +761,7 @@ func (m *MockWorkitemtrackingClient) GetTags(arg0 context.Context, arg1 workitem
 }
 
 // GetTags indicates an expected call of GetTags.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetTags), arg0, arg1)
 }
@@ -775,7 +776,7 @@ func (m *MockWorkitemtrackingClient) GetTemplate(arg0 context.Context, arg1 work
 }
 
 // GetTemplate indicates an expected call of GetTemplate.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetTemplate), arg0, arg1)
 }
@@ -790,7 +791,7 @@ func (m *MockWorkitemtrackingClient) GetTemplates(arg0 context.Context, arg1 wor
 }
 
 // GetTemplates indicates an expected call of GetTemplates.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetTemplates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetTemplates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplates", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetTemplates), arg0, arg1)
 }
@@ -805,7 +806,7 @@ func (m *MockWorkitemtrackingClient) GetUpdate(arg0 context.Context, arg1 workit
 }
 
 // GetUpdate indicates an expected call of GetUpdate.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetUpdate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetUpdate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetUpdate), arg0, arg1)
 }
@@ -820,7 +821,7 @@ func (m *MockWorkitemtrackingClient) GetUpdates(arg0 context.Context, arg1 worki
 }
 
 // GetUpdates indicates an expected call of GetUpdates.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetUpdates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetUpdates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdates", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetUpdates), arg0, arg1)
 }
@@ -835,7 +836,7 @@ func (m *MockWorkitemtrackingClient) GetWorkArtifactLinkTypes(arg0 context.Conte
 }
 
 // GetWorkArtifactLinkTypes indicates an expected call of GetWorkArtifactLinkTypes.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkArtifactLinkTypes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkArtifactLinkTypes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkArtifactLinkTypes", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkArtifactLinkTypes), arg0, arg1)
 }
@@ -850,7 +851,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItem(arg0 context.Context, arg1 work
 }
 
 // GetWorkItem indicates an expected call of GetWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItem), arg0, arg1)
 }
@@ -865,7 +866,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemField(arg0 context.Context, arg1
 }
 
 // GetWorkItemField indicates an expected call of GetWorkItemField.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemField(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemField(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemField", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemField), arg0, arg1)
 }
@@ -880,7 +881,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemFields(arg0 context.Context, arg
 }
 
 // GetWorkItemFields indicates an expected call of GetWorkItemFields.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemFields(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemFields(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemFields", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemFields), arg0, arg1)
 }
@@ -895,7 +896,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemIconJson(arg0 context.Context, a
 }
 
 // GetWorkItemIconJson indicates an expected call of GetWorkItemIconJson.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconJson(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconJson(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemIconJson", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemIconJson), arg0, arg1)
 }
@@ -910,7 +911,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemIconSvg(arg0 context.Context, ar
 }
 
 // GetWorkItemIconSvg indicates an expected call of GetWorkItemIconSvg.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconSvg(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconSvg(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemIconSvg", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemIconSvg), arg0, arg1)
 }
@@ -925,7 +926,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemIconXaml(arg0 context.Context, a
 }
 
 // GetWorkItemIconXaml indicates an expected call of GetWorkItemIconXaml.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconXaml(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIconXaml(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemIconXaml", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemIconXaml), arg0, arg1)
 }
@@ -940,7 +941,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemIcons(arg0 context.Context, arg1
 }
 
 // GetWorkItemIcons indicates an expected call of GetWorkItemIcons.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIcons(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemIcons(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemIcons", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemIcons), arg0, arg1)
 }
@@ -955,7 +956,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemNextStatesOnCheckinAction(arg0 c
 }
 
 // GetWorkItemNextStatesOnCheckinAction indicates an expected call of GetWorkItemNextStatesOnCheckinAction.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemNextStatesOnCheckinAction(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemNextStatesOnCheckinAction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemNextStatesOnCheckinAction", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemNextStatesOnCheckinAction), arg0, arg1)
 }
@@ -970,7 +971,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTemplate(arg0 context.Context, a
 }
 
 // GetWorkItemTemplate indicates an expected call of GetWorkItemTemplate.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTemplate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTemplate), arg0, arg1)
 }
@@ -985,7 +986,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemType(arg0 context.Context, arg1 
 }
 
 // GetWorkItemType indicates an expected call of GetWorkItemType.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemType(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemType", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemType), arg0, arg1)
 }
@@ -1000,7 +1001,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypeCategories(arg0 context.Cont
 }
 
 // GetWorkItemTypeCategories indicates an expected call of GetWorkItemTypeCategories.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeCategories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeCategories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypeCategories", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypeCategories), arg0, arg1)
 }
@@ -1015,7 +1016,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypeCategory(arg0 context.Contex
 }
 
 // GetWorkItemTypeCategory indicates an expected call of GetWorkItemTypeCategory.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeCategory(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeCategory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypeCategory", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypeCategory), arg0, arg1)
 }
@@ -1030,7 +1031,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypeFieldWithReferences(arg0 con
 }
 
 // GetWorkItemTypeFieldWithReferences indicates an expected call of GetWorkItemTypeFieldWithReferences.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeFieldWithReferences(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeFieldWithReferences(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypeFieldWithReferences", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypeFieldWithReferences), arg0, arg1)
 }
@@ -1045,7 +1046,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypeFieldsWithReferences(arg0 co
 }
 
 // GetWorkItemTypeFieldsWithReferences indicates an expected call of GetWorkItemTypeFieldsWithReferences.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeFieldsWithReferences(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeFieldsWithReferences(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypeFieldsWithReferences", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypeFieldsWithReferences), arg0, arg1)
 }
@@ -1060,7 +1061,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypeStates(arg0 context.Context,
 }
 
 // GetWorkItemTypeStates indicates an expected call of GetWorkItemTypeStates.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeStates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypeStates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypeStates", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypeStates), arg0, arg1)
 }
@@ -1075,7 +1076,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemTypes(arg0 context.Context, arg1
 }
 
 // GetWorkItemTypes indicates an expected call of GetWorkItemTypes.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemTypes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemTypes", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemTypes), arg0, arg1)
 }
@@ -1090,7 +1091,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItems(arg0 context.Context, arg1 wor
 }
 
 // GetWorkItems indicates an expected call of GetWorkItems.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItems(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItems(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItems", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItems), arg0, arg1)
 }
@@ -1105,7 +1106,7 @@ func (m *MockWorkitemtrackingClient) GetWorkItemsBatch(arg0 context.Context, arg
 }
 
 // GetWorkItemsBatch indicates an expected call of GetWorkItemsBatch.
-func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemsBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) GetWorkItemsBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemsBatch", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).GetWorkItemsBatch), arg0, arg1)
 }
@@ -1120,7 +1121,7 @@ func (m *MockWorkitemtrackingClient) MigrateProjectsProcess(arg0 context.Context
 }
 
 // MigrateProjectsProcess indicates an expected call of MigrateProjectsProcess.
-func (mr *MockWorkitemtrackingClientMockRecorder) MigrateProjectsProcess(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) MigrateProjectsProcess(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MigrateProjectsProcess", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).MigrateProjectsProcess), arg0, arg1)
 }
@@ -1135,7 +1136,7 @@ func (m *MockWorkitemtrackingClient) QueryById(arg0 context.Context, arg1 workit
 }
 
 // QueryById indicates an expected call of QueryById.
-func (mr *MockWorkitemtrackingClientMockRecorder) QueryById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) QueryById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryById", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).QueryById), arg0, arg1)
 }
@@ -1150,7 +1151,7 @@ func (m *MockWorkitemtrackingClient) QueryByWiql(arg0 context.Context, arg1 work
 }
 
 // QueryByWiql indicates an expected call of QueryByWiql.
-func (mr *MockWorkitemtrackingClientMockRecorder) QueryByWiql(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) QueryByWiql(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryByWiql", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).QueryByWiql), arg0, arg1)
 }
@@ -1165,7 +1166,7 @@ func (m *MockWorkitemtrackingClient) QueryWorkItemsForArtifactUris(arg0 context.
 }
 
 // QueryWorkItemsForArtifactUris indicates an expected call of QueryWorkItemsForArtifactUris.
-func (mr *MockWorkitemtrackingClientMockRecorder) QueryWorkItemsForArtifactUris(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) QueryWorkItemsForArtifactUris(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryWorkItemsForArtifactUris", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).QueryWorkItemsForArtifactUris), arg0, arg1)
 }
@@ -1180,7 +1181,7 @@ func (m *MockWorkitemtrackingClient) ReadReportingDiscussions(arg0 context.Conte
 }
 
 // ReadReportingDiscussions indicates an expected call of ReadReportingDiscussions.
-func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingDiscussions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingDiscussions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadReportingDiscussions", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).ReadReportingDiscussions), arg0, arg1)
 }
@@ -1195,7 +1196,7 @@ func (m *MockWorkitemtrackingClient) ReadReportingRevisionsGet(arg0 context.Cont
 }
 
 // ReadReportingRevisionsGet indicates an expected call of ReadReportingRevisionsGet.
-func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingRevisionsGet(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingRevisionsGet(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadReportingRevisionsGet", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).ReadReportingRevisionsGet), arg0, arg1)
 }
@@ -1210,7 +1211,7 @@ func (m *MockWorkitemtrackingClient) ReadReportingRevisionsPost(arg0 context.Con
 }
 
 // ReadReportingRevisionsPost indicates an expected call of ReadReportingRevisionsPost.
-func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingRevisionsPost(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) ReadReportingRevisionsPost(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadReportingRevisionsPost", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).ReadReportingRevisionsPost), arg0, arg1)
 }
@@ -1225,7 +1226,7 @@ func (m *MockWorkitemtrackingClient) ReplaceTemplate(arg0 context.Context, arg1 
 }
 
 // ReplaceTemplate indicates an expected call of ReplaceTemplate.
-func (mr *MockWorkitemtrackingClientMockRecorder) ReplaceTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) ReplaceTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceTemplate", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).ReplaceTemplate), arg0, arg1)
 }
@@ -1240,7 +1241,7 @@ func (m *MockWorkitemtrackingClient) RestoreWorkItem(arg0 context.Context, arg1 
 }
 
 // RestoreWorkItem indicates an expected call of RestoreWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) RestoreWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) RestoreWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).RestoreWorkItem), arg0, arg1)
 }
@@ -1255,7 +1256,7 @@ func (m *MockWorkitemtrackingClient) SearchQueries(arg0 context.Context, arg1 wo
 }
 
 // SearchQueries indicates an expected call of SearchQueries.
-func (mr *MockWorkitemtrackingClientMockRecorder) SearchQueries(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) SearchQueries(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchQueries", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).SearchQueries), arg0, arg1)
 }
@@ -1269,7 +1270,7 @@ func (m *MockWorkitemtrackingClient) SendMail(arg0 context.Context, arg1 workite
 }
 
 // SendMail indicates an expected call of SendMail.
-func (mr *MockWorkitemtrackingClientMockRecorder) SendMail(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) SendMail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMail", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).SendMail), arg0, arg1)
 }
@@ -1284,7 +1285,7 @@ func (m *MockWorkitemtrackingClient) UpdateClassificationNode(arg0 context.Conte
 }
 
 // UpdateClassificationNode indicates an expected call of UpdateClassificationNode.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateClassificationNode(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateClassificationNode(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClassificationNode", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateClassificationNode), arg0, arg1)
 }
@@ -1299,7 +1300,7 @@ func (m *MockWorkitemtrackingClient) UpdateComment(arg0 context.Context, arg1 wo
 }
 
 // UpdateComment indicates an expected call of UpdateComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateComment), arg0, arg1)
 }
@@ -1314,7 +1315,7 @@ func (m *MockWorkitemtrackingClient) UpdateGithubConnectionRepos(arg0 context.Co
 }
 
 // UpdateGithubConnectionRepos indicates an expected call of UpdateGithubConnectionRepos.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateGithubConnectionRepos(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateGithubConnectionRepos(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGithubConnectionRepos", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateGithubConnectionRepos), arg0, arg1)
 }
@@ -1329,7 +1330,7 @@ func (m *MockWorkitemtrackingClient) UpdateQuery(arg0 context.Context, arg1 work
 }
 
 // UpdateQuery indicates an expected call of UpdateQuery.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuery", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateQuery), arg0, arg1)
 }
@@ -1344,7 +1345,7 @@ func (m *MockWorkitemtrackingClient) UpdateTag(arg0 context.Context, arg1 workit
 }
 
 // UpdateTag indicates an expected call of UpdateTag.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateTag), arg0, arg1)
 }
@@ -1359,7 +1360,7 @@ func (m *MockWorkitemtrackingClient) UpdateWorkItem(arg0 context.Context, arg1 w
 }
 
 // UpdateWorkItem indicates an expected call of UpdateWorkItem.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkItem", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateWorkItem), arg0, arg1)
 }
@@ -1374,7 +1375,7 @@ func (m *MockWorkitemtrackingClient) UpdateWorkItemComment(arg0 context.Context,
 }
 
 // UpdateWorkItemComment indicates an expected call of UpdateWorkItemComment.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItemComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItemComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkItemComment", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateWorkItemComment), arg0, arg1)
 }
@@ -1389,7 +1390,7 @@ func (m *MockWorkitemtrackingClient) UpdateWorkItemField(arg0 context.Context, a
 }
 
 // UpdateWorkItemField indicates an expected call of UpdateWorkItemField.
-func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItemField(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWorkitemtrackingClientMockRecorder) UpdateWorkItemField(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkItemField", reflect.TypeOf((*MockWorkitemtrackingClient)(nil).UpdateWorkItemField), arg0, arg1)
 }

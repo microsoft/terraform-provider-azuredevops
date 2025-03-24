@@ -8,16 +8,17 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	core "github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	operations "github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	webapi "github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockCoreClient is a mock of Client interface.
 type MockCoreClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockCoreClientMockRecorder
+	isgomock struct{}
 }
 
 // MockCoreClientMockRecorder is the mock recorder for MockCoreClient.
@@ -47,7 +48,7 @@ func (m *MockCoreClient) CreateConnectedService(arg0 context.Context, arg1 core.
 }
 
 // CreateConnectedService indicates an expected call of CreateConnectedService.
-func (mr *MockCoreClientMockRecorder) CreateConnectedService(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) CreateConnectedService(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateConnectedService", reflect.TypeOf((*MockCoreClient)(nil).CreateConnectedService), arg0, arg1)
 }
@@ -62,7 +63,7 @@ func (m *MockCoreClient) CreateOrUpdateProxy(arg0 context.Context, arg1 core.Cre
 }
 
 // CreateOrUpdateProxy indicates an expected call of CreateOrUpdateProxy.
-func (mr *MockCoreClientMockRecorder) CreateOrUpdateProxy(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) CreateOrUpdateProxy(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateProxy", reflect.TypeOf((*MockCoreClient)(nil).CreateOrUpdateProxy), arg0, arg1)
 }
@@ -77,7 +78,7 @@ func (m *MockCoreClient) CreateTeam(arg0 context.Context, arg1 core.CreateTeamAr
 }
 
 // CreateTeam indicates an expected call of CreateTeam.
-func (mr *MockCoreClientMockRecorder) CreateTeam(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) CreateTeam(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTeam", reflect.TypeOf((*MockCoreClient)(nil).CreateTeam), arg0, arg1)
 }
@@ -91,7 +92,7 @@ func (m *MockCoreClient) DeleteProxy(arg0 context.Context, arg1 core.DeleteProxy
 }
 
 // DeleteProxy indicates an expected call of DeleteProxy.
-func (mr *MockCoreClientMockRecorder) DeleteProxy(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) DeleteProxy(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProxy", reflect.TypeOf((*MockCoreClient)(nil).DeleteProxy), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockCoreClient) DeleteTeam(arg0 context.Context, arg1 core.DeleteTeamAr
 }
 
 // DeleteTeam indicates an expected call of DeleteTeam.
-func (mr *MockCoreClientMockRecorder) DeleteTeam(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) DeleteTeam(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTeam", reflect.TypeOf((*MockCoreClient)(nil).DeleteTeam), arg0, arg1)
 }
@@ -120,7 +121,7 @@ func (m *MockCoreClient) GetAllTeams(arg0 context.Context, arg1 core.GetAllTeams
 }
 
 // GetAllTeams indicates an expected call of GetAllTeams.
-func (mr *MockCoreClientMockRecorder) GetAllTeams(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetAllTeams(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTeams", reflect.TypeOf((*MockCoreClient)(nil).GetAllTeams), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockCoreClient) GetConnectedServiceDetails(arg0 context.Context, arg1 c
 }
 
 // GetConnectedServiceDetails indicates an expected call of GetConnectedServiceDetails.
-func (mr *MockCoreClientMockRecorder) GetConnectedServiceDetails(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetConnectedServiceDetails(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConnectedServiceDetails", reflect.TypeOf((*MockCoreClient)(nil).GetConnectedServiceDetails), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockCoreClient) GetConnectedServices(arg0 context.Context, arg1 core.Ge
 }
 
 // GetConnectedServices indicates an expected call of GetConnectedServices.
-func (mr *MockCoreClientMockRecorder) GetConnectedServices(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetConnectedServices(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConnectedServices", reflect.TypeOf((*MockCoreClient)(nil).GetConnectedServices), arg0, arg1)
 }
@@ -165,7 +166,7 @@ func (m *MockCoreClient) GetProcessById(arg0 context.Context, arg1 core.GetProce
 }
 
 // GetProcessById indicates an expected call of GetProcessById.
-func (mr *MockCoreClientMockRecorder) GetProcessById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProcessById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProcessById", reflect.TypeOf((*MockCoreClient)(nil).GetProcessById), arg0, arg1)
 }
@@ -180,7 +181,7 @@ func (m *MockCoreClient) GetProcesses(arg0 context.Context, arg1 core.GetProcess
 }
 
 // GetProcesses indicates an expected call of GetProcesses.
-func (mr *MockCoreClientMockRecorder) GetProcesses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProcesses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProcesses", reflect.TypeOf((*MockCoreClient)(nil).GetProcesses), arg0, arg1)
 }
@@ -195,7 +196,7 @@ func (m *MockCoreClient) GetProject(arg0 context.Context, arg1 core.GetProjectAr
 }
 
 // GetProject indicates an expected call of GetProject.
-func (mr *MockCoreClientMockRecorder) GetProject(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProject(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProject", reflect.TypeOf((*MockCoreClient)(nil).GetProject), arg0, arg1)
 }
@@ -210,7 +211,7 @@ func (m *MockCoreClient) GetProjectCollection(arg0 context.Context, arg1 core.Ge
 }
 
 // GetProjectCollection indicates an expected call of GetProjectCollection.
-func (mr *MockCoreClientMockRecorder) GetProjectCollection(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProjectCollection(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectCollection", reflect.TypeOf((*MockCoreClient)(nil).GetProjectCollection), arg0, arg1)
 }
@@ -225,7 +226,7 @@ func (m *MockCoreClient) GetProjectCollections(arg0 context.Context, arg1 core.G
 }
 
 // GetProjectCollections indicates an expected call of GetProjectCollections.
-func (mr *MockCoreClientMockRecorder) GetProjectCollections(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProjectCollections(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectCollections", reflect.TypeOf((*MockCoreClient)(nil).GetProjectCollections), arg0, arg1)
 }
@@ -240,7 +241,7 @@ func (m *MockCoreClient) GetProjectProperties(arg0 context.Context, arg1 core.Ge
 }
 
 // GetProjectProperties indicates an expected call of GetProjectProperties.
-func (mr *MockCoreClientMockRecorder) GetProjectProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProjectProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectProperties", reflect.TypeOf((*MockCoreClient)(nil).GetProjectProperties), arg0, arg1)
 }
@@ -255,7 +256,7 @@ func (m *MockCoreClient) GetProjects(arg0 context.Context, arg1 core.GetProjects
 }
 
 // GetProjects indicates an expected call of GetProjects.
-func (mr *MockCoreClientMockRecorder) GetProjects(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProjects(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjects", reflect.TypeOf((*MockCoreClient)(nil).GetProjects), arg0, arg1)
 }
@@ -270,7 +271,7 @@ func (m *MockCoreClient) GetProxies(arg0 context.Context, arg1 core.GetProxiesAr
 }
 
 // GetProxies indicates an expected call of GetProxies.
-func (mr *MockCoreClientMockRecorder) GetProxies(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetProxies(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProxies", reflect.TypeOf((*MockCoreClient)(nil).GetProxies), arg0, arg1)
 }
@@ -285,7 +286,7 @@ func (m *MockCoreClient) GetTeam(arg0 context.Context, arg1 core.GetTeamArgs) (*
 }
 
 // GetTeam indicates an expected call of GetTeam.
-func (mr *MockCoreClientMockRecorder) GetTeam(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetTeam(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeam", reflect.TypeOf((*MockCoreClient)(nil).GetTeam), arg0, arg1)
 }
@@ -300,7 +301,7 @@ func (m *MockCoreClient) GetTeamMembersWithExtendedProperties(arg0 context.Conte
 }
 
 // GetTeamMembersWithExtendedProperties indicates an expected call of GetTeamMembersWithExtendedProperties.
-func (mr *MockCoreClientMockRecorder) GetTeamMembersWithExtendedProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetTeamMembersWithExtendedProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeamMembersWithExtendedProperties", reflect.TypeOf((*MockCoreClient)(nil).GetTeamMembersWithExtendedProperties), arg0, arg1)
 }
@@ -315,7 +316,7 @@ func (m *MockCoreClient) GetTeams(arg0 context.Context, arg1 core.GetTeamsArgs) 
 }
 
 // GetTeams indicates an expected call of GetTeams.
-func (mr *MockCoreClientMockRecorder) GetTeams(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) GetTeams(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeams", reflect.TypeOf((*MockCoreClient)(nil).GetTeams), arg0, arg1)
 }
@@ -330,7 +331,7 @@ func (m *MockCoreClient) QueueCreateProject(arg0 context.Context, arg1 core.Queu
 }
 
 // QueueCreateProject indicates an expected call of QueueCreateProject.
-func (mr *MockCoreClientMockRecorder) QueueCreateProject(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) QueueCreateProject(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreateProject", reflect.TypeOf((*MockCoreClient)(nil).QueueCreateProject), arg0, arg1)
 }
@@ -345,7 +346,7 @@ func (m *MockCoreClient) QueueDeleteProject(arg0 context.Context, arg1 core.Queu
 }
 
 // QueueDeleteProject indicates an expected call of QueueDeleteProject.
-func (mr *MockCoreClientMockRecorder) QueueDeleteProject(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) QueueDeleteProject(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDeleteProject", reflect.TypeOf((*MockCoreClient)(nil).QueueDeleteProject), arg0, arg1)
 }
@@ -359,7 +360,7 @@ func (m *MockCoreClient) RemoveProjectAvatar(arg0 context.Context, arg1 core.Rem
 }
 
 // RemoveProjectAvatar indicates an expected call of RemoveProjectAvatar.
-func (mr *MockCoreClientMockRecorder) RemoveProjectAvatar(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) RemoveProjectAvatar(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveProjectAvatar", reflect.TypeOf((*MockCoreClient)(nil).RemoveProjectAvatar), arg0, arg1)
 }
@@ -373,7 +374,7 @@ func (m *MockCoreClient) SetProjectAvatar(arg0 context.Context, arg1 core.SetPro
 }
 
 // SetProjectAvatar indicates an expected call of SetProjectAvatar.
-func (mr *MockCoreClientMockRecorder) SetProjectAvatar(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) SetProjectAvatar(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetProjectAvatar", reflect.TypeOf((*MockCoreClient)(nil).SetProjectAvatar), arg0, arg1)
 }
@@ -387,7 +388,7 @@ func (m *MockCoreClient) SetProjectProperties(arg0 context.Context, arg1 core.Se
 }
 
 // SetProjectProperties indicates an expected call of SetProjectProperties.
-func (mr *MockCoreClientMockRecorder) SetProjectProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) SetProjectProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetProjectProperties", reflect.TypeOf((*MockCoreClient)(nil).SetProjectProperties), arg0, arg1)
 }
@@ -402,7 +403,7 @@ func (m *MockCoreClient) UpdateProject(arg0 context.Context, arg1 core.UpdatePro
 }
 
 // UpdateProject indicates an expected call of UpdateProject.
-func (mr *MockCoreClientMockRecorder) UpdateProject(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) UpdateProject(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProject", reflect.TypeOf((*MockCoreClient)(nil).UpdateProject), arg0, arg1)
 }
@@ -417,7 +418,7 @@ func (m *MockCoreClient) UpdateTeam(arg0 context.Context, arg1 core.UpdateTeamAr
 }
 
 // UpdateTeam indicates an expected call of UpdateTeam.
-func (mr *MockCoreClientMockRecorder) UpdateTeam(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCoreClientMockRecorder) UpdateTeam(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTeam", reflect.TypeOf((*MockCoreClient)(nil).UpdateTeam), arg0, arg1)
 }

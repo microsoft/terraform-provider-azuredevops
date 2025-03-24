@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	taskagent "github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTaskagentClient is a mock of Client interface.
 type MockTaskagentClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockTaskagentClientMockRecorder
+	isgomock struct{}
 }
 
 // MockTaskagentClientMockRecorder is the mock recorder for MockTaskagentClient.
@@ -45,7 +46,7 @@ func (m *MockTaskagentClient) AddAgent(arg0 context.Context, arg1 taskagent.AddA
 }
 
 // AddAgent indicates an expected call of AddAgent.
-func (mr *MockTaskagentClientMockRecorder) AddAgent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddAgent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgent", reflect.TypeOf((*MockTaskagentClient)(nil).AddAgent), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockTaskagentClient) AddAgentCloud(arg0 context.Context, arg1 taskagent
 }
 
 // AddAgentCloud indicates an expected call of AddAgentCloud.
-func (mr *MockTaskagentClientMockRecorder) AddAgentCloud(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddAgentCloud(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCloud", reflect.TypeOf((*MockTaskagentClient)(nil).AddAgentCloud), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockTaskagentClient) AddAgentPool(arg0 context.Context, arg1 taskagent.
 }
 
 // AddAgentPool indicates an expected call of AddAgentPool.
-func (mr *MockTaskagentClientMockRecorder) AddAgentPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddAgentPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentPool", reflect.TypeOf((*MockTaskagentClient)(nil).AddAgentPool), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockTaskagentClient) AddAgentQueue(arg0 context.Context, arg1 taskagent
 }
 
 // AddAgentQueue indicates an expected call of AddAgentQueue.
-func (mr *MockTaskagentClientMockRecorder) AddAgentQueue(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddAgentQueue(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentQueue", reflect.TypeOf((*MockTaskagentClient)(nil).AddAgentQueue), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockTaskagentClient) AddDeploymentGroup(arg0 context.Context, arg1 task
 }
 
 // AddDeploymentGroup indicates an expected call of AddDeploymentGroup.
-func (mr *MockTaskagentClientMockRecorder) AddDeploymentGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddDeploymentGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDeploymentGroup", reflect.TypeOf((*MockTaskagentClient)(nil).AddDeploymentGroup), arg0, arg1)
 }
@@ -120,39 +121,39 @@ func (m *MockTaskagentClient) AddEnvironment(arg0 context.Context, arg1 taskagen
 }
 
 // AddEnvironment indicates an expected call of AddEnvironment.
-func (mr *MockTaskagentClientMockRecorder) AddEnvironment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddEnvironment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEnvironment", reflect.TypeOf((*MockTaskagentClient)(nil).AddEnvironment), arg0, arg1)
 }
 
 // AddKubernetesResourcExistingEndpoint mocks base method.
-func (m *MockTaskagentClient) AddKubernetesResourcExistingEndpoint(arg0 context.Context, arg1 taskagent.AddKubernetesResourceArgsExistingEndpoint) (*taskagent.KubernetesResource, error) {
+func (m *MockTaskagentClient) AddKubernetesResourcExistingEndpoint(ctx context.Context, args taskagent.AddKubernetesResourceArgsExistingEndpoint) (*taskagent.KubernetesResource, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddKubernetesResourcExistingEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddKubernetesResourcExistingEndpoint", ctx, args)
 	ret0, _ := ret[0].(*taskagent.KubernetesResource)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddKubernetesResourcExistingEndpoint indicates an expected call of AddKubernetesResourcExistingEndpoint.
-func (mr *MockTaskagentClientMockRecorder) AddKubernetesResourcExistingEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddKubernetesResourcExistingEndpoint(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddKubernetesResourcExistingEndpoint", reflect.TypeOf((*MockTaskagentClient)(nil).AddKubernetesResourcExistingEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddKubernetesResourcExistingEndpoint", reflect.TypeOf((*MockTaskagentClient)(nil).AddKubernetesResourcExistingEndpoint), ctx, args)
 }
 
 // AddKubernetesResourceNewEndpoint mocks base method.
-func (m *MockTaskagentClient) AddKubernetesResourceNewEndpoint(arg0 context.Context, arg1 taskagent.AddKubernetesResourceArgsNewEndpoint) (*taskagent.KubernetesResource, error) {
+func (m *MockTaskagentClient) AddKubernetesResourceNewEndpoint(ctx context.Context, args taskagent.AddKubernetesResourceArgsNewEndpoint) (*taskagent.KubernetesResource, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddKubernetesResourceNewEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddKubernetesResourceNewEndpoint", ctx, args)
 	ret0, _ := ret[0].(*taskagent.KubernetesResource)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddKubernetesResourceNewEndpoint indicates an expected call of AddKubernetesResourceNewEndpoint.
-func (mr *MockTaskagentClientMockRecorder) AddKubernetesResourceNewEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddKubernetesResourceNewEndpoint(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddKubernetesResourceNewEndpoint", reflect.TypeOf((*MockTaskagentClient)(nil).AddKubernetesResourceNewEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddKubernetesResourceNewEndpoint", reflect.TypeOf((*MockTaskagentClient)(nil).AddKubernetesResourceNewEndpoint), ctx, args)
 }
 
 // AddTaskGroup mocks base method.
@@ -165,7 +166,7 @@ func (m *MockTaskagentClient) AddTaskGroup(arg0 context.Context, arg1 taskagent.
 }
 
 // AddTaskGroup indicates an expected call of AddTaskGroup.
-func (mr *MockTaskagentClientMockRecorder) AddTaskGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddTaskGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTaskGroup", reflect.TypeOf((*MockTaskagentClient)(nil).AddTaskGroup), arg0, arg1)
 }
@@ -180,7 +181,7 @@ func (m *MockTaskagentClient) AddVariableGroup(arg0 context.Context, arg1 taskag
 }
 
 // AddVariableGroup indicates an expected call of AddVariableGroup.
-func (mr *MockTaskagentClientMockRecorder) AddVariableGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) AddVariableGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVariableGroup", reflect.TypeOf((*MockTaskagentClient)(nil).AddVariableGroup), arg0, arg1)
 }
@@ -194,7 +195,7 @@ func (m *MockTaskagentClient) DeleteAgent(arg0 context.Context, arg1 taskagent.D
 }
 
 // DeleteAgent indicates an expected call of DeleteAgent.
-func (mr *MockTaskagentClientMockRecorder) DeleteAgent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteAgent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAgent", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteAgent), arg0, arg1)
 }
@@ -209,7 +210,7 @@ func (m *MockTaskagentClient) DeleteAgentCloud(arg0 context.Context, arg1 taskag
 }
 
 // DeleteAgentCloud indicates an expected call of DeleteAgentCloud.
-func (mr *MockTaskagentClientMockRecorder) DeleteAgentCloud(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteAgentCloud(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAgentCloud", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteAgentCloud), arg0, arg1)
 }
@@ -223,7 +224,7 @@ func (m *MockTaskagentClient) DeleteAgentPool(arg0 context.Context, arg1 taskage
 }
 
 // DeleteAgentPool indicates an expected call of DeleteAgentPool.
-func (mr *MockTaskagentClientMockRecorder) DeleteAgentPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteAgentPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAgentPool", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteAgentPool), arg0, arg1)
 }
@@ -237,7 +238,7 @@ func (m *MockTaskagentClient) DeleteAgentQueue(arg0 context.Context, arg1 taskag
 }
 
 // DeleteAgentQueue indicates an expected call of DeleteAgentQueue.
-func (mr *MockTaskagentClientMockRecorder) DeleteAgentQueue(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteAgentQueue(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAgentQueue", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteAgentQueue), arg0, arg1)
 }
@@ -251,7 +252,7 @@ func (m *MockTaskagentClient) DeleteDeploymentGroup(arg0 context.Context, arg1 t
 }
 
 // DeleteDeploymentGroup indicates an expected call of DeleteDeploymentGroup.
-func (mr *MockTaskagentClientMockRecorder) DeleteDeploymentGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteDeploymentGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeploymentGroup", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteDeploymentGroup), arg0, arg1)
 }
@@ -265,7 +266,7 @@ func (m *MockTaskagentClient) DeleteDeploymentTarget(arg0 context.Context, arg1 
 }
 
 // DeleteDeploymentTarget indicates an expected call of DeleteDeploymentTarget.
-func (mr *MockTaskagentClientMockRecorder) DeleteDeploymentTarget(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteDeploymentTarget(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeploymentTarget", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteDeploymentTarget), arg0, arg1)
 }
@@ -279,7 +280,7 @@ func (m *MockTaskagentClient) DeleteEnvironment(arg0 context.Context, arg1 taska
 }
 
 // DeleteEnvironment indicates an expected call of DeleteEnvironment.
-func (mr *MockTaskagentClientMockRecorder) DeleteEnvironment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteEnvironment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEnvironment", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteEnvironment), arg0, arg1)
 }
@@ -293,7 +294,7 @@ func (m *MockTaskagentClient) DeleteKubernetesResource(arg0 context.Context, arg
 }
 
 // DeleteKubernetesResource indicates an expected call of DeleteKubernetesResource.
-func (mr *MockTaskagentClientMockRecorder) DeleteKubernetesResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteKubernetesResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteKubernetesResource", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteKubernetesResource), arg0, arg1)
 }
@@ -307,7 +308,7 @@ func (m *MockTaskagentClient) DeleteTaskGroup(arg0 context.Context, arg1 taskage
 }
 
 // DeleteTaskGroup indicates an expected call of DeleteTaskGroup.
-func (mr *MockTaskagentClientMockRecorder) DeleteTaskGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteTaskGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTaskGroup", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteTaskGroup), arg0, arg1)
 }
@@ -321,7 +322,7 @@ func (m *MockTaskagentClient) DeleteVariableGroup(arg0 context.Context, arg1 tas
 }
 
 // DeleteVariableGroup indicates an expected call of DeleteVariableGroup.
-func (mr *MockTaskagentClientMockRecorder) DeleteVariableGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) DeleteVariableGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVariableGroup", reflect.TypeOf((*MockTaskagentClient)(nil).DeleteVariableGroup), arg0, arg1)
 }
@@ -336,7 +337,7 @@ func (m *MockTaskagentClient) GetAgent(arg0 context.Context, arg1 taskagent.GetA
 }
 
 // GetAgent indicates an expected call of GetAgent.
-func (mr *MockTaskagentClientMockRecorder) GetAgent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgent), arg0, arg1)
 }
@@ -351,7 +352,7 @@ func (m *MockTaskagentClient) GetAgentCloud(arg0 context.Context, arg1 taskagent
 }
 
 // GetAgentCloud indicates an expected call of GetAgentCloud.
-func (mr *MockTaskagentClientMockRecorder) GetAgentCloud(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentCloud(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCloud", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentCloud), arg0, arg1)
 }
@@ -366,7 +367,7 @@ func (m *MockTaskagentClient) GetAgentCloudRequests(arg0 context.Context, arg1 t
 }
 
 // GetAgentCloudRequests indicates an expected call of GetAgentCloudRequests.
-func (mr *MockTaskagentClientMockRecorder) GetAgentCloudRequests(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentCloudRequests(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCloudRequests", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentCloudRequests), arg0, arg1)
 }
@@ -381,7 +382,7 @@ func (m *MockTaskagentClient) GetAgentCloudTypes(arg0 context.Context, arg1 task
 }
 
 // GetAgentCloudTypes indicates an expected call of GetAgentCloudTypes.
-func (mr *MockTaskagentClientMockRecorder) GetAgentCloudTypes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentCloudTypes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCloudTypes", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentCloudTypes), arg0, arg1)
 }
@@ -396,7 +397,7 @@ func (m *MockTaskagentClient) GetAgentClouds(arg0 context.Context, arg1 taskagen
 }
 
 // GetAgentClouds indicates an expected call of GetAgentClouds.
-func (mr *MockTaskagentClientMockRecorder) GetAgentClouds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentClouds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentClouds", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentClouds), arg0, arg1)
 }
@@ -411,7 +412,7 @@ func (m *MockTaskagentClient) GetAgentPool(arg0 context.Context, arg1 taskagent.
 }
 
 // GetAgentPool indicates an expected call of GetAgentPool.
-func (mr *MockTaskagentClientMockRecorder) GetAgentPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPool", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentPool), arg0, arg1)
 }
@@ -426,7 +427,7 @@ func (m *MockTaskagentClient) GetAgentPools(arg0 context.Context, arg1 taskagent
 }
 
 // GetAgentPools indicates an expected call of GetAgentPools.
-func (mr *MockTaskagentClientMockRecorder) GetAgentPools(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentPools(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPools", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentPools), arg0, arg1)
 }
@@ -441,7 +442,7 @@ func (m *MockTaskagentClient) GetAgentPoolsByIds(arg0 context.Context, arg1 task
 }
 
 // GetAgentPoolsByIds indicates an expected call of GetAgentPoolsByIds.
-func (mr *MockTaskagentClientMockRecorder) GetAgentPoolsByIds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentPoolsByIds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPoolsByIds", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentPoolsByIds), arg0, arg1)
 }
@@ -456,7 +457,7 @@ func (m *MockTaskagentClient) GetAgentQueue(arg0 context.Context, arg1 taskagent
 }
 
 // GetAgentQueue indicates an expected call of GetAgentQueue.
-func (mr *MockTaskagentClientMockRecorder) GetAgentQueue(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentQueue(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentQueue", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentQueue), arg0, arg1)
 }
@@ -471,7 +472,7 @@ func (m *MockTaskagentClient) GetAgentQueues(arg0 context.Context, arg1 taskagen
 }
 
 // GetAgentQueues indicates an expected call of GetAgentQueues.
-func (mr *MockTaskagentClientMockRecorder) GetAgentQueues(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentQueues(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentQueues", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentQueues), arg0, arg1)
 }
@@ -486,7 +487,7 @@ func (m *MockTaskagentClient) GetAgentQueuesByIds(arg0 context.Context, arg1 tas
 }
 
 // GetAgentQueuesByIds indicates an expected call of GetAgentQueuesByIds.
-func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesByIds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesByIds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentQueuesByIds", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentQueuesByIds), arg0, arg1)
 }
@@ -501,7 +502,7 @@ func (m *MockTaskagentClient) GetAgentQueuesByNames(arg0 context.Context, arg1 t
 }
 
 // GetAgentQueuesByNames indicates an expected call of GetAgentQueuesByNames.
-func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesByNames(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesByNames(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentQueuesByNames", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentQueuesByNames), arg0, arg1)
 }
@@ -516,7 +517,7 @@ func (m *MockTaskagentClient) GetAgentQueuesForPools(arg0 context.Context, arg1 
 }
 
 // GetAgentQueuesForPools indicates an expected call of GetAgentQueuesForPools.
-func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesForPools(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgentQueuesForPools(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentQueuesForPools", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgentQueuesForPools), arg0, arg1)
 }
@@ -531,7 +532,7 @@ func (m *MockTaskagentClient) GetAgents(arg0 context.Context, arg1 taskagent.Get
 }
 
 // GetAgents indicates an expected call of GetAgents.
-func (mr *MockTaskagentClientMockRecorder) GetAgents(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetAgents(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgents", reflect.TypeOf((*MockTaskagentClient)(nil).GetAgents), arg0, arg1)
 }
@@ -546,7 +547,7 @@ func (m *MockTaskagentClient) GetDeploymentGroup(arg0 context.Context, arg1 task
 }
 
 // GetDeploymentGroup indicates an expected call of GetDeploymentGroup.
-func (mr *MockTaskagentClientMockRecorder) GetDeploymentGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetDeploymentGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentGroup", reflect.TypeOf((*MockTaskagentClient)(nil).GetDeploymentGroup), arg0, arg1)
 }
@@ -561,7 +562,7 @@ func (m *MockTaskagentClient) GetDeploymentGroups(arg0 context.Context, arg1 tas
 }
 
 // GetDeploymentGroups indicates an expected call of GetDeploymentGroups.
-func (mr *MockTaskagentClientMockRecorder) GetDeploymentGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetDeploymentGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentGroups", reflect.TypeOf((*MockTaskagentClient)(nil).GetDeploymentGroups), arg0, arg1)
 }
@@ -576,7 +577,7 @@ func (m *MockTaskagentClient) GetDeploymentTarget(arg0 context.Context, arg1 tas
 }
 
 // GetDeploymentTarget indicates an expected call of GetDeploymentTarget.
-func (mr *MockTaskagentClientMockRecorder) GetDeploymentTarget(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetDeploymentTarget(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentTarget", reflect.TypeOf((*MockTaskagentClient)(nil).GetDeploymentTarget), arg0, arg1)
 }
@@ -591,7 +592,7 @@ func (m *MockTaskagentClient) GetDeploymentTargets(arg0 context.Context, arg1 ta
 }
 
 // GetDeploymentTargets indicates an expected call of GetDeploymentTargets.
-func (mr *MockTaskagentClientMockRecorder) GetDeploymentTargets(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetDeploymentTargets(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentTargets", reflect.TypeOf((*MockTaskagentClient)(nil).GetDeploymentTargets), arg0, arg1)
 }
@@ -606,7 +607,7 @@ func (m *MockTaskagentClient) GetEnvironmentById(arg0 context.Context, arg1 task
 }
 
 // GetEnvironmentById indicates an expected call of GetEnvironmentById.
-func (mr *MockTaskagentClientMockRecorder) GetEnvironmentById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetEnvironmentById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnvironmentById", reflect.TypeOf((*MockTaskagentClient)(nil).GetEnvironmentById), arg0, arg1)
 }
@@ -621,7 +622,7 @@ func (m *MockTaskagentClient) GetEnvironmentDeploymentExecutionRecords(arg0 cont
 }
 
 // GetEnvironmentDeploymentExecutionRecords indicates an expected call of GetEnvironmentDeploymentExecutionRecords.
-func (mr *MockTaskagentClientMockRecorder) GetEnvironmentDeploymentExecutionRecords(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetEnvironmentDeploymentExecutionRecords(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnvironmentDeploymentExecutionRecords", reflect.TypeOf((*MockTaskagentClient)(nil).GetEnvironmentDeploymentExecutionRecords), arg0, arg1)
 }
@@ -636,7 +637,7 @@ func (m *MockTaskagentClient) GetEnvironments(arg0 context.Context, arg1 taskage
 }
 
 // GetEnvironments indicates an expected call of GetEnvironments.
-func (mr *MockTaskagentClientMockRecorder) GetEnvironments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetEnvironments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnvironments", reflect.TypeOf((*MockTaskagentClient)(nil).GetEnvironments), arg0, arg1)
 }
@@ -651,7 +652,7 @@ func (m *MockTaskagentClient) GetKubernetesResource(arg0 context.Context, arg1 t
 }
 
 // GetKubernetesResource indicates an expected call of GetKubernetesResource.
-func (mr *MockTaskagentClientMockRecorder) GetKubernetesResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetKubernetesResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKubernetesResource", reflect.TypeOf((*MockTaskagentClient)(nil).GetKubernetesResource), arg0, arg1)
 }
@@ -666,7 +667,7 @@ func (m *MockTaskagentClient) GetTaskGroups(arg0 context.Context, arg1 taskagent
 }
 
 // GetTaskGroups indicates an expected call of GetTaskGroups.
-func (mr *MockTaskagentClientMockRecorder) GetTaskGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetTaskGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTaskGroups", reflect.TypeOf((*MockTaskagentClient)(nil).GetTaskGroups), arg0, arg1)
 }
@@ -681,7 +682,7 @@ func (m *MockTaskagentClient) GetVariableGroup(arg0 context.Context, arg1 taskag
 }
 
 // GetVariableGroup indicates an expected call of GetVariableGroup.
-func (mr *MockTaskagentClientMockRecorder) GetVariableGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetVariableGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVariableGroup", reflect.TypeOf((*MockTaskagentClient)(nil).GetVariableGroup), arg0, arg1)
 }
@@ -696,7 +697,7 @@ func (m *MockTaskagentClient) GetVariableGroups(arg0 context.Context, arg1 taska
 }
 
 // GetVariableGroups indicates an expected call of GetVariableGroups.
-func (mr *MockTaskagentClientMockRecorder) GetVariableGroups(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetVariableGroups(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVariableGroups", reflect.TypeOf((*MockTaskagentClient)(nil).GetVariableGroups), arg0, arg1)
 }
@@ -711,22 +712,22 @@ func (m *MockTaskagentClient) GetVariableGroupsById(arg0 context.Context, arg1 t
 }
 
 // GetVariableGroupsById indicates an expected call of GetVariableGroupsById.
-func (mr *MockTaskagentClientMockRecorder) GetVariableGroupsById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetVariableGroupsById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVariableGroupsById", reflect.TypeOf((*MockTaskagentClient)(nil).GetVariableGroupsById), arg0, arg1)
 }
 
 // GetYamlSchema mocks base method.
-func (m *MockTaskagentClient) GetYamlSchema(arg0 context.Context, arg1 taskagent.GetYamlSchemaArgs) (interface{}, error) {
+func (m *MockTaskagentClient) GetYamlSchema(arg0 context.Context, arg1 taskagent.GetYamlSchemaArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetYamlSchema", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetYamlSchema indicates an expected call of GetYamlSchema.
-func (mr *MockTaskagentClientMockRecorder) GetYamlSchema(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) GetYamlSchema(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetYamlSchema", reflect.TypeOf((*MockTaskagentClient)(nil).GetYamlSchema), arg0, arg1)
 }
@@ -741,7 +742,7 @@ func (m *MockTaskagentClient) ReplaceAgent(arg0 context.Context, arg1 taskagent.
 }
 
 // ReplaceAgent indicates an expected call of ReplaceAgent.
-func (mr *MockTaskagentClientMockRecorder) ReplaceAgent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) ReplaceAgent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceAgent", reflect.TypeOf((*MockTaskagentClient)(nil).ReplaceAgent), arg0, arg1)
 }
@@ -755,7 +756,7 @@ func (m *MockTaskagentClient) ShareVariableGroup(arg0 context.Context, arg1 task
 }
 
 // ShareVariableGroup indicates an expected call of ShareVariableGroup.
-func (mr *MockTaskagentClientMockRecorder) ShareVariableGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) ShareVariableGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShareVariableGroup", reflect.TypeOf((*MockTaskagentClient)(nil).ShareVariableGroup), arg0, arg1)
 }
@@ -770,7 +771,7 @@ func (m *MockTaskagentClient) UpdateAgent(arg0 context.Context, arg1 taskagent.U
 }
 
 // UpdateAgent indicates an expected call of UpdateAgent.
-func (mr *MockTaskagentClientMockRecorder) UpdateAgent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateAgent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAgent", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateAgent), arg0, arg1)
 }
@@ -785,7 +786,7 @@ func (m *MockTaskagentClient) UpdateAgentCloud(arg0 context.Context, arg1 taskag
 }
 
 // UpdateAgentCloud indicates an expected call of UpdateAgentCloud.
-func (mr *MockTaskagentClientMockRecorder) UpdateAgentCloud(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateAgentCloud(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAgentCloud", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateAgentCloud), arg0, arg1)
 }
@@ -800,7 +801,7 @@ func (m *MockTaskagentClient) UpdateAgentPool(arg0 context.Context, arg1 taskage
 }
 
 // UpdateAgentPool indicates an expected call of UpdateAgentPool.
-func (mr *MockTaskagentClientMockRecorder) UpdateAgentPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateAgentPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAgentPool", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateAgentPool), arg0, arg1)
 }
@@ -815,7 +816,7 @@ func (m *MockTaskagentClient) UpdateDeploymentGroup(arg0 context.Context, arg1 t
 }
 
 // UpdateDeploymentGroup indicates an expected call of UpdateDeploymentGroup.
-func (mr *MockTaskagentClientMockRecorder) UpdateDeploymentGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateDeploymentGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeploymentGroup", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateDeploymentGroup), arg0, arg1)
 }
@@ -830,7 +831,7 @@ func (m *MockTaskagentClient) UpdateDeploymentTargets(arg0 context.Context, arg1
 }
 
 // UpdateDeploymentTargets indicates an expected call of UpdateDeploymentTargets.
-func (mr *MockTaskagentClientMockRecorder) UpdateDeploymentTargets(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateDeploymentTargets(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeploymentTargets", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateDeploymentTargets), arg0, arg1)
 }
@@ -845,7 +846,7 @@ func (m *MockTaskagentClient) UpdateEnvironment(arg0 context.Context, arg1 taska
 }
 
 // UpdateEnvironment indicates an expected call of UpdateEnvironment.
-func (mr *MockTaskagentClientMockRecorder) UpdateEnvironment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateEnvironment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEnvironment", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateEnvironment), arg0, arg1)
 }
@@ -860,7 +861,7 @@ func (m *MockTaskagentClient) UpdateTaskGroup(arg0 context.Context, arg1 taskage
 }
 
 // UpdateTaskGroup indicates an expected call of UpdateTaskGroup.
-func (mr *MockTaskagentClientMockRecorder) UpdateTaskGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateTaskGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTaskGroup", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateTaskGroup), arg0, arg1)
 }
@@ -875,7 +876,7 @@ func (m *MockTaskagentClient) UpdateVariableGroup(arg0 context.Context, arg1 tas
 }
 
 // UpdateVariableGroup indicates an expected call of UpdateVariableGroup.
-func (mr *MockTaskagentClientMockRecorder) UpdateVariableGroup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTaskagentClientMockRecorder) UpdateVariableGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVariableGroup", reflect.TypeOf((*MockTaskagentClient)(nil).UpdateVariableGroup), arg0, arg1)
 }

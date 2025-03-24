@@ -9,16 +9,17 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	core "github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	git "github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
 	webapi "github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGitClient is a mock of Client interface.
 type MockGitClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockGitClientMockRecorder
+	isgomock struct{}
 }
 
 // MockGitClientMockRecorder is the mock recorder for MockGitClient.
@@ -48,7 +49,7 @@ func (m *MockGitClient) CreateAnnotatedTag(arg0 context.Context, arg1 git.Create
 }
 
 // CreateAnnotatedTag indicates an expected call of CreateAnnotatedTag.
-func (mr *MockGitClientMockRecorder) CreateAnnotatedTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateAnnotatedTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAnnotatedTag", reflect.TypeOf((*MockGitClient)(nil).CreateAnnotatedTag), arg0, arg1)
 }
@@ -63,7 +64,7 @@ func (m *MockGitClient) CreateAttachment(arg0 context.Context, arg1 git.CreateAt
 }
 
 // CreateAttachment indicates an expected call of CreateAttachment.
-func (mr *MockGitClientMockRecorder) CreateAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAttachment", reflect.TypeOf((*MockGitClient)(nil).CreateAttachment), arg0, arg1)
 }
@@ -78,7 +79,7 @@ func (m *MockGitClient) CreateCherryPick(arg0 context.Context, arg1 git.CreateCh
 }
 
 // CreateCherryPick indicates an expected call of CreateCherryPick.
-func (mr *MockGitClientMockRecorder) CreateCherryPick(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateCherryPick(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCherryPick", reflect.TypeOf((*MockGitClient)(nil).CreateCherryPick), arg0, arg1)
 }
@@ -93,7 +94,7 @@ func (m *MockGitClient) CreateComment(arg0 context.Context, arg1 git.CreateComme
 }
 
 // CreateComment indicates an expected call of CreateComment.
-func (mr *MockGitClientMockRecorder) CreateComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateComment", reflect.TypeOf((*MockGitClient)(nil).CreateComment), arg0, arg1)
 }
@@ -108,7 +109,7 @@ func (m *MockGitClient) CreateCommitStatus(arg0 context.Context, arg1 git.Create
 }
 
 // CreateCommitStatus indicates an expected call of CreateCommitStatus.
-func (mr *MockGitClientMockRecorder) CreateCommitStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateCommitStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCommitStatus", reflect.TypeOf((*MockGitClient)(nil).CreateCommitStatus), arg0, arg1)
 }
@@ -123,7 +124,7 @@ func (m *MockGitClient) CreateFavorite(arg0 context.Context, arg1 git.CreateFavo
 }
 
 // CreateFavorite indicates an expected call of CreateFavorite.
-func (mr *MockGitClientMockRecorder) CreateFavorite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateFavorite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFavorite", reflect.TypeOf((*MockGitClient)(nil).CreateFavorite), arg0, arg1)
 }
@@ -138,7 +139,7 @@ func (m *MockGitClient) CreateForkSyncRequest(arg0 context.Context, arg1 git.Cre
 }
 
 // CreateForkSyncRequest indicates an expected call of CreateForkSyncRequest.
-func (mr *MockGitClientMockRecorder) CreateForkSyncRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateForkSyncRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForkSyncRequest", reflect.TypeOf((*MockGitClient)(nil).CreateForkSyncRequest), arg0, arg1)
 }
@@ -153,7 +154,7 @@ func (m *MockGitClient) CreateImportRequest(arg0 context.Context, arg1 git.Creat
 }
 
 // CreateImportRequest indicates an expected call of CreateImportRequest.
-func (mr *MockGitClientMockRecorder) CreateImportRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateImportRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateImportRequest", reflect.TypeOf((*MockGitClient)(nil).CreateImportRequest), arg0, arg1)
 }
@@ -167,7 +168,7 @@ func (m *MockGitClient) CreateLike(arg0 context.Context, arg1 git.CreateLikeArgs
 }
 
 // CreateLike indicates an expected call of CreateLike.
-func (mr *MockGitClientMockRecorder) CreateLike(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateLike(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateLike", reflect.TypeOf((*MockGitClient)(nil).CreateLike), arg0, arg1)
 }
@@ -182,7 +183,7 @@ func (m *MockGitClient) CreateMergeRequest(arg0 context.Context, arg1 git.Create
 }
 
 // CreateMergeRequest indicates an expected call of CreateMergeRequest.
-func (mr *MockGitClientMockRecorder) CreateMergeRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateMergeRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMergeRequest", reflect.TypeOf((*MockGitClient)(nil).CreateMergeRequest), arg0, arg1)
 }
@@ -197,7 +198,7 @@ func (m *MockGitClient) CreatePullRequest(arg0 context.Context, arg1 git.CreateP
 }
 
 // CreatePullRequest indicates an expected call of CreatePullRequest.
-func (mr *MockGitClientMockRecorder) CreatePullRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequest", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequest), arg0, arg1)
 }
@@ -212,7 +213,7 @@ func (m *MockGitClient) CreatePullRequestIterationStatus(arg0 context.Context, a
 }
 
 // CreatePullRequestIterationStatus indicates an expected call of CreatePullRequestIterationStatus.
-func (mr *MockGitClientMockRecorder) CreatePullRequestIterationStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequestIterationStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequestIterationStatus", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequestIterationStatus), arg0, arg1)
 }
@@ -227,7 +228,7 @@ func (m *MockGitClient) CreatePullRequestLabel(arg0 context.Context, arg1 git.Cr
 }
 
 // CreatePullRequestLabel indicates an expected call of CreatePullRequestLabel.
-func (mr *MockGitClientMockRecorder) CreatePullRequestLabel(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequestLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequestLabel", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequestLabel), arg0, arg1)
 }
@@ -242,7 +243,7 @@ func (m *MockGitClient) CreatePullRequestReviewer(arg0 context.Context, arg1 git
 }
 
 // CreatePullRequestReviewer indicates an expected call of CreatePullRequestReviewer.
-func (mr *MockGitClientMockRecorder) CreatePullRequestReviewer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequestReviewer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequestReviewer", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequestReviewer), arg0, arg1)
 }
@@ -257,7 +258,7 @@ func (m *MockGitClient) CreatePullRequestReviewers(arg0 context.Context, arg1 gi
 }
 
 // CreatePullRequestReviewers indicates an expected call of CreatePullRequestReviewers.
-func (mr *MockGitClientMockRecorder) CreatePullRequestReviewers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequestReviewers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequestReviewers", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequestReviewers), arg0, arg1)
 }
@@ -272,7 +273,7 @@ func (m *MockGitClient) CreatePullRequestStatus(arg0 context.Context, arg1 git.C
 }
 
 // CreatePullRequestStatus indicates an expected call of CreatePullRequestStatus.
-func (mr *MockGitClientMockRecorder) CreatePullRequestStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePullRequestStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePullRequestStatus", reflect.TypeOf((*MockGitClient)(nil).CreatePullRequestStatus), arg0, arg1)
 }
@@ -287,7 +288,7 @@ func (m *MockGitClient) CreatePush(arg0 context.Context, arg1 git.CreatePushArgs
 }
 
 // CreatePush indicates an expected call of CreatePush.
-func (mr *MockGitClientMockRecorder) CreatePush(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreatePush(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePush", reflect.TypeOf((*MockGitClient)(nil).CreatePush), arg0, arg1)
 }
@@ -302,7 +303,7 @@ func (m *MockGitClient) CreateRepository(arg0 context.Context, arg1 git.CreateRe
 }
 
 // CreateRepository indicates an expected call of CreateRepository.
-func (mr *MockGitClientMockRecorder) CreateRepository(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateRepository(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockGitClient)(nil).CreateRepository), arg0, arg1)
 }
@@ -317,7 +318,7 @@ func (m *MockGitClient) CreateRevert(arg0 context.Context, arg1 git.CreateRevert
 }
 
 // CreateRevert indicates an expected call of CreateRevert.
-func (mr *MockGitClientMockRecorder) CreateRevert(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateRevert(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRevert", reflect.TypeOf((*MockGitClient)(nil).CreateRevert), arg0, arg1)
 }
@@ -332,7 +333,7 @@ func (m *MockGitClient) CreateThread(arg0 context.Context, arg1 git.CreateThread
 }
 
 // CreateThread indicates an expected call of CreateThread.
-func (mr *MockGitClientMockRecorder) CreateThread(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateThread(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateThread", reflect.TypeOf((*MockGitClient)(nil).CreateThread), arg0, arg1)
 }
@@ -347,7 +348,7 @@ func (m *MockGitClient) CreateUnmaterializedPullRequestReviewer(arg0 context.Con
 }
 
 // CreateUnmaterializedPullRequestReviewer indicates an expected call of CreateUnmaterializedPullRequestReviewer.
-func (mr *MockGitClientMockRecorder) CreateUnmaterializedPullRequestReviewer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) CreateUnmaterializedPullRequestReviewer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUnmaterializedPullRequestReviewer", reflect.TypeOf((*MockGitClient)(nil).CreateUnmaterializedPullRequestReviewer), arg0, arg1)
 }
@@ -361,7 +362,7 @@ func (m *MockGitClient) DeleteAttachment(arg0 context.Context, arg1 git.DeleteAt
 }
 
 // DeleteAttachment indicates an expected call of DeleteAttachment.
-func (mr *MockGitClientMockRecorder) DeleteAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAttachment", reflect.TypeOf((*MockGitClient)(nil).DeleteAttachment), arg0, arg1)
 }
@@ -375,7 +376,7 @@ func (m *MockGitClient) DeleteComment(arg0 context.Context, arg1 git.DeleteComme
 }
 
 // DeleteComment indicates an expected call of DeleteComment.
-func (mr *MockGitClientMockRecorder) DeleteComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockGitClient)(nil).DeleteComment), arg0, arg1)
 }
@@ -389,7 +390,7 @@ func (m *MockGitClient) DeleteLike(arg0 context.Context, arg1 git.DeleteLikeArgs
 }
 
 // DeleteLike indicates an expected call of DeleteLike.
-func (mr *MockGitClientMockRecorder) DeleteLike(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteLike(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLike", reflect.TypeOf((*MockGitClient)(nil).DeleteLike), arg0, arg1)
 }
@@ -403,7 +404,7 @@ func (m *MockGitClient) DeletePullRequestIterationStatus(arg0 context.Context, a
 }
 
 // DeletePullRequestIterationStatus indicates an expected call of DeletePullRequestIterationStatus.
-func (mr *MockGitClientMockRecorder) DeletePullRequestIterationStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeletePullRequestIterationStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePullRequestIterationStatus", reflect.TypeOf((*MockGitClient)(nil).DeletePullRequestIterationStatus), arg0, arg1)
 }
@@ -417,7 +418,7 @@ func (m *MockGitClient) DeletePullRequestLabels(arg0 context.Context, arg1 git.D
 }
 
 // DeletePullRequestLabels indicates an expected call of DeletePullRequestLabels.
-func (mr *MockGitClientMockRecorder) DeletePullRequestLabels(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeletePullRequestLabels(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePullRequestLabels", reflect.TypeOf((*MockGitClient)(nil).DeletePullRequestLabels), arg0, arg1)
 }
@@ -431,7 +432,7 @@ func (m *MockGitClient) DeletePullRequestReviewer(arg0 context.Context, arg1 git
 }
 
 // DeletePullRequestReviewer indicates an expected call of DeletePullRequestReviewer.
-func (mr *MockGitClientMockRecorder) DeletePullRequestReviewer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeletePullRequestReviewer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePullRequestReviewer", reflect.TypeOf((*MockGitClient)(nil).DeletePullRequestReviewer), arg0, arg1)
 }
@@ -445,7 +446,7 @@ func (m *MockGitClient) DeletePullRequestStatus(arg0 context.Context, arg1 git.D
 }
 
 // DeletePullRequestStatus indicates an expected call of DeletePullRequestStatus.
-func (mr *MockGitClientMockRecorder) DeletePullRequestStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeletePullRequestStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePullRequestStatus", reflect.TypeOf((*MockGitClient)(nil).DeletePullRequestStatus), arg0, arg1)
 }
@@ -459,7 +460,7 @@ func (m *MockGitClient) DeleteRefFavorite(arg0 context.Context, arg1 git.DeleteR
 }
 
 // DeleteRefFavorite indicates an expected call of DeleteRefFavorite.
-func (mr *MockGitClientMockRecorder) DeleteRefFavorite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteRefFavorite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefFavorite", reflect.TypeOf((*MockGitClient)(nil).DeleteRefFavorite), arg0, arg1)
 }
@@ -473,7 +474,7 @@ func (m *MockGitClient) DeleteRepository(arg0 context.Context, arg1 git.DeleteRe
 }
 
 // DeleteRepository indicates an expected call of DeleteRepository.
-func (mr *MockGitClientMockRecorder) DeleteRepository(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteRepository(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRepository", reflect.TypeOf((*MockGitClient)(nil).DeleteRepository), arg0, arg1)
 }
@@ -487,7 +488,7 @@ func (m *MockGitClient) DeleteRepositoryFromRecycleBin(arg0 context.Context, arg
 }
 
 // DeleteRepositoryFromRecycleBin indicates an expected call of DeleteRepositoryFromRecycleBin.
-func (mr *MockGitClientMockRecorder) DeleteRepositoryFromRecycleBin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) DeleteRepositoryFromRecycleBin(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRepositoryFromRecycleBin", reflect.TypeOf((*MockGitClient)(nil).DeleteRepositoryFromRecycleBin), arg0, arg1)
 }
@@ -502,7 +503,7 @@ func (m *MockGitClient) GetAnnotatedTag(arg0 context.Context, arg1 git.GetAnnota
 }
 
 // GetAnnotatedTag indicates an expected call of GetAnnotatedTag.
-func (mr *MockGitClientMockRecorder) GetAnnotatedTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetAnnotatedTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnotatedTag", reflect.TypeOf((*MockGitClient)(nil).GetAnnotatedTag), arg0, arg1)
 }
@@ -517,7 +518,7 @@ func (m *MockGitClient) GetAttachmentContent(arg0 context.Context, arg1 git.GetA
 }
 
 // GetAttachmentContent indicates an expected call of GetAttachmentContent.
-func (mr *MockGitClientMockRecorder) GetAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachmentContent", reflect.TypeOf((*MockGitClient)(nil).GetAttachmentContent), arg0, arg1)
 }
@@ -532,7 +533,7 @@ func (m *MockGitClient) GetAttachmentZip(arg0 context.Context, arg1 git.GetAttac
 }
 
 // GetAttachmentZip indicates an expected call of GetAttachmentZip.
-func (mr *MockGitClientMockRecorder) GetAttachmentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetAttachmentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachmentZip", reflect.TypeOf((*MockGitClient)(nil).GetAttachmentZip), arg0, arg1)
 }
@@ -547,7 +548,7 @@ func (m *MockGitClient) GetAttachments(arg0 context.Context, arg1 git.GetAttachm
 }
 
 // GetAttachments indicates an expected call of GetAttachments.
-func (mr *MockGitClientMockRecorder) GetAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachments", reflect.TypeOf((*MockGitClient)(nil).GetAttachments), arg0, arg1)
 }
@@ -562,7 +563,7 @@ func (m *MockGitClient) GetBlob(arg0 context.Context, arg1 git.GetBlobArgs) (*gi
 }
 
 // GetBlob indicates an expected call of GetBlob.
-func (mr *MockGitClientMockRecorder) GetBlob(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBlob(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlob", reflect.TypeOf((*MockGitClient)(nil).GetBlob), arg0, arg1)
 }
@@ -577,7 +578,7 @@ func (m *MockGitClient) GetBlobContent(arg0 context.Context, arg1 git.GetBlobCon
 }
 
 // GetBlobContent indicates an expected call of GetBlobContent.
-func (mr *MockGitClientMockRecorder) GetBlobContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBlobContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlobContent", reflect.TypeOf((*MockGitClient)(nil).GetBlobContent), arg0, arg1)
 }
@@ -592,7 +593,7 @@ func (m *MockGitClient) GetBlobZip(arg0 context.Context, arg1 git.GetBlobZipArgs
 }
 
 // GetBlobZip indicates an expected call of GetBlobZip.
-func (mr *MockGitClientMockRecorder) GetBlobZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBlobZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlobZip", reflect.TypeOf((*MockGitClient)(nil).GetBlobZip), arg0, arg1)
 }
@@ -607,7 +608,7 @@ func (m *MockGitClient) GetBlobsZip(arg0 context.Context, arg1 git.GetBlobsZipAr
 }
 
 // GetBlobsZip indicates an expected call of GetBlobsZip.
-func (mr *MockGitClientMockRecorder) GetBlobsZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBlobsZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlobsZip", reflect.TypeOf((*MockGitClient)(nil).GetBlobsZip), arg0, arg1)
 }
@@ -622,7 +623,7 @@ func (m *MockGitClient) GetBranch(arg0 context.Context, arg1 git.GetBranchArgs) 
 }
 
 // GetBranch indicates an expected call of GetBranch.
-func (mr *MockGitClientMockRecorder) GetBranch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBranch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBranch", reflect.TypeOf((*MockGitClient)(nil).GetBranch), arg0, arg1)
 }
@@ -637,7 +638,7 @@ func (m *MockGitClient) GetBranches(arg0 context.Context, arg1 git.GetBranchesAr
 }
 
 // GetBranches indicates an expected call of GetBranches.
-func (mr *MockGitClientMockRecorder) GetBranches(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetBranches(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBranches", reflect.TypeOf((*MockGitClient)(nil).GetBranches), arg0, arg1)
 }
@@ -652,7 +653,7 @@ func (m *MockGitClient) GetChanges(arg0 context.Context, arg1 git.GetChangesArgs
 }
 
 // GetChanges indicates an expected call of GetChanges.
-func (mr *MockGitClientMockRecorder) GetChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChanges", reflect.TypeOf((*MockGitClient)(nil).GetChanges), arg0, arg1)
 }
@@ -667,7 +668,7 @@ func (m *MockGitClient) GetCherryPick(arg0 context.Context, arg1 git.GetCherryPi
 }
 
 // GetCherryPick indicates an expected call of GetCherryPick.
-func (mr *MockGitClientMockRecorder) GetCherryPick(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCherryPick(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCherryPick", reflect.TypeOf((*MockGitClient)(nil).GetCherryPick), arg0, arg1)
 }
@@ -682,7 +683,7 @@ func (m *MockGitClient) GetCherryPickForRefName(arg0 context.Context, arg1 git.G
 }
 
 // GetCherryPickForRefName indicates an expected call of GetCherryPickForRefName.
-func (mr *MockGitClientMockRecorder) GetCherryPickForRefName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCherryPickForRefName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCherryPickForRefName", reflect.TypeOf((*MockGitClient)(nil).GetCherryPickForRefName), arg0, arg1)
 }
@@ -697,7 +698,7 @@ func (m *MockGitClient) GetComment(arg0 context.Context, arg1 git.GetCommentArgs
 }
 
 // GetComment indicates an expected call of GetComment.
-func (mr *MockGitClientMockRecorder) GetComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComment", reflect.TypeOf((*MockGitClient)(nil).GetComment), arg0, arg1)
 }
@@ -712,7 +713,7 @@ func (m *MockGitClient) GetComments(arg0 context.Context, arg1 git.GetCommentsAr
 }
 
 // GetComments indicates an expected call of GetComments.
-func (mr *MockGitClientMockRecorder) GetComments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetComments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComments", reflect.TypeOf((*MockGitClient)(nil).GetComments), arg0, arg1)
 }
@@ -727,7 +728,7 @@ func (m *MockGitClient) GetCommit(arg0 context.Context, arg1 git.GetCommitArgs) 
 }
 
 // GetCommit indicates an expected call of GetCommit.
-func (mr *MockGitClientMockRecorder) GetCommit(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCommit(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommit", reflect.TypeOf((*MockGitClient)(nil).GetCommit), arg0, arg1)
 }
@@ -742,7 +743,7 @@ func (m *MockGitClient) GetCommitDiffs(arg0 context.Context, arg1 git.GetCommitD
 }
 
 // GetCommitDiffs indicates an expected call of GetCommitDiffs.
-func (mr *MockGitClientMockRecorder) GetCommitDiffs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCommitDiffs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitDiffs", reflect.TypeOf((*MockGitClient)(nil).GetCommitDiffs), arg0, arg1)
 }
@@ -757,7 +758,7 @@ func (m *MockGitClient) GetCommits(arg0 context.Context, arg1 git.GetCommitsArgs
 }
 
 // GetCommits indicates an expected call of GetCommits.
-func (mr *MockGitClientMockRecorder) GetCommits(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCommits(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommits", reflect.TypeOf((*MockGitClient)(nil).GetCommits), arg0, arg1)
 }
@@ -772,7 +773,7 @@ func (m *MockGitClient) GetCommitsBatch(arg0 context.Context, arg1 git.GetCommit
 }
 
 // GetCommitsBatch indicates an expected call of GetCommitsBatch.
-func (mr *MockGitClientMockRecorder) GetCommitsBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetCommitsBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitsBatch", reflect.TypeOf((*MockGitClient)(nil).GetCommitsBatch), arg0, arg1)
 }
@@ -787,7 +788,7 @@ func (m *MockGitClient) GetDeletedRepositories(arg0 context.Context, arg1 git.Ge
 }
 
 // GetDeletedRepositories indicates an expected call of GetDeletedRepositories.
-func (mr *MockGitClientMockRecorder) GetDeletedRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetDeletedRepositories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeletedRepositories", reflect.TypeOf((*MockGitClient)(nil).GetDeletedRepositories), arg0, arg1)
 }
@@ -802,7 +803,7 @@ func (m *MockGitClient) GetForkSyncRequest(arg0 context.Context, arg1 git.GetFor
 }
 
 // GetForkSyncRequest indicates an expected call of GetForkSyncRequest.
-func (mr *MockGitClientMockRecorder) GetForkSyncRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetForkSyncRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetForkSyncRequest", reflect.TypeOf((*MockGitClient)(nil).GetForkSyncRequest), arg0, arg1)
 }
@@ -817,7 +818,7 @@ func (m *MockGitClient) GetForkSyncRequests(arg0 context.Context, arg1 git.GetFo
 }
 
 // GetForkSyncRequests indicates an expected call of GetForkSyncRequests.
-func (mr *MockGitClientMockRecorder) GetForkSyncRequests(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetForkSyncRequests(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetForkSyncRequests", reflect.TypeOf((*MockGitClient)(nil).GetForkSyncRequests), arg0, arg1)
 }
@@ -832,7 +833,7 @@ func (m *MockGitClient) GetForks(arg0 context.Context, arg1 git.GetForksArgs) (*
 }
 
 // GetForks indicates an expected call of GetForks.
-func (mr *MockGitClientMockRecorder) GetForks(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetForks(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetForks", reflect.TypeOf((*MockGitClient)(nil).GetForks), arg0, arg1)
 }
@@ -847,7 +848,7 @@ func (m *MockGitClient) GetImportRequest(arg0 context.Context, arg1 git.GetImpor
 }
 
 // GetImportRequest indicates an expected call of GetImportRequest.
-func (mr *MockGitClientMockRecorder) GetImportRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetImportRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImportRequest", reflect.TypeOf((*MockGitClient)(nil).GetImportRequest), arg0, arg1)
 }
@@ -862,7 +863,7 @@ func (m *MockGitClient) GetItem(arg0 context.Context, arg1 git.GetItemArgs) (*gi
 }
 
 // GetItem indicates an expected call of GetItem.
-func (mr *MockGitClientMockRecorder) GetItem(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItem(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItem", reflect.TypeOf((*MockGitClient)(nil).GetItem), arg0, arg1)
 }
@@ -877,7 +878,7 @@ func (m *MockGitClient) GetItemContent(arg0 context.Context, arg1 git.GetItemCon
 }
 
 // GetItemContent indicates an expected call of GetItemContent.
-func (mr *MockGitClientMockRecorder) GetItemContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItemContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemContent", reflect.TypeOf((*MockGitClient)(nil).GetItemContent), arg0, arg1)
 }
@@ -892,7 +893,7 @@ func (m *MockGitClient) GetItemText(arg0 context.Context, arg1 git.GetItemTextAr
 }
 
 // GetItemText indicates an expected call of GetItemText.
-func (mr *MockGitClientMockRecorder) GetItemText(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItemText(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemText", reflect.TypeOf((*MockGitClient)(nil).GetItemText), arg0, arg1)
 }
@@ -907,7 +908,7 @@ func (m *MockGitClient) GetItemZip(arg0 context.Context, arg1 git.GetItemZipArgs
 }
 
 // GetItemZip indicates an expected call of GetItemZip.
-func (mr *MockGitClientMockRecorder) GetItemZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItemZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemZip", reflect.TypeOf((*MockGitClient)(nil).GetItemZip), arg0, arg1)
 }
@@ -922,7 +923,7 @@ func (m *MockGitClient) GetItems(arg0 context.Context, arg1 git.GetItemsArgs) (*
 }
 
 // GetItems indicates an expected call of GetItems.
-func (mr *MockGitClientMockRecorder) GetItems(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItems(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItems", reflect.TypeOf((*MockGitClient)(nil).GetItems), arg0, arg1)
 }
@@ -937,7 +938,7 @@ func (m *MockGitClient) GetItemsBatch(arg0 context.Context, arg1 git.GetItemsBat
 }
 
 // GetItemsBatch indicates an expected call of GetItemsBatch.
-func (mr *MockGitClientMockRecorder) GetItemsBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetItemsBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemsBatch", reflect.TypeOf((*MockGitClient)(nil).GetItemsBatch), arg0, arg1)
 }
@@ -952,7 +953,7 @@ func (m *MockGitClient) GetLikes(arg0 context.Context, arg1 git.GetLikesArgs) (*
 }
 
 // GetLikes indicates an expected call of GetLikes.
-func (mr *MockGitClientMockRecorder) GetLikes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetLikes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikes", reflect.TypeOf((*MockGitClient)(nil).GetLikes), arg0, arg1)
 }
@@ -967,7 +968,7 @@ func (m *MockGitClient) GetMergeBases(arg0 context.Context, arg1 git.GetMergeBas
 }
 
 // GetMergeBases indicates an expected call of GetMergeBases.
-func (mr *MockGitClientMockRecorder) GetMergeBases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetMergeBases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergeBases", reflect.TypeOf((*MockGitClient)(nil).GetMergeBases), arg0, arg1)
 }
@@ -982,7 +983,7 @@ func (m *MockGitClient) GetMergeRequest(arg0 context.Context, arg1 git.GetMergeR
 }
 
 // GetMergeRequest indicates an expected call of GetMergeRequest.
-func (mr *MockGitClientMockRecorder) GetMergeRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetMergeRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergeRequest", reflect.TypeOf((*MockGitClient)(nil).GetMergeRequest), arg0, arg1)
 }
@@ -997,7 +998,7 @@ func (m *MockGitClient) GetPermission(arg0 context.Context, arg1 git.GetPermissi
 }
 
 // GetPermission indicates an expected call of GetPermission.
-func (mr *MockGitClientMockRecorder) GetPermission(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPermission(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPermission", reflect.TypeOf((*MockGitClient)(nil).GetPermission), arg0, arg1)
 }
@@ -1012,7 +1013,7 @@ func (m *MockGitClient) GetPolicyConfigurations(arg0 context.Context, arg1 git.G
 }
 
 // GetPolicyConfigurations indicates an expected call of GetPolicyConfigurations.
-func (mr *MockGitClientMockRecorder) GetPolicyConfigurations(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPolicyConfigurations(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyConfigurations", reflect.TypeOf((*MockGitClient)(nil).GetPolicyConfigurations), arg0, arg1)
 }
@@ -1027,7 +1028,7 @@ func (m *MockGitClient) GetPullRequest(arg0 context.Context, arg1 git.GetPullReq
 }
 
 // GetPullRequest indicates an expected call of GetPullRequest.
-func (mr *MockGitClientMockRecorder) GetPullRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequest", reflect.TypeOf((*MockGitClient)(nil).GetPullRequest), arg0, arg1)
 }
@@ -1042,7 +1043,7 @@ func (m *MockGitClient) GetPullRequestById(arg0 context.Context, arg1 git.GetPul
 }
 
 // GetPullRequestById indicates an expected call of GetPullRequestById.
-func (mr *MockGitClientMockRecorder) GetPullRequestById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestById", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestById), arg0, arg1)
 }
@@ -1057,7 +1058,7 @@ func (m *MockGitClient) GetPullRequestCommits(arg0 context.Context, arg1 git.Get
 }
 
 // GetPullRequestCommits indicates an expected call of GetPullRequestCommits.
-func (mr *MockGitClientMockRecorder) GetPullRequestCommits(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestCommits(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestCommits", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestCommits), arg0, arg1)
 }
@@ -1072,7 +1073,7 @@ func (m *MockGitClient) GetPullRequestIteration(arg0 context.Context, arg1 git.G
 }
 
 // GetPullRequestIteration indicates an expected call of GetPullRequestIteration.
-func (mr *MockGitClientMockRecorder) GetPullRequestIteration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIteration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIteration", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIteration), arg0, arg1)
 }
@@ -1087,7 +1088,7 @@ func (m *MockGitClient) GetPullRequestIterationChanges(arg0 context.Context, arg
 }
 
 // GetPullRequestIterationChanges indicates an expected call of GetPullRequestIterationChanges.
-func (mr *MockGitClientMockRecorder) GetPullRequestIterationChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIterationChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIterationChanges", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIterationChanges), arg0, arg1)
 }
@@ -1102,7 +1103,7 @@ func (m *MockGitClient) GetPullRequestIterationCommits(arg0 context.Context, arg
 }
 
 // GetPullRequestIterationCommits indicates an expected call of GetPullRequestIterationCommits.
-func (mr *MockGitClientMockRecorder) GetPullRequestIterationCommits(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIterationCommits(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIterationCommits", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIterationCommits), arg0, arg1)
 }
@@ -1117,7 +1118,7 @@ func (m *MockGitClient) GetPullRequestIterationStatus(arg0 context.Context, arg1
 }
 
 // GetPullRequestIterationStatus indicates an expected call of GetPullRequestIterationStatus.
-func (mr *MockGitClientMockRecorder) GetPullRequestIterationStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIterationStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIterationStatus", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIterationStatus), arg0, arg1)
 }
@@ -1132,7 +1133,7 @@ func (m *MockGitClient) GetPullRequestIterationStatuses(arg0 context.Context, ar
 }
 
 // GetPullRequestIterationStatuses indicates an expected call of GetPullRequestIterationStatuses.
-func (mr *MockGitClientMockRecorder) GetPullRequestIterationStatuses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIterationStatuses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIterationStatuses", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIterationStatuses), arg0, arg1)
 }
@@ -1147,7 +1148,7 @@ func (m *MockGitClient) GetPullRequestIterations(arg0 context.Context, arg1 git.
 }
 
 // GetPullRequestIterations indicates an expected call of GetPullRequestIterations.
-func (mr *MockGitClientMockRecorder) GetPullRequestIterations(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestIterations(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestIterations", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestIterations), arg0, arg1)
 }
@@ -1162,7 +1163,7 @@ func (m *MockGitClient) GetPullRequestLabel(arg0 context.Context, arg1 git.GetPu
 }
 
 // GetPullRequestLabel indicates an expected call of GetPullRequestLabel.
-func (mr *MockGitClientMockRecorder) GetPullRequestLabel(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestLabel", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestLabel), arg0, arg1)
 }
@@ -1177,22 +1178,22 @@ func (m *MockGitClient) GetPullRequestLabels(arg0 context.Context, arg1 git.GetP
 }
 
 // GetPullRequestLabels indicates an expected call of GetPullRequestLabels.
-func (mr *MockGitClientMockRecorder) GetPullRequestLabels(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestLabels(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestLabels", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestLabels), arg0, arg1)
 }
 
 // GetPullRequestProperties mocks base method.
-func (m *MockGitClient) GetPullRequestProperties(arg0 context.Context, arg1 git.GetPullRequestPropertiesArgs) (interface{}, error) {
+func (m *MockGitClient) GetPullRequestProperties(arg0 context.Context, arg1 git.GetPullRequestPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPullRequestProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPullRequestProperties indicates an expected call of GetPullRequestProperties.
-func (mr *MockGitClientMockRecorder) GetPullRequestProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestProperties", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestProperties), arg0, arg1)
 }
@@ -1207,7 +1208,7 @@ func (m *MockGitClient) GetPullRequestQuery(arg0 context.Context, arg1 git.GetPu
 }
 
 // GetPullRequestQuery indicates an expected call of GetPullRequestQuery.
-func (mr *MockGitClientMockRecorder) GetPullRequestQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestQuery", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestQuery), arg0, arg1)
 }
@@ -1222,7 +1223,7 @@ func (m *MockGitClient) GetPullRequestReviewer(arg0 context.Context, arg1 git.Ge
 }
 
 // GetPullRequestReviewer indicates an expected call of GetPullRequestReviewer.
-func (mr *MockGitClientMockRecorder) GetPullRequestReviewer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestReviewer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestReviewer", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestReviewer), arg0, arg1)
 }
@@ -1237,7 +1238,7 @@ func (m *MockGitClient) GetPullRequestReviewers(arg0 context.Context, arg1 git.G
 }
 
 // GetPullRequestReviewers indicates an expected call of GetPullRequestReviewers.
-func (mr *MockGitClientMockRecorder) GetPullRequestReviewers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestReviewers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestReviewers", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestReviewers), arg0, arg1)
 }
@@ -1252,7 +1253,7 @@ func (m *MockGitClient) GetPullRequestStatus(arg0 context.Context, arg1 git.GetP
 }
 
 // GetPullRequestStatus indicates an expected call of GetPullRequestStatus.
-func (mr *MockGitClientMockRecorder) GetPullRequestStatus(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestStatus(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestStatus", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestStatus), arg0, arg1)
 }
@@ -1267,7 +1268,7 @@ func (m *MockGitClient) GetPullRequestStatuses(arg0 context.Context, arg1 git.Ge
 }
 
 // GetPullRequestStatuses indicates an expected call of GetPullRequestStatuses.
-func (mr *MockGitClientMockRecorder) GetPullRequestStatuses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestStatuses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestStatuses", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestStatuses), arg0, arg1)
 }
@@ -1282,7 +1283,7 @@ func (m *MockGitClient) GetPullRequestThread(arg0 context.Context, arg1 git.GetP
 }
 
 // GetPullRequestThread indicates an expected call of GetPullRequestThread.
-func (mr *MockGitClientMockRecorder) GetPullRequestThread(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestThread(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestThread", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestThread), arg0, arg1)
 }
@@ -1297,7 +1298,7 @@ func (m *MockGitClient) GetPullRequestWorkItemRefs(arg0 context.Context, arg1 gi
 }
 
 // GetPullRequestWorkItemRefs indicates an expected call of GetPullRequestWorkItemRefs.
-func (mr *MockGitClientMockRecorder) GetPullRequestWorkItemRefs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestWorkItemRefs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestWorkItemRefs", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestWorkItemRefs), arg0, arg1)
 }
@@ -1312,7 +1313,7 @@ func (m *MockGitClient) GetPullRequests(arg0 context.Context, arg1 git.GetPullRe
 }
 
 // GetPullRequests indicates an expected call of GetPullRequests.
-func (mr *MockGitClientMockRecorder) GetPullRequests(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequests(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockGitClient)(nil).GetPullRequests), arg0, arg1)
 }
@@ -1327,7 +1328,7 @@ func (m *MockGitClient) GetPullRequestsByProject(arg0 context.Context, arg1 git.
 }
 
 // GetPullRequestsByProject indicates an expected call of GetPullRequestsByProject.
-func (mr *MockGitClientMockRecorder) GetPullRequestsByProject(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPullRequestsByProject(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestsByProject", reflect.TypeOf((*MockGitClient)(nil).GetPullRequestsByProject), arg0, arg1)
 }
@@ -1342,7 +1343,7 @@ func (m *MockGitClient) GetPush(arg0 context.Context, arg1 git.GetPushArgs) (*gi
 }
 
 // GetPush indicates an expected call of GetPush.
-func (mr *MockGitClientMockRecorder) GetPush(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPush(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPush", reflect.TypeOf((*MockGitClient)(nil).GetPush), arg0, arg1)
 }
@@ -1357,7 +1358,7 @@ func (m *MockGitClient) GetPushCommits(arg0 context.Context, arg1 git.GetPushCom
 }
 
 // GetPushCommits indicates an expected call of GetPushCommits.
-func (mr *MockGitClientMockRecorder) GetPushCommits(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPushCommits(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPushCommits", reflect.TypeOf((*MockGitClient)(nil).GetPushCommits), arg0, arg1)
 }
@@ -1372,7 +1373,7 @@ func (m *MockGitClient) GetPushes(arg0 context.Context, arg1 git.GetPushesArgs) 
 }
 
 // GetPushes indicates an expected call of GetPushes.
-func (mr *MockGitClientMockRecorder) GetPushes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetPushes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPushes", reflect.TypeOf((*MockGitClient)(nil).GetPushes), arg0, arg1)
 }
@@ -1387,7 +1388,7 @@ func (m *MockGitClient) GetRecycleBinRepositories(arg0 context.Context, arg1 git
 }
 
 // GetRecycleBinRepositories indicates an expected call of GetRecycleBinRepositories.
-func (mr *MockGitClientMockRecorder) GetRecycleBinRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRecycleBinRepositories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecycleBinRepositories", reflect.TypeOf((*MockGitClient)(nil).GetRecycleBinRepositories), arg0, arg1)
 }
@@ -1402,7 +1403,7 @@ func (m *MockGitClient) GetRefFavorite(arg0 context.Context, arg1 git.GetRefFavo
 }
 
 // GetRefFavorite indicates an expected call of GetRefFavorite.
-func (mr *MockGitClientMockRecorder) GetRefFavorite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRefFavorite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRefFavorite", reflect.TypeOf((*MockGitClient)(nil).GetRefFavorite), arg0, arg1)
 }
@@ -1417,7 +1418,7 @@ func (m *MockGitClient) GetRefFavorites(arg0 context.Context, arg1 git.GetRefFav
 }
 
 // GetRefFavorites indicates an expected call of GetRefFavorites.
-func (mr *MockGitClientMockRecorder) GetRefFavorites(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRefFavorites(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRefFavorites", reflect.TypeOf((*MockGitClient)(nil).GetRefFavorites), arg0, arg1)
 }
@@ -1432,7 +1433,7 @@ func (m *MockGitClient) GetRefs(arg0 context.Context, arg1 git.GetRefsArgs) (*gi
 }
 
 // GetRefs indicates an expected call of GetRefs.
-func (mr *MockGitClientMockRecorder) GetRefs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRefs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRefs", reflect.TypeOf((*MockGitClient)(nil).GetRefs), arg0, arg1)
 }
@@ -1447,7 +1448,7 @@ func (m *MockGitClient) GetRepositories(arg0 context.Context, arg1 git.GetReposi
 }
 
 // GetRepositories indicates an expected call of GetRepositories.
-func (mr *MockGitClientMockRecorder) GetRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRepositories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepositories", reflect.TypeOf((*MockGitClient)(nil).GetRepositories), arg0, arg1)
 }
@@ -1462,7 +1463,7 @@ func (m *MockGitClient) GetRepository(arg0 context.Context, arg1 git.GetReposito
 }
 
 // GetRepository indicates an expected call of GetRepository.
-func (mr *MockGitClientMockRecorder) GetRepository(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRepository(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitClient)(nil).GetRepository), arg0, arg1)
 }
@@ -1477,7 +1478,7 @@ func (m *MockGitClient) GetRepositoryWithParent(arg0 context.Context, arg1 git.G
 }
 
 // GetRepositoryWithParent indicates an expected call of GetRepositoryWithParent.
-func (mr *MockGitClientMockRecorder) GetRepositoryWithParent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRepositoryWithParent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepositoryWithParent", reflect.TypeOf((*MockGitClient)(nil).GetRepositoryWithParent), arg0, arg1)
 }
@@ -1492,7 +1493,7 @@ func (m *MockGitClient) GetRevert(arg0 context.Context, arg1 git.GetRevertArgs) 
 }
 
 // GetRevert indicates an expected call of GetRevert.
-func (mr *MockGitClientMockRecorder) GetRevert(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRevert(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevert", reflect.TypeOf((*MockGitClient)(nil).GetRevert), arg0, arg1)
 }
@@ -1507,7 +1508,7 @@ func (m *MockGitClient) GetRevertForRefName(arg0 context.Context, arg1 git.GetRe
 }
 
 // GetRevertForRefName indicates an expected call of GetRevertForRefName.
-func (mr *MockGitClientMockRecorder) GetRevertForRefName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetRevertForRefName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevertForRefName", reflect.TypeOf((*MockGitClient)(nil).GetRevertForRefName), arg0, arg1)
 }
@@ -1522,7 +1523,7 @@ func (m *MockGitClient) GetStatuses(arg0 context.Context, arg1 git.GetStatusesAr
 }
 
 // GetStatuses indicates an expected call of GetStatuses.
-func (mr *MockGitClientMockRecorder) GetStatuses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetStatuses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatuses", reflect.TypeOf((*MockGitClient)(nil).GetStatuses), arg0, arg1)
 }
@@ -1537,7 +1538,7 @@ func (m *MockGitClient) GetSuggestions(arg0 context.Context, arg1 git.GetSuggest
 }
 
 // GetSuggestions indicates an expected call of GetSuggestions.
-func (mr *MockGitClientMockRecorder) GetSuggestions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetSuggestions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSuggestions", reflect.TypeOf((*MockGitClient)(nil).GetSuggestions), arg0, arg1)
 }
@@ -1552,7 +1553,7 @@ func (m *MockGitClient) GetThreads(arg0 context.Context, arg1 git.GetThreadsArgs
 }
 
 // GetThreads indicates an expected call of GetThreads.
-func (mr *MockGitClientMockRecorder) GetThreads(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetThreads(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThreads", reflect.TypeOf((*MockGitClient)(nil).GetThreads), arg0, arg1)
 }
@@ -1567,7 +1568,7 @@ func (m *MockGitClient) GetTree(arg0 context.Context, arg1 git.GetTreeArgs) (*gi
 }
 
 // GetTree indicates an expected call of GetTree.
-func (mr *MockGitClientMockRecorder) GetTree(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetTree(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTree", reflect.TypeOf((*MockGitClient)(nil).GetTree), arg0, arg1)
 }
@@ -1582,7 +1583,7 @@ func (m *MockGitClient) GetTreeZip(arg0 context.Context, arg1 git.GetTreeZipArgs
 }
 
 // GetTreeZip indicates an expected call of GetTreeZip.
-func (mr *MockGitClientMockRecorder) GetTreeZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) GetTreeZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTreeZip", reflect.TypeOf((*MockGitClient)(nil).GetTreeZip), arg0, arg1)
 }
@@ -1597,7 +1598,7 @@ func (m *MockGitClient) QueryImportRequests(arg0 context.Context, arg1 git.Query
 }
 
 // QueryImportRequests indicates an expected call of QueryImportRequests.
-func (mr *MockGitClientMockRecorder) QueryImportRequests(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) QueryImportRequests(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryImportRequests", reflect.TypeOf((*MockGitClient)(nil).QueryImportRequests), arg0, arg1)
 }
@@ -1612,7 +1613,7 @@ func (m *MockGitClient) RestoreRepositoryFromRecycleBin(arg0 context.Context, ar
 }
 
 // RestoreRepositoryFromRecycleBin indicates an expected call of RestoreRepositoryFromRecycleBin.
-func (mr *MockGitClientMockRecorder) RestoreRepositoryFromRecycleBin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) RestoreRepositoryFromRecycleBin(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreRepositoryFromRecycleBin", reflect.TypeOf((*MockGitClient)(nil).RestoreRepositoryFromRecycleBin), arg0, arg1)
 }
@@ -1626,7 +1627,7 @@ func (m *MockGitClient) SharePullRequest(arg0 context.Context, arg1 git.SharePul
 }
 
 // SharePullRequest indicates an expected call of SharePullRequest.
-func (mr *MockGitClientMockRecorder) SharePullRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) SharePullRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePullRequest", reflect.TypeOf((*MockGitClient)(nil).SharePullRequest), arg0, arg1)
 }
@@ -1641,7 +1642,7 @@ func (m *MockGitClient) UpdateComment(arg0 context.Context, arg1 git.UpdateComme
 }
 
 // UpdateComment indicates an expected call of UpdateComment.
-func (mr *MockGitClientMockRecorder) UpdateComment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateComment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateComment", reflect.TypeOf((*MockGitClient)(nil).UpdateComment), arg0, arg1)
 }
@@ -1656,7 +1657,7 @@ func (m *MockGitClient) UpdateImportRequest(arg0 context.Context, arg1 git.Updat
 }
 
 // UpdateImportRequest indicates an expected call of UpdateImportRequest.
-func (mr *MockGitClientMockRecorder) UpdateImportRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateImportRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImportRequest", reflect.TypeOf((*MockGitClient)(nil).UpdateImportRequest), arg0, arg1)
 }
@@ -1671,7 +1672,7 @@ func (m *MockGitClient) UpdatePullRequest(arg0 context.Context, arg1 git.UpdateP
 }
 
 // UpdatePullRequest indicates an expected call of UpdatePullRequest.
-func (mr *MockGitClientMockRecorder) UpdatePullRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequest", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequest), arg0, arg1)
 }
@@ -1685,22 +1686,22 @@ func (m *MockGitClient) UpdatePullRequestIterationStatuses(arg0 context.Context,
 }
 
 // UpdatePullRequestIterationStatuses indicates an expected call of UpdatePullRequestIterationStatuses.
-func (mr *MockGitClientMockRecorder) UpdatePullRequestIterationStatuses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequestIterationStatuses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequestIterationStatuses", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequestIterationStatuses), arg0, arg1)
 }
 
 // UpdatePullRequestProperties mocks base method.
-func (m *MockGitClient) UpdatePullRequestProperties(arg0 context.Context, arg1 git.UpdatePullRequestPropertiesArgs) (interface{}, error) {
+func (m *MockGitClient) UpdatePullRequestProperties(arg0 context.Context, arg1 git.UpdatePullRequestPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePullRequestProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdatePullRequestProperties indicates an expected call of UpdatePullRequestProperties.
-func (mr *MockGitClientMockRecorder) UpdatePullRequestProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequestProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequestProperties", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequestProperties), arg0, arg1)
 }
@@ -1715,7 +1716,7 @@ func (m *MockGitClient) UpdatePullRequestReviewer(arg0 context.Context, arg1 git
 }
 
 // UpdatePullRequestReviewer indicates an expected call of UpdatePullRequestReviewer.
-func (mr *MockGitClientMockRecorder) UpdatePullRequestReviewer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequestReviewer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequestReviewer", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequestReviewer), arg0, arg1)
 }
@@ -1729,7 +1730,7 @@ func (m *MockGitClient) UpdatePullRequestReviewers(arg0 context.Context, arg1 gi
 }
 
 // UpdatePullRequestReviewers indicates an expected call of UpdatePullRequestReviewers.
-func (mr *MockGitClientMockRecorder) UpdatePullRequestReviewers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequestReviewers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequestReviewers", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequestReviewers), arg0, arg1)
 }
@@ -1743,7 +1744,7 @@ func (m *MockGitClient) UpdatePullRequestStatuses(arg0 context.Context, arg1 git
 }
 
 // UpdatePullRequestStatuses indicates an expected call of UpdatePullRequestStatuses.
-func (mr *MockGitClientMockRecorder) UpdatePullRequestStatuses(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdatePullRequestStatuses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePullRequestStatuses", reflect.TypeOf((*MockGitClient)(nil).UpdatePullRequestStatuses), arg0, arg1)
 }
@@ -1758,7 +1759,7 @@ func (m *MockGitClient) UpdateRef(arg0 context.Context, arg1 git.UpdateRefArgs) 
 }
 
 // UpdateRef indicates an expected call of UpdateRef.
-func (mr *MockGitClientMockRecorder) UpdateRef(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateRef(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRef", reflect.TypeOf((*MockGitClient)(nil).UpdateRef), arg0, arg1)
 }
@@ -1773,7 +1774,7 @@ func (m *MockGitClient) UpdateRefs(arg0 context.Context, arg1 git.UpdateRefsArgs
 }
 
 // UpdateRefs indicates an expected call of UpdateRefs.
-func (mr *MockGitClientMockRecorder) UpdateRefs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateRefs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRefs", reflect.TypeOf((*MockGitClient)(nil).UpdateRefs), arg0, arg1)
 }
@@ -1788,7 +1789,7 @@ func (m *MockGitClient) UpdateRepository(arg0 context.Context, arg1 git.UpdateRe
 }
 
 // UpdateRepository indicates an expected call of UpdateRepository.
-func (mr *MockGitClientMockRecorder) UpdateRepository(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateRepository(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRepository", reflect.TypeOf((*MockGitClient)(nil).UpdateRepository), arg0, arg1)
 }
@@ -1803,7 +1804,7 @@ func (m *MockGitClient) UpdateThread(arg0 context.Context, arg1 git.UpdateThread
 }
 
 // UpdateThread indicates an expected call of UpdateThread.
-func (mr *MockGitClientMockRecorder) UpdateThread(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGitClientMockRecorder) UpdateThread(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateThread", reflect.TypeOf((*MockGitClient)(nil).UpdateThread), arg0, arg1)
 }

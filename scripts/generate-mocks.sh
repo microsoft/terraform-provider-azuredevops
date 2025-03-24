@@ -10,7 +10,7 @@ MOCK_PKG_NAME="azdosdkmocks"
 function install_gomock() {
     info "Installing GoMock tools"
     (
-        go get github.com/golang/mock/mockgen
+        go install go.uber.org/mock/mockgen@latest
     )
 }
 
@@ -45,6 +45,7 @@ function generate_single_mock_client() {
         -package $MOCK_PKG_NAME \
         -destination "$OUTPUT_DIR/$OUTPUT_FILE" \
         -mock_names "$2=$MOCK_NAME" \
+        -write_command_comment=false \
         --build_flags=--mod=mod \
         $1 $2
 
@@ -64,7 +65,7 @@ function generate_mock_clients() {
     # Note: the `|| true` and related wrapping with `()` is here to prevent the script from failing
     #       in the case that the status code from `go list all` is non-zero. This can happen, for example,
     #       if the mocks do not exist at the time the script is initially run.
-    AZDO_SDK_PACKAGES=$( (go list all || true) | grep 'azure-devops-go-api/azuredevops/\|terraform-provider-azuredevops/azdosdk/')
+    AZDO_SDK_PACKAGES=$( (go list all || true) | grep 'azure-devops-go-api/azuredevops/v7\|terraform-provider-azuredevops/azdosdk/')
 
     info "Found $(echo "$AZDO_SDK_PACKAGES" | wc -l) packages that may need mocking..."
     for PACKAGE in $AZDO_SDK_PACKAGES; do
