@@ -28,31 +28,34 @@ func DataGitRepositoryFile() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"file": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The file path",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The file path",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"branch": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The branch name, no default",
-				ConflictsWith: []string{"tag"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The branch name, no default",
+				ExactlyOneOf: []string{"branch", "tag"},
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"tag": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Optional tag name, no default",
-				ConflictsWith: []string{"branch"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Optional tag name, no default",
+				ExactlyOneOf: []string{"branch", "tag"},
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"content": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The file's content",
 			},
-			"commit_message": {
+			"last_commit_message": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The commit message",
+				Description: "The last commit message",
 			},
 		},
 	}
@@ -64,36 +67,32 @@ func dataSourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) erro
 
 	repoId := d.Get("repository_id").(string)
 	file := d.Get("file").(string)
-	branch := d.Get("branch").(string)
-	tag := d.Get("tag").(string)
 
-	var vdVersionType *git.GitVersionType
-	var vdVersion *string
-
-	if len(branch) > 0 {
-		vdVersionType = &git.GitVersionTypeValues.Branch
-		vdVersion = converter.String(shortBranchName(branch))
-	} else if len(tag) > 0 {
-		vdVersionType = &git.GitVersionTypeValues.Tag
-		vdVersion = converter.String(shortTagName(tag))
-	} else {
-		return fmt.Errorf("One of 'branch' or 'tag' must be specified")
+	var vDescriptor git.GitVersionDescriptor
+	if v, ok := d.GetOk("branch"); ok {
+		vDescriptor = git.GitVersionDescriptor{
+			VersionType: &git.GitVersionTypeValues.Branch,
+			Version:     converter.String(shortBranchName(v.(string))),
+		}
+	}
+	if v, ok := d.GetOk("tag"); ok {
+		vDescriptor = git.GitVersionDescriptor{
+			VersionType: &git.GitVersionTypeValues.Tag,
+			Version:     converter.String(shortTagName(v.(string))),
+		}
 	}
 
 	repoItem, err := clients.GitReposClient.GetItem(ctx, git.GetItemArgs{
-		RepositoryId:   &repoId,
-		Path:           &file,
-		IncludeContent: converter.Bool(true),
-		VersionDescriptor: &git.GitVersionDescriptor{
-			Version:     vdVersion,
-			VersionType: vdVersionType,
-		},
+		RepositoryId:      &repoId,
+		Path:              &file,
+		IncludeContent:    converter.Bool(true),
+		VersionDescriptor: &vDescriptor,
 	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf("Item not found, repositoryID: %s, %s: %s, file: %s. Error: %+v", repoId, string(*vdVersionType), *vdVersion, file, err)
+			return fmt.Errorf("Item not found, repositoryID: %s, %s: %s, file: %s. Error: %+v", repoId, string(*vDescriptor.VersionType), *vDescriptor.Version, file, err)
 		}
-		return fmt.Errorf("Get item failed, repositoryID: %s, %s: %s, file: %s. Error: %+v", repoId, string(*vdVersionType), *vdVersion, file, err)
+		return fmt.Errorf("Get item failed, repositoryID: %s, %s: %s, file: %s. Error: %+v", repoId, string(*vDescriptor.VersionType), *vDescriptor.Version, file, err)
 	}
 	err = d.Set("content", repoItem.Content)
 	if err != nil {
@@ -105,15 +104,15 @@ func dataSourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) erro
 	})
 
 	if err != nil {
-		return fmt.Errorf("Get commit failed, repositoryID: %s, branch: %s, file: %s. Error:  %+v", repoId, branch, file, err)
+		return fmt.Errorf("Get commit failed, repositoryID: %s, commitID: %s. Error:  %+v", repoId, *repoItem.CommitId, err)
 	}
 
-	err = d.Set("commit_message", commit.Comment)
+	err = d.Set("last_commit_message", commit.Comment)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(repoId + "/" + file + ":" + string(*vdVersionType) + ":" + *vdVersion)
+	d.SetId(fmt.Sprintf("%s/%s:%s:%s", repoId, file, string(*vDescriptor.VersionType), *vDescriptor.Version))
 
 	return nil
 }

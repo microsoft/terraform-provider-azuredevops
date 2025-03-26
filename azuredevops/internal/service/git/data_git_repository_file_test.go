@@ -84,9 +84,9 @@ func TestGitRepositoryFileDataSource_ReadBranch(t *testing.T) {
 
 	err := dataSourceGitRepositoryFileRead(resourceData, clients)
 	require.Nil(t, err)
-	require.Equal(t, gitFileRepo.Id.String()+"/"+*gitItem.Path+":branch:master", resourceData.Id())
+	require.Equal(t, fmt.Sprintf("%s/%s:branch:master", gitFileRepo.Id.String(), *gitItem.Path), resourceData.Id())
 	require.Equal(t, *gitItem.Content, resourceData.Get("content"))
-	require.Equal(t, *gitCommit.Comment, resourceData.Get("commit_message"))
+	require.Equal(t, *gitCommit.Comment, resourceData.Get("last_commit_message"))
 }
 
 func TestGitRepositoryFileDataSource_ReadTag(t *testing.T) {
@@ -128,9 +128,9 @@ func TestGitRepositoryFileDataSource_ReadTag(t *testing.T) {
 
 	err := dataSourceGitRepositoryFileRead(resourceData, clients)
 	require.Nil(t, err)
-	require.Equal(t, gitFileRepo.Id.String()+"/"+*gitItem.Path+":tag:v1.2.3", resourceData.Id())
+	require.Equal(t, fmt.Sprintf("%s/%s:tag:v1.2.3", gitFileRepo.Id.String(), *gitItem.Path), resourceData.Id())
 	require.Equal(t, *gitItem.Content, resourceData.Get("content"))
-	require.Equal(t, *gitCommit.Comment, resourceData.Get("commit_message"))
+	require.Equal(t, *gitCommit.Comment, resourceData.Get("last_commit_message"))
 }
 
 func TestGitRepositoryFileDataSource_ReadCommitFail(t *testing.T) {
@@ -172,7 +172,7 @@ func TestGitRepositoryFileDataSource_ReadCommitFail(t *testing.T) {
 
 	err := dataSourceGitRepositoryFileRead(resourceData, clients)
 	require.NotNil(t, err)
-	require.Equal(t, "Get commit failed, repositoryID: "+gitFileRepo.Id.String()+", branch: master, file: "+*gitItem.Path+". Error:  Failed to read commit", err.Error())
+	require.Equal(t, fmt.Sprintf("Get commit failed, repositoryID: %s, commitID: %s. Error:  Failed to read commit", gitFileRepo.Id.String(), *gitItem.CommitId), err.Error())
 }
 
 func TestGitRepositoryFileDataSource_ReadItemFail(t *testing.T) {
@@ -206,7 +206,7 @@ func TestGitRepositoryFileDataSource_ReadItemFail(t *testing.T) {
 
 	err := dataSourceGitRepositoryFileRead(resourceData, clients)
 	require.NotNil(t, err)
-	require.Equal(t, "Get item failed, repositoryID: "+gitFileRepo.Id.String()+", branch: master, file: "+*gitItem.Path+". Error: Failed to get item", err.Error())
+	require.Equal(t, fmt.Sprintf("Get item failed, repositoryID: %s, branch: master, file: %s. Error: Failed to get item", gitFileRepo.Id.String(), *gitItem.Path), err.Error())
 }
 
 func TestGitRepositoryFileDataSource_ReadItemNotFound(t *testing.T) {
@@ -242,22 +242,5 @@ func TestGitRepositoryFileDataSource_ReadItemNotFound(t *testing.T) {
 
 	err := dataSourceGitRepositoryFileRead(resourceData, clients)
 	require.NotNil(t, err)
-	require.Equal(t, "Item not found, repositoryID: "+gitFileRepo.Id.String()+", branch: master, file: "+*gitItem.Path+". Error: REST call returned status code 404", err.Error())
-}
-
-func TestGitRepositoryFileDataSource_NoVersionType(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	clients := &client.AggregatedClient{
-		Ctx: context.Background(),
-	}
-
-	resourceData := schema.TestResourceDataRaw(t, DataGitRepositoryFile().Schema, nil)
-	resourceData.Set("repository_id", gitFileRepo.Id.String())
-	resourceData.Set("file", gitItem.Path)
-
-	err := dataSourceGitRepositoryFileRead(resourceData, clients)
-	require.NotNil(t, err)
-	require.Equal(t, "One of 'branch' or 'tag' must be specified", err.Error())
+	require.Equal(t, fmt.Sprintf("Item not found, repositoryID: %s, branch: master, file: %s. Error: REST call returned status code 404", gitFileRepo.Id.String(), *gitItem.Path), err.Error())
 }
