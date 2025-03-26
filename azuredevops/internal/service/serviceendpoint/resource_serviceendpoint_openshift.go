@@ -268,9 +268,7 @@ func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *se
 			d.Set("accept_untrusted_certs", acceptUntrustedCerts)
 			d.Set("certificate_authority_file", (*params)["certificateAuthorityFile"])
 		}
-		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "None") {
-			// params not return, ignore
-		}
+		// Authorization type `None` returns nothing, ignored
 	}
 	return nil
 }
