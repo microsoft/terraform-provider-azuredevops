@@ -116,6 +116,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_serviceendpoint_octopusdeploy",
+		"azuredevops_serviceendpoint_openshift",
 		"azuredevops_serviceendpoint_permissions",
 		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_servicefabric",
