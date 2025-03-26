@@ -48,7 +48,7 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Git Repository File. Note this is different from that of the corresponding resource being a combination of the `repository ID` and `file`, followed by either ':branch:' or ':tag:' and then the `branch` or `tag` used.
 
-* `commit_message` - The commit message for the file.
+* `last_commit_message` - The commit message for the file.
 
 * `content` - The file content.
 
