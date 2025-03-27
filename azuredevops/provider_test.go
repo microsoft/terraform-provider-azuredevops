@@ -163,6 +163,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_feed",
 		"azuredevops_git_repositories",
 		"azuredevops_git_repository",
+		"azuredevops_git_repository_file",
 		"azuredevops_group",
 		"azuredevops_group_membership",
 		"azuredevops_groups",
