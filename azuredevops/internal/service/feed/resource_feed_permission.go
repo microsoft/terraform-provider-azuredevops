@@ -1,8 +1,10 @@
 package feed
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,6 +32,27 @@ func ResourceFeedPermission() *schema.Resource {
 		Read:   resourceFeedPermissionRead,
 		Update: resourceFeedPermissionUpdate,
 		Delete: resourceFeedPermissionDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
+				idParts := strings.Split(d.Id(), "/")
+				if len(idParts) > 3 || len(idParts) < 2 {
+					return nil, fmt.Errorf(" Unexpected ID format (%q), Expected: <feedId>/<identityDescriptor> or <projetId>/<feedId>/<identityDescriptor>", d.Id())
+				}
+
+				if len(idParts) == 2 {
+					d.Set("feed_id", idParts[0])
+					d.Set("identity_descriptor", idParts[1])
+				}
+
+				if len(idParts) == 3 {
+					d.Set("project_id", idParts[0])
+					d.Set("feed_id", idParts[1])
+					d.Set("identity_descriptor", idParts[2])
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
