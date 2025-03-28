@@ -112,6 +112,7 @@ The following arguments are supported:
     | DeleteBuildDefinition          | Delete build pipeline                 |
     | OverrideBuildCheckInValidation | Override check-in validation by build |
     | AdministerBuildPermissions     | Administer build permissions          |
+    | CreateBuildDefinition          | Create build pipeline                 |
 
 ---
 
