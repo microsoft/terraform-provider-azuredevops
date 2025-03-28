@@ -86,6 +86,30 @@ func ResourceGitRepositoryFile() *schema.Resource {
 				Computed:    true,
 				Description: "The commit message when creating or updating the file",
 			},
+			"committer_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"committer_email": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"author_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"author_email": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 			"overwrite_on_create": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -225,6 +249,26 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Get repository file commit failed , repositoryID: %s, branch: %s, file: %s . Error:  %+v", repoId, branch, file, err)
 	}
 
+	if commit.Committer != nil {
+		if commit.Committer.Name != nil {
+			d.Set("committer_name", *commit.Committer.Name)
+		}
+
+		if commit.Committer.Email != nil {
+			d.Set("committer_email", *commit.Committer.Email)
+		}
+	}
+
+	if commit.Author != nil {
+		if commit.Author.Name != nil {
+			d.Set("author_name", *commit.Author.Name)
+		}
+
+		if commit.Committer.Email != nil {
+			d.Set("author_email", *commit.Author.Email)
+		}
+	}
+
 	d.Set("commit_message", commit.Comment)
 
 	return nil
@@ -307,6 +351,10 @@ func resourceGitRepositoryFileDelete(d *schema.ResourceData, m interface{}) erro
 				},
 				Commits: &[]git.GitCommitRef{
 					{
+						Author: &git.GitUserDate{
+							Name:  converter.String(d.Get("author_name").(string)),
+							Email: converter.String(d.Get("author_email").(string)),
+						},
 						Comment: &message,
 						Changes: &[]interface{}{change},
 					},
@@ -415,6 +463,14 @@ func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType g
 			},
 			Commits: &[]git.GitCommitRef{
 				{
+					Author: &git.GitUserDate{
+						Name:  converter.String(d.Get("author_name").(string)),
+						Email: converter.String(d.Get("author_email").(string)),
+					},
+					Committer: &git.GitUserDate{
+						Name:  converter.String(d.Get("committer_name").(string)),
+						Email: converter.String(d.Get("committer_email").(string)),
+					},
 					Comment: message,
 					Changes: &[]interface{}{change},
 				},
