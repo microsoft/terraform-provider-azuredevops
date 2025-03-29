@@ -33,7 +33,7 @@ resource "azuredevops_project" "project" {
 
 ## Authentication
 
-Authentication may be accomplished using an [Azure AD service principal](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity) if your organization is connected to Azure AD, or by a [personal access token](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
+Authentication may be accomplished using an [Azure AD service principal](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity) if your organization is connected to Entra ID, or by a [personal access token](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
 
 The provider will use the first available authentication method that is available. They are discovered in the following order:
 
@@ -52,7 +52,7 @@ The provider will use the first available authentication method that is availabl
 
 The OIDC service principal authentication methods allow for secure passwordless authentication from [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials) & [GitHub Actions](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect).
 
-* [Authenticating to a Service Principal with Manage Identity](guides/authenticating_managed_identity.html)
+* [Authenticating to a Service Principal with Managed Identity](guides/authenticating_managed_identity.html)
 * [Authenticating to a Service Principal with a Client Certificate](guides/authenticating_service_principal_using_a_client_certificate.html)
 * [Authenticating to a Service Principal with a Client Secret](guides/authenticating_service_principal_using_a_client_secret.html)
 * [Authenticating to a Service Principal with an OIDC Token](guides/authenticating_service_principal_using_an_oidc_token.html)
