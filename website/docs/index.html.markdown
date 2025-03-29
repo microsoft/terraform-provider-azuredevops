@@ -52,7 +52,7 @@ The provider will use the first available authentication method that is availabl
 
 The OIDC service principal authentication methods allow for secure passwordless authentication from [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials) & [GitHub Actions](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect).
 
-* [Authenticating to a Service Principal with Managed Identity](guides/authenticating_managed_identity.html)
+* [Authenticating to a Service Principal with a Managed Identity](guides/authenticating_managed_identity.html)
 * [Authenticating to a Service Principal with a Client Certificate](guides/authenticating_service_principal_using_a_client_certificate.html)
 * [Authenticating to a Service Principal with a Client Secret](guides/authenticating_service_principal_using_a_client_secret.html)
 * [Authenticating to a Service Principal with an OIDC Token](guides/authenticating_service_principal_using_an_oidc_token.html)
