@@ -36,6 +36,45 @@ resource "azuredevops_git_repository_file" "example" {
 }
 ```
 
+### Author Email Pattern
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_git_repository" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Git Repository"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_repository_policy_author_email_pattern" "example" {
+  project_id            = azuredevops_project.example.id
+  enabled               = true
+  blocking              = true
+  author_email_patterns = ["auhtor@test.com"]
+  repository_ids        = [azuredevops_git_repository.example.id]
+}
+
+
+resource "azuredevops_git_repository_file" "example" {
+  repository_id       = azuredevops_git_repository.example.id
+  file                = ".gitignore"
+  content             = "**/*.tfstate"
+  branch              = "refs/heads/master"
+  commit_message      = "First commit"
+  overwrite_on_create = false
+  author_name         = "authorname"
+  author_email        = "auhtor@test.com"
+  depends_on          = [azuredevops_repository_policy_author_email_pattern.example]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -53,6 +92,32 @@ The following arguments are supported:
 * `commit_message` - (Optional) Commit message when adding or updating the managed file.
 
 * `overwrite_on_create` - (Optional) Enable overwriting existing files (defaults to `false`).
+
+* `author_name` - (Optional) The name of the author.
+
+* `author_email` - (Optional) The email of the author.
+
+* `committer_name` - (Optional) The name of the committer.
+
+* `committer_email` - (Optional) The email of the committer.
+
+## Attributes Reference
+
+The following attributes are exported:
+
+* `id` - The ID of the git repository file in format of `repository ID/file`
+
+* `project_id` - The ID of the Project.
+
+* `commit_message` - Commit message when adding or updating the managed file.
+
+* `author_name` - The name of the author.
+
+* `author_email` - The email of the author.
+
+* `committer_name` - The name of the committer.
+
+* `committer_email` - The email of the committer.
 
 ## Timeouts
 
