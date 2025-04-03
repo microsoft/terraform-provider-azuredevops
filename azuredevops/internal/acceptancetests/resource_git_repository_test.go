@@ -280,7 +280,7 @@ func TestAccGitRepository_forkBranchNotEmpty(t *testing.T) {
 	})
 }
 
-func TestAccGitRssepository_privateImportBranchNotEmpty(t *testing.T) {
+func TestAccGitRepository_privateImportServiceEndpointBranchNotEmpty(t *testing.T) {
 	if os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME") == "" ||
 		os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD") == "" {
 		t.Skip("Skipping as AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME or AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD is not specified")
@@ -290,7 +290,7 @@ func TestAccGitRssepository_privateImportBranchNotEmpty(t *testing.T) {
 	gitImportRepoName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
-	tfRepoNode := "azuredevops_git_repository.repository"
+	tfRepoNode := "azuredevops_git_repository.test"
 	tfImportRepoNode := "azuredevops_git_repository.import"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -304,7 +304,46 @@ func TestAccGitRssepository_privateImportBranchNotEmpty(t *testing.T) {
 		CheckDestroy: checkGitRepoDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: hclGitRepositoryImportPrivate(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
+				Config: hclGitRepositoryImportPrivateServiceEndpoint(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "default_branch", "refs/heads/master"),
+					resource.TestCheckResourceAttrSet(tfImportRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfImportRepoNode, "name", gitImportRepoName),
+					resource.TestCheckResourceAttr(tfImportRepoNode, "default_branch", "refs/heads/master"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGitRepository_privateUserNamePasswordImportBranchNotEmpty(t *testing.T) {
+	if os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME") == "" ||
+		os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD") == "" {
+		t.Skip("Skipping as AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME or AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD is not specified")
+	}
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	gitImportRepoName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	tfRepoNode := "azuredevops_git_repository.test"
+	tfImportRepoNode := "azuredevops_git_repository.import"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testutils.PreCheck(t, &[]string{
+				"AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME",
+				"AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD",
+			})
+		},
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryImportPrivateUserNamePassword(projectName, gitRepoName, gitImportRepoName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					checkGitRepoExists(gitRepoName),
 					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
@@ -495,7 +534,7 @@ resource "azuredevops_git_repository" "fork" {
 }`, repoInit, forkRepoName)
 }
 
-func hclGitRepositoryImportPrivate(projectName, repoName, importRepoName, serviceEndpointName string) string {
+func hclGitRepositoryImportPrivateServiceEndpoint(projectName, repoName, importRepoName, serviceEndpointName string) string {
 	repoInit := hclGitRepositoryBasic(projectName, repoName, "Clean")
 	return fmt.Sprintf(`
 %s
@@ -517,4 +556,23 @@ resource "azuredevops_git_repository" "import" {
   }
 }
 `, repoInit, serviceEndpointName, importRepoName)
+}
+
+func hclGitRepositoryImportPrivateUserNamePassword(projectName, repoName, importRepoName, serviceEndpointName string) string {
+	repoInit := hclGitRepositoryBasic(projectName, repoName, "Clean")
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_git_repository" "import" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+  initialization {
+    init_type             = "Import"
+    source_type           = "Git"
+    source_url            = azuredevops_git_repository.test.remote_url
+    username              = "%s"
+	password              = "%s"
+  }
+}
+`, repoInit, importRepoName, os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME"), os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD"))
 }
