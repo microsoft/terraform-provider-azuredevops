@@ -113,7 +113,21 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	repoName := "repoName"
 	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
 
-	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, map[string]interface{}{
+		"project_id": projectID.String(),
+		"repo_id":    repoID.String(),
+		"name":       repoName,
+		"initialization": []interface{}{
+			map[string]interface{}{
+				"init_type":             "Clean",
+				"username":              "",
+				"password":              "",
+				"source_type":           "",
+				"source_url":            "",
+				"service_connection_id": "",
+			},
+		},
+	})
 	resourceData.SetId(gitRepo.Id.String())
 	configureCleanInitialization(resourceData)
 	flattenGitRepository(resourceData, &gitRepo)

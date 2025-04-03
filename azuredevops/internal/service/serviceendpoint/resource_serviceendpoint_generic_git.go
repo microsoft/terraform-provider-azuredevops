@@ -39,13 +39,13 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 		},
 		"username": {
 			Type:        schema.TypeString,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_USERNAME", nil),
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME", nil),
 			Description: "The username to use for the GenericGit service git connection.",
 			Optional:    true,
 		},
 		"password": {
 			Type:        schema.TypeString,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_PASSWORD", nil),
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD", nil),
 			Description: "The password or token key to use for the GenericGit git service connection.",
 			Sensitive:   true,
 			Optional:    true,

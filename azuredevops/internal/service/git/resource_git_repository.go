@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -137,8 +138,9 @@ func ResourceGitRepository() *schema.Resource {
 						},
 
 						"password": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:      schema.TypeString,
+							Optional:  true,
+							WriteOnly: true,
 							RequiredWith: []string{
 								"initialization.0.source_url",
 								"initialization.0.source_type",
@@ -146,7 +148,6 @@ func ResourceGitRepository() *schema.Resource {
 							ConflictsWith: []string{
 								"initialization.0.service_connection_id",
 							},
-							Default: "",
 						},
 					},
 				},
@@ -588,13 +589,27 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 	if len(initData) == 1 {
 		initValues := initData[0].(map[string]interface{})
 
+		password := ""
+		if !d.GetRawConfig().IsNull() {
+			p := cty.GetAttrPath("initialization").IndexInt(0).GetAttr("password")
+			passwordRaw, errs := d.GetRawConfigAt(p)
+
+			if errs != nil {
+				return nil, nil, nil, fmt.Errorf("Error retrieving initialization.0.password %v", errs[0])
+			}
+
+			if !passwordRaw.IsNull() {
+				password = passwordRaw.AsString()
+			}
+		}
+
 		initialization = &repoInitializationMeta{
 			initType:            initValues["init_type"].(string),
 			sourceType:          initValues["source_type"].(string),
 			sourceURL:           initValues["source_url"].(string),
 			serviceConnectionID: initValues["service_connection_id"].(string),
 			userName:            initValues["username"].(string),
-			password:            initValues["password"].(string),
+			password:            password,
 		}
 
 		if strings.EqualFold(initialization.initType, "clean") {
