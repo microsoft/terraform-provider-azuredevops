@@ -74,3 +74,17 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 * `read` - (Defaults to 5 minute) Used when retrieving the Feed Permission.
 * `update` - (Defaults to 10 minutes) Used when updating the Feed Permission.
 * `delete` - (Defaults to 10 minutes) Used when deleting the Feed Permission.
+
+## Import
+
+Azure DevOps Feed Permission can be imported using the Project ID, Feed ID and Identity Descriptor or Feed ID and Identity Descriptor e.g.:
+
+```sh
+terraform import azuredevops_feed_permission.permission 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000/vssgp.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+or 
+
+```sh
+terraform import azuredevops_feed_permission.permission 00000000-0000-0000-0000-000000000000/vssgp.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
