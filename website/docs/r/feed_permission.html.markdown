@@ -77,7 +77,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Azure DevOps Feed Permission can be imported using the Project ID, Feed ID and Identity Descriptor or Feed ID and Identity Descriptor e.g.:
+Azure DevOps Feed Permission can be imported using the `Project ID/Feed ID/Identity Descriptor` or `Feed ID/Identity Descriptor` e.g.:
 
 ```sh
 terraform import azuredevops_feed_permission.permission 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000/vssgp.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
