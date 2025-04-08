@@ -57,53 +57,15 @@ func TestAccFeedPermission_importErrorStep(t *testing.T) {
 				),
 			},
 			{
-				Config: hclFeedPermissionImport(projectName),
+				Config:      hclFeedPermissionImport(projectName),
 				ExpectError: feedPermissionRequiresImportError(),
 			},
 		},
 	})
 }
 
-func hclFeedPermissionBasic(name string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name               = "%[1]s"
-  description        = "%[1]s-description"
-  visibility         = "private"
-  version_control    = "Git"
-  work_item_template = "Agile"
-}
-
-resource "azuredevops_feed" "test" {
-  name       = "%[1]s"
-  project_id = azuredevops_project.test.id
-}
-
-resource "azuredevops_group" "test" {
-  scope        = azuredevops_project.test.id
-  display_name = "%[1]s"
-}
-
-resource "azuredevops_feed_permission" "test" {
-  feed_id             = azuredevops_feed.test.id
-  project_id          = azuredevops_project.test.id
-  role                = "reader"
-  identity_descriptor = azuredevops_group.test.descriptor
-}
-`, name)
-}
-
-func hclFeedPermissionImport(name string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_feed_permission" "import" {
-  feed_id             = azuredevops_feed.test.id
-  project_id          = azuredevops_project.test.id
-  role                = "reader"
-  identity_descriptor = azuredevops_group.test.descriptor
-}
-`, hclFeedPermissionBasic(name))
+func feedPermissionRequiresImportError() *regexp.Regexp {
+	return regexp.MustCompile(`Error: feed Permission for Feed : .* and Identity : .* already exists`)
 }
 
 func checkFeedPermissionDestroyed(s *terraform.State) error {
@@ -152,6 +114,44 @@ func CheckFeedPermissionExist() resource.TestCheckFunc {
 	}
 }
 
-func feedPermissionRequiresImportError() *regexp.Regexp {
-	return regexp.MustCompile(`Error: feed Permission for Feed : .* and Identity : .* already exists`)
+func hclFeedPermissionBasic(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "%[1]s"
+  description        = "%[1]s-description"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+resource "azuredevops_feed" "test" {
+  name       = "%[1]s"
+  project_id = azuredevops_project.test.id
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.test.id
+  display_name = "%[1]s"
+}
+
+resource "azuredevops_feed_permission" "test" {
+  feed_id             = azuredevops_feed.test.id
+  project_id          = azuredevops_project.test.id
+  role                = "reader"
+  identity_descriptor = azuredevops_group.test.descriptor
+}
+`, name)
+}
+
+func hclFeedPermissionImport(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_feed_permission" "import" {
+  feed_id             = azuredevops_feed_permission.test.feed_id
+  project_id          = azuredevops_feed_permission.test.project_id
+  role                = "reader"
+  identity_descriptor = azuredevops_feed_permission.test.identity_descriptor
+}
+`, hclFeedPermissionBasic(name))
 }
