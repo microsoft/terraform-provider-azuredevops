@@ -54,6 +54,12 @@ jobs:
       - bash: |
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
+          make terrafmt
+        displayName: "Run terrafmt"
+
+      - bash: |
+          #!/usr/bin/env bash
+          cd "$BUILD_SOURCESDIRECTORY"
           make lint
         displayName: "Run Lint Check"
 
