@@ -255,7 +255,7 @@ A `initialization` - block supports the following:
 
 * `username` (Optional) The username used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
 
-* `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`.
+* `password` (Optional) The password used to authenticate to a private repository for import initialization. Conflicts with `service_connection_id`. Note: This is a write-only attribute, which allows ephemeral resources to be used.
 
     ~>**Note** At least `service_connection_id` or `username/password` needs to be set to import private repository.
 
