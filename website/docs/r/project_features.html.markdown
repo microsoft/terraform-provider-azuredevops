@@ -23,8 +23,8 @@ resource "azuredevops_project" "example" {
 resource "azuredevops_project_features" "example-features" {
   project_id = azuredevops_project.example.id
   features = {
-     testplans = "disabled"
-     artifacts = "enabled"
+    testplans = "disabled"
+    artifacts = "enabled"
   }
 }
 ```

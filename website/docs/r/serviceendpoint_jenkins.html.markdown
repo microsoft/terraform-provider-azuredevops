@@ -21,14 +21,14 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_jenkins" "example" {
-  project_id            = azuredevops_project.example.id
-  service_endpoint_name = "jenkins-example"
-  description           = "Service Endpoint for 'Jenkins' (Managed by Terraform)"
-  url                   = "https://example.com"
-  accept_untrusted_certs  = false
-  username              = "username"
-  password              = "password"
-  
+  project_id             = azuredevops_project.example.id
+  service_endpoint_name  = "jenkins-example"
+  description            = "Service Endpoint for 'Jenkins' (Managed by Terraform)"
+  url                    = "https://example.com"
+  accept_untrusted_certs = false
+  username               = "username"
+  password               = "password"
+
 }
 ```
 

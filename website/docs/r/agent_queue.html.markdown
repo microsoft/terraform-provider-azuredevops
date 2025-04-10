@@ -48,8 +48,8 @@ data "azuredevops_project" "example" {
 }
 
 resource "azuredevops_agent_queue" "example" {
-  name          = "example-queue"
-  project_id    = data.azuredevops_project.example.id
+  name       = "example-queue"
+  project_id = data.azuredevops_project.example.id
 }
 ```
 

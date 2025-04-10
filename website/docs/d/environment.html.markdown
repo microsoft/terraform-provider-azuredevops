@@ -21,13 +21,13 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_environment" "example" {
-  project_id = azuredevops_project.example.id
-  name       = "Example Environment"
+  project_id  = azuredevops_project.example.id
+  name        = "Example Environment"
   description = "Managed by Terraform"
 }
 
 data "azuredevops_environment" "example" {
-  project_id= azuredevops_project.example.id
+  project_id     = azuredevops_project.example.id
   environment_id = azuredevops_environment.example.id
 }
 ```

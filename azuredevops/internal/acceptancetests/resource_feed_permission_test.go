@@ -57,7 +57,7 @@ func TestAccFeedPermission_importErrorStep(t *testing.T) {
 				),
 			},
 			{
-				Config: hclFeedPermissionImport(projectName),
+				Config:      hclFeedPermissionImport(projectName),
 				ExpectError: feedPermissionRequiresImportError(),
 			},
 		},

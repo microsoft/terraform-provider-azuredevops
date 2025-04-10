@@ -105,12 +105,12 @@ func TestAccServiceEndpointNexus_RequiresImportErrorStepUsernamePassword(t *test
 func hclSvcEndpointNexusResourceBasicUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_nexus" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	username			   = "u"
-	password			   = "redacted"
-	url			   		   = "http://url.com/1"
-	description 		   = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  username              = "u"
+  password              = "redacted"
+  url                   = "http://url.com/1"
+  description           = "%s"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -120,12 +120,12 @@ resource "azuredevops_serviceendpoint_nexus" "test" {
 func hclSvcEndpointNexusResourceCompleteUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_nexus" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	username			   = "u"
-	password			   = "redacted"
-	url			   		   = "https://url.com/1"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  username              = "u"
+  password              = "redacted"
+  url                   = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -135,12 +135,12 @@ resource "azuredevops_serviceendpoint_nexus" "test" {
 func hclSvcEndpointNexusResourceUpdateUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_nexus" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	username			   = "u2"
-	password			   = "redacted2"
-	url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  username              = "u2"
+  password              = "redacted2"
+  url                   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -152,12 +152,12 @@ func hclSvcEndpointNexusResourceRequiresImportUsernamePassword(projectName strin
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_nexus" "import" {
-  project_id                = azuredevops_serviceendpoint_nexus.test.project_id
+  project_id            = azuredevops_serviceendpoint_nexus.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_nexus.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_nexus.test.description
-  url          	= azuredevops_serviceendpoint_nexus.test.url
-  username			   = "u"
-  password			   = "redacted"
+  description           = azuredevops_serviceendpoint_nexus.test.description
+  url                   = azuredevops_serviceendpoint_nexus.test.url
+  username              = "u"
+  password              = "redacted"
 }
 `, template)
 }

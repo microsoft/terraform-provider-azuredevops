@@ -49,9 +49,9 @@ resource "azuredevops_branch_policy_min_reviewers" "example" {
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
-    
+
     scope {
-      match_type     = "DefaultBranch"
+      match_type = "DefaultBranch"
     }
   }
 }

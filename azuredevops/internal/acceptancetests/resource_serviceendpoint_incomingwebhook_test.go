@@ -135,14 +135,14 @@ func hclSvcEndpointIncomingWebhookResource(projectName string, serviceEndpointNa
 
 func hclSvcEndpointIncomingWebhookResourceUpdate(projectName string, webhookName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_incomingwebhook" "test" {
-		project_id             = azuredevops_project.project.id
-		webhook_name           = "%s"
-		secret			       = "secret1!"
-		http_header			   = "X-Header"
-		service_endpoint_name  = "%s"
-		description            = "%s"
-	}`, webhookName, serviceEndpointName, description)
+resource "azuredevops_serviceendpoint_incomingwebhook" "test" {
+  project_id            = azuredevops_project.project.id
+  webhook_name          = "%s"
+  secret                = "secret1!"
+  http_header           = "X-Header"
+  service_endpoint_name = "%s"
+  description           = "%s"
+}`, webhookName, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -150,14 +150,14 @@ func hclSvcEndpointIncomingWebhookResourceUpdate(projectName string, webhookName
 
 func hclSvcEndpointIncomingWebhookResourceComplete(projectName string, serviceEndpointName string, webhookName string, secret string, httpHeader string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
-	resource "azuredevops_serviceendpoint_incomingwebhook" "test" {
-		project_id             = azuredevops_project.project.id
-		service_endpoint_name  = "%s"
-		webhook_name           = "%s"
-		secret			       = "%s"
-		http_header			   = "%s"
-		description            = "%s"
-	}`, serviceEndpointName, webhookName, secret, httpHeader, description)
+resource "azuredevops_serviceendpoint_incomingwebhook" "test" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  webhook_name          = "%s"
+  secret                = "%s"
+  http_header           = "%s"
+  description           = "%s"
+}`, serviceEndpointName, webhookName, secret, httpHeader, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
@@ -167,13 +167,13 @@ func hclSvcEndpointIncomingWebhookResourceRequiresImport(projectName string, ser
 	template := hclSvcEndpointIncomingWebhookResource(projectName, serviceEndpointName)
 	return fmt.Sprintf(`
 	%s
-	resource "azuredevops_serviceendpoint_incomingwebhook" "import" {
-		project_id             = azuredevops_serviceendpoint_incomingwebhook.test.project_id
-		webhook_name           = "test_webhook_name"
-		secret			       = "hsdhj23r8/3aefh1!"
-		http_header			   = "X-Header-Test"
-		service_endpoint_name  = azuredevops_serviceendpoint_incomingwebhook.test.service_endpoint_name
-		description            = azuredevops_serviceendpoint_incomingwebhook.test.description
-	}
+resource "azuredevops_serviceendpoint_incomingwebhook" "import" {
+  project_id            = azuredevops_serviceendpoint_incomingwebhook.test.project_id
+  webhook_name          = "test_webhook_name"
+  secret                = "hsdhj23r8/3aefh1!"
+  http_header           = "X-Header-Test"
+  service_endpoint_name = azuredevops_serviceendpoint_incomingwebhook.test.service_endpoint_name
+  description           = azuredevops_serviceendpoint_incomingwebhook.test.description
+}
 	`, template)
 }

@@ -52,8 +52,8 @@ resource "azuredevops_serviceendpoint_maven" "example" {
   repository_id         = "example"
 
   authentication_basic {
-    username              = "username"
-    password              = "password"
+    username = "username"
+    password = "password"
   }
 }
 ```
