@@ -567,11 +567,11 @@ resource "azuredevops_git_repository" "import" {
   project_id = azuredevops_project.test.id
   name       = "%s"
   initialization {
-    init_type             = "Import"
-    source_type           = "Git"
-    source_url            = azuredevops_git_repository.test.remote_url
-    username              = "%s"
-	password              = "%s"
+    init_type   = "Import"
+    source_type = "Git"
+    source_url  = azuredevops_git_repository.test.remote_url
+    username    = "%s"
+    password    = "%s"
   }
 }
 `, repoInit, importRepoName, os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME"), os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD"))
