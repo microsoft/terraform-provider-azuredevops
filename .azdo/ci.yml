@@ -55,7 +55,7 @@ jobs:
           #!/usr/bin/env bash
           cd "$BUILD_SOURCESDIRECTORY"
           ./scripts/terrafmt.sh
-        displayName: "Run terrafmt"
+        displayName: "Run Terrafmt"
 
       - bash: |
           #!/usr/bin/env bash
