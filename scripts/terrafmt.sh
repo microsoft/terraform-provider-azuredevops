@@ -12,7 +12,7 @@ for f in $files; do
     if command -v terrafmt; then
       terrafmt diff -c -f "$f" || error=true
     elif command -v "$GOPATH"/bin/terrafmt; then
-      "$GOPATH"/bin/terrafmt diff -c -q -f "$f" || error=true
+      "$GOPATH"/bin/terrafmt diff -c -f "$f" || error=true
     fi
   fi
 done
