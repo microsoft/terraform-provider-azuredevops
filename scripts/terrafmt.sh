@@ -8,8 +8,8 @@ error=false
 for f in $files; do
   if command -v terrafmt; then
     terrafmt diff -c -q -f "$f" || error=true
-  else
-    $(GOPATH)/bin/terrafmt diff -c -q -f "$f" || error=true
+  else command -v $(GOPATH)/bin/terrafmt;
+   $(GOPATH)/bin/terrafmt diff -c -q -f "$f" || error=true
   fi
 done
 
