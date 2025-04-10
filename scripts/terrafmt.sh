@@ -6,7 +6,11 @@ files=$(find ./azuredevops -type f -name "*_test.go")
 error=false
 
 for f in $files; do
-  terrafmt diff -c -q -f "$f" || error=true
+  if command -v terrafmt; then
+    terrafmt diff -c -q -f "$f" || error=true
+  else
+    $(GOPATH)/bin/terrafmt diff -c -q -f "$f" || error=true
+  fi
 done
 
 if ${error}; then
