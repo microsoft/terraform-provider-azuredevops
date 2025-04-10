@@ -13,12 +13,12 @@ Manages a Storage Queue Pipelines Service Hook .
 
 ```hcl
 resource "azuredevops_project" "example" {
-  name = "example-project" 
+  name = "example-project"
 }
 
 resource "azurerm_resource_group" "example" {
   name     = "example-resources"
-  location = "West Europe" 
+  location = "West Europe"
 }
 
 resource "azurerm_storage_account" "example" {
@@ -30,18 +30,18 @@ resource "azurerm_storage_account" "example" {
 }
 
 resource "azurerm_storage_queue" "example" {
-  name                  = "examplequeue"
-  storage_account_name  = azurerm_storage_account.example.name
+  name                 = "examplequeue"
+  storage_account_name = azurerm_storage_account.example.name
 }
 
 resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
   project_id   = azuredevops_project.example.id
   account_name = azurerm_storage_account.example.name
-  account_key  = azurerm_storage_account.example.primary_access_key 
+  account_key  = azurerm_storage_account.example.primary_access_key
   queue_name   = azurerm_storage_queue.example.name
   visi_timeout = 30
   run_state_changed_event {
-    run_state_filter = "Completed"
+    run_state_filter  = "Completed"
     run_result_filter = "Succeeded"
   }
 }
@@ -53,7 +53,7 @@ An empty configuration block will occur in all events triggering the associated 
 resource "azuredevops_servicehook_storage_queue_pipelines" "example" {
   project_id   = azuredevops_project.example.id
   account_name = azurerm_storage_account.example.name
-  account_key  = azurerm_storage_account.example.primary_access_key 
+  account_key  = azurerm_storage_account.example.primary_access_key
   queue_name   = azurerm_storage_queue.example.name
   visi_timeout = 30
   run_state_changed_event {}

@@ -26,8 +26,8 @@ data "azuredevops_group" "tf-project-readers" {
 }
 
 resource "azuredevops_library_permissions" "permissions" {
-  project_id        = azuredevops_project.project.id
-  principal         = data.azuredevops_group.tf-project-readers.id
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
   permissions = {
     "View" : "allow",
     "Administer" : "allow",

@@ -79,19 +79,20 @@ resource "azuredevops_git_repository" "test" {
 }
 
 resource "azuredevops_git_repository_file" "test" {
-  repository_id = azuredevops_git_repository.test.id
-  branch        = "%[3]s"
-  file          = "%[4]s"
-  content       = "%[5]s"
-  commit_message= "%[6]s"
+  repository_id  = azuredevops_git_repository.test.id
+  branch         = "%[3]s"
+  file           = "%[4]s"
+  content        = "%[5]s"
+  commit_message = "%[6]s"
 }
 
 data "azuredevops_git_repository_file" "test" {
   repository_id = azuredevops_git_repository.test.id
-  branch     = "%[3]s"
-  file       = "%[7]s"
-  depends_on = [azuredevops_git_repository_file.test]
+  branch        = "%[3]s"
+  file          = "%[7]s"
+  depends_on    = [azuredevops_git_repository_file.test]
 }
+
 
 `, projectName, repoName, branch, rfile, content, commitMessage, dfile)
 }

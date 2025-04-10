@@ -27,8 +27,8 @@ resource "azuredevops_serviceendpoint_nexus" "example" {
   description           = "Service Endpoint for 'Nexus IQ' (Managed by Terraform)"
   url                   = "https://example.com"
 
-  username              = "username"
-  password              = "password"
+  username = "username"
+  password = "password"
 }
 ```
 

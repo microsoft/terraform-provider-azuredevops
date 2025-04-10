@@ -126,10 +126,10 @@ func TestAccServiceEndpointSonarQube_RequiresImportErrorStep(t *testing.T) {
 func hclSvcEndpointSonarQubeResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarqube" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	token			   	   = "redacted"
-	url			   		   = "http://url.com/"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  token                 = "redacted"
+  url                   = "http://url.com/"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -139,11 +139,11 @@ resource "azuredevops_serviceendpoint_sonarqube" "test" {
 func hclSvcEndpointSonarQubeResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarqube" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	token			   	   = "redacted"
-	url			   		   = "https://url.com/"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  token                 = "redacted"
+  url                   = "https://url.com/"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -153,11 +153,11 @@ resource "azuredevops_serviceendpoint_sonarqube" "test" {
 func hclSvcEndpointSonarQubeResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_sonarqube" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	token			   	   = "redacted2"
-	url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  token                 = "redacted2"
+  url                   = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -169,11 +169,11 @@ func hclSvcEndpointSonarQubeResourceRequiresImport(projectName string, serviceEn
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_sonarqube" "import" {
-  project_id                = azuredevops_serviceendpoint_sonarqube.test.project_id
+  project_id            = azuredevops_serviceendpoint_sonarqube.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_sonarqube.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_sonarqube.test.description
-  url          = azuredevops_serviceendpoint_sonarqube.test.url
-  token          = "redacted"
+  description           = azuredevops_serviceendpoint_sonarqube.test.description
+  url                   = azuredevops_serviceendpoint_sonarqube.test.url
+  token                 = "redacted"
 }
 `, template)
 }

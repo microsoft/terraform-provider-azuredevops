@@ -43,9 +43,9 @@ resource "azuredevops_branch_policy_work_item_linking" "example" {
       repository_ref = "refs/heads/releases"
       match_type     = "Prefix"
     }
-    
+
     scope {
-      match_type     = "DefaultBranch"
+      match_type = "DefaultBranch"
     }
   }
 }

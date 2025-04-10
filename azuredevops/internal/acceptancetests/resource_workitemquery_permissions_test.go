@@ -166,17 +166,17 @@ func hclWorkItemQueryPermissions(projectName string, path string, permissions ma
 %s
 
 data "azuredevops_group" "project-administrators" {
-	project_id = azuredevops_project.project.id
-	name       = "Project administrators"
+  project_id = azuredevops_project.project.id
+  name       = "Project administrators"
 }
 
 resource "azuredevops_workitemquery_permissions" "wiq-permissions" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.project-administrators.id
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.project-administrators.id
 	%s
-	permissions = {
+  permissions = {
 		%s
-	}
+  }
 }
 `, projectResource, szPath, szPermissions)
 }

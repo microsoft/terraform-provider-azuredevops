@@ -54,9 +54,9 @@ resource "azuredevops_branch_policy_status_check" "example" {
       repository_ref = azuredevops_git_repository.example.default_branch
       match_type     = "Exact"
     }
-    
+
     scope {
-      match_type     = "DefaultBranch"
+      match_type = "DefaultBranch"
     }
   }
 }

@@ -22,6 +22,7 @@ tools:
 	go install github.com/client9/misspell/cmd/misspell@latest
 	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
 	go install github.com/bflad/tfproviderdocs@latest
+	go install github.com/katbyte/terrafmt@latest
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.64.8
 
 build: fmtcheck check-vendor-vs-mod
@@ -34,6 +35,18 @@ fmt:
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
+
+terrafmt:
+	@echo "==> Fixing acceptance test terraform blocks code with terrafmt..."
+	@if command -v terrafmt; \
+		then (find azuredevops | egrep "_test.go" | sort | while read f; do terrafmt fmt -f $$f; done) \
+		else (find azuredevops | egrep "_test.go" | sort | while read f; do $(GOPATH)/bin/terrafmt fmt -f $$f; done); \
+	  fi
+	@echo "==> Fixing website terraform blocks code with terrafmt..."
+	@if command -v terrafmt; \
+		then (find . | egrep html.markdown | sort | while read f; do terrafmt fmt $$f; done); \
+		else (find . | egrep html.markdown | sort | while read f; do $(GOPATH)/bin/terrafmt fmt $$f; done); \
+	  fi
 
 lint:
 	@echo "==> Checking source code against linters..."
@@ -91,6 +104,8 @@ website-lint:
 	@misspell -error -source=text website/
 	@echo "==> Checking documentation for errors..."
 	@tfproviderdocs check -provider-name=azuredevops
+#-require-resource-subcategory \
+#		-allowed-resource-subcategories-file website/allowed-subcategories
 
 website-test:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))

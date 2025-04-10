@@ -18,7 +18,7 @@ data "azuredevops_project" "example" {
 
 data "azuredevops_build_definition" "example" {
   project_id = data.azuredevops_project.example.id
-  name = "existing"
+  name       = "existing"
 }
 
 output "id" {

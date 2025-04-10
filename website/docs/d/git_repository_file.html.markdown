@@ -24,8 +24,8 @@ data "azuredevops_git_repository" "example" {
 
 data "azuredevops_git_repository_file" "example" {
   repository_id = data.azuredevops_git_repository.example.id
-  branch = "refs/heads/main"
-  file   = "MyFile.txt"
+  branch        = "refs/heads/main"
+  file          = "MyFile.txt"
 }
 ```
 
