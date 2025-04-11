@@ -289,7 +289,7 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 			return nil, identityResponse, fmt.Errorf(" Feed Permissions Not Found. Feed may exist at organization or project level."+
 				" Please ensure you have set the `project_id` correctly. \n Project ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
 		}
-		return nil, identityResponse, err
+		return nil, identityResponse, fmt.Errorf(" \nProject ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
 	}
 
 	for _, permission := range *permissions {
