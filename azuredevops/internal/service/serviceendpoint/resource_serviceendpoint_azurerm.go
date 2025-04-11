@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -191,36 +192,49 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureRM(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
+    clients := m.(*client.AggregatedClient)
+    serviceEndpoint, err := expandServiceEndpointAzureRM(d)
+    if err != nil {
+        return fmt.Errorf(errMsgTfConfigRead, err)
+    }
 
-	resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
-	if err != nil {
-		return err
-	}
+    resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
+    if err != nil {
+        return err
+    }
 
-	serviceEndpoint.Id = resp.Id
-	if shouldValidate(endpointFeatures(d)) {
-		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
-			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-				clients.Ctx,
-				serviceendpoint.DeleteServiceEndpointArgs{
-					ProjectIds: &[]string{
-						(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
-					},
-					EndpointId: resp.Id,
-				}); delErr != nil {
-				return fmt.Errorf(" Delete service endpoint error %v", delErr)
-			}
-			return err
-		}
-	}
+    serviceEndpoint.Id = resp.Id
 
-	d.SetId(resp.Id.String())
-	return resourceServiceEndpointAzureRMRead(d, m)
+    if shouldValidate(endpointFeatures(d)) {
+        projectID := d.Get("project_id").(string)
+        var matchedProjectID *uuid.UUID
+
+        for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+            if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+                ref.ProjectReference.Id.String() == projectID {
+                matchedProjectID = ref.ProjectReference.Id
+                break
+            }
+        }
+
+        if matchedProjectID == nil {
+            return fmt.Errorf("project_id '%s' not found in service endpoint project references", projectID)
+        }
+
+        if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+            clients.Ctx,
+            serviceendpoint.DeleteServiceEndpointArgs{
+                ProjectIds: &[]string{matchedProjectID.String()},
+                EndpointId: resp.Id,
+            }); delErr != nil {
+            return fmt.Errorf("delete service endpoint error: %v", delErr)
+        }
+
+        return err // validation error is returned after deletion
+    }
+
+    d.SetId(resp.Id.String())
+    return resourceServiceEndpointAzureRMRead(d, m)
 }
 
 func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) error {
