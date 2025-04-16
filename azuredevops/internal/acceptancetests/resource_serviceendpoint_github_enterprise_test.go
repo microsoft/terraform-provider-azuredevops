@@ -12,18 +12,18 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccServiceEndpointGitHubEnterprise_PersonalTokenBasic(t *testing.T) {
+func TestAccServiceEndpointGitHubEnterprise_personalTokenBasic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
 
 	resourceType := "azuredevops_serviceendpoint_github_enterprise"
-	tfSvcEpNode := resourceType + ".serviceendpoint"
+	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: personTokenConfigBasicGithubEnterprise(projectName, serviceEndpointName),
+				Config: hclGithubEnterprisePersonTokenConfigBasic(projectName, serviceEndpointName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
@@ -37,20 +37,20 @@ func TestAccServiceEndpointGitHubEnterprise_PersonalTokenBasic(t *testing.T) {
 	})
 }
 
-func TestAccServiceEndpointGitHubEnterprise_PersonalTokenUpdate(t *testing.T) {
+func TestAccServiceEndpointGitHubEnterprise_personalTokenUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
 	description := "Manage by Terraform Update"
 
 	resourceType := "azuredevops_serviceendpoint_github_enterprise"
-	tfSvcEpNode := resourceType + ".serviceendpoint"
+	tfSvcEpNode := resourceType + ".test"
 	resource.ParallelTest(t, resource.TestCase{
 		Providers:    testutils.GetProviders(),
 		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: personTokenConfigBasicGithubEnterprise(projectName, serviceEndpointNameFirst),
+				Config: hclGithubEnterprisePersonTokenConfigBasic(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
@@ -59,7 +59,7 @@ func TestAccServiceEndpointGitHubEnterprise_PersonalTokenUpdate(t *testing.T) {
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 				),
 			}, {
-				Config: personTokenConfigUpdateGithubEnterprise(projectName, serviceEndpointNameSecond, description),
+				Config: hclGithubEnterprisePersonTokenConfigUpdate(projectName, serviceEndpointNameSecond, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_personal.#", "1"),
@@ -73,9 +73,68 @@ func TestAccServiceEndpointGitHubEnterprise_PersonalTokenUpdate(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointGitHubEnterprise_oauthBasic(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_github_enterprise"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclGithubEnterpriseOauthBasic(projectName, serviceEndpointName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_oauth.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+				),
+			},
+		},
+	})
+}
+func TestAccServiceEndpointGitHubEnterprise_oauthUpdate(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointNameFirst := testutils.GenerateResourceName()
+	serviceEndpointNameSecond := testutils.GenerateResourceName()
+	description := "Manage by Terraform Update"
+
+	resourceType := "azuredevops_serviceendpoint_github_enterprise"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclGithubEnterpriseOauthBasic(projectName, serviceEndpointNameFirst),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_oauth.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
+				),
+			}, {
+				Config: hclGithubEnterpriseOauthUpdate(projectName, serviceEndpointNameSecond, description),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "auth_oauth.#", "1"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
+				),
+			},
+		},
+	})
+}
+
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
-func TestAccServiceEndpointGitHubEnterprise_CreateAndUpdate(t *testing.T) {
+func TestAccServiceEndpointGitHubEnterprise_createAndUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
@@ -118,11 +177,11 @@ func TestAccServiceEndpointGitHubEnterprise_CreateAndUpdate(t *testing.T) {
 	})
 }
 
-func personTokenConfigBasicGithubEnterprise(projectName string, serviceEndpointName string) string {
+func hclGithubEnterprisePersonTokenConfigBasic(projectName string, serviceEndpointName string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_github_enterprise" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%[1]s"
   url                   = "https://github.contoso.com"
@@ -134,16 +193,45 @@ resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func personTokenConfigUpdateGithubEnterprise(projectName string, serviceEndpointName string, description string) string {
+func hclGithubEnterprisePersonTokenConfigUpdate(projectName string, serviceEndpointName string, description string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 
 	serviceEndpointResource := fmt.Sprintf(`
-resource "azuredevops_serviceendpoint_github_enterprise" "serviceendpoint" {
+resource "azuredevops_serviceendpoint_github_enterprise" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%[1]s"
   url                   = "https://github.contoso.com"
   auth_personal {
     personal_access_token = "test_token_update"
+  }
+  description = "%[2]s"
+}`, serviceEndpointName, description)
+
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func hclGithubEnterpriseOauthBasic(projectName string, serviceEndpointName string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_github_enterprise" "test" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  auth_oauth {
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
+  }
+}`, serviceEndpointName)
+
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func hclGithubEnterpriseOauthUpdate(projectName string, serviceEndpointName string, description string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_github_enterprise" "test" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%[1]s"
+  auth_oauth {
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
   }
   description = "%[2]s"
 }`, serviceEndpointName, description)

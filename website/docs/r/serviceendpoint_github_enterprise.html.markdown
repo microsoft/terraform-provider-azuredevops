@@ -11,6 +11,8 @@ Manages a GitHub Enterprise Server service endpoint within Azure DevOps.
 
 ## Example Usage
 
+### With token
+
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -33,6 +35,27 @@ resource "azuredevops_serviceendpoint_github_enterprise" "example" {
 }
 ```
 
+### With OAuth 
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_serviceendpoint_github_enterprise" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example GitHub Enterprise"
+  description           = "Managed by Terraform"
+  auth_oauth {
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+ss
 ## Argument Reference
 
 The following arguments are supported:
@@ -41,11 +64,13 @@ The following arguments are supported:
 
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 
-* `url` - (Required) GitHub Enterprise Server Url.
-
 ---
 
 * `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
+
+* `auth_oauth` - (Optional) An `auth_oauth` block as documented below. Allows connecting using an Oauth token.
+
+* `url` - (Optional) GitHub Enterprise Server Url.
 
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
@@ -56,6 +81,12 @@ The following arguments are supported:
 An `auth_personal` block supports the following:
 
 * `personal_access_token` - (Required) The Personal Access Token for GitHub.
+
+---
+
+An `auth_oauth` block supports the following:
+
+* `oauth_configuration_id` - (Required) The OAuth Configuration ID.
 
 ## Attributes Reference
 

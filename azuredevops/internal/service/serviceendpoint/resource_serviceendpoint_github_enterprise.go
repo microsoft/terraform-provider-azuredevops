@@ -32,10 +32,11 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	}
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"auth_personal": {
-			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
-			MaxItems: 1,
+			Type:          schema.TypeSet,
+			Optional:      true,
+			MinItems:      1,
+			MaxItems:      1,
+			ConflictsWith: []string{"auth_oauth"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"personal_access_token": {
@@ -50,10 +51,26 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 			},
 		},
 
+		"auth_oauth": {
+			Type:          schema.TypeSet,
+			Optional:      true,
+			MinItems:      1,
+			MaxItems:      1,
+			ConflictsWith: []string{"auth_personal"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"oauth_configuration_id": {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+				},
+			},
+		},
+
 		"url": {
 			Type:         schema.TypeString,
+			Optional:     true,
 			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-			Required:     true,
 		},
 	})
 	return r
@@ -134,6 +151,14 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 				}
 			}
 		}
+		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
+			d.Set("auth_oauth", &[]map[string]interface{}{
+				{
+					"oauth_configuration_id": (*serviceEndpoint.Authorization.Parameters)["ConfigurationId"],
+				},
+			})
+		}
+
 		if serviceEndpoint.Url != nil {
 			d.Set("url", *serviceEndpoint.Url)
 		}
@@ -166,6 +191,11 @@ func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendp
 		parameters = expandAuthPersonalSetGithubEnterprise(config.(*schema.Set))
 	}
 
+	if config, ok := d.GetOk("auth_oauth"); ok {
+		scheme = "OAuth2"
+		parameters = expandAuthOauthSetGithubEnterprise(config.(*schema.Set))
+	}
+
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &parameters,
 		Scheme:     &scheme,
@@ -180,4 +210,12 @@ func expandAuthPersonalSetGithubEnterprise(d *schema.Set) map[string]string {
 
 	authPerson["apitoken"] = val["personal_access_token"].(string)
 	return authPerson
+}
+
+func expandAuthOauthSetGithubEnterprise(d *schema.Set) map[string]string {
+	authConfig := make(map[string]string)
+	val := d.List()[0].(map[string]interface{})
+	authConfig["ConfigurationId"] = val["oauth_configuration_id"].(string)
+	authConfig["AccessToken"] = ""
+	return authConfig
 }
