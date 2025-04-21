@@ -1,3 +1,30 @@
+## 1.9.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_extension` [#1328](https://github.com/microsoft/terraform-provider-azuredevops/pull/1328)
+* **New Resource** `azuredevops_serviceendpoint_openshift` [#1336](https://github.com/microsoft/terraform-provider-azuredevops/pull/1336)
+* **New Data Resource** `azuredevops_git_repository_file` [#1335](https://github.com/microsoft/terraform-provider-azuredevops/pull/1335)
+
+IMPROVEMENTS:
+
+* `azuredevops_git_repository_file` - Add support for git author and committer. [#1340](https://github.com/microsoft/terraform-provider-azuredevops/pull/1340)
+* `azuredevops_serviceendpoint_github` - Add support for oauth2. [#1353](https://github.com/microsoft/terraform-provider-azuredevops/pull/1353)
+* `azuredevops_git_repository` - Set the branch wait timeout to creation timeout, customizable via `timeouts` in HCL. [#1356](https://github.com/microsoft/terraform-provider-azuredevops/pull/1356)
+* `azuredevops_feed_permission`
+  - Add support for import. [#1339](https://github.com/microsoft/terraform-provider-azuredevops/pull/1339)
+  - Optimize error message. [#1350](https://github.com/microsoft/terraform-provider-azuredevops/pull/1350)
+* `azuredevops_git_repository` - Add support for ephemeral password. [#1343](https://github.com/microsoft/terraform-provider-azuredevops/pull/1343)
+  > **WARNING**: [To use write-only arguments, you must use Terraform v.1.11 or later and use a resource that supports write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only#requirements). 
+  
+* Document - Fixed typo (manage to managed) and updated Azure AD to Entra ID. [#1341](https://github.com/microsoft/terraform-provider-azuredevops/pull/1341)
+* Bump `azcore` to `v1.17.1` [#1330](https://github.com/microsoft/terraform-provider-azuredevops/pull/1330)
+* Bump `github.com/golang-jwt/jwt/v5` from `v5.2.1` to `v5.2.2` [#1332](https://github.com/microsoft/terraform-provider-azuredevops/pull/1332)
+* Replace `golang/mock` with `uber-go/mock` [#1333](https://github.com/microsoft/terraform-provider-azuredevops/pull/1333)
+* Bump golang to `v1.24.1` and update CI images [#1334](https://github.com/microsoft/terraform-provider-azuredevops/pull/1334)
+* Add `terrafmt` to CI. [#1348](https://github.com/microsoft/terraform-provider-azuredevops/pull/1348)
+* Bump `golang.org/x/net` from `v0.37.0` to `v0.38.0`. [#1354](https://github.com/microsoft/terraform-provider-azuredevops/pull/1354)
+
 ## 1.8.1
 
 BUG FIX:
