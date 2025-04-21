@@ -284,7 +284,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if !strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
-		err = waitForBranch(clients, repo.Name, projectID)
+		err = waitForBranch(clients, repo.Name, projectID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
 		}
@@ -439,7 +439,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID fmt.Stringer) error {
+func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID fmt.Stringer, timeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
@@ -456,7 +456,7 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Second,
+		Timeout:                   timeout,
 		MinTimeout:                2 * time.Second,
 		Delay:                     1 * time.Second,
 		ContinuousTargetOccurence: 1,
