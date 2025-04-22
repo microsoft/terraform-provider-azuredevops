@@ -7,7 +7,7 @@ description: |-
 
 # azuredevops_git_permissions
 
-Manages permissions for Git repositories. 
+Manages permissions for Git repositories.
 
 ~> **Note** Permissions can be assigned to group principals and not to single user principals.
 
@@ -202,6 +202,9 @@ The following arguments are supported:
 * `project_id` - (Required) The ID of the project to assign the permissions.
 
 * `principal` - (Required) The **group** principal to assign the permissions.
+
+  ~> **Note**  The `descriptor` of the user/group not the `ID`. Some resources in this provider use the `descriptor` 
+      as resource ID. It is recommended to check before use.
 
 * `permissions` - (Required) the permissions to assign. The following permissions are available
 
