@@ -206,12 +206,6 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
         return fmt.Errorf(errMsgTfConfigRead, err)
     }
 
-	projectID := d.Get("project_id").(string)
-    _, err = validateProjectID(d, projectID, m)
-    if err != nil {
-        return fmt.Errorf("validation failed: %v", err)
-    }
-
     resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
     if err != nil {
         return err
@@ -257,6 +251,12 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
         return err
     }
 
+	projectID := d.Get("project_id").(string)
+    _, err = validateProjectID(d, projectID, m)
+    if err != nil {
+        return fmt.Errorf("validation failed: %v", err)
+    }
+	
     serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
     if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
         return nil
