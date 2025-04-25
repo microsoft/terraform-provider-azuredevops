@@ -71,7 +71,6 @@ func dataResourceServiceEndpointDockerRegistryRead(d *schema.ResourceData, m int
 				d.Set("registry_type", v)
 			}
 		}
-
 	}
 	return nil
 }

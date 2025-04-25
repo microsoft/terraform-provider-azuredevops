@@ -76,10 +76,7 @@ data "azuredevops_serviceendpoint_dockerregistry" "test" {
   project_id            = azuredevops_project.test.id
   service_endpoint_name = azuredevops_serviceendpoint_dockerregistry.test.service_endpoint_name
 }
-
-
 `, projectName, serviceEndpointName)
-
 }
 
 func hclDataServiceConnectionDockerRegistryWithID(projectName, serviceEndpointName string) string {
@@ -100,8 +97,5 @@ data "azuredevops_serviceendpoint_dockerregistry" "test" {
   project_id          = azuredevops_project.test.id
   service_endpoint_id = azuredevops_serviceendpoint_dockerregistry.test.id
 }
-
-
 `, projectName, serviceEndpointName)
-
 }
