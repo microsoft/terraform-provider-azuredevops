@@ -58,7 +58,7 @@ The following attributes are exported:
 
 ~> **NOTE** You can use `azuredevops_storage_key` and `azuredevops_descriptor` to convert `ID`(`00000000-0000-0000-0000-000000000000`) and `descriptor`(`vssgp.xxxxxxxxxxxxxxxxxxx`) to each other.
 
-* `id` - The ID for this resource is the group descriptor. See below.
+* `id` - The ID for this resource is the group `descriptor`. See below.
 
 * `descriptor` - The Descriptor is the primary way to reference the graph subject. This field will uniquely identify the same graph subject across both Accounts and Organizations. In format of `vssgp.xxxxxxxxxxxxxxxxxxx`
 
