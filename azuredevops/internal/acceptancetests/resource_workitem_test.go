@@ -268,7 +268,7 @@ resource "azuredevops_workitem" "test" {
   title      = "%[2]s"
   project_id = azuredevops_project.project.id
   type       = "Issue"
-  parent_id = azuredevops_workitem.parent.id
+  parent_id  = azuredevops_workitem.parent.id
 }
 `, template, title)
 }
@@ -295,7 +295,7 @@ resource "azuredevops_workitem" "test" {
   title      = "%[2]s"
   project_id = azuredevops_project.project.id
   type       = "Issue"
-  parent_id = azuredevops_workitem.parent2.id
+  parent_id  = azuredevops_workitem.parent2.id
 }
 `, template, title)
 }
