@@ -70,6 +70,8 @@ The following arguments are supported:
 
 * `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 
+* `parent_id` - (Optional) The work item parent.
+
 * `state` - (Optional) The state of the Work Item. The four main states that are defined for the User Story (`Agile`) are `New`, `Active`, `Resolved`, and `Closed`. See [Workflow states](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/workflow-and-state-categories?view=azure-devops&tabs=agile-process#workflow-states) for more details.
 
 * `tags` - (Optional) Specifies a list of Tags.
@@ -79,6 +81,20 @@ The following arguments are supported:
 In addition to the Arguments listed above - the following Attributes are exported:
 
 * `id` - The ID of the Work Item.
+
+* `url` - The URL of the Work Item.
+
+* `relations` - A `relations` blocks as documented below.
+
+
+---
+
+An `relations` block supports the following:
+
+* `rel` - The type of relationship. For example: `System.LinkTypes.Hierarchy-Reverse` is a parent relationship. More details [item link type](https://learn.microsoft.com/en-us/azure/devops/boards/queries/link-type-reference?view=azure-devops#example).
+
+* `url` - The URL of the Work Item.
+
 
 ## Timeouts
 
@@ -91,4 +107,8 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Work Item resource does not support import.
+Azure DevOps Work Item can be imported using the Project ID and Work Item ID, e.g.
+
+```sh
+terraform import azuredevops_workitem.example 00000000-0000-0000-0000-000000000000/0
+```
