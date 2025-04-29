@@ -200,16 +200,16 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{}) error {
-    clients := m.(*client.AggregatedClient)
-    serviceEndpoint, err := expandServiceEndpointAzureRM(d)
-    if err != nil {
-        return fmt.Errorf(errMsgTfConfigRead, err)
-    }
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, err := expandServiceEndpointAzureRM(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
 
-    resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
-    if err != nil {
-        return err
-    }
+	resp, err := createServiceEndpoint(d, clients, serviceEndpoint)
+	if err != nil {
+		return err
+	}
 
     serviceEndpoint.Id = resp.Id
 
@@ -224,32 +224,33 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
         }
     }
 
-    if shouldValidate(endpointFeatures(d)) {
-        if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
-            if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-                clients.Ctx,
-                serviceendpoint.DeleteServiceEndpointArgs{
+	serviceEndpoint.Id = resp.Id
+	if shouldValidate(endpointFeatures(d)) {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
+			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+				clients.Ctx,
+				serviceendpoint.DeleteServiceEndpointArgs{
                     ProjectIds: &[]string{
                         (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
-                    },
-                    EndpointId: resp.Id,
-                }); delErr != nil {
-                return fmt.Errorf("delete service endpoint error: %v", delErr)
-            }
-            return err
-        }
-    }
+					},
+					EndpointId: resp.Id,
+				}); delErr != nil {
+				return fmt.Errorf(" Delete service endpoint error %v", delErr)
+			}
+			return err
+		}
+	}
 
-    d.SetId(resp.Id.String())
-    return resourceServiceEndpointAzureRMRead(d, m)
+	d.SetId(resp.Id.String())
+	return resourceServiceEndpointAzureRMRead(d, m)
 }
 
 func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) error {
-    clients := m.(*client.AggregatedClient)
-    getArgs, err := serviceEndpointGetArgs(d)
-    if err != nil {
-        return err
-    }
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return err
+	}
 
 	projectID := d.Get("project_id").(string)
     _, err = validateProjectID(d, projectID, m)
@@ -257,18 +258,19 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
         return fmt.Errorf("validation failed: %v", err)
     }
 	
-    serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-    if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
-        return nil
-    }
-    if err != nil {
-        return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
-    }
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+	}
 
-    if serviceEndpoint == nil || serviceEndpoint.Id == nil {
-        d.SetId("")
-        return nil
-    }
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		d.SetId("")
+		return nil
+	}
+	d.Set("features", d.Get("features"))
 
     // Populate shared_project_ids
     sharedProjectIDs := []string{}
@@ -282,11 +284,11 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 
     d.Set("features", d.Get("features"))
 
-    if err = checkServiceConnection(serviceEndpoint); err != nil {
-        return err
-    }
-    flattenServiceEndpointAzureRM(d, serviceEndpoint)
-    return nil
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return err
+	}
+	flattenServiceEndpointAzureRM(d, serviceEndpoint)
+	return nil
 }
 
 func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{}) error {
