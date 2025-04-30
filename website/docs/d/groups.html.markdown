@@ -42,7 +42,9 @@ The following attributes are exported:
 
 A `groups` block supports the following:
 
-* `id` - The ID of the group.
+~> **NOTE** You can use `azuredevops_storage_key` and `azuredevops_descriptor` to convert `ID`(`00000000-0000-0000-0000-000000000000`) and `descriptor`(`vssgp.xxxxxxxxxxxxxxxxxxx`) to each other.
+
+* `id` - The ID(UUID format) of the group.
 
 * `description` - A short phrase to help human readers disambiguate groups with similar names
 
