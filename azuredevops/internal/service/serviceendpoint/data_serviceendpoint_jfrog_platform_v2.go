@@ -32,19 +32,9 @@ func DataSourceServiceEndpointJFrogPlatformV2() *schema.Resource {
 }
 
 func DataSourceServiceEndpointJFrogPlatformV2Read(d *schema.ResourceData, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-	getArgs, err := serviceEndpointGetArgs(d)
+	serviceEndpoint, err := dataSourceGetBaseServiceEndpoint(d, m)
 	if err != nil {
 		return err
-	}
-
-	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
