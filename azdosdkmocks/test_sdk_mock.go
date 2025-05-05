@@ -9,14 +9,15 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	test "github.com/microsoft/azure-devops-go-api/azuredevops/v7/test"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTestClient is a mock of Client interface.
 type MockTestClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockTestClientMockRecorder
+	isgomock struct{}
 }
 
 // MockTestClientMockRecorder is the mock recorder for MockTestClient.
@@ -46,7 +47,7 @@ func (m *MockTestClient) AddTestCasesToSuite(arg0 context.Context, arg1 test.Add
 }
 
 // AddTestCasesToSuite indicates an expected call of AddTestCasesToSuite.
-func (mr *MockTestClientMockRecorder) AddTestCasesToSuite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) AddTestCasesToSuite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTestCasesToSuite", reflect.TypeOf((*MockTestClient)(nil).AddTestCasesToSuite), arg0, arg1)
 }
@@ -61,7 +62,7 @@ func (m *MockTestClient) AddTestResultsToTestRun(arg0 context.Context, arg1 test
 }
 
 // AddTestResultsToTestRun indicates an expected call of AddTestResultsToTestRun.
-func (mr *MockTestClientMockRecorder) AddTestResultsToTestRun(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) AddTestResultsToTestRun(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTestResultsToTestRun", reflect.TypeOf((*MockTestClient)(nil).AddTestResultsToTestRun), arg0, arg1)
 }
@@ -76,7 +77,7 @@ func (m *MockTestClient) CreateTestResultAttachment(arg0 context.Context, arg1 t
 }
 
 // CreateTestResultAttachment indicates an expected call of CreateTestResultAttachment.
-func (mr *MockTestClientMockRecorder) CreateTestResultAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) CreateTestResultAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestResultAttachment", reflect.TypeOf((*MockTestClient)(nil).CreateTestResultAttachment), arg0, arg1)
 }
@@ -91,7 +92,7 @@ func (m *MockTestClient) CreateTestRun(arg0 context.Context, arg1 test.CreateTes
 }
 
 // CreateTestRun indicates an expected call of CreateTestRun.
-func (mr *MockTestClientMockRecorder) CreateTestRun(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) CreateTestRun(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestRun", reflect.TypeOf((*MockTestClient)(nil).CreateTestRun), arg0, arg1)
 }
@@ -106,7 +107,7 @@ func (m *MockTestClient) CreateTestRunAttachment(arg0 context.Context, arg1 test
 }
 
 // CreateTestRunAttachment indicates an expected call of CreateTestRunAttachment.
-func (mr *MockTestClientMockRecorder) CreateTestRunAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) CreateTestRunAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestRunAttachment", reflect.TypeOf((*MockTestClient)(nil).CreateTestRunAttachment), arg0, arg1)
 }
@@ -121,7 +122,7 @@ func (m *MockTestClient) CreateTestSession(arg0 context.Context, arg1 test.Creat
 }
 
 // CreateTestSession indicates an expected call of CreateTestSession.
-func (mr *MockTestClientMockRecorder) CreateTestSession(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) CreateTestSession(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestSession", reflect.TypeOf((*MockTestClient)(nil).CreateTestSession), arg0, arg1)
 }
@@ -136,7 +137,7 @@ func (m *MockTestClient) CreateTestSubResultAttachment(arg0 context.Context, arg
 }
 
 // CreateTestSubResultAttachment indicates an expected call of CreateTestSubResultAttachment.
-func (mr *MockTestClientMockRecorder) CreateTestSubResultAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) CreateTestSubResultAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestSubResultAttachment", reflect.TypeOf((*MockTestClient)(nil).CreateTestSubResultAttachment), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockTestClient) DeleteTestCase(arg0 context.Context, arg1 test.DeleteTe
 }
 
 // DeleteTestCase indicates an expected call of DeleteTestCase.
-func (mr *MockTestClientMockRecorder) DeleteTestCase(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) DeleteTestCase(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTestCase", reflect.TypeOf((*MockTestClient)(nil).DeleteTestCase), arg0, arg1)
 }
@@ -164,7 +165,7 @@ func (m *MockTestClient) DeleteTestRun(arg0 context.Context, arg1 test.DeleteTes
 }
 
 // DeleteTestRun indicates an expected call of DeleteTestRun.
-func (mr *MockTestClientMockRecorder) DeleteTestRun(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) DeleteTestRun(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTestRun", reflect.TypeOf((*MockTestClient)(nil).DeleteTestRun), arg0, arg1)
 }
@@ -179,7 +180,7 @@ func (m *MockTestClient) GetBuildCodeCoverage(arg0 context.Context, arg1 test.Ge
 }
 
 // GetBuildCodeCoverage indicates an expected call of GetBuildCodeCoverage.
-func (mr *MockTestClientMockRecorder) GetBuildCodeCoverage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetBuildCodeCoverage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildCodeCoverage", reflect.TypeOf((*MockTestClient)(nil).GetBuildCodeCoverage), arg0, arg1)
 }
@@ -194,7 +195,7 @@ func (m *MockTestClient) GetPoint(arg0 context.Context, arg1 test.GetPointArgs) 
 }
 
 // GetPoint indicates an expected call of GetPoint.
-func (mr *MockTestClientMockRecorder) GetPoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetPoint(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPoint", reflect.TypeOf((*MockTestClient)(nil).GetPoint), arg0, arg1)
 }
@@ -209,7 +210,7 @@ func (m *MockTestClient) GetPoints(arg0 context.Context, arg1 test.GetPointsArgs
 }
 
 // GetPoints indicates an expected call of GetPoints.
-func (mr *MockTestClientMockRecorder) GetPoints(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetPoints(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPoints", reflect.TypeOf((*MockTestClient)(nil).GetPoints), arg0, arg1)
 }
@@ -224,7 +225,7 @@ func (m *MockTestClient) GetPointsByQuery(arg0 context.Context, arg1 test.GetPoi
 }
 
 // GetPointsByQuery indicates an expected call of GetPointsByQuery.
-func (mr *MockTestClientMockRecorder) GetPointsByQuery(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetPointsByQuery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPointsByQuery", reflect.TypeOf((*MockTestClient)(nil).GetPointsByQuery), arg0, arg1)
 }
@@ -239,7 +240,7 @@ func (m *MockTestClient) GetResultRetentionSettings(arg0 context.Context, arg1 t
 }
 
 // GetResultRetentionSettings indicates an expected call of GetResultRetentionSettings.
-func (mr *MockTestClientMockRecorder) GetResultRetentionSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetResultRetentionSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResultRetentionSettings", reflect.TypeOf((*MockTestClient)(nil).GetResultRetentionSettings), arg0, arg1)
 }
@@ -254,7 +255,7 @@ func (m *MockTestClient) GetTestCaseById(arg0 context.Context, arg1 test.GetTest
 }
 
 // GetTestCaseById indicates an expected call of GetTestCaseById.
-func (mr *MockTestClientMockRecorder) GetTestCaseById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestCaseById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestCaseById", reflect.TypeOf((*MockTestClient)(nil).GetTestCaseById), arg0, arg1)
 }
@@ -269,7 +270,7 @@ func (m *MockTestClient) GetTestCases(arg0 context.Context, arg1 test.GetTestCas
 }
 
 // GetTestCases indicates an expected call of GetTestCases.
-func (mr *MockTestClientMockRecorder) GetTestCases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestCases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestCases", reflect.TypeOf((*MockTestClient)(nil).GetTestCases), arg0, arg1)
 }
@@ -284,7 +285,7 @@ func (m *MockTestClient) GetTestIteration(arg0 context.Context, arg1 test.GetTes
 }
 
 // GetTestIteration indicates an expected call of GetTestIteration.
-func (mr *MockTestClientMockRecorder) GetTestIteration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestIteration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestIteration", reflect.TypeOf((*MockTestClient)(nil).GetTestIteration), arg0, arg1)
 }
@@ -299,7 +300,7 @@ func (m *MockTestClient) GetTestIterations(arg0 context.Context, arg1 test.GetTe
 }
 
 // GetTestIterations indicates an expected call of GetTestIterations.
-func (mr *MockTestClientMockRecorder) GetTestIterations(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestIterations(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestIterations", reflect.TypeOf((*MockTestClient)(nil).GetTestIterations), arg0, arg1)
 }
@@ -314,7 +315,7 @@ func (m *MockTestClient) GetTestResultAttachmentContent(arg0 context.Context, ar
 }
 
 // GetTestResultAttachmentContent indicates an expected call of GetTestResultAttachmentContent.
-func (mr *MockTestClientMockRecorder) GetTestResultAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestResultAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestResultAttachmentContent", reflect.TypeOf((*MockTestClient)(nil).GetTestResultAttachmentContent), arg0, arg1)
 }
@@ -329,7 +330,7 @@ func (m *MockTestClient) GetTestResultAttachmentZip(arg0 context.Context, arg1 t
 }
 
 // GetTestResultAttachmentZip indicates an expected call of GetTestResultAttachmentZip.
-func (mr *MockTestClientMockRecorder) GetTestResultAttachmentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestResultAttachmentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestResultAttachmentZip", reflect.TypeOf((*MockTestClient)(nil).GetTestResultAttachmentZip), arg0, arg1)
 }
@@ -344,7 +345,7 @@ func (m *MockTestClient) GetTestResultAttachments(arg0 context.Context, arg1 tes
 }
 
 // GetTestResultAttachments indicates an expected call of GetTestResultAttachments.
-func (mr *MockTestClientMockRecorder) GetTestResultAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestResultAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestResultAttachments", reflect.TypeOf((*MockTestClient)(nil).GetTestResultAttachments), arg0, arg1)
 }
@@ -359,7 +360,7 @@ func (m *MockTestClient) GetTestResultById(arg0 context.Context, arg1 test.GetTe
 }
 
 // GetTestResultById indicates an expected call of GetTestResultById.
-func (mr *MockTestClientMockRecorder) GetTestResultById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestResultById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestResultById", reflect.TypeOf((*MockTestClient)(nil).GetTestResultById), arg0, arg1)
 }
@@ -374,7 +375,7 @@ func (m *MockTestClient) GetTestResults(arg0 context.Context, arg1 test.GetTestR
 }
 
 // GetTestResults indicates an expected call of GetTestResults.
-func (mr *MockTestClientMockRecorder) GetTestResults(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestResults(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestResults", reflect.TypeOf((*MockTestClient)(nil).GetTestResults), arg0, arg1)
 }
@@ -389,7 +390,7 @@ func (m *MockTestClient) GetTestRunAttachmentContent(arg0 context.Context, arg1 
 }
 
 // GetTestRunAttachmentContent indicates an expected call of GetTestRunAttachmentContent.
-func (mr *MockTestClientMockRecorder) GetTestRunAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunAttachmentContent", reflect.TypeOf((*MockTestClient)(nil).GetTestRunAttachmentContent), arg0, arg1)
 }
@@ -404,7 +405,7 @@ func (m *MockTestClient) GetTestRunAttachmentZip(arg0 context.Context, arg1 test
 }
 
 // GetTestRunAttachmentZip indicates an expected call of GetTestRunAttachmentZip.
-func (mr *MockTestClientMockRecorder) GetTestRunAttachmentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunAttachmentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunAttachmentZip", reflect.TypeOf((*MockTestClient)(nil).GetTestRunAttachmentZip), arg0, arg1)
 }
@@ -419,7 +420,7 @@ func (m *MockTestClient) GetTestRunAttachments(arg0 context.Context, arg1 test.G
 }
 
 // GetTestRunAttachments indicates an expected call of GetTestRunAttachments.
-func (mr *MockTestClientMockRecorder) GetTestRunAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunAttachments", reflect.TypeOf((*MockTestClient)(nil).GetTestRunAttachments), arg0, arg1)
 }
@@ -434,7 +435,7 @@ func (m *MockTestClient) GetTestRunById(arg0 context.Context, arg1 test.GetTestR
 }
 
 // GetTestRunById indicates an expected call of GetTestRunById.
-func (mr *MockTestClientMockRecorder) GetTestRunById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunById", reflect.TypeOf((*MockTestClient)(nil).GetTestRunById), arg0, arg1)
 }
@@ -449,7 +450,7 @@ func (m *MockTestClient) GetTestRunCodeCoverage(arg0 context.Context, arg1 test.
 }
 
 // GetTestRunCodeCoverage indicates an expected call of GetTestRunCodeCoverage.
-func (mr *MockTestClientMockRecorder) GetTestRunCodeCoverage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunCodeCoverage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunCodeCoverage", reflect.TypeOf((*MockTestClient)(nil).GetTestRunCodeCoverage), arg0, arg1)
 }
@@ -464,7 +465,7 @@ func (m *MockTestClient) GetTestRunStatistics(arg0 context.Context, arg1 test.Ge
 }
 
 // GetTestRunStatistics indicates an expected call of GetTestRunStatistics.
-func (mr *MockTestClientMockRecorder) GetTestRunStatistics(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRunStatistics(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRunStatistics", reflect.TypeOf((*MockTestClient)(nil).GetTestRunStatistics), arg0, arg1)
 }
@@ -479,7 +480,7 @@ func (m *MockTestClient) GetTestRuns(arg0 context.Context, arg1 test.GetTestRuns
 }
 
 // GetTestRuns indicates an expected call of GetTestRuns.
-func (mr *MockTestClientMockRecorder) GetTestRuns(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestRuns(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestRuns", reflect.TypeOf((*MockTestClient)(nil).GetTestRuns), arg0, arg1)
 }
@@ -494,7 +495,7 @@ func (m *MockTestClient) GetTestSessions(arg0 context.Context, arg1 test.GetTest
 }
 
 // GetTestSessions indicates an expected call of GetTestSessions.
-func (mr *MockTestClientMockRecorder) GetTestSessions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestSessions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestSessions", reflect.TypeOf((*MockTestClient)(nil).GetTestSessions), arg0, arg1)
 }
@@ -509,7 +510,7 @@ func (m *MockTestClient) GetTestSubResultAttachmentContent(arg0 context.Context,
 }
 
 // GetTestSubResultAttachmentContent indicates an expected call of GetTestSubResultAttachmentContent.
-func (mr *MockTestClientMockRecorder) GetTestSubResultAttachmentContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestSubResultAttachmentContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestSubResultAttachmentContent", reflect.TypeOf((*MockTestClient)(nil).GetTestSubResultAttachmentContent), arg0, arg1)
 }
@@ -524,7 +525,7 @@ func (m *MockTestClient) GetTestSubResultAttachmentZip(arg0 context.Context, arg
 }
 
 // GetTestSubResultAttachmentZip indicates an expected call of GetTestSubResultAttachmentZip.
-func (mr *MockTestClientMockRecorder) GetTestSubResultAttachmentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestSubResultAttachmentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestSubResultAttachmentZip", reflect.TypeOf((*MockTestClient)(nil).GetTestSubResultAttachmentZip), arg0, arg1)
 }
@@ -539,7 +540,7 @@ func (m *MockTestClient) GetTestSubResultAttachments(arg0 context.Context, arg1 
 }
 
 // GetTestSubResultAttachments indicates an expected call of GetTestSubResultAttachments.
-func (mr *MockTestClientMockRecorder) GetTestSubResultAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) GetTestSubResultAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestSubResultAttachments", reflect.TypeOf((*MockTestClient)(nil).GetTestSubResultAttachments), arg0, arg1)
 }
@@ -554,7 +555,7 @@ func (m *MockTestClient) QueryTestHistory(arg0 context.Context, arg1 test.QueryT
 }
 
 // QueryTestHistory indicates an expected call of QueryTestHistory.
-func (mr *MockTestClientMockRecorder) QueryTestHistory(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) QueryTestHistory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryTestHistory", reflect.TypeOf((*MockTestClient)(nil).QueryTestHistory), arg0, arg1)
 }
@@ -569,7 +570,7 @@ func (m *MockTestClient) QueryTestRuns(arg0 context.Context, arg1 test.QueryTest
 }
 
 // QueryTestRuns indicates an expected call of QueryTestRuns.
-func (mr *MockTestClientMockRecorder) QueryTestRuns(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) QueryTestRuns(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryTestRuns", reflect.TypeOf((*MockTestClient)(nil).QueryTestRuns), arg0, arg1)
 }
@@ -583,7 +584,7 @@ func (m *MockTestClient) RemoveTestCasesFromSuiteUrl(arg0 context.Context, arg1 
 }
 
 // RemoveTestCasesFromSuiteUrl indicates an expected call of RemoveTestCasesFromSuiteUrl.
-func (mr *MockTestClientMockRecorder) RemoveTestCasesFromSuiteUrl(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) RemoveTestCasesFromSuiteUrl(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTestCasesFromSuiteUrl", reflect.TypeOf((*MockTestClient)(nil).RemoveTestCasesFromSuiteUrl), arg0, arg1)
 }
@@ -598,7 +599,7 @@ func (m *MockTestClient) UpdateResultRetentionSettings(arg0 context.Context, arg
 }
 
 // UpdateResultRetentionSettings indicates an expected call of UpdateResultRetentionSettings.
-func (mr *MockTestClientMockRecorder) UpdateResultRetentionSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateResultRetentionSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateResultRetentionSettings", reflect.TypeOf((*MockTestClient)(nil).UpdateResultRetentionSettings), arg0, arg1)
 }
@@ -613,7 +614,7 @@ func (m *MockTestClient) UpdateSuiteTestCases(arg0 context.Context, arg1 test.Up
 }
 
 // UpdateSuiteTestCases indicates an expected call of UpdateSuiteTestCases.
-func (mr *MockTestClientMockRecorder) UpdateSuiteTestCases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateSuiteTestCases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSuiteTestCases", reflect.TypeOf((*MockTestClient)(nil).UpdateSuiteTestCases), arg0, arg1)
 }
@@ -628,7 +629,7 @@ func (m *MockTestClient) UpdateTestPoints(arg0 context.Context, arg1 test.Update
 }
 
 // UpdateTestPoints indicates an expected call of UpdateTestPoints.
-func (mr *MockTestClientMockRecorder) UpdateTestPoints(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateTestPoints(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTestPoints", reflect.TypeOf((*MockTestClient)(nil).UpdateTestPoints), arg0, arg1)
 }
@@ -643,7 +644,7 @@ func (m *MockTestClient) UpdateTestResults(arg0 context.Context, arg1 test.Updat
 }
 
 // UpdateTestResults indicates an expected call of UpdateTestResults.
-func (mr *MockTestClientMockRecorder) UpdateTestResults(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateTestResults(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTestResults", reflect.TypeOf((*MockTestClient)(nil).UpdateTestResults), arg0, arg1)
 }
@@ -658,7 +659,7 @@ func (m *MockTestClient) UpdateTestRun(arg0 context.Context, arg1 test.UpdateTes
 }
 
 // UpdateTestRun indicates an expected call of UpdateTestRun.
-func (mr *MockTestClientMockRecorder) UpdateTestRun(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateTestRun(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTestRun", reflect.TypeOf((*MockTestClient)(nil).UpdateTestRun), arg0, arg1)
 }
@@ -673,7 +674,7 @@ func (m *MockTestClient) UpdateTestSession(arg0 context.Context, arg1 test.Updat
 }
 
 // UpdateTestSession indicates an expected call of UpdateTestSession.
-func (mr *MockTestClientMockRecorder) UpdateTestSession(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTestClientMockRecorder) UpdateTestSession(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTestSession", reflect.TypeOf((*MockTestClient)(nil).UpdateTestSession), arg0, arg1)
 }

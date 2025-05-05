@@ -1,4 +1,5 @@
 run:
+  timeout: 10m
   deadline: 10m10s
   modules-download-mode: vendor
 
@@ -9,29 +10,30 @@ issues:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gofmt
     - goimports
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - nakedret
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
     - unused
     - unconvert
-    - varcheck
-    - vet
-    - vetshadow
+    - govet
     - whitespace
+    - asciicheck
 
 linters-settings:
   errcheck:
-    ignore: github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema:ForceNew|Set,fmt:.*,io:Close
-  misspell:
-    ignore-words:
-      - hdinsight
+    check-blank: true
+    exclude-functions:
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).ForceNew
+      - strconv.*
+      - fmt.*
+
+  tagalign:
+    sort: true

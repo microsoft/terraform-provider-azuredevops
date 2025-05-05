@@ -13,8 +13,8 @@ import (
 	azcore "github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	azidentity "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	gomock "github.com/golang/mock/gomock"
 	azuredevops "github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTokenGetter is a mock of TokenGetter interface.

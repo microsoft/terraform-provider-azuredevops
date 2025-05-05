@@ -47,7 +47,7 @@ resource "azuredevops_serviceendpoint_npm" "test" {
 }
 
 data "azuredevops_serviceendpoint_npm" "test" {
-  project_id          = azuredevops_project.test.id
+  project_id            = azuredevops_project.test.id
   service_endpoint_name = azuredevops_serviceendpoint_npm.test.service_endpoint_name
 }
 `, name)

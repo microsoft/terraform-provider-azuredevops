@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
@@ -17,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 var wiqProjectID = "f454422e-57b3-442a-8dde-b1b6b7c40b95"
@@ -92,7 +92,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleError(t *testin
 			Query:   converter.String(wiqSharedQueryName),
 			Depth:   converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/")
@@ -140,7 +140,7 @@ func TestWorkItemQueryPermissions_CreateWorkItemQueryToken_HandleErrorInPath(t *
 			Query:   converter.String(wiqFldrID.String()),
 			Depth:   converter.Int(1),
 		}).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	d := getWorkItemQueryPermissionsResource(t, wiqProjectID, "/folder")

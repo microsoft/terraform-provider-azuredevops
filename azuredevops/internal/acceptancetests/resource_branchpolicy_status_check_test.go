@@ -126,7 +126,7 @@ resource "azuredevops_branch_policy_status_check" "p" {
   blocking = true
 
   settings {
-	name = "%s"
+    name = "%s"
     scope {
       repository_id  = azuredevops_git_repository.r.id
       repository_ref = azuredevops_git_repository.r.default_branch
@@ -144,31 +144,32 @@ func hclBranchPolicyStatusCheckResourceComplete(projectName string, repoName str
 		`%s %s`,
 		hclBranchPolicyStatusCheckResourceTemplate(projectName, repoName), `
 
+
 resource "azuredevops_user_entitlement" "user" {
   principal_name       = "mail@email.com"
   account_license_type = "basic"
 }
 
 resource "azuredevops_branch_policy_status_check" "p" {
- project_id = azuredevops_project.p.id
+  project_id = azuredevops_project.p.id
 
- enabled  = true
- blocking = true
+  enabled  = true
+  blocking = true
 
- settings {
-	name = "Release"
-	author_id            = azuredevops_user_entitlement.user.id
-	invalidate_on_update = true
-	applicability = "conditional"
-	display_name = "PreCheck"
-	filename_patterns = ["*.go","**.ts"]
+  settings {
+    name                 = "Release"
+    author_id            = azuredevops_user_entitlement.user.id
+    invalidate_on_update = true
+    applicability        = "conditional"
+    display_name         = "PreCheck"
+    filename_patterns    = ["*.go", "**.ts"]
 
-   scope {
-     repository_id  = azuredevops_git_repository.r.id
-     repository_ref = azuredevops_git_repository.r.default_branch
-     match_type     = "Exact"
-   }
- }
+    scope {
+      repository_id  = azuredevops_git_repository.r.id
+      repository_ref = azuredevops_git_repository.r.default_branch
+      match_type     = "Exact"
+    }
+  }
 }
 `)
 }
@@ -176,33 +177,32 @@ resource "azuredevops_branch_policy_status_check" "p" {
 func hclBranchPolicyStatusCheckResourceUpdate(projectName string, repoName string,
 	statusName string, invalid bool, applicability string, displayName string) string {
 
-	statusCheck := fmt.Sprintf(
-		`
+	statusCheck := fmt.Sprintf(`
 data "azuredevops_group" "group" {
   project_id = azuredevops_project.p.id
   name       = "Project Administrators"
 }
 
 resource "azuredevops_branch_policy_status_check" "p" {
- project_id = azuredevops_project.p.id
+  project_id = azuredevops_project.p.id
 
- enabled  = true
- blocking = true
+  enabled  = true
+  blocking = true
 
- settings {
-	name = "%s"
-	author_id = data.azuredevops_group.group.origin_id
-	invalidate_on_update = %t
-	applicability = "%s"
-	display_name = "%s"
-	filename_patterns = ["*.go","**.ts"]
+  settings {
+    name                 = "%s"
+    author_id            = data.azuredevops_group.group.origin_id
+    invalidate_on_update = %t
+    applicability        = "%s"
+    display_name         = "%s"
+    filename_patterns    = ["*.go", "**.ts"]
 
-   scope {
-     repository_id  = azuredevops_git_repository.r.id
-     repository_ref = azuredevops_git_repository.r.default_branch
-     match_type     = "Exact"
-   }
- }
+    scope {
+      repository_id  = azuredevops_git_repository.r.id
+      repository_ref = azuredevops_git_repository.r.default_branch
+      match_type     = "Exact"
+    }
+  }
 }
 `, statusName, invalid, applicability, displayName)
 

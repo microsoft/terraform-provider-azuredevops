@@ -129,17 +129,23 @@ resource "azuredevops_workitemquery_permissions" "example-sharedqueries-permissi
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to assign the permissions.
-* `path` - (Optional) Path to a query or folder beneath `Shared Queries`
+
 * `principal` - (Required) The **group** principal to assign the permissions.
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
+
 * `permissions` - (Required) the permissions to assign. The following permissions are available
 
-| Permissions              | Description                        |
-|--------------------------|------------------------------------|
-| Read                     | Read                               |
-| Contribute               | Contribute                         |
-| Delete                   | Delete                             |
-| ManagePermissions        | Manage Permissions                 |
+    | Permissions              | Description                        |
+    |--------------------------|------------------------------------|
+    | Read                     | Read                               |
+    | Contribute               | Contribute                         |
+    | Delete                   | Delete                             |
+    | ManagePermissions        | Manage Permissions                 |
+
+---
+
+* `path` - (Optional) Path to a query or folder beneath `Shared Queries`
+
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Defaults to `true`
 
 ## Relevant Links
 

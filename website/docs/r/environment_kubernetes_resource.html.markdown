@@ -42,14 +42,14 @@ resource "azuredevops_serviceendpoint_kubernetes" "example" {
 }
 
 resource "azuredevops_environment_resource_kubernetes" "example" {
-  project_id = azuredevops_project.example.id
-  environment_id = azuredevops_environment.example.id
+  project_id          = azuredevops_project.example.id
+  environment_id      = azuredevops_environment.example.id
   service_endpoint_id = azuredevops_serviceendpoint_kubernetes.example.id
-  
-  name = "Example"
-  namespace = "default"
+
+  name         = "Example"
+  namespace    = "default"
   cluster_name = "example-aks"
-  tags = ["tag1", "tag2"]
+  tags         = ["tag1", "tag2"]
 }
 ```
 

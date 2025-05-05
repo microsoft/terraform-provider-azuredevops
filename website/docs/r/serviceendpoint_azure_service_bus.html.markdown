@@ -41,6 +41,8 @@ The following arguments are supported:
 
 * `connection_string` - (Required) The  Azure Service Bus Connection string.
 
+---
+
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference

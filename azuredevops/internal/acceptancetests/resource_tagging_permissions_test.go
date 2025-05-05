@@ -115,16 +115,16 @@ func hclTaggingPermissions(projectName string, permissions map[string]map[string
 %s
 
 data "azuredevops_group" "tf-project-readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
 }
 
 resource "azuredevops_tagging_permissions" "acctest" {
-	project_id  = azuredevops_project.project.id
-	principal   = data.azuredevops_group.tf-project-readers.id
-	permissions = {
+  project_id = azuredevops_project.project.id
+  principal  = data.azuredevops_group.tf-project-readers.id
+  permissions = {
 		%s
-	}
+  }
 }
 `, testutils.HclProjectResource(projectName), rootPermissions)
 }

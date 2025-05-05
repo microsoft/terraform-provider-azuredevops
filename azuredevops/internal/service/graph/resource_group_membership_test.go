@@ -9,13 +9,13 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGroupMembership_Create_DoesNotSwallowErrors(t *testing.T) {
@@ -54,6 +54,16 @@ func TestGroupMembership_Destroy_DoesNotSwallowErrors(t *testing.T) {
 		EXPECT().
 		RemoveMembership(clients.Ctx, expectedArgs).
 		Return(errors.New("RemoveMembership() Failed"))
+
+	graphClient.
+		EXPECT().
+		ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
+			SubjectDescriptor: converter.String("TEST_GROUP"),
+			Direction:         &graph.GraphTraversalDirectionValues.Down,
+			Depth:             converter.Int(1),
+		}).
+		Return(&[]graph.GraphMembership{}, nil).
+		Times(2)
 
 	resourceData := getGroupMembershipResourceData(t, "TEST_GROUP", "TEST_MEMBER_1")
 	err := resourceGroupMembershipDelete(resourceData, clients)

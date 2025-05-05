@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	accounts "github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAccountsClient is a mock of Client interface.
 type MockAccountsClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccountsClientMockRecorder
+	isgomock struct{}
 }
 
 // MockAccountsClientMockRecorder is the mock recorder for MockAccountsClient.
@@ -45,7 +46,7 @@ func (m *MockAccountsClient) GetAccounts(arg0 context.Context, arg1 accounts.Get
 }
 
 // GetAccounts indicates an expected call of GetAccounts.
-func (mr *MockAccountsClientMockRecorder) GetAccounts(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockAccountsClientMockRecorder) GetAccounts(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccounts", reflect.TypeOf((*MockAccountsClient)(nil).GetAccounts), arg0, arg1)
 }

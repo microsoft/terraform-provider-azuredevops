@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -18,6 +17,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestTeamAdministrators_Create_DontSwallowError(t *testing.T) {
@@ -42,7 +42,7 @@ func TestTeamAdministrators_Create_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)
@@ -76,7 +76,7 @@ func TestTeamAdministrators_Read_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)
@@ -144,7 +144,7 @@ func TestTeamAdministrators_Delete_DontSwallowError(t *testing.T) {
 	coreClient.
 		EXPECT().
 		GetTeam(clients.Ctx, gomock.Any()).
-		Return(nil, fmt.Errorf(errMsg)).
+		Return(nil, fmt.Errorf("%s", errMsg)).
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceTeamAdministrators().Schema, nil)

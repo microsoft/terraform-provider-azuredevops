@@ -23,16 +23,22 @@ resource "azuredevops_agent_pool" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the agent pool.
-- `auto_provision` - (Optional) Specifies whether a queue should be automatically provisioned for each project collection. Defaults to `false`.
-- `pool_type` - (Optional) Specifies whether the agent pool type is Automation or Deployment. Defaults to `automation`.
-- `auto_update` - (Optional) Specifies whether or not agents within the pool should be automatically updated. Defaults to `true`.
+* `name` - (Required) The name of the agent pool.
+
+---
+
+* `auto_provision` - (Optional) Specifies whether a queue should be automatically provisioned for each project collection. Defaults to `false`.
+
+* `pool_type` - (Optional) Specifies whether the agent pool type is Automation or Deployment. Defaults to `automation`.
+
+* `auto_update` - (Optional) Specifies whether or not agents within the pool should be automatically updated. Defaults to `true`.
+
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the agent pool.
+* `id` - The ID of the agent pool.
 
 ## Relevant Links
 
@@ -47,7 +53,8 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 * `update` - (Defaults to 10 minutes) Used when updating the Agent Pool.
 * `delete` - (Defaults to 10 minutes) Used when deleting the Agent Pool.
 
-## Import
+## Import*
+
 
 Azure DevOps Agent Pools can be imported using the agent pool ID, e.g.
 

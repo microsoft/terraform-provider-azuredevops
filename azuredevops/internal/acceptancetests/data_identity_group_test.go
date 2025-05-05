@@ -23,7 +23,8 @@ func TestAccIdentityGroupDataSource(t *testing.T) {
 			{
 				Config: hclIdentityGroupConfig(groupName, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "descriptor"),
+					resource.TestCheckResourceAttrSet(tfNode, "subject_descriptor"),
 					resource.TestCheckResourceAttr(tfNode, "name", fmt.Sprintf("[%s]\\%s", projectName, groupName)),
 				),
 			},
@@ -32,7 +33,7 @@ func TestAccIdentityGroupDataSource(t *testing.T) {
 }
 
 func hclIdentityGroupConfig(groupName string, projectName string) string {
-	combinedgroupName := fmt.Sprintf("[%s]\\\\%s", projectName, groupName)
+	combinedGroupName := fmt.Sprintf("[%s]\\\\%s", projectName, groupName)
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
   name               = "%s"
@@ -45,5 +46,5 @@ resource "azuredevops_project" "project" {
 data "azuredevops_identity_group" "test" {
   name       = "%s"
   project_id = azuredevops_project.project.id
-}`, projectName, combinedgroupName)
+}`, projectName, combinedGroupName)
 }

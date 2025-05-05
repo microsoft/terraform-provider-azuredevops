@@ -6,7 +6,6 @@ package acceptancetests
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -19,43 +18,24 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-// Verifies that the following sequence of events occurs without error:
-//
-//	(1) TF apply creates resource
-//	(2) TF state values are set
-//	(3) Group membership exists and can be queried for
-//	(4) TF destroy removes group memberships
-//
-// Note: This will be uncommented in https://github.com/microsoft/terraform-provider-azuredevops/issues/174
-func TestAccGroupMembership_CreateAndRemove(t *testing.T) {
-	t.Skip("Skipping test TestAccGroupMembership_CreateAndRemove due to service inconsistent")
+func TestAccGroupMembership_createAndRemove(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	userPrincipalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
-	groupName := "Build Administrators"
-	tfNode := "azuredevops_group_membership.membership"
+	userPrincipalName := testutils.GenerateResourceName() + "@msaztest.com"
+	tfNode := "azuredevops_group_membership.test"
 
-	tfStanzaWithMembership := testutils.HclGroupMembershipResource(projectName, groupName, userPrincipalName)
-	tfStanzaWithoutMembership := testutils.HclGroupMembershipDependencies(projectName, groupName, userPrincipalName)
-
-	// This test differs from most other acceptance tests in the following ways:
-	//	- The second step is the same as the first except it omits the group membership.
-	//	  This lets us test that the membership is removed in isolation of the project being deleted
-	//	- There is no CheckDestroy function because that is covered based on the above point
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: tfStanzaWithMembership,
+				Config: hclMemberShipBasic(projectName, userPrincipalName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "group"),
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
-					checkGroupMembershipMatchesState(),
 				),
 			}, {
-				// remove the group membership
-				Config: tfStanzaWithoutMembership,
+				Config: hclMemberShipRemove(projectName, userPrincipalName),
 				Check:  checkGroupMembershipMatchesState(),
 			},
 		},
@@ -67,7 +47,7 @@ func checkGroupMembershipMatchesState() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		memberDescriptor := s.RootModule().Outputs["user_descriptor"].Value.(string)
 		groupDescriptor := s.RootModule().Outputs["group_descriptor"].Value.(string)
-		_, expectingMembership := s.RootModule().Resources["azuredevops_group_membership.membership"]
+		_, expectingMembership := s.RootModule().Resources["azuredevops_group_membership.test"]
 
 		// The sleep here is to take into account some propagation delay that can happen with Group Membership APIs.
 		// If we want to go inspect the behavior of the service after a Terraform Apply, we'll need to wait a little bit
@@ -111,4 +91,45 @@ func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error)
 		Direction:         &graph.GraphTraversalDirectionValues.Down,
 		Depth:             converter.Int(1),
 	})
+}
+
+func hclMemberShipTemplate(projectName, userPrincipalName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+data "azuredevops_group" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "Build Administrators"
+}
+resource "azuredevops_user_entitlement" "test" {
+  principal_name       = "%s"
+  account_license_type = "express"
+}`, projectName, userPrincipalName)
+}
+
+func hclMemberShipBasic(projectName, userPrincipalName string) string {
+	return fmt.Sprintf(`
+%s
+output "group_descriptor" {
+  value = data.azuredevops_group.test.descriptor
+}
+output "user_descriptor" {
+  value = azuredevops_user_entitlement.test.descriptor
+}
+resource "azuredevops_group_membership" "test" {
+  group   = data.azuredevops_group.test.descriptor
+  members = [azuredevops_user_entitlement.test.descriptor]
+}`, hclMemberShipTemplate(projectName, userPrincipalName))
+}
+
+func hclMemberShipRemove(projectName, userPrincipalName string) string {
+	return fmt.Sprintf(`
+%s
+output "group_descriptor" {
+  value = data.azuredevops_group.test.descriptor
+}
+output "user_descriptor" {
+  value = azuredevops_user_entitlement.test.descriptor
+}`, hclMemberShipTemplate(projectName, userPrincipalName))
 }

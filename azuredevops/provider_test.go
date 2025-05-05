@@ -21,13 +21,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	mock_azuredevops "github.com/microsoft/terraform-provider-azuredevops/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestProvider_HasChildResources(t *testing.T) {
@@ -51,9 +51,12 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_check_business_hours",
 		"azuredevops_check_exclusive_lock",
 		"azuredevops_check_required_template",
+		"azuredevops_check_rest_api",
+		"azuredevops_dashboard",
 		"azuredevops_elastic_pool",
 		"azuredevops_environment",
 		"azuredevops_environment_resource_kubernetes",
+		"azuredevops_extension",
 		"azuredevops_feed",
 		"azuredevops_feed_permission",
 		"azuredevops_feed_retention_policy",
@@ -113,6 +116,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_nuget",
 		"azuredevops_serviceendpoint_octopusdeploy",
+		"azuredevops_serviceendpoint_openshift",
 		"azuredevops_serviceendpoint_permissions",
 		"azuredevops_serviceendpoint_runpipeline",
 		"azuredevops_serviceendpoint_servicefabric",
@@ -123,6 +127,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_visualstudiomarketplace",
 		"azuredevops_servicehook_permissions",
 		"azuredevops_servicehook_storage_queue_pipelines",
+		"azuredevops_service_principal_entitlement",
 		"azuredevops_tagging_permissions",
 		"azuredevops_team",
 		"azuredevops_team_administrators",
@@ -153,11 +158,14 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_area",
 		"azuredevops_build_definition",
 		"azuredevops_client_config",
+		"azuredevops_descriptor",
 		"azuredevops_environment",
 		"azuredevops_feed",
 		"azuredevops_git_repositories",
 		"azuredevops_git_repository",
+		"azuredevops_git_repository_file",
 		"azuredevops_group",
+		"azuredevops_group_membership",
 		"azuredevops_groups",
 		"azuredevops_identity_group",
 		"azuredevops_identity_groups",
@@ -169,11 +177,15 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_azurecr",
 		"azuredevops_serviceendpoint_azurerm",
 		"azuredevops_serviceendpoint_bitbucket",
+		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
 		"azuredevops_serviceendpoint_sonarcloud",
+		"azuredevops_storage_key",
+		"azuredevops_service_principal",
 		"azuredevops_team",
 		"azuredevops_teams",
+		"azuredevops_user",
 		"azuredevops_users",
 		"azuredevops_variable_group",
 	}

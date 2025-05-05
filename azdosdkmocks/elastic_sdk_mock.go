@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	elastic "github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockElasticClient is a mock of Client interface.
 type MockElasticClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockElasticClientMockRecorder
+	isgomock struct{}
 }
 
 // MockElasticClientMockRecorder is the mock recorder for MockElasticClient.
@@ -45,7 +46,7 @@ func (m *MockElasticClient) CreateElasticPool(arg0 context.Context, arg1 elastic
 }
 
 // CreateElasticPool indicates an expected call of CreateElasticPool.
-func (mr *MockElasticClientMockRecorder) CreateElasticPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) CreateElasticPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateElasticPool", reflect.TypeOf((*MockElasticClient)(nil).CreateElasticPool), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockElasticClient) GetElasticNodes(arg0 context.Context, arg1 elastic.G
 }
 
 // GetElasticNodes indicates an expected call of GetElasticNodes.
-func (mr *MockElasticClientMockRecorder) GetElasticNodes(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) GetElasticNodes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetElasticNodes", reflect.TypeOf((*MockElasticClient)(nil).GetElasticNodes), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockElasticClient) GetElasticPool(arg0 context.Context, arg1 elastic.Ge
 }
 
 // GetElasticPool indicates an expected call of GetElasticPool.
-func (mr *MockElasticClientMockRecorder) GetElasticPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) GetElasticPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetElasticPool", reflect.TypeOf((*MockElasticClient)(nil).GetElasticPool), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockElasticClient) GetElasticPoolLogs(arg0 context.Context, arg1 elasti
 }
 
 // GetElasticPoolLogs indicates an expected call of GetElasticPoolLogs.
-func (mr *MockElasticClientMockRecorder) GetElasticPoolLogs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) GetElasticPoolLogs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetElasticPoolLogs", reflect.TypeOf((*MockElasticClient)(nil).GetElasticPoolLogs), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockElasticClient) GetElasticPools(arg0 context.Context, arg1 elastic.G
 }
 
 // GetElasticPools indicates an expected call of GetElasticPools.
-func (mr *MockElasticClientMockRecorder) GetElasticPools(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) GetElasticPools(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetElasticPools", reflect.TypeOf((*MockElasticClient)(nil).GetElasticPools), arg0, arg1)
 }
@@ -120,7 +121,7 @@ func (m *MockElasticClient) UpdateElasticNode(arg0 context.Context, arg1 elastic
 }
 
 // UpdateElasticNode indicates an expected call of UpdateElasticNode.
-func (mr *MockElasticClientMockRecorder) UpdateElasticNode(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) UpdateElasticNode(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateElasticNode", reflect.TypeOf((*MockElasticClient)(nil).UpdateElasticNode), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockElasticClient) UpdateElasticPool(arg0 context.Context, arg1 elastic
 }
 
 // UpdateElasticPool indicates an expected call of UpdateElasticPool.
-func (mr *MockElasticClientMockRecorder) UpdateElasticPool(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockElasticClientMockRecorder) UpdateElasticPool(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateElasticPool", reflect.TypeOf((*MockElasticClient)(nil).UpdateElasticPool), arg0, arg1)
 }

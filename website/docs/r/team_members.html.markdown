@@ -44,23 +44,29 @@ resource "azuredevops_team_members" "example-team-members" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project ID.
-- `team_id` - (Required) The ID of the Team.
-- `members` - (Required) List of subject descriptors to define members of the team.
+* `project_id` - (Required) The Project ID.
 
-  > NOTE: It's possible to define team members both within the
-  > `azuredevops_team` resource via the `members` block and by using the
-  > `azuredevops_team_members` resource. However it's not possible to use
-  > both methods to manage team members, since there'll be conflicts.
-- `mode` - (Optional) The mode how the resource manages team members.
-  - `mode == add`: the resource will ensure that all specified members will be part of the referenced team
-  - `mode == overwrite`: the resource will replace all existing members with the members specified within the `members` block
+* `team_id` - (Required) The ID of the Team.
+
+* `members` - (Required) List of subject descriptors to define members of the team.
+
+  ~> **NOTE:** It's possible to define team members both within the
+   `azuredevops_team` resource via the `members` block and by using the
+   `azuredevops_team_members` resource. However, it's not possible to use
+   both methods to manage team members, since there'll be conflicts.
+
+---
+
+* `mode` - (Optional) The mode how the resource manages team members. Possible values: `add`, `overwrite`. Defaults to `add`.
+
+  ~> **NOTE:** 1. `mode = add`: the resource will ensure that all specified members will be part of the referenced team
+  <br>2. `mode = overwrite`: the resource will replace all existing members with the members specified within the `members` block
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - A random ID for this resource. There is no "natural" ID, so a random one is assigned.
+* `id` - A random ID for this resource. There is no "natural" ID, so a random one is assigned.
 
 ## Relevant Links
 

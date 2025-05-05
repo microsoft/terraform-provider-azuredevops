@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	pipelineschecks "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelineschecks"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPipelineschecksClient is a mock of Client interface.
 type MockPipelineschecksClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelineschecksClientMockRecorder
+	isgomock struct{}
 }
 
 // MockPipelineschecksClientMockRecorder is the mock recorder for MockPipelineschecksClient.
@@ -45,7 +46,7 @@ func (m *MockPipelineschecksClient) AddCheckConfiguration(arg0 context.Context, 
 }
 
 // AddCheckConfiguration indicates an expected call of AddCheckConfiguration.
-func (mr *MockPipelineschecksClientMockRecorder) AddCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) AddCheckConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).AddCheckConfiguration), arg0, arg1)
 }
@@ -59,7 +60,7 @@ func (m *MockPipelineschecksClient) DeleteCheckConfiguration(arg0 context.Contex
 }
 
 // DeleteCheckConfiguration indicates an expected call of DeleteCheckConfiguration.
-func (mr *MockPipelineschecksClientMockRecorder) DeleteCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) DeleteCheckConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).DeleteCheckConfiguration), arg0, arg1)
 }
@@ -74,7 +75,7 @@ func (m *MockPipelineschecksClient) EvaluateCheckSuite(arg0 context.Context, arg
 }
 
 // EvaluateCheckSuite indicates an expected call of EvaluateCheckSuite.
-func (mr *MockPipelineschecksClientMockRecorder) EvaluateCheckSuite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) EvaluateCheckSuite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EvaluateCheckSuite", reflect.TypeOf((*MockPipelineschecksClient)(nil).EvaluateCheckSuite), arg0, arg1)
 }
@@ -89,7 +90,7 @@ func (m *MockPipelineschecksClient) GetCheckConfiguration(arg0 context.Context, 
 }
 
 // GetCheckConfiguration indicates an expected call of GetCheckConfiguration.
-func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckConfiguration), arg0, arg1)
 }
@@ -104,7 +105,7 @@ func (m *MockPipelineschecksClient) GetCheckConfigurationsOnResource(arg0 contex
 }
 
 // GetCheckConfigurationsOnResource indicates an expected call of GetCheckConfigurationsOnResource.
-func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfigurationsOnResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) GetCheckConfigurationsOnResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckConfigurationsOnResource", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckConfigurationsOnResource), arg0, arg1)
 }
@@ -119,7 +120,7 @@ func (m *MockPipelineschecksClient) GetCheckSuite(arg0 context.Context, arg1 pip
 }
 
 // GetCheckSuite indicates an expected call of GetCheckSuite.
-func (mr *MockPipelineschecksClientMockRecorder) GetCheckSuite(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) GetCheckSuite(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCheckSuite", reflect.TypeOf((*MockPipelineschecksClient)(nil).GetCheckSuite), arg0, arg1)
 }
@@ -134,7 +135,7 @@ func (m *MockPipelineschecksClient) QueryCheckConfigurationsOnResources(arg0 con
 }
 
 // QueryCheckConfigurationsOnResources indicates an expected call of QueryCheckConfigurationsOnResources.
-func (mr *MockPipelineschecksClientMockRecorder) QueryCheckConfigurationsOnResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) QueryCheckConfigurationsOnResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryCheckConfigurationsOnResources", reflect.TypeOf((*MockPipelineschecksClient)(nil).QueryCheckConfigurationsOnResources), arg0, arg1)
 }
@@ -149,7 +150,7 @@ func (m *MockPipelineschecksClient) UpdateCheckConfiguration(arg0 context.Contex
 }
 
 // UpdateCheckConfiguration indicates an expected call of UpdateCheckConfiguration.
-func (mr *MockPipelineschecksClientMockRecorder) UpdateCheckConfiguration(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelineschecksClientMockRecorder) UpdateCheckConfiguration(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCheckConfiguration", reflect.TypeOf((*MockPipelineschecksClient)(nil).UpdateCheckConfiguration), arg0, arg1)
 }

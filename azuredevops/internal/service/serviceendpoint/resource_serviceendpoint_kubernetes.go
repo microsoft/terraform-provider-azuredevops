@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"gopkg.in/yaml.v3"
@@ -197,12 +196,12 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+
+	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
+		return nil
+	}
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -348,7 +347,10 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
-		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
+		clusterAdmin, err := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
+		if err != nil {
+			return fmt.Errorf(" Parsing `cluster_admin` value. Error: %+v", err)
+		}
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
 			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
@@ -411,7 +413,10 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				"ca_cert": configuration["ca_cert"].(string),
 			}
 			if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
-				acceptUntrustedCerts, _ := strconv.ParseBool(v)
+				acceptUntrustedCerts, err := strconv.ParseBool(v)
+				if err != nil {
+					return fmt.Errorf(" Pparse `accept_untrusted_certs`. Error: %+v ", err)
+				}
 				serviceAccount["accept_untrusted_certs"] = acceptUntrustedCerts
 			}
 		}

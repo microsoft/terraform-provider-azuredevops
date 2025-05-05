@@ -43,12 +43,13 @@ The following arguments are supported:
 
 * `identity_descriptor` - (Required) The Descriptor of identity you want to assign a role.
 
-* `role` - (Required) The role to be assigned, possible values : `reader`, `contributor`, `collaborator`, `administrator`
+* `role` - (Required) The role to be assigned. Possible values are: `reader`, `contributor`, `collaborator`, `administrator`
+
+---
 
 * `project_id` - (Optional) The ID of the Project Feed is created in. If not specified, feed will be created at the organization level.
 
 * `display_name` - (Optional) The display name of the assignment
-
 
 ## Attributes Reference
 
@@ -73,3 +74,17 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 * `read` - (Defaults to 5 minute) Used when retrieving the Feed Permission.
 * `update` - (Defaults to 10 minutes) Used when updating the Feed Permission.
 * `delete` - (Defaults to 10 minutes) Used when deleting the Feed Permission.
+
+## Import
+
+Azure DevOps Feed Permission can be imported using the `Project ID/Feed ID/Identity Descriptor` or `Feed ID/Identity Descriptor` e.g.:
+
+```sh
+terraform import azuredevops_feed_permission.permission 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000/vssgp.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+or 
+
+```sh
+terraform import azuredevops_feed_permission.permission 00000000-0000-0000-0000-000000000000/vssgp.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```

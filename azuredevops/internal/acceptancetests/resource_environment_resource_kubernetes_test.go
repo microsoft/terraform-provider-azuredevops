@@ -16,15 +16,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// Verifies that the following sequence of events occurs without error:
-//
-//	(1) TF apply creates resource
-//	(2) TF state values are set
-//	(3) Resource can be queried by ID and has expected information
-//	(4) TF apply updates resource with new name
-//	(5) Resource can be queried by ID and has expected name
-//	(6) TF destroy deletes resource
-//	(7) Resource can no longer be queried by ID
 func TestAccEnvironmentKubernetes_createUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	environmentName := testutils.GenerateResourceName()

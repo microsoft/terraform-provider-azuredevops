@@ -1,3 +1,123 @@
+## 1.9.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_extension` [#1328](https://github.com/microsoft/terraform-provider-azuredevops/pull/1328)
+* **New Resource** `azuredevops_serviceendpoint_openshift` [#1336](https://github.com/microsoft/terraform-provider-azuredevops/pull/1336)
+* **New Data Resource** `azuredevops_git_repository_file` [#1335](https://github.com/microsoft/terraform-provider-azuredevops/pull/1335)
+
+IMPROVEMENTS:
+
+* `azuredevops_git_repository_file` - Add support for git author and committer. [#1340](https://github.com/microsoft/terraform-provider-azuredevops/pull/1340)
+* `azuredevops_serviceendpoint_github` - Add support for oauth2. [#1353](https://github.com/microsoft/terraform-provider-azuredevops/pull/1353)
+* `azuredevops_git_repository` - Set the branch wait timeout to creation timeout, customizable via `timeouts` in HCL. [#1356](https://github.com/microsoft/terraform-provider-azuredevops/pull/1356)
+* `azuredevops_feed_permission`
+  - Add support for import. [#1339](https://github.com/microsoft/terraform-provider-azuredevops/pull/1339)
+  - Optimize error message. [#1350](https://github.com/microsoft/terraform-provider-azuredevops/pull/1350)
+* `azuredevops_git_repository` - Add support for ephemeral password. [#1343](https://github.com/microsoft/terraform-provider-azuredevops/pull/1343)
+  > **WARNING**: [To use write-only arguments, you must use Terraform v.1.11 or later and use a resource that supports write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only#requirements). 
+  
+* Document - Fixed typo (manage to managed) and updated Azure AD to Entra ID. [#1341](https://github.com/microsoft/terraform-provider-azuredevops/pull/1341)
+* Bump `azcore` to `v1.17.1` [#1330](https://github.com/microsoft/terraform-provider-azuredevops/pull/1330)
+* Bump `github.com/golang-jwt/jwt/v5` from `v5.2.1` to `v5.2.2` [#1332](https://github.com/microsoft/terraform-provider-azuredevops/pull/1332)
+* Replace `golang/mock` with `uber-go/mock` [#1333](https://github.com/microsoft/terraform-provider-azuredevops/pull/1333)
+* Bump golang to `v1.24.1` and update CI images [#1334](https://github.com/microsoft/terraform-provider-azuredevops/pull/1334)
+* Add `terrafmt` to CI. [#1348](https://github.com/microsoft/terraform-provider-azuredevops/pull/1348)
+* Bump `golang.org/x/net` from `v0.37.0` to `v0.38.0`. [#1354](https://github.com/microsoft/terraform-provider-azuredevops/pull/1354)
+
+## 1.8.1
+
+BUG FIX:
+
+* `azuredevops_variable_group` - Fix validation conflict with `ignore_changes`. [#1325](https://github.com/microsoft/terraform-provider-azuredevops/pull/1325)
+
+## 1.8.0
+
+FEATURES:
+
+* **New Data Resource** `azuredevops_group_membership` [#1307](https://github.com/microsoft/terraform-provider-azuredevops/pull/1307)
+
+BUG FIX:
+
+* `azuredevops_project` - Fix the bug where `id` was set to the project name. [#1316](https://github.com/microsoft/terraform-provider-azuredevops/pull/1316)
+* All service connection resources - Check if service connection has been deleted. [#1318](https://github.com/microsoft/terraform-provider-azuredevops/pull/1318)
+
+IMPROVEMENTS:
+
+* `azuredevops_client_config` - Add support for export organization ID. [#1301](https://github.com/microsoft/terraform-provider-azuredevops/pull/1301)
+* `azuredevops_service_principal_entitlement` - Suppress case difference for `origin`. [#1303](https://github.com/microsoft/terraform-provider-azuredevops/pull/1303)
+* Bump `terraform-plugin-sdk/v2` sdk to `v2.36.1` and `azidentity` to `v1.8.2`. [#1310](https://github.com/microsoft/terraform-provider-azuredevops/pull/1310)
+* `azuredevops_build_definition` 
+  - Add support for other Git(`Git`) to `repository.repo_type`. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+  - Add support for create classic agent jobs. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+* **Data source** `azuredevops_build_definition`
+  - Add support for exporting other Git(`Git`). [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+  - Add support for exporting classic agent jobs. [#1312](https://github.com/microsoft/terraform-provider-azuredevops/pull/1312)
+* `azuredevops_variable_group` - Check secret variables during plan. [#1321](https://github.com/microsoft/terraform-provider-azuredevops/pull/1321)
+* `azuredevops_users` - Update documentation. [#1302](https://github.com/microsoft/terraform-provider-azuredevops/pull/1302)
+* `azuredevops_team` - Fix incorrect name in Terraform registry. [#1304](https://github.com/microsoft/terraform-provider-azuredevops/pull/1304)
+* `azuredevops_teams` - Fix incorrect name in Terraform registry. [#1304](https://github.com/microsoft/terraform-provider-azuredevops/pull/1304)
+* `serviceendpoint_azurecr` - Documentation update. [#1308](https://github.com/microsoft/terraform-provider-azuredevops/pull/1308)
+
+## 1.7.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_dashboard` [#1284](https://github.com/microsoft/terraform-provider-azuredevops/pull/1284)
+* **New Data Resource** `azuredevops_descriptor` [#1294](https://github.com/microsoft/terraform-provider-azuredevops/pull/1294)
+* **New Data Resource** `azuredevops_storage_key` [#1294](https://github.com/microsoft/terraform-provider-azuredevops/pull/1294)
+* **New Data Resource** `azuredevops_user` [#1296](https://github.com/microsoft/terraform-provider-azuredevops/pull/1296)
+
+BUG FIX:
+
+* `azuredevops_project` - Fix name unchanged but updated.  [#1285](https://github.com/microsoft/terraform-provider-azuredevops/pull/1285)
+* Permission resources 
+  - Fix `descriptor` filter bug, cannot set permission for AAD groups. [#1297](https://github.com/microsoft/terraform-provider-azuredevops/pull/1297)
+  - Fix collection level groups/users cannot set permission bug. [#1299](https://github.com/microsoft/terraform-provider-azuredevops/pull/1299)
+
+IMPROVEMENTS:
+
+* `azuredevops_identity_groups`  
+  - Add support for `descriptor`. [#1279](https://github.com/microsoft/terraform-provider-azuredevops/pull/1279)
+  - Add support for `subject_descriptor`. [#1292](https://github.com/microsoft/terraform-provider-azuredevops/pull/1292)
+* `azuredevops_identity_group` - Add support for `subject_descriptor`. [#1292](https://github.com/microsoft/terraform-provider-azuredevops/pull/1292)
+* `azuredevops_identity_user` - Add support for `subject_descriptor`. [#1293](https://github.com/microsoft/terraform-provider-azuredevops/pull/1293)
+
+BREAKING CHANGE:
+
+* All service endpoint resources - Change `authorization` to compute only, not configurable. [#1298](https://github.com/microsoft/terraform-provider-azuredevops/pull/1298)
+
+## 1.6.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_service_principal_entitlement` [#1253](https://github.com/microsoft/terraform-provider-azuredevops/pull/1253)
+* **New Resource** `azuredevops_feed_retention_policy` [#1257](https://github.com/microsoft/terraform-provider-azuredevops/pull/1257)
+* **New Resource** `azuredevops_project_tags` [#1259](https://github.com/microsoft/terraform-provider-azuredevops/pull/1259)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_sca` [#1267](https://github.com/microsoft/terraform-provider-azuredevops/pull/1267)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_sast` [#1268](https://github.com/microsoft/terraform-provider-azuredevops/pull/1268)
+* **New Resource** `azuredevops_serviceendpoint_checkmarx_one` [#1269](https://github.com/microsoft/terraform-provider-azuredevops/pull/1269)
+* **New Resource** `azuredevops_check_rest_api` [#1274](https://github.com/microsoft/terraform-provider-azuredevops/pull/1274)
+* **New Data Resource** `azuredevops_service_principal` [#1253](https://github.com/microsoft/terraform-provider-azuredevops/pull/1253)
+
+BUG FIX:
+
+* `azuredevops_securityrole_assignment` - Fix inconsistent result after apply.  [#1255](https://github.com/microsoft/terraform-provider-azuredevops/pull/1255)
+* `azuredevops_wiki` - Fix documentation typos.  [#1264](https://github.com/microsoft/terraform-provider-azuredevops/pull/1264)
+* `azuredevops_git_repository` - Fix branch not found bug.  [#1270](https://github.com/microsoft/terraform-provider-azuredevops/pull/1270)
+* Permission resources - Add support for identity filtering.  [#1256](https://github.com/microsoft/terraform-provider-azuredevops/pull/1256)
+
+IMPROVEMENTS:
+
+* `azuredevops_project` - Update documentation. [#1258](https://github.com/microsoft/terraform-provider-azuredevops/pull/1258)
+* `azuredevops_feed_retention_policy` - Add support for organization level feed retention policy. [#1261](https://github.com/microsoft/terraform-provider-azuredevops/pull/1261)
+* **Data Resource** `azuredevops_team` - Optimize the read operation, use `GetTeam` instead of `GetTeams` [#1262](https://github.com/microsoft/terraform-provider-azuredevops/pull/1262)
+* All resource documentation - Add timeout documentation. [#1273](https://github.com/microsoft/terraform-provider-azuredevops/pull/1273)
+* Update dependencies and bump go to `v1.23` [#1277](https://github.com/microsoft/terraform-provider-azuredevops/pull/1277)
+* Documentation
+  - Update document format [#1278](https://github.com/microsoft/terraform-provider-azuredevops/pull/1278)
+  - Fix documentation errors and add missing properties. [#1280](https://github.com/microsoft/terraform-provider-azuredevops/pull/1280)
+
 ## 1.5.0
 
 FEATURES:

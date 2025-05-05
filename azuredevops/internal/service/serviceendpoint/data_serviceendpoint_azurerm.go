@@ -86,7 +86,7 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
-	if serviceEndpoint != nil {
+	if serviceEndpoint != nil && serviceEndpoint.Id != nil {
 		if err = checkServiceConnection(serviceEndpoint); err != nil {
 			return err
 		}

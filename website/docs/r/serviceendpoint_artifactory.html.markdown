@@ -58,17 +58,35 @@ resource "azuredevops_serviceendpoint_artifactory" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
+
 * `service_endpoint_name` - (Required) The Service Endpoint name.
+
 * `url` - (Required) URL of the Artifactory server to connect with.
 
-   _Note: URL should not end in a slash character._
-* either `authentication_token` or `authentication_basic` (one is required)
-  * `authentication_token`
-    * `token` - Authentication Token generated through Artifactory.
-  * `authentication_basic`
-      * `username` - Artifactory Username.
-      * `password` - Artifactory Password.
+   _**Note: URL should not end in a slash character.**_
+---
+
 * `description` - (Optional) The Service Endpoint description.
+
+---
+
+* `authentication_token` - (Optional) A `authentication_token` block as defined below.
+
+* `authentication_token` - (Optional) A `authentication_basic` block as defined below.
+
+---
+
+A `authentication_token` block supports the following:
+
+* `token` - (Required) Authentication Token generated through Artifactory.
+
+---
+
+A `authentication_basic` block supports the following:
+ 
+* `username` - (Required) The Username of the Artifactory.
+
+* `password` - (Required) The Password of the Artifactory.
 
 ## Attributes Reference
 

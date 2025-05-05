@@ -9,8 +9,9 @@ description: |-
 
 Manages a Visual Studio Marketplace service endpoint within Azure DevOps. Using this service endpoint requires you to install: [Azure DevOps Extension Tasks](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.vsts-developer-tools-build-tasks)
 
-## Example Usage with token
+## Example Usage
 
+###  Authorize with token
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -31,7 +32,7 @@ resource "azuredevops_serviceendpoint_visualstudiomarketplace" "example" {
 }
 ```
 
-## Example Usage with username and password
+### Authorize with username and password
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -64,6 +65,8 @@ The following arguments are supported:
 
 * `url` - (Required) The server URL for Visual Studio Marketplace.
 
+---
+
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 * `authentication_token` - (Optional) An `authentication_token` block as documented below.
@@ -74,13 +77,17 @@ The following arguments are supported:
 
 ---
 
-A `authentication_token` block supports the following:
+An `authentication_token` block supports the following:
 
 * `token` - The Personal Access Token.
 
-A `authentication_basic` block supports the following:
-*`username` - The username of the marketplace.
-*`password` - The password of the marketplace.
+---
+
+An `authentication_basic` block supports the following:
+
+* `username` - The username of the marketplace.
+
+* `password` - The password of the marketplace.
 
 ## Attributes Reference
 

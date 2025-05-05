@@ -42,38 +42,32 @@ resource "azuredevops_group" "example" {
 
 The following arguments are supported:
 
-- `scope` - (Optional) The scope of the group. A descriptor referencing the scope (collection, project) in which the group should be created. If omitted, will be created in the scope of the enclosing account or organization.x
- 
-- `origin_id` - (Optional) The OriginID as a reference to a group from an external AD or AAD backed provider. The `scope`, `mail` and `display_name` arguments cannot be used simultaneously with `origin_id`.
- 
-- `mail` - (Optional) The mail address as a reference to an existing group from an external AD or AAD backed provider. The `scope`, `origin_id` and `display_name` arguments cannot be used simultaneously with `mail`.
- 
-- `display_name` - (Optional) The name of a new Azure DevOps group that is not backed by an external provider. The `origin_id` and `mail` arguments cannot be used simultaneously with `display_name`.
- 
-- `description` - (Optional) The Description of the Project.
+* `scope` - (Optional) The scope of the group. A descriptor referencing the scope (collection, project) in which the group should be created. If omitted, will be created in the scope of the enclosing account or organization.x
 
-- `members` - (Optional)
-  > NOTE: It's possible to define group members both within the `azuredevops_group` resource via the members block and by using the `azuredevops_group_membership` resource. However it's not possible to use both methods to manage group members, since there'll be conflicts.
+* `origin_id` - (Optional) The OriginID as a reference to a group from an external AD or AAD backed provider. The `scope`, `mail` and `display_name` arguments cannot be used simultaneously with `origin_id`.
+
+* `mail` - (Optional) The mail address as a reference to an existing group from an external AD or AAD backed provider. The `scope`, `origin_id` and `display_name` arguments cannot be used simultaneously with `mail`.
+
+* `display_name` - (Optional) The name of a new Azure DevOps group that is not backed by an external provider. The `origin_id` and `mail` arguments cannot be used simultaneously with `display_name`.
+
+* `description` - (Optional) The Description of the Project.
+
+* `members` - (Optional) The member of the Group.
+
+  ~> **NOTE:** It's possible to define group members both within the `azuredevops_group` resource via the members block and by using the `azuredevops_group_membership` resource. However it's not possible to use both methods to manage group members, since there'll be conflicts.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the Group.
-
-- `url` - This url is the full route to the source resource of this graph subject.
-
-- `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
-
-- `subject_kind` - This field identifies the type of the graph subject (ex: Group, Scope, User).
-
-- `domain` - This represents the name of the container of origin for a graph member.
-
-- `principal_name` - This is the PrincipalName of this graph member from the source provider.
-
-- `descriptor` - The identity (subject) descriptor of the Group.
-
-- `group_id` - The ID of the Group.
+* `id` - The ID of the Group.
+* `url` - This url is the full route to the source resource of this graph subject.
+* `origin` - The type of source provider for the origin identifier (ex:AD, AAD, MSA)
+* `subject_kind` - This field identifies the type of the graph subject (ex: Group, Scope, User).
+* `domain` - This represents the name of the container of origin for a graph member.
+* `principal_name` - This is the PrincipalName of this graph member from the source provider.
+* `descriptor` - The identity (subject) descriptor of the Group.
+* `group_id` - The ID of the Group.
 
 ## Relevant Links
 

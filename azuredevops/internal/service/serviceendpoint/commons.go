@@ -52,10 +52,8 @@ func baseSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(0, 1024),
 		},
 		"authorization": {
-			Type:         schema.TypeMap,
-			Optional:     true,
-			Computed:     true,
-			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Type:     schema.TypeMap,
+			Computed: true,
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -213,6 +211,31 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 		}
 		return serviceendpoint.ServiceEndpoint{}, opState.Ready, nil
 	}
+}
+
+// Check if the service endpoint has been deleted
+// 1) Service response 404
+// 2) Service response 200 but service endpoint is null
+// 3) Service response 200 but service endpoint is not null but ID is null
+// 4) Service response 200 but service endpoint is not null and ID is null but other data is null
+// 5) Service response 200 with state property? deleted = true/false or state = deleted/success/updating
+func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) bool {
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
+			d.SetId("")
+			return true
+		}
+		return false
+	}
+
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil ||
+		(serviceEndpoint.Id != nil && serviceEndpoint.Authorization == nil) {
+		log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
+		d.SetId("")
+		return true
+	}
+	return false
 }
 
 func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) retry.StateRefreshFunc {

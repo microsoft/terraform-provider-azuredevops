@@ -18,65 +18,72 @@ func TestAccTeamMembers_CreateAndUpdate(t *testing.T) {
 
 	config1 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_contributors" {
-	project_id = azuredevops_project.project.id
-	name       = "Contributors"
+  project_id = azuredevops_project.project.id
+  name       = "Contributors"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	members = [
-	  data.azuredevops_group.builtin_project_contributors.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  members = [
+    data.azuredevops_group.builtin_project_contributors.descriptor
+  ]
 }
+
+
 
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config2 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_contributors" {
-	project_id = azuredevops_project.project.id
-	name       = "Contributors"
+  project_id = azuredevops_project.project.id
+  name       = "Contributors"
 }
 
 data "azuredevops_group" "builtin_project_readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	members = [
-	  data.azuredevops_group.builtin_project_contributors.descriptor,
-	  data.azuredevops_group.builtin_project_readers.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  members = [
+    data.azuredevops_group.builtin_project_contributors.descriptor,
+    data.azuredevops_group.builtin_project_readers.descriptor
+  ]
 }
+
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config3 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	members = [
-		data.azuredevops_group.builtin_project_readers.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  members = [
+    data.azuredevops_group.builtin_project_readers.descriptor
+  ]
 }
+
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
@@ -120,68 +127,75 @@ func TestAccTeamMembers_CreateAndUpdate_Overwrite(t *testing.T) {
 
 	config1 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_contributors" {
-	project_id = azuredevops_project.project.id
-	name       = "Contributors"
+  project_id = azuredevops_project.project.id
+  name       = "Contributors"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	mode = "overwrite"
-	members = [
-	  data.azuredevops_group.builtin_project_contributors.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  mode       = "overwrite"
+  members = [
+    data.azuredevops_group.builtin_project_contributors.descriptor
+  ]
 }
+
+
 
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config2 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_contributors" {
-	project_id = azuredevops_project.project.id
-	name       = "Contributors"
+  project_id = azuredevops_project.project.id
+  name       = "Contributors"
 }
 
 data "azuredevops_group" "builtin_project_readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	mode = "overwrite"
-	members = [
-	  data.azuredevops_group.builtin_project_contributors.descriptor,
-	  data.azuredevops_group.builtin_project_readers.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  mode       = "overwrite"
+  members = [
+    data.azuredevops_group.builtin_project_contributors.descriptor,
+    data.azuredevops_group.builtin_project_readers.descriptor
+  ]
 }
+
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 
 	config3 := fmt.Sprintf(`
 
+
 %s
 
 data "azuredevops_group" "builtin_project_readers" {
-	project_id = azuredevops_project.project.id
-	name       = "Readers"
+  project_id = azuredevops_project.project.id
+  name       = "Readers"
 }
 
 resource "azuredevops_team_members" "team_members" {
-	project_id = azuredevops_team.team.project_id
-	team_id = azuredevops_team.team.id
-	mode = "overwrite"
-	members = [
-		data.azuredevops_group.builtin_project_readers.descriptor
-	]
+  project_id = azuredevops_team.team.project_id
+  team_id    = azuredevops_team.team.id
+  mode       = "overwrite"
+  members = [
+    data.azuredevops_group.builtin_project_readers.descriptor
+  ]
 }
+
 
 	`, testutils.HclTeamConfiguration(projectName, teamName, "", nil, nil))
 

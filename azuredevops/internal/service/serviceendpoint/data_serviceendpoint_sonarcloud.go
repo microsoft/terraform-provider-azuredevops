@@ -23,7 +23,7 @@ func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface
 		return err
 	}
 
-	if serviceEndpoint != nil {
+	if serviceEndpoint != nil && serviceEndpoint.Id != nil {
 		if err = checkServiceConnection(serviceEndpoint); err != nil {
 			return err
 		}

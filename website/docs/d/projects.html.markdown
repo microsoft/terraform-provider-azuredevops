@@ -38,22 +38,29 @@ output "state" {
 
 The following arguments are supported:
 
-- `name` - (Optional) Name of the Project, if not specified all projects will be returned.
+* `name` - (Optional) Name of the Project, if not specified all projects will be returned.
 
-- `state` - (Optional) State of the Project, if not specified all projects will be returned. Valid values are `all`, `deleting`, `new`, `wellFormed`, `createPending`, `unchanged`,`deleted`.
+* `state` - (Optional) State of the Project, if not specified all projects will be returned. Valid values are `all`, `deleting`, `new`, `wellFormed`, `createPending`, `unchanged`,`deleted`.
 
-DataSource without specifying any arguments will return all projects.
+~> **NOTE:** DataSource without specifying any arguments will return all projects.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `projects` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
+* `projects` - A list of `projects` blocks as documented below. A list of existing projects in your Azure DevOps Organization with details about every project which includes:
 
-  - `project_id` - The ID of the Project.
-  - `name` - The name of the Project.
-  - `project_url` - Url to the full version of the object.
-  - `state` - Project state.
+---
+
+A list of `projects` blocks supports the following:
+
+* `project_id` - The ID of the Project.
+  
+* `name` - The name of the Project.
+  
+* `project_url` - The Url to the full version of the object.
+  
+* `state` - The state of the Project. 
 
 ## Relevant Links
 

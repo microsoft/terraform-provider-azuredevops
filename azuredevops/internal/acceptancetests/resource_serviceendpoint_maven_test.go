@@ -239,14 +239,14 @@ func TestAccServiceEndpointMaven_RequiresImportErrorStepUsernamePassword(t *test
 func hclSvcEndpointMavenResourceBasic(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	repository_id		= "test-repository"
-	authentication_token {
-		token			   	   = "redacted"
-	}
-	url			   		   = "http://url.com/1"
-	description 		   = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  repository_id         = "test-repository"
+  authentication_token {
+    token = "redacted"
+  }
+  url         = "http://url.com/1"
+  description = "%s"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -256,15 +256,15 @@ resource "azuredevops_serviceendpoint_maven" "test" {
 func hclSvcEndpointMavenResourceBasicUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	repository_id		= "test-repository"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
-	url			   		   = "http://url.com/1"
-	description 		   = "%s"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  repository_id         = "test-repository"
+  authentication_basic {
+    username = "u"
+    password = "redacted"
+  }
+  url         = "http://url.com/1"
+  description = "%s"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -274,15 +274,15 @@ resource "azuredevops_serviceendpoint_maven" "test" {
 func hclSvcEndpointMavenResourceCompleteUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	repository_id		= "test-repository"
-	authentication_basic {
-		username			   = "u"
-		password			   = "redacted"
-	}
-	url			   		   = "https://url.com/1"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  repository_id         = "test-repository"
+  authentication_basic {
+    username = "u"
+    password = "redacted"
+  }
+  url = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -292,14 +292,14 @@ resource "azuredevops_serviceendpoint_maven" "test" {
 func hclSvcEndpointMavenResourceComplete(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	repository_id		= "test-repository"
-	authentication_token {
-		token          = "redacted"
-	}
-	  url			   		   = "https://url.com/1"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  repository_id         = "test-repository"
+  authentication_token {
+    token = "redacted"
+  }
+  url = "https://url.com/1"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -309,14 +309,14 @@ resource "azuredevops_serviceendpoint_maven" "test" {
 func hclSvcEndpointMavenResourceUpdate(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	repository_id		= "test-repository"
-	authentication_token {
-		token          = "redacted2"
-	}
-	  url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  repository_id         = "test-repository"
+  authentication_token {
+    token = "redacted2"
+  }
+  url = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -326,15 +326,15 @@ resource "azuredevops_serviceendpoint_maven" "test" {
 func hclSvcEndpointMavenResourceUpdateUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_maven" "test" {
-	project_id             = azuredevops_project.project.id
-	service_endpoint_name  = "%s"
-	description            = "%s"
-	repository_id		= "test-repository"
-	authentication_basic {
-		username			   = "u2"
-		password			   = "redacted2"
-	}
-	url			   		   = "https://url.com/2"
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  repository_id         = "test-repository"
+  authentication_basic {
+    username = "u2"
+    password = "redacted2"
+  }
+  url = "https://url.com/2"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -346,13 +346,13 @@ func hclSvcEndpointMavenResourceRequiresImport(projectName string, serviceEndpoi
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_maven" "import" {
-  project_id                = azuredevops_serviceendpoint_maven.test.project_id
+  project_id            = azuredevops_serviceendpoint_maven.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_maven.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_maven.test.description
-  url          = azuredevops_serviceendpoint_maven.test.url
-  repository_id		= "test-repository"
+  description           = azuredevops_serviceendpoint_maven.test.description
+  url                   = azuredevops_serviceendpoint_maven.test.url
+  repository_id         = "test-repository"
   authentication_token {
-	  token          = "redacted"
+    token = "redacted"
   }
 }
 `, template)
@@ -362,14 +362,14 @@ func hclSvcEndpointMavenResourceRequiresImportUsernamePassword(projectName strin
 	return fmt.Sprintf(`
 %s
 resource "azuredevops_serviceendpoint_maven" "import" {
-  project_id                = azuredevops_serviceendpoint_maven.test.project_id
+  project_id            = azuredevops_serviceendpoint_maven.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_maven.test.service_endpoint_name
-  description            = azuredevops_serviceendpoint_maven.test.description
-  url          	= azuredevops_serviceendpoint_maven.test.url
-  repository_id		= "test-repository"
+  description           = azuredevops_serviceendpoint_maven.test.description
+  url                   = azuredevops_serviceendpoint_maven.test.url
+  repository_id         = "test-repository"
   authentication_basic {
-	username			   = "u"
-	password			   = "redacted"
+    username = "u"
+    password = "redacted"
   }
 }
 `, template)

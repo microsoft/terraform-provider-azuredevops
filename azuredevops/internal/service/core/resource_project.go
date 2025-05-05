@@ -164,6 +164,8 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(fmt.Errorf(" looking up project with (ID: %s or Name: %s). Error: %+v", projectID, name, err))
 	}
 
+	// Set ID to the project UUID in case the project is imported by name
+	d.SetId(project.Id.String())
 	err = flattenProject(clients, d, project)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
@@ -177,29 +179,29 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(fmt.Errorf(" converting terraform data model to AzDO project reference: %+v", err))
 	}
-	//
-	//requiresUpdate := false
-	//if !d.HasChange("name") {
-	//	project.Name = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
-	//if !d.HasChange("description") {
-	//	project.Description = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
-	//if !d.HasChange("visibility") {
-	//	project.Visibility = nil
-	//} else {
-	//	requiresUpdate = true
-	//}
 
-	//if requiresUpdate {
-	if err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate)); err != nil {
-		return diag.FromErr(fmt.Errorf(" updating project: %v", err))
+	requiresUpdate := false
+	if !d.HasChange("name") {
+		project.Name = nil
+	} else {
+		requiresUpdate = true
 	}
-	//}
+	if !d.HasChange("description") {
+		project.Description = nil
+	} else {
+		requiresUpdate = true
+	}
+	if !d.HasChange("visibility") {
+		project.Visibility = nil
+	} else {
+		requiresUpdate = true
+	}
+
+	if requiresUpdate {
+		if err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate)); err != nil {
+			return diag.FromErr(fmt.Errorf(" updating project: %v", err))
+		}
+	}
 
 	if d.HasChange("features") {
 		var featureStates map[string]interface{}

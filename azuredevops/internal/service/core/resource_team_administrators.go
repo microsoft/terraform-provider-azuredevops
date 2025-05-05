@@ -47,11 +47,11 @@ func ResourceTeamAdministrators() *schema.Resource {
 			"mode": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Default:          "add",
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc: validation.StringInSlice([]string{
 					"add", "overwrite",
 				}, true),
+				Default: "add",
 			},
 			"administrators": {
 				Type: schema.TypeSet,

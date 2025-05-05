@@ -761,7 +761,7 @@ resource "azuredevops_pipeline_authorization" "test" {
   resource_id = data.azuredevops_git_repository.remote_repo.id
   type        = "repository"
 
-  pipeline_id = azuredevops_build_definition.test.id
+  pipeline_id         = azuredevops_build_definition.test.id
   pipeline_project_id = azuredevops_project.test.id
 }
 `, name)

@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	pipelinesapproval "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinesapproval"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPipelinesapprovalClient is a mock of Client interface.
 type MockPipelinesapprovalClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelinesapprovalClientMockRecorder
+	isgomock struct{}
 }
 
 // MockPipelinesapprovalClientMockRecorder is the mock recorder for MockPipelinesapprovalClient.
@@ -45,7 +46,7 @@ func (m *MockPipelinesapprovalClient) GetApproval(arg0 context.Context, arg1 pip
 }
 
 // GetApproval indicates an expected call of GetApproval.
-func (mr *MockPipelinesapprovalClientMockRecorder) GetApproval(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesapprovalClientMockRecorder) GetApproval(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApproval", reflect.TypeOf((*MockPipelinesapprovalClient)(nil).GetApproval), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockPipelinesapprovalClient) QueryApprovals(arg0 context.Context, arg1 
 }
 
 // QueryApprovals indicates an expected call of QueryApprovals.
-func (mr *MockPipelinesapprovalClientMockRecorder) QueryApprovals(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesapprovalClientMockRecorder) QueryApprovals(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryApprovals", reflect.TypeOf((*MockPipelinesapprovalClient)(nil).QueryApprovals), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockPipelinesapprovalClient) UpdateApprovals(arg0 context.Context, arg1
 }
 
 // UpdateApprovals indicates an expected call of UpdateApprovals.
-func (mr *MockPipelinesapprovalClientMockRecorder) UpdateApprovals(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesapprovalClientMockRecorder) UpdateApprovals(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateApprovals", reflect.TypeOf((*MockPipelinesapprovalClient)(nil).UpdateApprovals), arg0, arg1)
 }

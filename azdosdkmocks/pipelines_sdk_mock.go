@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	pipelines "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelines"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPipelinesClient is a mock of Client interface.
 type MockPipelinesClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelinesClientMockRecorder
+	isgomock struct{}
 }
 
 // MockPipelinesClientMockRecorder is the mock recorder for MockPipelinesClient.
@@ -45,7 +46,7 @@ func (m *MockPipelinesClient) CreatePipeline(arg0 context.Context, arg1 pipeline
 }
 
 // CreatePipeline indicates an expected call of CreatePipeline.
-func (mr *MockPipelinesClientMockRecorder) CreatePipeline(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) CreatePipeline(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipeline", reflect.TypeOf((*MockPipelinesClient)(nil).CreatePipeline), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockPipelinesClient) GetArtifact(arg0 context.Context, arg1 pipelines.G
 }
 
 // GetArtifact indicates an expected call of GetArtifact.
-func (mr *MockPipelinesClientMockRecorder) GetArtifact(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) GetArtifact(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifact", reflect.TypeOf((*MockPipelinesClient)(nil).GetArtifact), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockPipelinesClient) GetLog(arg0 context.Context, arg1 pipelines.GetLog
 }
 
 // GetLog indicates an expected call of GetLog.
-func (mr *MockPipelinesClientMockRecorder) GetLog(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) GetLog(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockPipelinesClient)(nil).GetLog), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockPipelinesClient) GetPipeline(arg0 context.Context, arg1 pipelines.G
 }
 
 // GetPipeline indicates an expected call of GetPipeline.
-func (mr *MockPipelinesClientMockRecorder) GetPipeline(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) GetPipeline(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipeline", reflect.TypeOf((*MockPipelinesClient)(nil).GetPipeline), arg0, arg1)
 }
@@ -105,7 +106,7 @@ func (m *MockPipelinesClient) GetRun(arg0 context.Context, arg1 pipelines.GetRun
 }
 
 // GetRun indicates an expected call of GetRun.
-func (mr *MockPipelinesClientMockRecorder) GetRun(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) GetRun(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRun", reflect.TypeOf((*MockPipelinesClient)(nil).GetRun), arg0, arg1)
 }
@@ -120,7 +121,7 @@ func (m *MockPipelinesClient) ListLogs(arg0 context.Context, arg1 pipelines.List
 }
 
 // ListLogs indicates an expected call of ListLogs.
-func (mr *MockPipelinesClientMockRecorder) ListLogs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) ListLogs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLogs", reflect.TypeOf((*MockPipelinesClient)(nil).ListLogs), arg0, arg1)
 }
@@ -135,7 +136,7 @@ func (m *MockPipelinesClient) ListPipelines(arg0 context.Context, arg1 pipelines
 }
 
 // ListPipelines indicates an expected call of ListPipelines.
-func (mr *MockPipelinesClientMockRecorder) ListPipelines(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) ListPipelines(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelines", reflect.TypeOf((*MockPipelinesClient)(nil).ListPipelines), arg0, arg1)
 }
@@ -150,7 +151,7 @@ func (m *MockPipelinesClient) ListRuns(arg0 context.Context, arg1 pipelines.List
 }
 
 // ListRuns indicates an expected call of ListRuns.
-func (mr *MockPipelinesClientMockRecorder) ListRuns(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) ListRuns(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRuns", reflect.TypeOf((*MockPipelinesClient)(nil).ListRuns), arg0, arg1)
 }
@@ -165,7 +166,7 @@ func (m *MockPipelinesClient) Preview(arg0 context.Context, arg1 pipelines.Previ
 }
 
 // Preview indicates an expected call of Preview.
-func (mr *MockPipelinesClientMockRecorder) Preview(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) Preview(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Preview", reflect.TypeOf((*MockPipelinesClient)(nil).Preview), arg0, arg1)
 }
@@ -180,7 +181,7 @@ func (m *MockPipelinesClient) RunPipeline(arg0 context.Context, arg1 pipelines.R
 }
 
 // RunPipeline indicates an expected call of RunPipeline.
-func (mr *MockPipelinesClientMockRecorder) RunPipeline(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinesClientMockRecorder) RunPipeline(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunPipeline", reflect.TypeOf((*MockPipelinesClient)(nil).RunPipeline), arg0, arg1)
 }

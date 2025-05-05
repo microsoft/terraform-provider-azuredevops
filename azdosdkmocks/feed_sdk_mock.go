@@ -9,15 +9,16 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	feed "github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
 	operations "github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFeedClient is a mock of Client interface.
 type MockFeedClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockFeedClientMockRecorder
+	isgomock struct{}
 }
 
 // MockFeedClientMockRecorder is the mock recorder for MockFeedClient.
@@ -47,7 +48,7 @@ func (m *MockFeedClient) CreateFeed(arg0 context.Context, arg1 feed.CreateFeedAr
 }
 
 // CreateFeed indicates an expected call of CreateFeed.
-func (mr *MockFeedClientMockRecorder) CreateFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) CreateFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFeed", reflect.TypeOf((*MockFeedClient)(nil).CreateFeed), arg0, arg1)
 }
@@ -62,7 +63,7 @@ func (m *MockFeedClient) CreateFeedView(arg0 context.Context, arg1 feed.CreateFe
 }
 
 // CreateFeedView indicates an expected call of CreateFeedView.
-func (mr *MockFeedClientMockRecorder) CreateFeedView(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) CreateFeedView(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFeedView", reflect.TypeOf((*MockFeedClient)(nil).CreateFeedView), arg0, arg1)
 }
@@ -76,7 +77,7 @@ func (m *MockFeedClient) DeleteFeed(arg0 context.Context, arg1 feed.DeleteFeedAr
 }
 
 // DeleteFeed indicates an expected call of DeleteFeed.
-func (mr *MockFeedClientMockRecorder) DeleteFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) DeleteFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFeed", reflect.TypeOf((*MockFeedClient)(nil).DeleteFeed), arg0, arg1)
 }
@@ -90,7 +91,7 @@ func (m *MockFeedClient) DeleteFeedRetentionPolicies(arg0 context.Context, arg1 
 }
 
 // DeleteFeedRetentionPolicies indicates an expected call of DeleteFeedRetentionPolicies.
-func (mr *MockFeedClientMockRecorder) DeleteFeedRetentionPolicies(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) DeleteFeedRetentionPolicies(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFeedRetentionPolicies", reflect.TypeOf((*MockFeedClient)(nil).DeleteFeedRetentionPolicies), arg0, arg1)
 }
@@ -104,7 +105,7 @@ func (m *MockFeedClient) DeleteFeedView(arg0 context.Context, arg1 feed.DeleteFe
 }
 
 // DeleteFeedView indicates an expected call of DeleteFeedView.
-func (mr *MockFeedClientMockRecorder) DeleteFeedView(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) DeleteFeedView(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFeedView", reflect.TypeOf((*MockFeedClient)(nil).DeleteFeedView), arg0, arg1)
 }
@@ -119,7 +120,7 @@ func (m *MockFeedClient) EmptyRecycleBin(arg0 context.Context, arg1 feed.EmptyRe
 }
 
 // EmptyRecycleBin indicates an expected call of EmptyRecycleBin.
-func (mr *MockFeedClientMockRecorder) EmptyRecycleBin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) EmptyRecycleBin(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmptyRecycleBin", reflect.TypeOf((*MockFeedClient)(nil).EmptyRecycleBin), arg0, arg1)
 }
@@ -134,7 +135,7 @@ func (m *MockFeedClient) GetBadge(arg0 context.Context, arg1 feed.GetBadgeArgs) 
 }
 
 // GetBadge indicates an expected call of GetBadge.
-func (mr *MockFeedClientMockRecorder) GetBadge(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetBadge(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBadge", reflect.TypeOf((*MockFeedClient)(nil).GetBadge), arg0, arg1)
 }
@@ -149,7 +150,7 @@ func (m *MockFeedClient) GetFeed(arg0 context.Context, arg1 feed.GetFeedArgs) (*
 }
 
 // GetFeed indicates an expected call of GetFeed.
-func (mr *MockFeedClientMockRecorder) GetFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockFeedClient)(nil).GetFeed), arg0, arg1)
 }
@@ -164,7 +165,7 @@ func (m *MockFeedClient) GetFeedChange(arg0 context.Context, arg1 feed.GetFeedCh
 }
 
 // GetFeedChange indicates an expected call of GetFeedChange.
-func (mr *MockFeedClientMockRecorder) GetFeedChange(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedChange(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedChange", reflect.TypeOf((*MockFeedClient)(nil).GetFeedChange), arg0, arg1)
 }
@@ -179,7 +180,7 @@ func (m *MockFeedClient) GetFeedChanges(arg0 context.Context, arg1 feed.GetFeedC
 }
 
 // GetFeedChanges indicates an expected call of GetFeedChanges.
-func (mr *MockFeedClientMockRecorder) GetFeedChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedChanges", reflect.TypeOf((*MockFeedClient)(nil).GetFeedChanges), arg0, arg1)
 }
@@ -194,7 +195,7 @@ func (m *MockFeedClient) GetFeedPermissions(arg0 context.Context, arg1 feed.GetF
 }
 
 // GetFeedPermissions indicates an expected call of GetFeedPermissions.
-func (mr *MockFeedClientMockRecorder) GetFeedPermissions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedPermissions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedPermissions", reflect.TypeOf((*MockFeedClient)(nil).GetFeedPermissions), arg0, arg1)
 }
@@ -209,7 +210,7 @@ func (m *MockFeedClient) GetFeedRetentionPolicies(arg0 context.Context, arg1 fee
 }
 
 // GetFeedRetentionPolicies indicates an expected call of GetFeedRetentionPolicies.
-func (mr *MockFeedClientMockRecorder) GetFeedRetentionPolicies(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedRetentionPolicies(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedRetentionPolicies", reflect.TypeOf((*MockFeedClient)(nil).GetFeedRetentionPolicies), arg0, arg1)
 }
@@ -224,7 +225,7 @@ func (m *MockFeedClient) GetFeedView(arg0 context.Context, arg1 feed.GetFeedView
 }
 
 // GetFeedView indicates an expected call of GetFeedView.
-func (mr *MockFeedClientMockRecorder) GetFeedView(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedView(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedView", reflect.TypeOf((*MockFeedClient)(nil).GetFeedView), arg0, arg1)
 }
@@ -239,7 +240,7 @@ func (m *MockFeedClient) GetFeedViews(arg0 context.Context, arg1 feed.GetFeedVie
 }
 
 // GetFeedViews indicates an expected call of GetFeedViews.
-func (mr *MockFeedClientMockRecorder) GetFeedViews(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedViews(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedViews", reflect.TypeOf((*MockFeedClient)(nil).GetFeedViews), arg0, arg1)
 }
@@ -254,7 +255,7 @@ func (m *MockFeedClient) GetFeeds(arg0 context.Context, arg1 feed.GetFeedsArgs) 
 }
 
 // GetFeeds indicates an expected call of GetFeeds.
-func (mr *MockFeedClientMockRecorder) GetFeeds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeeds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeeds", reflect.TypeOf((*MockFeedClient)(nil).GetFeeds), arg0, arg1)
 }
@@ -269,7 +270,7 @@ func (m *MockFeedClient) GetFeedsFromRecycleBin(arg0 context.Context, arg1 feed.
 }
 
 // GetFeedsFromRecycleBin indicates an expected call of GetFeedsFromRecycleBin.
-func (mr *MockFeedClientMockRecorder) GetFeedsFromRecycleBin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetFeedsFromRecycleBin(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedsFromRecycleBin", reflect.TypeOf((*MockFeedClient)(nil).GetFeedsFromRecycleBin), arg0, arg1)
 }
@@ -284,7 +285,7 @@ func (m *MockFeedClient) GetGlobalPermissions(arg0 context.Context, arg1 feed.Ge
 }
 
 // GetGlobalPermissions indicates an expected call of GetGlobalPermissions.
-func (mr *MockFeedClientMockRecorder) GetGlobalPermissions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetGlobalPermissions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGlobalPermissions", reflect.TypeOf((*MockFeedClient)(nil).GetGlobalPermissions), arg0, arg1)
 }
@@ -299,7 +300,7 @@ func (m *MockFeedClient) GetPackage(arg0 context.Context, arg1 feed.GetPackageAr
 }
 
 // GetPackage indicates an expected call of GetPackage.
-func (mr *MockFeedClientMockRecorder) GetPackage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackage", reflect.TypeOf((*MockFeedClient)(nil).GetPackage), arg0, arg1)
 }
@@ -314,7 +315,7 @@ func (m *MockFeedClient) GetPackageChanges(arg0 context.Context, arg1 feed.GetPa
 }
 
 // GetPackageChanges indicates an expected call of GetPackageChanges.
-func (mr *MockFeedClientMockRecorder) GetPackageChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackageChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackageChanges", reflect.TypeOf((*MockFeedClient)(nil).GetPackageChanges), arg0, arg1)
 }
@@ -329,7 +330,7 @@ func (m *MockFeedClient) GetPackageVersion(arg0 context.Context, arg1 feed.GetPa
 }
 
 // GetPackageVersion indicates an expected call of GetPackageVersion.
-func (mr *MockFeedClientMockRecorder) GetPackageVersion(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackageVersion(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackageVersion", reflect.TypeOf((*MockFeedClient)(nil).GetPackageVersion), arg0, arg1)
 }
@@ -344,7 +345,7 @@ func (m *MockFeedClient) GetPackageVersionProvenance(arg0 context.Context, arg1 
 }
 
 // GetPackageVersionProvenance indicates an expected call of GetPackageVersionProvenance.
-func (mr *MockFeedClientMockRecorder) GetPackageVersionProvenance(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackageVersionProvenance(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackageVersionProvenance", reflect.TypeOf((*MockFeedClient)(nil).GetPackageVersionProvenance), arg0, arg1)
 }
@@ -359,7 +360,7 @@ func (m *MockFeedClient) GetPackageVersions(arg0 context.Context, arg1 feed.GetP
 }
 
 // GetPackageVersions indicates an expected call of GetPackageVersions.
-func (mr *MockFeedClientMockRecorder) GetPackageVersions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackageVersions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackageVersions", reflect.TypeOf((*MockFeedClient)(nil).GetPackageVersions), arg0, arg1)
 }
@@ -374,7 +375,7 @@ func (m *MockFeedClient) GetPackages(arg0 context.Context, arg1 feed.GetPackages
 }
 
 // GetPackages indicates an expected call of GetPackages.
-func (mr *MockFeedClientMockRecorder) GetPackages(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetPackages(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackages", reflect.TypeOf((*MockFeedClient)(nil).GetPackages), arg0, arg1)
 }
@@ -389,7 +390,7 @@ func (m *MockFeedClient) GetRecycleBinPackage(arg0 context.Context, arg1 feed.Ge
 }
 
 // GetRecycleBinPackage indicates an expected call of GetRecycleBinPackage.
-func (mr *MockFeedClientMockRecorder) GetRecycleBinPackage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetRecycleBinPackage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecycleBinPackage", reflect.TypeOf((*MockFeedClient)(nil).GetRecycleBinPackage), arg0, arg1)
 }
@@ -404,7 +405,7 @@ func (m *MockFeedClient) GetRecycleBinPackageVersion(arg0 context.Context, arg1 
 }
 
 // GetRecycleBinPackageVersion indicates an expected call of GetRecycleBinPackageVersion.
-func (mr *MockFeedClientMockRecorder) GetRecycleBinPackageVersion(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetRecycleBinPackageVersion(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecycleBinPackageVersion", reflect.TypeOf((*MockFeedClient)(nil).GetRecycleBinPackageVersion), arg0, arg1)
 }
@@ -419,7 +420,7 @@ func (m *MockFeedClient) GetRecycleBinPackageVersions(arg0 context.Context, arg1
 }
 
 // GetRecycleBinPackageVersions indicates an expected call of GetRecycleBinPackageVersions.
-func (mr *MockFeedClientMockRecorder) GetRecycleBinPackageVersions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetRecycleBinPackageVersions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecycleBinPackageVersions", reflect.TypeOf((*MockFeedClient)(nil).GetRecycleBinPackageVersions), arg0, arg1)
 }
@@ -434,7 +435,7 @@ func (m *MockFeedClient) GetRecycleBinPackages(arg0 context.Context, arg1 feed.G
 }
 
 // GetRecycleBinPackages indicates an expected call of GetRecycleBinPackages.
-func (mr *MockFeedClientMockRecorder) GetRecycleBinPackages(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) GetRecycleBinPackages(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecycleBinPackages", reflect.TypeOf((*MockFeedClient)(nil).GetRecycleBinPackages), arg0, arg1)
 }
@@ -448,7 +449,7 @@ func (m *MockFeedClient) PermanentDeleteFeed(arg0 context.Context, arg1 feed.Per
 }
 
 // PermanentDeleteFeed indicates an expected call of PermanentDeleteFeed.
-func (mr *MockFeedClientMockRecorder) PermanentDeleteFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) PermanentDeleteFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PermanentDeleteFeed", reflect.TypeOf((*MockFeedClient)(nil).PermanentDeleteFeed), arg0, arg1)
 }
@@ -463,7 +464,7 @@ func (m *MockFeedClient) QueryPackageMetrics(arg0 context.Context, arg1 feed.Que
 }
 
 // QueryPackageMetrics indicates an expected call of QueryPackageMetrics.
-func (mr *MockFeedClientMockRecorder) QueryPackageMetrics(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) QueryPackageMetrics(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryPackageMetrics", reflect.TypeOf((*MockFeedClient)(nil).QueryPackageMetrics), arg0, arg1)
 }
@@ -478,7 +479,7 @@ func (m *MockFeedClient) QueryPackageVersionMetrics(arg0 context.Context, arg1 f
 }
 
 // QueryPackageVersionMetrics indicates an expected call of QueryPackageVersionMetrics.
-func (mr *MockFeedClientMockRecorder) QueryPackageVersionMetrics(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) QueryPackageVersionMetrics(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryPackageVersionMetrics", reflect.TypeOf((*MockFeedClient)(nil).QueryPackageVersionMetrics), arg0, arg1)
 }
@@ -492,7 +493,7 @@ func (m *MockFeedClient) RestoreDeletedFeed(arg0 context.Context, arg1 feed.Rest
 }
 
 // RestoreDeletedFeed indicates an expected call of RestoreDeletedFeed.
-func (mr *MockFeedClientMockRecorder) RestoreDeletedFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) RestoreDeletedFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreDeletedFeed", reflect.TypeOf((*MockFeedClient)(nil).RestoreDeletedFeed), arg0, arg1)
 }
@@ -507,7 +508,7 @@ func (m *MockFeedClient) SetFeedPermissions(arg0 context.Context, arg1 feed.SetF
 }
 
 // SetFeedPermissions indicates an expected call of SetFeedPermissions.
-func (mr *MockFeedClientMockRecorder) SetFeedPermissions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) SetFeedPermissions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFeedPermissions", reflect.TypeOf((*MockFeedClient)(nil).SetFeedPermissions), arg0, arg1)
 }
@@ -522,7 +523,7 @@ func (m *MockFeedClient) SetFeedRetentionPolicies(arg0 context.Context, arg1 fee
 }
 
 // SetFeedRetentionPolicies indicates an expected call of SetFeedRetentionPolicies.
-func (mr *MockFeedClientMockRecorder) SetFeedRetentionPolicies(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) SetFeedRetentionPolicies(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFeedRetentionPolicies", reflect.TypeOf((*MockFeedClient)(nil).SetFeedRetentionPolicies), arg0, arg1)
 }
@@ -537,7 +538,7 @@ func (m *MockFeedClient) SetGlobalPermissions(arg0 context.Context, arg1 feed.Se
 }
 
 // SetGlobalPermissions indicates an expected call of SetGlobalPermissions.
-func (mr *MockFeedClientMockRecorder) SetGlobalPermissions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) SetGlobalPermissions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetGlobalPermissions", reflect.TypeOf((*MockFeedClient)(nil).SetGlobalPermissions), arg0, arg1)
 }
@@ -552,7 +553,7 @@ func (m *MockFeedClient) UpdateFeed(arg0 context.Context, arg1 feed.UpdateFeedAr
 }
 
 // UpdateFeed indicates an expected call of UpdateFeed.
-func (mr *MockFeedClientMockRecorder) UpdateFeed(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) UpdateFeed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFeed", reflect.TypeOf((*MockFeedClient)(nil).UpdateFeed), arg0, arg1)
 }
@@ -567,7 +568,7 @@ func (m *MockFeedClient) UpdateFeedView(arg0 context.Context, arg1 feed.UpdateFe
 }
 
 // UpdateFeedView indicates an expected call of UpdateFeedView.
-func (mr *MockFeedClientMockRecorder) UpdateFeedView(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFeedClientMockRecorder) UpdateFeedView(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFeedView", reflect.TypeOf((*MockFeedClient)(nil).UpdateFeedView), arg0, arg1)
 }

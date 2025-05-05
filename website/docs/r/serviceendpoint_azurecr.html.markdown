@@ -9,8 +9,9 @@ description: |-
 
 Manages a Azure Container Registry service endpoint within Azure DevOps.
 
-## Example Usage for Service Principal
+## Example Usage
 
+### Authorize with Service Principal
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -32,7 +33,7 @@ resource "azuredevops_serviceendpoint_azurecr" "example" {
 }
 ```
 
-## Example Usage for WorkloadIdentityFederation
+### Authorize with WorkloadIdentityFederation
 
 ```hcl
 resource "azuredevops_project" "example" {
@@ -83,31 +84,44 @@ resource "azurerm_federated_identity_credential" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
-- `resource_group` - (Required) The resource group to which the container registry belongs.
-- `azurecr_spn_tenantid` - (Required) The tenant id of the service principal.
-- `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility. `ManagedServiceIdentity` has not yet been implemented for this resource.
-- `azurecr_name` - (Required) The Azure container registry name.
-- `azurecr_subscription_id` - (Required) The subscription id of the Azure targets.
-- `azurecr_subscription_name` - (Required) The subscription name of the Azure targets.
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-- `credentials` - (Optional) A `credentials` block.
+* `project_id` - (Required) The ID of the project.
+
+* `service_endpoint_name` - (Required) The name you will use to refer to this service connection in task inputs.
+
+* `resource_group` - (Required) The resource group to which the container registry belongs.
+
+* `azurecr_spn_tenantid` - (Required) The tenant id of the service principal.
+
+* `service_endpoint_authentication_scheme` - (Optional) Specifies the type of azurerm endpoint, either `WorkloadIdentityFederation`, `ManagedServiceIdentity` or `ServicePrincipal`. Defaults to `ServicePrincipal` for backwards compatibility. `ManagedServiceIdentity` has not yet been implemented for this resource.
+
+* `azurecr_name` - (Required) The Azure container registry name.
+
+* `azurecr_subscription_id` - (Required) The subscription id of the Azure targets.
+
+* `azurecr_subscription_name` - (Required) The subscription name of the Azure targets.
+
+---
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+
+* `credentials` - (Optional) A `credentials` block as defined below.
 
 ---
 
 A `credentials` block supports the following:
 
-- `serviceprincipalid` - (Required) The service principal application Id
+* `serviceprincipalid` - (Required) The ID of the Service Principal Application.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
-- `service_principal_id` - The service principal ID.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
+* `service_principal_id` - The Application(Client) ID of the Service Principal.
+* `workload_identity_federation_issuer` - The issuer if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `https://vstoken.dev.azure.com/00000000-0000-0000-0000-000000000000`, where the GUID is the Organization ID of your Azure DevOps Organisation.
+* `workload_identity_federation_subject` - The subject if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. This looks like `sc://<organisation>/<project>/<service-connection-name>`.
 
 ## Relevant Links
 

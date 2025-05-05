@@ -8,6 +8,7 @@ type repoTypeValuesType struct {
 	TfsGit           RepoType
 	Bitbucket        RepoType
 	GitHubEnterprise RepoType
+	OtherGit         RepoType
 }
 
 // RepoTypeValues enum of the type of the repository
@@ -16,4 +17,5 @@ var RepoTypeValues = repoTypeValuesType{
 	TfsGit:           "TfsGit",
 	Bitbucket:        "Bitbucket",
 	GitHubEnterprise: "GitHubEnterprise",
+	OtherGit:         "Git",
 }

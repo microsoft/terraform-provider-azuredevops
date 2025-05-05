@@ -60,27 +60,34 @@ resource "azuredevops_serviceendpoint_jfrog_xray_v2" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project.
+
 * `service_endpoint_name` - (Required) The Service Endpoint name.
+
 * `url` - (Required) URL of the Artifactory server to connect with.
 
-~> **NOTE:** URL should not end in a slash character.
+    ~> **NOTE:** URL should not end in a slash character.
 
-* `authentication_token` - (Optional) A `authentication_token` block as documented below.
-* `authentication_basic` - (Optional) A `authentication_basic` block as documented below.
+---
+
+* `authentication_token` - (Optional) An `authentication_token` block as documented below.
+
+* `authentication_basic` - (Optional) An `authentication_basic` block as documented below.
+
 * `description` - (Optional) The Service Endpoint description.
 
 ---
 
-A `authentication_token` block supports the following:
+An `authentication_token` block supports the following:
 
-* `token` - Authentication Token generated through Artifactory.
+* `token` - (Required) Authentication Token generated through Artifactory.
 
 ---
 
-A `authentication_basic` block supports the following:
+An `authentication_basic` block supports the following:
 
-* `username` - Artifactory Username.
-* `password` - Artifactory Password.
+* `username` - (Required) The Username of the  Artifactory.
+
+* `password` - (Required) The Password of the Artifactory.
 
 ## Attributes Reference
 

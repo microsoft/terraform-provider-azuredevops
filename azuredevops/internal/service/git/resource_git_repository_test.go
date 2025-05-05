@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
@@ -19,6 +18,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 var (
@@ -113,7 +113,21 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	repoName := "repoName"
 	gitRepo := git.GitRepository{Id: &repoID, Name: &repoName, Project: &project}
 
-	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
+	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, map[string]interface{}{
+		"project_id": projectID.String(),
+		"repo_id":    repoID.String(),
+		"name":       repoName,
+		"initialization": []interface{}{
+			map[string]interface{}{
+				"init_type":             "Clean",
+				"username":              "",
+				"password":              "",
+				"source_type":           "",
+				"source_url":            "",
+				"service_connection_id": "",
+			},
+		},
+	})
 	resourceData.SetId(gitRepo.Id.String())
 	configureCleanInitialization(resourceData)
 	flattenGitRepository(resourceData, &gitRepo)

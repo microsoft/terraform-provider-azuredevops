@@ -28,13 +28,17 @@ resource "azuredevops_group_entitlement" "example" {
 
 ## Argument Reference
 
-- `display_name` - (Optional) The display name is the name used in Azure DevOps UI. Cannot be set together with `origin_id` and `origin`.
-- `origin_id` - (Optional) The unique identifier from the system of origin. Typically, a sid, object id or Guid. e.g. Used for member of other tenant on Azure Active Directory.
-- `origin` - (Optional) The type of source provider for the origin identifier.
-- `account_license_type` - (Optional) Type of Account License. Valid values: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`. In addition, the value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
-- `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.) Valid values: `account` (Default), `auto`, `msdn`, `none`, `profile`, `trial`
+* `display_name` - (Optional) The display name is the name used in Azure DevOps UI. Cannot be set together with `origin_id` and `origin`.
 
-> **NOTE:** A existing group in Azure AD can only be referenced by the combination of `origin_id` and `origin`.
+* `origin_id` - (Optional) The unique identifier from the system of origin. Typically, a sid, object id or Guid. e.g. Used for member of other tenant on Azure Active Directory.
+
+* `origin` - (Optional) The type of source provider for the origin identifier.
+
+* `account_license_type` - (Optional) Type of Account License. Possible values are: `advanced`, `earlyAdopter`, `express`, `none`, `professional`, or `stakeholder`. Defaults to `express`. In addition, the value `basic` is allowed which is an alias for `express` and reflects the name of the `express` license used in the Azure DevOps web interface.
+
+* `licensing_source` - (Optional) The source of the licensing (e.g. Account. MSDN etc.). Possible values are: `account`, `auto`, `msdn`, `none`, `profile`, `trial`. Defaults to `account`.
+
+~> **NOTE:** A existing group in Azure AD can only be referenced by the combination of `origin_id` and `origin`.
 
 ## Attributes Reference
 

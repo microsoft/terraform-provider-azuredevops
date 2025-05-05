@@ -11,6 +11,8 @@ Manages a GitHub Enterprise Server service endpoint within Azure DevOps.
 
 ## Example Usage
 
+### With token
+
 ```hcl
 resource "azuredevops_project" "example" {
   name               = "Example Project"
@@ -33,29 +35,66 @@ resource "azuredevops_serviceendpoint_github_enterprise" "example" {
 }
 ```
 
+### With OAuth 
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_serviceendpoint_github_enterprise" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example GitHub Enterprise"
+  description           = "Managed by Terraform"
+  auth_oauth {
+    oauth_configuration_id = "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+ss
 ## Argument Reference
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `url` - (Required) GitHub Enterprise Server Url.
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-- `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
+* `project_id` - (Required) The ID of the project.
 
-**NOTE: GitHub Apps can not be created or updated via terraform. You must install and configure the app on GitHub and then import it. You must also set the `description` to "" explicitly."**
+* `service_endpoint_name` - (Required) The Service Endpoint name.
 
-`auth_personal` block supports the following:
+---
 
-- `personal_access_token` - (Required) The Personal Access Token for GitHub.
+* `auth_personal` - (Optional) An `auth_personal` block as documented below. Allows connecting using a personal access token.
+
+* `auth_oauth` - (Optional) An `auth_oauth` block as documented below. Allows connecting using an Oauth token.
+
+* `url` - (Optional) GitHub Enterprise Server Url.
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+
+~> **NOTE:** GitHub Apps can not be created or updated via terraform. You must install and configure the app on GitHub and then import it. You must also set the `description` to "" explicitly.
+
+---
+
+An `auth_personal` block supports the following:
+
+* `personal_access_token` - (Required) The Personal Access Token for GitHub.
+
+---
+
+An `auth_oauth` block supports the following:
+
+* `oauth_configuration_id` - (Required) The OAuth Configuration ID.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 

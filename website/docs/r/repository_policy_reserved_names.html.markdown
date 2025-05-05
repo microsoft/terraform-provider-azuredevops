@@ -58,16 +58,21 @@ resource "azuredevops_repository_policy_reserved_names" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project in which the policy will be created.
-- `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`. 
-- `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
-- `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.
+* `project_id` - (Required) The ID of the project in which the policy will be created.
+
+---
+
+* `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
+
+* `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
+
+* `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the repository policy.
+* `id` - The ID of the repository policy.
 
 ## Relevant Links
 

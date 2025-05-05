@@ -9,14 +9,15 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	wiki "github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockWikiClient is a mock of Client interface.
 type MockWikiClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockWikiClientMockRecorder
+	isgomock struct{}
 }
 
 // MockWikiClientMockRecorder is the mock recorder for MockWikiClient.
@@ -46,7 +47,7 @@ func (m *MockWikiClient) CreateAttachment(arg0 context.Context, arg1 wiki.Create
 }
 
 // CreateAttachment indicates an expected call of CreateAttachment.
-func (mr *MockWikiClientMockRecorder) CreateAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) CreateAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAttachment", reflect.TypeOf((*MockWikiClient)(nil).CreateAttachment), arg0, arg1)
 }
@@ -61,7 +62,7 @@ func (m *MockWikiClient) CreateOrUpdatePage(arg0 context.Context, arg1 wiki.Crea
 }
 
 // CreateOrUpdatePage indicates an expected call of CreateOrUpdatePage.
-func (mr *MockWikiClientMockRecorder) CreateOrUpdatePage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) CreateOrUpdatePage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdatePage", reflect.TypeOf((*MockWikiClient)(nil).CreateOrUpdatePage), arg0, arg1)
 }
@@ -76,7 +77,7 @@ func (m *MockWikiClient) CreatePageMove(arg0 context.Context, arg1 wiki.CreatePa
 }
 
 // CreatePageMove indicates an expected call of CreatePageMove.
-func (mr *MockWikiClientMockRecorder) CreatePageMove(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) CreatePageMove(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePageMove", reflect.TypeOf((*MockWikiClient)(nil).CreatePageMove), arg0, arg1)
 }
@@ -91,7 +92,7 @@ func (m *MockWikiClient) CreateWiki(arg0 context.Context, arg1 wiki.CreateWikiAr
 }
 
 // CreateWiki indicates an expected call of CreateWiki.
-func (mr *MockWikiClientMockRecorder) CreateWiki(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) CreateWiki(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWiki", reflect.TypeOf((*MockWikiClient)(nil).CreateWiki), arg0, arg1)
 }
@@ -106,7 +107,7 @@ func (m *MockWikiClient) DeletePage(arg0 context.Context, arg1 wiki.DeletePageAr
 }
 
 // DeletePage indicates an expected call of DeletePage.
-func (mr *MockWikiClientMockRecorder) DeletePage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) DeletePage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePage", reflect.TypeOf((*MockWikiClient)(nil).DeletePage), arg0, arg1)
 }
@@ -121,7 +122,7 @@ func (m *MockWikiClient) DeletePageById(arg0 context.Context, arg1 wiki.DeletePa
 }
 
 // DeletePageById indicates an expected call of DeletePageById.
-func (mr *MockWikiClientMockRecorder) DeletePageById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) DeletePageById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePageById", reflect.TypeOf((*MockWikiClient)(nil).DeletePageById), arg0, arg1)
 }
@@ -136,7 +137,7 @@ func (m *MockWikiClient) DeleteWiki(arg0 context.Context, arg1 wiki.DeleteWikiAr
 }
 
 // DeleteWiki indicates an expected call of DeleteWiki.
-func (mr *MockWikiClientMockRecorder) DeleteWiki(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) DeleteWiki(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWiki", reflect.TypeOf((*MockWikiClient)(nil).DeleteWiki), arg0, arg1)
 }
@@ -151,7 +152,7 @@ func (m *MockWikiClient) GetAllWikis(arg0 context.Context, arg1 wiki.GetAllWikis
 }
 
 // GetAllWikis indicates an expected call of GetAllWikis.
-func (mr *MockWikiClientMockRecorder) GetAllWikis(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetAllWikis(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllWikis", reflect.TypeOf((*MockWikiClient)(nil).GetAllWikis), arg0, arg1)
 }
@@ -166,7 +167,7 @@ func (m *MockWikiClient) GetPage(arg0 context.Context, arg1 wiki.GetPageArgs) (*
 }
 
 // GetPage indicates an expected call of GetPage.
-func (mr *MockWikiClientMockRecorder) GetPage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPage", reflect.TypeOf((*MockWikiClient)(nil).GetPage), arg0, arg1)
 }
@@ -181,7 +182,7 @@ func (m *MockWikiClient) GetPageById(arg0 context.Context, arg1 wiki.GetPageById
 }
 
 // GetPageById indicates an expected call of GetPageById.
-func (mr *MockWikiClientMockRecorder) GetPageById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageById", reflect.TypeOf((*MockWikiClient)(nil).GetPageById), arg0, arg1)
 }
@@ -196,7 +197,7 @@ func (m *MockWikiClient) GetPageByIdText(arg0 context.Context, arg1 wiki.GetPage
 }
 
 // GetPageByIdText indicates an expected call of GetPageByIdText.
-func (mr *MockWikiClientMockRecorder) GetPageByIdText(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageByIdText(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageByIdText", reflect.TypeOf((*MockWikiClient)(nil).GetPageByIdText), arg0, arg1)
 }
@@ -211,7 +212,7 @@ func (m *MockWikiClient) GetPageByIdZip(arg0 context.Context, arg1 wiki.GetPageB
 }
 
 // GetPageByIdZip indicates an expected call of GetPageByIdZip.
-func (mr *MockWikiClientMockRecorder) GetPageByIdZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageByIdZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageByIdZip", reflect.TypeOf((*MockWikiClient)(nil).GetPageByIdZip), arg0, arg1)
 }
@@ -226,7 +227,7 @@ func (m *MockWikiClient) GetPageData(arg0 context.Context, arg1 wiki.GetPageData
 }
 
 // GetPageData indicates an expected call of GetPageData.
-func (mr *MockWikiClientMockRecorder) GetPageData(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageData", reflect.TypeOf((*MockWikiClient)(nil).GetPageData), arg0, arg1)
 }
@@ -241,7 +242,7 @@ func (m *MockWikiClient) GetPageText(arg0 context.Context, arg1 wiki.GetPageText
 }
 
 // GetPageText indicates an expected call of GetPageText.
-func (mr *MockWikiClientMockRecorder) GetPageText(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageText(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageText", reflect.TypeOf((*MockWikiClient)(nil).GetPageText), arg0, arg1)
 }
@@ -256,7 +257,7 @@ func (m *MockWikiClient) GetPageZip(arg0 context.Context, arg1 wiki.GetPageZipAr
 }
 
 // GetPageZip indicates an expected call of GetPageZip.
-func (mr *MockWikiClientMockRecorder) GetPageZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPageZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPageZip", reflect.TypeOf((*MockWikiClient)(nil).GetPageZip), arg0, arg1)
 }
@@ -271,7 +272,7 @@ func (m *MockWikiClient) GetPagesBatch(arg0 context.Context, arg1 wiki.GetPagesB
 }
 
 // GetPagesBatch indicates an expected call of GetPagesBatch.
-func (mr *MockWikiClientMockRecorder) GetPagesBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetPagesBatch(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPagesBatch", reflect.TypeOf((*MockWikiClient)(nil).GetPagesBatch), arg0, arg1)
 }
@@ -286,7 +287,7 @@ func (m *MockWikiClient) GetWiki(arg0 context.Context, arg1 wiki.GetWikiArgs) (*
 }
 
 // GetWiki indicates an expected call of GetWiki.
-func (mr *MockWikiClientMockRecorder) GetWiki(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) GetWiki(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWiki", reflect.TypeOf((*MockWikiClient)(nil).GetWiki), arg0, arg1)
 }
@@ -301,7 +302,7 @@ func (m *MockWikiClient) UpdatePageById(arg0 context.Context, arg1 wiki.UpdatePa
 }
 
 // UpdatePageById indicates an expected call of UpdatePageById.
-func (mr *MockWikiClientMockRecorder) UpdatePageById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) UpdatePageById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePageById", reflect.TypeOf((*MockWikiClient)(nil).UpdatePageById), arg0, arg1)
 }
@@ -316,7 +317,7 @@ func (m *MockWikiClient) UpdateWiki(arg0 context.Context, arg1 wiki.UpdateWikiAr
 }
 
 // UpdateWiki indicates an expected call of UpdateWiki.
-func (mr *MockWikiClientMockRecorder) UpdateWiki(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockWikiClientMockRecorder) UpdateWiki(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWiki", reflect.TypeOf((*MockWikiClient)(nil).UpdateWiki), arg0, arg1)
 }

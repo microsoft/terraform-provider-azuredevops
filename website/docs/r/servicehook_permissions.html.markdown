@@ -46,17 +46,22 @@ resource "azuredevops_servicehook_permissions" "example-permissions" {
 
 The following arguments are supported:
 
-* `project_id` - (optional) The ID of the project.
 * `principal` - (Required) The **group** principal to assign the permissions.
+
 * `permissions` - (Required) the permissions to assign. The following permissions are available.
+
+  | Name                | Permission Description |
+  |---------------------|------------------------|
+  | ViewSubscriptions   | View Subscriptions     |
+  | EditSubscriptions   | Edit Subscription      | 
+  | DeleteSubscriptions | Delete Subscriptions   | 
+  | PublishEvents       | Publish Events         | 
+
+---
+
 * `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions. Default: `true`
 
-| Name               | Permission Description   |
-| ------------------ | ------------------------ |
-| ViewSubscriptions  | View Subscriptions       |
-| EditSubscriptions  | Edit Subscription        | 
-| DeleteSubscriptions| Delete Subscriptions     | 
-| PublishEvents      | Publish Events           | 
+* `project_id` - (optional) The ID of the project.
 
 ## Relevant Links
 

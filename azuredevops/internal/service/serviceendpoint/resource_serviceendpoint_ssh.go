@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -93,19 +92,17 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
+		return nil
+	}
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return err
 	}
-	flattenServiceEndpointSSH(d, serviceEndpoint)
-	return nil
+	return flattenServiceEndpointSSH(d, serviceEndpoint)
 }
 
 func resourceServiceEndpointSSHUpdate(d *schema.ResourceData, m interface{}) error {
@@ -158,12 +155,16 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	return serviceEndpoint, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
 	doBaseFlattening(d, serviceEndpoint)
 	d.Set("host", (*serviceEndpoint.Data)["Host"])
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
-		port, _ := strconv.ParseInt(portStr, 10, 64)
+		port, err := strconv.ParseInt(portStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf(" Parse SSH port: %s. Error: %+v ", portStr, err)
+		}
 		d.Set("port", port)
 	}
 	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	return nil
 }

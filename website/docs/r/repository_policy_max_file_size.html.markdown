@@ -60,17 +60,23 @@ resource "azuredevops_repository_policy_max_file_size" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project in which the policy will be created.
-- `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
-- `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
-- `max_file_size` - (Required) Block pushes that contain new or updated files larger than this limit. Available values is: `1, 2, 5, 10, 50, 100, 200` (MB).
-- `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.
+* `project_id` - (Required) The ID of the project in which the policy will be created.
+
+* `max_file_size` - (Required) Block pushes that contain new or updated files larger than this limit. Possible values are: `1, 2, 5, 10, 50, 100, 200` (MB).
+
+---
+
+* `blocking` - (Optional) A flag indicating if the policy should be blocking. Defaults to `true`.
+ 
+* `enabled` - (Optional) A flag indicating if the policy should be enabled. Defaults to `true`.
+
+* `repository_ids` (Optional) Control whether the policy is enabled for the repository or the project. If `repository_ids` not configured, the policy will be set to the project.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the repository policy.
+* `id` - The ID of the repository policy.
 
 ## Relevant Links
 

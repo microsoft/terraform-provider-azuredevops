@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -40,13 +39,13 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 		},
 		"username": {
 			Type:        schema.TypeString,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_USERNAME", nil),
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME", nil),
 			Description: "The username to use for the GenericGit service git connection.",
 			Optional:    true,
 		},
 		"password": {
 			Type:        schema.TypeString,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_GenericGit_GIT_SERVICE_CONNECTION_PASSWORD", nil),
+			DefaultFunc: schema.EnvDefaultFunc("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD", nil),
 			Description: "The password or token key to use for the GenericGit git service connection.",
 			Sensitive:   true,
 			Optional:    true,
@@ -86,12 +85,11 @@ func resourceServiceEndpointGenericGitRead(d *schema.ResourceData, m interface{}
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
+		return nil
+	}
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {

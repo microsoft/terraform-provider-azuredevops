@@ -35,11 +35,18 @@ resource "azuredevops_serviceendpoint_incomingwebhook" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project. Changing this forces a new Service Connection Incoming WebHook to be created.
+
 * `webhook_name` - (Required) The name of the WebHook.
-* `secret` - (Optional) Secret for the WebHook. WebHook service will use this secret to calculate the payload checksum.
-* `http_header` - (Optional) Http header name on which checksum will be sent.
+
 * `service_endpoint_name` - (Required) The name of the service endpoint. Changing this forces a new Service Connection Incoming WebHook to be created.
+
+---
+
 * `description` - (Optional) The Service Endpoint description. Defaults to Managed by Terraform.
+
+* `http_header` - (Optional) Http header name on which checksum will be sent.
+
+* `secret` - (Optional) Secret for the WebHook. WebHook service will use this secret to calculate the payload checksum.
 
 ## Attributes Reference
 

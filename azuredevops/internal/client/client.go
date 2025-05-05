@@ -10,7 +10,9 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/elastic"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/extensionmanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
@@ -29,9 +31,11 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/securityroles"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -46,15 +50,19 @@ type AggregatedClient struct {
 	OrganizationURL               string
 	CoreClient                    core.Client
 	BuildClient                   build.Client
+	DashboardClient               dashboard.Client
+	DashboardClientExtra          dashboardextras.Client
 	PipelinesClient               pipelines.Client
 	GitReposClient                git.Client
 	GraphClient                   graph.Client
 	OperationsClient              operations.Client
+	OrganizationClient            organization.Client
 	PipelinesChecksClient         pipelineschecks.Client
 	PipelinePermissionsClient     pipelinepermissions.Client
 	PipelinesChecksClientExtras   pipelineschecksextras.Client
 	PolicyClient                  policy.Client
 	ElasticClient                 elastic.Client
+	ExtensionManagementClient     extensionmanagement.Client
 	ReleaseClient                 release.Client
 	ServiceEndpointClient         serviceendpoint.Client
 	TaskAgentClient               taskagent.Client
@@ -98,7 +106,27 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 
 	operationsClient := operations.NewClient(ctx, connection)
 
+	organizationClient := organization.NewClient(ctx, connection)
+
 	elasticClient := elastic.NewClient(ctx, connection)
+
+	extensionManagementClient, err := extensionmanagement.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): extensionmanagement.NewClient failed.")
+		return nil, err
+	}
+
+	dashboardClient, err := dashboard.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): dashboardClient.NewClient failed.")
+		return nil, err
+	}
+
+	dashboardClientExtra, err := dashboardextras.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): dashboardClientExtra.NewClient failed.")
+		return nil, err
+	}
 
 	serviceEndpointClient, err := serviceendpoint.NewClient(ctx, connection)
 	if err != nil {
@@ -197,10 +225,14 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
+		DashboardClient:               dashboardClient,
+		DashboardClientExtra:          dashboardClientExtra,
 		ElasticClient:                 elasticClient,
+		ExtensionManagementClient:     extensionManagementClient,
 		GitReposClient:                gitReposClient,
 		GraphClient:                   graphClient,
 		OperationsClient:              operationsClient,
+		OrganizationClient:            organizationClient,
 		PipelinesClient:               pipelines,
 		PipelinesChecksClient:         pipelinesChecksClient,
 		PipelinePermissionsClient:     pipelinepermissionsClient,

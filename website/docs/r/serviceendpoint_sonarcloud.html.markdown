@@ -35,7 +35,9 @@ The following arguments are supported:
 
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 
-* `token` - (Required) Authentication Token generated through SonarCloud (go to `My Account > Security > Generate Tokens`).
+* `token` - (Required) The Authentication Token generated through SonarCloud (go to `My Account > Security > Generate Tokens`).
+
+---
 
 * `description` - (Optional) The Service Endpoint description.
 

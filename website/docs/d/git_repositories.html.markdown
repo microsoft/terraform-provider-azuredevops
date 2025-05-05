@@ -34,9 +34,11 @@ data "azuredevops_git_repositories" "example-single-repo" {
 
 The following arguments are supported:
 
-- `project_id` - (Optional) ID of project to list Git repositories
-- `name` - (Optional) Name of the Git repository to retrieve; requires `project_id` to be specified as well
-- `include_hidden` - (Optional, default: false)
+* `project_id` - (Optional) ID of project to list Git repositories
+
+* `name` - (Optional) Name of the Git repository to retrieve; requires `project_id` to be specified as well
+
+* `include_hidden` - (Optional) Defaults to `false`.
 
 DataSource without specifying any arguments will return all Git repositories of an organization.
 
@@ -44,18 +46,31 @@ DataSource without specifying any arguments will return all Git repositories of 
 
 The following attributes are exported:
 
-- `repositories` - A list of existing projects in your Azure DevOps Organization with details about every project which includes:
+* `repositories` - A `repositories` blocks as documented below. A list of existing projects in your Azure DevOps Organization with details about every project.
 
-  - `id` - Git repository identifier.
-  - `name` - Git repository name.
-  - `url` - Details REST API endpoint for the Git Repository.
-  - `ssh_url` - SSH Url to clone the Git repository
-  - `web_url` - Url of the Git repository web view
-  - `remote_url` - HTTPS Url to clone the Git repository
-  - `project_id` - Project identifier to which the Git repository belongs.
-  - `size` - Compressed size (bytes) of the repository.
-  - `default_branch` - The ref of the default branch.
-  - `disabled` - Is the repository disabled?
+--- 
+
+A `repositories` block supports the following:
+
+* `id` - Git repository identifier.
+
+* `name` - Git repository name.
+
+* `url` - Details REST API endpoint for the Git Repository.
+
+* `ssh_url` - SSH Url to clone the Git repository
+
+* `web_url` - Url of the Git repository web view
+
+* `remote_url` - HTTPS Url to clone the Git repository
+
+* `project_id` - Project identifier to which the Git repository belongs.
+
+* `size` - Compressed size (bytes) of the repository.
+
+* `default_branch` - The ref of the default branch.
+
+* `disabled` - Is the repository disabled?
 
 ## Relevant Links
 

@@ -1,8 +1,10 @@
 package feed
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,6 +32,27 @@ func ResourceFeedPermission() *schema.Resource {
 		Read:   resourceFeedPermissionRead,
 		Update: resourceFeedPermissionUpdate,
 		Delete: resourceFeedPermissionDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
+				idParts := strings.Split(d.Id(), "/")
+				if len(idParts) > 3 || len(idParts) < 2 {
+					return nil, fmt.Errorf(" Unexpected ID format (%q), Expected: <feedId>/<identityDescriptor> or <projetId>/<feedId>/<identityDescriptor>", d.Id())
+				}
+
+				if len(idParts) == 2 {
+					d.Set("feed_id", idParts[0])
+					d.Set("identity_descriptor", idParts[1])
+				}
+
+				if len(idParts) == 3 {
+					d.Set("project_id", idParts[0])
+					d.Set("feed_id", idParts[1])
+					d.Set("identity_descriptor", idParts[2])
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -90,11 +113,11 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 	permission, identityResponse, err := getFeedPermission(d, m)
 
 	if err != nil && !utils.ResponseWasNotFound(err) {
-		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
+		return fmt.Errorf("Creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	if permission != nil {
-		return fmt.Errorf("feed Permission for Feed : %s and Identity : %s already exists", feedId, identityDescriptor)
+		return fmt.Errorf("Feed Permission for Feed : %s and Identity : %s already exists", feedId, identityDescriptor)
 	}
 
 	_, err = clients.FeedClient.SetFeedPermissions(clients.Ctx, feed.SetFeedPermissionsArgs{
@@ -119,7 +142,10 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
 	}
 
-	id, _ := uuid.NewUUID()
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf(" Creating Permission for Feed failed: %+v", err)
+	}
 	d.SetId(fmt.Sprintf("fp-%s", id.String()))
 
 	return resourceFeedPermissionRead(d, m)
@@ -259,7 +285,11 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 	})
 
 	if err != nil {
-		return nil, identityResponse, err
+		if utils.ResponseWasNotFound(err) {
+			return nil, identityResponse, fmt.Errorf(" Feed Permissions Not Found. Feed may exist at organization or project level."+
+				" Please ensure you have set the `project_id` correctly. \n Project ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
+		}
+		return nil, identityResponse, fmt.Errorf(" \nProject ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
 	}
 
 	for _, permission := range *permissions {

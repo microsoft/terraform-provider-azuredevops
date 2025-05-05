@@ -205,117 +205,305 @@ resource "azuredevops_build_definition" "example" {
 }
 ```
 
+### Using Other Git and Agent Jobs
+```hcl
+resource "azuredevops_serviceendpoint_generic_git" "example" {
+  project_id            = data.azuredevops_project.example.id
+  repository_url        = "https://gitlab.com/example/example.git"
+  password              = "token"
+  service_endpoint_name = "Example Generic Git"
+}
+
+
+resource "azuredevops_build_definition" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Example Build Definition"
+  path       = "\\ExampleFolder"
+
+  ci_trigger {
+    use_yaml = false
+  }
+
+  repository {
+    repo_type             = "Git"
+    repo_id               = azuredevops_serviceendpoint_generic_git.example.repository_url
+    branch_name           = "refs/heads/main"
+    url                   = azuredevops_serviceendpoint_generic_git.example.repository_url
+    service_connection_id = azuredevops_serviceendpoint_generic_git.example.id
+  }
+
+  jobs {
+    name      = "Agent Job1"
+    ref_name  = "agent_job1"
+    condition = "succeededOrFailed()"
+    target {
+      type = "AgentJob"
+      execution_options {
+        type = "None"
+      }
+    }
+  }
+
+  jobs {
+    name      = "Agent Job2"
+    ref_name  = "agent_job2"
+    condition = "succeededOrFailed()"
+    dependencies {
+      scope = "agent_job1"
+    }
+    target {
+      type    = "AgentJob"
+      demands = ["git"]
+      execution_options {
+        type              = "Multi-Configuration"
+        continue_on_error = true
+        multipliers       = "multipliers"
+        max_concurrency   = 2
+      }
+    }
+  }
+
+  jobs {
+    name      = "Agentless Job1"
+    ref_name  = "agentless_job1"
+    condition = "succeeded()"
+    target {
+      type = "AgentlessJob"
+      execution_options {
+        type = "None"
+      }
+    }
+  }
+
+  jobs {
+    name                    = "Agentless Job2"
+    ref_name                = "agentless_job2"
+    condition               = "succeeded()"
+    job_authorization_scope = "project"
+    dependencies {
+      scope = "agent_job2"
+    }
+    dependencies {
+      scope = "agentless_job1"
+    }
+    target {
+      type = "AgentlessJob"
+      execution_options {
+        type              = "Multi-Configuration"
+        continue_on_error = true
+        multipliers       = "multipliers"
+      }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
-- `project_id` - (Required) The project ID or project name.
-- `name` - (Required) The name of the build definition.
-- `repository` - (Required) A `repository` block as documented below.
+* `project_id` - (Required) The project ID or project name.
+
+* `name` - (Required) The name of the build definition.
+
+* `repository` - (Required) A `repository` block as documented below.
 
 ---
-- `path` - (Optional) The folder path of the build definition.
-- `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
-- `ci_trigger` - (Optional) A `ci_trigger` block as documented below.
-- `pull_request_trigger` - (Optional) A `pull_request_trigger` block as documented below.
-- `build_completion_trigger` - (Optional) A `build_completion_trigger` block as documented below.
-- `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
-- `variable` - (Optional) A list of `variable` blocks, as documented below.
-- `features`- (Optional) A `features` blocks as documented below.
-- `queue_status`- (Optional) The queue status of the build definition. Valid values: `enabled` or `paused` or `disabled`. Defaults to `enabled`.
+* `path` - (Optional) The folder path of the build definition.
+
+* `agent_pool_name` - (Optional) The agent pool that should execute the build. Defaults to `Azure Pipelines`.
+
+* `ci_trigger` - (Optional) A `ci_trigger` block as documented below.
+
+* `pull_request_trigger` - (Optional) A `pull_request_trigger` block as documented below.
+
+* `build_completion_trigger` - (Optional) A `build_completion_trigger` block as documented below.
+
+* `variable_groups` - (Optional) A list of variable group IDs (integers) to link to the build definition.
+
+* `variable` - (Optional) A list of `variable` blocks, as documented below.
+
+* `features`- (Optional) A `features` blocks as documented below.
+
+* `queue_status`- (Optional) The queue status of the build definition. Possible values are: `enabled` or `paused` or `disabled`. Defaults to `enabled`.
+
+* `agent_specification`- (Optional) The Agent Specification to run the pipelines. Required when `repo_type` is `Git`. Example: `windows-2019`, `windows-latest`, `macos-13` etc.
+
+* `job_authorization_scope`- (Optional) The job authorization scope for builds queued against this definition. Possible values are: `project`, `projectCollection`. Defaults to `projectCollection`.
+
+* `jobs`- (Optional) A `jobs` blocks as documented below.
+
+  ~> **NOTE:** The `jobs` are classic pipelines, you need to enable the classic pipeline feature for your organization to use this feature.
 
 ---
+
+`jobs` block supports the following:
+
+* `name` - (Required) The name of the job.
+
+* `ref_name` - (Required) The reference name of the job, can be used to define the job dependencies.
+
+* `condition` - (Required) Specifies when this job should run. Can **Custom conditions** to specify more complex conditions. Possible values: `succeeded()`, `succeededOrFailed()`, `always()`, `failed()` etc. More details: [Pipeline conditions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops)
+
+* `target`- (Required) A `target` blocks as documented below.
+
+* `job_timeout_in_minutes` - (Optional) The job execution timeout (in minutes) for builds queued against this definition. Possible values are between `0` and `1000000000`. Defaults to `0`.
+
+* `job_cancel_timeout_in_minutes` - (Optional) The job cancel timeout (in minutes) for builds cancelled by user for this definition. Possible values are between `0` and `60`. Defaults to `0`.
+
+* `job_authorization_scope`- (Optional) The job authorization scope for builds queued against this definition. Possible values are: `project`, `projectCollection`. Defaults to `projectCollection`.
+ 
+* `allow_scripts_auth_access_option`- (Optional) Enables scripts and other processes launched by tasks to access the OAuth token through the `System.AccessToken` variable. Possible values: `true`, `false`. Defaults to `false`. Available when Job type is `AgentJob`
+
+* `dependencies`- (Optional) A `dependencies` blocks as documented below. Define the job dependencies.
+
+---
+
+`dependencies` block supports the following:
+
+* `scope` (Required) The job reference name that depends on. Reference to `jobs.ref_name`
+
+---
+
+`target` block supports the following:
+
+* `type` (Required) The job type. Possible values: `AgentJob`, `AgentlessJob`
+
+* `execution_options`- (Required) A `execution_options` blocks as documented below.
+
+* `demands` - (Optional) A list of demands that represents the agent capabilities required by this build. Example: `git`
+
+---
+
+`execution_options` block supports the following:
+
+* `type`- (Required) The execution type of the Job. Possible values are: `None`, `Multi-Configuration`, `Multi-Agent`.
+
+* `multipliers` - (Optional) A list of comma separated configuration variables to use. These are defined on the Variables tab. For example, OperatingSystem, Browser will run the tasks for both variables. Available when `execution_options.type` is `Multi-Configuration`.  
+
+* `max_concurrency` - (Optional) Limit the number of agents to be used. If job type is `AgentlessJob`, the concurrency is not configurable and is fixed to 50.
+
+* `continue_on_error` - (Optional) Whether to continue the job when an error occurs. Possible values are: `true`, `false`.
+
+---
+
 `features` block supports the following:
 
-  - `skip_first_run` (Optional) Trigger the pipeline to run after the creation. Defaults to `true`.
+  * `skip_first_run` (Optional) Trigger the pipeline to run after the creation. Defaults to `true`.
   
   ~> **Note** The first run(`skip_first_run = false`) will only be triggered on create. If the first run fails, the build definition will still be marked as successfully created. A warning message indicating the inability to run pipeline will be displayed.
 
 ---
+
 `variable` block supports the following:
 
-- `name` - (Required) The name of the variable.
-- `value` - (Optional) The value of the variable.
-- `secret_value` - (Optional) The secret value of the variable. Used when `is_secret` set to `true`.
-- `is_secret` - (Optional) True if the variable is a secret. Defaults to `false`.
-- `allow_override` - (Optional) True if the variable can be overridden. Defaults to `true`.
+* `name` - (Required) The name of the variable.
+
+* `value` - (Optional) The value of the variable.
+
+* `secret_value` - (Optional) The secret value of the variable. Used when `is_secret` set to `true`.
+
+* `is_secret` - (Optional) True if the variable is a secret. Defaults to `false`.
+
+* `allow_override` - (Optional) True if the variable can be overridden. Defaults to `true`.
 
 ---
+
 `repository` block supports the following:
 
-- `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
-- `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
-- `repo_type` - (Optional) The repository type. Valid values: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise`. Defaults to `GitHub`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
-- `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
-- `yml_path` - (Required) The path of the Yaml file describing the build definition.
-- `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`.
-- `report_build_status` - (Optional) Report build status. Default is true.
+* `repo_id` - (Required) The id of the repository. For `TfsGit` repos, this is simply the ID of the repository. For `Github` repos, this will take the form of `<GitHub Org>/<Repo Name>`. For `Bitbucket` repos, this will take the form of `<Workspace ID>/<Repo Name>`.
+
+* `repo_type` - (Required) The repository type. Possible values are: `GitHub` or `TfsGit` or `Bitbucket` or `GitHub Enterprise` or `Git`. Defaults to `GitHub`. If `repo_type` is `GitHubEnterprise`, must use existing project and GitHub Enterprise service connection.
+
+* `branch_name` - (Optional) The branch name for which builds are triggered. Defaults to `master`.
+
+* `service_connection_id` - (Optional) The service connection ID. Used if the `repo_type` is `GitHub` or `GitHubEnterprise`.
+
+* `yml_path` - (Optional) The path of the Yaml file describing the build definition.
+
+* `github_enterprise_url` - (Optional) The Github Enterprise URL. Used if `repo_type` is `GithubEnterprise`. Conflict with `url`
+
+* `url` - (Optional) The URL of the Git repository. Used if `repo_type` is `Git`. Conflict with `github_enterprise_url`
+
+* `report_build_status` - (Optional) Report build status. Default is true.
 
 ---
+
 `ci_trigger` block supports the following:
 
-- `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
-- `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
+* `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
+
+* `override` - (Optional) Override the azure-pipeline file and use a this configuration for all builds.
 
 ---
+
 `ci_trigger` `override` block supports the following:
 
-- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
-- `batch` - (Optional) If you set batch to true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built. Defaults to `true`.
-- `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
-- `max_concurrent_builds_per_branch` - (Optional) The number of max builds per branch. Defaults to `1`.
-- `polling_interval` - (Optional) How often the external repository is polled. Defaults to `0`.
-- `polling_job_id` - (Computed) This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
+* `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
+
+* `batch` - (Optional) If you set batch to true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built. Defaults to `true`.
+
+* `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+
+* `max_concurrent_builds_per_branch` - (Optional) The number of max builds per branch. Defaults to `1`.
+
+* `polling_interval` - (Optional) How often the external repository is polled. Defaults to `0`.
+
+* `polling_job_id` - (Computed) This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
 
 ---
+
 `build_completion_trigger` block supports the following:
 
-- `build_definition_id` - (Required) The ID of the build pipeline will be triggered.
-- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
+* `build_definition_id` - (Required) The ID of the build pipeline will be triggered.
+
+* `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
 
 ---
+
 `pull_request_trigger` block supports the following:
 
-- `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
-- `initial_branch` - (Optional) When use_yaml is true set this to the name of the branch that the azure-pipelines.yml exists on. Defaults to `Managed by Terraform`.
-- `forks` - (Required) Set permissions for Forked repositories.
-- `override` - (Optional) Override the azure-pipeline file and use this configuration for all builds.
+* `use_yaml` - (Optional) Use the azure-pipeline file for the build configuration. Defaults to `false`.
+
+* `initial_branch` - (Optional) When use_yaml is true set this to the name of the branch that the azure-pipelines.yml exists on. Defaults to `Managed by Terraform`.
+
+* `forks` - (Required) Set permissions for Forked repositories.
+
+* `override` - (Optional) Override the azure-pipeline file and use this configuration for all builds.
 
 ---
+
 `forks` block supports the following:
 
-- `enabled` - (Required) Build pull requests from forks of this repository.
-- `share_secrets` - (Required) Make secrets available to builds of forks.
+* `enabled` - (Required) Build pull requests from forks of this repository.
+
+* `share_secrets` - (Required) Make secrets available to builds of forks.
 
 ---
+
 `pull_request_trigger` `override` block supports the following:
 
-- `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
-- `auto_cancel` - (Optional) . Defaults to `true`.
-- `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+* `branch_filter` - (Required) The branches to include and exclude from the trigger. A `branch_filter` block as documented below.
+
+* `auto_cancel` - (Optional) . Defaults to `true`.
+
+* `path_filter` - (Optional) Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
 
 ---
-`branch_filter` block supports the following:
 
-- `include` - (Optional) List of branch patterns to include.
-- `exclude` - (Optional) List of branch patterns to exclude.
-
----
-`path_filter` block supports the following:
-
-- `include` - (Optional) List of path patterns to include.
-- `exclude` - (Optional) List of path patterns to exclude.
-
----
 `schedules` block supports the following:
 
 -> **Note:** Schedule pipeline will not use any schedules defined in the YAML file. To use schedules from the YAML file, delete all scheduled triggers.
 
-- `days_to_build`: (Required) When to build. Valid values: `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`.
-- `schedule_only_with_changes`: (Optional) Schedule builds if the source or pipeline has changed. Defaults to `true`.
-- `start_hours`: (Optional) Build start hour. Defaults to `0`. Valid values: `0 ~ 23`.
-- `start_minutes`: (Optional) Build start minute. Defaults to `0`. Valid values: `0 ~ 59`.
-- `time_zone`: (Optional) Build time zone. Defaults to `(UTC) Coordinated Universal Time`. Valid values: 
+* `days_to_build`: (Required) When to build. Possible values are: `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`.
+
+* `schedule_only_with_changes`: (Optional) Schedule builds if the source or pipeline has changed. Defaults to `true`.
+
+* `start_hours`: (Optional) Build start hour. Possible values are: `0 ~ 23`. Defaults to `0`.
+
+* `start_minutes`: (Optional) Build start minute. Possible values are: `0 ~ 59`. Defaults to `0`.
+
+* `time_zone`: (Optional) Build time zone. Defaults to `(UTC) Coordinated Universal Time`. Possible values are:
   `(UTC-12:00) International Date Line West`,   
   `(UTC-11:00) Coordinated Universal Time-11`,   
   `(UTC-10:00) Aleutian Islands`,   
@@ -457,22 +645,37 @@ The following arguments are supported:
   `(UTC+13:00) Nuku'alofa`,   
   `(UTC+13:00) Samoa`,   
   `(UTC+14:00) Kiritimati Island`.
-- `branch_filter` (Required) block supports the following:
-  - `include` - (Optional) List of branch patterns to include.
-  - `exclude` - (Optional) List of branch patterns to exclude.
 
+* `branch_filter` - A `branch_filter` block as defined below.
+
+---
+
+`branch_filter` block supports the following:
+
+* `include` - (Optional) List of branch patterns to include.
+
+* `exclude` - (Optional) List of branch patterns to exclude.
+
+---
+
+`path_filter` block supports the following:
+
+* `include` - (Optional) List of path patterns to include.
+
+* `exclude` - (Optional) List of path patterns to exclude.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the build definition
-- `revision` - The revision of the build definition
+* `id` - The ID of the build definition
+* `revision` - The revision of the build definition
 
 ---
-The `schedules` block exports the following:
 
-- `schedule_job_id` - The ID of the schedule job 
+A `schedules` block exports the following:
+
+* `schedule_job_id` - The ID of the schedule job 
 
 ## Remarks
 

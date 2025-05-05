@@ -35,20 +35,25 @@ data "azuredevops_feed" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) Name of the Feed.
-- `feed_id` - (Required) ID of the Feed.
+* `name` - (Required) The Name of the Feed.
+
+* `feed_id` - (Required) The ID of the Feed.
 
 ~> **Note** Only one of `name` or `feed_id` can be set at the same time.
 
-- `project_id` - (Optional) ID of the Project Feed is created in.
+---
+
+* `project_id` - (Optional) ID of the Project Feed is created in.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `name` - The name of the Feed.
-- `feed_id` - The ID of the Feed.
-- `project_id` - The ID of the Project.
+* `name` - The name of the Feed.
+
+* `feed_id` - The ID of the Feed.
+
+* `project_id` - The ID of the Project.
 
 ## Relevant Links
 

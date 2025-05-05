@@ -36,25 +36,32 @@ resource "azuredevops_serviceendpoint_generic_git" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The name of the service endpoint.
-- `repository_url` - (Required) The URL of the repository associated with the service endpoint.
-- `username` - (Optional) The username used to authenticate to the git repository.
-- `password` - (Optional) The PAT or password used to authenticate to the git repository.
+* `project_id` - (Required) The ID of the project.
 
-~> **Note** For AzureDevOps Git, PAT should be used as the password.
+* `service_endpoint_name` - (Required) The name of the service endpoint.
 
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-- `enable_pipelines_access` - (Optional) A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
+* `repository_url` - (Required) The URL of the repository associated with the service endpoint.
+
+---
+
+* `username` - (Optional) The username used to authenticate to the git repository.
+
+* `password` - (Optional) The PAT or password used to authenticate to the git repository.
+
+    ~> **Note** For AzureDevOps Git, PAT should be used as the password.
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+
+* `enable_pipelines_access` - (Optional) A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The name of the service endpoint.
-- `enable_pipelines_access` - A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The name of the service endpoint.
+* `enable_pipelines_access` - A value indicating whether or not to attempt accessing this git server from Azure Pipelines.
 
 ## Relevant Links
 

@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	pipelinepermissions "github.com/microsoft/azure-devops-go-api/azuredevops/v7/pipelinepermissions"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPipelinepermissionsClient is a mock of Client interface.
 type MockPipelinepermissionsClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPipelinepermissionsClientMockRecorder
+	isgomock struct{}
 }
 
 // MockPipelinepermissionsClientMockRecorder is the mock recorder for MockPipelinepermissionsClient.
@@ -45,7 +46,7 @@ func (m *MockPipelinepermissionsClient) GetPipelinePermissionsForResource(arg0 c
 }
 
 // GetPipelinePermissionsForResource indicates an expected call of GetPipelinePermissionsForResource.
-func (mr *MockPipelinepermissionsClientMockRecorder) GetPipelinePermissionsForResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinepermissionsClientMockRecorder) GetPipelinePermissionsForResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelinePermissionsForResource", reflect.TypeOf((*MockPipelinepermissionsClient)(nil).GetPipelinePermissionsForResource), arg0, arg1)
 }
@@ -60,7 +61,7 @@ func (m *MockPipelinepermissionsClient) UpdatePipelinePermisionsForResource(arg0
 }
 
 // UpdatePipelinePermisionsForResource indicates an expected call of UpdatePipelinePermisionsForResource.
-func (mr *MockPipelinepermissionsClientMockRecorder) UpdatePipelinePermisionsForResource(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinepermissionsClientMockRecorder) UpdatePipelinePermisionsForResource(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelinePermisionsForResource", reflect.TypeOf((*MockPipelinepermissionsClient)(nil).UpdatePipelinePermisionsForResource), arg0, arg1)
 }
@@ -75,7 +76,7 @@ func (m *MockPipelinepermissionsClient) UpdatePipelinePermisionsForResources(arg
 }
 
 // UpdatePipelinePermisionsForResources indicates an expected call of UpdatePipelinePermisionsForResources.
-func (mr *MockPipelinepermissionsClientMockRecorder) UpdatePipelinePermisionsForResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPipelinepermissionsClientMockRecorder) UpdatePipelinePermisionsForResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelinePermisionsForResources", reflect.TypeOf((*MockPipelinepermissionsClient)(nil).UpdatePipelinePermisionsForResources), arg0, arg1)
 }

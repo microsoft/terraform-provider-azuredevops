@@ -33,22 +33,31 @@ resource "azuredevops_serviceendpoint_ssh" "example" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The ID of the project.
-- `service_endpoint_name` - (Required) The Service Endpoint name.
-- `host` - (Required) The Host name or IP address of the remote machine.
-- `username` - (Required) Username for connecting to the endpoint.
-- `port` - (Optional) Port number on the remote machine to use for connecting. Defaults to `22`.
-- `password` - (Optional) Password for connecting to the endpoint.
-- `private_key` - (Optional) Private Key for connecting to the endpoint.
-- `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
+* `project_id` - (Required) The ID of the project.
+
+* `service_endpoint_name` - (Required) The Service Endpoint name.
+
+* `host` - (Required) The Host name or IP address of the remote machine.
+
+* `username` - (Required) Username for connecting to the endpoint.
+
+---
+
+* `port` - (Optional) Port number on the remote machine to use for connecting. Defaults to `22`.
+
+* `password` - (Optional) Password for connecting to the endpoint.
+
+* `private_key` - (Optional) Private Key for connecting to the endpoint.
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The ID of the service endpoint.
-- `project_id` - The ID of the project.
-- `service_endpoint_name` - The Service Endpoint name.
+* `id` - The ID of the service endpoint.
+* `project_id` - The ID of the project.
+* `service_endpoint_name` - The Service Endpoint name.
 
 ## Relevant Links
 

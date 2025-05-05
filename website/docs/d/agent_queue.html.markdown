@@ -37,17 +37,21 @@ output "pool_id" {
 
 The following arguments are supported:
 
-- `project_id` - (Required) The Project Id.
-- `name` - (Required) Name of the Agent Queue.
+* `project_id` - (Required) The Project Id.
+
+* `name` - (Required) Name of the Agent Queue.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id`  - The id of the agent queue.
-- `name` - The name of the agent queue.
-- `project_id` - Project identifier to which the agent queue belongs.
-- `agent_pool_id` - Agent pool identifier to which the agent queue belongs.
+* `id`  - The id of the agent queue.
+
+* `name` - The name of the agent queue.
+
+* `project_id` - The ID of the Project to which the agent queue belongs.
+
+* `agent_pool_id` - The ID of the Agent pool to which the agent queue belongs.
 
 ## Relevant Links
 

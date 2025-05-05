@@ -18,7 +18,7 @@ data "azuredevops_project" "example" {
 
 data "azuredevops_build_definition" "example" {
   project_id = data.azuredevops_project.example.id
-  name = "existing"
+  name       = "existing"
 }
 
 output "id" {
@@ -62,6 +62,63 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `queue_status` - The queue status of the build definition.
 
+* `agent_specification`- The Agent Specification to run the pipelines. Example: `windows-2019`, `windows-latest`, `macos-13` etc.
+
+* `job_authorization_scope`- The job authorization scope for builds queued against this definition.
+
+* `jobs`- A `jobs` blocks as documented below.
+
+---
+
+`jobs` block supports the following:
+
+* `name` - The name of the job.
+
+* `ref_name` - The reference name of the job, can be used to define the job dependencies.
+
+* `condition` - Specifies when this job should run. Can **Custom conditions** to specify more complex conditions. More details: [Pipeline conditions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops)
+
+* `target`- A `target` blocks as documented below.
+
+* `job_timeout_in_minutes` - The job execution timeout (in minutes) for builds queued against this definition.
+
+* `job_cancel_timeout_in_minutes` - The job cancel timeout (in minutes) for builds cancelled by user for this definition.
+
+* `job_authorization_scope`- The job authorization scope for builds queued against this definition.
+
+* `allow_scripts_auth_access_option`- Enables scripts and other processes launched by tasks to access the OAuth token through the `System.AccessToken` variable.
+
+* `dependencies`- A `dependencies` blocks as documented below. Define the job dependencies.
+
+---
+
+`dependencies` block supports the following:
+
+* `scope` The job reference name that depends on. Reference to `jobs.ref_name`
+
+---
+
+`target` block supports the following:
+
+* `type`  The job type.
+
+* `execution_options`- A `execution_options` blocks as documented below.
+
+* `demands` - A list of demands that represents the agent capabilities required by this build. Example: `git`
+
+---
+
+`execution_options` block supports the following:
+
+* `type`- The execution type of the Job.
+
+* `multipliers` -  A list of comma separated configuration variables to use. These are defined on the Variables tab. For example, OperatingSystem, Browser will run the tasks for both variables.
+
+* `max_concurrency` - Limit the number of agents to be used. If job type is `AgentlessJob`, the concurrency is not configurable and is fixed to 50.
+
+* `continue_on_error` - Whether to continue the job when an error occurs.
+
+
 ---
 
 A `branch_filter` block exports the following:
@@ -83,22 +140,33 @@ A `ci_trigger` block exports the following:
 A `ci_trigger` `override` block supports the following:
 
 * `batch` - If batch is true, when a pipeline is running, the system waits until the run is completed, then starts another run with all changes that have not yet been built.
+
 * `branch_filter` - The branches to include and exclude from the trigger.
+
 * `path_filter` - Specify file paths to include or exclude. Note that the wildcard syntax is different between branches/tags and file paths.
+
 * `max_concurrent_builds_per_branch` - The number of max builds per branch.
+
 * `polling_interval` - How often the external repository is polled.
+
 * `polling_job_id` - This is the ID of the polling job that polls the external repository. Once the build definition is saved/updated, this value is set.
 
-* `branch_filter` block supports the following:
+---
 
-  * `include` - (Optional) List of branch patterns to include.
-  * `exclude` - (Optional) List of branch patterns to exclude.
+A `branch_filter` block supports the following:
 
-* `path_filter` block supports the following:
+* `include` - (Optional) List of branch patterns to include.
 
-  * `include` - (Optional) List of path patterns to include.
-  * `exclude` - (Optional) List of path patterns to exclude.
+* `exclude` - (Optional) List of branch patterns to exclude.
 
+---
+
+A `path_filter` block supports the following:
+
+* `include` - (Optional) List of path patterns to include.
+ 
+* `exclude` - (Optional) List of path patterns to exclude.
+ 
 ---
 
 A `pull_request_trigger` block exports the following:
@@ -118,6 +186,7 @@ A `pull_request_trigger` block exports the following:
 A `forks` block exports the following:
 
 * `enabled` - Build pull requests from forks of this repository.
+
 * `share_secrets` - Make secrets available to builds of forks.
 
 ---
@@ -125,18 +194,10 @@ A `forks` block exports the following:
 A `pull_request_trigger` `override` block supports the following:
 
 * `auto_cancel` -Should further updates to a PR cancel an in progress validation?
-* `branch_filter` - The branches to include and exclude from the trigger.
-* `path_filter` - The file paths to include or exclude.
 
-* `branch_filter` block supports the following:
+* `branch_filter` - The branches to include and exclude from the trigger. A `branch_filter` block as defined above.
 
-  * `include` - (Optional) List of branch patterns to include.
-  * `exclude` - (Optional) List of branch patterns to exclude.
-
-* `path_filter` block supports the following:
-
-  * `include` - (Optional) List of path patterns to include.
-  * `exclude` - (Optional) List of path patterns to exclude.
+* `path_filter` - The file paths to include or exclude. A `path_filter` block as defined above.
 
 ---
 

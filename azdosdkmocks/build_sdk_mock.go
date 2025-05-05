@@ -9,15 +9,16 @@ import (
 	io "io"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	build "github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	webapi "github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockBuildClient is a mock of Client interface.
 type MockBuildClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockBuildClientMockRecorder
+	isgomock struct{}
 }
 
 // MockBuildClientMockRecorder is the mock recorder for MockBuildClient.
@@ -47,7 +48,7 @@ func (m *MockBuildClient) AddBuildTag(arg0 context.Context, arg1 build.AddBuildT
 }
 
 // AddBuildTag indicates an expected call of AddBuildTag.
-func (mr *MockBuildClientMockRecorder) AddBuildTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AddBuildTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBuildTag", reflect.TypeOf((*MockBuildClient)(nil).AddBuildTag), arg0, arg1)
 }
@@ -62,7 +63,7 @@ func (m *MockBuildClient) AddBuildTags(arg0 context.Context, arg1 build.AddBuild
 }
 
 // AddBuildTags indicates an expected call of AddBuildTags.
-func (mr *MockBuildClientMockRecorder) AddBuildTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AddBuildTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBuildTags", reflect.TypeOf((*MockBuildClient)(nil).AddBuildTags), arg0, arg1)
 }
@@ -77,7 +78,7 @@ func (m *MockBuildClient) AddDefinitionTag(arg0 context.Context, arg1 build.AddD
 }
 
 // AddDefinitionTag indicates an expected call of AddDefinitionTag.
-func (mr *MockBuildClientMockRecorder) AddDefinitionTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AddDefinitionTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDefinitionTag", reflect.TypeOf((*MockBuildClient)(nil).AddDefinitionTag), arg0, arg1)
 }
@@ -92,7 +93,7 @@ func (m *MockBuildClient) AddDefinitionTags(arg0 context.Context, arg1 build.Add
 }
 
 // AddDefinitionTags indicates an expected call of AddDefinitionTags.
-func (mr *MockBuildClientMockRecorder) AddDefinitionTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AddDefinitionTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDefinitionTags", reflect.TypeOf((*MockBuildClient)(nil).AddDefinitionTags), arg0, arg1)
 }
@@ -107,7 +108,7 @@ func (m *MockBuildClient) AddRetentionLeases(arg0 context.Context, arg1 build.Ad
 }
 
 // AddRetentionLeases indicates an expected call of AddRetentionLeases.
-func (mr *MockBuildClientMockRecorder) AddRetentionLeases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AddRetentionLeases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRetentionLeases", reflect.TypeOf((*MockBuildClient)(nil).AddRetentionLeases), arg0, arg1)
 }
@@ -122,7 +123,7 @@ func (m *MockBuildClient) AuthorizeDefinitionResources(arg0 context.Context, arg
 }
 
 // AuthorizeDefinitionResources indicates an expected call of AuthorizeDefinitionResources.
-func (mr *MockBuildClientMockRecorder) AuthorizeDefinitionResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AuthorizeDefinitionResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizeDefinitionResources", reflect.TypeOf((*MockBuildClient)(nil).AuthorizeDefinitionResources), arg0, arg1)
 }
@@ -137,7 +138,7 @@ func (m *MockBuildClient) AuthorizeProjectResources(arg0 context.Context, arg1 b
 }
 
 // AuthorizeProjectResources indicates an expected call of AuthorizeProjectResources.
-func (mr *MockBuildClientMockRecorder) AuthorizeProjectResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) AuthorizeProjectResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizeProjectResources", reflect.TypeOf((*MockBuildClient)(nil).AuthorizeProjectResources), arg0, arg1)
 }
@@ -152,7 +153,7 @@ func (m *MockBuildClient) CreateArtifact(arg0 context.Context, arg1 build.Create
 }
 
 // CreateArtifact indicates an expected call of CreateArtifact.
-func (mr *MockBuildClientMockRecorder) CreateArtifact(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) CreateArtifact(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtifact", reflect.TypeOf((*MockBuildClient)(nil).CreateArtifact), arg0, arg1)
 }
@@ -167,7 +168,7 @@ func (m *MockBuildClient) CreateDefinition(arg0 context.Context, arg1 build.Crea
 }
 
 // CreateDefinition indicates an expected call of CreateDefinition.
-func (mr *MockBuildClientMockRecorder) CreateDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) CreateDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDefinition", reflect.TypeOf((*MockBuildClient)(nil).CreateDefinition), arg0, arg1)
 }
@@ -182,7 +183,7 @@ func (m *MockBuildClient) CreateFolder(arg0 context.Context, arg1 build.CreateFo
 }
 
 // CreateFolder indicates an expected call of CreateFolder.
-func (mr *MockBuildClientMockRecorder) CreateFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) CreateFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFolder", reflect.TypeOf((*MockBuildClient)(nil).CreateFolder), arg0, arg1)
 }
@@ -196,7 +197,7 @@ func (m *MockBuildClient) DeleteBuild(arg0 context.Context, arg1 build.DeleteBui
 }
 
 // DeleteBuild indicates an expected call of DeleteBuild.
-func (mr *MockBuildClientMockRecorder) DeleteBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBuild", reflect.TypeOf((*MockBuildClient)(nil).DeleteBuild), arg0, arg1)
 }
@@ -211,7 +212,7 @@ func (m *MockBuildClient) DeleteBuildTag(arg0 context.Context, arg1 build.Delete
 }
 
 // DeleteBuildTag indicates an expected call of DeleteBuildTag.
-func (mr *MockBuildClientMockRecorder) DeleteBuildTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteBuildTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBuildTag", reflect.TypeOf((*MockBuildClient)(nil).DeleteBuildTag), arg0, arg1)
 }
@@ -225,7 +226,7 @@ func (m *MockBuildClient) DeleteDefinition(arg0 context.Context, arg1 build.Dele
 }
 
 // DeleteDefinition indicates an expected call of DeleteDefinition.
-func (mr *MockBuildClientMockRecorder) DeleteDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDefinition", reflect.TypeOf((*MockBuildClient)(nil).DeleteDefinition), arg0, arg1)
 }
@@ -240,7 +241,7 @@ func (m *MockBuildClient) DeleteDefinitionTag(arg0 context.Context, arg1 build.D
 }
 
 // DeleteDefinitionTag indicates an expected call of DeleteDefinitionTag.
-func (mr *MockBuildClientMockRecorder) DeleteDefinitionTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteDefinitionTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDefinitionTag", reflect.TypeOf((*MockBuildClient)(nil).DeleteDefinitionTag), arg0, arg1)
 }
@@ -254,7 +255,7 @@ func (m *MockBuildClient) DeleteFolder(arg0 context.Context, arg1 build.DeleteFo
 }
 
 // DeleteFolder indicates an expected call of DeleteFolder.
-func (mr *MockBuildClientMockRecorder) DeleteFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFolder", reflect.TypeOf((*MockBuildClient)(nil).DeleteFolder), arg0, arg1)
 }
@@ -268,7 +269,7 @@ func (m *MockBuildClient) DeleteRetentionLeasesById(arg0 context.Context, arg1 b
 }
 
 // DeleteRetentionLeasesById indicates an expected call of DeleteRetentionLeasesById.
-func (mr *MockBuildClientMockRecorder) DeleteRetentionLeasesById(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteRetentionLeasesById(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRetentionLeasesById", reflect.TypeOf((*MockBuildClient)(nil).DeleteRetentionLeasesById), arg0, arg1)
 }
@@ -283,7 +284,7 @@ func (m *MockBuildClient) DeleteTag(arg0 context.Context, arg1 build.DeleteTagAr
 }
 
 // DeleteTag indicates an expected call of DeleteTag.
-func (mr *MockBuildClientMockRecorder) DeleteTag(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockBuildClient)(nil).DeleteTag), arg0, arg1)
 }
@@ -297,7 +298,7 @@ func (m *MockBuildClient) DeleteTemplate(arg0 context.Context, arg1 build.Delete
 }
 
 // DeleteTemplate indicates an expected call of DeleteTemplate.
-func (mr *MockBuildClientMockRecorder) DeleteTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) DeleteTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTemplate", reflect.TypeOf((*MockBuildClient)(nil).DeleteTemplate), arg0, arg1)
 }
@@ -312,7 +313,7 @@ func (m *MockBuildClient) GetArtifact(arg0 context.Context, arg1 build.GetArtifa
 }
 
 // GetArtifact indicates an expected call of GetArtifact.
-func (mr *MockBuildClientMockRecorder) GetArtifact(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetArtifact(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifact", reflect.TypeOf((*MockBuildClient)(nil).GetArtifact), arg0, arg1)
 }
@@ -327,7 +328,7 @@ func (m *MockBuildClient) GetArtifactContentZip(arg0 context.Context, arg1 build
 }
 
 // GetArtifactContentZip indicates an expected call of GetArtifactContentZip.
-func (mr *MockBuildClientMockRecorder) GetArtifactContentZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetArtifactContentZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifactContentZip", reflect.TypeOf((*MockBuildClient)(nil).GetArtifactContentZip), arg0, arg1)
 }
@@ -342,7 +343,7 @@ func (m *MockBuildClient) GetArtifacts(arg0 context.Context, arg1 build.GetArtif
 }
 
 // GetArtifacts indicates an expected call of GetArtifacts.
-func (mr *MockBuildClientMockRecorder) GetArtifacts(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetArtifacts(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifacts", reflect.TypeOf((*MockBuildClient)(nil).GetArtifacts), arg0, arg1)
 }
@@ -357,7 +358,7 @@ func (m *MockBuildClient) GetAttachment(arg0 context.Context, arg1 build.GetAtta
 }
 
 // GetAttachment indicates an expected call of GetAttachment.
-func (mr *MockBuildClientMockRecorder) GetAttachment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetAttachment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachment", reflect.TypeOf((*MockBuildClient)(nil).GetAttachment), arg0, arg1)
 }
@@ -372,7 +373,7 @@ func (m *MockBuildClient) GetAttachments(arg0 context.Context, arg1 build.GetAtt
 }
 
 // GetAttachments indicates an expected call of GetAttachments.
-func (mr *MockBuildClientMockRecorder) GetAttachments(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetAttachments(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachments", reflect.TypeOf((*MockBuildClient)(nil).GetAttachments), arg0, arg1)
 }
@@ -387,7 +388,7 @@ func (m *MockBuildClient) GetBuild(arg0 context.Context, arg1 build.GetBuildArgs
 }
 
 // GetBuild indicates an expected call of GetBuild.
-func (mr *MockBuildClientMockRecorder) GetBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuild", reflect.TypeOf((*MockBuildClient)(nil).GetBuild), arg0, arg1)
 }
@@ -402,7 +403,7 @@ func (m *MockBuildClient) GetBuildBadge(arg0 context.Context, arg1 build.GetBuil
 }
 
 // GetBuildBadge indicates an expected call of GetBuildBadge.
-func (mr *MockBuildClientMockRecorder) GetBuildBadge(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildBadge(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildBadge", reflect.TypeOf((*MockBuildClient)(nil).GetBuildBadge), arg0, arg1)
 }
@@ -417,7 +418,7 @@ func (m *MockBuildClient) GetBuildBadgeData(arg0 context.Context, arg1 build.Get
 }
 
 // GetBuildBadgeData indicates an expected call of GetBuildBadgeData.
-func (mr *MockBuildClientMockRecorder) GetBuildBadgeData(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildBadgeData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildBadgeData", reflect.TypeOf((*MockBuildClient)(nil).GetBuildBadgeData), arg0, arg1)
 }
@@ -432,7 +433,7 @@ func (m *MockBuildClient) GetBuildChanges(arg0 context.Context, arg1 build.GetBu
 }
 
 // GetBuildChanges indicates an expected call of GetBuildChanges.
-func (mr *MockBuildClientMockRecorder) GetBuildChanges(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildChanges(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildChanges", reflect.TypeOf((*MockBuildClient)(nil).GetBuildChanges), arg0, arg1)
 }
@@ -447,7 +448,7 @@ func (m *MockBuildClient) GetBuildController(arg0 context.Context, arg1 build.Ge
 }
 
 // GetBuildController indicates an expected call of GetBuildController.
-func (mr *MockBuildClientMockRecorder) GetBuildController(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildController(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildController", reflect.TypeOf((*MockBuildClient)(nil).GetBuildController), arg0, arg1)
 }
@@ -462,7 +463,7 @@ func (m *MockBuildClient) GetBuildControllers(arg0 context.Context, arg1 build.G
 }
 
 // GetBuildControllers indicates an expected call of GetBuildControllers.
-func (mr *MockBuildClientMockRecorder) GetBuildControllers(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildControllers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildControllers", reflect.TypeOf((*MockBuildClient)(nil).GetBuildControllers), arg0, arg1)
 }
@@ -477,7 +478,7 @@ func (m *MockBuildClient) GetBuildGeneralSettings(arg0 context.Context, arg1 bui
 }
 
 // GetBuildGeneralSettings indicates an expected call of GetBuildGeneralSettings.
-func (mr *MockBuildClientMockRecorder) GetBuildGeneralSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildGeneralSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildGeneralSettings", reflect.TypeOf((*MockBuildClient)(nil).GetBuildGeneralSettings), arg0, arg1)
 }
@@ -492,7 +493,7 @@ func (m *MockBuildClient) GetBuildLog(arg0 context.Context, arg1 build.GetBuildL
 }
 
 // GetBuildLog indicates an expected call of GetBuildLog.
-func (mr *MockBuildClientMockRecorder) GetBuildLog(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildLog(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildLog", reflect.TypeOf((*MockBuildClient)(nil).GetBuildLog), arg0, arg1)
 }
@@ -507,7 +508,7 @@ func (m *MockBuildClient) GetBuildLogLines(arg0 context.Context, arg1 build.GetB
 }
 
 // GetBuildLogLines indicates an expected call of GetBuildLogLines.
-func (mr *MockBuildClientMockRecorder) GetBuildLogLines(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildLogLines(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildLogLines", reflect.TypeOf((*MockBuildClient)(nil).GetBuildLogLines), arg0, arg1)
 }
@@ -522,7 +523,7 @@ func (m *MockBuildClient) GetBuildLogZip(arg0 context.Context, arg1 build.GetBui
 }
 
 // GetBuildLogZip indicates an expected call of GetBuildLogZip.
-func (mr *MockBuildClientMockRecorder) GetBuildLogZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildLogZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildLogZip", reflect.TypeOf((*MockBuildClient)(nil).GetBuildLogZip), arg0, arg1)
 }
@@ -537,7 +538,7 @@ func (m *MockBuildClient) GetBuildLogs(arg0 context.Context, arg1 build.GetBuild
 }
 
 // GetBuildLogs indicates an expected call of GetBuildLogs.
-func (mr *MockBuildClientMockRecorder) GetBuildLogs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildLogs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildLogs", reflect.TypeOf((*MockBuildClient)(nil).GetBuildLogs), arg0, arg1)
 }
@@ -552,7 +553,7 @@ func (m *MockBuildClient) GetBuildLogsZip(arg0 context.Context, arg1 build.GetBu
 }
 
 // GetBuildLogsZip indicates an expected call of GetBuildLogsZip.
-func (mr *MockBuildClientMockRecorder) GetBuildLogsZip(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildLogsZip(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildLogsZip", reflect.TypeOf((*MockBuildClient)(nil).GetBuildLogsZip), arg0, arg1)
 }
@@ -567,22 +568,22 @@ func (m *MockBuildClient) GetBuildOptionDefinitions(arg0 context.Context, arg1 b
 }
 
 // GetBuildOptionDefinitions indicates an expected call of GetBuildOptionDefinitions.
-func (mr *MockBuildClientMockRecorder) GetBuildOptionDefinitions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildOptionDefinitions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildOptionDefinitions", reflect.TypeOf((*MockBuildClient)(nil).GetBuildOptionDefinitions), arg0, arg1)
 }
 
 // GetBuildProperties mocks base method.
-func (m *MockBuildClient) GetBuildProperties(arg0 context.Context, arg1 build.GetBuildPropertiesArgs) (interface{}, error) {
+func (m *MockBuildClient) GetBuildProperties(arg0 context.Context, arg1 build.GetBuildPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBuildProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBuildProperties indicates an expected call of GetBuildProperties.
-func (mr *MockBuildClientMockRecorder) GetBuildProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildProperties", reflect.TypeOf((*MockBuildClient)(nil).GetBuildProperties), arg0, arg1)
 }
@@ -597,7 +598,7 @@ func (m *MockBuildClient) GetBuildReport(arg0 context.Context, arg1 build.GetBui
 }
 
 // GetBuildReport indicates an expected call of GetBuildReport.
-func (mr *MockBuildClientMockRecorder) GetBuildReport(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildReport(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildReport", reflect.TypeOf((*MockBuildClient)(nil).GetBuildReport), arg0, arg1)
 }
@@ -612,7 +613,7 @@ func (m *MockBuildClient) GetBuildReportHtmlContent(arg0 context.Context, arg1 b
 }
 
 // GetBuildReportHtmlContent indicates an expected call of GetBuildReportHtmlContent.
-func (mr *MockBuildClientMockRecorder) GetBuildReportHtmlContent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildReportHtmlContent(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildReportHtmlContent", reflect.TypeOf((*MockBuildClient)(nil).GetBuildReportHtmlContent), arg0, arg1)
 }
@@ -627,7 +628,7 @@ func (m *MockBuildClient) GetBuildSettings(arg0 context.Context, arg1 build.GetB
 }
 
 // GetBuildSettings indicates an expected call of GetBuildSettings.
-func (mr *MockBuildClientMockRecorder) GetBuildSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildSettings", reflect.TypeOf((*MockBuildClient)(nil).GetBuildSettings), arg0, arg1)
 }
@@ -642,7 +643,7 @@ func (m *MockBuildClient) GetBuildTags(arg0 context.Context, arg1 build.GetBuild
 }
 
 // GetBuildTags indicates an expected call of GetBuildTags.
-func (mr *MockBuildClientMockRecorder) GetBuildTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildTags", reflect.TypeOf((*MockBuildClient)(nil).GetBuildTags), arg0, arg1)
 }
@@ -657,7 +658,7 @@ func (m *MockBuildClient) GetBuildTimeline(arg0 context.Context, arg1 build.GetB
 }
 
 // GetBuildTimeline indicates an expected call of GetBuildTimeline.
-func (mr *MockBuildClientMockRecorder) GetBuildTimeline(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildTimeline(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildTimeline", reflect.TypeOf((*MockBuildClient)(nil).GetBuildTimeline), arg0, arg1)
 }
@@ -672,7 +673,7 @@ func (m *MockBuildClient) GetBuildWorkItemsRefs(arg0 context.Context, arg1 build
 }
 
 // GetBuildWorkItemsRefs indicates an expected call of GetBuildWorkItemsRefs.
-func (mr *MockBuildClientMockRecorder) GetBuildWorkItemsRefs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildWorkItemsRefs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildWorkItemsRefs", reflect.TypeOf((*MockBuildClient)(nil).GetBuildWorkItemsRefs), arg0, arg1)
 }
@@ -687,7 +688,7 @@ func (m *MockBuildClient) GetBuildWorkItemsRefsFromCommits(arg0 context.Context,
 }
 
 // GetBuildWorkItemsRefsFromCommits indicates an expected call of GetBuildWorkItemsRefsFromCommits.
-func (mr *MockBuildClientMockRecorder) GetBuildWorkItemsRefsFromCommits(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuildWorkItemsRefsFromCommits(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildWorkItemsRefsFromCommits", reflect.TypeOf((*MockBuildClient)(nil).GetBuildWorkItemsRefsFromCommits), arg0, arg1)
 }
@@ -702,7 +703,7 @@ func (m *MockBuildClient) GetBuilds(arg0 context.Context, arg1 build.GetBuildsAr
 }
 
 // GetBuilds indicates an expected call of GetBuilds.
-func (mr *MockBuildClientMockRecorder) GetBuilds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetBuilds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildClient)(nil).GetBuilds), arg0, arg1)
 }
@@ -717,7 +718,7 @@ func (m *MockBuildClient) GetChangesBetweenBuilds(arg0 context.Context, arg1 bui
 }
 
 // GetChangesBetweenBuilds indicates an expected call of GetChangesBetweenBuilds.
-func (mr *MockBuildClientMockRecorder) GetChangesBetweenBuilds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetChangesBetweenBuilds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChangesBetweenBuilds", reflect.TypeOf((*MockBuildClient)(nil).GetChangesBetweenBuilds), arg0, arg1)
 }
@@ -732,7 +733,7 @@ func (m *MockBuildClient) GetDefinition(arg0 context.Context, arg1 build.GetDefi
 }
 
 // GetDefinition indicates an expected call of GetDefinition.
-func (mr *MockBuildClientMockRecorder) GetDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinition", reflect.TypeOf((*MockBuildClient)(nil).GetDefinition), arg0, arg1)
 }
@@ -747,22 +748,22 @@ func (m *MockBuildClient) GetDefinitionMetrics(arg0 context.Context, arg1 build.
 }
 
 // GetDefinitionMetrics indicates an expected call of GetDefinitionMetrics.
-func (mr *MockBuildClientMockRecorder) GetDefinitionMetrics(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionMetrics(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionMetrics", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionMetrics), arg0, arg1)
 }
 
 // GetDefinitionProperties mocks base method.
-func (m *MockBuildClient) GetDefinitionProperties(arg0 context.Context, arg1 build.GetDefinitionPropertiesArgs) (interface{}, error) {
+func (m *MockBuildClient) GetDefinitionProperties(arg0 context.Context, arg1 build.GetDefinitionPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefinitionProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDefinitionProperties indicates an expected call of GetDefinitionProperties.
-func (mr *MockBuildClientMockRecorder) GetDefinitionProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionProperties", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionProperties), arg0, arg1)
 }
@@ -777,7 +778,7 @@ func (m *MockBuildClient) GetDefinitionResources(arg0 context.Context, arg1 buil
 }
 
 // GetDefinitionResources indicates an expected call of GetDefinitionResources.
-func (mr *MockBuildClientMockRecorder) GetDefinitionResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionResources", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionResources), arg0, arg1)
 }
@@ -792,7 +793,7 @@ func (m *MockBuildClient) GetDefinitionRevisions(arg0 context.Context, arg1 buil
 }
 
 // GetDefinitionRevisions indicates an expected call of GetDefinitionRevisions.
-func (mr *MockBuildClientMockRecorder) GetDefinitionRevisions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionRevisions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionRevisions", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionRevisions), arg0, arg1)
 }
@@ -807,7 +808,7 @@ func (m *MockBuildClient) GetDefinitionTags(arg0 context.Context, arg1 build.Get
 }
 
 // GetDefinitionTags indicates an expected call of GetDefinitionTags.
-func (mr *MockBuildClientMockRecorder) GetDefinitionTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionTags", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionTags), arg0, arg1)
 }
@@ -822,7 +823,7 @@ func (m *MockBuildClient) GetDefinitionYaml(arg0 context.Context, arg1 build.Get
 }
 
 // GetDefinitionYaml indicates an expected call of GetDefinitionYaml.
-func (mr *MockBuildClientMockRecorder) GetDefinitionYaml(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitionYaml(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitionYaml", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitionYaml), arg0, arg1)
 }
@@ -837,7 +838,7 @@ func (m *MockBuildClient) GetDefinitions(arg0 context.Context, arg1 build.GetDef
 }
 
 // GetDefinitions indicates an expected call of GetDefinitions.
-func (mr *MockBuildClientMockRecorder) GetDefinitions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetDefinitions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefinitions", reflect.TypeOf((*MockBuildClient)(nil).GetDefinitions), arg0, arg1)
 }
@@ -852,7 +853,7 @@ func (m *MockBuildClient) GetFile(arg0 context.Context, arg1 build.GetFileArgs) 
 }
 
 // GetFile indicates an expected call of GetFile.
-func (mr *MockBuildClientMockRecorder) GetFile(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetFile(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFile", reflect.TypeOf((*MockBuildClient)(nil).GetFile), arg0, arg1)
 }
@@ -867,7 +868,7 @@ func (m *MockBuildClient) GetFileContents(arg0 context.Context, arg1 build.GetFi
 }
 
 // GetFileContents indicates an expected call of GetFileContents.
-func (mr *MockBuildClientMockRecorder) GetFileContents(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetFileContents(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileContents", reflect.TypeOf((*MockBuildClient)(nil).GetFileContents), arg0, arg1)
 }
@@ -882,7 +883,7 @@ func (m *MockBuildClient) GetFolders(arg0 context.Context, arg1 build.GetFolders
 }
 
 // GetFolders indicates an expected call of GetFolders.
-func (mr *MockBuildClientMockRecorder) GetFolders(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetFolders(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFolders", reflect.TypeOf((*MockBuildClient)(nil).GetFolders), arg0, arg1)
 }
@@ -897,7 +898,7 @@ func (m *MockBuildClient) GetLatestBuild(arg0 context.Context, arg1 build.GetLat
 }
 
 // GetLatestBuild indicates an expected call of GetLatestBuild.
-func (mr *MockBuildClientMockRecorder) GetLatestBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetLatestBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestBuild", reflect.TypeOf((*MockBuildClient)(nil).GetLatestBuild), arg0, arg1)
 }
@@ -912,7 +913,7 @@ func (m *MockBuildClient) GetPathContents(arg0 context.Context, arg1 build.GetPa
 }
 
 // GetPathContents indicates an expected call of GetPathContents.
-func (mr *MockBuildClientMockRecorder) GetPathContents(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetPathContents(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPathContents", reflect.TypeOf((*MockBuildClient)(nil).GetPathContents), arg0, arg1)
 }
@@ -927,7 +928,7 @@ func (m *MockBuildClient) GetProjectMetrics(arg0 context.Context, arg1 build.Get
 }
 
 // GetProjectMetrics indicates an expected call of GetProjectMetrics.
-func (mr *MockBuildClientMockRecorder) GetProjectMetrics(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetProjectMetrics(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectMetrics", reflect.TypeOf((*MockBuildClient)(nil).GetProjectMetrics), arg0, arg1)
 }
@@ -942,7 +943,7 @@ func (m *MockBuildClient) GetProjectResources(arg0 context.Context, arg1 build.G
 }
 
 // GetProjectResources indicates an expected call of GetProjectResources.
-func (mr *MockBuildClientMockRecorder) GetProjectResources(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetProjectResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectResources", reflect.TypeOf((*MockBuildClient)(nil).GetProjectResources), arg0, arg1)
 }
@@ -957,7 +958,7 @@ func (m *MockBuildClient) GetPullRequest(arg0 context.Context, arg1 build.GetPul
 }
 
 // GetPullRequest indicates an expected call of GetPullRequest.
-func (mr *MockBuildClientMockRecorder) GetPullRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetPullRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequest", reflect.TypeOf((*MockBuildClient)(nil).GetPullRequest), arg0, arg1)
 }
@@ -972,7 +973,7 @@ func (m *MockBuildClient) GetResourceUsage(arg0 context.Context, arg1 build.GetR
 }
 
 // GetResourceUsage indicates an expected call of GetResourceUsage.
-func (mr *MockBuildClientMockRecorder) GetResourceUsage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetResourceUsage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceUsage", reflect.TypeOf((*MockBuildClient)(nil).GetResourceUsage), arg0, arg1)
 }
@@ -987,7 +988,7 @@ func (m *MockBuildClient) GetRetentionHistory(arg0 context.Context, arg1 build.G
 }
 
 // GetRetentionHistory indicates an expected call of GetRetentionHistory.
-func (mr *MockBuildClientMockRecorder) GetRetentionHistory(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionHistory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionHistory", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionHistory), arg0, arg1)
 }
@@ -1002,7 +1003,7 @@ func (m *MockBuildClient) GetRetentionLease(arg0 context.Context, arg1 build.Get
 }
 
 // GetRetentionLease indicates an expected call of GetRetentionLease.
-func (mr *MockBuildClientMockRecorder) GetRetentionLease(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionLease(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionLease", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionLease), arg0, arg1)
 }
@@ -1017,7 +1018,7 @@ func (m *MockBuildClient) GetRetentionLeasesByMinimalRetentionLeases(arg0 contex
 }
 
 // GetRetentionLeasesByMinimalRetentionLeases indicates an expected call of GetRetentionLeasesByMinimalRetentionLeases.
-func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByMinimalRetentionLeases(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByMinimalRetentionLeases(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionLeasesByMinimalRetentionLeases", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionLeasesByMinimalRetentionLeases), arg0, arg1)
 }
@@ -1032,7 +1033,7 @@ func (m *MockBuildClient) GetRetentionLeasesByOwnerId(arg0 context.Context, arg1
 }
 
 // GetRetentionLeasesByOwnerId indicates an expected call of GetRetentionLeasesByOwnerId.
-func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByOwnerId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByOwnerId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionLeasesByOwnerId", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionLeasesByOwnerId), arg0, arg1)
 }
@@ -1047,7 +1048,7 @@ func (m *MockBuildClient) GetRetentionLeasesByUserId(arg0 context.Context, arg1 
 }
 
 // GetRetentionLeasesByUserId indicates an expected call of GetRetentionLeasesByUserId.
-func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByUserId(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionLeasesByUserId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionLeasesByUserId", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionLeasesByUserId), arg0, arg1)
 }
@@ -1062,7 +1063,7 @@ func (m *MockBuildClient) GetRetentionLeasesForBuild(arg0 context.Context, arg1 
 }
 
 // GetRetentionLeasesForBuild indicates an expected call of GetRetentionLeasesForBuild.
-func (mr *MockBuildClientMockRecorder) GetRetentionLeasesForBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionLeasesForBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionLeasesForBuild", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionLeasesForBuild), arg0, arg1)
 }
@@ -1077,7 +1078,7 @@ func (m *MockBuildClient) GetRetentionSettings(arg0 context.Context, arg1 build.
 }
 
 // GetRetentionSettings indicates an expected call of GetRetentionSettings.
-func (mr *MockBuildClientMockRecorder) GetRetentionSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetRetentionSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetentionSettings", reflect.TypeOf((*MockBuildClient)(nil).GetRetentionSettings), arg0, arg1)
 }
@@ -1092,7 +1093,7 @@ func (m *MockBuildClient) GetStatusBadge(arg0 context.Context, arg1 build.GetSta
 }
 
 // GetStatusBadge indicates an expected call of GetStatusBadge.
-func (mr *MockBuildClientMockRecorder) GetStatusBadge(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetStatusBadge(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatusBadge", reflect.TypeOf((*MockBuildClient)(nil).GetStatusBadge), arg0, arg1)
 }
@@ -1107,7 +1108,7 @@ func (m *MockBuildClient) GetTags(arg0 context.Context, arg1 build.GetTagsArgs) 
 }
 
 // GetTags indicates an expected call of GetTags.
-func (mr *MockBuildClientMockRecorder) GetTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockBuildClient)(nil).GetTags), arg0, arg1)
 }
@@ -1122,7 +1123,7 @@ func (m *MockBuildClient) GetTemplate(arg0 context.Context, arg1 build.GetTempla
 }
 
 // GetTemplate indicates an expected call of GetTemplate.
-func (mr *MockBuildClientMockRecorder) GetTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplate", reflect.TypeOf((*MockBuildClient)(nil).GetTemplate), arg0, arg1)
 }
@@ -1137,7 +1138,7 @@ func (m *MockBuildClient) GetTemplates(arg0 context.Context, arg1 build.GetTempl
 }
 
 // GetTemplates indicates an expected call of GetTemplates.
-func (mr *MockBuildClientMockRecorder) GetTemplates(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetTemplates(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplates", reflect.TypeOf((*MockBuildClient)(nil).GetTemplates), arg0, arg1)
 }
@@ -1152,7 +1153,7 @@ func (m *MockBuildClient) GetWorkItemsBetweenBuilds(arg0 context.Context, arg1 b
 }
 
 // GetWorkItemsBetweenBuilds indicates an expected call of GetWorkItemsBetweenBuilds.
-func (mr *MockBuildClientMockRecorder) GetWorkItemsBetweenBuilds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) GetWorkItemsBetweenBuilds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkItemsBetweenBuilds", reflect.TypeOf((*MockBuildClient)(nil).GetWorkItemsBetweenBuilds), arg0, arg1)
 }
@@ -1167,7 +1168,7 @@ func (m *MockBuildClient) ListBranches(arg0 context.Context, arg1 build.ListBran
 }
 
 // ListBranches indicates an expected call of ListBranches.
-func (mr *MockBuildClientMockRecorder) ListBranches(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) ListBranches(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBranches", reflect.TypeOf((*MockBuildClient)(nil).ListBranches), arg0, arg1)
 }
@@ -1182,7 +1183,7 @@ func (m *MockBuildClient) ListRepositories(arg0 context.Context, arg1 build.List
 }
 
 // ListRepositories indicates an expected call of ListRepositories.
-func (mr *MockBuildClientMockRecorder) ListRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) ListRepositories(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositories", reflect.TypeOf((*MockBuildClient)(nil).ListRepositories), arg0, arg1)
 }
@@ -1197,7 +1198,7 @@ func (m *MockBuildClient) ListSourceProviders(arg0 context.Context, arg1 build.L
 }
 
 // ListSourceProviders indicates an expected call of ListSourceProviders.
-func (mr *MockBuildClientMockRecorder) ListSourceProviders(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) ListSourceProviders(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSourceProviders", reflect.TypeOf((*MockBuildClient)(nil).ListSourceProviders), arg0, arg1)
 }
@@ -1212,7 +1213,7 @@ func (m *MockBuildClient) ListWebhooks(arg0 context.Context, arg1 build.ListWebh
 }
 
 // ListWebhooks indicates an expected call of ListWebhooks.
-func (mr *MockBuildClientMockRecorder) ListWebhooks(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) ListWebhooks(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWebhooks", reflect.TypeOf((*MockBuildClient)(nil).ListWebhooks), arg0, arg1)
 }
@@ -1227,7 +1228,7 @@ func (m *MockBuildClient) QueueBuild(arg0 context.Context, arg1 build.QueueBuild
 }
 
 // QueueBuild indicates an expected call of QueueBuild.
-func (mr *MockBuildClientMockRecorder) QueueBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) QueueBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBuild", reflect.TypeOf((*MockBuildClient)(nil).QueueBuild), arg0, arg1)
 }
@@ -1242,7 +1243,7 @@ func (m *MockBuildClient) RestoreDefinition(arg0 context.Context, arg1 build.Res
 }
 
 // RestoreDefinition indicates an expected call of RestoreDefinition.
-func (mr *MockBuildClientMockRecorder) RestoreDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) RestoreDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreDefinition", reflect.TypeOf((*MockBuildClient)(nil).RestoreDefinition), arg0, arg1)
 }
@@ -1256,7 +1257,7 @@ func (m *MockBuildClient) RestoreWebhooks(arg0 context.Context, arg1 build.Resto
 }
 
 // RestoreWebhooks indicates an expected call of RestoreWebhooks.
-func (mr *MockBuildClientMockRecorder) RestoreWebhooks(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) RestoreWebhooks(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreWebhooks", reflect.TypeOf((*MockBuildClient)(nil).RestoreWebhooks), arg0, arg1)
 }
@@ -1271,7 +1272,7 @@ func (m *MockBuildClient) SaveTemplate(arg0 context.Context, arg1 build.SaveTemp
 }
 
 // SaveTemplate indicates an expected call of SaveTemplate.
-func (mr *MockBuildClientMockRecorder) SaveTemplate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) SaveTemplate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTemplate", reflect.TypeOf((*MockBuildClient)(nil).SaveTemplate), arg0, arg1)
 }
@@ -1286,7 +1287,7 @@ func (m *MockBuildClient) UpdateBuild(arg0 context.Context, arg1 build.UpdateBui
 }
 
 // UpdateBuild indicates an expected call of UpdateBuild.
-func (mr *MockBuildClientMockRecorder) UpdateBuild(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuild(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuild", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuild), arg0, arg1)
 }
@@ -1301,22 +1302,22 @@ func (m *MockBuildClient) UpdateBuildGeneralSettings(arg0 context.Context, arg1 
 }
 
 // UpdateBuildGeneralSettings indicates an expected call of UpdateBuildGeneralSettings.
-func (mr *MockBuildClientMockRecorder) UpdateBuildGeneralSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuildGeneralSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuildGeneralSettings", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuildGeneralSettings), arg0, arg1)
 }
 
 // UpdateBuildProperties mocks base method.
-func (m *MockBuildClient) UpdateBuildProperties(arg0 context.Context, arg1 build.UpdateBuildPropertiesArgs) (interface{}, error) {
+func (m *MockBuildClient) UpdateBuildProperties(arg0 context.Context, arg1 build.UpdateBuildPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBuildProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBuildProperties indicates an expected call of UpdateBuildProperties.
-func (mr *MockBuildClientMockRecorder) UpdateBuildProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuildProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuildProperties", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuildProperties), arg0, arg1)
 }
@@ -1331,7 +1332,7 @@ func (m *MockBuildClient) UpdateBuildSettings(arg0 context.Context, arg1 build.U
 }
 
 // UpdateBuildSettings indicates an expected call of UpdateBuildSettings.
-func (mr *MockBuildClientMockRecorder) UpdateBuildSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuildSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuildSettings", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuildSettings), arg0, arg1)
 }
@@ -1346,7 +1347,7 @@ func (m *MockBuildClient) UpdateBuildTags(arg0 context.Context, arg1 build.Updat
 }
 
 // UpdateBuildTags indicates an expected call of UpdateBuildTags.
-func (mr *MockBuildClientMockRecorder) UpdateBuildTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuildTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuildTags", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuildTags), arg0, arg1)
 }
@@ -1361,7 +1362,7 @@ func (m *MockBuildClient) UpdateBuilds(arg0 context.Context, arg1 build.UpdateBu
 }
 
 // UpdateBuilds indicates an expected call of UpdateBuilds.
-func (mr *MockBuildClientMockRecorder) UpdateBuilds(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateBuilds(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuilds", reflect.TypeOf((*MockBuildClient)(nil).UpdateBuilds), arg0, arg1)
 }
@@ -1376,22 +1377,22 @@ func (m *MockBuildClient) UpdateDefinition(arg0 context.Context, arg1 build.Upda
 }
 
 // UpdateDefinition indicates an expected call of UpdateDefinition.
-func (mr *MockBuildClientMockRecorder) UpdateDefinition(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateDefinition(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDefinition", reflect.TypeOf((*MockBuildClient)(nil).UpdateDefinition), arg0, arg1)
 }
 
 // UpdateDefinitionProperties mocks base method.
-func (m *MockBuildClient) UpdateDefinitionProperties(arg0 context.Context, arg1 build.UpdateDefinitionPropertiesArgs) (interface{}, error) {
+func (m *MockBuildClient) UpdateDefinitionProperties(arg0 context.Context, arg1 build.UpdateDefinitionPropertiesArgs) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDefinitionProperties", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateDefinitionProperties indicates an expected call of UpdateDefinitionProperties.
-func (mr *MockBuildClientMockRecorder) UpdateDefinitionProperties(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateDefinitionProperties(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDefinitionProperties", reflect.TypeOf((*MockBuildClient)(nil).UpdateDefinitionProperties), arg0, arg1)
 }
@@ -1406,7 +1407,7 @@ func (m *MockBuildClient) UpdateDefinitionTags(arg0 context.Context, arg1 build.
 }
 
 // UpdateDefinitionTags indicates an expected call of UpdateDefinitionTags.
-func (mr *MockBuildClientMockRecorder) UpdateDefinitionTags(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateDefinitionTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDefinitionTags", reflect.TypeOf((*MockBuildClient)(nil).UpdateDefinitionTags), arg0, arg1)
 }
@@ -1421,7 +1422,7 @@ func (m *MockBuildClient) UpdateFolder(arg0 context.Context, arg1 build.UpdateFo
 }
 
 // UpdateFolder indicates an expected call of UpdateFolder.
-func (mr *MockBuildClientMockRecorder) UpdateFolder(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateFolder(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFolder", reflect.TypeOf((*MockBuildClient)(nil).UpdateFolder), arg0, arg1)
 }
@@ -1436,7 +1437,7 @@ func (m *MockBuildClient) UpdateRetentionLease(arg0 context.Context, arg1 build.
 }
 
 // UpdateRetentionLease indicates an expected call of UpdateRetentionLease.
-func (mr *MockBuildClientMockRecorder) UpdateRetentionLease(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateRetentionLease(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRetentionLease", reflect.TypeOf((*MockBuildClient)(nil).UpdateRetentionLease), arg0, arg1)
 }
@@ -1451,7 +1452,7 @@ func (m *MockBuildClient) UpdateRetentionSettings(arg0 context.Context, arg1 bui
 }
 
 // UpdateRetentionSettings indicates an expected call of UpdateRetentionSettings.
-func (mr *MockBuildClientMockRecorder) UpdateRetentionSettings(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateRetentionSettings(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRetentionSettings", reflect.TypeOf((*MockBuildClient)(nil).UpdateRetentionSettings), arg0, arg1)
 }
@@ -1465,7 +1466,7 @@ func (m *MockBuildClient) UpdateStage(arg0 context.Context, arg1 build.UpdateSta
 }
 
 // UpdateStage indicates an expected call of UpdateStage.
-func (mr *MockBuildClientMockRecorder) UpdateStage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBuildClientMockRecorder) UpdateStage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStage", reflect.TypeOf((*MockBuildClient)(nil).UpdateStage), arg0, arg1)
 }
