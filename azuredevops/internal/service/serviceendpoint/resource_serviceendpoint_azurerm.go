@@ -292,17 +292,17 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{}) error {
-    clients := m.(*client.AggregatedClient)
-    serviceEndpoint, err := expandServiceEndpointAzureRM(d)
-    if err != nil {
-        return fmt.Errorf(errMsgTfConfigRead, err)
-    }
+	clients := m.(*client.AggregatedClient)
+	serviceEndpoint, err := expandServiceEndpointAzureRM(d)
+	if err != nil {
+		return fmt.Errorf(errMsgTfConfigRead, err)
+	}
 
-    if shouldValidate(endpointFeatures(d)) {
-        if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
-            return err
-        }
-    }
+	if shouldValidate(endpointFeatures(d)) {
+		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
+			return err
+		}
+	}
     // Handle shared_project_ids updates
     if d.HasChange("shared_project_ids") {
         old, new := d.GetChange("shared_project_ids")
@@ -329,8 +329,11 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
             }
         }
     }
+	if err != nil {
+		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
+	}
 
-    return resourceServiceEndpointAzureRMRead(d, m)
+	return resourceServiceEndpointAzureRMRead(d, m)
 }
 
 func resourceServiceEndpointAzureRMDelete(d *schema.ResourceData, m interface{}) error {
