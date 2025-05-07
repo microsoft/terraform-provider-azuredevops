@@ -269,8 +269,7 @@ resource "azuredevops_project" "project" {
   visibility         = "private"
   version_control    = "Git"
   work_item_template = "Agile"
-}
-`, name)
+}`, name)
 }
 
 func workItemBasic(projectNane string, title string) string {
