@@ -106,7 +106,7 @@ func ResourceWorkItem() *schema.Resource {
 			"parent_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(0),
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 
 			"url": {

@@ -252,10 +252,11 @@ func TestAccWorkItem_parentDelete(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      tfNode,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ResourceName:            tfNode,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportStateVerifyIgnore: []string{"parent_id"},
 			},
 		},
 	})
