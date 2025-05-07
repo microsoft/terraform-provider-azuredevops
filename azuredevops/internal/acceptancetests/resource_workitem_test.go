@@ -213,6 +213,54 @@ func TestAccWorkItem_parentUpdate(t *testing.T) {
 	})
 }
 
+func TestAccWorkItem_parentDelete(t *testing.T) {
+	workItemTitle := testutils.GenerateResourceName()
+	projectName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitem.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: workItemParent(projectName, workItemTitle),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckProjectExists(projectName),
+					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttr(tfNode, "type", "Issue"),
+					resource.TestCheckResourceAttr(tfNode, "state", "Active"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+			},
+			{
+				Config: workItemParentDelete(projectName, workItemTitle),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckProjectExists(projectName),
+					resource.TestCheckResourceAttr(tfNode, "title", workItemTitle),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttr(tfNode, "type", "Issue"),
+					resource.TestCheckResourceAttr(tfNode, "state", "Active"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+			},
+		},
+	})
+}
+
 func workItemTemplate(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "project" {
@@ -273,6 +321,25 @@ resource "azuredevops_workitem" "test" {
 `, template, title)
 }
 
+func workItemParentDelete(projectNane string, title string) string {
+	template := workItemTemplate(projectNane)
+	return fmt.Sprintf(`
+%[1]s
+
+resource "azuredevops_workitem" "parent" {
+  title      = "%[2]s Parent"
+  project_id = azuredevops_project.project.id
+  type       = "Issue"
+}
+
+resource "azuredevops_workitem" "test" {
+  title      = "%[2]s"
+  project_id = azuredevops_project.project.id
+  type       = "Issue"
+}
+`, template, title)
+}
+
 func workItemParentUpdate(projectNane string, title string) string {
 	template := workItemTemplate(projectNane)
 	return fmt.Sprintf(`
@@ -290,10 +357,9 @@ resource "azuredevops_workitem" "parent2" {
   type       = "Issue"
 }
 
-
 resource "azuredevops_workitem" "test" {
-  title      = "%[2]s"
   project_id = azuredevops_project.project.id
+  title      = "%[2]s"
   type       = "Issue"
   parent_id  = azuredevops_workitem.parent2.id
 }

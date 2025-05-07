@@ -21,6 +21,7 @@ resource "azuredevops_project" "example" {
   visibility         = "private"
   description        = "Managed by Terraform"
 }
+
 resource "azuredevops_workitem" "example" {
   project_id = data.azuredevops_project.example.id
   title      = "Example Work Item"
@@ -40,6 +41,7 @@ resource "azuredevops_project" "example" {
   visibility         = "private"
   description        = "Managed by Terraform"
 }
+
 resource "azuredevops_workitem" "example" {
   project_id = data.azuredevops_project.example.id
   title      = "Example Work Item"
@@ -49,6 +51,32 @@ resource "azuredevops_workitem" "example" {
   custom_fields = {
     example : "example"
   }
+}
+```
+### With Parent Work Item
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+}
+
+resource "azuredevops_workitem" "epic" {
+  project_id = azuredevops_project.example.id
+  title      = "Example EPIC Title"
+  type       = "Epic"
+  state      = "New"
+}
+
+resource "azuredevops_workitem" "example" {
+  project_id = azuredevops_project.example.id
+  title      = "Example Work Item"
+  type       = "Issue"
+  state      = "Active"
+  tags       = ["Tag"]
+  parent_id  = azuredevops_workitem.epic.id
 }
 ```
 
@@ -70,7 +98,7 @@ The following arguments are supported:
 
 * `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 
-* `parent_id` - (Optional) The work item parent.
+* `parent_id` - (Optional) The parent work item.
 
 * `state` - (Optional) The state of the Work Item. The four main states that are defined for the User Story (`Agile`) are `New`, `Active`, `Resolved`, and `Closed`. See [Workflow states](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/workflow-and-state-categories?view=azure-devops&tabs=agile-process#workflow-states) for more details.
 

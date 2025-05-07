@@ -285,19 +285,19 @@ func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOpe
 							})
 						}
 					}
-
 				}
 
-				operations = append(operations, webapi.JsonPatchOperation{
-					Op:   &webapi.OperationValues.Add,
-					From: nil,
-					Path: converter.String("/relations/-"),
-					Value: &map[string]string{
-						"rel": "System.LinkTypes.Hierarchy-Reverse",
-						"url": fmt.Sprintf("https://dev.azure.com/%s/_apis/wit/workItems/%d", organizationName, newParentId.(int)),
-					},
-				})
-
+				if newParentId.(int) > 0 {
+					operations = append(operations, webapi.JsonPatchOperation{
+						Op:   &webapi.OperationValues.Add,
+						From: nil,
+						Path: converter.String("/relations/-"),
+						Value: &map[string]string{
+							"rel": "System.LinkTypes.Hierarchy-Reverse",
+							"url": fmt.Sprintf("https://dev.azure.com/%s/_apis/wit/workItems/%d", organizationName, newParentId.(int)),
+						},
+					})
+				}
 			}
 		} else {
 			value := d.Get(terraformProperty).(string)
