@@ -165,11 +165,6 @@ func resourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	var fields []string
-	for key := range systemFieldMapping {
-		fields = append(fields, key)
-	}
-
 	args := workitemtracking.GetWorkItemArgs{
 		Project: converter.String(d.Get("project_id").(string)),
 		Id:      &id,
