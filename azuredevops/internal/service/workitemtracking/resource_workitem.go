@@ -22,22 +22,27 @@ var systemFieldMapping = map[string]string{
 	"System.WorkItemType":  "type",
 	"System.AreaPath":      "area_path",
 	"System.IterationPath": "iteration_path",
+
+	"System.Parent": "parent_id",
 }
 
 var fieldMapping = map[string]string{
-	"state":          "System.State",
 	"title":          "System.Title",
 	"type":           "System.WorkItemType",
+	"state":          "System.State",
 	"area_path":      "System.AreaPath",
 	"iteration_path": "System.IterationPath",
+
+	"parent_id": "System.Parent",
 }
 
 func ResourceWorkItem() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceWorkItemCreate,
-		Read:   resourceWorkItemRead,
-		Update: resourceWorkItemUpdate,
-		Delete: resourceWorkItemDelete,
+		Create:   resourceWorkItemCreate,
+		Read:     resourceWorkItemRead,
+		Update:   resourceWorkItemUpdate,
+		Delete:   resourceWorkItemDelete,
+		Importer: tfhelper.ImportProjectQualifiedResource(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -98,6 +103,33 @@ func ResourceWorkItem() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
+			"parent_id": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
+
+			"url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"relations": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rel": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"url": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -105,8 +137,10 @@ func ResourceWorkItem() *schema.Resource {
 func resourceWorkItemCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
+	orgName := strings.Split(clients.OrganizationURL, "/")[3]
+
 	var operations []webapi.JsonPatchOperation
-	operations = expandSystemFields(d, operations)
+	operations = expandSystemFields(d, operations, orgName)
 	operations = expandCustomFields(d, operations)
 	operations = expandTags(d, operations, webapi.OperationValues.Add)
 
@@ -130,8 +164,11 @@ func resourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	args := workitemtracking.GetWorkItemArgs{
-		Id: &id,
+		Project: converter.String(d.Get("project_id").(string)),
+		Id:      &id,
+		Expand:  converter.ToPtr(workitemtracking.WorkItemExpandValues.All),
 	}
 	workItem, err := clients.WorkItemTrackingClient.GetWorkItem(clients.Ctx, args)
 	if err != nil {
@@ -142,8 +179,23 @@ func resourceWorkItemRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	flattenFields(d, workItem.Fields)
+	if workItem != nil {
+		if workItem.Url != nil {
+			d.Set("url", *workItem.Url)
+			flattenFields(d, workItem.Fields)
+		}
 
+		var relations []map[string]interface{}
+		if workItem.Relations != nil {
+			for _, v := range *workItem.Relations {
+				relations = append(relations, map[string]interface{}{
+					"rel": v.Rel,
+					"url": v.Url,
+				})
+			}
+		}
+		d.Set("relations", relations)
+	}
 	return nil
 }
 
@@ -155,8 +207,11 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	orgName := strings.Split(clients.OrganizationURL, "/")[3]
+
 	var operations []webapi.JsonPatchOperation
-	operations = expandSystemFields(d, operations)
+	operations = expandSystemFields(d, operations, orgName)
 	operations = expandCustomFields(d, operations)
 	operations = expandTags(d, operations, webapi.OperationValues.Replace)
 
@@ -167,7 +222,7 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	_, err = clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
 	if err != nil {
-		return err
+		return fmt.Errorf(" Update work item. Project ID: %s, Work Item: %s, Error: %+v", project, d.Id(), err)
 	}
 
 	return resourceWorkItemRead(d, m)
@@ -207,16 +262,48 @@ func expandCustomFields(d *schema.ResourceData, operations []webapi.JsonPatchOpe
 	return operations
 }
 
-func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation) []webapi.JsonPatchOperation {
+func expandSystemFields(d *schema.ResourceData, operations []webapi.JsonPatchOperation, organizationName string) []webapi.JsonPatchOperation {
 	for terraformProperty, apiName := range fieldMapping {
-		value := d.Get(terraformProperty).(string)
-		if value != "" {
-			operations = append(operations, webapi.JsonPatchOperation{
-				Op:    &webapi.OperationValues.Add,
-				From:  nil,
-				Path:  converter.String("/fields/" + apiName),
-				Value: value,
-			})
+		if terraformProperty == "parent_id" {
+			if d.HasChange("parent_id") {
+				oldParentId, newParentId := d.GetChange("parent_id")
+				if oldParentId.(int) > 0 {
+					relations := d.Get("relations").([]interface{})
+
+					// find the parent relationship and delete it
+					for idx, relation := range relations {
+						if v, ok := relation.(map[string]interface{})["rel"]; ok && strings.EqualFold(v.(string), "System.LinkTypes.Hierarchy-Reverse") {
+							operations = append(operations, webapi.JsonPatchOperation{
+								Op:   &webapi.OperationValues.Remove,
+								From: nil,
+								Path: converter.String(fmt.Sprintf("/relations/%d", idx)),
+							})
+						}
+					}
+				}
+
+				if newParentId.(int) > 0 {
+					operations = append(operations, webapi.JsonPatchOperation{
+						Op:   &webapi.OperationValues.Add,
+						From: nil,
+						Path: converter.String("/relations/-"),
+						Value: &map[string]string{
+							"rel": "System.LinkTypes.Hierarchy-Reverse",
+							"url": fmt.Sprintf("https://dev.azure.com/%s/_apis/wit/workItems/%d", organizationName, newParentId.(int)),
+						},
+					})
+				}
+			}
+		} else {
+			value := d.Get(terraformProperty).(string)
+			if value != "" {
+				operations = append(operations, webapi.JsonPatchOperation{
+					Op:    &webapi.OperationValues.Add,
+					From:  nil,
+					Path:  converter.String("/fields/" + apiName),
+					Value: value,
+				})
+			}
 		}
 	}
 	return operations
