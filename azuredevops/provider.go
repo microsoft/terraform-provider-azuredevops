@@ -98,6 +98,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_azuredevops":                 serviceendpoint.ResourceServiceEndpointAzureDevOps(),
 			"azuredevops_serviceendpoint_azurerm":                     serviceendpoint.ResourceServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":                   serviceendpoint.ResourceServiceEndpointBitBucket(),
+			"azuredevops_serviceendpoint_black_duck":                  serviceendpoint.ResourceServiceEndpointBlackDuck(),
 			"azuredevops_serviceendpoint_checkmarx_one":               serviceendpoint.ResourceServiceEndpointCheckMarxOneService(),
 			"azuredevops_serviceendpoint_checkmarx_sca":               serviceendpoint.ResourceServiceEndpointCheckMarxSCA(),
 			"azuredevops_serviceendpoint_checkmarx_sast":              serviceendpoint.ResourceServiceEndpointCheckMarxSAST(),
