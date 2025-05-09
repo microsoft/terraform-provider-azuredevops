@@ -50,7 +50,7 @@ func resourceServiceEndpointBlackDuckCreate(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
+		return fmt.Errorf(" Expanding service connection: %+v", err)
 	}
 
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
@@ -88,7 +88,7 @@ func resourceServiceEndpointBlackDuckUpdate(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
+		return fmt.Errorf(" Expanding service connection: %+v", err)
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
@@ -102,7 +102,7 @@ func resourceServiceEndpointBlackDuckDelete(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
+		return fmt.Errorf(" Expanding service connection: %+v", err)
 	}
 
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))

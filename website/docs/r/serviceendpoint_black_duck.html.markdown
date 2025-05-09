@@ -23,7 +23,7 @@ resource "azuredevops_project" "example" {
 resource "azuredevops_serviceendpoint_black_duck" "example" {
   project_id            = azuredevops_project.example.id
   server_url            = "https://blackduck.com/"
-  api_token             = "ffffffffffffffffff"
+  api_token             = "token"
   service_endpoint_name = "Example Black Duck"
   description           = "Managed by Terraform"
 }
