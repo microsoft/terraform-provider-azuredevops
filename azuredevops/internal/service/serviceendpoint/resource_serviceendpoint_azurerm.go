@@ -306,24 +306,25 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
     // Handle shared_project_ids updates
     if d.HasChange("shared_project_ids") {
         old, new := d.GetChange("shared_project_ids")
-        oldSet := toStringSet(old.([]interface{}))
-        newSet := toStringSet(new.([]interface{}))
+        oldSet := schema.NewSet(schema.HashString, old.([]interface{}))
+        newSet := schema.NewSet(schema.HashString, new.([]interface{}))
 
 		_, err = updateServiceEndpoint(clients, serviceEndpoint)
-		if len(diffSharedProjects(newSet, oldSet)) > 0 {
+		if newSet.Difference(oldSet).Len() > 0 {
 		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
+
         // Add new shared projects
-		for _, projectID := range diffSharedProjects(newSet, oldSet) {
-            err := shareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID)
+        for _, projectID := range newSet.Difference(oldSet).List() {
+            err := shareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID.(string))
             if err != nil {
                 return fmt.Errorf("failed to share service endpoint with project '%s': %v", projectID, err)
             }
         }
 
         // Remove old shared projects
-		for _, projectID := range diffSharedProjects(oldSet, newSet) {
-            err := unshareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID)
+        for _, projectID := range oldSet.Difference(newSet).List() {
+            err := unshareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID.(string))
             if err != nil {
                 return fmt.Errorf("failed to unshare service endpoint with project '%s': %v", projectID, err)
             }
