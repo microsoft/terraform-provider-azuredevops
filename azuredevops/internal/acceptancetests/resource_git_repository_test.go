@@ -236,7 +236,6 @@ func TestAccGitRepository_import_by_name(t *testing.T) {
 						if !ok {
 							return fmt.Errorf(" Resource `ID` not found in state")
 						}
-						fmt.Printf(" Resource `ID` is not in UUID format. Current value: %s", id.String())
 						if err := uuid.Validate(id.String()); err != nil {
 							return fmt.Errorf(" Resource `ID` is not in UUID format. Current value: %s", id.String())
 						}
