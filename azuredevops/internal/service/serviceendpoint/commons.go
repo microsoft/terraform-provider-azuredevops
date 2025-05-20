@@ -464,3 +464,50 @@ func checkServiceConnection(endpoint *serviceendpoint.ServiceEndpoint) error {
 	}
 	return nil
 }
+
+// shareServiceEndpointWithProject shares the service endpoint with the specified project ID.
+func shareServiceEndpointWithProject(clients *client.AggregatedClient, endpointID *uuid.UUID, projectID string) error {
+	err := clients.ServiceEndpointClient.ShareServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.ShareServiceEndpointArgs{
+			EndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+				{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: func() *uuid.UUID {
+							parsedUUID, err := uuid.Parse(projectID)
+							if err != nil {
+								panic(fmt.Sprintf("invalid projectID '%s': %v", projectID, err))
+							}
+							return &parsedUUID
+						}(),
+					},
+				},
+			},
+			EndpointId: endpointID,
+		},
+	)
+    return err
+}
+
+// unshareServiceEndpointWithProject unshares the service endpoint with the specified project ID.
+func unshareServiceEndpointWithProject(clients *client.AggregatedClient, endpointID *uuid.UUID, projectID string) error {
+	err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+		clients.Ctx,
+		serviceendpoint.DeleteServiceEndpointArgs{
+			ProjectIds: &[]string{projectID},
+			EndpointId: endpointID,
+		},
+	)
+    return err
+}
+
+// Helper function to calculate the difference between two sets
+func diffSharedProjects(set1, set2 map[string]struct{}) []string {
+	diff := []string{}
+	for key := range set1 {
+		if _, found := set2[key]; !found {
+			diff = append(diff, key)
+		}
+	}
+	return diff
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -171,6 +172,14 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 				},
 			},
 		},
+		"shared_project_ids": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "A list of additional project IDs where the service endpoint should be shared.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 	})
 
 	r.SchemaVersion = 2
@@ -202,14 +211,27 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
+    serviceEndpoint.Id = resp.Id
+
+    // Handle shared_project_ids
+    if sharedProjectIDs, ok := d.GetOk("shared_project_ids"); ok {
+        for _, sharedProjectID := range sharedProjectIDs.([]interface{}) {
+            sharedProjectIDStr := sharedProjectID.(string)
+            err := shareServiceEndpointWithProject(clients, resp.Id, sharedProjectIDStr)
+            if err != nil {
+                return fmt.Errorf("failed to share service endpoint with project '%s': %v", sharedProjectIDStr, err)
+            }
+        }
+    }
+
 	serviceEndpoint.Id = resp.Id
 	if shouldValidate(endpointFeatures(d)) {
 		if err := validateServiceEndpoint(clients, serviceEndpoint, d.Get("project_id").(string), endpointValidationTimeoutSeconds); err != nil {
 			if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 				clients.Ctx,
 				serviceendpoint.DeleteServiceEndpointArgs{
-					ProjectIds: &[]string{
-						(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
+                    ProjectIds: &[]string{
+                        (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
 					},
 					EndpointId: resp.Id,
 				}); delErr != nil {
@@ -230,6 +252,12 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
+	projectID := d.Get("project_id").(string)
+    _, err = validateProjectID(d, projectID, m)
+    if err != nil {
+        return fmt.Errorf("validation failed: %v", err)
+    }
+	
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
 	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
 		return nil
@@ -243,6 +271,18 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return nil
 	}
 	d.Set("features", d.Get("features"))
+
+    // Populate shared_project_ids
+    sharedProjectIDs := []string{}
+    for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+        if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+            ref.ProjectReference.Id.String() != d.Get("project_id").(string) {
+            sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
+        }
+    }
+    d.Set("shared_project_ids", sharedProjectIDs)
+
+    d.Set("features", d.Get("features"))
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return err
@@ -263,8 +303,33 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 			return err
 		}
 	}
-	_, err = updateServiceEndpoint(clients, serviceEndpoint)
+    // Handle shared_project_ids updates
+    if d.HasChange("shared_project_ids") {
+        old, new := d.GetChange("shared_project_ids")
+        oldSet := schema.NewSet(schema.HashString, old.([]interface{}))
+        newSet := schema.NewSet(schema.HashString, new.([]interface{}))
 
+		_, err = updateServiceEndpoint(clients, serviceEndpoint)
+		if newSet.Difference(oldSet).Len() > 0 {
+		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
+	}
+
+        // Add new shared projects
+        for _, projectID := range newSet.Difference(oldSet).List() {
+            err := shareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID.(string))
+            if err != nil {
+                return fmt.Errorf("failed to share service endpoint with project '%s': %v", projectID, err)
+            }
+        }
+
+        // Remove old shared projects
+        for _, projectID := range oldSet.Difference(newSet).List() {
+            err := unshareServiceEndpointWithProject(clients, serviceEndpoint.Id, projectID.(string))
+            if err != nil {
+                return fmt.Errorf("failed to unshare service endpoint with project '%s': %v", projectID, err)
+            }
+        }
+    }
 	if err != nil {
 		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
 	}
@@ -509,6 +574,15 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 	}
 }
 
+// Convert a slice of interface{} to a set of strings
+func toStringSet(input []interface{}) map[string]struct{} {
+	set := make(map[string]struct{})
+	for _, item := range input {
+		set[item.(string)] = struct{}{}
+	}
+	return set
+}
+
 // Validation function to ensure either Subscription or ManagementGroup scopeLevels are set correctly
 func validateScopeLevel(scopeMap map[string][]string) error {
 	// Check for empty
@@ -545,4 +619,34 @@ func shouldValidate(features map[string]interface{}) bool {
 		return false
 	}
 	return validate
+}
+
+
+func validateProjectID(d *schema.ResourceData, projectID string, m interface{}) (*uuid.UUID, error) {
+	clients := m.(*client.AggregatedClient)
+	getArgs, err := serviceEndpointGetArgs(d)
+	if err != nil {
+		return nil, err
+	}
+	var matchedProjectID *uuid.UUID
+	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+		if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+			ref.ProjectReference.Id.String() == projectID {
+			matchedProjectID = ref.ProjectReference.Id
+			break
+		}
+	}
+
+	if matchedProjectID == nil {
+		return nil, fmt.Errorf("project_id '%s' not found in service endpoint project references", projectID)
+	}
+
+	// Set the project_id in the resource data for use in other functions
+	d.Set("project_id", matchedProjectID.String())
+	return matchedProjectID, nil
 }
