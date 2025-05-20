@@ -125,13 +125,16 @@ func resourceExtensionRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("scope", extension.Scopes)
 		d.Set("publisher_name", extension.PublisherName)
 		d.Set("extension_name", extension.ExtensionName)
-		if extension.InstallState != nil {
-			if *extension.InstallState.Flags == extensionmanagement.ExtensionStateFlagsValues.None {
-				d.Set("disabled", false)
-			} else if *extension.InstallState.Flags == extensionmanagement.ExtensionStateFlagsValues.Disabled {
-				d.Set("disabled", true)
-			} else {
-				return diag.Errorf(" Extension is in an unexpected state. Status: %s", *extension.InstallState.Flags)
+		if extension.InstallState != nil && extension.InstallState.Flags != nil {
+			d.Set("disabled", false)
+
+			flagsStr := string(*extension.InstallState.Flags)
+			flags := strings.Split(flagsStr, ",")
+			for _, flag := range flags {
+				if flag == string(extensionmanagement.ExtensionStateFlagsValues.Disabled) {
+					d.Set("disabled", true)
+					break
+				}
 			}
 		}
 	}
