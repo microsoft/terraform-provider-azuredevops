@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
@@ -177,10 +178,9 @@ func TestAccGitRepository_incorrectInitialization(t *testing.T) {
 			},
 		},
 	})
-
 }
 
-func TestAccGitRepository_import(t *testing.T) {
+func TestAccGitRepository_importGitRepository(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
 
@@ -203,7 +203,48 @@ func TestAccGitRepository_import(t *testing.T) {
 				)},
 		},
 	})
+}
 
+func TestAccGitRepository_import_by_name(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+
+	tfRepoNode := "azuredevops_git_repository.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryBasic(projectName, gitRepoName, "Clean"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfRepoNode, "is_fork"),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "remote_url"),
+					resource.TestCheckResourceAttr(tfRepoNode, "initialization.#", "1"),
+					checkGitRepoExists(gitRepoName),
+				),
+			},
+			{
+				ResourceName:            tfRepoNode,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"initialization"},
+				ImportStateId:           fmt.Sprintf("%s/%s", projectName, gitRepoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					func(state *terraform.State) error {
+						id, ok := state.RootModule().Resources["id"]
+						if !ok {
+							return fmt.Errorf(" Resource `ID` not found in state")
+						}
+						if err := uuid.Validate(id.String()); err != nil {
+							return fmt.Errorf(" Resource `ID` is not in UUID format. Current value: %s", id.String())
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
 }
 
 func TestAccGitRepository_initializationClean(t *testing.T) {

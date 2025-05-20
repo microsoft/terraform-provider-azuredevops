@@ -329,6 +329,9 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
+	// repository can be imported though the repository name, set the ID to UUID instead of the name
+	d.SetId(repo.Id.String())
+
 	err = flattenGitRepository(d, repo)
 	if err != nil {
 		return fmt.Errorf(" Flatten Git repository: %w", err)
