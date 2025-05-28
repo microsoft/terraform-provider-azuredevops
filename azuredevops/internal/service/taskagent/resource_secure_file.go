@@ -76,12 +76,6 @@ func ResourceSecureFile() *schema.Resource {
 	}
 }
 
-// FileHashMetadata Metadata structure for file hash information
-type FileHashMetadata struct {
-	SHA1   string `json:"sha1"`
-	SHA256 string `json:"sha256"`
-}
-
 func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
