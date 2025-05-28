@@ -35,6 +35,9 @@ func ResourceGitRepositoryBranch() *schema.Resource {
 			Read:   schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -141,7 +144,7 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		RepositoryId: converter.String(repoId),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" creating branch %q: %w", branchName, err))
+		return diag.FromErr(fmt.Errorf(" Creating branch %q: %+v", branchName, err))
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", repoId, branchName))
@@ -226,12 +229,12 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]git.GitRefUpdateResult, error) {
 	updateRefResults, err := clients.GitReposClient.UpdateRefs(clients.Ctx, args)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(" Updating refs: %w", err)
 	}
 
 	for _, refUpdate := range *updateRefResults {
 		if !*refUpdate.Success {
-			return nil, fmt.Errorf("Error got invalid GitRefUpdate.UpdateStatus: %s", *refUpdate.UpdateStatus)
+			return nil, fmt.Errorf(" Update refs failed. Update Status: %s", *refUpdate.UpdateStatus)
 		}
 	}
 
