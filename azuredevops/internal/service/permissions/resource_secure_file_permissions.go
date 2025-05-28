@@ -102,6 +102,6 @@ func createSecureFileToken(d *schema.ResourceData, clients *client.AggregatedCli
 	}
 	// Token format based on the API path from the configuration:
 	// "_apis/securityroles/scopes/distributedtask.securefile/roleassignments/resources/@project_id%24@sec_file_id"
-	aclToken := fmt.Sprintf("distributedtask.securefile/roleassignments/resources/%s%s%s", projectID.(string), "%24", secureFileID.(string))
+	aclToken := fmt.Sprintf("Library/%s/SecureFile/%s", projectID.(string), secureFileID.(string))
 	return aclToken, nil
 }

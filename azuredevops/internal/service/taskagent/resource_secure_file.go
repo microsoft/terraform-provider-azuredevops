@@ -7,10 +7,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -25,6 +23,7 @@ func ResourceSecureFile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSecureFileCreate,
 		Read:   resourceSecureFileRead,
+		Update: resourceSecureFileUpdate,
 		Delete: resourceSecureFileDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -39,170 +38,83 @@ func ResourceSecureFile() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
+				Description:  "The ID of the Azure DevOps project.",
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Description:  "The name of the secure file. Must be unique within the project.",
 			},
-			"path": {
+			"content": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
+				Sensitive:    true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Description:  "The content of the secure file. This is the actual file data that will be stored securely.",
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  "",
+			"properties": &schema.Schema{
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Key-value map of properties. The provider automatically adds file_hash_sha1 and file_hash_sha256.",
 			},
 			"file_hash_sha1": {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "SHA1 hash of the file content. Computed from the content during creation.",
 			},
 			"file_hash_sha256": {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "SHA256 hash of the file content. Computed from the content during creation.",
 			},
 		},
 	}
 }
 
-// Metadata structure for file hash information
+// FileHashMetadata Metadata structure for file hash information
 type FileHashMetadata struct {
 	SHA1   string `json:"sha1"`
 	SHA256 string `json:"sha256"`
-}
-
-// Read file content and calculate hashes
-func readFileAndCalculateHashes(filePath string) ([]byte, string, string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, "", "", fmt.Errorf("error opening file: %v", err)
-	}
-	defer file.Close()
-
-	// Read file content
-	fileContent, err := io.ReadAll(file)
-	if err != nil {
-		return nil, "", "", fmt.Errorf("error reading file: %v", err)
-	}
-
-	// Reset file pointer to beginning to recalculate hashes
-	_, err = file.Seek(0, 0)
-	if err != nil {
-		return nil, "", "", fmt.Errorf("error seeking file: %v", err)
-	}
-
-	// Calculate SHA1
-	sha1Hash := sha1.New()
-	if _, err := io.Copy(sha1Hash, file); err != nil {
-		return nil, "", "", fmt.Errorf("error calculating SHA1: %v", err)
-	}
-	sha1String := hex.EncodeToString(sha1Hash.Sum(nil))
-
-	// Reset file pointer to recalculate SHA256
-	_, err = file.Seek(0, 0)
-	if err != nil {
-		return nil, "", "", fmt.Errorf("error seeking file: %v", err)
-	}
-
-	// Calculate SHA256
-	sha256Hash := sha256.New()
-	if _, err := io.Copy(sha256Hash, file); err != nil {
-		return nil, "", "", fmt.Errorf("error calculating SHA256: %v", err)
-	}
-	sha256String := hex.EncodeToString(sha256Hash.Sum(nil))
-
-	return fileContent, sha1String, sha256String, nil
-}
-
-// Create hash metadata description
-func createMetadataDescription(baseDescription string, sha1String, sha256String string) string {
-	hashMetadata := FileHashMetadata{
-		SHA1:   sha1String,
-		SHA256: sha256String,
-	}
-
-	metadataJSON, err := json.Marshal(hashMetadata)
-	if err != nil {
-		// If JSON marshaling fails, fall back to a simpler format
-		return fmt.Sprintf("%s [SHA1:%s SHA256:%s]", baseDescription, sha1String, sha256String)
-	}
-
-	if baseDescription == "" {
-		return string(metadataJSON)
-	}
-	return fmt.Sprintf("%s %s", baseDescription, string(metadataJSON))
-}
-
-// Extract hash metadata from description
-func extractHashMetadataFromDescription(description string) (string, string, string) {
-	baseDescription := description
-	sha1String := ""
-	sha256String := ""
-
-	// Try to extract JSON metadata
-	jsonStart := strings.LastIndex(description, "{")
-	if jsonStart != -1 {
-		possibleJSON := description[jsonStart:]
-		var hashMetadata FileHashMetadata
-		if err := json.Unmarshal([]byte(possibleJSON), &hashMetadata); err == nil {
-			baseDescription = strings.TrimSpace(description[:jsonStart])
-			sha1String = hashMetadata.SHA1
-			sha256String = hashMetadata.SHA256
-			return baseDescription, sha1String, sha256String
-		}
-	}
-
-	// If JSON extraction fails, look for the simpler format
-	sha1Start := strings.Index(description, "[SHA1:")
-	if sha1Start != -1 {
-		sha256End := strings.Index(description, "SHA256:")
-		if sha256End != -1 {
-			endBracket := strings.Index(description[sha256End:], "]")
-			if endBracket != -1 {
-				baseDescription = strings.TrimSpace(description[:sha1Start])
-				sha1Part := description[sha1Start+6 : sha256End-1]
-				sha256Part := description[sha256End+7 : sha256End+endBracket]
-				sha1String = strings.TrimSpace(sha1Part)
-				sha256String = strings.TrimSpace(sha256Part)
-			}
-		}
-	}
-
-	return baseDescription, sha1String, sha256String
 }
 
 func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	filePath := d.Get("path").(string)
-	description := d.Get("description").(string)
-
-	// Read file content and calculate hashes
-	fileContent, sha1String, sha256String, err := readFileAndCalculateHashes(filePath)
-	if err != nil {
-		return fmt.Errorf("error reading file and calculating hashes: %v", err)
+	content := d.Get("content").(string)
+	properties := map[string]string{}
+	if v, ok := d.GetOk("properties"); ok {
+		for k, v2 := range v.(map[string]interface{}) {
+			properties[k] = v2.(string)
+		}
 	}
 
-	// Create a description that includes hash metadata
-	descriptionWithMetadata := createMetadataDescription(description, sha1String, sha256String)
+	// Calculate hashes for the content
+	contentBytes := []byte(content)
+	sha1Hash := sha1.New()
+	sha1Hash.Write(contentBytes)
+	sha1String := hex.EncodeToString(sha1Hash.Sum(nil))
 
-	// Build URL for secure file creation
+	sha256Hash := sha256.New()
+	sha256Hash.Write(contentBytes)
+	sha256String := hex.EncodeToString(sha256Hash.Sum(nil))
+
+	// Optionally add hashes to properties
+	properties["file_hash_sha1"] = sha1String
+	properties["file_hash_sha256"] = sha256String
+	if err := d.Set("properties", properties); err != nil {
+		return fmt.Errorf("unable to set properties with hash fields: %w", err)
+	}
+	// Build URL for secure file creation (no properties, only name)
 	createURL := projectID + "/_apis/distributedtask/securefiles"
 	queryParams := map[string]string{
 		"name": name,
 	}
-	if descriptionWithMetadata != "" {
-		queryParams["description"] = descriptionWithMetadata
-	}
-	// Convert query params to url.Values
 	urlValues := url.Values{}
 	for key, value := range queryParams {
 		urlValues.Add(key, value)
@@ -215,7 +127,7 @@ func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 		http.MethodPost,
 		finalUrl,
 		"6.0-preview.1",
-		bytes.NewReader(fileContent),
+		bytes.NewReader(contentBytes),
 		"application/octet-stream",
 		"",
 		map[string]string{},
@@ -252,6 +164,38 @@ func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 	// Store hash values in the state
 	d.Set("file_hash_sha1", sha1String)
 	d.Set("file_hash_sha256", sha256String)
+
+	// PATCH to set properties
+	patchPayload := map[string]interface{}{
+		"id":         secureFileID,
+		"name":       name,
+		"properties": properties,
+	}
+	patchBytes, err := json.Marshal(patchPayload)
+	if err != nil {
+		return fmt.Errorf("error marshaling patch payload: %v", err)
+	}
+	patchURL := strings.TrimRight(clients.OrganizationURL, "/") + "/" + strings.TrimLeft(projectID, "/") + "/_apis/distributedtask/securefiles/" + secureFileID + "?api-version=6.0-preview.1"
+	patchReq, err := clients.RawClient.CreateRequestMessage(
+		clients.Ctx,
+		http.MethodPatch,
+		patchURL,
+		"6.0-preview.1",
+		bytes.NewReader(patchBytes),
+		"application/json",
+		"",
+		map[string]string{},
+	)
+	if err != nil {
+		return fmt.Errorf("error creating patch request: %v", err)
+	}
+	patchResp, err := clients.RawClient.SendRequest(patchReq)
+	if err != nil {
+		return fmt.Errorf("error sending patch request: %v", err)
+	}
+	if patchResp.StatusCode < 200 || patchResp.StatusCode >= 300 {
+		return clients.RawClient.UnwrapError(patchResp)
+	}
 
 	return resourceSecureFileRead(d, m)
 }
@@ -313,24 +257,87 @@ func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	// Set values from response
 	d.Set("name", secureFile["name"].(string))
 
-	// Extract description and hash metadata
-	description := ""
-	if descriptionVal, ok := secureFile["description"]; ok && descriptionVal != nil {
-		description = descriptionVal.(string)
+	// Extract properties
+	props := map[string]interface{}{}
+	if remoteProps, ok := secureFile["properties"].(map[string]interface{}); ok {
+		for k, v := range remoteProps {
+			props[k] = v
+		}
 	}
 
-	baseDescription, sha1String, sha256String := extractHashMetadataFromDescription(description)
-	d.Set("description", baseDescription)
-
-	// Only set hash values if they exist in the description
-	if sha1String != "" {
-		d.Set("file_hash_sha1", sha1String)
+	if sha1, ok := props["file_hash_sha1"].(string); ok {
+		d.Set("file_hash_sha1", sha1)
+		delete(props, "file_hash_sha1")
 	}
-	if sha256String != "" {
-		d.Set("file_hash_sha256", sha256String)
+	if sha256, ok := props["file_hash_sha256"].(string); ok {
+		d.Set("file_hash_sha256", sha256)
+		delete(props, "file_hash_sha256")
 	}
+	d.Set("properties", props)
 
 	return nil
+}
+
+func resourceSecureFileUpdate(d *schema.ResourceData, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+	projectID := d.Get("project_id").(string)
+	secureFileID := d.Id()
+	name := d.Get("name").(string)
+
+	// Always preserve hash values
+	hashSha1, _ := d.Get("file_hash_sha1").(string)
+	hashSha256, _ := d.Get("file_hash_sha256").(string)
+
+	// Build properties map, always including hashes
+	props := map[string]string{}
+	if v, ok := d.GetOk("properties"); ok {
+		for k, v2 := range v.(map[string]interface{}) {
+			props[k] = v2.(string)
+		}
+	}
+	// Always set hashes, even if user tries to remove them
+	props["file_hash_sha1"] = hashSha1
+	props["file_hash_sha256"] = hashSha256
+	if err := d.Set("properties", props); err != nil {
+		return fmt.Errorf("error updating properties with hash fields: %w", err)
+	}
+	patchPayload := map[string]interface{}{
+		"id":         secureFileID,
+		"name":       name,
+		"properties": props,
+	}
+
+	payloadBytes, err := json.Marshal(patchPayload)
+	if err != nil {
+		return fmt.Errorf("error marshaling update payload: %v", err)
+	}
+
+	patchURL := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
+		strings.TrimLeft(projectID, "/") + "/_apis/distributedtask/securefiles/" + secureFileID + "?api-version=6.0-preview.1"
+
+	request, err := clients.RawClient.CreateRequestMessage(
+		clients.Ctx,
+		http.MethodPatch,
+		patchURL,
+		"6.0-preview.1",
+		bytes.NewReader(payloadBytes),
+		"application/json",
+		"",
+		map[string]string{},
+	)
+	if err != nil {
+		return fmt.Errorf("error creating update request: %v", err)
+	}
+
+	response, err := clients.RawClient.SendRequest(request)
+	if err != nil {
+		return fmt.Errorf("error sending secure file update request: %v", err)
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return clients.RawClient.UnwrapError(response)
+	}
+
+	return resourceSecureFileRead(d, m)
 }
 
 func resourceSecureFileDelete(d *schema.ResourceData, m interface{}) error {
