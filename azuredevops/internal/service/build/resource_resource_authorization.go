@@ -50,7 +50,7 @@ func ResourceResourceAuthorization() *schema.Resource {
 				Default:          "endpoint",
 				Description:      "type of the resource",
 				DiffSuppressFunc: suppress.CaseDifference,
-				ValidateFunc:     validation.StringInSlice([]string{"endpoint", "queue", "variablegroup"}, false),
+				ValidateFunc:     validation.StringInSlice([]string{"endpoint", "queue", "variablegroup", "securefile"}, false),
 			},
 			"authorized": {
 				Type:        schema.TypeBool,
