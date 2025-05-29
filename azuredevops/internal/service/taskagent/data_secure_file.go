@@ -99,7 +99,7 @@ func dataSourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if found == nil {
-		return fmt.Errorf("secure file with name '%s' not found in project '%s'", name, projectID)
+		return fmt.Errorf("secure file with name '%s' not found in project '%s', api url '%s'", name, projectID, finalUrl)
 	}
 
 	// Set ID and attributes

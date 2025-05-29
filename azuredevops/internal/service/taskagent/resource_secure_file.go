@@ -142,6 +142,8 @@ func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff
 	newSha1 := remoteProps["file_hash_sha1"]
 	oldSha256 := d.Get("file_hash_sha256").(string)
 	newSha256 := remoteProps["file_hash_sha256"]
+	d.SetNew("file_hash_sha1", newSha1)
+	d.SetNew("file_hash_sha256", newSha256)
 	if newSha1 != oldSha1 || newSha256 != oldSha256 {
 		// File changed remotely, schedule replacement
 		d.ForceNew("content")

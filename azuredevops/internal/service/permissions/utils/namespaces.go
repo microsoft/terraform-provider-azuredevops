@@ -392,7 +392,14 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		for key, value := range principalPermissions.PrincipalPermission.Permissions {
 			actionDef, ok := (*actionMap)[string(key)]
 			if !ok {
-				return fmt.Errorf("Invalid permission [%s]", key)
+				return fmt.Errorf("Invalid permission [%s], valid permissions are %s", key,
+					strings.Join(func() []string {
+						var names []string
+						linq.From(*actionMap).SelectT(func(item interface{}) string {
+							return item.(linq.KeyValue).Key.(string)
+						}).ToSlice(&names)
+						return names
+					}(), ", "))
 			}
 			if aceItem.Deny == nil {
 				aceItem.Deny = new(int)
