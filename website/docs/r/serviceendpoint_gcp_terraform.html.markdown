@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 
-* `private_key` - (Required) The client email field in the JSON key file for creating the JSON Web Token.
+* `private_key` - (Required) The Private Key for connecting to the endpoint.
 
 * `token_uri` - (Required) The token uri field in the JSON key file for creating the JSON Web Token.
 
