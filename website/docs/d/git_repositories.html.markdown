@@ -8,7 +8,7 @@ description: |-
 # Data Source: azuredevops_git_repositories
 
 Use this data source to access information about **multiple** existing Git Repositories within Azure DevOps.
-To read informations about a **single** Git Repository use the data source [`azuredevops_git_repository`](data_git_repository.html)
+To read informations about a **single** Git Repository use the data source [`azuredevops_git_repository`](git_repository.html)
 
 ## Example Usage
 
