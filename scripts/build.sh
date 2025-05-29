@@ -61,4 +61,5 @@ clean_and_build
 
 if [ $doInstall -eq 1 ]; then
   $(dirname $0)/local-install.sh
+  echo "thanks"
 fi
