@@ -78,27 +78,46 @@ func ResourceSecureFile() *schema.Resource {
 	}
 }
 
-func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-	// Skip on new resources
-	if d.Id() == "" {
-		return nil
-	}
-
-	clients := m.(*client.AggregatedClient)
-	projectID := d.Get("project_id").(string)
-	secureFileID := d.Id()
-
-	// Build URL for getting secure file
+func getSecureFileURL(clients *client.AggregatedClient, projectID, secureFileID string) string {
 	readURL := fmt.Sprintf("_apis/distributedtask/securefiles/%s", secureFileID)
 	queryParams := url.Values{}
 	queryParams.Add("api-version", "6.0-preview.1")
-
-	finalUrl := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
+	return strings.TrimRight(clients.OrganizationURL, "/") + "/" +
 		strings.TrimLeft(projectID, "/") + "/" +
 		strings.TrimLeft(readURL, "/") + "?" +
 		queryParams.Encode()
+}
 
-	// Create request message
+func getSecureFileProperties(secureFile map[string]interface{}) map[string]interface{} {
+	props := map[string]interface{}{}
+	if remoteProps, ok := secureFile["properties"].(map[string]interface{}); ok {
+		for k, v := range remoteProps {
+			props[k] = v
+		}
+	}
+	return props
+}
+
+func setSecureFileHashes(d *schema.ResourceDiff, remoteProps map[string]interface{}) {
+	oldSha1 := d.Get("file_hash_sha1").(string)
+	newSha1 := remoteProps["file_hash_sha1"]
+	oldSha256 := d.Get("file_hash_sha256").(string)
+	newSha256 := remoteProps["file_hash_sha256"]
+	d.SetNew("file_hash_sha1", newSha1)
+	d.SetNew("file_hash_sha256", newSha256)
+	if newSha1 != oldSha1 || newSha256 != oldSha256 {
+		d.ForceNew("content")
+	}
+}
+
+func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+	if d.Id() == "" {
+		return nil
+	}
+	clients := m.(*client.AggregatedClient)
+	projectID := d.Get("project_id").(string)
+	secureFileID := d.Id()
+	finalUrl := getSecureFileURL(clients, projectID, secureFileID)
 	request, err := clients.RawClient.CreateRequestMessage(
 		clients.Ctx,
 		http.MethodGet,
@@ -112,42 +131,20 @@ func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff
 	if err != nil {
 		return fmt.Errorf("error creating request message: %v", err)
 	}
-
-	// Send the request
 	response, err := clients.RawClient.SendRequest(request)
 	if err != nil {
 		return fmt.Errorf("error sending secure file read request: %v", err)
 	}
-
-	// Check response status
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return clients.RawClient.UnwrapError(response)
 	}
-
-	// Parse the response body
 	var secureFile map[string]interface{}
 	err = clients.RawClient.UnmarshalBody(response, &secureFile)
 	if err != nil {
 		return err
 	}
-	// Extract properties
-	remoteProps := map[string]interface{}{}
-	if props, ok := secureFile["properties"].(map[string]interface{}); ok {
-		for k, v := range props {
-			remoteProps[k] = v
-		}
-	}
-
-	oldSha1 := d.Get("file_hash_sha1").(string)
-	newSha1 := remoteProps["file_hash_sha1"]
-	oldSha256 := d.Get("file_hash_sha256").(string)
-	newSha256 := remoteProps["file_hash_sha256"]
-	d.SetNew("file_hash_sha1", newSha1)
-	d.SetNew("file_hash_sha256", newSha256)
-	if newSha1 != oldSha1 || newSha256 != oldSha256 {
-		// File changed remotely, schedule replacement
-		d.ForceNew("content")
-	}
+	remoteProps := getSecureFileProperties(secureFile)
+	setSecureFileHashes(d, remoteProps)
 	return nil
 }
 
@@ -273,18 +270,7 @@ func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
 	secureFileID := d.Id()
-
-	// Build URL for getting secure file
-	readURL := fmt.Sprintf("_apis/distributedtask/securefiles/%s", secureFileID)
-	queryParams := url.Values{}
-	queryParams.Add("api-version", "6.0-preview.1")
-
-	finalUrl := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
-		strings.TrimLeft(projectID, "/") + "/" +
-		strings.TrimLeft(readURL, "/") + "?" +
-		queryParams.Encode()
-
-	// Create request message
+	finalUrl := getSecureFileURL(clients, projectID, secureFileID)
 	request, err := clients.RawClient.CreateRequestMessage(
 		clients.Ctx,
 		http.MethodGet,
@@ -298,52 +284,27 @@ func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error creating request message: %v", err)
 	}
-
-	// Send the request
 	response, err := clients.RawClient.SendRequest(request)
 	if err != nil {
 		return fmt.Errorf("error sending secure file read request: %v", err)
 	}
-
-	// Handle 404 (not found)
 	if response.StatusCode == http.StatusNotFound {
 		d.SetId("")
 		return nil
 	}
-
-	// Check response status
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return clients.RawClient.UnwrapError(response)
 	}
-
-	// Parse the response body
 	var secureFile map[string]interface{}
 	err = clients.RawClient.UnmarshalBody(response, &secureFile)
 	if err != nil {
 		return fmt.Errorf("error parsing secure file response: %v", err)
 	}
-
-	// Set values from response
 	d.Set("name", secureFile["name"].(string))
-
-	// Extract properties
-	props := map[string]interface{}{}
-	if remoteProps, ok := secureFile["properties"].(map[string]interface{}); ok {
-		for k, v := range remoteProps {
-			props[k] = v
-		}
-	}
-
-	if _, ok := props["file_hash_sha1"].(string); ok {
-		// d.Set("file_hash_sha1", sha1)
-		delete(props, "file_hash_sha1")
-	}
-	if _, ok := props["file_hash_sha256"].(string); ok {
-		// d.Set("file_hash_sha256", sha256)
-		delete(props, "file_hash_sha256")
-	}
+	props := getSecureFileProperties(secureFile)
+	delete(props, "file_hash_sha1")
+	delete(props, "file_hash_sha256")
 	d.Set("properties", props)
-
 	return nil
 }
 
@@ -380,10 +341,7 @@ func resourceSecureFileUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling update payload: %v", err)
 	}
-
-	patchURL := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
-		strings.TrimLeft(projectID, "/") + "/_apis/distributedtask/securefiles/" + secureFileID + "?api-version=6.0-preview.1"
-
+	patchURL := getSecureFileURL(clients, projectID, secureFileID)
 	request, err := clients.RawClient.CreateRequestMessage(
 		clients.Ctx,
 		http.MethodPatch,
@@ -413,15 +371,7 @@ func resourceSecureFileDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
 	secureFileID := d.Id()
-
-	// Build URL for deleting secure file
-	deleteURL := fmt.Sprintf("_apis/distributedtask/securefiles/%s", secureFileID)
-	queryParams := url.Values{}
-
-	finalUrl := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
-		strings.TrimLeft(projectID, "/") + "/" +
-		strings.TrimLeft(deleteURL, "/") + "?" +
-		queryParams.Encode()
+	finalUrl := getSecureFileURL(clients, projectID, secureFileID)
 
 	// Create request message
 	request, err := clients.RawClient.CreateRequestMessage(
