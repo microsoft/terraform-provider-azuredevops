@@ -104,9 +104,8 @@ func getSecureFileProperties(secureFile map[string]interface{}) map[string]inter
 
 // setSecureFileHashes updates the diff with hash values and forces new content if hashes change.
 func setSecureFileHashes(d *schema.ResourceDiff, remoteProps map[string]interface{}) {
-	oldSha1 := d.Get("file_hash_sha1").(string)
+	oldSha1, oldSha256 := calculateContentHashes(d.Get("content").(string))
 	newSha1, _ := remoteProps["file_hash_sha1"].(string)
-	oldSha256 := d.Get("file_hash_sha256").(string)
 	newSha256, _ := remoteProps["file_hash_sha256"].(string)
 	d.SetNew("file_hash_sha1", newSha1)
 	d.SetNew("file_hash_sha256", newSha256)
