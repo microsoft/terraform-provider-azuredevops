@@ -23,6 +23,7 @@ resource "azuredevops_secure_file" "example" {
   properties = {
     environment = "production"
   }
+  allow_access = true
 }
 ```
 
@@ -34,6 +35,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the secure file. Must be unique within the project.
 * `content` - (Required) The content of the secure file. This is the actual file data that will be stored securely.
 * `properties` - (Optional) Key-value map of properties to associate with the secure file. The provider automatically adds `file_hash_sha1` and `file_hash_sha256`.
+* `allow_access` - (Optional) Boolean that indicate if this secure file is shared by all pipelines of this project. Defaults to `false`. If set to `true`, the secure file can be used in all pipelines without needing explicit permissions.
 
 ## Attributes Reference
 
@@ -75,5 +77,6 @@ _Note that the content of secure files is not imported and will not be present i
 ## PAT Permissions Required
 
 - **Secure Files**: Read, Create, & Manage
+- **Build**: Read & execute
 - **Project and Team**: Read
 
