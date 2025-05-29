@@ -15,6 +15,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -61,6 +62,11 @@ func ResourceSecureFile() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Key-value map of properties. The provider automatically adds file_hash_sha1 and file_hash_sha256.",
+			},
+			"allow_access": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"file_hash_sha1": {
 				Type:        schema.TypeString,
@@ -178,6 +184,49 @@ func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff
 	return nil
 }
 
+// --- Allow Access helpers for Secure File ---
+
+// updateSecureFileAllowAccess updates the allow_access property for a secure file
+func updateSecureFileAllowAccess(clients *client.AggregatedClient, projectID, secureFileID, name string, allowAccess bool) error {
+	resourceRefType := "securefile"
+	defResourceRef := build.DefinitionResourceReference{
+		Type:       &resourceRefType,
+		Authorized: &allowAccess,
+		Name:       &name,
+		Id:         &secureFileID,
+	}
+	resources := []build.DefinitionResourceReference{defResourceRef}
+	_, err := clients.BuildClient.AuthorizeProjectResources(
+		clients.Ctx, build.AuthorizeProjectResourcesArgs{
+			Resources: &resources,
+			Project:   &projectID,
+		},
+	)
+	return err
+}
+
+// readSecureFileAllowAccess reads the allow_access property for a secure file
+func readSecureFileAllowAccess(clients *client.AggregatedClient, projectID, secureFileID string) (bool, error) {
+	resourceRefType := "securefile"
+	projectResources, err := clients.BuildClient.GetProjectResources(
+		clients.Ctx,
+		build.GetProjectResourcesArgs{
+			Project: &projectID,
+			Type:    &resourceRefType,
+			Id:      &secureFileID,
+		},
+	)
+	if err != nil {
+		return false, err
+	}
+	for _, authResource := range *projectResources {
+		if secureFileID == *authResource.Id {
+			return *authResource.Authorized, nil
+		}
+	}
+	return false, nil
+}
+
 func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
@@ -248,6 +297,11 @@ func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error sending patch request: %v", err)
 	}
 
+	// Set allow_access if needed
+	if err := updateSecureFileAllowAccess(clients, projectID, secureFileID, name, d.Get("allow_access").(bool)); err != nil {
+		return fmt.Errorf("error setting allow_access for secure file: %v", err)
+	}
+
 	return resourceSecureFileRead(d, m)
 }
 
@@ -289,6 +343,12 @@ func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	delete(props, "file_hash_sha1")
 	delete(props, "file_hash_sha256")
 	d.Set("properties", props)
+
+	// Read allow_access
+	allowAccess, err := readSecureFileAllowAccess(clients, projectID, secureFileID)
+	if err == nil {
+		d.Set("allow_access", allowAccess)
+	}
 	return nil
 }
 
@@ -324,6 +384,13 @@ func resourceSecureFileUpdate(d *schema.ResourceData, m interface{}) error {
 	_, err = clients.RawClient.SendRequest(request)
 	if err != nil {
 		return fmt.Errorf("error sending secure file update request: %v", err)
+	}
+
+	// Update allow_access if changed
+	if d.HasChange("allow_access") {
+		if err := updateSecureFileAllowAccess(clients, projectID, secureFileID, name, d.Get("allow_access").(bool)); err != nil {
+			return fmt.Errorf("error updating allow_access for secure file: %v", err)
+		}
 	}
 	return resourceSecureFileRead(d, m)
 }
