@@ -566,7 +566,7 @@ func initializeFeaturesWithValidate(validate bool) []map[string]interface{} {
 	return features
 }
 
-func TestAccAzureRMServiceEndpointSharedProjectIDs(t *testing.T) {
+func TestAzureRMServiceEndpointSharedProjectIDs(t *testing.T) {
     mainProjectID := uuid.New().String()
     sharedProjectID1 := uuid.New().String()
     sharedProjectID2 := uuid.New().String()
@@ -607,7 +607,7 @@ func TestAccAzureRMServiceEndpointSharedProjectIDs(t *testing.T) {
     })
 }
 
-func testAccAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID string, sharedProjectIDs []string) string {
+func testAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID string, sharedProjectIDs []string) string {
     sharedProjectIDsConfig := ""
     for _, id := range sharedProjectIDs {
         sharedProjectIDsConfig += fmt.Sprintf(`"%s",`, id)
@@ -629,7 +629,7 @@ resource "azuredevops_serviceendpoint_azurerm" "test" {
 `, mainProjectID, sharedProjectIDsConfig)
 }
 
-func testAccCheckAzureRMServiceEndpointDestroy(s *terraform.State, buildClient serviceendpoint.Client) error {
+func testCheckAzureRMServiceEndpointDestroy(s *terraform.State, buildClient serviceendpoint.Client) error {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
     for _, rs := range s.RootModule().Resources {
