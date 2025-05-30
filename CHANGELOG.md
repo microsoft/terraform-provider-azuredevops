@@ -1,3 +1,23 @@
+## 1.10.0
+
+FEATURES:
+
+* **New Resource** `azuredevops_serviceendpoint_black_duck` [#1364](https://github.com/microsoft/terraform-provider-azuredevops/pull/1364)
+
+BUG FIX:
+
+* `azuredevops_serviceendpoint_azurecr` - Fix cannot update bug. [#1372](https://github.com/microsoft/terraform-provider-azuredevops/pull/1372)
+* `azuredevops_extension` - Fix install new extension failed bug. [#1373](https://github.com/microsoft/terraform-provider-azuredevops/pull/1373)
+* `azuredevops_git_repository` - Fix ID not set correctly when import a repository by name. [#1374](https://github.com/microsoft/terraform-provider-azuredevops/pull/1374)
+
+IMPROVEMENTS:
+
+* `azuredevops_workitem `
+    - Add support for link parent work item. [#1365](https://github.com/microsoft/terraform-provider-azuredevops/pull/1365)
+    - Add support for import. [#1365](https://github.com/microsoft/terraform-provider-azuredevops/pull/1365)
+* **Data Source** `azuredevops_group` - Update document. [#1360](https://github.com/microsoft/terraform-provider-azuredevops/pull/1360)
+* **Data Source** `azuredevops_groups` - Update document. [#1360](https://github.com/microsoft/terraform-provider-azuredevops/pull/1360)
+
 ## 1.9.0
 
 FEATURES:
