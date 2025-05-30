@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -252,12 +251,6 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	projectID := d.Get("project_id").(string)
-    _, err = validateProjectID(d, projectID, m)
-    if err != nil {
-        return fmt.Errorf("validation failed: %v", err)
-    }
-	
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
 	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
 		return nil
@@ -619,34 +612,4 @@ func shouldValidate(features map[string]interface{}) bool {
 		return false
 	}
 	return validate
-}
-
-
-func validateProjectID(d *schema.ResourceData, projectID string, m interface{}) (*uuid.UUID, error) {
-	clients := m.(*client.AggregatedClient)
-	getArgs, err := serviceEndpointGetArgs(d)
-	if err != nil {
-		return nil, err
-	}
-	var matchedProjectID *uuid.UUID
-	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
-		if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
-			ref.ProjectReference.Id.String() == projectID {
-			matchedProjectID = ref.ProjectReference.Id
-			break
-		}
-	}
-
-	if matchedProjectID == nil {
-		return nil, fmt.Errorf("project_id '%s' not found in service endpoint project references", projectID)
-	}
-
-	// Set the project_id in the resource data for use in other functions
-	d.Set("project_id", matchedProjectID.String())
-	return matchedProjectID, nil
 }
