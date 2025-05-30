@@ -223,6 +223,8 @@ The following arguments are supported:
 
 * `server_url` - (Optional) The server URL of the service endpoint. Changing this forces a new resource to be created.
 
+* `shared_project_ids` - (Optional) list of project IDs you want the service connection shared with. 
+
 ~> **NOTE:** One of either `Subscription` scoped i.e. `azurerm_subscription_id`, `azurerm_subscription_name` or `ManagementGroup` scoped i.e. `azurerm_management_group_id`, `azurerm_management_group_name` values must be specified.
 
 * `credentials` - (Optional) A `credentials` block as defined below.
