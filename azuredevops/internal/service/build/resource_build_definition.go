@@ -555,7 +555,7 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 	})
 
 	if err != nil {
-		return diag.Errorf("  Ceating Build Definition: %+v", err)
+		return diag.Errorf(" Creating Build Definition: %+v", err)
 	}
 
 	var diags diag.Diagnostics = nil
