@@ -15,7 +15,7 @@ Use this data source to access information about an existing user within Azure D
 
 ```hcl
 data "azuredevops_user" "example" {
-  principal_name = "example@example.com"
+  descriptor = "descriptor"
 }
 ```
 
