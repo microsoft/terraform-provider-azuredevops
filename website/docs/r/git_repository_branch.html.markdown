@@ -70,3 +70,11 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 * `create` - (Defaults to 10 minutes) Used when creating the Git Branch.
 * `read` - (Defaults to 5 minute) Used when retrieving the Git Branch.
 * `delete` - (Defaults to 10 minutes) Used when deleting the Git Branch.
+
+## Import
+
+Azure DevOps Git Repository Branch can be imported using the `repository ID:branchName`.
+
+```sh
+terraform import azuredevops_git_repository_branch.example "00000000-0000-0000-0000-000000000000:main"
+```
