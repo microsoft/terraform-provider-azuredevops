@@ -89,10 +89,8 @@ func getSecureFileURL(clients *client.AggregatedClient, projectID, secureFileID 
 	base := strings.TrimRight(clients.OrganizationURL, "/") + "/" + strings.TrimLeft(projectID, "/") + "/_apis/distributedtask/securefiles"
 	baseParams := url.Values{}
 	baseParams.Add("api-version", "6.0-preview.1")
-	if params != nil {
-		for k, v := range params {
-			baseParams[k] = v
-		}
+	for k, v := range params {
+		baseParams[k] = v
 	}
 	if secureFileID != "" {
 		base += "/" + secureFileID
@@ -109,15 +107,22 @@ func getSecureFileProperties(secureFile map[string]interface{}) map[string]inter
 }
 
 // setSecureFileHashes updates the diff with hash values and forces new content if hashes change.
-func setSecureFileHashes(d *schema.ResourceDiff, remoteProps map[string]interface{}) {
+func setSecureFileHashes(d *schema.ResourceDiff, remoteProps map[string]interface{}) error {
 	oldSha1, oldSha256 := calculateContentHashes(d.Get("content").(string))
 	newSha1, _ := remoteProps["file_hash_sha1"].(string)
 	newSha256, _ := remoteProps["file_hash_sha256"].(string)
-	d.SetNew("file_hash_sha1", newSha1)
-	d.SetNew("file_hash_sha256", newSha256)
-	if newSha1 != oldSha1 || newSha256 != oldSha256 {
-		d.ForceNew("content")
+	if err := d.SetNew("file_hash_sha1", newSha1); err != nil {
+		return err
 	}
+	if err := d.SetNew("file_hash_sha256", newSha256); err != nil {
+		return err
+	}
+	if newSha1 != oldSha1 || newSha256 != oldSha256 {
+		if err := d.ForceNew("content"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // buildPropertiesMap builds a string map from the resource data, always including hashes if present.
@@ -180,7 +185,10 @@ func resourceSecureFileCustomizeDiff(ctx context.Context, d *schema.ResourceDiff
 		return err
 	}
 	remoteProps := getSecureFileProperties(secureFile)
-	setSecureFileHashes(d, remoteProps)
+	err = setSecureFileHashes(d, remoteProps)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -234,8 +242,12 @@ func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 	content := d.Get("content").(string)
 	sha1String, sha256String := calculateContentHashes(content)
 
-	d.Set("file_hash_sha1", sha1String)
-	d.Set("file_hash_sha256", sha256String)
+	if err := d.Set("file_hash_sha1", sha1String); err != nil {
+		return fmt.Errorf("error setting file_hash_sha1: %v", err)
+	}
+	if err := d.Set("file_hash_sha256", sha256String); err != nil {
+		return fmt.Errorf("error setting file_hash_sha256: %v", err)
+	}
 	// Build URL for secure file creation
 	createURL := getSecureFileURL(clients, projectID, "", url.Values{"name": []string{name}})
 
