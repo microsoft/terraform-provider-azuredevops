@@ -62,13 +62,13 @@ func mergeTypesFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyCo
 	}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 	if err != nil {
-		return fmt.Errorf(" Unable to marshal policy settings into JSON: %+v", err)
+		return fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
 	}
 
 	policySettings := mergeTypePolicySettings{}
 	err = json.Unmarshal(policyAsJSON, &policySettings)
 	if err != nil {
-		return fmt.Errorf(" Unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
+		return fmt.Errorf("Unable to unmarshal branch policy settings (%+v): %+v", policySettings, err)
 	}
 
 	settingsList := d.Get("settings").([]interface{})

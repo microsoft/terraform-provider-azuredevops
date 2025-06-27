@@ -1,6 +1,4 @@
 //go:build (all || resource_agentpool) && !exclude_resource_agentpool
-// +build all resource_agentpool
-// +build !exclude_resource_agentpool
 
 package acceptancetests
 

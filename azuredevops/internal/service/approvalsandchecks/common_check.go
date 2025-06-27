@@ -99,7 +99,7 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 		clients := m.(*client.AggregatedClient)
 		configuration, projectID, err := expandFunc(d)
 		if err != nil {
-			return fmt.Errorf(" failed to expand check. Error: %+v", err)
+			return fmt.Errorf("failed to expand check. Error: %+v", err)
 		}
 
 		createdCheck, err := clients.PipelinesChecksClientExtras.AddCheckConfiguration(clients.Ctx, pipelineschecksextras.AddCheckConfigurationArgs{
@@ -107,7 +107,7 @@ func genCheckCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func(d *schema
 			Configuration: configuration,
 		})
 		if err != nil {
-			return fmt.Errorf(" failed creating check, project ID: %s. Error: %+v", projectID, err)
+			return fmt.Errorf("failed creating check, project ID: %s. Error: %+v", projectID, err)
 		}
 
 		d.SetId(fmt.Sprintf("%d", *createdCheck.Id))
@@ -209,7 +209,7 @@ func doBaseExpansion(d *schema.ResourceData, checkType *pipelineschecksextras.Ch
 	if d.Id() != "" {
 		taskCheckId, err := strconv.Atoi(d.Id())
 		if err != nil {
-			return nil, "", fmt.Errorf(" parsing task check ID: (%+v)", err)
+			return nil, "", fmt.Errorf("parsing task check ID: (%+v)", err)
 		}
 		taskCheck.Id = &taskCheckId
 	}
@@ -222,7 +222,7 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 	d.Set("project_id", projectID)
 
 	if check.Resource == nil {
-		return fmt.Errorf(" resource not found")
+		return fmt.Errorf("resource not found")
 	}
 
 	d.Set("target_resource_id", check.Resource.Id)

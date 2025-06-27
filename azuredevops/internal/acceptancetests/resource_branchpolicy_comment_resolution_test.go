@@ -1,3 +1,5 @@
+//go:build (all || resource_branchpolicy_comment_resolution) && !exclude_resource_branchpolicy_comment_resolution
+
 package acceptancetests
 
 import (

@@ -1,6 +1,4 @@
 //go:build (all || permissions || resource_serviceendpoint_permissions) && (!exclude_permissions || !exclude_resource_serviceendpoint_permissions)
-// +build all permissions resource_serviceendpoint_permissions
-// +build !exclude_permissions !exclude_resource_serviceendpoint_permissions
 
 package acceptancetests
 

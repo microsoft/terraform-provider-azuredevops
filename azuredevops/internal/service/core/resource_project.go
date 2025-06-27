@@ -100,12 +100,12 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interf
 	clients := m.(*client.AggregatedClient)
 	project, err := expandProject(clients, d, true)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" expand project reference: %+v", err))
+		return diag.FromErr(fmt.Errorf("expand project reference: %+v", err))
 	}
 
 	operationRef, err := clients.CoreClient.QueueCreateProject(clients.Ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" creating project: %v", err))
+		return diag.FromErr(fmt.Errorf("creating project: %v", err))
 	}
 
 	// waiting creation operation finished or timeout
@@ -127,12 +127,12 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return diag.FromErr(fmt.Errorf(" waiting for project create finished. %v ", err))
+		return diag.FromErr(fmt.Errorf("waiting for project create finished. %v ", err))
 	}
 
 	project, err = getProject(clients, "", *project.Name, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" waiting for project ready. %v ", err))
+		return diag.FromErr(fmt.Errorf("waiting for project ready. %v ", err))
 	}
 
 	featureStates, ok := d.GetOk("features")
@@ -161,14 +161,14 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, m interfac
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf(" looking up project with (ID: %s or Name: %s). Error: %+v", projectID, name, err))
+		return diag.FromErr(fmt.Errorf("looking up project with (ID: %s or Name: %s). Error: %+v", projectID, name, err))
 	}
 
 	// Set ID to the project UUID in case the project is imported by name
 	d.SetId(project.Id.String())
 	err = flattenProject(clients, d, project)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
+		return diag.FromErr(fmt.Errorf("flattening project: %v", err))
 	}
 	return nil
 }
@@ -177,7 +177,7 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	clients := m.(*client.AggregatedClient)
 	project, err := expandProject(clients, d, false)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" converting terraform data model to AzDO project reference: %+v", err))
+		return diag.FromErr(fmt.Errorf("converting terraform data model to AzDO project reference: %+v", err))
 	}
 
 	requiresUpdate := false
@@ -199,7 +199,7 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	if requiresUpdate {
 		if err = updateProject(clients, project, d.Timeout(schema.TimeoutUpdate)); err != nil {
-			return diag.FromErr(fmt.Errorf(" updating project: %v", err))
+			return diag.FromErr(fmt.Errorf("updating project: %v", err))
 		}
 	}
 
@@ -234,7 +234,7 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, m interf
 
 	err := deleteProject(clients, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" deleting project: %v", err))
+		return diag.FromErr(fmt.Errorf("deleting project: %v", err))
 	}
 
 	return nil
@@ -308,7 +308,7 @@ func getProject(clients *client.AggregatedClient, projectID string, projectName 
 		if utils.ResponseWasNotFound(err) {
 			return nil, err
 		}
-		return nil, fmt.Errorf(" Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
+		return nil, fmt.Errorf("Project not found. (ID: %s or name: %s), Error: %+v", projectID, projectName, err)
 	}
 
 	return project, nil
@@ -355,7 +355,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for project ready. %v ", err)
+		return fmt.Errorf("waiting for project ready. %v ", err)
 	}
 	return nil
 }
@@ -363,7 +363,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 func deleteProject(clients *client.AggregatedClient, id string, timeout time.Duration) error {
 	uuid, err := uuid.Parse(id)
 	if err != nil {
-		return fmt.Errorf(" Invalid project UUID: %s", id)
+		return fmt.Errorf("Invalid project UUID: %s", id)
 	}
 
 	var operationRef *operations.OperationReference
@@ -404,7 +404,7 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for project ready. %v ", err)
+		return fmt.Errorf("waiting for project ready. %v ", err)
 	}
 	return nil
 }

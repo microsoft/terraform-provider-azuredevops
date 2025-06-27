@@ -1,6 +1,4 @@
 //go:build (all || resource_policy_check_credentials) && !resource_policy_check_credentials
-// +build all resource_policy_check_credentials
-// +build !resource_policy_check_credentials
 
 package acceptancetests
 

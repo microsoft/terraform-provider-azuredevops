@@ -65,7 +65,7 @@ func resourceProjectTagsCreate(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Creating Project Tags. Project ID: %s, Error: %+v", projectID.String(), err))
+		return diag.FromErr(fmt.Errorf("Creating Project Tags. Project ID: %s, Error: %+v", projectID.String(), err))
 	}
 
 	d.SetId(projectID.String())
@@ -90,7 +90,7 @@ func resourceProjectTagsRead(ctx context.Context, d *schema.ResourceData, m inte
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf(" Gettting Project tags. Projecct ID: %s. Error: %+v", projectID, err))
+		return diag.FromErr(fmt.Errorf("Gettting Project tags. Projecct ID: %s. Error: %+v", projectID, err))
 	}
 
 	if tags == nil || len(*tags) == 0 {
@@ -125,7 +125,7 @@ func resourceProjectTagsUpdate(ctx context.Context, d *schema.ResourceData, m in
 		Keys:      &[]string{"Microsoft.TeamFoundation.Project.Tag.*"},
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Gettting Project tags. Projecct ID: %s. Error: %+v", projectId, err))
+		return diag.FromErr(fmt.Errorf("Gettting Project tags. Projecct ID: %s. Error: %+v", projectId, err))
 	}
 	tagsExists := flattenProjectTags(*resp)
 
@@ -147,7 +147,7 @@ func resourceProjectTagsUpdate(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Updating Project Tags. Project ID: %s, Error: %+v", projectId.String(), err))
+		return diag.FromErr(fmt.Errorf("Updating Project Tags. Project ID: %s, Error: %+v", projectId.String(), err))
 	}
 	return resourceProjectTagsRead(clients.Ctx, d, m)
 }
@@ -172,7 +172,7 @@ func resourceProjectTagsDelete(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Deleting Project Tags. ProjectID: %s, Error: %+v", projectId, err))
+		return diag.FromErr(fmt.Errorf("Deleting Project Tags. ProjectID: %s, Error: %+v", projectId, err))
 	}
 	return nil
 }

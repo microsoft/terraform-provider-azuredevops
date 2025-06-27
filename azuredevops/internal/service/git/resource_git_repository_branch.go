@@ -109,21 +109,21 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 			PeelTags:     converter.Bool(true),
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(" Getting refs matching %q: %w", filter, err))
+			return diag.FromErr(fmt.Errorf("Getting refs matching %q: %w", filter, err))
 		}
 
 		if len(gotRefs.Value) == 0 {
-			return diag.FromErr(fmt.Errorf(" No refs found that match ref %q.", rs))
+			return diag.FromErr(fmt.Errorf("No refs found that match ref %q.", rs))
 		}
 
 		gotRef := gotRefs.Value[0]
 		if gotRef.Name == nil {
-			return diag.FromErr(fmt.Errorf(" Got unexpected GetRefs response, a ref without a name was returned."))
+			return diag.FromErr(fmt.Errorf("Got unexpected GetRefs response, a ref without a name was returned."))
 		}
 
 		// Check for complete match. Sometimes refs exist that match prefix with Ref, but do not match completely.
 		if *gotRef.Name != rs {
-			return diag.FromErr(fmt.Errorf(" Ref %q not found, closest match is %q.", filter, *gotRef.Name))
+			return diag.FromErr(fmt.Errorf("Ref %q not found, closest match is %q.", filter, *gotRef.Name))
 		}
 
 		if gotRef.PeeledObjectId != nil {
@@ -131,7 +131,7 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		} else if gotRef.ObjectId != nil {
 			newObjectId = *gotRef.ObjectId
 		} else {
-			return diag.FromErr(fmt.Errorf(" GetRefs response doesn't have a valid commit id."))
+			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
 	}
 
@@ -144,7 +144,7 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 		RepositoryId: converter.String(repoId),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Creating branch %q: %+v", branchName, err))
+		return diag.FromErr(fmt.Errorf("Creating branch %q: %+v", branchName, err))
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", repoId, branchName))
@@ -181,7 +181,7 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 				return nil
 			}
 		}
-		return diag.FromErr(fmt.Errorf(" Reading branch %q: %w", branchName, err))
+		return diag.FromErr(fmt.Errorf("Reading branch %q: %w", branchName, err))
 	}
 
 	d.Set("name", branchName)
@@ -208,7 +208,7 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 		Name:         &branchName,
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Getting latest commit of %q: %w", branchName, err))
+		return diag.FromErr(fmt.Errorf("Getting latest commit of %q: %w", branchName, err))
 	}
 
 	_, err = updateRefs(clients, git.UpdateRefsArgs{
@@ -220,7 +220,7 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 		RepositoryId: converter.String(repoId),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Deleting branch %q: %w", branchName, err))
+		return diag.FromErr(fmt.Errorf("Deleting branch %q: %w", branchName, err))
 	}
 
 	return nil
@@ -229,12 +229,12 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]git.GitRefUpdateResult, error) {
 	updateRefResults, err := clients.GitReposClient.UpdateRefs(clients.Ctx, args)
 	if err != nil {
-		return nil, fmt.Errorf(" Updating refs: %w", err)
+		return nil, fmt.Errorf("Updating refs: %w", err)
 	}
 
 	for _, refUpdate := range *updateRefResults {
 		if !*refUpdate.Success {
-			return nil, fmt.Errorf(" Update refs failed. Update Status: %s", *refUpdate.UpdateStatus)
+			return nil, fmt.Errorf("Update refs failed. Update Status: %s", *refUpdate.UpdateStatus)
 		}
 	}
 

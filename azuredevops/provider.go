@@ -372,9 +372,9 @@ func clientErrorHandle(err error, orgUrl string) error {
 
 func buildError(statusCode int, orgUrl string) error {
 	if statusCode == http.StatusNotFound {
-		return fmt.Errorf(" Azure DevOps Organization: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
+		return fmt.Errorf("Azure DevOps Organization: %s doesn't exist or can't be found. Make sure the URL is correct.", orgUrl)
 	} else if statusCode == http.StatusUnauthorized {
-		return fmt.Errorf(" You are not authorized to access Azure DevOps Organization %s", orgUrl)
+		return fmt.Errorf("You are not authorized to access Azure DevOps Organization %s", orgUrl)
 	}
 	return nil
 }

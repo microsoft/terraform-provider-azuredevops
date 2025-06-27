@@ -1,6 +1,4 @@
 //go:build (all || resource_environment_resource_kubernetes) && !exclude_resource_environment_resource_kubernetes
-// +build all resource_environment_resource_kubernetes
-// +build !exclude_resource_environment_resource_kubernetes
 
 package acceptancetests
 
@@ -59,7 +57,7 @@ func checkEnvironmentKubernetesExists(tfNode string, expectedName string) resour
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources[tfNode]
 		if !ok {
-			return fmt.Errorf(" Did not find an resource in the TF state")
+			return fmt.Errorf("Did not find an resource in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -76,11 +74,11 @@ func checkEnvironmentKubernetesExists(tfNode string, expectedName string) resour
 
 		readResource, err := readEnvironmentKubernetes(clients, projectId, environmentId, id)
 		if err != nil {
-			return fmt.Errorf(" Resource with ID=%d cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("Resource with ID=%d cannot be found!. Error=%v", id, err)
 		}
 
 		if *readResource.Name != expectedName {
-			return fmt.Errorf(" Resource with ID=%d has Name=%s, but expected Name=%s", id, *readResource.Name, expectedName)
+			return fmt.Errorf("Resource with ID=%d has Name=%s, but expected Name=%s", id, *readResource.Name, expectedName)
 		}
 		return nil
 	}
@@ -110,7 +108,7 @@ func checkEnvironmentKubernetesDestroyed(s *terraform.State) error {
 
 		// indicates the environment still exists - this should fail the test
 		if _, err := readEnvironmentKubernetes(clients, projectId, environmentId, id); err == nil {
-			return fmt.Errorf(" Resource ID %d should not exist", id)
+			return fmt.Errorf("Resource ID %d should not exist", id)
 		}
 	}
 	return nil

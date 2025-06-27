@@ -178,7 +178,7 @@ func createSubscription(clients *client.AggregatedClient, subscription *serviceh
 			Subscription: subscription,
 		})
 	if err != nil {
-		return nil, fmt.Errorf(" creating subscription in Azure DevOps: %+v", err)
+		return nil, fmt.Errorf("creating subscription in Azure DevOps: %+v", err)
 	}
 
 	return createdSubscription, err

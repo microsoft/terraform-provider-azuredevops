@@ -50,7 +50,7 @@ func resourceServiceEndpointBlackDuckCreate(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(" Expanding service connection: %+v", err)
+		return fmt.Errorf("Expanding service connection: %+v", err)
 	}
 
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
@@ -74,7 +74,7 @@ func resourceServiceEndpointBlackDuckRead(d *schema.ResourceData, m interface{})
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -88,11 +88,11 @@ func resourceServiceEndpointBlackDuckUpdate(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(" Expanding service connection: %+v", err)
+		return fmt.Errorf("Expanding service connection: %+v", err)
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointBlackDuckRead(d, m)
@@ -102,7 +102,7 @@ func resourceServiceEndpointBlackDuckDelete(d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
 	if err != nil {
-		return fmt.Errorf(" Expanding service connection: %+v", err)
+		return fmt.Errorf("Expanding service connection: %+v", err)
 	}
 
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))

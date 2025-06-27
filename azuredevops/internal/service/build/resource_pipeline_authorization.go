@@ -97,7 +97,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	)
 
 	if err != nil {
-		return fmt.Errorf(" creating authorized resource: %+v", err)
+		return fmt.Errorf("creating authorized resource: %+v", err)
 	}
 
 	// ensure authorization is complete
@@ -112,7 +112,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for pipeline authorization ready. %v ", err)
+		return fmt.Errorf("waiting for pipeline authorization ready. %v ", err)
 	}
 
 	d.SetId(*response.Resource.Id)
@@ -212,7 +212,7 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 		pipePermissionParams)
 
 	if err != nil {
-		return fmt.Errorf(" deleting authorized resource: %+v", err)
+		return fmt.Errorf("deleting authorized resource: %+v", err)
 	}
 
 	return nil

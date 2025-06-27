@@ -50,20 +50,20 @@ func dataSourceIdentityGroupRead(d *schema.ResourceData, m interface{}) error {
 	// Get groups in specified project ID
 	projectGroups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
-		return fmt.Errorf(" Failed to get groups for project with ID: %s. Error: %v", projectID, err)
+		return fmt.Errorf("Failed to get groups for project with ID: %s. Error: %v", projectID, err)
 	}
 
 	// Select specific group by name/provider name.
 	targetGroup := selectIdentityGroup(&projectGroups, groupName)
 	if targetGroup == nil {
-		return fmt.Errorf(" Can not find group with name %s in project with ID %s", groupName, projectID)
+		return fmt.Errorf("Can not find group with name %s in project with ID %s", groupName, projectID)
 	}
 
 	identityGroup, err := clients.IdentityClient.ReadIdentity(clients.Ctx, identity.ReadIdentityArgs{
 		IdentityId: converter.String(targetGroup.Id.String()),
 	})
 	if err != nil {
-		return fmt.Errorf(" Failed to get Identrity Groups for project with ID: %s. Error: %v", projectID, err)
+		return fmt.Errorf("Failed to get Identrity Groups for project with ID: %s. Error: %v", projectID, err)
 	}
 
 	// Set ID and descriptor for group data resource based on targetGroup output.

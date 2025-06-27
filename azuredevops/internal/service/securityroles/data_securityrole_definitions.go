@@ -80,12 +80,12 @@ func dataSecurityRoleDefinitionsRead(d *schema.ResourceData, m interface{}) erro
 	})
 	if err != nil {
 		d.SetId("")
-		return fmt.Errorf(" finding security role definitions for scope: %s. Error: %v", scope, err)
+		return fmt.Errorf("finding security role definitions for scope: %s. Error: %v", scope, err)
 	}
 
 	if defs == nil || len(*defs) == 0 {
 		d.SetId("")
-		return fmt.Errorf(" no role definition found at scope: %s", scope)
+		return fmt.Errorf("no role definition found at scope: %s", scope)
 	}
 
 	fdefs, err := flattenSRD(defs)

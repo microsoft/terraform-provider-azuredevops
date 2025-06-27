@@ -128,7 +128,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 	if val, ok := d.GetOk("scope"); ok {
 		scopeUid, err := uuid.Parse(val.(string))
 		if err != nil {
-			return fmt.Errorf(" Parsing scope: %+v", err)
+			return fmt.Errorf("Parsing scope: %+v", err)
 		}
 		desc, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
 			StorageKey: &scopeUid,
@@ -181,7 +181,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 	if ok {
 		members := expandGroupMembers(*group.Descriptor, stateMembers.(*schema.Set))
 		if err := addMembers(clients, members); err != nil {
-			return fmt.Errorf(" adding group memberships during create: %+v", err)
+			return fmt.Errorf("adding group memberships during create: %+v", err)
 		}
 	}
 
@@ -310,7 +310,7 @@ func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" Waiting for group delete. %v ", err)
+		return fmt.Errorf("Waiting for group delete. %v ", err)
 	}
 
 	return nil
@@ -366,7 +366,7 @@ func groupReadMembers(groupDescriptor string, clients *client.AggregatedClient) 
 		Depth:             converter.Int(1),
 	})
 	if err != nil {
-		return nil, fmt.Errorf(" Reading group memberships: %+v", err)
+		return nil, fmt.Errorf("Reading group memberships: %+v", err)
 	}
 
 	members := make([]graph.GraphMembership, len(*actualMembers))

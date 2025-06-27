@@ -76,7 +76,7 @@ func dataEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		if len(response.Value) == 0 {
-			return fmt.Errorf(" Unable to find environment with name: %s", name)
+			return fmt.Errorf("Unable to find environment with name: %s", name)
 		}
 		environment = &response.Value[0]
 	}

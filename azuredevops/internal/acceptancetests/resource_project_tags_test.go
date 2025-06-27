@@ -1,3 +1,5 @@
+//go:build (all || resource_project_tags) && !exclude_resource_project_tags
+
 package acceptancetests
 
 import (
@@ -116,11 +118,11 @@ func checkProjectTagsDestroyed(s *terraform.State) error {
 			if utils.ResponseWasNotFound(err) {
 				return nil
 			}
-			return fmt.Errorf(" Get project Tags (Project ID: %s). Error: %+v", id, err)
+			return fmt.Errorf("Get project Tags (Project ID: %s). Error: %+v", id, err)
 		}
 
 		if tags != nil && len(*tags) != 0 {
-			return fmt.Errorf(" Project Tags (Project ID: %s) should not exist", id)
+			return fmt.Errorf("Project Tags (Project ID: %s) should not exist", id)
 		}
 	}
 	return nil
@@ -130,7 +132,7 @@ func CheckProjectTagsExist() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_project_tags.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a `azuredevops_project_tags` in the TF state")
+			return fmt.Errorf("Did not find a `azuredevops_project_tags` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -146,7 +148,7 @@ func CheckProjectTagsExist() resource.TestCheckFunc {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Project Tags with Project ( Project ID=%s ) not found!. Error=%v", id, err)
+			return fmt.Errorf("Project Tags with Project ( Project ID=%s ) not found!. Error=%v", id, err)
 		}
 		return nil
 	}

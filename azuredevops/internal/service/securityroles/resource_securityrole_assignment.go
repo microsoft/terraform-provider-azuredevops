@@ -111,7 +111,7 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" reading group memberships during read: %+v", err)
+		return fmt.Errorf("reading group memberships during read: %+v", err)
 	}
 
 	if assignment != nil && (assignment.Identity == nil && assignment.Role == nil) {

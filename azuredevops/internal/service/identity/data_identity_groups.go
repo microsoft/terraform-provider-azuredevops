@@ -61,7 +61,7 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 	// Get groups in specified project id
 	groups, err := getIdentityGroupsWithProjectID(clients, projectID)
 	if err != nil {
-		return fmt.Errorf(" Failed to get groups for project with ID %s. Error: %v", projectID, err)
+		return fmt.Errorf("Failed to get groups for project with ID %s. Error: %v", projectID, err)
 	}
 
 	identityIds := ""
@@ -73,13 +73,13 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 		IdentityIds: &identityIds,
 	})
 	if err != nil {
-		return fmt.Errorf(" Failed to get Identity Groups for project with ID %s. Error: %v", projectID, err)
+		return fmt.Errorf("Failed to get Identity Groups for project with ID %s. Error: %v", projectID, err)
 	}
 
 	// With project groups flatten results
 	flattenedGroups, err := flattenIdentityGroups(identityGroups)
 	if err != nil {
-		return fmt.Errorf(" Flattening groups. Error: %w", err)
+		return fmt.Errorf("Flattening groups. Error: %w", err)
 	}
 
 	// Set id and group list for groups data resource
@@ -94,7 +94,7 @@ func getIdentityGroupsWithProjectID(clients *client.AggregatedClient, projectID 
 		ScopeIds: &projectID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf(" Getting groups: %v", err)
+		return nil, fmt.Errorf("Getting groups: %v", err)
 	}
 	return *response, nil
 }

@@ -1,3 +1,5 @@
+//go:build (all || resource_branchpolicy_auto_reviewers) && !exclude_resource_branchpolicy_auto_reviewers
+
 package acceptancetests
 
 import (

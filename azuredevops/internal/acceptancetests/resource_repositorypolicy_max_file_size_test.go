@@ -1,6 +1,4 @@
 //go:build (all || resource_policy_file_size) && !resource_policy_file_size
-// +build all resource_policy_file_size
-// +build !resource_policy_file_size
 
 package acceptancetests
 

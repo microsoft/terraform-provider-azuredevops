@@ -294,7 +294,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 	}
 
 	if idlist == nil || len(*idlist) <= 0 {
-		return nil, fmt.Errorf(" No identity information for defined principals [%s]", descriptors)
+		return nil, fmt.Errorf("No identity information for defined principals [%s]", descriptors)
 	}
 
 	linq.From(*idlist).Where(func(ele interface{}) bool {
@@ -307,7 +307,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 	}).ToSlice(idlist)
 
 	if len(*idlist) != len(*principal) {
-		return nil, fmt.Errorf(" Failed to load identity information for defined principals [%s]", descriptors)
+		return nil, fmt.Errorf("Failed to load identity information for defined principals [%s]", descriptors)
 	}
 	return idlist, nil
 }
@@ -478,7 +478,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 				Descriptors: converter.String(descriptor),
 			})
 			if err != nil {
-				return nil, fmt.Errorf(" Unable to get identity details for descriptor [%s]", descriptor)
+				return nil, fmt.Errorf("Unable to get identity details for descriptor [%s]", descriptor)
 			}
 			idMap[descriptor] = (*identityDetails)[0]
 		}
@@ -491,7 +491,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 			return nil, fmt.Errorf("INTERAL ERROR: identity map does not contain an item with key [%s]", descriptor)
 		}
 		if subject.SubjectDescriptor == nil {
-			return nil, fmt.Errorf(" Identity %s does not contain a subject descriptor value", descriptor)
+			return nil, fmt.Errorf("Identity %s does not contain a subject descriptor value", descriptor)
 		}
 
 		subjectPerm := PrincipalPermission{

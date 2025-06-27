@@ -1,6 +1,4 @@
 //go:build (all || resource_policy_case_enforcement) && !resource_policy_case_enforcement
-// +build all resource_policy_case_enforcement
-// +build !resource_policy_case_enforcement
 
 package acceptancetests
 

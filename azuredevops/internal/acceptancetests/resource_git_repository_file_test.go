@@ -1,6 +1,4 @@
 //go:build (all || core || resource_git_repository_file) && !exclude_resource_git_repository_file
-// +build all core resource_git_repository_file
-// +build !exclude_resource_git_repository_file
 
 package acceptancetests
 
@@ -194,7 +192,7 @@ func repositoryFileIdFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return "", fmt.Errorf(" Resource node not found: %s", resourceName)
+			return "", fmt.Errorf("Resource node not found: %s", resourceName)
 		}
 		return fmt.Sprintf("%s/%s", rs.Primary.Attributes["repository_id"], rs.Primary.Attributes["file"]), nil
 	}
@@ -206,7 +204,7 @@ func checkGitRepoFileNotExists(fileName string) resource.TestCheckFunc {
 
 		repo, ok := s.RootModule().Resources["azuredevops_git_repository.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a repo definition in the TF state")
+			return fmt.Errorf("Did not find a repo definition in the TF state")
 		}
 
 		ctx := context.Background()
@@ -228,7 +226,7 @@ func checkGitRepoFileContent(expectedContent string) resource.TestCheckFunc {
 
 		gitFile, ok := s.RootModule().Resources["azuredevops_git_repository_file.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a repo definition in the TF state")
+			return fmt.Errorf("Did not find a repo definition in the TF state")
 		}
 
 		fileID := gitFile.Primary.ID

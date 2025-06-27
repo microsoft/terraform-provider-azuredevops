@@ -91,7 +91,7 @@ func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedCli
 		if delErr := deleteServiceEndpoint(clients, createdServiceEndpoint, d.Timeout(schema.TimeoutDelete)); delErr != nil {
 			log.Printf("[DEBUG] Failed to delete the failed service endpoint: %v ", delErr)
 		}
-		return nil, fmt.Errorf(" waiting for service endpoint ready. %v ", err)
+		return nil, fmt.Errorf("waiting for service endpoint ready. %v ", err)
 	}
 
 	return createdServiceEndpoint, err
@@ -118,7 +118,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 			},
 			EndpointId: serviceEndpoint.Id,
 		}); err != nil {
-		return fmt.Errorf(" Delete service endpoint error %v", err)
+		return fmt.Errorf("Delete service endpoint error %v", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -132,7 +132,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" Wait for service endpoint to be deleted error. %v ", err)
+		return fmt.Errorf("Wait for service endpoint to be deleted error. %v ", err)
 	}
 	return nil
 }
@@ -176,7 +176,7 @@ func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetService
 	var serviceEndpointID *uuid.UUID
 	parsedServiceEndpointID, err := uuid.Parse(d.Id())
 	if err != nil {
-		return nil, fmt.Errorf(" parsing the service endpoint ID from the Terraform resource data: %v", err)
+		return nil, fmt.Errorf("parsing the service endpoint ID from the Terraform resource data: %v", err)
 	}
 	serviceEndpointID = &parsedServiceEndpointID
 	projectID, err := uuid.Parse(d.Get("project_id").(string))
@@ -372,7 +372,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 	projectIDString := d.Get("project_id").(string)
 	parsedProjectID, err := uuid.Parse(projectIDString)
 	if err != nil {
-		return nil, fmt.Errorf(" Parsing projectID from the Terraform data source declaration: %v", err)
+		return nil, fmt.Errorf("Parsing projectID from the Terraform data source declaration: %v", err)
 	}
 
 	projectID = &parsedProjectID
@@ -381,7 +381,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 		var serviceEndpointID *uuid.UUID
 		parsedServiceEndpointID, err := uuid.Parse(serviceEndpointIDString.(string))
 		if err != nil {
-			return nil, fmt.Errorf(" Parsing serviceEndpointID from the Terraform data source declaration: %v", err)
+			return nil, fmt.Errorf("Parsing serviceEndpointID from the Terraform data source declaration: %v", err)
 		}
 		serviceEndpointID = &parsedServiceEndpointID
 
@@ -397,7 +397,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 				d.SetId("")
 				return nil, nil
 			}
-			return nil, fmt.Errorf(" Looking up service endpoint with ID (%v) and projectID (%v): %v", serviceEndpointID, projectID, err)
+			return nil, fmt.Errorf("Looking up service endpoint with ID (%v) and projectID (%v): %v", serviceEndpointID, projectID, err)
 		}
 
 		return serviceEndpoint, nil
@@ -410,7 +410,7 @@ func dataSourceGetBaseServiceEndpoint(d *schema.ResourceData, m interface{}) (*s
 				d.SetId("")
 				return nil, nil
 			}
-			return nil, fmt.Errorf(" Looking up service endpoint with name (%v) and projectID (%v): %v", serviceEndpointName, projectID, err)
+			return nil, fmt.Errorf("Looking up service endpoint with name (%v) and projectID (%v): %v", serviceEndpointName, projectID, err)
 		}
 
 		return serviceEndpoint, nil
@@ -460,7 +460,7 @@ const (
 
 func checkServiceConnection(endpoint *serviceendpoint.ServiceEndpoint) error {
 	if endpoint.Id != nil && (endpoint.Data == nil || endpoint.Type == nil) {
-		return fmt.Errorf(" Service connection not fully returned, this appears to be a permission issue with PAT/SPN/identity etc.")
+		return fmt.Errorf("Service connection not fully returned, this appears to be a permission issue with PAT/SPN/identity etc.")
 	}
 	return nil
 }

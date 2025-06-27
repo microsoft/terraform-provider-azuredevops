@@ -1,6 +1,4 @@
 //go:build (all || data_environment) && !exclude_data_environment
-// +build all data_environment
-// +build !exclude_data_environment
 
 package acceptancetests
 

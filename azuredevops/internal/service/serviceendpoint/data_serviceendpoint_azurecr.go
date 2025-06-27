@@ -98,5 +98,5 @@ func dataSourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{})
 
 		return nil
 	}
-	return fmt.Errorf(" Looking up service endpoint!")
+	return fmt.Errorf("Looking up service endpoint!")
 }
