@@ -1,6 +1,4 @@
 //go:build (all || data_sources || data_build_definition) && (!exclude_data_sources || !exclude_data_build_definition)
-// +build all data_sources data_build_definition
-// +build !exclude_data_sources !exclude_data_build_definition
 
 package acceptancetests
 

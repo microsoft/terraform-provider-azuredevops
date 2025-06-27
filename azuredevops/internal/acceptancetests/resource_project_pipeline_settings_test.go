@@ -1,6 +1,4 @@
 //go:build (all || core || resource_project || resource_project_features) && !exclude_resource_project_features
-// +build all core resource_project resource_project_features
-// +build !exclude_resource_project_features
 
 package acceptancetests
 

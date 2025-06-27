@@ -1,6 +1,4 @@
 //go:build (all || data_sources || data_serviceendpoint_sonarcloud) && (!exclude_data_sources || !exclude_data_serviceendpoint_sonarcloud)
-// +build all data_sources data_serviceendpoint_sonarcloud
-// +build !exclude_data_sources !exclude_data_serviceendpoint_sonarcloud
 
 package acceptancetests
 

@@ -1,6 +1,4 @@
 //go:build (all || resource_group_entitlement) && !exclude_resource_group_entitlement
-// +build all resource_group_entitlement
-// +build !exclude_resource_group_entitlement
 
 package acceptancetests
 

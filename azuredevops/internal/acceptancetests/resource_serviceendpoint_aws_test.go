@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_aws) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_aws
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 

@@ -1,6 +1,4 @@
 //go:build (all || resource_check_business_hours) && !exclude_approvalsandchecks
-// +build all resource_check_business_hours
-// +build !exclude_approvalsandchecks
 
 package acceptancetests
 

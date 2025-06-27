@@ -1,6 +1,4 @@
 //go:build (all || core || data_sources || resource_project || data_projects) && (!data_sources || !exclude_data_projects)
-// +build all core data_sources resource_project data_projects
-// +build !data_sources !exclude_data_projects
 
 package acceptancetests
 

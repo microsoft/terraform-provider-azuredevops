@@ -1,6 +1,4 @@
 //go:build (all || resource_variable_group) && !exclude_resource_variable_group
-// +build all resource_variable_group
-// +build !exclude_resource_variable_group
 
 package acceptancetests
 

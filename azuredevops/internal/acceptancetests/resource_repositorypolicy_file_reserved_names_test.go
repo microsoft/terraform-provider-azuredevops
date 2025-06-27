@@ -1,6 +1,4 @@
 //go:build (all || resource_policy_reserved_names) && !resource_policy_reserved_names
-// +build all resource_policy_reserved_names
-// +build !resource_policy_reserved_names
 
 package acceptancetests
 

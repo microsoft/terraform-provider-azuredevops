@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_kubernetes) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_kubernetes
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 

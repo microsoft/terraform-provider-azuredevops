@@ -1,6 +1,4 @@
 //go:build (all || core || resource_git_repository) && !exclude_resource_git_repository
-// +build all core resource_git_repository
-// +build !exclude_resource_git_repository
 
 package acceptancetests
 

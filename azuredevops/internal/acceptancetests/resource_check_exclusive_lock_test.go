@@ -1,6 +1,4 @@
 //go:build (all || resource_check_exclusive_lock) && !exclude_approvalsandchecks
-// +build all resource_check_exclusive_lock
-// +build !exclude_approvalsandchecks
 
 package acceptancetests
 

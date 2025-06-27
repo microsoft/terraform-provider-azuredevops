@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_nexus) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_nexus
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
