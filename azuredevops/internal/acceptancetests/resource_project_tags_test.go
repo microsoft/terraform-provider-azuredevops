@@ -1,3 +1,5 @@
+//go:build (all || resource_project_tags) && !exclude_resource_project_tags
+
 package acceptancetests
 
 import (
