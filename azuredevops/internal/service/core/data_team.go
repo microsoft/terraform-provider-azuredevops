@@ -80,7 +80,6 @@ func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		ProjectId: converter.String(projectID),
 		TeamId:    converter.String(teamName),
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Get Team (Team Name: %s). Error: %+v", teamName, err))
 	}

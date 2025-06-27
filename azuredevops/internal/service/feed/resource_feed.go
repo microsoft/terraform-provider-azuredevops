@@ -109,7 +109,6 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		},
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
 	}
@@ -128,7 +127,6 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &feedID,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -157,7 +155,6 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &name,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -175,7 +172,6 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &name,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -186,7 +182,6 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 				FeedId:  &name,
 				Project: &projectId,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -219,7 +214,6 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 			Value: false,
 		}},
 	})
-
 	if err != nil {
 		return err
 	}

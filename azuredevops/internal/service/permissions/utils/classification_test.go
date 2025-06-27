@@ -18,8 +18,10 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var iterationProjectID = "a417ffff-fb0d-4cd4-8aac-54d8878b60f0"
-var iterationRootID = "0b401c26-b0da-4655-995a-ab62f0b05187"
+var (
+	iterationProjectID = "a417ffff-fb0d-4cd4-8aac-54d8878b60f0"
+	iterationRootID    = "0b401c26-b0da-4655-995a-ab62f0b05187"
+)
 
 func TestClassificationNode_CreateIterationToken_RootIteration(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -89,7 +91,7 @@ func TestClassificationNode_CreateIterationToken_HandleErrorInPath(t *testing.T)
 		Ctx:                    context.Background(),
 	}
 
-	var errMsg = "@@GetClassificationNode@@failed"
+	errMsg := "@@GetClassificationNode@@failed"
 
 	workitemtrackingClient.
 		EXPECT().

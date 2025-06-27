@@ -48,7 +48,6 @@ func dataSourceAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 	agentPools, err := clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{
 		PoolName: converter.String(poolName),
 	})
-
 	if err != nil {
 		return err
 	}

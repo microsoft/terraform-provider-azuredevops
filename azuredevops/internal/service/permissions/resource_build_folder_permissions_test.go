@@ -29,8 +29,10 @@ var buildFolderProjectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
 
 var buildFolderToken = fmt.Sprintf("%s", buildFolderProjectID)
 
-var buildFolderPath = "a/b/c"
-var buildFolderTokenPath = fmt.Sprintf("%s/%s", buildFolderProjectID, buildFolderPath)
+var (
+	buildFolderPath      = "a/b/c"
+	buildFolderTokenPath = fmt.Sprintf("%s/%s", buildFolderProjectID, buildFolderPath)
+)
 
 func TestBuildFolderPermissions_CreateBuildFolderToken(t *testing.T) {
 	ctrl := gomock.NewController(t)

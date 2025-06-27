@@ -88,7 +88,6 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 				Type:    authorizedResource.Type,
 				Id:      authorizedResource.Id,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -109,7 +108,6 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 			Project:      &projectID,
 			DefinitionId: &definitionID,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				log.Printf(msgErrorAuthorizationNoLongerExists, *(authorizedResource.Id))

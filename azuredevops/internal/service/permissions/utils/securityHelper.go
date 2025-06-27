@@ -41,7 +41,8 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 				SubjectDescriptor: principal.(string),
 				Permissions:       permissionMap,
 			},
-		}}
+		},
+	}
 
 	if err := sn.SetPrincipalPermissions(&setPermissions); err != nil {
 		return err

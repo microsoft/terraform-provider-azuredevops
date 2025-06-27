@@ -122,6 +122,7 @@ func resourceServiceEndpointArgoCDRead(d *schema.ResourceData, m interface{}) er
 	flattenServiceEndpointArgoCD(d, serviceEndpoint)
 	return nil
 }
+
 func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
@@ -130,12 +131,12 @@ func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) 
 	}
 
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
 		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
 	return resourceServiceEndpointArgoCDRead(d, m)
 }
+
 func resourceServiceEndpointArgoCDDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArgoCD(d)

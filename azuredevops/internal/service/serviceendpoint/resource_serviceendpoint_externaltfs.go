@@ -122,6 +122,7 @@ func resourceServiceEndpointExternalTFSDelete(d *schema.ResourceData, m interfac
 
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
+
 func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externaltfs")

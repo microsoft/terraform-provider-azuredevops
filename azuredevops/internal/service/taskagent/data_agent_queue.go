@@ -71,7 +71,6 @@ func getAgentQueueByName(clients *client.AggregatedClient, name, projectID strin
 		Project:   &projectID,
 		QueueName: &name,
 	})
-
 	if err != nil {
 		return nil, err
 	}

@@ -137,7 +137,6 @@ func resourceServicePrincipalEntitlementRead(d *schema.ResourceData, m interface
 	servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
 		ServicePrincipalId: &id,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) || isServicePrincipalDeleted(servicePrincipalEntitlement) {
 			d.SetId("")
@@ -190,7 +189,6 @@ func resourceServicePrincipalEntitlementUpdate(d *schema.ResourceData, m interfa
 				},
 			},
 		})
-
 	if err != nil {
 		return fmt.Errorf("Updating service principal entitlement: %v", err)
 	}
@@ -217,7 +215,6 @@ func resourceServicePrincipalEntitlementDelete(d *schema.ResourceData, m interfa
 	err = clients.MemberEntitleManagementClient.DeleteServicePrincipalEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteServicePrincipalEntitlementArgs{
 		ServicePrincipalId: &id,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Deleting service principal entitlement: %v", err)
 	}
@@ -262,7 +259,6 @@ func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePri
 	servicePrincipalEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.AddServicePrincipalEntitlementArgs{
 		ServicePrincipalEntitlement: servicePrincipalEntitlement,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +277,6 @@ func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePri
 func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	servicePrincipalEntitlementId := d.Id()
 	id, err := uuid.Parse(servicePrincipalEntitlementId)
-
 	if err != nil {
 		return nil, fmt.Errorf("Only UUID values can used for import [%s]", servicePrincipalEntitlementId)
 	}

@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var gcpForTerraformTestServiceEndpointID = uuid.New()
-var gcpRandomServiceEndpointProjectID = uuid.New()
-var gcpForTerraformTestServiceEndpointProjectID = &gcpRandomServiceEndpointProjectID
+var (
+	gcpForTerraformTestServiceEndpointID        = uuid.New()
+	gcpRandomServiceEndpointProjectID           = uuid.New()
+	gcpForTerraformTestServiceEndpointProjectID = &gcpRandomServiceEndpointProjectID
+)
 
 var gcpForTerraformTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{

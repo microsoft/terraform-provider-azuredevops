@@ -115,7 +115,6 @@ func createBuildToken(d *schema.ResourceData, clients *client.AggregatedClient) 
 		Project:      converter.String(projectID.(string)),
 		DefinitionId: converter.Int(buildDefinitionID),
 	})
-
 	if err != nil {
 		return "", err
 	}

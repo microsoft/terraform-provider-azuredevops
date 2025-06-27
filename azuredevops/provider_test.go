@@ -298,7 +298,8 @@ func TestAuthOIDCToken(t *testing.T) {
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string,
 			getAssertion func(context.Context) (string, error),
-			options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
+			options *azidentity.ClientAssertionCredentialOptions,
+		) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -316,7 +317,7 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	oidcToken := "buffalo123"
 	tempFile := t.TempDir() + "/clientSecret.txt"
-	err := os.WriteFile(tempFile, []byte(oidcToken), 0644)
+	err := os.WriteFile(tempFile, []byte(oidcToken), 0o644)
 	assert.Nil(t, err)
 
 	accessToken := "thepassword"
@@ -371,7 +372,7 @@ func TestAuthClientSecretFile(t *testing.T) {
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	clientSecret := "buffalo123"
 	tempFile := t.TempDir() + "/clientSecret.txt"
-	err := os.WriteFile(tempFile, []byte(clientSecret), 0644)
+	err := os.WriteFile(tempFile, []byte(clientSecret), 0o644)
 	assert.Nil(t, err)
 
 	accessToken := "thepassword"
@@ -532,7 +533,7 @@ func TestAuthClientCertFile(t *testing.T) {
 	cert := generateCert()
 	accessToken := "thepassword"
 	tempFile := t.TempDir() + "/clientCerts.pem"
-	err := os.WriteFile(tempFile, cert, 0644)
+	err := os.WriteFile(tempFile, cert, 0o644)
 	assert.Nil(t, err)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)

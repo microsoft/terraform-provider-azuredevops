@@ -19,8 +19,10 @@ import (
 // so it doesn't seem to work and the website UI doesn't have it available
 var targetResourceTypes = []string{"endpoint", "environment", "queue", "repository", "securefile", "variablegroup"}
 
-type flatFunc func(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error
-type expandFunc func(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error)
+type (
+	flatFunc   func(d *schema.ResourceData, check *pipelineschecksextras.CheckConfiguration, projectID string) error
+	expandFunc func(d *schema.ResourceData) (*pipelineschecksextras.CheckConfiguration, string, error)
+)
 
 type approvalAndCheckTypes struct {
 	ExtendsCheck     *pipelineschecksextras.CheckType
@@ -128,7 +130,6 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			Id:      &taskCheckId,
 			Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) || strings.Contains(err.Error(), "does not exist.") {
 				d.SetId("")
@@ -155,7 +156,6 @@ func genCheckUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateF
 				Configuration: taskCheck,
 				Id:            taskCheck.Id,
 			})
-
 		if err != nil {
 			return err
 		}

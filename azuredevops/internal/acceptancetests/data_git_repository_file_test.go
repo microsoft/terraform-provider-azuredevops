@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccGitRepositoryFile_DataSource(t *testing.T) {
-
 	tfNode := "data.azuredevops_git_repository_file.test"
 
 	projectName := testutils.GenerateResourceName()
@@ -40,7 +39,6 @@ func TestAccGitRepositoryFile_DataSource(t *testing.T) {
 }
 
 func TestAccGitRepositoryFile_DataSource_notExist(t *testing.T) {
-
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 	branch := "refs/heads/master"

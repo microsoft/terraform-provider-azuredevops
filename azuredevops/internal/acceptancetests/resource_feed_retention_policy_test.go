@@ -209,7 +209,6 @@ func CheckFeedRetentionPolicyExist(expectedCountLimit int) resource.TestCheckFun
 			FeedId:  &id,
 			Project: &projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("Feed Retention Policy with Feed ( Feed ID=%s ) cannot be found!. Error=%v", id, err)
 		}

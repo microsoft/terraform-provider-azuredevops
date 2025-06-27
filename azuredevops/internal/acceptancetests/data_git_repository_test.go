@@ -45,6 +45,7 @@ func TestAccGitRepository_DataSource_notExist(t *testing.T) {
 		},
 	})
 }
+
 func hclDataRepository(projectName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -56,7 +57,6 @@ data "azuredevops_git_repository" "repository" {
   name       = "%[1]s"
 }
 `, projectName)
-
 }
 
 func hclDataRepositoryNotExist(name string) string {
@@ -70,5 +70,4 @@ data "azuredevops_git_repository" "test" {
   name       = "notExist"
 }
 `, name)
-
 }

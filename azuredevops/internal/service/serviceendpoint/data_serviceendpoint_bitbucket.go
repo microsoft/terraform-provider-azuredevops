@@ -20,7 +20,6 @@ func DataResourceServiceEndpointBitbucket() *schema.Resource {
 
 func dataSourceServiceEndpointBitbucketRead(d *schema.ResourceData, m interface{}) error {
 	serviceEndpoint, err := dataSourceGetBaseServiceEndpoint(d, m)
-
 	if err != nil {
 		return err
 	}

@@ -141,7 +141,6 @@ func checkRepositoryBranchExist(expectedName string) resource.TestCheckFunc {
 			RepositoryId: &repoId,
 			Name:         &branchName,
 		})
-
 		if err != nil {
 			return fmt.Errorf("Repositroy: %s, Branch: %s cannot be found. Error=%v", repoId, branchName, err)
 		}

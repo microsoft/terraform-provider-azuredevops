@@ -162,14 +162,14 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 
 func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	val := d.List()[0].(map[string]interface{}) // auth_personal only have one map configure structure
 	authPerson["AccessToken"] = val["personal_access_token"].(string)
 	return authPerson
 }
 
 func expandAuthOauthSet(d *schema.Set) map[string]string {
 	authConfig := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	val := d.List()[0].(map[string]interface{}) // auth_personal only have one map configure structure
 	authConfig["ConfigurationId"] = val["oauth_configuration_id"].(string)
 	authConfig["AccessToken"] = ""
 	return authConfig

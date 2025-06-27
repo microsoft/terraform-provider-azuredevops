@@ -20,20 +20,22 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var azureCRTestServiceEndpointID = uuid.New()
-var azureCRRandomServiceEndpointProjectID = uuid.New()
-var azureCRTestServiceEndpointProjectID = &azureCRRandomServiceEndpointProjectID
-var subscription_id = "42125daf-72fd-417c-9ea7-080690625ad3"
-var scope = fmt.Sprintf(
-	"/subscriptions/%s/resourceGroups/testrg/providers/Microsoft.ContainerRegistry/registries/testacr",
-	subscription_id,
+var (
+	azureCRTestServiceEndpointID          = uuid.New()
+	azureCRRandomServiceEndpointProjectID = uuid.New()
+	azureCRTestServiceEndpointProjectID   = &azureCRRandomServiceEndpointProjectID
+	subscription_id                       = "42125daf-72fd-417c-9ea7-080690625ad3"
+	scope                                 = fmt.Sprintf(
+		"/subscriptions/%s/resourceGroups/testrg/providers/Microsoft.ContainerRegistry/registries/testacr",
+		subscription_id,
+	)
 )
 
 var azureCRTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"authenticationType": "spnKey",
-			"tenantId":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+			"tenantId":           "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 			"loginServer":        "testacr.azurecr.io",
 			"scope":              scope,
 			"serviceprincipalid": "00000000-0000-0000-0000-000000000000",

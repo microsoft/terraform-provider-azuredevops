@@ -20,9 +20,11 @@ import (
 )
 
 // "rp" stands for RunPipeline
-var rpTestServiceEndpointID = uuid.New()
-var rpRandomServiceEndpointProjectID = uuid.New()
-var rpTestServiceEndpointProjectID = &rpRandomServiceEndpointProjectID
+var (
+	rpTestServiceEndpointID          = uuid.New()
+	rpRandomServiceEndpointProjectID = uuid.New()
+	rpTestServiceEndpointProjectID   = &rpRandomServiceEndpointProjectID
+)
 
 var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{

@@ -102,7 +102,6 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			Top:            converter.Int(d.Get("top").(int)),
 			ExpandIdentity: converter.Bool(false),
 		})
-
 		if err != nil {
 			return err
 		}

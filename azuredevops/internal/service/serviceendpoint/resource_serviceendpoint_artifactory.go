@@ -132,13 +132,13 @@ func resourceServiceEndpointArtifactoryUpdate(d *schema.ResourceData, m interfac
 	}
 
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointArtifactoryRead(d, m)
 }
+
 func resourceServiceEndpointArtifactoryDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArtifactory(d)

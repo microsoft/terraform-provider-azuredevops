@@ -132,7 +132,6 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -199,7 +198,6 @@ func resourceFeedPermissionUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("updating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -220,7 +218,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 	projectId := d.Get("project_id").(string)
 
 	identityResponse, err := getIdentity(d, m)
-
 	if err != nil {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -235,7 +232,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -250,7 +246,6 @@ func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, err
 	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
 		SubjectDescriptor: &identityDescriptor,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +253,6 @@ func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, err
 	response, err := clients.IdentityClient.ReadIdentity(clients.Ctx, identity.ReadIdentityArgs{
 		IdentityId: converter.String((*storageKey.Value).String()),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +268,6 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 	projectId := d.Get("project_id").(string)
 
 	identityResponse, err := getIdentity(d, m)
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -283,7 +276,6 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil, identityResponse, fmt.Errorf("Feed Permissions Not Found. Feed may exist at organization or project level."+

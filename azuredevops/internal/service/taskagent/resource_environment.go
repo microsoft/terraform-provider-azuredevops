@@ -78,7 +78,6 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 		EnvironmentId: &environmentID,
 		Project:       converter.String(d.Get("project_id").(string)),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -117,7 +116,6 @@ func resourceEnvironmentDelete(d *schema.ResourceData, m interface{}) error {
 		Project:       converter.String(d.Get("project_id").(string)),
 		EnvironmentId: &environmentId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error deleting environment: %+v", err)
 	}

@@ -96,7 +96,6 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		ProjectId: &projectID,
 		Team:      &teamData,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Creating Team: %+v", err)
 	}
@@ -150,7 +149,6 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 		TeamId:         converter.String(teamID),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -223,7 +221,6 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 			TeamId:    &teamID,
 			TeamData:  &teamData,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -233,7 +230,6 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 			TeamId:         converter.String(teamID),
 			ExpandIdentity: converter.Bool(false),
 		})
-
 		if err != nil {
 			return err
 		}
@@ -280,7 +276,6 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 		ProjectId: &projectID,
 		TeamId:    &teamID,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -415,7 +410,6 @@ func getIdentitiesFromSubjects(clients *client.AggregatedClient, query linq.Quer
 	idlist, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 		SubjectDescriptors: converter.String(discriptors),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -530,7 +524,6 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 		// determine the list of all removed administrators
 		linq.From(currentAdministrators).Except(linq.From(*subjectDescriptors)),
 		securityhelper.PermissionTypeValues.NotSet)
-
 	if err != nil {
 		return err
 	}
@@ -542,7 +535,6 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 		// determine the list of all added administrators
 		linq.From(*subjectDescriptors).Except(linq.From(currentAdministrators)),
 		securityhelper.PermissionTypeValues.Allow)
-
 	if err != nil {
 		return err
 	}
@@ -622,7 +614,6 @@ func getSubjectDescriptors(clients *client.AggregatedClient, members *[]string) 
 			memberIdentities, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 				Descriptors: &descriptors,
 			})
-
 			if err != nil {
 				return nil, err
 			}

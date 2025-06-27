@@ -309,7 +309,8 @@ func DataBuildDefinition() *schema.Resource {
 												},
 												"continue_on_error": {
 													Type:     schema.TypeBool,
-													Computed: true},
+													Computed: true,
+												},
 											},
 										},
 									},

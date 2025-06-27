@@ -259,7 +259,6 @@ func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*se
 		Descriptors:         descriptors,
 		IncludeExtendedInfo: &bTrue,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +287,6 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 	idlist, err := sn.identityClient.ReadIdentities(sn.context, identity.ReadIdentitiesArgs{
 		SubjectDescriptors: converter.String(descriptors),
 	})
-
 	if err != nil {
 		return nil, err
 	}

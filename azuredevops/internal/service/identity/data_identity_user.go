@@ -74,7 +74,6 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 		SearchFilter: &searchFilter, // Filter to get users
 		FilterValue:  &filterValue,  // Search String for user
 	})
-
 	if err != nil {
 		return nil, err
 	}

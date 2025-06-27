@@ -21,6 +21,7 @@ tools:
 	go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
 	go install github.com/bflad/tfproviderdocs@latest
 	go install github.com/katbyte/terrafmt@latest
+	go install mvdan.cc/gofumpt@latest
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(GOPATH)/bin" v1.64.8
 
 build: fmtcheck depscheck
@@ -30,6 +31,11 @@ fmt:
 	@echo "==> Fixing source code with gofmt..."
 	@echo "# This logic should match the search logic in scripts/gofmtcheck.sh"
 	find . -name '*.go' | grep -v vendor | xargs gofmt -s -w
+
+fumpt:
+	@echo "==> Fixing source code with Gofumpt..."
+	# This logic should match the search logic in scripts/gofmtcheck.sh
+	find . -name '*.go' | grep -v vendor | xargs gofumpt -s -w
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"

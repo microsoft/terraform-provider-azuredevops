@@ -148,7 +148,6 @@ func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
 		UserId: &id,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) || isUserDeleted(userEntitlement) {
 			d.SetId("")
@@ -197,7 +196,6 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 				},
 			},
 		})
-
 	if err != nil {
 		return fmt.Errorf("Updating user entitlement: %v", err)
 	}
@@ -224,7 +222,6 @@ func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error 
 	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
 		UserId: &id,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Deleting user entitlement: %v", err)
 	}
@@ -277,7 +274,6 @@ func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *membe
 	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.Ctx, memberentitlementmanagement.AddUserEntitlementArgs{
 		UserEntitlement: userEntitlement,
 	})
-
 	if err != nil {
 		return nil, err
 	}

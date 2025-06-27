@@ -22,9 +22,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var projectID = "projectid"
-var definitionID = 666
-var endpointId = uuid.New()
+var (
+	projectID    = "projectid"
+	definitionID = 666
+	endpointId   = uuid.New()
+)
 
 var resourceReferenceAuthorized = build.DefinitionResourceReference{
 	Authorized: converter.Bool(true),

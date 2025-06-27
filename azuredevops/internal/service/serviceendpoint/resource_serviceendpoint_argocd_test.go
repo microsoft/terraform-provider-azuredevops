@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var argocdTestServiceEndpointIDpassword = uuid.New()
-var argocdRandomServiceEndpointProjectIDpassword = uuid.New()
-var argocdTestServiceEndpointProjectIDpassword = &argocdRandomServiceEndpointProjectIDpassword
+var (
+	argocdTestServiceEndpointIDpassword          = uuid.New()
+	argocdRandomServiceEndpointProjectIDpassword = uuid.New()
+	argocdTestServiceEndpointProjectIDpassword   = &argocdRandomServiceEndpointProjectIDpassword
+)
 
 var argocdTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -48,9 +50,11 @@ var argocdTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var argocdTestServiceEndpointID = uuid.New()
-var argocdRandomServiceEndpointProjectID = uuid.New()
-var argocdTestServiceEndpointProjectID = &argocdRandomServiceEndpointProjectID
+var (
+	argocdTestServiceEndpointID          = uuid.New()
+	argocdRandomServiceEndpointProjectID = uuid.New()
+	argocdTestServiceEndpointProjectID   = &argocdRandomServiceEndpointProjectID
+)
 
 var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -91,6 +95,7 @@ func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 
 	}
 }
+
 func TestServiceEndpointArgoCD_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
 }
@@ -122,9 +127,11 @@ func testServiceEndpointArgoCD_Create_DoesNotSwallowError(t *testing.T, ep *serv
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArgoCD_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArgoCD_Create_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArgoCD_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArgoCD_Create_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
 }
@@ -155,9 +162,11 @@ func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *servic
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArgoCD_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArgoCD_Read_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArgoCD_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArgoCD_Read_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
 }

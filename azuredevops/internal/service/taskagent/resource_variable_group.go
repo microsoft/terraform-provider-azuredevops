@@ -166,7 +166,6 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = flattenVariableGroup(d, addedVariableGroup, projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
@@ -211,12 +210,11 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = flattenVariableGroup(d, variableGroup, &projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
 
-	//Read the Authorization Resource for get allow access property
+	// Read the Authorization Resource for get allow access property
 	resourceRefType := "variablegroup"
 	varGroupID := strconv.Itoa(variableGroupID)
 
@@ -228,7 +226,6 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 			Id:      &varGroupID,
 		},
 	)
-
 	if err != nil {
 		return fmt.Errorf("Looking up project resources given ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
@@ -256,7 +253,6 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = flattenVariableGroup(d, updatedVariableGroup, projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
@@ -279,13 +275,13 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
-	//delete the definition resource (allow access)
+	// delete the definition resource (allow access)
 	varGroupID := strconv.Itoa(variableGroupID)
 	_, err = deleteDefinitionResourceAuth(clients, &varGroupID, &projectID)
 	if err != nil {
 		return fmt.Errorf("Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
-	//delete the variable group
+	// delete the variable group
 	return deleteVariableGroup(clients, &projectID, &variableGroupID)
 }
 
@@ -461,7 +457,6 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 	d.Set("project_id", projectID)
 
 	variables, err := flattenVariables(d, variableGroup)
-
 	if err != nil {
 		return err
 	}
@@ -472,7 +467,6 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 
 	if isKeyVaultVariableGroupType(variableGroup.Type) {
 		keyVault, err := flattenKeyVault(d, variableGroup)
-
 		if err != nil {
 			return err
 		}
@@ -548,13 +542,13 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 	}
 
 	isSecret := converter.ToBool(variable.IsSecret, false)
-	var val = map[string]interface{}{
+	val := map[string]interface{}{
 		"name":      varName,
 		"value":     converter.ToString(variable.Value, ""),
 		"is_secret": isSecret,
 	}
 
-	//read secret variables from state if exist
+	// read secret variables from state if exist
 	if isSecret {
 		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, "variable", "name", varName); stateVal != nil {
 			val = stateVal
@@ -648,7 +642,7 @@ func deleteDefinitionResourceAuth(clients *client.AggregatedClient, variableGrou
 // Convert AzDO data structure allow_access to internal Terraform data structure
 func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.DefinitionResourceReference) {
 	variableGroupID := d.Id()
-	var allowAccess = false
+	allowAccess := false
 	if definitionResource != nil {
 		for _, authResource := range *definitionResource {
 			if variableGroupID == *authResource.Id {
@@ -660,7 +654,7 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 }
 
 func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
-	var token, loop, azkvSecretsRaw = "", 0, &KeyVaultSecretResult{}
+	token, loop, azkvSecretsRaw := "", 0, &KeyVaultSecretResult{}
 	kvSecrets = make(map[string]interface{})
 	invalidSecrets = make([]string, 0)
 
@@ -785,6 +779,6 @@ func getSkipToken(link *string) (string, error) {
 	if len(token) > 0 {
 		return token[0], nil
 	}
-	//if skip token not found, just return "" as the skip token
+	// if skip token not found, just return "" as the skip token
 	return "", nil
 }

@@ -75,7 +75,6 @@ func checkGroupEntitlementExists() resource.TestCheckFunc {
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 			GroupId: &id,
 		})
-
 		if err != nil {
 			return fmt.Errorf("GroupEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
@@ -93,7 +92,7 @@ func checkGroupEntitlementExists() resource.TestCheckFunc {
 func checkGroupEntitlementDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-	//verify that every users referenced in the state does not exist in AzDO
+	// verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_group_entitlement" {
 			continue
@@ -107,7 +106,6 @@ func checkGroupEntitlementDestroyed(s *terraform.State) error {
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 			GroupId: &id,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return nil

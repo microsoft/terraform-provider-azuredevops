@@ -173,8 +173,8 @@ resource "azuredevops_branch_policy_status_check" "p" {
 }
 
 func hclBranchPolicyStatusCheckResourceUpdate(projectName string, repoName string,
-	statusName string, invalid bool, applicability string, displayName string) string {
-
+	statusName string, invalid bool, applicability string, displayName string,
+) string {
 	statusCheck := fmt.Sprintf(`
 data "azuredevops_group" "group" {
   project_id = azuredevops_project.p.id

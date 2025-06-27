@@ -62,6 +62,7 @@ func ResourceServiceEndpointJenkins() *schema.Resource {
 
 	return r
 }
+
 func resourceServiceEndpointJenkinsCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointJenkins(d)

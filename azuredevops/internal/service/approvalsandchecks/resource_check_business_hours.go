@@ -11,8 +11,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
 )
 
-var evaluateBusinessHoursDefVersion = "0.0.1"
-var evaluateBusinessHoursDefId = "445fde2f-6c39-441c-807f-8a59ff2e075f"
+var (
+	evaluateBusinessHoursDefVersion = "0.0.1"
+	evaluateBusinessHoursDefId      = "445fde2f-6c39-441c-807f-8a59ff2e075f"
+)
 
 var evaluateBusinessHoursDef = map[string]interface{}{
 	"id":      evaluateBusinessHoursDefId,

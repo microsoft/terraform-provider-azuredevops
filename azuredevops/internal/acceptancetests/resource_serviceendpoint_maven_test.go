@@ -355,6 +355,7 @@ resource "azuredevops_serviceendpoint_maven" "import" {
 }
 `, template)
 }
+
 func hclSvcEndpointMavenResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	template := hclSvcEndpointMavenResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
 	return fmt.Sprintf(`

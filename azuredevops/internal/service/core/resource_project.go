@@ -122,7 +122,8 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, m interf
 		Target: []string{
 			string(operations.OperationStatusValues.Failed),
 			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled)},
+			string(operations.OperationStatusValues.Cancelled),
+		},
 		Refresh: pollOperationResult(clients, operationRef),
 	}
 
@@ -332,7 +333,6 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -350,7 +350,8 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 		Target: []string{
 			string(operations.OperationStatusValues.Failed),
 			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled)},
+			string(operations.OperationStatusValues.Cancelled),
+		},
 		Refresh: pollOperationResult(clients, operationRef),
 	}
 
@@ -381,7 +382,6 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -399,7 +399,8 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 		Target: []string{
 			string(operations.OperationStatusValues.Failed),
 			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled)},
+			string(operations.OperationStatusValues.Cancelled),
+		},
 		Refresh: pollOperationResult(clients, operationRef),
 	}
 
@@ -554,7 +555,6 @@ func lookupProcessTemplateName(clients *client.AggregatedClient, templateID stri
 	process, err := clients.CoreClient.GetProcessById(clients.Ctx, core.GetProcessByIdArgs{
 		ProcessId: &id,
 	})
-
 	if err != nil {
 		return "", fmt.Errorf("Error looking up template by ID: %v", err)
 	}

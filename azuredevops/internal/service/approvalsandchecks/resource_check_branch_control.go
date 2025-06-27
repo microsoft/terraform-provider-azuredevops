@@ -11,8 +11,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
 )
 
-var evaluateBranchProtectionDefVersion = "0.0.1"
-var evaluateBranchProtectionDefId = "86b05a0c-73e6-4f7d-b3cf-e38f3b39a75b"
+var (
+	evaluateBranchProtectionDefVersion = "0.0.1"
+	evaluateBranchProtectionDefId      = "86b05a0c-73e6-4f7d-b3cf-e38f3b39a75b"
+)
 
 var evaluateBranchProtectionDef = map[string]interface{}{
 	"id":      evaluateBranchProtectionDefId,

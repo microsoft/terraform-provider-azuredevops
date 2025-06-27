@@ -255,7 +255,6 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:
 			Configuration: policyConfig,
 			Project:       projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("creating policy in Azure DevOps: %+v", err)
 		}
@@ -271,7 +270,6 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:stat
 		clients := m.(*client.AggregatedClient)
 		projectID := d.Get("project_id").(string)
 		policyID, err := strconv.Atoi(d.Id())
-
 		if err != nil {
 			return fmt.Errorf("converting policy ID to an integer: (%+v)", err)
 		}
@@ -308,7 +306,6 @@ func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:
 			Configuration:   policyConfig,
 			Project:         projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("updating policy in Azure DevOps: %+v", err)
 		}
@@ -330,7 +327,6 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 			ConfigurationId: policyConfig.Id,
 			Project:         projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("deleting policy in Azure DevOps: %+v", err)
 		}

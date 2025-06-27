@@ -167,7 +167,6 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 		RepositoryId: &repoId,
 		Name:         &branchName,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")

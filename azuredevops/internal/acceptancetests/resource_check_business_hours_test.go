@@ -173,7 +173,8 @@ resource "azuredevops_check_business_hours" "test" {
 }
 
 func hclCheckBusinessHoursResourceComplete(projectName string, checkName string, start_time string, end_time string, time_zone string,
-	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string) string {
+	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string,
+) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_business_hours" "test" {
   project_id           = azuredevops_project.project.id
@@ -198,7 +199,8 @@ resource "azuredevops_check_business_hours" "test" {
 }
 
 func hclCheckBusinessHoursResourceUpdate(projectName string, checkName string, start_time string, end_time string, time_zone string,
-	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string) string {
+	monday string, tuesday string, wednesday string, thursday string, friday string, saturday string, sunday string,
+) string {
 	checkResource := fmt.Sprintf(`
 resource "azuredevops_check_business_hours" "test" {
   project_id           = azuredevops_project.project.id

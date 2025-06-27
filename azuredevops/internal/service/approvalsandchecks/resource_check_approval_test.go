@@ -20,16 +20,20 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var ApprovalCheckID = 123456789
-var ApprovalEndpointID = uuid.New().String()
-var ApprovalCheckProjectID = uuid.New().String()
-var ApprovalCheckTestProjectID = &ApprovalCheckProjectID
+var (
+	ApprovalCheckID            = 123456789
+	ApprovalEndpointID         = uuid.New().String()
+	ApprovalCheckProjectID     = uuid.New().String()
+	ApprovalCheckTestProjectID = &ApprovalCheckProjectID
+)
 
-var endpointTypeApproval = "endpoint"
-var endpointResourceApproval = pipelineschecksextras.Resource{
-	Id:   &ApprovalEndpointID,
-	Type: &endpointTypeApproval,
-}
+var (
+	endpointTypeApproval     = "endpoint"
+	endpointResourceApproval = pipelineschecksextras.Resource{
+		Id:   &ApprovalEndpointID,
+		Type: &endpointTypeApproval,
+	}
+)
 
 var approver = map[string]interface{}{
 	"id": "xxxx",

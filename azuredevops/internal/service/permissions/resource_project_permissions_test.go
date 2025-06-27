@@ -19,8 +19,10 @@ import (
  * Begin unit tests
  */
 
-var projectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
-var projectToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
+var (
+	projectID    = "9083e944-8e9e-405e-960a-c80180aa71e6"
+	projectToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
+)
 
 func TestProjectPermissions_CreateProjectToken(t *testing.T) {
 	var d *schema.ResourceData

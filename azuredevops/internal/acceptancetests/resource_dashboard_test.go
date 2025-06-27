@@ -311,7 +311,6 @@ func checkDashboardExist(expectedName string) resource.TestCheckFunc {
 		}
 
 		resp, err := clients.DashboardClient.GetDashboard(clients.Ctx, args)
-
 		if err != nil {
 			return fmt.Errorf("Dashboard with ID: %s cannot be found!. Error: %v", id, err)
 		}

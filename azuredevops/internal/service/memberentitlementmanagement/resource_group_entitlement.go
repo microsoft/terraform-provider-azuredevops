@@ -147,7 +147,6 @@ func resourceGroupEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 		GroupId: &id,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -203,7 +202,6 @@ func resourceGroupEntitlementUpdate(d *schema.ResourceData, m interface{}) error
 				},
 			},
 		})
-
 	if err != nil {
 		return fmt.Errorf("Updating group entitlement: %v", err)
 	}
@@ -232,7 +230,6 @@ func resourceGroupEntitlementDelete(d *schema.ResourceData, m interface{}) error
 	_, err = clients.MemberEntitleManagementClient.DeleteGroupEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteGroupEntitlementArgs{
 		GroupId: &id,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Deleting group entitlement: %v", err)
 	}
@@ -244,7 +241,6 @@ func resourceGroupEntitlementDelete(d *schema.ResourceData, m interface{}) error
 		err = clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
 			GroupDescriptor: converter.String(d.Get("descriptor").(string)),
 		})
-
 		if err != nil {
 			return fmt.Errorf("Deleting Azure DevOps local group: %v", err)
 		}
@@ -256,7 +252,6 @@ func resourceGroupEntitlementDelete(d *schema.ResourceData, m interface{}) error
 func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	upn := d.Id()
 	id, err := uuid.Parse(upn)
-
 	if err != nil {
 		return nil, fmt.Errorf("Only UUID values can used for import [%s]", upn)
 	}
@@ -323,7 +318,6 @@ func addGroupEntitlement(clients *client.AggregatedClient, groupEntitlement *mem
 	groupEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddGroupEntitlement(clients.Ctx, memberentitlementmanagement.AddGroupEntitlementArgs{
 		GroupEntitlement: groupEntitlement,
 	})
-
 	if err != nil {
 		return nil, err
 	}

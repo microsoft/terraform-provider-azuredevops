@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var artifactoryV2TestServiceEndpointIDpassword = uuid.New()
-var artifactoryV2RandomServiceEndpointProjectIDpassword = uuid.New()
-var artifactoryV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
+var (
+	artifactoryV2TestServiceEndpointIDpassword          = uuid.New()
+	artifactoryV2RandomServiceEndpointProjectIDpassword = uuid.New()
+	artifactoryV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+)
 
 var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -48,8 +50,10 @@ var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var artifactoryV2TestServiceEndpointID = uuid.New()
-var artifactoryV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var (
+	artifactoryV2TestServiceEndpointID        = uuid.New()
+	artifactoryV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+)
 
 var artifactoryV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -90,6 +94,7 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 
 	}
 }
+
 func TestServiceEndpointArtifactoryV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }

@@ -264,7 +264,6 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		}
 	}
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
 		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}

@@ -59,7 +59,6 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &identifier,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil

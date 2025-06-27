@@ -163,7 +163,7 @@ func updateProjectFeatureStates(ctx context.Context, fc featuremanagement.Client
 		if !ok {
 			return fmt.Errorf("unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts`", k)
 		}
-		//TODO handle response state
+		// TODO handle response state
 		_, err := fc.SetFeatureStateForScope(ctx, featuremanagement.SetFeatureStateForScopeArgs{
 			Feature: &featuremanagement.ContributedFeatureState{
 				FeatureId: converter.String(f),
@@ -200,7 +200,6 @@ func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 			},
 		},
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("Get project features error, project: %s, error: %+v", projectID, err)
 	}

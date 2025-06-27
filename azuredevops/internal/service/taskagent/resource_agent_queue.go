@@ -80,7 +80,6 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 		Project:            &projectID,
 		AuthorizePipelines: converter.Bool(false),
 	})
-
 	if err != nil {
 		return fmt.Errorf("creating agent queue: %+v", err)
 	}
@@ -132,7 +131,6 @@ func resourceAgentQueueDelete(d *schema.ResourceData, m interface{}) error {
 		QueueId: queueID,
 		Project: converter.String(d.Get("project_id").(string)),
 	})
-
 	if err != nil {
 		return fmt.Errorf("deleting agent queue: %+v", err)
 	}
