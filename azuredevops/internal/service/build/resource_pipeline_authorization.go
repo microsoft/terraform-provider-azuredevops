@@ -45,7 +45,7 @@ func ResourcePipelineAuthorization() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"endpoint", "queue", "variablegroup", "environment", "repository"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"endpoint", "queue", "variablegroup", "securefile", "environment", "repository"}, false),
 			},
 			"pipeline_id": {
 				Type:         schema.TypeInt,
