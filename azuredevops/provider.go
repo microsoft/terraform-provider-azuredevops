@@ -326,27 +326,20 @@ func Provider() *schema.Provider {
 		},
 	}
 
-	p.ConfigureContextFunc = providerConfigure(p)
+	p.ConfigureContextFunc = providerConfigure()
 
 	return p
 }
 
-func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
+func providerConfigure() schema.ConfigureContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		terraformVersion := p.TerraformVersion
-		if terraformVersion == "" {
-			// Terraform 0.12 introduced this field to the protocol
-			// We can therefore assume that if it's missing it's 0.10 or 0.11
-			terraformVersion = "0.11+compatible"
-		}
-
 		tokenFunction, err := sdk.GetAuthTokenProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 
 		organizationUrl := d.Get("org_service_url").(string)
-		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl, terraformVersion)
+		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl)
 
 		if err != nil {
 			return nil, diag.FromErr(clientErrorHandle(err, organizationUrl))

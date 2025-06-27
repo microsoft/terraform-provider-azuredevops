@@ -79,7 +79,7 @@ type AggregatedClient struct {
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
-func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL string, tfVersion string) (*AggregatedClient, error) {
+func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL string) (*AggregatedClient, error) {
 	ctx := context.Background()
 
 	if strings.EqualFold(organizationURL, "") {
@@ -90,7 +90,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 	if err != nil {
 		return nil, err
 	}
-	setUserAgent(connection, tfVersion)
+	setUserAgent(connection)
 
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
@@ -258,7 +258,7 @@ func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL str
 }
 
 // setUserAgent set UserAgent for http headers
-func setUserAgent(connection *azuredevops.Connection, tfVersion string) {
+func setUserAgent(connection *azuredevops.Connection) {
 	providerUserAgent := fmt.Sprintf("terraform-provider-azuredevops/%s", version.ProviderVersion)
 	connection.UserAgent = strings.TrimSpace(fmt.Sprintf("%s %s", connection.UserAgent, providerUserAgent))
 
