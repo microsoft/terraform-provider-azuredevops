@@ -1,6 +1,4 @@
 //go:build (all || data_sources || data_serviceendpoint_azurecr) && (!exclude_data_sources || !exclude_data_serviceendpoint_azurecr)
-// +build all data_sources data_serviceendpoint_azurecr
-// +build !exclude_data_sources !exclude_data_serviceendpoint_azurecr
 
 package acceptancetests
 

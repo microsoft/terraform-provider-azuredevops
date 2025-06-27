@@ -115,7 +115,7 @@ func resourceServiceEndpointAwsRead(d *schema.ResourceData, m interface{}) error
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -133,7 +133,7 @@ func resourceServiceEndpointAwsUpdate(d *schema.ResourceData, m interface{}) err
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 	return resourceServiceEndpointAwsRead(d, m)
 }
@@ -193,7 +193,7 @@ func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *servicee
 			if v != "" {
 				useOIDC, err := strconv.ParseBool(v)
 				if err != nil {
-					return fmt.Errorf(" parse `useOIDC`. Error: %+v", err)
+					return fmt.Errorf("parse `useOIDC`. Error: %+v", err)
 				}
 				d.Set("use_oidc", useOIDC)
 			}

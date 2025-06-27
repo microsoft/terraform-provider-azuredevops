@@ -60,7 +60,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queue, projectID, err := expandAgentQueue(d)
 	if err != nil {
-		return fmt.Errorf(" expanding the agent queue resource from state: %+v", err)
+		return fmt.Errorf("expanding the agent queue resource from state: %+v", err)
 	}
 
 	if queue.Pool != nil {
@@ -68,7 +68,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 			PoolId: queue.Pool.Id,
 		})
 		if err != nil {
-			return fmt.Errorf(" looking up referenced agent pool: %+v", err)
+			return fmt.Errorf("looking up referenced agent pool: %+v", err)
 		}
 		queue.Name = referencedPool.Name
 	} else {
@@ -82,7 +82,7 @@ func resourceAgentQueueCreate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf(" creating agent queue: %+v", err)
+		return fmt.Errorf("creating agent queue: %+v", err)
 	}
 
 	d.SetId(strconv.Itoa(*createdQueue.Id))
@@ -93,7 +93,7 @@ func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queueID, err := converter.ASCIIToIntPtr(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
+		return fmt.Errorf("Queue ID was unexpectedly not a valid integer: %+v", err)
 	}
 
 	queue, err := clients.TaskAgentClient.GetAgentQueue(clients.Ctx, taskagent.GetAgentQueueArgs{
@@ -107,7 +107,7 @@ func resourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf(" reading the agent queue resource: %+v", err)
+		return fmt.Errorf("reading the agent queue resource: %+v", err)
 	}
 
 	if queue.Pool != nil && queue.Pool.Id != nil {
@@ -125,7 +125,7 @@ func resourceAgentQueueDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	queueID, err := converter.ASCIIToIntPtr(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
+		return fmt.Errorf("Queue ID was unexpectedly not a valid integer: %+v", err)
 	}
 
 	err = clients.TaskAgentClient.DeleteAgentQueue(clients.Ctx, taskagent.DeleteAgentQueueArgs{
@@ -134,7 +134,7 @@ func resourceAgentQueueDelete(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf(" deleting agent queue: %+v", err)
+		return fmt.Errorf("deleting agent queue: %+v", err)
 	}
 
 	return nil
@@ -152,7 +152,7 @@ func expandAgentQueue(d *schema.ResourceData) (*taskagent.TaskAgentQueue, string
 	if d.Id() != "" {
 		id, err := converter.ASCIIToIntPtr(d.Id())
 		if err != nil {
-			return nil, "", fmt.Errorf(" Queue ID was unexpectedly not a valid integer: %+v", err)
+			return nil, "", fmt.Errorf("Queue ID was unexpectedly not a valid integer: %+v", err)
 		}
 		queue.Id = id
 	}

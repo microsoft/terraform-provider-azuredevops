@@ -54,11 +54,11 @@ func dataSourceAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if len(*agentPools) > 1 {
-		return fmt.Errorf(" Found multiple agent pools for name: %s. Agent pools found: %+v", poolName, agentPools)
+		return fmt.Errorf("Found multiple agent pools for name: %s. Agent pools found: %+v", poolName, agentPools)
 	}
 
 	if len(*agentPools) == 0 {
-		return fmt.Errorf(" Unable to find agent pool with name: %s", poolName)
+		return fmt.Errorf("Unable to find agent pool with name: %s", poolName)
 	}
 
 	pool := (*agentPools)[0]

@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_checkmarx_sast) && !exclude_resource_serviceendpoint_checkmarx_sast
+
 package acceptancetests
 
 import (

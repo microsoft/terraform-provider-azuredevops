@@ -1,6 +1,4 @@
 //go:build (all || data_sources || data_serviceendpoint_azurerm) && (!exclude_data_sources || !exclude_data_serviceendpoint_azurerm)
-// +build all data_sources data_serviceendpoint_azurerm
-// +build !exclude_data_sources !exclude_data_serviceendpoint_azurerm
 
 package acceptancetests
 

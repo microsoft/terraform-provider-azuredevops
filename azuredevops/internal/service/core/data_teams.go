@@ -151,7 +151,7 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
 
 	if err := d.Set("teams", result); err != nil {
-		return fmt.Errorf(" setting `teams`: %+v", err)
+		return fmt.Errorf("setting `teams`: %+v", err)
 	}
 
 	return nil

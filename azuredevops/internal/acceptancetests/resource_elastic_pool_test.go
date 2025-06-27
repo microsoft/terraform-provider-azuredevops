@@ -1,6 +1,4 @@
 //go:build (all || resource_elasticpool) && !exclude_resource_elasticpool
-// +build all resource_elasticpool
-// +build !exclude_resource_elasticpool
 
 package acceptancetests
 

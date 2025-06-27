@@ -106,7 +106,7 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 			state := "Waiting"
 			actualMemberships, err := getTeamMembers(clients, team)
 			if err != nil {
-				return nil, "", fmt.Errorf(" reading team memberships: %+v", err)
+				return nil, "", fmt.Errorf("reading team memberships: %+v", err)
 			}
 			if membersToAdd == nil || actualMemberships.Intersection(membersToAdd).Len() == membersToAdd.Len() {
 				state = "Synched"
@@ -123,7 +123,7 @@ func resourceTeamMembersCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for distribution of adding members. %v ", err)
+		return fmt.Errorf("waiting for distribution of adding members. %v ", err)
 	}
 
 	// The ID for this resource is meaningless so we can just assign a random ID
@@ -241,7 +241,7 @@ func resourceTeamMembersUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if _, err = stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
+		return fmt.Errorf("waiting for distribution of member list update. %v ", err)
 	}
 
 	return resourceTeamMembersRead(d, m)
@@ -305,7 +305,7 @@ func resourceTeamMembersDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if _, err = stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for distribution of member list update. %v ", err)
+		return fmt.Errorf("waiting for distribution of member list update. %v ", err)
 	}
 
 	d.SetId("")

@@ -96,5 +96,5 @@ func dataSourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{})
 		d.Set("service_endpoint_id", serviceEndpoint.Id.String())
 		return nil
 	}
-	return fmt.Errorf(" Looking up service endpoint!")
+	return fmt.Errorf("Looking up service endpoint!")
 }

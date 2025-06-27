@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_openshift) && !exclude_resource_serviceendpoint_openshift
+
 package acceptancetests
 
 import (

@@ -235,13 +235,13 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
-		return fmt.Errorf(" failed expanding repository resource data (ProjectID:  %s, Repository: %s) Error: %+v",
+		return fmt.Errorf("failed expanding repository resource data (ProjectID:  %s, Repository: %s) Error: %+v",
 			d.Get("project_id").(string), d.Get("name").(string), err)
 	}
 
 	if _, ok := d.GetOk("default_branch"); ok {
 		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Uninitialized)) {
-			return fmt.Errorf(" Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannot not be set.")
+			return fmt.Errorf("Repository 'initialization.init_type = Uninitialized', there will be no branches, 'default_branch' cannot not be set.")
 		}
 	}
 
@@ -259,7 +259,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		if parentRepoID, ok := d.GetOk("parent_repository_id"); ok {
 			parentRepo, err := gitRepositoryRead(clients, parentRepoID.(string), "", "")
 			if err != nil {
-				return fmt.Errorf(" Failed to locate parent repository [%s]: %+v", parentRepoID, err)
+				return fmt.Errorf("Failed to locate parent repository [%s]: %+v", parentRepoID, err)
 			}
 			args.GitRepositoryToCreate.ParentRepository = &git.GitRepositoryRef{
 				Id:      parentRepo.Id,
@@ -271,7 +271,7 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdRepo, err := clients.GitReposClient.CreateRepository(clients.Ctx, args)
 	if err != nil {
-		return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
+		return fmt.Errorf("Creating repository in Azure DevOps: %+v", err)
 	}
 
 	d.SetId(createdRepo.Id.String())
@@ -295,14 +295,14 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		createdRepo.DefaultBranch = converter.String(v)
 		_, err = updateGitRepository(clients, createdRepo, projectID)
 		if err != nil {
-			return fmt.Errorf(" updating repository : %+v", err)
+			return fmt.Errorf("updating repository : %+v", err)
 		}
 	}
 
 	if v := d.Get("disabled").(bool); v {
 		_, err = updateIsDisabledGitRepository(clients, createdRepo.Id.String(), projectID.String(), true)
 		if err != nil {
-			return fmt.Errorf(" disabling created repository in Azure DevOps: %+v", err)
+			return fmt.Errorf("disabling created repository in Azure DevOps: %+v", err)
 		}
 	}
 
@@ -321,7 +321,7 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" Looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
+		return fmt.Errorf("Looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
 	if repo == nil {
@@ -334,7 +334,7 @@ func resourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 
 	err = flattenGitRepository(d, repo)
 	if err != nil {
-		return fmt.Errorf(" Flatten Git repository: %w", err)
+		return fmt.Errorf("Flatten Git repository: %w", err)
 	}
 	return nil
 }
@@ -344,7 +344,7 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 
 	repo, initialization, projectID, err := expandGitRepository(d)
 	if err != nil {
-		return fmt.Errorf(" Expanding Repository: %+v", err)
+		return fmt.Errorf("Expanding Repository: %+v", err)
 	}
 
 	parsedID, err := uuid.Parse(d.Id())
@@ -362,19 +362,19 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" Looking up repository with ID %s and Name %s. Error: %v", *repo.Id, *repo.Name, err)
+		return fmt.Errorf("Looking up repository with ID %s and Name %s. Error: %v", *repo.Id, *repo.Name, err)
 	}
 
 	// Enable before update to match the config, disabled repository cannot be updated. Disabled -> Enabled
 	if *repoExist.IsDisabled && !disabled {
 		repoExist, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
 		if err != nil {
-			return fmt.Errorf(" Enabling repository in Azure DevOps: %+v", err)
+			return fmt.Errorf("Enabling repository in Azure DevOps: %+v", err)
 		}
 	}
 
 	if *repoExist.IsDisabled {
-		return fmt.Errorf(" A disabled repository cannot be updated, please enable the repository before attempting to update : %s", repo.Id.String())
+		return fmt.Errorf("A disabled repository cannot be updated, please enable the repository before attempting to update : %s", repo.Id.String())
 	}
 
 	// Initialize the repository if not initialized
@@ -389,14 +389,14 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	_, err = updateGitRepository(clients, repo, projectID)
 	if err != nil {
-		return fmt.Errorf(" Updating repository in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating repository in Azure DevOps: %+v", err)
 	}
 
 	// Disable after updating to match the config, disabled repository cannot be updated Enabled -> Disabled
 	if !*repoExist.IsDisabled && disabled {
 		_, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
 		if err != nil {
-			return fmt.Errorf(" Disabling repository in Azure DevOps: %+v", err)
+			return fmt.Errorf("Disabling repository in Azure DevOps: %+v", err)
 		}
 	}
 
@@ -411,7 +411,7 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 
 	_, err := uuid.Parse(repoID)
 	if err != nil {
-		return fmt.Errorf(" Invalid repository ID: %s", repoID)
+		return fmt.Errorf("Invalid repository ID: %s", repoID)
 	}
 
 	// you cannot delete a disabled repo
@@ -421,16 +421,16 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
+		return fmt.Errorf("looking up repository with ID %s and Name %s. Error: %v", repoID, repoName, err)
 	}
 
 	if *repoActual.IsDisabled {
-		return fmt.Errorf(" A disabled repository cannot be deleted, please enable the repository before attempting to delete : %s", repoID)
+		return fmt.Errorf("A disabled repository cannot be deleted, please enable the repository before attempting to delete : %s", repoID)
 	}
 
 	repoUUId, err := uuid.Parse(repoID)
 	if err != nil {
-		return fmt.Errorf(" Parse repository ID to UUID: %s. Error: %+v", repoID, err)
+		return fmt.Errorf("Parse repository ID to UUID: %s. Error: %+v", repoID, err)
 	}
 	err = clients.GitReposClient.DeleteRepository(clients.Ctx, git.DeleteRepositoryArgs{
 		RepositoryId: &repoUUId,
@@ -450,7 +450,7 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 			state := "Waiting"
 			gitRepo, err := gitRepositoryRead(clients, "", *repoName, projectID.String())
 			if err != nil {
-				return nil, "", fmt.Errorf(" Retrieving repository: %+v", err)
+				return nil, "", fmt.Errorf("Retrieving repository: %+v", err)
 			}
 
 			if converter.ToString(gitRepo.DefaultBranch, "") != "" {
@@ -465,7 +465,7 @@ func waitForBranch(clients *client.AggregatedClient, repoName *string, projectID
 		ContinuousTargetOccurence: 1,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" Retrieving expected branch for repository [%s]: %+v", *repoName, err)
+		return fmt.Errorf("Retrieving expected branch for repository [%s]: %+v", *repoName, err)
 	}
 	return nil
 }
@@ -561,7 +561,7 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository) error {
 	d.Set("name", repository.Name)
 	if repository.Project == nil || repository.Project.Id == nil {
-		return fmt.Errorf(" Unable to flatten Git repository without a valid projectID")
+		return fmt.Errorf("Unable to flatten Git repository without a valid projectID")
 	}
 	d.Set("project_id", repository.Project.Id.String())
 	d.Set("default_branch", repository.DefaultBranch)
@@ -630,7 +630,7 @@ func expandGitRepository(d *schema.ResourceData) (*git.GitRepository, *repoIniti
 func updateIsDisabledGitRepository(clients *client.AggregatedClient, repoID string, projectID string, isDisabled bool) (*git.GitRepository, error) {
 	uuid, err := uuid.Parse(repoID)
 	if err != nil {
-		return nil, fmt.Errorf(" invalid repositoryId UUID: %s", repoID)
+		return nil, fmt.Errorf("invalid repositoryId UUID: %s", repoID)
 	}
 	repo, err := clients.GitReposClient.UpdateRepository(
 		clients.Ctx,
@@ -640,7 +640,7 @@ func updateIsDisabledGitRepository(clients *client.AggregatedClient, repoID stri
 			Project:           converter.String(projectID),
 		})
 	if err != nil {
-		return nil, fmt.Errorf(" updating isDisabled on repository : %+v", err)
+		return nil, fmt.Errorf("updating isDisabled on repository : %+v", err)
 	}
 
 	return repo, nil
@@ -718,17 +718,17 @@ func initializeRepository(clients *client.AggregatedClient, initialization *repo
 					RepositoryId: repository.Id,
 				})
 				if err != nil {
-					return fmt.Errorf(" Creating repository in Azure DevOps: %+v", err)
+					return fmt.Errorf("Creating repository in Azure DevOps: %+v", err)
 				}
 
-				return fmt.Errorf(" Import repository in Azure DevOps: %+v ", importErr)
+				return fmt.Errorf("Import repository in Azure DevOps: %+v ", importErr)
 			}
 		}
 
 		if strings.EqualFold(initialization.initType, string(RepoInitTypeValues.Clean)) {
 			err := initializeGitRepository(clients, repository, repository.DefaultBranch)
 			if err != nil {
-				return fmt.Errorf(" initializing repository in Azure DevOps: %+v ", err)
+				return fmt.Errorf("initializing repository in Azure DevOps: %+v ", err)
 			}
 		}
 	}

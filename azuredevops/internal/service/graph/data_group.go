@@ -64,9 +64,9 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	projectDescriptor, err := getProjectDescriptor(clients, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf(" Project with with ID: %s was not found. Error: %v", projectID, err)
+			return fmt.Errorf("Project with with ID: %s was not found. Error: %v", projectID, err)
 		}
-		return fmt.Errorf(" Finding descriptor for project with ID: %s. Error: %v", projectID, err)
+		return fmt.Errorf("Finding descriptor for project with ID: %s. Error: %v", projectID, err)
 	}
 
 	projectGroups, err := getGroupsForDescriptor(clients, projectDescriptor)
@@ -81,9 +81,9 @@ func dataSourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	targetGroup := selectGroup(projectGroups, groupName)
 	if targetGroup == nil {
 		if projectID != "" {
-			return fmt.Errorf(" Could not find Group with Name: %s in project with ID: %s", groupName, projectID)
+			return fmt.Errorf("Could not find Group with Name: %s in project with ID: %s", groupName, projectID)
 		}
-		return fmt.Errorf(" Could not find group with name %s", groupName)
+		return fmt.Errorf("Could not find group with name %s", groupName)
 	}
 
 	d.SetId(*targetGroup.Descriptor)
@@ -174,7 +174,7 @@ func getGroupsWithContinuationToken(clients *client.AggregatedClient, projectDes
 	}
 
 	if response.ContinuationToken != nil && len(*response.ContinuationToken) > 1 {
-		return nil, "", fmt.Errorf(" Expected at most 1 continuation token, but found %d", len(*response.ContinuationToken))
+		return nil, "", fmt.Errorf("Expected at most 1 continuation token, but found %d", len(*response.ContinuationToken))
 	}
 
 	var newToken string

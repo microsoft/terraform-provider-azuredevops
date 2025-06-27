@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_incomingwebhook) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_incomingwebhook
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 

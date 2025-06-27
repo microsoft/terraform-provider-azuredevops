@@ -1,6 +1,4 @@
 //go:build (all || core || resource_git_repository_branch) && !exclude_resource_git_repository_branch
-// +build all core resource_git_repository_branch
-// +build !exclude_resource_git_repository_branch
 
 package acceptancetests
 
@@ -130,13 +128,13 @@ func checkRepositoryBranchExist(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_git_repository_branch.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find `azuredevops_git_repository_branch` in the TF state")
+			return fmt.Errorf("Did not find `azuredevops_git_repository_branch` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		repoId, branchName, err := tfhelper.ParseGitRepoBranchID(res.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parse resource IDs: %w", err)
+			return fmt.Errorf("Parse resource IDs: %w", err)
 		}
 
 		branch, err := clients.GitReposClient.GetBranch(clients.Ctx, git.GetBranchArgs{
@@ -145,11 +143,11 @@ func checkRepositoryBranchExist(expectedName string) resource.TestCheckFunc {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Repositroy: %s, Branch: %s cannot be found. Error=%v", repoId, branchName, err)
+			return fmt.Errorf("Repositroy: %s, Branch: %s cannot be found. Error=%v", repoId, branchName, err)
 		}
 
 		if *branch.Name != expectedName {
-			return fmt.Errorf(" Branch Name=%s, but expected Name=%s", *branch.Name, expectedName)
+			return fmt.Errorf("Branch Name=%s, but expected Name=%s", *branch.Name, expectedName)
 		}
 		return nil
 	}

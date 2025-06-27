@@ -123,7 +123,7 @@ func resourceAzureAgentPoolVMSSCreate(d *schema.ResourceData, m interface{}) err
 	if v, ok := d.GetOk("project_id"); ok {
 		projectId, err := uuid.Parse(v.(string))
 		if err != nil {
-			return fmt.Errorf(" parse Project Id: %s. Error: %+v", v, err)
+			return fmt.Errorf("parse Project Id: %s. Error: %+v", v, err)
 		}
 		args.ProjectId = &projectId
 	}
@@ -145,12 +145,12 @@ func resourceAzureAgentPoolVMSSCreate(d *schema.ResourceData, m interface{}) err
 	desiredIdle := d.Get("desired_idle").(int)
 	maxCapacity := d.Get("max_capacity").(int)
 	if desiredIdle > maxCapacity {
-		return fmt.Errorf(" `desired_idle` can not be greater than `max_capacity`. Valid range is from 0 to the maximum number of virtual machines in the scale set.")
+		return fmt.Errorf("`desired_idle` can not be greater than `max_capacity`. Valid range is from 0 to the maximum number of virtual machines in the scale set.")
 	}
 
 	elasticPool, err := clients.ElasticClient.CreateElasticPool(clients.Ctx, args)
 	if err != nil {
-		return fmt.Errorf(" creating Elastic Pool: %+v", err)
+		return fmt.Errorf("creating Elastic Pool: %+v", err)
 	}
 
 	updateArgs := taskagent.UpdateAgentPoolArgs{
@@ -167,7 +167,7 @@ func resourceAzureAgentPoolVMSSCreate(d *schema.ResourceData, m interface{}) err
 	}
 
 	if err != nil {
-		return fmt.Errorf(" updating agent pool in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating agent pool in Azure DevOps: %+v", err)
 	}
 
 	d.SetId(strconv.Itoa(*elasticPool.ElasticPool.PoolId))
@@ -179,7 +179,7 @@ func resourceAzureAgentPoolVMSSRead(d *schema.ResourceData, m interface{}) error
 
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" parse Elastic Pool ID: %+v", err)
+		return fmt.Errorf("parse Elastic Pool ID: %+v", err)
 	}
 
 	elasticPool, err := clients.ElasticClient.GetElasticPool(clients.Ctx, elastic.GetElasticPoolArgs{
@@ -190,14 +190,14 @@ func resourceAzureAgentPoolVMSSRead(d *schema.ResourceData, m interface{}) error
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" looking up Elastic Pool with ID %d. Error: %v", poolID, err)
+		return fmt.Errorf("looking up Elastic Pool with ID %d. Error: %v", poolID, err)
 	}
 
 	agentPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{
 		PoolId: &poolID,
 	})
 	if err != nil {
-		return fmt.Errorf(" looking up Agent Pool with ID %d. Error: %v", poolID, err)
+		return fmt.Errorf("looking up Agent Pool with ID %d. Error: %v", poolID, err)
 	}
 
 	d.Set("name", agentPool.Name)
@@ -222,7 +222,7 @@ func resourceAzureAgentPoolVMSSUpdate(d *schema.ResourceData, m interface{}) err
 
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" getting Elastic Pool Id: %+v", err)
+		return fmt.Errorf("getting Elastic Pool Id: %+v", err)
 	}
 
 	elasticPoolArgs := elastic.UpdateElasticPoolArgs{
@@ -252,14 +252,14 @@ func resourceAzureAgentPoolVMSSUpdate(d *schema.ResourceData, m interface{}) err
 	desiredIdle := d.Get("desired_idle").(int)
 	maxCapacity := d.Get("max_capacity").(int)
 	if desiredIdle > maxCapacity {
-		return fmt.Errorf(" `desired_idle` can not be greater than `max_capacity`. Valid range is from 0 to the maximum number of virtual machines in the scale set.")
+		return fmt.Errorf("`desired_idle` can not be greater than `max_capacity`. Valid range is from 0 to the maximum number of virtual machines in the scale set.")
 	}
 
 	elasticPoolArgs.ElasticPoolSettings.DesiredIdle = &desiredIdle
 	elasticPoolArgs.ElasticPoolSettings.MaxCapacity = &maxCapacity
 
 	if _, err := clients.ElasticClient.UpdateElasticPool(clients.Ctx, elasticPoolArgs); err != nil {
-		return fmt.Errorf(" updating Elastic Pool in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating Elastic Pool in Azure DevOps: %+v", err)
 	}
 
 	agentPoolArgs := taskagent.UpdateAgentPoolArgs{
@@ -272,7 +272,7 @@ func resourceAzureAgentPoolVMSSUpdate(d *schema.ResourceData, m interface{}) err
 
 	agentPoolArgs.PoolId = &poolID
 	if _, err = clients.TaskAgentClient.UpdateAgentPool(clients.Ctx, agentPoolArgs); err != nil {
-		return fmt.Errorf(" updating Elastic Pool in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating Elastic Pool in Azure DevOps: %+v", err)
 	}
 
 	if err := syncElasticPoolStatus(agentPoolArgs, clients); err != nil {
@@ -285,7 +285,7 @@ func resourceAzureAgentPoolVMSSUpdate(d *schema.ResourceData, m interface{}) err
 func resourceAzureAgentPoolVMSSDelete(d *schema.ResourceData, m interface{}) error {
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" parse agent pool ID: %+v", err)
+		return fmt.Errorf("parse agent pool ID: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -304,7 +304,7 @@ func resourceAzureAgentPoolVMSSDelete(d *schema.ResourceData, m interface{}) err
 				if utils.ResponseWasNotFound(err) {
 					state = "Synched"
 				} else {
-					return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+					return nil, "", fmt.Errorf("looking up Agent Pool with ID: %+v", err)
 				}
 			}
 			if agentPool == nil {
@@ -318,7 +318,7 @@ func resourceAzureAgentPoolVMSSDelete(d *schema.ResourceData, m interface{}) err
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for Elastic Pool deleted. %v ", err)
+		return fmt.Errorf("waiting for Elastic Pool deleted. %v ", err)
 	}
 	return nil
 }
@@ -331,7 +331,7 @@ func syncElasticPoolStatus(params taskagent.UpdateAgentPoolArgs, client *client.
 			state := "Waiting"
 			agentPool, err := client.TaskAgentClient.GetAgentPool(client.Ctx, taskagent.GetAgentPoolArgs{PoolId: params.PoolId})
 			if err != nil {
-				return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+				return nil, "", fmt.Errorf("looking up Agent Pool with ID: %+v", err)
 			}
 			if *agentPool.AutoUpdate == *params.Pool.AutoUpdate &&
 				*agentPool.AutoProvision == *params.Pool.AutoProvision {
@@ -345,7 +345,7 @@ func syncElasticPoolStatus(params taskagent.UpdateAgentPoolArgs, client *client.
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(client.Ctx); err != nil {
-		return fmt.Errorf(" waiting for Agent Pool ready. %v ", err)
+		return fmt.Errorf("waiting for Agent Pool ready. %v ", err)
 	}
 	return nil
 }

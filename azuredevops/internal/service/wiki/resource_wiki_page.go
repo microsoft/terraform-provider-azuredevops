@@ -114,7 +114,7 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
+		return fmt.Errorf("Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
 
 	pageLock.Lock()
@@ -142,7 +142,7 @@ func resourceWikiPageDelete(d *schema.ResourceData, m interface{}) error {
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
+		return fmt.Errorf("Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
 
 	pageLock.Lock()

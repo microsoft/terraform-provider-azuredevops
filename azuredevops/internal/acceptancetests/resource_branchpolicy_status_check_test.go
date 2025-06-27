@@ -1,6 +1,4 @@
 //go:build (all || resource_branchpolicy_status_check_acceptance_test || policy) && (!exclude_resource_branchpolicy_status_check_acceptance_test || !exclude_policy)
-// +build all resource_branchpolicy_status_check_acceptance_test policy
-// +build !exclude_resource_branchpolicy_status_check_acceptance_test !exclude_policy
 
 package acceptancetests
 

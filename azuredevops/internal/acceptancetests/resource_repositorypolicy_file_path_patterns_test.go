@@ -1,3 +1,5 @@
+//go:build (all || resource_repositorypolicy_file_path_patterns) && !exclude_resource_repositorypolicy_file_path_patterns
+
 package acceptancetests
 
 import (

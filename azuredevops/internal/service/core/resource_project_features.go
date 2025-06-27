@@ -112,7 +112,7 @@ func resourceProjectFeaturesRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	if currentFeatureStates == nil {
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf(" failed to retrieve current feature states for project: %s", projectID))
+		return diag.FromErr(fmt.Errorf("failed to retrieve current feature states for project: %s", projectID))
 	}
 	d.Set("features", currentFeatureStates)
 	return nil
@@ -161,7 +161,7 @@ func updateProjectFeatureStates(ctx context.Context, fc featuremanagement.Client
 		enabledValue := featuremanagement.ContributedFeatureEnabledValue(v.(string))
 		f, ok := projectFeatureNameMapReverse[ProjectFeatureType(k)]
 		if !ok {
-			return fmt.Errorf(" unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts`", k)
+			return fmt.Errorf("unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts`", k)
 		}
 		//TODO handle response state
 		_, err := fc.SetFeatureStateForScope(ctx, featuremanagement.SetFeatureStateForScopeArgs{
@@ -179,7 +179,7 @@ func updateProjectFeatureStates(ctx context.Context, fc featuremanagement.Client
 			ScopeValue: &projectID,
 		})
 		if nil != err {
-			return fmt.Errorf(" Faild to update project features. Feature type: %s,  Error: %+v", f, err)
+			return fmt.Errorf("Faild to update project features. Feature type: %s,  Error: %+v", f, err)
 		}
 	}
 	return nil
@@ -202,7 +202,7 @@ func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf(" Get project features error, project: %s, error: %+v", projectID, err)
+		return nil, fmt.Errorf("Get project features error, project: %s, error: %+v", projectID, err)
 	}
 
 	featureStates := make(map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue)

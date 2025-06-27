@@ -82,24 +82,24 @@ func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	})
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Get Team (Team Name: %s). Error: %+v", teamName, err))
+		return diag.FromErr(fmt.Errorf("Get Team (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	members, err := getTeamMembers(clients, team)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Get Team members (Team Name: %s). Error: %+v", teamName, err))
+		return diag.FromErr(fmt.Errorf("Get Team members (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	administrators, err := getTeamAdministrators(d, clients, team)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Get Team administrators (Team Name: %s). Error: %+v", teamName, err))
+		return diag.FromErr(fmt.Errorf("Get Team administrators (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{
 		StorageKey: team.Id,
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Get Team descriptor (Team Name: %s). Error: %+v", teamName, err))
+		return diag.FromErr(fmt.Errorf("Get Team descriptor (Team Name: %s). Error: %+v", teamName, err))
 	}
 
 	d.SetId(team.Id.String())

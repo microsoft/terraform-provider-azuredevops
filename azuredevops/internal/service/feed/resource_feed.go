@@ -134,7 +134,7 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" failed get feed. Projecct ID: %s , Feed ID %s : . Error: %+v", projectId, feedID, err)
+		return fmt.Errorf("failed get feed. Projecct ID: %s , Feed ID %s : . Error: %+v", projectId, feedID, err)
 	}
 
 	if feedDetail != nil {

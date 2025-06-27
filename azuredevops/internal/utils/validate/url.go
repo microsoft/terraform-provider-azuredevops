@@ -14,7 +14,7 @@ func Url(i interface{}, key string) (_ []string, errors []error) {
 		return
 	}
 	if strings.HasSuffix(url, "/") {
-		errors = append(errors, fmt.Errorf(" %q should not end with slash, got %q.", key, url))
+		errors = append(errors, fmt.Errorf("%q should not end with slash, got %q.", key, url))
 		return
 	}
 	return validation.IsURLWithHTTPorHTTPS(url, key)

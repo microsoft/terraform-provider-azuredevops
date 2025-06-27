@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_azurecr) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_azurecr
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 

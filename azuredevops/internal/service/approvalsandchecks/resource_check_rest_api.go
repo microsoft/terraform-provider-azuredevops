@@ -167,7 +167,7 @@ func flattenRestAPI(d *schema.ResourceData, check *pipelineschecksextras.CheckCo
 			if v, exist := inputs["waitForCompletion"]; exist {
 				waitForCompletion, err := strconv.ParseBool(v.(string))
 				if err != nil {
-					return fmt.Errorf(" parsing `waitForCompletion`: %v", err)
+					return fmt.Errorf("parsing `waitForCompletion`: %v", err)
 				}
 				d.Set("completion_event", string(CompleteEventValues.Callback))
 				if !waitForCompletion {
@@ -232,13 +232,13 @@ func expandRestAPI(d *schema.ResourceData) (*pipelineschecksextras.CheckConfigur
 	if v, ok := d.GetOk("retry_interval"); ok {
 		retryInterval := v.(int)
 		if completionEvent == string(CompleteEventValues.Callback) {
-			return nil, "", fmt.Errorf(" Does not need to set `retry_interval` when `completion_event=Callback`.")
+			return nil, "", fmt.Errorf("Does not need to set `retry_interval` when `completion_event=Callback`.")
 		}
 
 		timeout := d.Get("timeout").(int)
 		minRetryInterval := timeout / 10
 		if minRetryInterval > retryInterval {
-			return nil, "", fmt.Errorf(" We require you enter a value of 0 or at least %d,"+
+			return nil, "", fmt.Errorf("We require you enter a value of 0 or at least %d,"+
 				" to keep the number of retries below 10. Starting Autumn 2023, non-compliant "+
 				"checks will fail automatically. Timeout: %d, retryInterval: %d", minRetryInterval, timeout, retryInterval)
 		}

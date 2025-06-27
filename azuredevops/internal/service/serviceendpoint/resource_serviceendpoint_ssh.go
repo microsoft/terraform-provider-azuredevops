@@ -96,7 +96,7 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -113,7 +113,7 @@ func resourceServiceEndpointSSHUpdate(d *schema.ResourceData, m interface{}) err
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointSSHRead(d, m)
@@ -161,7 +161,7 @@ func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *servicee
 	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
 		port, err := strconv.ParseInt(portStr, 10, 64)
 		if err != nil {
-			return fmt.Errorf(" Parse SSH port: %s. Error: %+v ", portStr, err)
+			return fmt.Errorf("Parse SSH port: %s. Error: %+v ", portStr, err)
 		}
 		d.Set("port", port)
 	}
