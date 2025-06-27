@@ -109,11 +109,7 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("finding repositories. Error: %v", err)
 	}
 
-	results, err := flattenGitRepositories(projectRepos)
-	if err != nil {
-		return fmt.Errorf("flattening projects. Error: %v", err)
-	}
-
+	results := flattenGitRepositories(projectRepos)
 	repoNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
 		return fmt.Errorf("failed to get list of repository names: %v", err)
@@ -139,7 +135,7 @@ func createGitRepositoryDataSourceID(d *schema.ResourceData, repoNames *[]string
 	if repoNames != nil {
 		names = *repoNames
 	}
-	if len(names) <= 0 {
+	if len(names) == 0 {
 		names = append(names, "empty")
 	}
 	projectID := d.Get("project_id").(string)
@@ -152,9 +148,9 @@ func createGitRepositoryDataSourceID(d *schema.ResourceData, repoNames *[]string
 	return "gitRepos#" + base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
 }
 
-func flattenGitRepositories(repos *[]git.GitRepository) ([]interface{}, error) {
+func flattenGitRepositories(repos *[]git.GitRepository) []interface{} {
 	if repos == nil {
-		return []interface{}{}, nil
+		return []interface{}{}
 	}
 
 	results := make([]interface{}, 0)
@@ -204,7 +200,7 @@ func flattenGitRepositories(repos *[]git.GitRepository) ([]interface{}, error) {
 		results = append(results, output)
 	}
 
-	return results, nil
+	return results
 }
 
 func getGitRepositoriesByNameAndProject(clients *client.AggregatedClient, name string, projectID string, includeHidden bool) (*[]git.GitRepository, error) {

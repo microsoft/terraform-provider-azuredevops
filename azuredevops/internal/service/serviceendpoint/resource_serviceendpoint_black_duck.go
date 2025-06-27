@@ -48,11 +48,7 @@ func ResourceServiceEndpointBlackDuck() *schema.Resource {
 
 func resourceServiceEndpointBlackDuckCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
-	if err != nil {
-		return fmt.Errorf("Expanding service connection: %+v", err)
-	}
-
+	serviceEndpoint := expandServiceEndpointBlackDuck(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -86,12 +82,8 @@ func resourceServiceEndpointBlackDuckRead(d *schema.ResourceData, m interface{})
 
 func resourceServiceEndpointBlackDuckUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
-	if err != nil {
-		return fmt.Errorf("Expanding service connection: %+v", err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointBlackDuck(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -100,15 +92,11 @@ func resourceServiceEndpointBlackDuckUpdate(d *schema.ResourceData, m interface{
 
 func resourceServiceEndpointBlackDuckDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointBlackDuck(d)
-	if err != nil {
-		return fmt.Errorf("Expanding service connection: %+v", err)
-	}
-
+	serviceEndpoint := expandServiceEndpointBlackDuck(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointBlackDuck(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointBlackDuck(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -118,7 +106,7 @@ func expandServiceEndpointBlackDuck(d *schema.ResourceData) (*serviceendpoint.Se
 	}
 	serviceEndpoint.Type = converter.String("blackducksca")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointBlackDuck(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

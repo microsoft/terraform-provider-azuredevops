@@ -67,11 +67,11 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if getFeed != nil {
-		d.SetId((*getFeed.Id).String())
+		d.SetId(getFeed.Id.String())
 		d.Set("name", *getFeed.Name)
-		d.Set("feed_id", (*getFeed.Id).String())
+		d.Set("feed_id", getFeed.Id.String())
 		if getFeed.Project != nil {
-			d.Set("project_id", (*getFeed.Project.Id).String())
+			d.Set("project_id", getFeed.Project.Id.String())
 		}
 	}
 

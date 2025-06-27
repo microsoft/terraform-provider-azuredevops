@@ -22,7 +22,7 @@ import (
 )
 
 // timeout used to wait for operations on projects to finish before executing an update or delete
-var projectBusyTimeoutDuration time.Duration = 6
+var projectBusyTimeoutDuration time.Duration = 6 * time.Minute
 
 // ResourceProject schema and implementation for project resource
 func ResourceProject() *schema.Resource {
@@ -207,14 +207,11 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if d.HasChange("features") {
 		var featureStates map[string]interface{}
 		oldFeatureStates, newFeatureStates := d.GetChange("features")
-		if len(newFeatureStates.(map[string]interface{})) <= 0 {
+		if len(newFeatureStates.(map[string]interface{})) == 0 {
 			log.Printf("[TRACE] resourceProjectUpdate: new feature definition is empty; resetting to defaults")
 
 			featureStates = oldFeatureStates.(map[string]interface{})
-			pfeatureStates, err := getDefaultProjectFeatureStates(&featureStates)
-			if err != nil {
-				return nil
-			}
+			pfeatureStates := getDefaultProjectFeatureStates(&featureStates)
 			featureStates = *pfeatureStates
 		} else {
 			featureStates = newFeatureStates.(map[string]interface{})
@@ -320,7 +317,7 @@ func updateProject(clients *client.AggregatedClient, project *core.TeamProject, 
 
 	// project updates may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for updates, up until a timeout is reached
-	err := retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *retry.RetryError {
+	err := retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration, func() *retry.RetryError {
 		var updateErr error
 		operationRef, updateErr = clients.CoreClient.UpdateProject(
 			clients.Ctx,
@@ -371,7 +368,7 @@ func deleteProject(clients *client.AggregatedClient, id string, timeout time.Dur
 
 	// project deletes may fail if there is activity going on in the project. A retry can be employed
 	// to gracefully handle errors encountered for deletes, up until a timeout is reached
-	err = retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration*time.Minute, func() *retry.RetryError {
+	err = retry.RetryContext(clients.Ctx, projectBusyTimeoutDuration, func() *retry.RetryError {
 		var deleteErr error
 		operationRef, deleteErr = clients.CoreClient.QueueDeleteProject(clients.Ctx, core.QueueDeleteProjectArgs{
 			ProjectId: &uuid,
@@ -462,7 +459,7 @@ func expandProject(clients *client.AggregatedClient, d *schema.ResourceData, for
 
 func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, project *core.TeamProject) error {
 	var err error
-	processTemplateName := ""
+	var processTemplateName string
 	processTemplateID := (*project.Capabilities)["processTemplate"]["templateTypeId"]
 	if len(processTemplateID) > 0 {
 		processTemplateName, err = lookupProcessTemplateName(clients, processTemplateID)
@@ -482,7 +479,7 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 		featureStates := features.(map[string]interface{})
 		states, err := getConfiguredProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, &featureStates, project.Id.String())
 		if err != nil {
-			return nil
+			return err
 		}
 		currentFeatureStates = states
 	}

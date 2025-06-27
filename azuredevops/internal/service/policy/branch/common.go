@@ -130,7 +130,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	d.Set("project_id", converter.ToString(projectID, ""))
 	d.Set("enabled", converter.ToBool(policyConfig.IsEnabled, true))
 	d.Set("blocking", converter.ToBool(policyConfig.IsBlocking, true))
-	settings, err := flattenSettings(d, policyConfig)
+	settings, err := flattenSettings(policyConfig)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	return nil
 }
 
-func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration) ([]interface{}, error) {
+func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, error) {
 	policySettings := commonPolicySettings{}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 	if err != nil {

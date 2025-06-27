@@ -165,10 +165,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
-		args, err := gitRepositoryPushArgs(d, objectID, changeType)
-		if err != nil {
-			return retry.NonRetryableError(err)
-		}
+		args := gitRepositoryPushArgs(d, objectID, changeType)
 		if (*args.Push.Commits)[0].Comment == nil {
 			m := fmt.Sprintf("Add %s", file)
 			(*args.Push.Commits)[0].Comment = &m
@@ -293,11 +290,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
-		args, err := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
-		if err != nil {
-			return retry.NonRetryableError(err)
-		}
-
+		args := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
 		commits := *args.Push.Commits
 		if *commits[0].Comment == fmt.Sprintf("Add %s", file) {
 			*commits[0].Comment = fmt.Sprintf("Update %s", file)
@@ -430,7 +423,7 @@ func getLastCommitId(c *client.AggregatedClient, repoId, branch string) (string,
 }
 
 // gitRepositoryPushArgs returns args used to commit and push changes.
-func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
+func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) *git.CreatePushArgs {
 	var message *string
 	if commitMessage, hasCommitMessage := d.GetOk("commit_message"); hasCommitMessage {
 		cm := commitMessage.(string)
@@ -477,7 +470,7 @@ func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType g
 			},
 		},
 	}
-	return args, nil
+	return args
 }
 
 // shortBranchName removes the branch prefix which some API endpoints require.

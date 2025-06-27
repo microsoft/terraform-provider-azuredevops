@@ -243,7 +243,7 @@ func (client *ClientImpl) GetCheckSuite(ctx context.Context, args GetCheckSuiteA
 	if args.CheckSuiteId == nil {
 		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.CheckSuiteId"}
 	}
-	routeValues["checkSuiteId"] = (*args.CheckSuiteId).String()
+	routeValues["checkSuiteId"] = args.CheckSuiteId.String()
 
 	queryParams := url.Values{}
 	if args.Expand != nil {

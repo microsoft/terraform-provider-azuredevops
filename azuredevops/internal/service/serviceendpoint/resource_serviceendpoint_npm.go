@@ -52,11 +52,7 @@ func ResourceServiceEndpointNpm() *schema.Resource {
 
 func resourceServiceEndpointNpmCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNpm(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointNpm(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -90,12 +86,8 @@ func resourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) error
 
 func resourceServiceEndpointNpmUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNpm(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointNpm(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -104,16 +96,12 @@ func resourceServiceEndpointNpmUpdate(d *schema.ResourceData, m interface{}) err
 
 func resourceServiceEndpointNpmDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNpm(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointNpm(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointNpm(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -123,7 +111,7 @@ func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Type = converter.String("externalnpmregistry")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure

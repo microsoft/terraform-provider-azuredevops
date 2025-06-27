@@ -64,7 +64,7 @@ func baseSchema() map[string]*schema.Schema {
 }
 
 func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
+	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) == 0 {
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
 	}
 
@@ -310,7 +310,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 	if serviceEndpoint.ServiceEndpointProjectReferences != nil && len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
 		for _, project := range *serviceEndpoint.ServiceEndpointProjectReferences {
-			if strings.EqualFold((*project.ProjectReference.Id).String(), d.Get("project_id").(string)) {
+			if strings.EqualFold(project.ProjectReference.Id.String(), d.Get("project_id").(string)) {
 				d.Set("project_id", project.ProjectReference.Id.String())
 				break
 			}

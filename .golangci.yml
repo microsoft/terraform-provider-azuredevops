@@ -30,7 +30,6 @@ linters:
     - predeclared # find code that shadows one of Go's predeclared identifiers.
     - reassign # checks that package variables are not reassigned.
     - tenv #detects using os.Setenv instead of t.Setenv since Go1.17.
-    - tagalign #  checks struct tags that do not align with the specified column in struct definitions.
     - staticcheck # checks rules from staticcheck. It's not the same thing as the staticcheck binary.
     - unused # checks Go code for unused constants, variables, functions and types.
     - unconvert # checks for unnecessary type conversions.
@@ -63,6 +62,9 @@ linters:
 
     ###### DISABLED because golang will put the space back into `//nolint: linter` -> `// nolint: linter` ######
     #- nolintlint  #Reports ill-formed or insufficient nolint directives.
+    
+    ###### DISABLED because no easy way to format tags
+    #- tagalign #  checks struct tags that do not align with the specified column in struct definitions.
 
 linters-settings:
   errcheck:

@@ -204,14 +204,15 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 					return nil, err
 				}
 
-				if strings.EqualFold(workloadIdentityTokenUnmarshalled.RunPhase, "apply") {
+				switch runPhase := strings.ToLower(workloadIdentityTokenUnmarshalled.RunPhase); runPhase {
+				case "apply":
 					clientID = clientIdApply
 					tenantID = tenantIdApply
-				} else if strings.EqualFold(workloadIdentityTokenUnmarshalled.RunPhase, "plan") {
+				case "plan":
 					clientID = clientIdPlan.(string)
 					tenantID = tenantIdPlan
-				} else {
-					return nil, fmt.Errorf("Unrecognized workspace run phase: %s", workloadIdentityTokenUnmarshalled.RunPhase)
+				default:
+					return nil, fmt.Errorf("Unrecognized workspace run phase: %s", runPhase)
 				}
 			} else if clientID == "" {
 				return nil, fmt.Errorf("Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication.")

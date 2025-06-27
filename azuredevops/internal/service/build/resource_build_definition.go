@@ -834,7 +834,7 @@ func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildD
 			}
 		}
 		variables[index] = variable
-		index = index + 1
+		index++
 	}
 
 	return variables
@@ -1310,7 +1310,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 		return &[]model.PipelineJob{}, nil
 	}
 
-	var result []model.PipelineJob
+	result := make([]model.PipelineJob, 0, len(input))
 	for _, jobConfig := range input {
 		jobMap := jobConfig.(map[string]interface{})
 		job := model.PipelineJob{
@@ -1367,11 +1367,11 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 			}
 
 			// TODO
-			//if jobType == 2 { // Agentless Job
+			// if jobType == 2 { // Agentless Job
 			//	if v, ok := executionOptionsMap["max_concurrency"]; ok && v.(int) > 0 {
 			//		return nil, fmt.Errorf("`max_concurrency` must not be set when job is `AgentlessJob`")
 			//	}
-			//}
+			// }
 
 			// AgentlessJob(2)
 			if jobType == 2 {
@@ -1465,6 +1465,8 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		}
 	}
 
+	var buildTriggers []any
+
 	ciTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
 		build.DefinitionTriggerTypeValues.ContinuousIntegration,
@@ -1474,6 +1476,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 	if err != nil {
 		return nil, "", err
 	}
+	buildTriggers = append(buildTriggers, ciTriggers...)
 
 	pullRequestTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("pull_request_trigger").([]interface{}),
@@ -1484,8 +1487,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 	if err != nil {
 		return nil, "", err
 	}
-
-	buildTriggers := append(ciTriggers, pullRequestTriggers...)
+	buildTriggers = append(buildTriggers, pullRequestTriggers...)
 
 	buildCompletionTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("build_completion_trigger").([]interface{}),
@@ -1581,7 +1583,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		}
 
 		agentSpecification := d.Get("agent_specification").(string)
-		if len(agentSpecification) <= 0 {
+		if len(agentSpecification) == 0 {
 			return nil, "", fmt.Errorf("Expanding jobs: `agent_specification` must be set when `repo_type` is `Git`")
 		}
 

@@ -308,7 +308,7 @@ func importUserEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Res
 			return nil, err
 		}
 
-		if result == nil || len(*result) <= 0 {
+		if result == nil || len(*result) == 0 {
 			return nil, fmt.Errorf("No entitlement found for [%s]", upn)
 		}
 		if len(*result) > 1 {

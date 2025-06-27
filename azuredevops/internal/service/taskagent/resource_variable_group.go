@@ -247,7 +247,7 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
-	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
+	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID)
 	if err != nil {
 		return fmt.Errorf("Updating variable group in Azure DevOps: %+v", err)
 	}
@@ -328,7 +328,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 }
 
 // Make the Azure DevOps API call to update the variable group
-func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int, project *string) (*taskagent.VariableGroup, error) {
+func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int) (*taskagent.VariableGroup, error) {
 	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
 		taskagent.UpdateVariableGroupArgs{
@@ -507,7 +507,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 			return nil, err
 		}
 
-		index = index + 1
+		index++
 	}
 
 	return variables, nil
@@ -653,8 +653,9 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set("allow_access", allowAccess)
 }
 
-func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
-	token, loop, azkvSecretsRaw := "", 0, &KeyVaultSecretResult{}
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, err error) {
+	var azkvSecretsRaw *KeyVaultSecretResult
+	token, loop := "", 0
 	kvSecrets = make(map[string]interface{})
 	invalidSecrets = make([]string, 0)
 

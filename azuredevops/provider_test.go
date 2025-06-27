@@ -400,7 +400,7 @@ func TestAuthTrfm(t *testing.T) {
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	fakeTokenValue := "tokenvalue"
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", fakeTokenValue)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", fakeTokenValue)
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
@@ -438,7 +438,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	resourceData.Set("use_oidc", true)
 
 	// Apply phase test
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_apply, clientId_apply, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
@@ -451,7 +451,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	assert.Equal(t, "Bearer "+accessToken, token)
 
 	// Plan phase test
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_plan, clientId_plan, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
@@ -492,7 +492,7 @@ func generateCert() []byte {
 
 	publicBytes := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	privateBytes := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
-	return append(publicBytes[:], privateBytes[:]...)
+	return append(publicBytes, privateBytes...)
 }
 
 func TestAuthClientCert(t *testing.T) {

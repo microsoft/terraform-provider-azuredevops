@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
@@ -226,7 +225,7 @@ func (sn *SecurityNamespace) GetActionDefinitions() (*map[string]security.Action
 		if err != nil {
 			return nil, err
 		}
-		if secns == nil || len(*secns) <= 0 || (*secns)[0].Actions == nil || len(*(*secns)[0].Actions) <= 0 {
+		if secns == nil || len(*secns) == 0 || (*secns)[0].Actions == nil || len(*(*secns)[0].Actions) == 0 {
 			return nil, fmt.Errorf("Failed to load security namespace definition with id [%s]", sn.namespaceID)
 		}
 
@@ -262,7 +261,7 @@ func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*se
 	if err != nil {
 		return nil, err
 	}
-	if acl == nil || len(*acl) <= 0 {
+	if acl == nil || len(*acl) == 0 {
 		return nil, nil
 	}
 	if len(*acl) != 1 {
@@ -272,7 +271,7 @@ func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*se
 }
 
 func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]identity.Identity, error) {
-	if principal == nil || len(*principal) <= 0 {
+	if principal == nil || len(*principal) == 0 {
 		return nil, fmt.Errorf("principal is nil or empty")
 	}
 
@@ -291,7 +290,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 		return nil, err
 	}
 
-	if idlist == nil || len(*idlist) <= 0 {
+	if idlist == nil || len(*idlist) == 0 {
 		return nil, fmt.Errorf("No identity information for defined principals [%s]", descriptors)
 	}
 
@@ -312,7 +311,7 @@ func (sn *SecurityNamespace) getIdentitiesFromSubjects(principal *[]string) (*[]
 
 // SetPrincipalPermissions sets ACLs for specifc token inside a security namespace
 func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrincipalPermission) error {
-	if nil == permissionList || len(*permissionList) <= 0 {
+	if nil == permissionList || len(*permissionList) == 0 {
 		return nil
 	}
 
@@ -399,16 +398,17 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 				aceItem.Allow = new(int)
 			}
 
-			if strings.EqualFold("deny", string(value)) {
+			switch string(value) {
+			case "deny":
 				*aceItem.Allow = (*aceItem.Allow) &^ (*actionDef.Bit)
 				*aceItem.Deny = (*aceItem.Deny) | (*actionDef.Bit)
-			} else if strings.EqualFold("allow", string(value)) {
+			case "allow":
 				*aceItem.Deny = (*aceItem.Deny) &^ (*actionDef.Bit)
 				*aceItem.Allow = (*aceItem.Allow) | (*actionDef.Bit)
-			} else if strings.EqualFold("notset", string(value)) {
+			case "notset":
 				*aceItem.Allow = (*aceItem.Allow) &^ (*actionDef.Bit)
 				*aceItem.Deny = (*aceItem.Deny) &^ (*actionDef.Bit)
-			} else {
+			default:
 				return fmt.Errorf("Invalid permission action [%s]", value)
 			}
 		}
@@ -482,7 +482,7 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 		}
 	}
 
-	var permissions []PrincipalPermission
+	permissions := make([]PrincipalPermission, 0, len(*acl.AcesDictionary))
 	for descriptor, ace := range *acl.AcesDictionary {
 		subject, ok := idMap[descriptor]
 		if !ok {
@@ -497,11 +497,12 @@ func (sn *SecurityNamespace) GetPrincipalPermissions(principal *[]string) (*[]Pr
 			Permissions:       map[ActionName]PermissionType{},
 		}
 		for actionName, actionDef := range *actions {
-			if (*ace.Allow)&(*actionDef.Bit) != 0 {
+			switch {
+			case (*ace.Allow)&(*actionDef.Bit) != 0:
 				subjectPerm.Permissions[ActionName(actionName)] = PermissionTypeValues.Allow
-			} else if (*ace.Deny)&(*actionDef.Bit) != 0 {
+			case (*ace.Deny)&(*actionDef.Bit) != 0:
 				subjectPerm.Permissions[ActionName(actionName)] = PermissionTypeValues.Deny
-			} else {
+			default:
 				subjectPerm.Permissions[ActionName(actionName)] = PermissionTypeValues.NotSet
 			}
 		}

@@ -58,11 +58,7 @@ func ResourceServiceEndpointGeneric() *schema.Resource {
 
 func resourceServiceEndpointGenericCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGeneric(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGeneric(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -96,12 +92,8 @@ func resourceServiceEndpointGenericRead(d *schema.ResourceData, m interface{}) e
 
 func resourceServiceEndpointGenericUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGeneric(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGeneric(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -110,15 +102,11 @@ func resourceServiceEndpointGenericUpdate(d *schema.ResourceData, m interface{})
 
 func resourceServiceEndpointGenericDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGeneric(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGeneric(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGeneric(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("generic")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
@@ -129,7 +117,7 @@ func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.Serv
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

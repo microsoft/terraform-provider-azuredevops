@@ -213,7 +213,7 @@ func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 	return &featureStates, nil
 }
 
-func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string]interface{}, error) {
+func getDefaultProjectFeatureStates(states *map[string]interface{}) *map[string]interface{} {
 	featureStates := map[string]interface{}{}
 	for k := range projectFeatureNameMapReverse {
 		if states != nil {
@@ -223,7 +223,7 @@ func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string
 		}
 		featureStates[string(k)] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
 	}
-	return &featureStates, nil
+	return &featureStates
 }
 
 func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
@@ -232,7 +232,7 @@ func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
 
 	m := i.(map[string]interface{})
 
-	if len(m) <= 0 {
+	if len(m) == 0 {
 		errors = append(errors, fmt.Errorf("Feature map must contain at least on entry"))
 	}
 	for feature, state := range m {

@@ -268,7 +268,7 @@ func importGroupEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Re
 		return nil, fmt.Errorf("Group entitlement with ID: %s not found", upn)
 	}
 
-	d.SetId((*resp).Id.String())
+	d.SetId(resp.Id.String())
 
 	return []*schema.ResourceData{d}, nil
 }

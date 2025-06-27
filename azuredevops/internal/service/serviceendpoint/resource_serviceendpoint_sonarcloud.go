@@ -44,11 +44,7 @@ func ResourceServiceEndpointSonarCloud() *schema.Resource {
 
 func resourceServiceEndpointSonarCloudCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarCloud(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointSonarCloud(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -82,11 +78,7 @@ func resourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface{}
 
 func resourceServiceEndpointSonarCloudUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarCloud(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointSonarCloud(d)
 	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
@@ -96,16 +88,12 @@ func resourceServiceEndpointSonarCloudUpdate(d *schema.ResourceData, m interface
 
 func resourceServiceEndpointSonarCloudDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarCloud(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointSonarCloud(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointSonarCloud(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("Token"),
@@ -115,7 +103,7 @@ func expandServiceEndpointSonarCloud(d *schema.ResourceData) (*serviceendpoint.S
 	}
 	serviceEndpoint.Type = converter.String("sonarcloud")
 	serviceEndpoint.Url = converter.String("https://sonarcloud.io")
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure

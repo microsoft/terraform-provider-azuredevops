@@ -68,11 +68,7 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 
 func resourceServiceEndpointGcpTerraformCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGcp(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGcp(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -106,12 +102,8 @@ func resourceServiceEndpointGcpTerraformRead(d *schema.ResourceData, m interface
 
 func resourceServiceEndpointGcpTerraformUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGcp(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGcp(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -120,16 +112,12 @@ func resourceServiceEndpointGcpTerraformUpdate(d *schema.ResourceData, m interfa
 
 func resourceServiceEndpointGcpTerraformDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGcp(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGcp(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGcp(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -145,7 +133,7 @@ func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Type = converter.String("GoogleCloudServiceEndpoint")
 	serviceEndpoint.Url = converter.String("https://www.googleapis.com/")
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure

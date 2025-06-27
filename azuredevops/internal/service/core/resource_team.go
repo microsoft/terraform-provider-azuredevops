@@ -370,7 +370,7 @@ func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, sub
 	if err != nil {
 		return err
 	}
-	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentMemberSet.Len() <= 0 {
+	if (subjectDescriptors == nil || len(*subjectDescriptors) == 0) && currentMemberSet.Len() == 0 {
 		return nil
 	}
 	if subjectDescriptors == nil {
@@ -511,7 +511,7 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 	if err != nil {
 		return err
 	}
-	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentAdministratorSet.Len() <= 0 {
+	if (subjectDescriptors == nil || len(*subjectDescriptors) == 0) && currentAdministratorSet.Len() == 0 {
 		return nil
 	}
 
@@ -588,7 +588,7 @@ func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.Ag
 func getSubjectDescriptors(clients *client.AggregatedClient, members *[]string) (*schema.Set, error) {
 	set := schema.NewSet(schema.HashString, nil)
 
-	if members == nil || len(*members) <= 0 {
+	if members == nil || len(*members) == 0 {
 		return set, nil
 	}
 

@@ -198,7 +198,7 @@ func isFeedRestorable(d *schema.ResourceData, m interface{}) bool {
 		Project: converter.String(d.Get("project_id").(string)),
 	})
 
-	return err == nil && *((*change).ChangeType) == feed.ChangeTypeValues.Delete
+	return err == nil && *(change.ChangeType) == feed.ChangeTypeValues.Delete
 }
 
 func restoreFeed(d *schema.ResourceData, m interface{}) error {

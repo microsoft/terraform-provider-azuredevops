@@ -106,7 +106,7 @@ func dataTeamsRead(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 
-		if teamList == nil || len(*teamList) <= 0 {
+		if teamList == nil || len(*teamList) == 0 {
 			continue
 		}
 

@@ -69,11 +69,7 @@ func ResourceServiceEndpointDockerRegistry() *schema.Resource {
 
 func resourceServiceEndpointDockerRegistryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDockerRegistry(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointDockerRegistry(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -107,12 +103,8 @@ func resourceServiceEndpointDockerRegistryRead(d *schema.ResourceData, m interfa
 
 func resourceServiceEndpointDockerRegistryUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDockerRegistry(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointDockerRegistry(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -121,16 +113,12 @@ func resourceServiceEndpointDockerRegistryUpdate(d *schema.ResourceData, m inter
 
 func resourceServiceEndpointDockerRegistryDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDockerRegistry(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointDockerRegistry(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointDockerRegistry(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -146,7 +134,7 @@ func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoi
 	}
 	serviceEndpoint.Type = converter.String("dockerregistry")
 	serviceEndpoint.Url = converter.String("https://hub.docker.com/") // DevOps UI sets hub.docker.com for both DockerHub and Others types
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure

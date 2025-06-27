@@ -63,11 +63,7 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 
 func resourceServiceEndpointGenericGitCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGenericGit(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -101,12 +97,8 @@ func resourceServiceEndpointGenericGitRead(d *schema.ResourceData, m interface{}
 
 func resourceServiceEndpointGenericGitUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGenericGit(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Upating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -115,15 +107,11 @@ func resourceServiceEndpointGenericGitUpdate(d *schema.ResourceData, m interface
 
 func resourceServiceEndpointGenericGitDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGenericGit(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGenericGit(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGenericGit(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("git")
 	serviceEndpoint.Url = converter.String(d.Get("repository_url").(string))
@@ -137,7 +125,7 @@ func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.S
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

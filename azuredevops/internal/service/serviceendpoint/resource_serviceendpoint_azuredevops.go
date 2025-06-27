@@ -60,11 +60,7 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 
 func resourceServiceEndpointAzureDevOpsCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureDevOps(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointAzureDevOps(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -98,12 +94,8 @@ func resourceServiceEndpointAzureDevOpsRead(d *schema.ResourceData, m interface{
 
 func resourceServiceEndpointAzureDevOpsUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureDevOps(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointAzureDevOps(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -112,15 +104,11 @@ func resourceServiceEndpointAzureDevOpsUpdate(d *schema.ResourceData, m interfac
 
 func resourceServiceEndpointAzureDevOpsDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureDevOps(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointAzureDevOps(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointAzureDevOps(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -133,7 +121,7 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 	serviceEndpoint.Data = &map[string]string{
 		"releaseUrl": d.Get("release_api_url").(string),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

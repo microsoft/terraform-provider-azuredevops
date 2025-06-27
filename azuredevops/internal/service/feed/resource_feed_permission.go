@@ -251,7 +251,7 @@ func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, err
 	}
 
 	response, err := clients.IdentityClient.ReadIdentity(clients.Ctx, identity.ReadIdentityArgs{
-		IdentityId: converter.String((*storageKey.Value).String()),
+		IdentityId: converter.String(storageKey.Value.String()),
 	})
 	if err != nil {
 		return nil, err
