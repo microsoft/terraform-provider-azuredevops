@@ -45,13 +45,13 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 	return func(s *terraform.State) error {
 		resource, ok := s.RootModule().Resources["azuredevops_user_entitlement.user"]
 		if !ok {
-			return fmt.Errorf(" Did not find a UserEntitlement in the TF state")
+			return fmt.Errorf("Did not find a UserEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
@@ -59,7 +59,7 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 		})
 
 		if err != nil {
-			return fmt.Errorf(" UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if !strings.EqualFold(strings.ToLower(*userEntitlement.User.PrincipalName), strings.ToLower(expectedPrincipalName)) {
@@ -83,7 +83,7 @@ func checkUserEntitlementDestroyed(s *terraform.State) error {
 
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing UserEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
@@ -98,7 +98,7 @@ func checkUserEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if userEntitlement != nil && userEntitlement.AccessLevel != nil && string(*userEntitlement.AccessLevel.Status) != "none" {
-			return fmt.Errorf(" Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
+			return fmt.Errorf("Status should be none : %s with readUserEntitlement error %v", string(*userEntitlement.AccessLevel.Status), err)
 		}
 	}
 

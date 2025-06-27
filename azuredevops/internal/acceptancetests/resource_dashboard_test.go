@@ -267,7 +267,7 @@ func checkDashboardDestroyed(s *terraform.State) error {
 		id := resource.Primary.ID
 		dashboardId, err := uuid.Parse(id)
 		if err != nil {
-			return fmt.Errorf(" Parsing dashboard ID: %+v", err)
+			return fmt.Errorf("Parsing dashboard ID: %+v", err)
 		}
 
 		args := dashboard.GetDashboardArgs{
@@ -280,7 +280,7 @@ func checkDashboardDestroyed(s *terraform.State) error {
 		}
 		// indicates the project still exists - this should fail the test
 		if _, err = clients.DashboardClient.GetDashboard(clients.Ctx, args); err == nil {
-			return fmt.Errorf(" Dashboard with ID %s should not exist", id)
+			return fmt.Errorf("Dashboard with ID %s should not exist", id)
 		}
 	}
 	return nil
@@ -290,7 +290,7 @@ func checkDashboardExist(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_dashboard.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a `azuredevops_dashboard` in the Terraform state")
+			return fmt.Errorf("Did not find a `azuredevops_dashboard` in the Terraform state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -298,7 +298,7 @@ func checkDashboardExist(expectedName string) resource.TestCheckFunc {
 		id := res.Primary.ID
 		dashboardId, err := uuid.Parse(id)
 		if err != nil {
-			return fmt.Errorf(" Parsing dashboard ID %s", id)
+			return fmt.Errorf("Parsing dashboard ID %s", id)
 		}
 
 		args := dashboard.GetDashboardArgs{
@@ -313,11 +313,11 @@ func checkDashboardExist(expectedName string) resource.TestCheckFunc {
 		resp, err := clients.DashboardClient.GetDashboard(clients.Ctx, args)
 
 		if err != nil {
-			return fmt.Errorf(" Dashboard with ID: %s cannot be found!. Error: %v", id, err)
+			return fmt.Errorf("Dashboard with ID: %s cannot be found!. Error: %v", id, err)
 		}
 
 		if *resp.Name != expectedName {
-			return fmt.Errorf(" Dashboard with ID: %s has Name: %s, but expected Name: %s", id, *resp.Name, expectedName)
+			return fmt.Errorf("Dashboard with ID: %s has Name: %s, but expected Name: %s", id, *resp.Name, expectedName)
 		}
 		return nil
 	}
@@ -332,7 +332,7 @@ func importDashboardId(resourceType string) resource.ImportStateIdFunc {
 			}
 			return fmt.Sprintf("%s/%s", projectId, res.Primary.ID), nil
 		}
-		return "", fmt.Errorf(" Not found: %s", resourceType)
+		return "", fmt.Errorf("Not found: %s", resourceType)
 	}
 }
 

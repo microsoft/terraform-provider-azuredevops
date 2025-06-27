@@ -211,10 +211,10 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 					clientID = clientIdPlan.(string)
 					tenantID = tenantIdPlan
 				} else {
-					return nil, fmt.Errorf(" Unrecognized workspace run phase: %s", workloadIdentityTokenUnmarshalled.RunPhase)
+					return nil, fmt.Errorf("Unrecognized workspace run phase: %s", workloadIdentityTokenUnmarshalled.RunPhase)
 				}
 			} else if clientID == "" {
-				return nil, fmt.Errorf(" Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication.")
+				return nil, fmt.Errorf("Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication.")
 			}
 
 			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, AssertionProviderFromString(workloadIdentityToken), nil)

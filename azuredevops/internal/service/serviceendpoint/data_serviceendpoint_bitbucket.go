@@ -34,5 +34,5 @@ func dataSourceServiceEndpointBitbucketRead(d *schema.ResourceData, m interface{
 		return nil
 	}
 
-	return fmt.Errorf(" Looking up Bitbucket Service Endpoint!")
+	return fmt.Errorf("Looking up Bitbucket Service Endpoint!")
 }

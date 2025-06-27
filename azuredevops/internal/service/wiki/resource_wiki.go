@@ -192,7 +192,7 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Delete Project wiki failed. Error: %+v", err)
+			return fmt.Errorf("Delete Project wiki failed. Error: %+v", err)
 		}
 	}
 	return nil

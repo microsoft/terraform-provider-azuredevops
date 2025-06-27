@@ -706,12 +706,12 @@ func flattenBuildDefinition(d *schema.ResourceData, buildDefinition *build.Build
 	if buildDefinition.Process != nil {
 		pipeJobs, err := flattenBuildDefinitionJobs(buildDefinition.Process)
 		if err != nil {
-			return fmt.Errorf(" Flattening pipeline jobs: %+v", err)
+			return fmt.Errorf("Flattening pipeline jobs: %+v", err)
 		}
 
 		err = d.Set("jobs", pipeJobs)
 		if err != nil {
-			return fmt.Errorf(" Setting build definition jobs: %+v", err)
+			return fmt.Errorf("Setting build definition jobs: %+v", err)
 		}
 
 		// set agent identifier
@@ -750,12 +750,12 @@ func flattenBuildDefinitionJobs(input interface{}) ([]interface{}, error) {
 
 			v, err := json.Marshal(phases)
 			if err != nil {
-				return nil, fmt.Errorf(" Get pipeline jobs byte array: %+v", err)
+				return nil, fmt.Errorf("Get pipeline jobs byte array: %+v", err)
 			}
 
 			err = json.Unmarshal(v, &jobs)
 			if err != nil {
-				return nil, fmt.Errorf(" Convert Pipelins Jobs to PipelineJob: %+v", err)
+				return nil, fmt.Errorf("Convert Pipelins Jobs to PipelineJob: %+v", err)
 			}
 
 			for _, job := range jobs {
@@ -879,7 +879,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) (interface{}, err
 	if strings.EqualFold(*buildDefinition.Repository.Type, string(model.RepoTypeValues.GitHubEnterprise)) {
 		repoUrl, err := url.Parse(*buildDefinition.Repository.Url)
 		if err != nil {
-			return nil, fmt.Errorf(" Unable to parse repository URL: %+v ", err)
+			return nil, fmt.Errorf("Unable to parse repository URL: %+v ", err)
 		}
 		githubEnterpriseUrl = fmt.Sprintf("%s://%s", repoUrl.Scheme, repoUrl.Host)
 	}
@@ -901,7 +901,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) (interface{}, err
 		if buildStatus, ok := (*buildDefinition.Repository.Properties)["reportBuildStatus"]; ok {
 			reportBuildStatus, err := strconv.ParseBool(buildStatus)
 			if err != nil {
-				return nil, fmt.Errorf(" Unable parse Repository build status. Error: %+v", err)
+				return nil, fmt.Errorf("Unable parse Repository build status. Error: %+v", err)
 			}
 			repo[0]["report_build_status"] = reportBuildStatus
 		}
@@ -1284,7 +1284,7 @@ func expandVariables(d *schema.ResourceData) (*map[string]build.BuildDefinitionV
 		varName := varAsMap[bdVariableName].(string)
 
 		if _, ok := expandedVars[varName]; ok {
-			return nil, fmt.Errorf(" Unexpectedly found duplicate variable with name %s", varName)
+			return nil, fmt.Errorf("Unexpectedly found duplicate variable with name %s", varName)
 		}
 
 		isSecret := converter.Bool(varAsMap[bdVariableIsSecret].(bool))
@@ -1361,7 +1361,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 
 			if jobType == 1 { // Agent Job
 				if v, ok := executionOptionsMap["max_concurrency"]; !ok || v.(int) == 0 {
-					return nil, fmt.Errorf(" `max_concurrency` must be set when job is `AgentJob`")
+					return nil, fmt.Errorf("`max_concurrency` must be set when job is `AgentJob`")
 				}
 				executeOptions.MaxConcurrency = converter.ToPtr(executionOptionsMap["max_concurrency"].(int))
 			}
@@ -1369,7 +1369,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 			// TODO
 			//if jobType == 2 { // Agentless Job
 			//	if v, ok := executionOptionsMap["max_concurrency"]; ok && v.(int) > 0 {
-			//		return nil, fmt.Errorf(" `max_concurrency` must not be set when job is `AgentlessJob`")
+			//		return nil, fmt.Errorf("`max_concurrency` must not be set when job is `AgentlessJob`")
 			//	}
 			//}
 
@@ -1379,7 +1379,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 			}
 		case model.JobExecutionOptionsTypeValues.MultiAgent: // multi-agent, only available when job type is AgentJob
 			if jobType == 2 {
-				return nil, fmt.Errorf(" `Multi-Agent` is not supported when job Type is `AgentlessJob`")
+				return nil, fmt.Errorf("`Multi-Agent` is not supported when job Type is `AgentlessJob`")
 			}
 			executeOptions = model.JobExecutionOptions{
 				Type:            converter.ToPtr(2),
@@ -1388,12 +1388,12 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 
 			if v, ok := executionOptionsMap["multipliers"]; ok {
 				if len(v.(string)) > 0 {
-					return nil, fmt.Errorf(" `multipliers` must not be set when Execution Options Type is `Multi-Agent`")
+					return nil, fmt.Errorf("`multipliers` must not be set when Execution Options Type is `Multi-Agent`")
 				}
 			}
 			if jobType == 1 {
 				if v, ok := executionOptionsMap["max_concurrency"]; !ok || v.(int) == 0 {
-					return nil, fmt.Errorf(" `max_concurrency` must be set when job is `AgentJob`")
+					return nil, fmt.Errorf("`max_concurrency` must be set when job is `AgentJob`")
 				}
 				executeOptions.MaxConcurrency = converter.ToPtr(executionOptionsMap["max_concurrency"].(int))
 			}
@@ -1414,7 +1414,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 		} else {
 			demands := targetMap["demands"].([]interface{})
 			if len(demands) > 0 {
-				return nil, fmt.Errorf(" `demands` must not be set when Job Type is `AgentlessJob`")
+				return nil, fmt.Errorf("`demands` must not be set when Job Type is `AgentlessJob`")
 			}
 		}
 		job.Target = &target
@@ -1457,11 +1457,11 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 
 	if strings.EqualFold(repoType, string(model.RepoTypeValues.OtherGit)) {
 		if _, ok := repository["service_connection_id"]; !ok {
-			return nil, "", fmt.Errorf(" `repository.service_connection_id` must be set when `repoType` is `Git`")
+			return nil, "", fmt.Errorf("`repository.service_connection_id` must be set when `repoType` is `Git`")
 		}
 
 		if _, ok := repository["url"]; !ok {
-			return nil, "", fmt.Errorf(" `repository.service_connection_id` must be set when `repoType` is `Git`")
+			return nil, "", fmt.Errorf("`repository.service_connection_id` must be set when `repoType` is `Git`")
 		}
 	}
 
@@ -1527,7 +1527,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 
 	variables, err := expandVariables(d)
 	if err != nil {
-		return nil, "", fmt.Errorf(" Expanding varibles: %+v", err)
+		return nil, "", fmt.Errorf("Expanding varibles: %+v", err)
 	}
 
 	queueStatus := build.DefinitionQueueStatus(d.Get("queue_status").(string))
@@ -1577,12 +1577,12 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 
 		jobs, err := expandBuildDefinitionJobs(d.Get("jobs").([]interface{}))
 		if err != nil {
-			return nil, "", fmt.Errorf(" Expanding jobs: %+v", err)
+			return nil, "", fmt.Errorf("Expanding jobs: %+v", err)
 		}
 
 		agentSpecification := d.Get("agent_specification").(string)
 		if len(agentSpecification) <= 0 {
-			return nil, "", fmt.Errorf(" Expanding jobs: `agent_specification` must be set when `repo_type` is `Git`")
+			return nil, "", fmt.Errorf("Expanding jobs: `agent_specification` must be set when `repo_type` is `Git`")
 		}
 
 		buildDefinition.Process = map[string]interface{}{

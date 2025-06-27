@@ -106,17 +106,17 @@ func dataSourceGitRepositoriesRead(d *schema.ResourceData, m interface{}) error 
 		if utils.ResponseWasNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf(" finding repositories. Error: %v", err)
+		return fmt.Errorf("finding repositories. Error: %v", err)
 	}
 
 	results, err := flattenGitRepositories(projectRepos)
 	if err != nil {
-		return fmt.Errorf(" flattening projects. Error: %v", err)
+		return fmt.Errorf("flattening projects. Error: %v", err)
 	}
 
 	repoNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
-		return fmt.Errorf(" failed to get list of repository names: %v", err)
+		return fmt.Errorf("failed to get list of repository names: %v", err)
 	}
 
 	id, err := createGitRepositoryDataSourceID(d, &repoNames)
@@ -147,7 +147,7 @@ func createGitRepositoryDataSourceID(d *schema.ResourceData, repoNames *[]string
 		names = append([]string{projectID}, names...)
 	}
 	if _, err := h.Write([]byte(strings.Join(names, "-"))); err != nil {
-		return "", fmt.Errorf(" Unable to compute hash for Git repository names: %v", err)
+		return "", fmt.Errorf("Unable to compute hash for Git repository names: %v", err)
 	}
 	return "gitRepos#" + base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
 }

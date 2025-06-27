@@ -36,7 +36,7 @@ func ResourceDashboard() *schema.Resource {
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
 				idParts := strings.Split(d.Id(), "/")
 				if len(idParts) > 3 || len(idParts) < 2 {
-					return nil, fmt.Errorf(" Unexpected ID format (%q), Expected: <projetId>/<dasboardId> or <projetId>/<teamId>/<dasboardId>", d.Id())
+					return nil, fmt.Errorf("Unexpected ID format (%q), Expected: <projetId>/<dasboardId> or <projetId>/<teamId>/<dasboardId>", d.Id())
 				}
 
 				d.Set("project_id", idParts[0])

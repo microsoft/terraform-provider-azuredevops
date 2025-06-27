@@ -184,7 +184,7 @@ func GetRealProjectId(projectNameOrID string, meta interface{}) (string, error) 
 			IncludeHistory:      converter.Bool(false),
 		})
 		if err != nil {
-			return "", fmt.Errorf(" Failed to get the project with specified projectNameOrID: %s , %+v", projectNameOrID, err)
+			return "", fmt.Errorf("Failed to get the project with specified projectNameOrID: %s , %+v", projectNameOrID, err)
 		}
 		return (*project.Id).String(), nil
 	}

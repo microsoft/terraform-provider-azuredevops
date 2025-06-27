@@ -141,7 +141,7 @@ func checkFeedDestroyed(s *terraform.State) error {
 			Project: &projectID,
 		})
 		if err == nil {
-			return fmt.Errorf(" Feed (Feed ID: %s) should not exist", id)
+			return fmt.Errorf("Feed (Feed ID: %s) should not exist", id)
 		}
 	}
 	return nil
@@ -151,7 +151,7 @@ func CheckFeedExist(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_feed.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find `azuredevops_feed` in the TF state")
+			return fmt.Errorf("Did not find `azuredevops_feed` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -164,11 +164,11 @@ func CheckFeedExist(expectedName string) resource.TestCheckFunc {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Feed with ID=%s cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("Feed with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if *feeds.Name != expectedName {
-			return fmt.Errorf(" Feed with ID=%s has Name=%s, but expected Name=%s", id, *feeds.Name, expectedName)
+			return fmt.Errorf("Feed with ID=%s has Name=%s, but expected Name=%s", id, *feeds.Name, expectedName)
 		}
 		return nil
 	}

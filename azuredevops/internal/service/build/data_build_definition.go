@@ -397,15 +397,15 @@ func dataSourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 	buildDefinitions, err := getBuildDefinitionsByNameAndProject(clients, name, path, projectID)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf(" Build Definition with name %s does not exist in project %s in %s path", name, projectID, path)
+			return fmt.Errorf("Build Definition with name %s does not exist in project %s in %s path", name, projectID, path)
 		}
-		return fmt.Errorf(" Finding build definitions. Error: %v", err)
+		return fmt.Errorf("Finding build definitions. Error: %v", err)
 	}
 	if buildDefinitions == nil || 0 >= len(*buildDefinitions) {
-		return fmt.Errorf(" Build Definition with name %s does not exist in project %s in %s path", name, projectID, path)
+		return fmt.Errorf("Build Definition with name %s does not exist in project %s in %s path", name, projectID, path)
 	}
 	if 1 < len(*buildDefinitions) {
-		return fmt.Errorf(" Multiple build definitions with name %s found in project %s", name, projectID)
+		return fmt.Errorf("Multiple build definitions with name %s found in project %s", name, projectID)
 	}
 
 	buildDetail := &(*buildDefinitions)[0]

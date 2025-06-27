@@ -45,7 +45,7 @@ func dataSourceDataStorageKeyRead(ctx context.Context, d *schema.ResourceData, m
 		if utils.ResponseWasNotFound(err) {
 			return diag.Errorf(" The specified descriptor %s does not exist.", storageKey)
 		}
-		return diag.FromErr(fmt.Errorf(" Reading descriptor: %s. Error: %+v", storageKey, err))
+		return diag.FromErr(fmt.Errorf("Reading descriptor: %s. Error: %+v", storageKey, err))
 	}
 
 	d.SetId(storageKey.Value.String())

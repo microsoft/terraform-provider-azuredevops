@@ -215,7 +215,7 @@ func TestGitRepositoryBranch_Read(t *testing.T) {
 					m:   clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf(" Reading branch \"a-branch\": an-error")),
+			diag.FromErr(fmt.Errorf("Reading branch \"a-branch\": an-error")),
 		},
 	}
 	for _, tt := range tests {
@@ -286,7 +286,7 @@ func TestGitRepositoryBranch_Delete(t *testing.T) {
 					m:   clients,
 				}
 			},
-			diag.FromErr(fmt.Errorf(" Deleting branch \"a-branch\": Updating refs: an-error")),
+			diag.FromErr(fmt.Errorf("Deleting branch \"a-branch\": Updating refs: an-error")),
 		},
 	}
 	for _, tt := range tests {

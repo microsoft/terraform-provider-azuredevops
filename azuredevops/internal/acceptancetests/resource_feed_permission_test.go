@@ -81,7 +81,7 @@ func checkFeedPermissionDestroyed(s *terraform.State) error {
 
 		if err == nil {
 			if permissions != nil && len(*permissions) > 0 {
-				return fmt.Errorf(" Feed permissions (Feed ID: %s) should not exist", id)
+				return fmt.Errorf("Feed permissions (Feed ID: %s) should not exist", id)
 			}
 		}
 	}
@@ -92,7 +92,7 @@ func CheckFeedPermissionExist() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_feed_permission.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a `azuredevops_feed_permission` in the TF state")
+			return fmt.Errorf("Did not find a `azuredevops_feed_permission` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -105,7 +105,7 @@ func CheckFeedPermissionExist() resource.TestCheckFunc {
 		})
 
 		if err != nil {
-			return fmt.Errorf(" Feed permissions with Feed ( Feed ID=%s ) cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("Feed permissions with Feed ( Feed ID=%s ) cannot be found!. Error=%v", id, err)
 		}
 
 		return nil

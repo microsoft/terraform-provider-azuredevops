@@ -98,7 +98,7 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf(" Creating Team: %+v", err)
+		return fmt.Errorf("Creating Team: %+v", err)
 	}
 
 	teamID := team.Id.String()
@@ -184,7 +184,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 		StorageKey: team.Id,
 	})
 	if err != nil {
-		return fmt.Errorf(" get team descriptor. Error: %+v", err)
+		return fmt.Errorf("get team descriptor. Error: %+v", err)
 	}
 	d.Set("descriptor", descriptor.Value)
 
@@ -302,7 +302,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				ExpandIdentity: converter.Bool(false),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf(" Reading team data: %+v", err)
+				return nil, "", fmt.Errorf("Reading team data: %+v", err)
 			}
 
 			bDescriptionUpdated := nil == description || *team.Description == *description
@@ -312,7 +312,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if administratorSet != nil {
 				actualAdministrators, err := getTeamAdministrators(d, clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf(" Reading team administrators: %+v", err)
+					return nil, "", fmt.Errorf("Reading team administrators: %+v", err)
 				}
 				bAdministratorsUpdated = actualAdministrators.Len() == administratorSet.Len()
 			}
@@ -322,7 +322,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				Team:    converter.String(teamID),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf(" Reading Team dashboard: %+v", err)
+				return nil, "", fmt.Errorf("Reading Team dashboard: %+v", err)
 			}
 			dashboardUpdate := true
 			if dashboards == nil && len(*dashboards) == 0 {
@@ -333,7 +333,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if memberSet != nil {
 				actualMemberships, err := getTeamMembers(clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf(" Reading team memberships: %+v", err)
+					return nil, "", fmt.Errorf("Reading team memberships: %+v", err)
 				}
 				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
 			}
@@ -351,7 +351,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
+		return fmt.Errorf("waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
 	}
 
 	return nil

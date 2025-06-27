@@ -46,13 +46,13 @@ func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) r
 	return func(s *terraform.State) error {
 		resource, ok := s.RootModule().Resources["azuredevops_service_principal_entitlement.service_principal"]
 		if !ok {
-			return fmt.Errorf(" Did not find a ServicePrincipalEntitlement in the TF state")
+			return fmt.Errorf("Did not find a ServicePrincipalEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing ServicePrincipalEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing ServicePrincipalEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
@@ -60,7 +60,7 @@ func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) r
 		})
 
 		if err != nil {
-			return fmt.Errorf(" ServicePrincipalEntitlement with ID=%s cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("ServicePrincipalEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if !strings.EqualFold(strings.ToLower(*servicePrincipalEntitlement.ServicePrincipal.OriginId), strings.ToLower(expectedServicePrincipalId)) {
@@ -84,7 +84,7 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing ServicePrincipalEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing ServicePrincipalEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
@@ -99,7 +99,7 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if servicePrincipalEntitlement != nil && servicePrincipalEntitlement.AccessLevel != nil && string(*servicePrincipalEntitlement.AccessLevel.Status) != "none" {
-			return fmt.Errorf(" Status should be none : %s with readServicePrincipalEntitlement error %v", string(*servicePrincipalEntitlement.AccessLevel.Status), err)
+			return fmt.Errorf("Status should be none : %s with readServicePrincipalEntitlement error %v", string(*servicePrincipalEntitlement.AccessLevel.Status), err)
 		}
 	}
 

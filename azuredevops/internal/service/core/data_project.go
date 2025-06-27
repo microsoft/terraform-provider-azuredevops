@@ -93,7 +93,7 @@ func dataProjectRead(ctx context.Context, d *schema.ResourceData, m interface{})
 
 	err = flattenProject(clients, d, project)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" flattening project: %v", err))
+		return diag.FromErr(fmt.Errorf("flattening project: %v", err))
 	}
 	return nil
 }

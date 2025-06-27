@@ -255,7 +255,7 @@ func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *se
 		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
 			acceptUntrustedCerts, err := strconv.ParseBool((*params)["acceptUntrustedCerts"])
 			if err != nil {
-				return fmt.Errorf(" Parse `acceptUntrustedCerts`: %v", err)
+				return fmt.Errorf("Parse `acceptUntrustedCerts`: %v", err)
 			}
 			d.Set("accept_untrusted_certs", acceptUntrustedCerts)
 			d.Set("certificate_authority_file", (*params)["certificateAuthorityFile"])
@@ -263,7 +263,7 @@ func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *se
 		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 			acceptUntrustedCerts, err := strconv.ParseBool((*params)["acceptUntrustedCerts"])
 			if err != nil {
-				return fmt.Errorf(" Parse `acceptUntrustedCerts`: %v", err)
+				return fmt.Errorf("Parse `acceptUntrustedCerts`: %v", err)
 			}
 			d.Set("accept_untrusted_certs", acceptUntrustedCerts)
 			d.Set("certificate_authority_file", (*params)["certificateAuthorityFile"])

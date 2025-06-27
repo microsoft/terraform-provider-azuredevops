@@ -239,7 +239,7 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	}
 	response, err := clients.GraphClient.ListUsers(clients.Ctx, args)
 	if err != nil {
-		return nil, "", fmt.Errorf(" Listing users: %q", err)
+		return nil, "", fmt.Errorf("Listing users: %q", err)
 	}
 
 	continuationToken = ""
