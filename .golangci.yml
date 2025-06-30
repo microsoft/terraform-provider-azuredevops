@@ -68,6 +68,7 @@ linters:
 
 linters-settings:
   errcheck:
+    check-blank: true
     exclude-functions:
       - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).ForceNew
       - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).SetNew
