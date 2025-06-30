@@ -62,11 +62,7 @@ func ResourceServiceEndpointExternalTFS() *schema.Resource {
 
 func resourceServiceEndpointExternalTFSCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointExternalTFS(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -101,12 +97,8 @@ func resourceServiceEndpointExternalTFSRead(d *schema.ResourceData, m interface{
 
 func resourceServiceEndpointExternalTFSUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointExternalTFS(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -115,14 +107,11 @@ func resourceServiceEndpointExternalTFSUpdate(d *schema.ResourceData, m interfac
 
 func resourceServiceEndpointExternalTFSDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointExternalTFS(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointExternalTFS(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
-func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+
+func expandServiceEndpointExternalTFS(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externaltfs")
 	serviceEndpoint.Url = converter.String(d.Get("connection_url").(string))
@@ -139,7 +128,7 @@ func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.
 		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {

@@ -57,7 +57,6 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
 			UserId: &id,
 		})
-
 		if err != nil {
 			return fmt.Errorf("UserEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
@@ -75,7 +74,7 @@ func checkUserEntitlementExists(expectedPrincipalName string) resource.TestCheck
 func checkUserEntitlementDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-	//verify that every users referenced in the state does not exist in AzDO
+	// verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_user_entitlement" {
 			continue
@@ -89,7 +88,6 @@ func checkUserEntitlementDestroyed(s *terraform.State) error {
 		userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
 			UserId: &id,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return nil

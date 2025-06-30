@@ -54,11 +54,7 @@ func ResourceServiceEndpointGitLab() *schema.Resource {
 
 func resourceServiceEndpointGitLabCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitLab(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGitLab(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
@@ -93,12 +89,8 @@ func resourceServiceEndpointGitLabRead(ctx context.Context, d *schema.ResourceDa
 
 func resourceServiceEndpointGitLabUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitLab(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGitLab(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return diag.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -107,18 +99,14 @@ func resourceServiceEndpointGitLabUpdate(ctx context.Context, d *schema.Resource
 
 func resourceServiceEndpointGitLabDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitLab(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if err = deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
+	serviceEndpoint := expandServiceEndpointGitLab(d)
+	if err := deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func expandServiceEndpointGitLab(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGitLab(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -131,7 +119,7 @@ func expandServiceEndpointGitLab(d *schema.ResourceData) (*serviceendpoint.Servi
 	serviceEndpoint.Data = &map[string]string{
 		"username": d.Get("username").(string),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointGitLab(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

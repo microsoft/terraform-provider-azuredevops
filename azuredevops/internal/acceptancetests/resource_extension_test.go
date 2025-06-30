@@ -213,7 +213,6 @@ func checkExtensionExist(expectedExtensionId string) resource.TestCheckFunc {
 			PublisherName: &ids[0],
 			ExtensionName: &ids[1],
 		})
-
 		if err != nil {
 			return fmt.Errorf("Extension with Publisher ID=%s , Extension ID: %s cannot be found!. Error=%v", ids[0], ids[1], err)
 		}

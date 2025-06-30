@@ -113,7 +113,6 @@ func checkProjectTagsDestroyed(s *terraform.State) error {
 			ProjectId: &projectID,
 			Keys:      &[]string{"Microsoft.TeamFoundation.Project.Tag.*"},
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return nil
@@ -146,7 +145,6 @@ func CheckProjectTagsExist() resource.TestCheckFunc {
 			ProjectId: &projectID,
 			Keys:      &[]string{"Microsoft.TeamFoundation.Project.Tag.*"},
 		})
-
 		if err != nil {
 			return fmt.Errorf("Project Tags with Project ( Project ID=%s ) not found!. Error=%v", id, err)
 		}

@@ -92,7 +92,6 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 		Project: &projectID,
 		Path:    &path,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -142,7 +141,6 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to update build folder.  Project ID: %s, Error: %+v ", projectID, err)
 	}

@@ -264,7 +264,6 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		}
 	}
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
 		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
@@ -487,7 +486,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("server_url", serviceEndpoint.Url)
 	}
 
-	s := strings.SplitN(scope, "/", -1)
+	s := strings.Split(scope, "/")
 	if len(s) == 5 {
 		d.Set("resource_group", s[4])
 	}
@@ -520,7 +519,7 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 	var mgmtElementCount int
 	for _, ele := range scopeMap["managementGroup"] {
 		if ele == "" {
-			mgmtElementCount = mgmtElementCount + 1
+			mgmtElementCount++
 		}
 	}
 

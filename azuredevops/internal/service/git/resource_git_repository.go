@@ -231,6 +231,7 @@ func ResourceGitRepository() *schema.Resource {
 		},
 	}
 }
+
 func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	repo, initialization, projectID, err := expandGitRepository(d)
@@ -544,7 +545,7 @@ func gitRepositoryRead(clients *client.AggregatedClient, repoID string, repoName
 			return nil, err
 		}
 		for _, gitRepo := range *allRepo {
-			if strings.EqualFold((*gitRepo.Id).String(), identifier) ||
+			if strings.EqualFold(gitRepo.Id.String(), identifier) ||
 				strings.EqualFold(*gitRepo.Name, identifier) {
 				repo = &gitRepo
 				break
@@ -695,7 +696,7 @@ func initializeRepository(clients *client.AggregatedClient, initialization *repo
 				importRequest.Parameters.DeleteServiceEndpointAfterImportIsDone = converter.Bool(true)
 			}
 
-			//TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
+			// TODO validate the request before importing _apis/git/import/ImportRepositoryValidations
 			_, importErr := clients.GitReposClient.CreateImportRequest(clients.Ctx, git.CreateImportRequestArgs{
 				ImportRequest: &importRequest,
 				Project:       &projectId,

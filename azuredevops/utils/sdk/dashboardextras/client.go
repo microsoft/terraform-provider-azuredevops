@@ -53,7 +53,7 @@ func (client *ClientImpl) UpdateDashboard(ctx context.Context, args UpdateDashbo
 	if args.Dashboard.Id == nil {
 		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.Dashboard.Id"}
 	}
-	routeValues["dashboardId"] = (*args.Dashboard.Id).String()
+	routeValues["dashboardId"] = args.Dashboard.Id.String()
 
 	if args.Team != nil {
 		routeValues["team"] = *args.Team

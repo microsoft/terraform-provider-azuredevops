@@ -145,7 +145,6 @@ func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) 
 		EnvironmentId: resource.EnvironmentReference.Id,
 		ResourceId:    &resourceId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("deleting Kubernetes environment: %+v", err)
 	}

@@ -34,5 +34,4 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 	custom_fields := d.Get("custom_fields").(map[string]interface{})
 	require.Equal(t, "SomeValue", custom_fields["SomeName"].(string))
 	require.Equal(t, "bar", custom_fields["foo"].(string))
-
 }

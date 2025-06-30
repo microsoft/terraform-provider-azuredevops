@@ -20,9 +20,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var CheckExclusiveLockID = 123456789
-var CheckExclusiveLockProjectID = uuid.New().String()
-var CheckExclusiveLockTestProjectID = &CheckExclusiveLockProjectID
+var (
+	CheckExclusiveLockID            = 123456789
+	CheckExclusiveLockProjectID     = uuid.New().String()
+	CheckExclusiveLockTestProjectID = &CheckExclusiveLockProjectID
+)
 
 var CheckExclusiveLockInputs = map[string]interface{}{}
 

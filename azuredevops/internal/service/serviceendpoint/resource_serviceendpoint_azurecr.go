@@ -327,7 +327,7 @@ func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 
 		if scope, ok := (*serviceEndpoint.Authorization.Parameters)["scope"]; ok {
-			s := strings.SplitN(scope, "/", -1)
+			s := strings.Split(scope, "/")
 			d.Set("resource_group", s[4])
 			d.Set("azurecr_name", s[8])
 		}

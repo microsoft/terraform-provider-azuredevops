@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var serviceFabricTestServiceEndpointID = uuid.New()
-var serviceFabricRandomServiceEndpointProjectID = uuid.New()
-var serviceFabricTestServiceEndpointProjectID = &serviceFabricRandomServiceEndpointProjectID
+var (
+	serviceFabricTestServiceEndpointID          = uuid.New()
+	serviceFabricRandomServiceEndpointProjectID = uuid.New()
+	serviceFabricTestServiceEndpointProjectID   = &serviceFabricRandomServiceEndpointProjectID
+)
 
 var serviceFabricTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{

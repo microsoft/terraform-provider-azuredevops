@@ -195,7 +195,6 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 	group, err := clients.GraphClient.GetGroup(
 		clients.Ctx,
 		graph.GetGroupArgs{GroupDescriptor: converter.String(d.Id())})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")

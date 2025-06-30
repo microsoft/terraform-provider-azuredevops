@@ -65,27 +65,29 @@ var prjListStateWellFormed2 = []core.TeamProjectReference{
 	},
 }
 
-var duplicatePrjID *uuid.UUID = testhelper.CreateUUID()
-var prjListDoubleID = []core.TeamProjectReference{
-	{
-		Name:  converter.String("vsteam-0177"),
-		Id:    duplicatePrjID,
-		State: &core.ProjectStateValues.WellFormed,
-		Url:   nil,
-	},
-	{
-		Name:  converter.String("vsteam-0178"),
-		Id:    testhelper.CreateUUID(),
-		State: &core.ProjectStateValues.WellFormed,
-		Url:   nil,
-	},
-	{
-		Name:  converter.String("vsteam-0179"),
-		Id:    duplicatePrjID,
-		State: &core.ProjectStateValues.WellFormed,
-		Url:   nil,
-	},
-}
+var (
+	duplicatePrjID  *uuid.UUID = testhelper.CreateUUID()
+	prjListDoubleID            = []core.TeamProjectReference{
+		{
+			Name:  converter.String("vsteam-0177"),
+			Id:    duplicatePrjID,
+			State: &core.ProjectStateValues.WellFormed,
+			Url:   nil,
+		},
+		{
+			Name:  converter.String("vsteam-0178"),
+			Id:    testhelper.CreateUUID(),
+			State: &core.ProjectStateValues.WellFormed,
+			Url:   nil,
+		},
+		{
+			Name:  converter.String("vsteam-0179"),
+			Id:    duplicatePrjID,
+			State: &core.ProjectStateValues.WellFormed,
+			Url:   nil,
+		},
+	}
+)
 
 func TestDataSourceProjects_Read_TestFindProjectByName(t *testing.T) {
 	ctrl := gomock.NewController(t)

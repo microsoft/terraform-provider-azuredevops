@@ -143,7 +143,7 @@ func getQueryIDsFromPath(context context.Context, wiqClient workitemtracking.Cli
 	ret = append(ret, qry.Id.String())
 	if len(pathItems) > 0 {
 		for _, v := range pathItems {
-			if qry.Children == nil || len(*qry.Children) <= 0 {
+			if qry.Children == nil || len(*qry.Children) == 0 {
 				return nil, fmt.Errorf("Unable to find query [%s] in folder [%s] because it has no children", v, converter.ToString(qry.Name, qry.Id.String()))
 			}
 

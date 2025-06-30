@@ -95,7 +95,7 @@ func resourceServiceEndpointPermissionsDelete(d *schema.ResourceData, m interfac
 func createServiceEndpointToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
 	projectID := d.Get("project_id").(string)
 	// Token format for ALL service endpoints in a project: endpoints/ProjectID
-	// Token format for a specific endpoint endpoint in a project: endpoints/ProjectID/ServiceEndpointID
+	// Token format for a specific endpoint in a project: endpoints/ProjectID/ServiceEndpointID
 	aclToken := "endpoints/" + projectID
 	serviceEndpointID, serviceEndpointOk := d.GetOk("serviceendpoint_id")
 	if serviceEndpointOk {

@@ -16,9 +16,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-const errMsgTfConfigRead = " Reading terraform configuration: %+v"
-const errMsgServiceCreate = " Looking up service endpoint given ID (%s) and project ID (%s): %v "
-const errMsgServiceDelete = " Delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
+const (
+	errMsgTfConfigRead  = " Reading terraform configuration: %+v"
+	errMsgServiceCreate = " Looking up service endpoint given ID (%s) and project ID (%s): %v "
+	errMsgServiceDelete = " Delete service endpoint. ServiceEndpointID: %s, projectID: %s. %v "
+)
 
 type operationState struct {
 	Ready      string
@@ -62,7 +64,7 @@ func baseSchema() map[string]*schema.Schema {
 }
 
 func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
+	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) == 0 {
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
 	}
 
@@ -198,7 +200,6 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 				Project:    converter.String(projectID.String()),
 				EndpointId: endPointID,
 			})
-
 		if err != nil {
 			return nil, opState.Failed, fmt.Errorf(errMsgServiceDelete, endPointID, *projectID, err)
 		}
@@ -247,7 +248,6 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 				Project:    converter.String(projectID.String()),
 			},
 		)
-
 		if err != nil {
 			return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, *projectID, err)
 		}
@@ -310,7 +310,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 
 	if serviceEndpoint.ServiceEndpointProjectReferences != nil && len(*serviceEndpoint.ServiceEndpointProjectReferences) > 0 {
 		for _, project := range *serviceEndpoint.ServiceEndpointProjectReferences {
-			if strings.EqualFold((*project.ProjectReference.Id).String(), d.Get("project_id").(string)) {
+			if strings.EqualFold(project.ProjectReference.Id.String(), d.Get("project_id").(string)) {
 				d.Set("project_id", project.ProjectReference.Id.String())
 				break
 			}

@@ -73,11 +73,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 
 func resourceServiceEndpointGitHubCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHub(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGitHub(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -111,12 +107,8 @@ func resourceServiceEndpointGitHubRead(d *schema.ResourceData, m interface{}) er
 
 func resourceServiceEndpointGitHubUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHub(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGitHub(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -125,16 +117,12 @@ func resourceServiceEndpointGitHubUpdate(d *schema.ResourceData, m interface{}) 
 
 func resourceServiceEndpointGitHubDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHub(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGitHub(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGitHub(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
@@ -157,19 +145,19 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	serviceEndpoint.Type = converter.String("github")
 	serviceEndpoint.Url = converter.String("https://github.com")
 
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	val := d.List()[0].(map[string]interface{}) // auth_personal only have one map configure structure
 	authPerson["AccessToken"] = val["personal_access_token"].(string)
 	return authPerson
 }
 
 func expandAuthOauthSet(d *schema.Set) map[string]string {
 	authConfig := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	val := d.List()[0].(map[string]interface{}) // auth_personal only have one map configure structure
 	authConfig["ConfigurationId"] = val["oauth_configuration_id"].(string)
 	authConfig["AccessToken"] = ""
 	return authConfig
@@ -187,14 +175,14 @@ func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *servi
 	}
 	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-		authPersonal := flattenAuthPerson(d, authPersonalSet)
+		authPersonal := flattenAuthPerson(authPersonalSet)
 		if authPersonal != nil {
 			d.Set("auth_personal", authPersonal)
 		}
 	}
 }
 
-func flattenAuthPerson(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
+func flattenAuthPerson(authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
 			return []interface{}{authPersonal}

@@ -80,7 +80,6 @@ func dataProjectRead(ctx context.Context, d *schema.ResourceData, m interface{})
 		IncludeCapabilities: converter.Bool(true),
 		IncludeHistory:      converter.Bool(false),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return diag.FromErr(fmt.Errorf("Project with name %s or ID %s does not exist ", name, id))

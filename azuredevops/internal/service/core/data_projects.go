@@ -96,7 +96,7 @@ func dataSourceProjectsRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get list of project names: %v", err))
 	}
-	if len(projectNames) <= 0 && name != "" {
+	if len(projectNames) == 0 && name != "" {
 		projectNames = append(projectNames, name)
 	}
 	h := sha1.New()

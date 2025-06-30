@@ -474,6 +474,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthEnvironment(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -542,6 +543,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthVariableGroup(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -587,6 +589,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclAllPipelineAuthEndpoint(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -613,6 +616,7 @@ resource "azuredevops_pipeline_authorization" "test" {
 }
 `, name)
 }
+
 func hclPipelineAuthEndpoint(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {

@@ -68,11 +68,7 @@ func ResourceServiceEndpointDynamicsLifecycleServices() *schema.Resource {
 
 func resourceServiceEndpointDynamicsLifecycleServicesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointDynamicsLifecycleServices(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
@@ -107,12 +103,8 @@ func resourceServiceEndpointDynamicsLifecycleServicesRead(ctx context.Context, d
 
 func resourceServiceEndpointDynamicsLifecycleServicesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointDynamicsLifecycleServices(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return diag.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -121,18 +113,14 @@ func resourceServiceEndpointDynamicsLifecycleServicesUpdate(ctx context.Context,
 
 func resourceServiceEndpointDynamicsLifecycleServicesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointDynamicsLifecycleServices(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if err = deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
+	serviceEndpoint := expandServiceEndpointDynamicsLifecycleServices(d)
+	if err := deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func expandServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -147,7 +135,7 @@ func expandServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData) (*se
 	}
 	serviceEndpoint.Type = converter.String("lcsserviceendpoint")
 	serviceEndpoint.Url = converter.String(d.Get("authorization_endpoint").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointDynamicsLifecycleServices(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) {

@@ -340,7 +340,6 @@ func providerConfigure() schema.ConfigureContextFunc {
 
 		organizationUrl := d.Get("org_service_url").(string)
 		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl)
-
 		if err != nil {
 			return nil, diag.FromErr(clientErrorHandle(err, organizationUrl))
 		}

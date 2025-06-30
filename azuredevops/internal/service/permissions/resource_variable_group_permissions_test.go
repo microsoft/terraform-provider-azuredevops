@@ -19,8 +19,10 @@ import (
  * Begin unit tests
  */
 
-var variableGroupID = "5"
-var variableGroupToken = fmt.Sprintf("Library/%s/VariableGroup/%s", projectID, variableGroupID)
+var (
+	variableGroupID    = "5"
+	variableGroupToken = fmt.Sprintf("Library/%s/VariableGroup/%s", projectID, variableGroupID)
+)
 
 func TestVariableGroupsPermissions_CreateVariableGroupToken(t *testing.T) {
 	var d *schema.ResourceData

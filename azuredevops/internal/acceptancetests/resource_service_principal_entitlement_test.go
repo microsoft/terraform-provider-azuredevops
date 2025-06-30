@@ -58,7 +58,6 @@ func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) r
 		servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
 			ServicePrincipalId: &id,
 		})
-
 		if err != nil {
 			return fmt.Errorf("ServicePrincipalEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
@@ -76,7 +75,7 @@ func checkServicePrincipalEntitlementExists(expectedServicePrincipalId string) r
 func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-	//verify that every users referenced in the state does not exist in AzDO
+	// verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_service_principal_entitlement" {
 			continue
@@ -90,7 +89,6 @@ func checkServicePrincipalEntitlementDestroyed(s *terraform.State) error {
 		servicePrincipalEntitlement, err := clients.MemberEntitleManagementClient.GetServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.GetServicePrincipalEntitlementArgs{
 			ServicePrincipalId: &id,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return nil

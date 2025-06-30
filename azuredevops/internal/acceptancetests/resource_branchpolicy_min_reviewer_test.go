@@ -110,6 +110,7 @@ func TestAccBranchPolicyMinReviewers_resetAllVote(t *testing.T) {
 		},
 	})
 }
+
 func TestAccBranchPolicyMinReviewers_requiresImportError(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	node := "azuredevops_branch_policy_min_reviewers.test"

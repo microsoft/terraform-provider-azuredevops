@@ -22,7 +22,6 @@ func CheckProjectExists(expectedName string) resource.TestCheckFunc {
 		clients := GetProvider().Meta().(*client.AggregatedClient)
 		id := resource.Primary.ID
 		project, err := readProject(clients, id)
-
 		if err != nil {
 			return fmt.Errorf("Project with ID=%s cannot be found!. Error=%v", id, err)
 		}

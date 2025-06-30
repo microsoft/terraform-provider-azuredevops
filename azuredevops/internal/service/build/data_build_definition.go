@@ -309,7 +309,8 @@ func DataBuildDefinition() *schema.Resource {
 												},
 												"continue_on_error": {
 													Type:     schema.TypeBool,
-													Computed: true},
+													Computed: true,
+												},
 											},
 										},
 									},
@@ -428,7 +429,7 @@ func getBuildDefinitionsByNameAndProject(clients *client.AggregatedClient, name 
 	if err != nil {
 		return nil, err
 	}
-	var buildDefinitions []build.BuildDefinition
+	buildDefinitions := make([]build.BuildDefinition, 0, len(builds.Value))
 	for _, buildDefinition := range builds.Value {
 		buildDetails, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
 			Project:      &projectID,

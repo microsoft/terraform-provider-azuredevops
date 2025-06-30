@@ -78,11 +78,7 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 
 func resourceServiceEndpointGitHubEnterpriseCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHubEnterprise(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGitHubEnterprise(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -116,12 +112,8 @@ func resourceServiceEndpointGitHubEnterpriseRead(d *schema.ResourceData, m inter
 
 func resourceServiceEndpointGitHubEnterpriseUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHubEnterprise(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointGitHubEnterprise(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -130,11 +122,7 @@ func resourceServiceEndpointGitHubEnterpriseUpdate(d *schema.ResourceData, m int
 
 func resourceServiceEndpointGitHubEnterpriseDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointGitHubEnterprise(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointGitHubEnterprise(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
@@ -145,7 +133,7 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 			if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 				authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
-				authPersonal := flattenAuthPersonGithubEnterprise(d, authPersonalSet)
+				authPersonal := flattenAuthPersonGithubEnterprise(authPersonalSet)
 				if authPersonal != nil {
 					d.Set("auth_personal", authPersonal)
 				}
@@ -165,7 +153,7 @@ func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpo
 	}
 }
 
-func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
+func flattenAuthPersonGithubEnterprise(authPersonalSet []interface{}) []interface{} {
 	if len(authPersonalSet) == 1 {
 		if authPersonal, ok := authPersonalSet[0].(map[string]interface{}); ok {
 			return []interface{}{authPersonal}
@@ -175,7 +163,7 @@ func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet [
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 
 	serviceEndpoint.Type = converter.String("githubenterprise")
@@ -201,12 +189,12 @@ func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendp
 		Scheme:     &scheme,
 	}
 
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func expandAuthPersonalSetGithubEnterprise(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
-	val := d.List()[0].(map[string]interface{}) //auth_personal only have one map configure structure
+	val := d.List()[0].(map[string]interface{}) // auth_personal only have one map configure structure
 
 	authPerson["apitoken"] = val["personal_access_token"].(string)
 	return authPerson

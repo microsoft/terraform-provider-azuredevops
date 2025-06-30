@@ -261,7 +261,6 @@ func addMembers(clients *client.AggregatedClient, memberships *[]graph.GraphMemb
 				SubjectDescriptor:   membership.MemberDescriptor,
 				ContainerDescriptor: membership.ContainerDescriptor,
 			})
-
 			if err != nil {
 				return fmt.Errorf("Error adding member %s to group %s: %+v",
 					converter.ToString(membership.MemberDescriptor, "nil"),
@@ -281,7 +280,6 @@ func removeMembers(clients *client.AggregatedClient, memberships *[]graph.GraphM
 				SubjectDescriptor:   membership.MemberDescriptor,
 				ContainerDescriptor: membership.ContainerDescriptor,
 			})
-
 			if err != nil {
 				return fmt.Errorf("Error removing member from group: %+v", err)
 			}

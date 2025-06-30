@@ -154,7 +154,6 @@ resource "azuredevops_serviceendpoint_nuget" "test" {
   feed_url              = "https://api.nuget.org/v3/index.json"
   description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
-
 }
 
 func hclSvcEndpointNuGetResourcePersonalAccessToken(projectName string, serviceEndpointName string) string {
@@ -174,7 +173,6 @@ resource "azuredevops_serviceendpoint_nuget" "test" {
   feed_url              = "https://api.nuget.org/v3/index.json"
   description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
-
 }
 
 func hclSvcEndpointNuGetResourceUnamePwd(projectName string, serviceEndpointName string) string {
@@ -195,7 +193,6 @@ resource "azuredevops_serviceendpoint_nuget" "test" {
   feed_url              = "https://api.nuget.org/v3/index.json"
   description           = "%[2]s-description"
 }`, projectName, serviceEndpointName)
-
 }
 
 func hclSvcEndpointNugGetResourceRequiresImport(projectName string, serviceEndpointName string) string {

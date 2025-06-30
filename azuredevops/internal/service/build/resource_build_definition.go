@@ -553,7 +553,6 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 		Definition: buildDefinition,
 		Project:    &projectID,
 	})
-
 	if err != nil {
 		return diag.Errorf(" Creating Build Definition: %+v", err)
 	}
@@ -582,7 +581,6 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 						},
 					},
 				})
-
 				if err != nil {
 					diags = append(diags, diag.Diagnostic{
 						Severity: diag.Warning,
@@ -607,7 +605,6 @@ func resourceBuildDefinitionCreate(ctx context.Context, d *schema.ResourceData, 
 func resourceBuildDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	projectID, buildDefinitionID, err := tfhelper.ParseProjectIDAndResourceID(d)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -616,7 +613,6 @@ func resourceBuildDefinitionRead(ctx context.Context, d *schema.ResourceData, m 
 		Project:      &projectID,
 		DefinitionId: &buildDefinitionID,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -643,7 +639,6 @@ func resourceBuildDefinitionUpdate(ctx context.Context, d *schema.ResourceData, 
 		Project:      &projectID,
 		DefinitionId: buildDefinition.Id,
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -832,14 +827,14 @@ func flattenBuildVariables(d *schema.ResourceData, buildDefinition *build.BuildD
 			bdVariableAllowOverride: converter.ToBool(varVal.AllowOverride, false),
 		}
 
-		//read secret variable from state if exist
+		// read secret variable from state if exist
 		if isSecret {
 			if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, bdVariable, bdVariableName, varName); stateVal != nil {
 				variable = stateVal
 			}
 		}
 		variables[index] = variable
-		index = index + 1
+		index++
 	}
 
 	return variables
@@ -1038,16 +1033,14 @@ func flattenTriggers(m *[]interface{}) map[build.DefinitionTriggerType][]interfa
 			if val, ok := trigger["settingsSourceType"]; ok {
 				isYaml = int(val.(float64)) == 2
 			}
-			buildTriggers[build.DefinitionTriggerTypeValues.ContinuousIntegration] =
-				[]interface{}{flattenBuildDefinitionContinuousIntegrationTrigger(trigger, isYaml)}
+			buildTriggers[build.DefinitionTriggerTypeValues.ContinuousIntegration] = []interface{}{flattenBuildDefinitionContinuousIntegrationTrigger(trigger, isYaml)}
 		}
 		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.PullRequest)) {
 			isYaml := false
 			if val, ok := trigger["settingsSourceType"]; ok {
 				isYaml = int(val.(float64)) == 2
 			}
-			buildTriggers[build.DefinitionTriggerTypeValues.PullRequest] =
-				[]interface{}{flattenBuildDefinitionPullRequestTrigger(trigger, isYaml)}
+			buildTriggers[build.DefinitionTriggerTypeValues.PullRequest] = []interface{}{flattenBuildDefinitionPullRequestTrigger(trigger, isYaml)}
 		}
 		if strings.EqualFold(triggerType, string(build.DefinitionTriggerTypeValues.Schedule)) {
 			buildTriggers[build.DefinitionTriggerTypeValues.Schedule] = flattenBuildDefinitionScheduleTrigger(trigger)
@@ -1105,6 +1098,7 @@ func expandBuildDefinitionFork(d map[string]interface{}) map[string]interface{} 
 		"enabled":      d["enabled"].(bool),
 	}
 }
+
 func expandBuildDefinitionForkList(d []interface{}) []map[string]interface{} {
 	vs := make([]map[string]interface{}, 0, len(d))
 	for _, v := range d {
@@ -1114,6 +1108,7 @@ func expandBuildDefinitionForkList(d []interface{}) []map[string]interface{} {
 	}
 	return vs
 }
+
 func expandBuildDefinitionForkListFirstOrNil(d []interface{}) map[string]interface{} {
 	d2 := expandBuildDefinitionForkList(d)
 	if len(d2) != 1 {
@@ -1129,6 +1124,7 @@ func expandBuildDefinitionManualPullRequestTrigger(d map[string]interface{}) map
 		"autoCancel":    d["auto_cancel"].(bool),
 	}
 }
+
 func expandBuildDefinitionManualPullRequestTriggerList(d []interface{}) []map[string]interface{} {
 	vs := make([]map[string]interface{}, 0, len(d))
 	for _, v := range d {
@@ -1138,6 +1134,7 @@ func expandBuildDefinitionManualPullRequestTriggerList(d []interface{}) []map[st
 	}
 	return vs
 }
+
 func expandBuildDefinitionManualPullRequestTriggerListFirstOrNil(d []interface{}) map[string]interface{} {
 	d2 := expandBuildDefinitionManualPullRequestTriggerList(d)
 	if len(d2) != 1 {
@@ -1156,6 +1153,7 @@ func expandBuildDefinitionManualContinuousIntegrationTrigger(d map[string]interf
 		"pollingInterval":              d["polling_interval"].(int),
 	}
 }
+
 func expandBuildDefinitionManualContinuousIntegrationTriggerList(d []interface{}) []map[string]interface{} {
 	vs := make([]map[string]interface{}, 0, len(d))
 	for _, v := range d {
@@ -1165,6 +1163,7 @@ func expandBuildDefinitionManualContinuousIntegrationTriggerList(d []interface{}
 	}
 	return vs
 }
+
 func expandBuildDefinitionManualContinuousIntegrationTriggerListFirstOrNil(d []interface{}) map[string]interface{} {
 	d2 := expandBuildDefinitionManualContinuousIntegrationTriggerList(d)
 	if len(d2) != 1 {
@@ -1241,6 +1240,7 @@ func expandBuildDefinitionTrigger(d map[string]interface{}, t build.DefinitionTr
 	}
 	return nil, nil
 }
+
 func expandBuildDefinitionTriggerList(d []interface{}, t build.DefinitionTriggerType, m interface{}, projectID string) ([]interface{}, error) {
 	vs := make([]interface{}, 0, len(d))
 	for _, v := range d {
@@ -1310,7 +1310,7 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 		return &[]model.PipelineJob{}, nil
 	}
 
-	var result []model.PipelineJob
+	result := make([]model.PipelineJob, 0, len(input))
 	for _, jobConfig := range input {
 		jobMap := jobConfig.(map[string]interface{})
 		job := model.PipelineJob{
@@ -1367,11 +1367,11 @@ func expandBuildDefinitionJobs(input []interface{}) (*[]model.PipelineJob, error
 			}
 
 			// TODO
-			//if jobType == 2 { // Agentless Job
+			// if jobType == 2 { // Agentless Job
 			//	if v, ok := executionOptionsMap["max_concurrency"]; ok && v.(int) > 0 {
 			//		return nil, fmt.Errorf("`max_concurrency` must not be set when job is `AgentlessJob`")
 			//	}
-			//}
+			// }
 
 			// AgentlessJob(2)
 			if jobType == 2 {
@@ -1465,6 +1465,8 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		}
 	}
 
+	var buildTriggers []any
+
 	ciTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
 		build.DefinitionTriggerTypeValues.ContinuousIntegration,
@@ -1474,6 +1476,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 	if err != nil {
 		return nil, "", err
 	}
+	buildTriggers = append(buildTriggers, ciTriggers...)
 
 	pullRequestTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("pull_request_trigger").([]interface{}),
@@ -1484,8 +1487,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 	if err != nil {
 		return nil, "", err
 	}
-
-	buildTriggers := append(ciTriggers, pullRequestTriggers...)
+	buildTriggers = append(buildTriggers, pullRequestTriggers...)
 
 	buildCompletionTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("build_completion_trigger").([]interface{}),
@@ -1581,7 +1583,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		}
 
 		agentSpecification := d.Get("agent_specification").(string)
-		if len(agentSpecification) <= 0 {
+		if len(agentSpecification) == 0 {
 			return nil, "", fmt.Errorf("Expanding jobs: `agent_specification` must be set when `repo_type` is `Git`")
 		}
 

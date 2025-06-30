@@ -63,7 +63,6 @@ func resourceProjectTagsCreate(ctx context.Context, d *schema.ResourceData, m in
 		PatchDocument: tags,
 		ProjectId:     &projectID,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Creating Project Tags. Project ID: %s, Error: %+v", projectID.String(), err))
 	}
@@ -84,7 +83,6 @@ func resourceProjectTagsRead(ctx context.Context, d *schema.ResourceData, m inte
 		ProjectId: &projectID,
 		Keys:      &[]string{"Microsoft.TeamFoundation.Project.Tag.*"},
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -145,7 +143,6 @@ func resourceProjectTagsUpdate(ctx context.Context, d *schema.ResourceData, m in
 		PatchDocument: allTagsOp,
 		ProjectId:     &projectId,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Updating Project Tags. Project ID: %s, Error: %+v", projectId.String(), err))
 	}
@@ -170,7 +167,6 @@ func resourceProjectTagsDelete(ctx context.Context, d *schema.ResourceData, m in
 		PatchDocument: tagsRemoveOp,
 		ProjectId:     &projectId,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Deleting Project Tags. ProjectID: %s, Error: %+v", projectId, err))
 	}

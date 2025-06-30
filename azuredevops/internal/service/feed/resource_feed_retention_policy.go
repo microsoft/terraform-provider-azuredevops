@@ -91,7 +91,6 @@ func resourceFeedRetentionPolicyCreate(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Creating Feed Retention Policy. FeedId: %s, Error: %+v", feedId, err))
 	}
@@ -109,7 +108,6 @@ func resourceFeedRetentionPolicyRead(ctx context.Context, d *schema.ResourceData
 		FeedId:  &feedID,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -145,7 +143,6 @@ func resourceFeedRetentionPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Updating Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
 	}
@@ -161,7 +158,6 @@ func resourceFeedRetentionPolicyDelete(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Deleting Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
 	}

@@ -126,24 +126,24 @@ func resourceGitRepositoryBranchCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("Ref %q not found, closest match is %q.", filter, *gotRef.Name))
 		}
 
-		if gotRef.PeeledObjectId != nil {
+		switch {
+		case gotRef.PeeledObjectId != nil:
 			newObjectId = *gotRef.PeeledObjectId
-		} else if gotRef.ObjectId != nil {
+		case gotRef.ObjectId != nil:
 			newObjectId = *gotRef.ObjectId
-		} else {
+		default:
 			return diag.FromErr(fmt.Errorf("GetRefs response doesn't have a valid commit id."))
 		}
 	}
 
-	_, err := updateRefs(clients, git.UpdateRefsArgs{
+	if err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
 			Name:        converter.String(REF_BRANCH_PREFIX + branchName),
 			NewObjectId: &newObjectId,
 			OldObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
 		RepositoryId: converter.String(repoId),
-	})
-	if err != nil {
+	}); err != nil {
 		return diag.FromErr(fmt.Errorf("Creating branch %q: %+v", branchName, err))
 	}
 
@@ -167,7 +167,6 @@ func resourceGitRepositoryBranchRead(ctx context.Context, d *schema.ResourceData
 		RepositoryId: &repoId,
 		Name:         &branchName,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -211,34 +210,33 @@ func resourceGitRepositoryBranchDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("Getting latest commit of %q: %w", branchName, err))
 	}
 
-	_, err = updateRefs(clients, git.UpdateRefsArgs{
+	if err := updateRefs(clients, git.UpdateRefsArgs{
 		RefUpdates: &[]git.GitRefUpdate{{
 			Name:        converter.String(REF_BRANCH_PREFIX + branchName),
 			OldObjectId: gotBranch.Commit.CommitId,
 			NewObjectId: converter.String("0000000000000000000000000000000000000000"),
 		}},
 		RepositoryId: converter.String(repoId),
-	})
-	if err != nil {
+	}); err != nil {
 		return diag.FromErr(fmt.Errorf("Deleting branch %q: %w", branchName, err))
 	}
 
 	return nil
 }
 
-func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) (*[]git.GitRefUpdateResult, error) {
+func updateRefs(clients *client.AggregatedClient, args git.UpdateRefsArgs) error {
 	updateRefResults, err := clients.GitReposClient.UpdateRefs(clients.Ctx, args)
 	if err != nil {
-		return nil, fmt.Errorf("Updating refs: %w", err)
+		return fmt.Errorf("Updating refs: %w", err)
 	}
 
 	for _, refUpdate := range *updateRefResults {
 		if !*refUpdate.Success {
-			return nil, fmt.Errorf("Update refs failed. Update Status: %s", *refUpdate.UpdateStatus)
+			return fmt.Errorf("Update refs failed. Update Status: %s", *refUpdate.UpdateStatus)
 		}
 	}
 
-	return updateRefResults, nil
+	return nil
 }
 
 func withPrefix(prefix, name string) string {

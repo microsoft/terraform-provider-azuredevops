@@ -21,12 +21,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var FeedId = uuid.New().String()
-var ProjectId = uuid.New().String()
-var IdentityDescriptor = "some-identity-descriptor"
-var IdentityLegacyDescriptor = "some-legacy-identity-descriptor"
-var IdentityId = uuid.New()
-var Role = "reader"
+var (
+	FeedId                   = uuid.New().String()
+	ProjectId                = uuid.New().String()
+	IdentityDescriptor       = "some-identity-descriptor"
+	IdentityLegacyDescriptor = "some-legacy-identity-descriptor"
+	IdentityId               = uuid.New()
+	Role                     = "reader"
+)
 
 // verifies that if an error is produced on create, the error is not swallowed
 

@@ -198,7 +198,8 @@ func TestAccGitRepository_importGitRepository(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfRepoNode, "web_url"),
 					resource.TestCheckResourceAttr(tfRepoNode, "initialization.#", "1"),
 					checkGitRepoExists(gitRepoName),
-				)},
+				),
+			},
 		},
 	})
 }

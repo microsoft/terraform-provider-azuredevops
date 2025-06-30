@@ -130,7 +130,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	d.Set("project_id", converter.ToString(projectID, ""))
 	d.Set("enabled", converter.ToBool(policyConfig.IsEnabled, true))
 	d.Set("blocking", converter.ToBool(policyConfig.IsBlocking, true))
-	settings, err := flattenSettings(d, policyConfig)
+	settings, err := flattenSettings(policyConfig)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	return nil
 }
 
-func flattenSettings(d *schema.ResourceData, policyConfig *policy.PolicyConfiguration) ([]interface{}, error) {
+func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, error) {
 	policySettings := commonPolicySettings{}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
 	if err != nil {
@@ -255,7 +255,6 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:
 			Configuration: policyConfig,
 			Project:       projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("creating policy in Azure DevOps: %+v", err)
 		}
@@ -271,7 +270,6 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:stat
 		clients := m.(*client.AggregatedClient)
 		projectID := d.Get("project_id").(string)
 		policyID, err := strconv.Atoi(d.Id())
-
 		if err != nil {
 			return fmt.Errorf("converting policy ID to an integer: (%+v)", err)
 		}
@@ -308,7 +306,6 @@ func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:
 			Configuration:   policyConfig,
 			Project:         projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("updating policy in Azure DevOps: %+v", err)
 		}
@@ -330,7 +327,6 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 			ConfigurationId: policyConfig.Id,
 			Project:         projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("deleting policy in Azure DevOps: %+v", err)
 		}

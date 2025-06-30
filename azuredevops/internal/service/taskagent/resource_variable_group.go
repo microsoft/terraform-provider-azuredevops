@@ -166,7 +166,6 @@ func resourceVariableGroupCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = flattenVariableGroup(d, addedVariableGroup, projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
@@ -211,12 +210,11 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = flattenVariableGroup(d, variableGroup, &projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
 
-	//Read the Authorization Resource for get allow access property
+	// Read the Authorization Resource for get allow access property
 	resourceRefType := "variablegroup"
 	varGroupID := strconv.Itoa(variableGroupID)
 
@@ -228,7 +226,6 @@ func resourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 			Id:      &varGroupID,
 		},
 	)
-
 	if err != nil {
 		return fmt.Errorf("Looking up project resources given ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
@@ -250,13 +247,12 @@ func resourceVariableGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
 
-	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID, projectID)
+	updatedVariableGroup, err := updateVariableGroup(clients, variableGroupParams, &variableGroupID)
 	if err != nil {
 		return fmt.Errorf("Updating variable group in Azure DevOps: %+v", err)
 	}
 
 	err = flattenVariableGroup(d, updatedVariableGroup, projectID)
-
 	if err != nil {
 		return fmt.Errorf("Flattening variable group: %+v", err)
 	}
@@ -279,13 +275,13 @@ func resourceVariableGroupDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Parsing the variable group ID from the Terraform resource data: %+v", err)
 	}
-	//delete the definition resource (allow access)
+	// delete the definition resource (allow access)
 	varGroupID := strconv.Itoa(variableGroupID)
 	_, err = deleteDefinitionResourceAuth(clients, &varGroupID, &projectID)
 	if err != nil {
 		return fmt.Errorf("Deleting the allow access definitionResource for variable group ID (%+v) and project ID (%+v): %+v", variableGroupID, projectID, err)
 	}
-	//delete the variable group
+	// delete the variable group
 	return deleteVariableGroup(clients, &projectID, &variableGroupID)
 }
 
@@ -332,7 +328,7 @@ func createVariableGroup(clients *client.AggregatedClient, variableGroupParams *
 }
 
 // Make the Azure DevOps API call to update the variable group
-func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int, project *string) (*taskagent.VariableGroup, error) {
+func updateVariableGroup(clients *client.AggregatedClient, parameters *taskagent.VariableGroupParameters, variableGroupID *int) (*taskagent.VariableGroup, error) {
 	updatedVariableGroup, err := clients.TaskAgentClient.UpdateVariableGroup(
 		clients.Ctx,
 		taskagent.UpdateVariableGroupArgs{
@@ -461,7 +457,6 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 	d.Set("project_id", projectID)
 
 	variables, err := flattenVariables(d, variableGroup)
-
 	if err != nil {
 		return err
 	}
@@ -472,7 +467,6 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 
 	if isKeyVaultVariableGroupType(variableGroup.Type) {
 		keyVault, err := flattenKeyVault(d, variableGroup)
-
 		if err != nil {
 			return err
 		}
@@ -513,7 +507,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 			return nil, err
 		}
 
-		index = index + 1
+		index++
 	}
 
 	return variables, nil
@@ -548,13 +542,13 @@ func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName stri
 	}
 
 	isSecret := converter.ToBool(variable.IsSecret, false)
-	var val = map[string]interface{}{
+	val := map[string]interface{}{
 		"name":      varName,
 		"value":     converter.ToString(variable.Value, ""),
 		"is_secret": isSecret,
 	}
 
-	//read secret variables from state if exist
+	// read secret variables from state if exist
 	if isSecret {
 		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, "variable", "name", varName); stateVal != nil {
 			val = stateVal
@@ -648,7 +642,7 @@ func deleteDefinitionResourceAuth(clients *client.AggregatedClient, variableGrou
 // Convert AzDO data structure allow_access to internal Terraform data structure
 func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.DefinitionResourceReference) {
 	variableGroupID := d.Id()
-	var allowAccess = false
+	allowAccess := false
 	if definitionResource != nil {
 		for _, authResource := range *definitionResource {
 			if variableGroupID == *authResource.Id {
@@ -659,8 +653,9 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set("allow_access", allowAccess)
 }
 
-func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, error error) {
-	var token, loop, azkvSecretsRaw = "", 0, &KeyVaultSecretResult{}
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, err error) {
+	var azkvSecretsRaw *KeyVaultSecretResult
+	token, loop := "", 0
 	kvSecrets = make(map[string]interface{})
 	invalidSecrets = make([]string, 0)
 
@@ -785,6 +780,6 @@ func getSkipToken(link *string) (string, error) {
 	if len(token) > 0 {
 		return token[0], nil
 	}
-	//if skip token not found, just return "" as the skip token
+	// if skip token not found, just return "" as the skip token
 	return "", nil
 }

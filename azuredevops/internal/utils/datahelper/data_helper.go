@@ -8,7 +8,7 @@ import (
 
 // GetAttributeValues converts an array of items into an array of one of their properties
 func GetAttributeValues(items []interface{}, attributeName string) ([]string, error) {
-	var result []string
+	result := make([]string, 0, len(items))
 	for _, element := range items {
 		result = append(result, element.(map[string]interface{})[attributeName].(string))
 	}

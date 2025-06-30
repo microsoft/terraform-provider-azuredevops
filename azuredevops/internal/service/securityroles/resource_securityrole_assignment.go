@@ -69,7 +69,6 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 		IdentityId: &identityId,
 		RoleName:   &roleName,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -146,7 +145,6 @@ func resourceSecurityRoleAssignmentDelete(d *schema.ResourceData, m interface{})
 		ResourceId: &resourceId,
 		IdentityId: &identityId,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -161,7 +159,6 @@ func getSecurityRoleAssignment(clients client.AggregatedClient, scope, roleName,
 			ResourceId: &resourceId,
 			IdentityId: &identityId,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return "", "syncing", nil

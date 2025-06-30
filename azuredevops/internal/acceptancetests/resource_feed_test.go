@@ -162,7 +162,6 @@ func CheckFeedExist(expectedName string) resource.TestCheckFunc {
 			FeedId:  &id,
 			Project: &projectID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("Feed with ID=%s cannot be found!. Error=%v", id, err)
 		}

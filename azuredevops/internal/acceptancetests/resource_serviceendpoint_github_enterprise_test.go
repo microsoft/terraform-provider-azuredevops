@@ -94,6 +94,7 @@ func TestAccServiceEndpointGitHubEnterprise_oauthBasic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccServiceEndpointGitHubEnterprise_oauthUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()

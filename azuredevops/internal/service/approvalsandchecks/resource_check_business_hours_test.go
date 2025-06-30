@@ -20,9 +20,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var CheckBusinessHoursID = 123456789
-var CheckBusinessHoursProjectID = uuid.New().String()
-var CheckBusinessHoursTestProjectID = &CheckBusinessHoursProjectID
+var (
+	CheckBusinessHoursID            = 123456789
+	CheckBusinessHoursProjectID     = uuid.New().String()
+	CheckBusinessHoursTestProjectID = &CheckBusinessHoursProjectID
+)
 
 var CheckBusinessHoursInputs = map[string]interface{}{
 	"businessDays": "Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday",

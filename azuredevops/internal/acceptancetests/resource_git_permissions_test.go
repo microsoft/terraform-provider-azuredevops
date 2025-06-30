@@ -117,7 +117,6 @@ func CheckGitPermissionProjectExists(expectedName string) resource.TestCheckFunc
 			IncludeCapabilities: converter.Bool(true),
 			IncludeHistory:      converter.Bool(false),
 		})
-
 		if err != nil {
 			return fmt.Errorf("Project with ID=%s cannot be found!. Error=%v", id, err)
 		}

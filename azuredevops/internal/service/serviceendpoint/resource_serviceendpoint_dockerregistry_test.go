@@ -19,11 +19,13 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var dockerRegistryTestServiceEndpointID = uuid.New()
-var dockerRegistryRandomServiceEndpointProjectID = uuid.New()
-var dockerRegistryTestServiceEndpointProjectID = &dockerRegistryRandomServiceEndpointProjectID
+var (
+	dockerRegistryTestServiceEndpointID          = uuid.New()
+	dockerRegistryRandomServiceEndpointProjectID = uuid.New()
+	dockerRegistryTestServiceEndpointProjectID   = &dockerRegistryRandomServiceEndpointProjectID
+)
 
-var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ //todo change
+var dockerRegistryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{ // todo change
 	Authorization: &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
 			"username": "DH_TEST_username",

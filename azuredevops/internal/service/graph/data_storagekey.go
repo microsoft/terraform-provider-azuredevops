@@ -40,7 +40,6 @@ func dataSourceDataStorageKeyRead(ctx context.Context, d *schema.ResourceData, m
 	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
 		SubjectDescriptor: converter.String(d.Get("descriptor").(string)),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return diag.Errorf(" The specified descriptor %s does not exist.", storageKey)

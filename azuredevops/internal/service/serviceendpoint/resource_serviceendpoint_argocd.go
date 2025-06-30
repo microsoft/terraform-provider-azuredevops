@@ -122,6 +122,7 @@ func resourceServiceEndpointArgoCDRead(d *schema.ResourceData, m interface{}) er
 	flattenServiceEndpointArgoCD(d, serviceEndpoint)
 	return nil
 }
+
 func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
@@ -130,12 +131,12 @@ func resourceServiceEndpointArgoCDUpdate(d *schema.ResourceData, m interface{}) 
 	}
 
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
 		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
 	return resourceServiceEndpointArgoCDRead(d, m)
 }
+
 func resourceServiceEndpointArgoCDDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArgoCD(d)
@@ -188,21 +189,22 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
 	doBaseFlattening(d, serviceEndpoint)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+	switch scheme := *serviceEndpoint.Authorization.Scheme; strings.ToLower(scheme) {
+	case "usernamepassword":
 		if _, ok := d.GetOk("authentication_basic"); !ok {
 			auth := make(map[string]interface{})
 			auth["username"] = ""
 			auth["password"] = ""
 			d.Set("authentication_basic", []interface{}{auth})
 		}
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	case "token":
 		if _, ok := d.GetOk("authentication_token"); !ok {
 			auth := make(map[string]interface{})
 			auth["token"] = ""
 			d.Set("authentication_token", []interface{}{auth})
 		}
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
+	default:
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", scheme))
 	}
 
 	d.Set("url", *serviceEndpoint.Url)

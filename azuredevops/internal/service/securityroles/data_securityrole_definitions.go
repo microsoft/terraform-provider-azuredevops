@@ -88,11 +88,7 @@ func dataSecurityRoleDefinitionsRead(d *schema.ResourceData, m interface{}) erro
 		return fmt.Errorf("no role definition found at scope: %s", scope)
 	}
 
-	fdefs, err := flattenSRD(defs)
-	if err != nil {
-		return fmt.Errorf("flattening security role definitions. Error: %w", err)
-	}
-
+	fdefs := flattenSRD(defs)
 	d.SetId("secroledefs-" + uuid.New().String())
 	d.Set("definitions", fdefs)
 	return nil
@@ -102,9 +98,9 @@ func getSRDHash(v interface{}) int {
 	return tfhelper.HashString(v.(map[string]interface{})["identifier"].(string))
 }
 
-func flattenSRD(srds *[]securityroles.SecurityRoleDefinition) ([]interface{}, error) {
+func flattenSRD(srds *[]securityroles.SecurityRoleDefinition) []interface{} {
 	if srds == nil {
-		return []interface{}{}, nil
+		return []interface{}{}
 	}
 
 	results := make([]interface{}, 0)
@@ -137,5 +133,5 @@ func flattenSRD(srds *[]securityroles.SecurityRoleDefinition) ([]interface{}, er
 
 		results = append(results, s)
 	}
-	return results, nil
+	return results
 }

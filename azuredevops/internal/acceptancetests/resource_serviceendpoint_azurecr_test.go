@@ -78,7 +78,8 @@ func TestAccServiceEndpointAzureCR_spn_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 				),
-			}, {
+			},
+			{
 				ResourceName:      tfSvcEpNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportState:       true,
@@ -94,7 +95,8 @@ func TestAccServiceEndpointAzureCR_spn_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 				),
-			}, {
+			},
+			{
 				ResourceName:      tfSvcEpNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportState:       true,
@@ -115,7 +117,7 @@ func TestAccServiceEndpointAzureCR_workLoadIdentity_basic(t *testing.T) {
 
 	resourceType := "azuredevops_serviceendpoint_azurecr"
 	tfSvcEpNode := resourceType + ".test"
-	//fmt.Println(hclAzureCRWorkLoadIdentity(projectName, serviceEndpointNameFirst))
+	// fmt.Println(hclAzureCRWorkLoadIdentity(projectName, serviceEndpointNameFirst))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testutils.PreCheck(t, nil)
@@ -172,7 +174,8 @@ func TestAccServiceEndpointAzureCR_workLoadIdentity_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
 				),
-			}, {
+			},
+			{
 				ResourceName:      tfSvcEpNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportState:       true,
@@ -188,7 +191,8 @@ func TestAccServiceEndpointAzureCR_workLoadIdentity_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 				),
-			}, {
+			},
+			{
 				ResourceName:      tfSvcEpNode,
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportState:       true,

@@ -77,10 +77,7 @@ func dataSourceIdentityGroupsRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// With project groups flatten results
-	flattenedGroups, err := flattenIdentityGroups(identityGroups)
-	if err != nil {
-		return fmt.Errorf("Flattening groups. Error: %w", err)
-	}
+	flattenedGroups := flattenIdentityGroups(identityGroups)
 
 	// Set id and group list for groups data resource
 	d.SetId("groups-" + uuid.New().String())
@@ -100,9 +97,9 @@ func getIdentityGroupsWithProjectID(clients *client.AggregatedClient, projectID 
 }
 
 // flatten function
-func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
+func flattenIdentityGroups(groups *[]identity.Identity) []interface{} {
 	if groups == nil {
-		return []interface{}{}, nil
+		return []interface{}{}
 	}
 	results := make([]interface{}, len(*groups))
 	for i, group := range *groups {
@@ -127,7 +124,7 @@ func flattenIdentityGroups(groups *[]identity.Identity) ([]interface{}, error) {
 
 		results[i] = groupMap
 	}
-	return results, nil
+	return results
 }
 
 func getIdentityGroupHash(v interface{}) int {

@@ -163,7 +163,7 @@ func updateProjectFeatureStates(ctx context.Context, fc featuremanagement.Client
 		if !ok {
 			return fmt.Errorf("unknown feature: %s, available features are: `boards`, `repositories`,`pipelines`,`testplans`,`artifacts`", k)
 		}
-		//TODO handle response state
+		// TODO handle response state
 		_, err := fc.SetFeatureStateForScope(ctx, featuremanagement.SetFeatureStateForScopeArgs{
 			Feature: &featuremanagement.ContributedFeatureState{
 				FeatureId: converter.String(f),
@@ -200,7 +200,6 @@ func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 			},
 		},
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("Get project features error, project: %s, error: %+v", projectID, err)
 	}
@@ -214,7 +213,7 @@ func getProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, p
 	return &featureStates, nil
 }
 
-func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string]interface{}, error) {
+func getDefaultProjectFeatureStates(states *map[string]interface{}) *map[string]interface{} {
 	featureStates := map[string]interface{}{}
 	for k := range projectFeatureNameMapReverse {
 		if states != nil {
@@ -224,7 +223,7 @@ func getDefaultProjectFeatureStates(states *map[string]interface{}) (*map[string
 		}
 		featureStates[string(k)] = string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled)
 	}
-	return &featureStates, nil
+	return &featureStates
 }
 
 func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
@@ -233,7 +232,7 @@ func validateProjectFeatures(i interface{}, k string) ([]string, []error) {
 
 	m := i.(map[string]interface{})
 
-	if len(m) <= 0 {
+	if len(m) == 0 {
 		errors = append(errors, fmt.Errorf("Feature map must contain at least on entry"))
 	}
 	for feature, state := range m {
