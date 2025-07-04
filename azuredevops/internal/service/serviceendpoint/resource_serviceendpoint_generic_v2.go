@@ -3,12 +3,14 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/forminput"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -16,6 +18,21 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
+
+// Cache to store validated service endpoint types
+var (
+	serviceEndpointTypesCache = make(map[string]bool)
+	serviceEndpointTypesList  = make([]string, 0)
+	serviceEndpointTypesMutex sync.RWMutex
+)
+
+// EndpointConfig represents the configuration for a service endpoint
+type EndpointConfig struct {
+	ServiceEndpointType string
+	AuthType            string
+	AuthData            map[string]string
+	Data                map[string]string
+}
 
 // ResourceServiceEndpointGenericV2 schema and implementation for generic service endpoint resource
 func ResourceServiceEndpointGenericV2() *schema.Resource {
@@ -30,7 +47,8 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 			Update: schema.DefaultTimeout(2 * time.Minute),
 			Delete: schema.DefaultTimeout(2 * time.Minute),
 		},
-		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		Importer:      tfhelper.ImportProjectQualifiedResourceUUID(),
+		CustomizeDiff: customizeServiceEndpointGenericV2Diff,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -70,6 +88,7 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 						"scheme": {
 							Type:         schema.TypeString,
 							Required:     true,
+							ForceNew:     true,
 							ValidateFunc: validation.StringIsNotWhiteSpace,
 						},
 						"parameters": {
@@ -90,14 +109,146 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"authorization_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 
 	return r
+}
+
+func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) (map[string]forminput.InputDescriptor, error) {
+	var possibleAuthSchemes []string
+	var possibleAuthData = make(map[string]forminput.InputDescriptor)
+	correctAuthScheme := false
+
+	for _, authScheme := range *availableType.AuthenticationSchemes {
+		possibleAuthSchemes = append(possibleAuthSchemes, *authScheme.Scheme)
+		if *authScheme.Scheme == config.AuthType {
+			correctAuthScheme = true
+			for _, data := range *authScheme.InputDescriptors {
+				possibleAuthData[*data.Id] = data
+			}
+		}
+	}
+	if !correctAuthScheme {
+		return nil, fmt.Errorf("service endpoint type '%s' does not support authentication scheme '%s'. Supported schemes: %v",
+			*availableType.Name, config.AuthType, possibleAuthSchemes)
+	}
+	return possibleAuthData, nil
+}
+
+func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string) error {
+	// Check for unsupported fields
+	for key := range configFields {
+		if _, exists := possibleFields[key]; !exists {
+			return fmt.Errorf("service endpoint type '%s' does not support %s field '%s'. Supported fields: {%s}",
+				endpointType, fieldType, key, func() string {
+					fields := make([]string, 0, len(possibleFields))
+					for k := range possibleFields {
+						fields = append(fields, k)
+					}
+					return fmt.Sprintf("%s", fields)
+				}())
+		}
+	}
+	// Check for missing required fields
+	missingFields := make(map[string]string)
+	for key, value := range possibleFields {
+		if value.Validation != nil && value.Validation.IsRequired != nil && *value.Validation.IsRequired {
+			if _, exists := configFields[key]; !exists {
+				missingFields[key] = *value.Name
+			}
+		}
+	}
+	if len(missingFields) > 0 {
+		return fmt.Errorf("service endpoint type '%s' is missing required %s fields: {%s}", endpointType, fieldType, func() string {
+			fields := make([]string, 0, len(missingFields))
+			for k, v := range missingFields {
+				fields = append(fields, fmt.Sprintf("%s: %s", k, v))
+			}
+			return fmt.Sprintf("%s", fields)
+		}())
+	}
+	return nil
+}
+
+func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) error {
+	// Validate Data fields
+	possibleData := make(map[string]forminput.InputDescriptor)
+	for _, data := range *availableType.InputDescriptors {
+		possibleData[*data.Id] = data
+	}
+	if err := validateFields(config.Data, possibleData, "data", *availableType.Name); err != nil {
+		return err
+	}
+
+	// Validate AuthData fields
+	possibleAuthData, err := validateAuthScheme(availableType, config)
+	if err != nil {
+		return err
+	}
+	if err := validateFields(config.AuthData, possibleAuthData, "auth", *availableType.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
+func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
+	// Check cache first
+	serviceEndpointType := serviceEndpoint.ServiceEndpointType
+	serviceEndpointTypesMutex.RLock()
+	if _, found := serviceEndpointTypesCache[serviceEndpointType]; found {
+		serviceEndpointTypesMutex.RUnlock()
+		return nil // Type is cached
+	}
+	serviceEndpointTypesMutex.RUnlock()
+
+	// Get available service endpoint types from Azure DevOps
+	args := serviceendpoint.GetServiceEndpointTypesArgs{}
+
+	serviceEndpointTypes, err := clients.ServiceEndpointClient.GetServiceEndpointTypes(clients.Ctx, args)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve service endpoint types: %v", err)
+	}
+
+	if serviceEndpointTypes == nil {
+		return fmt.Errorf("no service endpoint types available")
+	}
+
+	// Update cache
+	serviceEndpointTypesMutex.Lock()
+	defer serviceEndpointTypesMutex.Unlock()
+
+	// Populate cache and check if the requested type exists
+	typeFound := false
+	for _, availableType := range *serviceEndpointTypes {
+		if availableType.Name != nil {
+			typeName := *availableType.Name
+			serviceEndpointTypesCache[typeName] = true
+			serviceEndpointTypesList = append(serviceEndpointTypesList, typeName)
+
+			if typeName == serviceEndpointType {
+				typeFound = true
+				if err := validateServiceEndpointType(&availableType, serviceEndpoint); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// Print available types for debugging
+	fmt.Println("Available service endpoint types:")
+	for _, typeName := range serviceEndpointTypesList {
+		fmt.Printf("- %s\n", typeName)
+	}
+
+	// Check if the requested type exists in the updated cache
+	if !typeFound {
+		return fmt.Errorf("service endpoint type '%s' is not available", serviceEndpointType)
+	}
+
+	return nil
 }
 
 func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -142,10 +293,6 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(serviceEndpoint.Id.String())
-	err = d.Set("authorization_type", authScheme)
-	if err != nil {
-		return nil
-	}
 
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
@@ -196,11 +343,33 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 
 	// Handle authorization
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
-		if err := d.Set("authorization_type", *serviceEndpoint.Authorization.Scheme); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_type: %v", err))
+		// Get current authorization block
+		authSet := d.Get("authorization").(*schema.Set)
+		if authSet.Len() > 0 {
+			authData := authSet.List()[0].(map[string]interface{})
+
+			// Update the scheme if it's changed
+			authScheme := *serviceEndpoint.Authorization.Scheme
+			if authData["scheme"] != authScheme {
+				// We need to recreate the authorization block with the updated scheme
+				newAuth := map[string]interface{}{
+					"scheme":     authScheme,
+					"parameters": authData["parameters"], // Keep existing parameters
+				}
+
+				// Convert to a set and set in state
+				newAuthSet := schema.NewSet(schema.HashResource(&schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"scheme":     {Type: schema.TypeString},
+						"parameters": {Type: schema.TypeMap},
+					},
+				}), []interface{}{newAuth})
+
+				if err := d.Set("authorization", newAuthSet); err != nil {
+					return diag.FromErr(fmt.Errorf("error setting authorization: %v", err))
+				}
+			}
 		}
-		// We don't update the authorization parameters as they may contain sensitive information
-		// that we don't get back from the API
 	}
 
 	// Handle data - copy non-sensitive values
@@ -341,11 +510,6 @@ func getAuthorizationDetails(d *schema.ResourceData) (string, map[string]string,
 }
 
 func createGenericV2ServiceEndpoint(ctx context.Context, clients *client.AggregatedClient, name, projectID, description, serviceEndpointType, serverURL, authScheme string, authParams map[string]string, data map[string]string) (*serviceendpoint.ServiceEndpoint, error) {
-	// Validate service endpoint type exists
-	if err := validateServiceEndpointType(ctx, clients, serviceEndpointType); err != nil {
-		return nil, err
-	}
-
 	// Generate the project reference
 	projectReference := serviceendpoint.ServiceEndpointProjectReference{
 		ProjectReference: &serviceendpoint.ProjectReference{
@@ -448,26 +612,81 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 	return nil
 }
 
-func validateServiceEndpointType(ctx context.Context, clients *client.AggregatedClient, serviceEndpointType string) error {
-	// Get available service endpoint types from Azure DevOps
-	args := serviceendpoint.GetServiceEndpointTypesArgs{}
+// customizeServiceEndpointGenericV2Diff validates the service endpoint configuration during the planning phase
+func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
 
-	serviceEndpointTypes, err := clients.ServiceEndpointClient.GetServiceEndpointTypes(ctx, args)
+	// Only validate on resource creation changes
+	if d.Id() != "" {
+		return nil
+	}
+
+	serviceEndpointType := d.Get("service_endpoint_type").(string)
+	authScheme, authParams, err := getAuthorizationDetailsFromDiff(d)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve service endpoint types: %v", err)
+		return fmt.Errorf("error retrieving authorization details: %v", err)
 	}
 
-	if serviceEndpointTypes == nil {
-		return fmt.Errorf("no service endpoint types available")
-	}
+	// Convert additional data to the required format
+	data := make(map[string]string)
+	if dataRaw := d.Get("data"); dataRaw != nil {
+		dataMap, ok := dataRaw.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("invalid data format")
+		}
 
-	// Check if the requested type exists
-	for _, availableType := range *serviceEndpointTypes {
-		if availableType.Name != nil && *availableType.Name == serviceEndpointType {
-			return nil
+		for k, v := range dataMap {
+			strVal, ok := v.(string)
+			if !ok {
+				return fmt.Errorf("data value for key %q is not a string", k)
+			}
+			data[k] = strVal
 		}
 	}
 
-	// If we reach here, the type wasn't found
-	return fmt.Errorf("service endpoint type '%s' is not available", serviceEndpointType)
+	// Prepare endpoint config for validation
+	config := EndpointConfig{
+		ServiceEndpointType: serviceEndpointType,
+		AuthType:            authScheme,
+		AuthData:            authParams,
+		Data:                data,
+	}
+
+	// Validate service endpoint schema
+	if err := validateServiceEndpointSchema(clients, config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// getAuthorizationDetailsFromDiff extracts authorization details from ResourceDiff
+func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
+	authSet, ok := d.Get("authorization").(*schema.Set)
+	if !ok || authSet.Len() == 0 {
+		return "", nil, fmt.Errorf("no authorization configuration found")
+	}
+
+	authData, ok := authSet.List()[0].(map[string]interface{})
+	if !ok {
+		return "", nil, fmt.Errorf("invalid authorization configuration format")
+	}
+
+	scheme, ok := authData["scheme"].(string)
+	if !ok || scheme == "" {
+		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
+	}
+
+	params := make(map[string]string)
+	if paramsRaw, ok := authData["parameters"].(map[string]interface{}); ok {
+		for k, v := range paramsRaw {
+			strValue, ok := v.(string)
+			if !ok {
+				return "", nil, fmt.Errorf("parameter %q has invalid type, expected string", k)
+			}
+			params[k] = strValue
+		}
+	}
+
+	return scheme, params, nil
 }
