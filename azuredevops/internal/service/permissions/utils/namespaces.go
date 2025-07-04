@@ -389,7 +389,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		for key, value := range principalPermissions.PrincipalPermission.Permissions {
 			actionDef, ok := (*actionMap)[string(key)]
 			if !ok {
-				return fmt.Errorf("Invalid permission [%s]", key)
+				return fmt.Errorf("Invalid permission [%s]", string(key))
 			}
 			if aceItem.Deny == nil {
 				aceItem.Deny = new(int)
