@@ -116,8 +116,8 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 }
 
 func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) (map[string]forminput.InputDescriptor, error) {
-	var possibleAuthSchemes = make([]string, 0, len(*availableType.AuthenticationSchemes))
-	var possibleAuthData = make(map[string]forminput.InputDescriptor)
+	possibleAuthSchemes := make([]string, 0, len(*availableType.AuthenticationSchemes))
+	possibleAuthData := make(map[string]forminput.InputDescriptor)
 
 	correctAuthScheme := false
 
