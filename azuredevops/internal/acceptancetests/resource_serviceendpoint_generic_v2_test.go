@@ -296,7 +296,7 @@ resource "azuredevops_serviceendpoint_generic_v2" "test" {
   authorization {
     scheme = "Certificate"
     parameters = {
-      certificate           = <<EOF
+      certificate          = <<EOF
 %s
 EOF
       certificate_password = "%s"
