@@ -1,0 +1,87 @@
+---
+layout: "azuredevops"
+page_title: "AzureDevops: azuredevops_serviceendpoint_generic_v2"
+description: |-
+  Manages a Generic Service Endpoint (v2) within Azure DevOps.
+---
+
+# Resource: azuredevops_serviceendpoint_generic_v2
+
+Manages a Generic Service Endpoint (v2) within Azure DevOps, which can be used to connect to various external services with custom authentication mechanisms.
+
+## Example Usage
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
+# Basic username/password authentication
+resource "azuredevops_serviceendpoint_generic_v2" "example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Example Generic Service Endpoint"
+  description           = "Managed by Terraform"
+  service_endpoint_type = "generic"
+  server_url            = "https://example.com"
+  
+  authorization {
+    scheme     = "UsernamePassword"
+    parameters = {
+      username = "username"
+      password = "password"
+    }
+  }
+}
+
+# Token-based authentication
+resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
+  project_id            = azuredevops_project.example.id
+  service_endpoint_name = "Token-based Service Endpoint"
+  description           = "Managed by Terraform"
+  service_endpoint_type = "generic"
+  server_url            = "https://api.example.com"
+  
+  authorization {
+    scheme     = "Token"
+    parameters = {
+      apitoken = "your-api-token"
+    }
+  }
+  
+  data = {
+    releaseUrl = "https://releases.example.com"
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) The ID of the project to which the service endpoint belongs.
+* `service_endpoint_name` - (Required) The name of the service endpoint.
+* `service_endpoint_type` - (Required) The type of the service endpoint. This can be any valid service endpoint type, such as "generic", "artifactory", etc.
+* `description` - (Optional) The description of the service endpoint. Defaults to "Managed by Terraform".
+* `server_url` - (Required) The URL of the server associated with the service endpoint.
+* `authorization` - (Required) Specifies the authorization scheme and parameters. This block supports:
+  * `scheme` - (Required) The authorization scheme. Common values include "UsernamePassword", "Token", "OAuth", etc.
+  * `parameters` - (Optional) Map of key/value pairs for the specific authorization scheme. These often include sensitive data like tokens, usernames, and passwords.
+* `data` - (Optional) Additional data associated with the service endpoint. This is a map of key/value pairs.
+
+## Attributes Reference
+
+In addition to the arguments listed above, the following attributes are exported:
+
+* `id` - The ID of the service endpoint.
+* `authorization_type` - The authorization type of the service endpoint (same as the `scheme` specified in the `authorization` block).
+
+## Import
+
+Service endpoints can be imported using the project ID and service endpoint ID:
+
+```
+terraform import azuredevops_serviceendpoint_generic_v2.example <project_id>/<service_endpoint_id>
+```
