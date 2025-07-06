@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strings"
 	"sync"
 	"time"
@@ -176,7 +177,11 @@ func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, conf
 	return possibleAuthData, nil
 }
 
-func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string) error {
+func validateFields(ctx context.Context, configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string) error {
+	if len(configFields) == 0 {
+		tflog.Warn(ctx, fmt.Sprintf("Recieved nil configFields for service endpoint type '%s' for '%s' field. This indicates sensitive data or known-after-apply fields in configuration. Skipping validation.", endpointType, fieldType))
+		return nil
+	}
 	// Check for unsupported fields
 	for key := range configFields {
 		if _, exists := possibleFields[key]; !exists {
@@ -203,7 +208,7 @@ func validateFields(configFields map[string]string, possibleFields map[string]fo
 		return fmt.Errorf("service endpoint type '%s' is missing required %s fields: {%s}", endpointType, fieldType, func() string {
 			fields := make([]string, 0, len(missingFields))
 			for k, v := range missingFields {
-				fields = append(fields, fmt.Sprintf("%s: %s", k, v))
+				fields = append(fields, fmt.Sprintf("Key: %s, Display Name: %s\n", k, v))
 			}
 			return fmt.Sprintf("%s", fields)
 		}())
@@ -211,13 +216,13 @@ func validateFields(configFields map[string]string, possibleFields map[string]fo
 	return nil
 }
 
-func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) error {
+func validateServiceEndpointType(ctx context.Context, availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) error {
 	// Validate Data fields
 	possibleData := make(map[string]forminput.InputDescriptor)
 	for _, data := range *availableType.InputDescriptors {
 		possibleData[*data.Id] = data
 	}
-	if err := validateFields(config.Data, possibleData, "data", *availableType.Name); err != nil {
+	if err := validateFields(ctx, config.Data, possibleData, "data", *availableType.Name); err != nil {
 		return err
 	}
 
@@ -226,7 +231,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 	if err != nil {
 		return err
 	}
-	if err := validateFields(config.AuthData, possibleAuthData, "auth", *availableType.Name); err != nil {
+	if err := validateFields(ctx, config.AuthData, possibleAuthData, "auth", *availableType.Name); err != nil {
 		return err
 	}
 
@@ -234,7 +239,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 }
 
 // validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
-func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
+func validateServiceEndpointSchema(ctx context.Context, clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
 
 	// Check if types have been initialized yet
@@ -268,7 +273,7 @@ func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndp
 
 	// If the type was found in the cache, validate it
 	if foundType != nil {
-		return validateServiceEndpointType(foundType, serviceEndpoint)
+		return validateServiceEndpointType(ctx, foundType, serviceEndpoint)
 	}
 
 	// If the type wasn't found, prepare an error message with all valid types
@@ -323,6 +328,18 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 			}
 			data[k] = strVal
 		}
+	}
+
+	// Has to be called again to validate known-after-apply fields
+	config := EndpointConfig{
+		ServiceEndpointType: serviceEndpointType,
+		AuthType:            authScheme,
+		AuthData:            authParams,
+		Data:                data,
+	}
+
+	if err := validateServiceEndpointSchema(ctx, clients, config); err != nil {
+		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %v", err))
 	}
 
 	serviceEndpoint, err := createGenericV2ServiceEndpoint(ctx, clients, name, projectID, description, serviceEndpointType, serverURL, authScheme, authParams, data)
@@ -695,7 +712,7 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 	}
 
 	// Validate service endpoint schema
-	if err := validateServiceEndpointSchema(clients, config); err != nil {
+	if err := validateServiceEndpointSchema(ctx, clients, config); err != nil {
 		// If the error is about an invalid type, append the valid types with display names
 		return err
 	}
