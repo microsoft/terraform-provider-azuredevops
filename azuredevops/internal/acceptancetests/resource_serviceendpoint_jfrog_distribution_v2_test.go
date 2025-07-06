@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_jfrog_distribution_v2) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_jfrog_distribution_v2
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -350,6 +348,7 @@ resource "azuredevops_serviceendpoint_jfrog_distribution_v2" "import" {
 }
 `, template)
 }
+
 func hclSvcEndpointJFrogDistributionV2ResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	template := hclSvcEndpointJFrogDistributionV2ResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
 	return fmt.Sprintf(`

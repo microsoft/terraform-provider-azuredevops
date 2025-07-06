@@ -76,23 +76,23 @@ func dataSourceGitRepositoryRead(d *schema.ResourceData, m interface{}) error {
 	projectRepos, err := getGitRepositoriesByNameAndProject(clients, name, projectID, true)
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return fmt.Errorf(" Repository with name %s does not exist in project %s", name, projectID)
+			return fmt.Errorf("Repository with name %s does not exist in project %s", name, projectID)
 		}
-		return fmt.Errorf(" finding repositories. Error: %v", err)
+		return fmt.Errorf("finding repositories. Error: %v", err)
 	}
 	if projectRepos == nil || len(*projectRepos) == 0 {
-		return fmt.Errorf(" Repository with name %s does not exist in project %s", name, projectID)
+		return fmt.Errorf("Repository with name %s does not exist in project %s", name, projectID)
 	}
 
 	if len(*projectRepos) > 1 {
-		return fmt.Errorf(" Multiple Repositories with name %s found in project %s", name, projectID)
+		return fmt.Errorf("Multiple Repositories with name %s found in project %s", name, projectID)
 	}
 
 	repo := (*projectRepos)[0]
 	d.SetId(repo.Id.String())
 	err = flattenGitRepository(d, &repo)
 	if err != nil {
-		return fmt.Errorf(" flattening Git repository: %w", err)
+		return fmt.Errorf("flattening Git repository: %w", err)
 	}
 	return nil
 }

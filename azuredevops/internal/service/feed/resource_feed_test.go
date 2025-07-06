@@ -7,9 +7,10 @@ package feed
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
@@ -18,8 +19,10 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var FeedName = "some-feed-name"
-var FeedProjectId = uuid.New().String()
+var (
+	FeedName      = "some-feed-name"
+	FeedProjectId = uuid.New().String()
+)
 
 // verifies that if an error is produced on create, the error is not swallowed
 

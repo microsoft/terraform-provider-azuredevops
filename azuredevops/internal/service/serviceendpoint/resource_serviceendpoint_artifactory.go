@@ -113,7 +113,7 @@ func resourceServiceEndpointArtifactoryRead(d *schema.ResourceData, m interface{
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -132,13 +132,13 @@ func resourceServiceEndpointArtifactoryUpdate(d *schema.ResourceData, m interfac
 	}
 
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointArtifactoryRead(d, m)
 }
+
 func resourceServiceEndpointArtifactoryDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpoint, err := expandServiceEndpointArtifactory(d)
@@ -191,21 +191,22 @@ func expandServiceEndpointArtifactory(d *schema.ResourceData) (*serviceendpoint.
 func flattenServiceEndpointArtifactory(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
 	doBaseFlattening(d, serviceEndpoint)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+	switch scheme := *serviceEndpoint.Authorization.Scheme; strings.ToLower(scheme) {
+	case "usernamepassword":
 		if _, ok := d.GetOk("authentication_basic"); !ok {
 			auth := make(map[string]interface{})
 			auth["username"] = ""
 			auth["password"] = ""
 			d.Set("authentication_basic", []interface{}{auth})
 		}
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	case "token":
 		if _, ok := d.GetOk("authentication_token"); !ok {
 			auth := make(map[string]interface{})
 			auth["token"] = ""
 			d.Set("authentication_token", []interface{}{auth})
 		}
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
+	default:
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword), but got %s", scheme))
 	}
 
 	d.Set("url", *serviceEndpoint.Url)

@@ -28,7 +28,7 @@ func ResourceBuildFolder() *schema.Resource {
 			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				projectNameOrID, path, err := tfhelper.ParseImportedName(d.Id())
 				if err != nil {
-					return nil, fmt.Errorf(" parsing the resource ID from the Terraform resource data: %v", err)
+					return nil, fmt.Errorf("parsing the resource ID from the Terraform resource data: %v", err)
 				}
 
 				if projectID, err := tfhelper.GetRealProjectId(projectNameOrID, m); err == nil {
@@ -75,7 +75,7 @@ func resourceBuildFolderCreate(d *schema.ResourceData, m interface{}) error {
 
 	createdBuildFolder, err := createBuildFolder(clients, path, projectID, description)
 	if err != nil {
-		return fmt.Errorf(" failed creating resource Build Folder, %+v", err)
+		return fmt.Errorf("failed creating resource Build Folder, %+v", err)
 	}
 
 	d.SetId(createdBuildFolder.Project.Id.String())
@@ -92,7 +92,6 @@ func resourceBuildFolderRead(d *schema.ResourceData, m interface{}) error {
 		Project: &projectID,
 		Path:    &path,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -128,7 +127,7 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 	projectID := d.Get("project_id").(string)
 	projectUuid, err := uuid.Parse(projectID)
 	if err != nil {
-		return fmt.Errorf(" failed to parse Project ID. Project ID: %s , Error: %+v", projectID, err)
+		return fmt.Errorf("failed to parse Project ID. Project ID: %s , Error: %+v", projectID, err)
 	}
 
 	_, err = clients.BuildClient.UpdateFolder(m.(*client.AggregatedClient).Ctx, build.UpdateFolderArgs{
@@ -142,7 +141,6 @@ func resourceBuildFolderUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to update build folder.  Project ID: %s, Error: %+v ", projectID, err)
 	}

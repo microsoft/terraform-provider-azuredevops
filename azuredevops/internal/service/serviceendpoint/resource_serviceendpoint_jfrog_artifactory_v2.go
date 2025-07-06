@@ -113,7 +113,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Read(d *schema.ResourceData, m int
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -131,7 +131,7 @@ func resourceServiceEndpointJFrogArtifactoryV2Update(d *schema.ResourceData, m i
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointJFrogArtifactoryV2Read(d, m)
@@ -153,21 +153,22 @@ func resourceServiceEndpointJFrogArtifactoryV2Delete(d *schema.ResourceData, m i
 func flattenServiceEndpointArtifactoryV2(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
 	doBaseFlattening(d, serviceEndpoint)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+	switch scheme := *serviceEndpoint.Authorization.Scheme; strings.ToLower(scheme) {
+	case "usernamepassword":
 		if _, ok := d.GetOk("authentication_basic"); !ok {
 			auth := make(map[string]interface{})
 			auth["username"] = ""
 			auth["password"] = ""
 			d.Set("authentication_basic", []interface{}{auth})
 		}
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	case "token":
 		if _, ok := d.GetOk("authentication_token"); !ok {
 			auth := make(map[string]interface{})
 			auth["token"] = ""
 			d.Set("authentication_token", []interface{}{auth})
 		}
-	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
+	default:
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", scheme))
 	}
 
 	d.Set("url", *serviceEndpoint.Url)

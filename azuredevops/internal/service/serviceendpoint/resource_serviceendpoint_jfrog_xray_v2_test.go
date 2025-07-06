@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var xrayV2TestServiceEndpointIDpassword = uuid.New()
-var xrayV2RandomServiceEndpointProjectIDpassword = uuid.New()
-var xrayV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
+var (
+	xrayV2TestServiceEndpointIDpassword          = uuid.New()
+	xrayV2RandomServiceEndpointProjectIDpassword = uuid.New()
+	xrayV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+)
 
 var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -48,9 +50,11 @@ var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var xrayV2TestServiceEndpointID = uuid.New()
-var xrayV2RandomServiceEndpointProjectID = uuid.New()
-var xrayV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var (
+	xrayV2TestServiceEndpointID          = uuid.New()
+	xrayV2RandomServiceEndpointProjectID = uuid.New()
+	xrayV2TestServiceEndpointProjectID   = &artifactoryRandomServiceEndpointProjectID
+)
 
 var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -91,6 +95,7 @@ func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 
 	}
 }
+
 func TestServiceEndpointxrayV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
@@ -122,9 +127,11 @@ func testServiceEndpointxrayV2_Create_DoesNotSwallowError(t *testing.T, ep *serv
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointxrayV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointxrayV2_Create_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
@@ -155,9 +162,11 @@ func testServiceEndpointxrayV2_Read_DoesNotSwallowError(t *testing.T, ep *servic
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointxrayV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointxrayV2_Read_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }

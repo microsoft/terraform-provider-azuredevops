@@ -19,8 +19,10 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var classificationProjectName = "test-acc-project-0fu72ecbiu"
-var classificationProjectID = "9c3a5552-268c-423c-a9cd-7de0b36b7035"
+var (
+	classificationProjectName = "test-acc-project-0fu72ecbiu"
+	classificationProjectID   = "9c3a5552-268c-423c-a9cd-7de0b36b7035"
+)
 
 type classificationNodeDefinition struct {
 	id         string

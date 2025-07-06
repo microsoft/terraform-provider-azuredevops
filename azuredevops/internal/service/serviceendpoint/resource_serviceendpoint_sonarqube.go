@@ -52,11 +52,7 @@ func ResourceServiceEndpointSonarQube() *schema.Resource {
 
 func resourceServiceEndpointSonarQubeCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarQube(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointSonarQube(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -78,7 +74,7 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if serviceEndpoint.Id == nil {
@@ -95,13 +91,9 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 
 func resourceServiceEndpointSonarQubeUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarQube(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointSonarQube(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointSonarQubeRead(d, m)
@@ -109,16 +101,12 @@ func resourceServiceEndpointSonarQubeUpdate(d *schema.ResourceData, m interface{
 
 func resourceServiceEndpointSonarQubeDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointSonarQube(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointSonarQube(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointSonarQube(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointSonarQube(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("UsernamePassword"),
@@ -128,7 +116,7 @@ func expandServiceEndpointSonarQube(d *schema.ResourceData) (*serviceendpoint.Se
 	}
 	serviceEndpoint.Type = converter.String("sonarqube")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure

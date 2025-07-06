@@ -57,18 +57,18 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 	// Query ADO for list of identity user with filter
 	filteredServicePrincipals, err := getIdentityServicePrincipalsWithFilterValue(clients, searchFilter, displayName)
 	if err != nil || filteredServicePrincipals == nil || len(*filteredServicePrincipals) == 0 {
-		return fmt.Errorf(" Finding service principal with filter %s. Error: %v", *searchFilter, err)
+		return fmt.Errorf("Finding service principal with filter %s. Error: %v", *searchFilter, err)
 	}
 
 	flattenedServicePrincipals, err := flattenIdentityServicePrincipals(filteredServicePrincipals)
 	if err != nil {
-		return fmt.Errorf(" Flatten service principals. Error: %v", err)
+		return fmt.Errorf("Flatten service principals. Error: %v", err)
 	}
 
 	// Filter for the desired user in the FilterUsers results
 	targetServicePrincipal := validateIdentityServicePrincipal(flattenedServicePrincipals, displayName)
 	if targetServicePrincipal == nil {
-		return fmt.Errorf(" Could not find service principal with name: %s", displayName)
+		return fmt.Errorf("Could not find service principal with name: %s", displayName)
 	}
 
 	servicePrincipalDescriptor := targetServicePrincipal.SubjectDescriptor
@@ -76,9 +76,9 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 	servicePrincipal, err := getServicePrincipal(clients, servicePrincipalDescriptor)
 	if err != nil {
 		if servicePrincipalDescriptor != nil {
-			return fmt.Errorf(" Finding service principal with Descriptor %s", *servicePrincipalDescriptor)
+			return fmt.Errorf("Finding service principal with Descriptor %s", *servicePrincipalDescriptor)
 		}
-		return fmt.Errorf(" Finding service principal. Error: %v", err)
+		return fmt.Errorf("Finding service principal. Error: %v", err)
 	}
 
 	d.SetId(*servicePrincipal.Descriptor)
@@ -102,12 +102,12 @@ func getIdentityServicePrincipalsWithFilterValue(clients *client.AggregatedClien
 // Flatten Query Results
 func flattenIdentityServicePrincipals(servicePrincipals *[]identity.Identity) (*[]identity.Identity, error) {
 	if servicePrincipals == nil || len(*servicePrincipals) == 0 {
-		return nil, fmt.Errorf(" Input Service Principals Parameter is nil")
+		return nil, fmt.Errorf("Input Service Principals Parameter is nil")
 	}
 	results := make([]identity.Identity, 0)
 	for _, servicePrincipal := range *servicePrincipals {
 		if servicePrincipal.Descriptor == nil {
-			return nil, fmt.Errorf(" User Object does not contain an id")
+			return nil, fmt.Errorf("User Object does not contain an id")
 		}
 		results = append(results, identity.Identity{
 			Id:                  servicePrincipal.Id,

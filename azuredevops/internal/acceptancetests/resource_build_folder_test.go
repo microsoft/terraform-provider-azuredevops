@@ -1,6 +1,4 @@
 //go:build (all || resource_build_folder) && (!exclude_permissions || !exclude_resource_build_folder)
-// +build all resource_build_folder
-// +build !exclude_permissions !exclude_resource_build_folder
 
 package acceptancetests
 

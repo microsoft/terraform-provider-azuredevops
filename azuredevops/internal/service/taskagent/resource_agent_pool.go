@@ -75,7 +75,7 @@ func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 
 	agentPool, err := clients.TaskAgentClient.AddAgentPool(clients.Ctx, args)
 	if err != nil {
-		return fmt.Errorf(" creating agent pool in Azure DevOps: %+v", err)
+		return fmt.Errorf("creating agent pool in Azure DevOps: %+v", err)
 	}
 
 	// auto update can only be set to true after creation
@@ -96,7 +96,7 @@ func resourceAzureAgentPoolCreate(d *schema.ResourceData, m interface{}) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf(" updating agent pool in Azure DevOps: %+v", err)
+			return fmt.Errorf("updating agent pool in Azure DevOps: %+v", err)
 		}
 	}
 	d.SetId(strconv.Itoa(*agentPool.Id))
@@ -108,7 +108,7 @@ func resourceAzureAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" parse agent pool ID: %+v", err)
+		return fmt.Errorf("parse agent pool ID: %+v", err)
 	}
 
 	agentPool, err := clients.TaskAgentClient.GetAgentPool(clients.Ctx, taskagent.GetAgentPoolArgs{PoolId: &poolID})
@@ -117,7 +117,7 @@ func resourceAzureAgentPoolRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" looking up Agent Pool with ID %d. Error: %v", poolID, err)
+		return fmt.Errorf("looking up Agent Pool with ID %d. Error: %v", poolID, err)
 	}
 
 	d.Set("name", agentPool.Name)
@@ -144,12 +144,12 @@ func resourceAzureAgentPoolUpdate(d *schema.ResourceData, m interface{}) error {
 
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" getting agent pool Id: %+v", err)
+		return fmt.Errorf("getting agent pool Id: %+v", err)
 	}
 	parameter.PoolId = &poolID
 
 	if _, err = clients.TaskAgentClient.UpdateAgentPool(clients.Ctx, parameter); err != nil {
-		return fmt.Errorf(" updating agent pool in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating agent pool in Azure DevOps: %+v", err)
 	}
 
 	if err := syncStatus(parameter, clients); err != nil {
@@ -162,7 +162,7 @@ func resourceAzureAgentPoolUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 	poolID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" parse agent pool ID: %+v", err)
+		return fmt.Errorf("parse agent pool ID: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -181,7 +181,7 @@ func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 				if utils.ResponseWasNotFound(err) {
 					state = "Synched"
 				} else {
-					return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+					return nil, "", fmt.Errorf("looking up Agent Pool with ID: %+v", err)
 				}
 			}
 			if agentPool == nil {
@@ -195,7 +195,7 @@ func resourceAzureAgentPoolDelete(d *schema.ResourceData, m interface{}) error {
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for Agent Pool deleted. %v ", err)
+		return fmt.Errorf("waiting for Agent Pool deleted. %v ", err)
 	}
 	return nil
 }
@@ -208,7 +208,7 @@ func syncStatus(params taskagent.UpdateAgentPoolArgs, client *client.AggregatedC
 			state := "Waiting"
 			agentPool, err := client.TaskAgentClient.GetAgentPool(client.Ctx, taskagent.GetAgentPoolArgs{PoolId: params.PoolId})
 			if err != nil {
-				return nil, "", fmt.Errorf(" looking up Agent Pool with ID: %+v", err)
+				return nil, "", fmt.Errorf("looking up Agent Pool with ID: %+v", err)
 			}
 			if *agentPool.AutoUpdate == *params.Pool.AutoUpdate &&
 				*agentPool.AutoProvision == *params.Pool.AutoProvision &&
@@ -223,7 +223,7 @@ func syncStatus(params taskagent.UpdateAgentPoolArgs, client *client.AggregatedC
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(client.Ctx); err != nil {
-		return fmt.Errorf(" waiting for Agent Pool ready. %v ", err)
+		return fmt.Errorf("waiting for Agent Pool ready. %v ", err)
 	}
 	return nil
 }

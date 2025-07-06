@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var sonarQubeTestServiceEndpointID = uuid.New()
-var sonarQubeRandomServiceEndpointProjectID = uuid.New()
-var sonarQubeTestServiceEndpointProjectID = &sonarQubeRandomServiceEndpointProjectID
+var (
+	sonarQubeTestServiceEndpointID          = uuid.New()
+	sonarQubeRandomServiceEndpointProjectID = uuid.New()
+	sonarQubeTestServiceEndpointProjectID   = &sonarQubeRandomServiceEndpointProjectID
+)
 
 var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{

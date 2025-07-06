@@ -14,17 +14,19 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var testID = uuid.New()
-var testProject = core.TeamProject{
-	Id:          &testID,
-	Name:        converter.String("Name"),
-	Visibility:  &core.ProjectVisibilityValues.Public,
-	Description: converter.String("Description"),
-	Capabilities: &map[string]map[string]string{
-		"versioncontrol":  {"sourceControlType": "SouceControlType"},
-		"processTemplate": {"templateTypeId": testID.String()},
-	},
-}
+var (
+	testID      = uuid.New()
+	testProject = core.TeamProject{
+		Id:          &testID,
+		Name:        converter.String("Name"),
+		Visibility:  &core.ProjectVisibilityValues.Public,
+		Description: converter.String("Description"),
+		Capabilities: &map[string]map[string]string{
+			"versioncontrol":  {"sourceControlType": "SouceControlType"},
+			"processTemplate": {"templateTypeId": testID.String()},
+		},
+	}
+)
 
 type testCase struct {
 	Name            string

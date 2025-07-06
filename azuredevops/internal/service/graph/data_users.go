@@ -145,10 +145,7 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 				return b
 			}).
 			ToSlice(&newUsers)
-		fusers, err := flattenUsers(&newUsers)
-		if err != nil {
-			return err
-		}
+		fusers := flattenUsers(&newUsers)
 		users = append(users, fusers...)
 	}
 
@@ -190,22 +187,18 @@ func getUserHash(v interface{}) int {
 	return tfhelper.HashString(v.(map[string]interface{})["descriptor"].(string))
 }
 
-func flattenUsers(input *[]graph.GraphUser) ([]interface{}, error) {
+func flattenUsers(input *[]graph.GraphUser) []interface{} {
 	if input == nil {
-		return []interface{}{}, nil
+		return []interface{}{}
 	}
 	results := make([]interface{}, len(*input))
 	for i, element := range *input {
-		output, err := flattenUser(&element)
-		if err != nil {
-			return nil, err
-		}
-		results[i] = output
+		results[i] = flattenUser(&element)
 	}
-	return results, nil
+	return results
 }
 
-func flattenUser(user *graph.GraphUser) (map[string]interface{}, error) {
+func flattenUser(user *graph.GraphUser) map[string]interface{} {
 	s := make(map[string]interface{})
 
 	if v := user.Descriptor; v != nil {
@@ -227,7 +220,7 @@ func flattenUser(user *graph.GraphUser) (map[string]interface{}, error) {
 		s["mail_address"] = *v
 	}
 
-	return s, nil
+	return s
 }
 
 func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectTypes *[]string, continuationToken string) ([]graph.GraphUser, string, error) {
@@ -239,7 +232,7 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	}
 	response, err := clients.GraphClient.ListUsers(clients.Ctx, args)
 	if err != nil {
-		return nil, "", fmt.Errorf(" Listing users: %q", err)
+		return nil, "", fmt.Errorf("Listing users: %q", err)
 	}
 
 	continuationToken = ""

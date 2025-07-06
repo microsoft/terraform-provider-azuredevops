@@ -38,7 +38,8 @@ func ResourceWiki() *schema.Resource {
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(wiki.WikiTypeValues.ProjectWiki),
-					string(wiki.WikiTypeValues.CodeWiki)},
+					string(wiki.WikiTypeValues.CodeWiki),
+				},
 					false),
 			},
 			"project_id": {
@@ -102,7 +103,6 @@ func resourceWikiCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	resp, err := clients.WikiClient.CreateWiki(clients.Ctx, wiki.CreateWikiArgs{WikiCreateParams: wikiArgs})
-
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,8 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 	if wikiType == wiki.WikiTypeValues.CodeWiki {
 		_, err := clients.WikiClient.DeleteWiki(clients.Ctx, wiki.DeleteWikiArgs{
 			WikiIdentifier: converter.String(d.Id()),
-			Project:        converter.String(d.Get("project_id").(string))})
+			Project:        converter.String(d.Get("project_id").(string)),
+		})
 		if err != nil {
 			return err
 		}
@@ -190,9 +191,8 @@ func resourceWikiDelete(d *schema.ResourceData, m interface{}) error {
 			RepositoryId: resp.RepositoryId,
 			Project:      converter.String(d.Get("project_id").(string)),
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Delete Project wiki failed. Error: %+v", err)
+			return fmt.Errorf("Delete Project wiki failed. Error: %+v", err)
 		}
 	}
 	return nil

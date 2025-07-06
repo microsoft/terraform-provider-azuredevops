@@ -55,12 +55,12 @@ func resourceEnvironmentCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	environment, err := expandEnvironment(d)
 	if err != nil {
-		return fmt.Errorf(" Expanding the environment resource from state: %+v", err)
+		return fmt.Errorf("Expanding the environment resource from state: %+v", err)
 	}
 
 	createdEnvironment, err := createEnvironment(clients, environment)
 	if err != nil {
-		return fmt.Errorf(" Creating environment in Azure DevOps: %+v", err)
+		return fmt.Errorf("Creating environment in Azure DevOps: %+v", err)
 	}
 
 	flattenEnvironment(d, createdEnvironment)
@@ -78,7 +78,6 @@ func resourceEnvironmentRead(d *schema.ResourceData, m interface{}) error {
 		EnvironmentId: &environmentID,
 		Project:       converter.String(d.Get("project_id").(string)),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -117,7 +116,6 @@ func resourceEnvironmentDelete(d *schema.ResourceData, m interface{}) error {
 		Project:       converter.String(d.Get("project_id").(string)),
 		EnvironmentId: &environmentId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error deleting environment: %+v", err)
 	}
@@ -154,7 +152,7 @@ func updateEnvironment(clients *client.AggregatedClient, environment *taskagent.
 func expandEnvironment(d *schema.ResourceData) (*taskagent.EnvironmentInstance, error) {
 	projectId, err := uuid.Parse(d.Get("project_id").(string))
 	if err != nil {
-		return nil, fmt.Errorf(" faild parse project ID to UUID: %s, %+v", "project_id", err)
+		return nil, fmt.Errorf("faild parse project ID to UUID: %s, %+v", "project_id", err)
 	}
 	environment := &taskagent.EnvironmentInstance{
 		Name:        converter.String(d.Get("name").(string)),

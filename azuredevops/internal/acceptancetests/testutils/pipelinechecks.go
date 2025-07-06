@@ -17,7 +17,7 @@ func CheckPipelineCheckExistsWithName(tfNode string, expectedName string) resour
 	return func(s *terraform.State) error {
 		resourceState, ok := s.RootModule().Resources[tfNode]
 		if !ok {
-			return fmt.Errorf(" Did not find a check in the state")
+			return fmt.Errorf("Did not find a check in the state")
 		}
 
 		check, err := getCheckFromState(resourceState)
@@ -27,7 +27,7 @@ func CheckPipelineCheckExistsWithName(tfNode string, expectedName string) resour
 
 		if DisplayName, found := check.Settings.(map[string]interface{})["displayName"]; found {
 			if DisplayName != expectedName {
-				return fmt.Errorf(" Check has Name=%s, but expected Name=%s", DisplayName, expectedName)
+				return fmt.Errorf("Check has Name=%s, but expected Name=%s", DisplayName, expectedName)
 			}
 		} else {
 			return fmt.Errorf("displayName setting not found")
@@ -48,7 +48,7 @@ func CheckPipelineCheckDestroyed(resourceType string) resource.TestCheckFunc {
 
 			// indicates the resource exists - this should fail the test
 			if _, err := getSvcEndpointFromState(res); err == nil {
-				return fmt.Errorf(" Unexpectedly found a check that should have been deleted")
+				return fmt.Errorf("Unexpectedly found a check that should have been deleted")
 			}
 		}
 

@@ -55,11 +55,7 @@ func ResourceServiceEndpointOctopusDeploy() *schema.Resource {
 
 func resourceServiceEndpointOctopusDeployCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointOctopusDeploy(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointOctopusDeploy(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -81,7 +77,7 @@ func resourceServiceEndpointOctopusDeployRead(d *schema.ResourceData, m interfac
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -93,13 +89,9 @@ func resourceServiceEndpointOctopusDeployRead(d *schema.ResourceData, m interfac
 
 func resourceServiceEndpointOctopusDeployUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointOctopusDeploy(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointOctopusDeploy(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointOctopusDeployRead(d, m)
@@ -107,15 +99,11 @@ func resourceServiceEndpointOctopusDeployUpdate(d *schema.ResourceData, m interf
 
 func resourceServiceEndpointOctopusDeployDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointOctopusDeploy(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointOctopusDeploy(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -129,7 +117,7 @@ func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) (*serviceendpoin
 	}
 	serviceEndpoint.Type = converter.String("OctopusEndpoint")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointOctopusDeploy(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
@@ -139,7 +127,7 @@ func flattenServiceEndpointOctopusDeploy(d *schema.ResourceData, serviceEndpoint
 	if v, ok := (*serviceEndpoint.Data)["ignoreSslErrors"]; ok && v != "" {
 		ignoreSslErrors, err := strconv.ParseBool(v)
 		if err != nil {
-			panic(fmt.Errorf(" Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v",
+			panic(fmt.Errorf("Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v",
 				*serviceEndpoint.Name, (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id, err))
 		}
 		d.Set("ignore_ssl_error", ignoreSslErrors)

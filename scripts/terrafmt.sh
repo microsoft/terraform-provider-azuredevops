@@ -5,16 +5,8 @@ echo "==> Checking terraform blocks are formatted..."
 files=$(find ./azuredevops -type f -name "*_test.go")
 error=false
 
-echo $()
-
 for f in $files; do
-  if ! ${error}; then
-    if command -v terrafmt; then
-      terrafmt diff -c -f "$f" || error=true
-    elif command -v "$GOPATH"/bin/terrafmt; then
-      "$GOPATH"/bin/terrafmt diff -c -f "$f" || error=true
-    fi
-  fi
+  terrafmt diff -c -q -f "$f" || error=true
 done
 
 if ${error}; then

@@ -1,6 +1,4 @@
 //go:build (all || data_sources || git || data_git_repository) && (!exclude_data_sources || !exclude_git || !data_git_repository)
-// +build all data_sources git data_git_repository
-// +build !exclude_data_sources !exclude_git !data_git_repository
 
 package acceptancetests
 
@@ -15,7 +13,6 @@ import (
 )
 
 func TestAccGitRepositoryFile_DataSource(t *testing.T) {
-
 	tfNode := "data.azuredevops_git_repository_file.test"
 
 	projectName := testutils.GenerateResourceName()
@@ -42,7 +39,6 @@ func TestAccGitRepositoryFile_DataSource(t *testing.T) {
 }
 
 func TestAccGitRepositoryFile_DataSource_notExist(t *testing.T) {
-
 	projectName := testutils.GenerateResourceName()
 	repoName := testutils.GenerateResourceName()
 	branch := "refs/heads/master"

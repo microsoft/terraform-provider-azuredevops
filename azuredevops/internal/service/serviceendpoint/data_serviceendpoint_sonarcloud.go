@@ -31,5 +31,5 @@ func dataSourceServiceEndpointSonarCloudRead(d *schema.ResourceData, m interface
 
 		return nil
 	}
-	return fmt.Errorf(" Looking up Sonar Cloud service endpoint !")
+	return fmt.Errorf("Looking up Sonar Cloud service endpoint !")
 }

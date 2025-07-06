@@ -25,13 +25,17 @@ import (
  * Begin unit tests
  */
 
-var buildPermissionsID = "9083e944-8e9e-405e-960a-c80180aa71e6"
-var buildDefinitionID = "5"
+var (
+	buildPermissionsID = "9083e944-8e9e-405e-960a-c80180aa71e6"
+	buildDefinitionID  = "5"
+)
 
 var buildToken = fmt.Sprintf("%s/%s", buildPermissionsID, buildDefinitionID)
 
-var buildDefinitionPath = "a/b/c"
-var buildTokenPath = fmt.Sprintf("%s/%s/%s", buildPermissionsID, buildDefinitionPath, buildDefinitionID)
+var (
+	buildDefinitionPath = "a/b/c"
+	buildTokenPath      = fmt.Sprintf("%s/%s/%s", buildPermissionsID, buildDefinitionPath, buildDefinitionID)
+)
 
 func TestBuildDefinitionPermissions_CreateBuildToken(t *testing.T) {
 	ctrl := gomock.NewController(t)

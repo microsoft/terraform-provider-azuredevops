@@ -1,6 +1,4 @@
 //go:build (all || data_sources || data_serviceendpoint_npm) && (!exclude_data_sources || !exclude_data_serviceendpoint_npm)
-// +build all data_sources data_serviceendpoint_npm
-// +build !exclude_data_sources !exclude_data_serviceendpoint_npm
 
 package acceptancetests
 

@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_github_enterprise) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_github_enterprise
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -96,6 +94,7 @@ func TestAccServiceEndpointGitHubEnterprise_oauthBasic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccServiceEndpointGitHubEnterprise_oauthUpdate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()

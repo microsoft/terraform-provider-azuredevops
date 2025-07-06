@@ -6,8 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-//https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/state-migration
-
+// https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/state-migration
 func ServiceEndpointAzureRmSchemaV1ToV2() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{

@@ -55,13 +55,13 @@ func dataSourceAgentPoolsRead(d *schema.ResourceData, m interface{}) error {
 
 	agentPools, err := clients.TaskAgentClient.GetAgentPools(clients.Ctx, taskagent.GetAgentPoolsArgs{})
 	if err != nil {
-		return fmt.Errorf(" finding agent pools. Error: %v", err)
+		return fmt.Errorf("finding agent pools. Error: %v", err)
 	}
 	log.Printf("[TRACE] plugin.terraform-provider-azuredevops: Read [%d] agent pools from current organization", len(*agentPools))
 
 	err = d.Set("agent_pools", flattenAgentPoolReferences(agentPools))
 	if err != nil {
-		return fmt.Errorf(" setting agent_pools field in state. Error: %v", err)
+		return fmt.Errorf("setting agent_pools field in state. Error: %v", err)
 	}
 
 	d.SetId(time.Now().UTC().String())

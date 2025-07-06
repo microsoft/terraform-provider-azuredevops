@@ -76,7 +76,7 @@ func ResourceEnvironmentKubernetes() *schema.Resource {
 func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf("expanding the Kubernetes resource from state: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -92,7 +92,7 @@ func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) 
 		EnvironmentId: resource.EnvironmentReference.Id,
 	})
 	if err != nil {
-		return fmt.Errorf(" creating Kubernetes resource in Azure DevOps: %+v", err)
+		return fmt.Errorf("creating Kubernetes resource in Azure DevOps: %+v", err)
 	}
 
 	d.SetId(strconv.Itoa(*createdResource.Id))
@@ -102,12 +102,12 @@ func resourceEnvironmentKubernetesCreate(d *schema.ResourceData, m interface{}) 
 func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf("expanding the Kubernetes resource from state: %+v", err)
 	}
 
 	resourceId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" getting kubernetes resource id: %+v", err)
+		return fmt.Errorf("getting kubernetes resource id: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -121,7 +121,7 @@ func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" reading the Kubernetes resource: %+v", err)
+		return fmt.Errorf("reading the Kubernetes resource: %+v", err)
 	}
 
 	flattenEnvironmentKubernetesResource(d, project, fetchedResource)
@@ -131,12 +131,12 @@ func resourceEnvironmentKubernetesRead(d *schema.ResourceData, m interface{}) er
 func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) error {
 	project, resource, err := expandEnvironmentKubernetesResource(d)
 	if err != nil {
-		return fmt.Errorf(" expanding the Kubernetes resource from state: %+v", err)
+		return fmt.Errorf("expanding the Kubernetes resource from state: %+v", err)
 	}
 
 	resourceId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" getting kubernetes resource id: %+v", err)
+		return fmt.Errorf("getting kubernetes resource id: %+v", err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -145,9 +145,8 @@ func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) 
 		EnvironmentId: resource.EnvironmentReference.Id,
 		ResourceId:    &resourceId,
 	})
-
 	if err != nil {
-		return fmt.Errorf(" deleting Kubernetes environment: %+v", err)
+		return fmt.Errorf("deleting Kubernetes environment: %+v", err)
 	}
 
 	return nil
@@ -156,13 +155,13 @@ func resourceEnvironmentKubernetesDelete(d *schema.ResourceData, m interface{}) 
 func expandEnvironmentKubernetesResource(d *schema.ResourceData) (*taskagent.ProjectReference, *taskagent.KubernetesResource, error) {
 	projectId, err := uuid.Parse(d.Get("project_id").(string))
 	if err != nil {
-		return nil, nil, fmt.Errorf(" Failed to parse project ID to UUID: %s, %+v", d.Get("project_id"), err)
+		return nil, nil, fmt.Errorf("Failed to parse project ID to UUID: %s, %+v", d.Get("project_id"), err)
 	}
 	project := &taskagent.ProjectReference{Id: &projectId}
 
 	serviceEndpointId, err := uuid.Parse(d.Get("service_endpoint_id").(string))
 	if err != nil {
-		return nil, nil, fmt.Errorf(" Failed to parse service endpoint ID to UUID: %s, %+v", d.Get("service_endpoint_id"), err)
+		return nil, nil, fmt.Errorf("Failed to parse service endpoint ID to UUID: %s, %+v", d.Get("service_endpoint_id"), err)
 	}
 	tagsSchemaSet := d.Get("tags").(*schema.Set)
 	tags := tfhelper.ExpandStringSet(tagsSchemaSet)

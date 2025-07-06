@@ -36,7 +36,7 @@ func ResourceFeedPermission() *schema.Resource {
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
 				idParts := strings.Split(d.Id(), "/")
 				if len(idParts) > 3 || len(idParts) < 2 {
-					return nil, fmt.Errorf(" Unexpected ID format (%q), Expected: <feedId>/<identityDescriptor> or <projetId>/<feedId>/<identityDescriptor>", d.Id())
+					return nil, fmt.Errorf("Unexpected ID format (%q), Expected: <feedId>/<identityDescriptor> or <projetId>/<feedId>/<identityDescriptor>", d.Id())
 				}
 
 				if len(idParts) == 2 {
@@ -132,19 +132,18 @@ func resourceFeedPermissionCreate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("creating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	err = checkPermissions(d, m)
 	if err != nil {
-		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
+		return fmt.Errorf("Sync Feed Permission for Feed failed: %+v", err)
 	}
 
 	id, err := uuid.NewUUID()
 	if err != nil {
-		return fmt.Errorf(" Creating Permission for Feed failed: %+v", err)
+		return fmt.Errorf("Creating Permission for Feed failed: %+v", err)
 	}
 	d.SetId(fmt.Sprintf("fp-%s", id.String()))
 
@@ -199,14 +198,13 @@ func resourceFeedPermissionUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("updating feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
 
 	err = checkPermissions(d, m)
 	if err != nil {
-		return fmt.Errorf(" Sync Feed Permission for Feed failed: %+v", err)
+		return fmt.Errorf("Sync Feed Permission for Feed failed: %+v", err)
 	}
 
 	return resourceFeedPermissionRead(d, m)
@@ -220,7 +218,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 	projectId := d.Get("project_id").(string)
 
 	identityResponse, err := getIdentity(d, m)
-
 	if err != nil {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -235,7 +232,6 @@ func resourceFeedPermissionDelete(d *schema.ResourceData, m interface{}) error {
 			},
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("deleting feed Permission for Feed : %s and Identity : %s, Error: %+v", feedId, identityDescriptor, err)
 	}
@@ -250,15 +246,13 @@ func getIdentity(d *schema.ResourceData, m interface{}) (*identity.Identity, err
 	storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
 		SubjectDescriptor: &identityDescriptor,
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	response, err := clients.IdentityClient.ReadIdentity(clients.Ctx, identity.ReadIdentityArgs{
-		IdentityId: converter.String((*storageKey.Value).String()),
+		IdentityId: converter.String(storageKey.Value.String()),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +268,6 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 	projectId := d.Get("project_id").(string)
 
 	identityResponse, err := getIdentity(d, m)
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -283,13 +276,12 @@ func getFeedPermission(d *schema.ResourceData, m interface{}) (*feed.FeedPermiss
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-			return nil, identityResponse, fmt.Errorf(" Feed Permissions Not Found. Feed may exist at organization or project level."+
+			return nil, identityResponse, fmt.Errorf("Feed Permissions Not Found. Feed may exist at organization or project level."+
 				" Please ensure you have set the `project_id` correctly. \n Project ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
 		}
-		return nil, identityResponse, fmt.Errorf(" \nProject ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
+		return nil, identityResponse, fmt.Errorf("\nProject ID: %s\n Feed ID: %s\n Error: %+v", projectId, feedId, err)
 	}
 
 	for _, permission := range *permissions {
@@ -317,7 +309,7 @@ func checkPermissions(d *schema.ResourceData, m interface{}) error {
 		Refresh:                   pollPermissions(d, m),
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" Failed waiting for Feed Permission create. %v ", err)
+		return fmt.Errorf("Failed waiting for Feed Permission create. %v ", err)
 	}
 	return nil
 }

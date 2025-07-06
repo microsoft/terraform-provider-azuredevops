@@ -87,21 +87,21 @@ func dataSourceProjectsRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	projects, err := getProjectsForStateAndName(clients, state, name)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" finding projects with state %s. Error: %v", state, err))
+		return diag.FromErr(fmt.Errorf("finding projects with state %s. Error: %v", state, err))
 	}
 
 	results := flattenProjectReferences(&projects)
 
 	projectNames, err := datahelper.GetAttributeValues(results, "name")
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" failed to get list of project names: %v", err))
+		return diag.FromErr(fmt.Errorf("failed to get list of project names: %v", err))
 	}
-	if len(projectNames) <= 0 && name != "" {
+	if len(projectNames) == 0 && name != "" {
 		projectNames = append(projectNames, name)
 	}
 	h := sha1.New()
 	if _, err := h.Write([]byte(state + strings.Join(projectNames, "-"))); err != nil {
-		return diag.FromErr(fmt.Errorf(" Unable to compute hash for project names: %v", err))
+		return diag.FromErr(fmt.Errorf("Unable to compute hash for project names: %v", err))
 	}
 	d.SetId("projects#" + base64.URLEncoding.EncodeToString(h.Sum(nil)))
 

@@ -67,7 +67,7 @@ func resourceResourceAuthorizationCreate(d *schema.ResourceData, m interface{}) 
 
 	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
-		return fmt.Errorf(" creating authorized resource: %+v", err)
+		return fmt.Errorf("creating authorized resource: %+v", err)
 	}
 
 	d.SetId(*authorizedResource.Id)
@@ -88,7 +88,6 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 				Type:    authorizedResource.Type,
 				Id:      authorizedResource.Id,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -109,7 +108,6 @@ func resourceResourceAuthorizationRead(d *schema.ResourceData, m interface{}) er
 			Project:      &projectID,
 			DefinitionId: &definitionID,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				log.Printf(msgErrorAuthorizationNoLongerExists, *(authorizedResource.Id))
@@ -145,7 +143,7 @@ func resourceResourceAuthorizationUpdate(d *schema.ResourceData, m interface{}) 
 
 	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
-		return fmt.Errorf(" updating authorized resource: %+v", err)
+		return fmt.Errorf("updating authorized resource: %+v", err)
 	}
 
 	return resourceResourceAuthorizationRead(d, m)
@@ -161,7 +159,7 @@ func resourceResourceAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 
 	err := sendAuthorizedResourceToAPI(clients, authorizedResource, projectID, definitionID)
 	if err != nil {
-		return fmt.Errorf(" deleting authorized resource: %+v", err)
+		return fmt.Errorf("deleting authorized resource: %+v", err)
 	}
 
 	return nil

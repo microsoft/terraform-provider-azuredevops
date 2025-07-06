@@ -91,7 +91,6 @@ func resourceExtensionCreate(ctx context.Context, d *schema.ResourceData, m inte
 			ExtensionName: &extensionId,
 			Version:       converter.String(d.Get("version").(string)),
 		})
-
 	if err != nil {
 		return diag.Errorf(" Installing extension for Publisher: %s, Name: %s. Error: %v", publisherId, extensionId, err)
 	}
@@ -109,7 +108,6 @@ func resourceExtensionRead(ctx context.Context, d *schema.ResourceData, m interf
 		PublisherName: &publisherId,
 		ExtensionName: &extensionId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -182,7 +180,6 @@ func resourceExtensionDelete(ctx context.Context, d *schema.ResourceData, m inte
 		PublisherName: &publisher,
 		ExtensionName: &name,
 	})
-
 	if err != nil {
 		return diag.Errorf(" Uninstalling extension for Publisher: %s, name: %s. Error: %v", publisher, name, err)
 	}

@@ -23,16 +23,18 @@ import (
  * Begin unit tests
  */
 
-var gitProjectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
-var gitTokenProject = fmt.Sprintf("repoV2/%s", gitProjectID)
-var gitRepositoryID = "c629a0a4-926d-45d1-8095-6e2499cf3938"
-var gitTokenRepository = fmt.Sprintf("%s/%s", gitTokenProject, gitRepositoryID)
-var gitTokenBranchAll = fmt.Sprintf("%s/refs/heads", gitTokenRepository)
-var gitBranchNameValid = "master"
-var gitTokenBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
-var gitSubBranchNameValid = "1.0.0"
-var gitTokenSubBranch = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid)+"/"+encodeBranchName(gitSubBranchNameValid))
-var gitBranchNameInValid = "@@invalid@@"
+var (
+	gitProjectID          = "9083e944-8e9e-405e-960a-c80180aa71e6"
+	gitTokenProject       = fmt.Sprintf("repoV2/%s", gitProjectID)
+	gitRepositoryID       = "c629a0a4-926d-45d1-8095-6e2499cf3938"
+	gitTokenRepository    = fmt.Sprintf("%s/%s", gitTokenProject, gitRepositoryID)
+	gitTokenBranchAll     = fmt.Sprintf("%s/refs/heads", gitTokenRepository)
+	gitBranchNameValid    = "master"
+	gitTokenBranch        = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
+	gitSubBranchNameValid = "1.0.0"
+	gitTokenSubBranch     = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid)+"/"+encodeBranchName(gitSubBranchNameValid))
+	gitBranchNameInValid  = "@@invalid@@"
+)
 
 func TestGitPermissions_CreateGitToken(t *testing.T) {
 	var d *schema.ResourceData

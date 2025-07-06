@@ -1,3 +1,5 @@
+//go:build (all || resource_extension) && !exclude_resource_extension
+
 package acceptancetests
 
 import (
@@ -191,7 +193,7 @@ func checkExtensionDestroyed(s *terraform.State) error {
 		})
 
 		if err == nil {
-			return fmt.Errorf(" Extension with Publisher ID=%s , Extension ID: %s should not exist", ids[0], ids[1])
+			return fmt.Errorf("Extension with Publisher ID=%s , Extension ID: %s should not exist", ids[0], ids[1])
 		}
 	}
 	return nil
@@ -201,7 +203,7 @@ func checkExtensionExist(expectedExtensionId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_extension.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find `azuredevops_extension` in the TF state")
+			return fmt.Errorf("Did not find `azuredevops_extension` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -211,13 +213,12 @@ func checkExtensionExist(expectedExtensionId string) resource.TestCheckFunc {
 			PublisherName: &ids[0],
 			ExtensionName: &ids[1],
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Extension with Publisher ID=%s , Extension ID: %s cannot be found!. Error=%v", ids[0], ids[1], err)
+			return fmt.Errorf("Extension with Publisher ID=%s , Extension ID: %s cannot be found!. Error=%v", ids[0], ids[1], err)
 		}
 
 		if *extension.ExtensionId != expectedExtensionId {
-			return fmt.Errorf(" Extension with Publisher ID=%s has Extension ID=%s, but expected Extension ID=%s", *extension.PublisherId, *extension.ExtensionId, expectedExtensionId)
+			return fmt.Errorf("Extension with Publisher ID=%s has Extension ID=%s, but expected Extension ID=%s", *extension.PublisherId, *extension.ExtensionId, expectedExtensionId)
 		}
 		return nil
 	}

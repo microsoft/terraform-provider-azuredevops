@@ -134,7 +134,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 	if ref == nil {
-		return fmt.Errorf(" Creating Git file. Branch not found. Name: %s.", branch)
+		return fmt.Errorf("Creating Git file. Branch not found. Name: %s.", branch)
 	}
 
 	version := shortBranchName(branch)
@@ -154,7 +154,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 	changeType := git.VersionControlChangeTypeValues.Add
 	if repoItem != nil {
 		if !overwriteOnCreate {
-			return fmt.Errorf(" Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
+			return fmt.Errorf("Refusing to overwrite existing file. Configure `overwrite_on_create` to `true` to override.")
 		}
 		changeType = git.VersionControlChangeTypeValues.Edit
 	}
@@ -165,10 +165,7 @@ func resourceGitRepositoryFileCreate(d *schema.ResourceData, m interface{}) erro
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
-		args, err := gitRepositoryPushArgs(d, objectID, changeType)
-		if err != nil {
-			return retry.NonRetryableError(err)
-		}
+		args := gitRepositoryPushArgs(d, objectID, changeType)
 		if (*args.Push.Commits)[0].Comment == nil {
 			m := fmt.Sprintf("Add %s", file)
 			(*args.Push.Commits)[0].Comment = &m
@@ -206,12 +203,12 @@ func resourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" Get Git file. Repository not found, repositoryID: %s. Error:  %+v", repoId, err)
+		return fmt.Errorf("Get Git file. Repository not found, repositoryID: %s. Error:  %+v", repoId, err)
 	}
 
 	ref, err := checkRepositoryBranchExists(clients, repoId, branch)
 	if err != nil {
-		return fmt.Errorf(" Get Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
+		return fmt.Errorf("Get Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
 	}
 
 	if ref == nil {
@@ -284,7 +281,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 
 	_, err := checkRepositoryBranchExists(clients, repoId, branch)
 	if err != nil {
-		return fmt.Errorf(" Updating Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
+		return fmt.Errorf("Updating Git file. Failed to get repository branch. Repository ID: %s. Branch Name: %s. Error:  %+v", repoId, branch, err)
 	}
 
 	// Need to retry creating the file as multiple updates could happen at the same time
@@ -293,11 +290,7 @@ func resourceGitRepositoryFileUpdate(d *schema.ResourceData, m interface{}) erro
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
-		args, err := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
-		if err != nil {
-			return retry.NonRetryableError(err)
-		}
-
+		args := gitRepositoryPushArgs(d, objectID, git.VersionControlChangeTypeValues.Edit)
 		commits := *args.Push.Commits
 		if *commits[0].Comment == fmt.Sprintf("Add %s", file) {
 			*commits[0].Comment = fmt.Sprintf("Update %s", file)
@@ -383,7 +376,7 @@ func checkRepositoryBranchExists(c *client.AggregatedClient, repoId, branch stri
 		Filter:       converter.String("heads/" + branchName),
 	})
 	if err != nil {
-		return nil, fmt.Errorf(" Failed to get  the repository branch: %s. Error: %+v", branch, err)
+		return nil, fmt.Errorf("Failed to get  the repository branch: %s. Error: %+v", branch, err)
 	}
 	if resp != nil {
 		for _, ref := range resp.Value {
@@ -430,7 +423,7 @@ func getLastCommitId(c *client.AggregatedClient, repoId, branch string) (string,
 }
 
 // gitRepositoryPushArgs returns args used to commit and push changes.
-func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) (*git.CreatePushArgs, error) {
+func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType git.VersionControlChangeType) *git.CreatePushArgs {
 	var message *string
 	if commitMessage, hasCommitMessage := d.GetOk("commit_message"); hasCommitMessage {
 		cm := commitMessage.(string)
@@ -477,7 +470,7 @@ func gitRepositoryPushArgs(d *schema.ResourceData, objectID string, changeType g
 			},
 		},
 	}
-	return args, nil
+	return args
 }
 
 // shortBranchName removes the branch prefix which some API endpoints require.

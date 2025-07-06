@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_maven) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_maven
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -357,6 +355,7 @@ resource "azuredevops_serviceendpoint_maven" "import" {
 }
 `, template)
 }
+
 func hclSvcEndpointMavenResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	template := hclSvcEndpointMavenResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
 	return fmt.Sprintf(`

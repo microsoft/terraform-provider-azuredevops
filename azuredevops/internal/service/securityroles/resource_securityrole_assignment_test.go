@@ -19,10 +19,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var SecurityRoleAssignmentIdentityID = uuid.New()
-var SecurityRoleAssignmentScope = "some:scope"
-var SecurityRoleAssignmentResourceID = "123456789"
-var SecurityRoleAssignmentRole = "Admin"
+var (
+	SecurityRoleAssignmentIdentityID = uuid.New()
+	SecurityRoleAssignmentScope      = "some:scope"
+	SecurityRoleAssignmentResourceID = "123456789"
+	SecurityRoleAssignmentRole       = "Admin"
+)
 
 // verifies that if an error is produced on create, the error is not swallowed
 

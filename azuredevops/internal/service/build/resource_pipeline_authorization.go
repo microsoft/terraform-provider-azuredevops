@@ -83,21 +83,22 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 			Pipelines: &[]pipelinepermissions.PipelinePermission{{
 				Authorized: converter.ToPtr(true),
 				Id:         converter.ToPtr(v.(int)),
-			}}}
+			}},
+		}
 	} else {
 		pipePermissionParams.ResourceAuthorization = &pipelinepermissions.ResourcePipelinePermissions{
 			AllPipelines: &pipelinepermissions.Permission{
 				Authorized: converter.ToPtr(true),
-			}}
+			},
+		}
 	}
 
 	response, err := clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
 		clients.Ctx,
 		pipePermissionParams,
 	)
-
 	if err != nil {
-		return fmt.Errorf(" creating authorized resource: %+v", err)
+		return fmt.Errorf("creating authorized resource: %+v", err)
 	}
 
 	// ensure authorization is complete
@@ -112,7 +113,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	}
 
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
-		return fmt.Errorf(" waiting for pipeline authorization ready. %v ", err)
+		return fmt.Errorf("waiting for pipeline authorization ready. %v ", err)
 	}
 
 	d.SetId(*response.Resource.Id)
@@ -159,7 +160,7 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 	}
 
 	if resp.Pipelines != nil && len(*resp.Pipelines) > 0 {
-		var exist = false
+		exist := false
 		for _, pipe := range *resp.Pipelines {
 			if *pipe.Id == d.Get("pipeline_id").(int) {
 				exist = true
@@ -199,20 +200,21 @@ func resourcePipelineAuthorizationDelete(d *schema.ResourceData, m interface{}) 
 			Pipelines: &[]pipelinepermissions.PipelinePermission{{
 				Authorized: converter.ToPtr(false),
 				Id:         converter.ToPtr(v.(int)),
-			}}}
+			}},
+		}
 	} else {
 		pipePermissionParams.ResourceAuthorization = &pipelinepermissions.ResourcePipelinePermissions{
 			AllPipelines: &pipelinepermissions.Permission{
 				Authorized: converter.ToPtr(false),
-			}}
+			},
+		}
 	}
 
 	_, err := clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
 		clients.Ctx,
 		pipePermissionParams)
-
 	if err != nil {
-		return fmt.Errorf(" deleting authorized resource: %+v", err)
+		return fmt.Errorf("deleting authorized resource: %+v", err)
 	}
 
 	return nil

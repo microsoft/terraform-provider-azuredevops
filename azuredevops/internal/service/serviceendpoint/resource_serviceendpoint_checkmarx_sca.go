@@ -78,11 +78,7 @@ func ResourceServiceEndpointCheckMarxSCA() *schema.Resource {
 
 func resourceServiceEndpointCheckMarxSCACreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointCheckMarxSCA(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointCheckMarxSCA(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -104,7 +100,7 @@ func resourceServiceEndpointCheckMarxSCARead(d *schema.ResourceData, m interface
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -117,28 +113,20 @@ func resourceServiceEndpointCheckMarxSCARead(d *schema.ResourceData, m interface
 func resourceServiceEndpointCheckMarxSCAUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	serviceEndpoint, err := expandServiceEndpointCheckMarxSCA(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointCheckMarxSCA(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 	return resourceServiceEndpointCheckMarxSCARead(d, m)
 }
 
 func resourceServiceEndpointCheckMarxSCADelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointCheckMarxSCA(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointCheckMarxSCA(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointCheckMarxSCA(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointCheckMarxSCA(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -155,7 +143,7 @@ func expandServiceEndpointCheckMarxSCA(d *schema.ResourceData) (*serviceendpoint
 		"dependencyWebAppURL":        d.Get("web_app_url").(string),
 		"teams":                      d.Get("team").(string),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointCheckMarxSCA(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

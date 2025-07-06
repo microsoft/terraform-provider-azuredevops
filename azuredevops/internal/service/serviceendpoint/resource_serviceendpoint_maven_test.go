@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var mavenTestServiceEndpointIDpassword = uuid.New()
-var mavenRandomServiceEndpointProjectIDpassword = uuid.New()
-var mavenTestServiceEndpointProjectIDpassword = &mavenRandomServiceEndpointProjectID
+var (
+	mavenTestServiceEndpointIDpassword          = uuid.New()
+	mavenRandomServiceEndpointProjectIDpassword = uuid.New()
+	mavenTestServiceEndpointProjectIDpassword   = &mavenRandomServiceEndpointProjectID
+)
 
 var mavenTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -51,9 +53,11 @@ var mavenTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var mavenTestServiceEndpointID = uuid.New()
-var mavenRandomServiceEndpointProjectID = uuid.New()
-var mavenTestServiceEndpointProjectID = &mavenRandomServiceEndpointProjectID
+var (
+	mavenTestServiceEndpointID          = uuid.New()
+	mavenRandomServiceEndpointProjectID = uuid.New()
+	mavenTestServiceEndpointProjectID   = &mavenRandomServiceEndpointProjectID
+)
 
 var mavenTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -97,6 +101,7 @@ func testServiceEndpointMaven_ExpandFlatten_Roundtrip(t *testing.T, ep *servicee
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
+
 func TestServiceEndpointMaven_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointMaven_ExpandFlatten_Roundtrip(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }
@@ -128,9 +133,11 @@ func testServiceEndpointMaven_Create_DoesNotSwallowError(t *testing.T, ep *servi
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointMaven_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointMaven_Create_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointMaven_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointMaven_Create_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }
@@ -161,9 +168,11 @@ func testServiceEndpointMaven_Read_DoesNotSwallowError(t *testing.T, ep *service
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointMaven_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointMaven_Read_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointMaven_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointMaven_Read_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }
@@ -196,9 +205,11 @@ func testServiceEndpointMaven_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointMaven_Delete_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointMaven_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }
@@ -230,9 +241,11 @@ func testServiceEndpointMaven_Update_DoesNotSwallowError(t *testing.T, ep *servi
 	err := r.Update(resourceData, clients)
 	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointMaven_Update_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointMaven_Update_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }

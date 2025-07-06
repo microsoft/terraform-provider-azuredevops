@@ -81,7 +81,7 @@ func resourceProjectPipelineSettingsCreateUpdate(ctx context.Context, d *schema.
 
 	err := configureProjectPipelineGeneralSettings(clients, projectID, d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" creating/updating project build general settings: %v", err))
+		return diag.FromErr(fmt.Errorf("creating/updating project build general settings: %v", err))
 	}
 	d.SetId(projectID)
 	return resourceProjectPipelineSettingsRead(ctx, d, m)

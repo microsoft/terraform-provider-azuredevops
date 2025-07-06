@@ -1,6 +1,4 @@
 //go:build (all || permissions || resource_iteration_permissions) && (!exclude_permissions || !exclude_resource_iteration_permissions)
-// +build all permissions resource_iteration_permissions
-// +build !exclude_permissions !exclude_resource_iteration_permissions
 
 package acceptancetests
 

@@ -19,18 +19,20 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var azurermTestServiceEndpointAzureRMID = uuid.New()
-var azurermRandomServiceEndpointAzureRMProjectID = uuid.New()
-var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
+var (
+	azurermTestServiceEndpointAzureRMID          = uuid.New()
+	azurermRandomServiceEndpointAzureRMProjectID = uuid.New()
+	azurermTestServiceEndpointAzureRMProjectID   = &azurermRandomServiceEndpointAzureRMProjectID
+)
 
 func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 	return serviceendpoint.ServiceEndpoint{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
 				"authenticationType":  "spnKey",
-				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", //fake value
-				"serviceprincipalkey": "serviceprincipalkey",                  //fake value
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"serviceprincipalid":  "e31eaaac-47da-4156-b433-9b0538c94b7e", // fake value
+				"serviceprincipalkey": "serviceprincipalkey",                  // fake value
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 			},
 			Scheme: converter.String("ServicePrincipal"),
 		},
@@ -38,7 +40,7 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"creationMode":     "Manual",
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
 		Id:          &azurermTestServiceEndpointAzureRMID,
@@ -67,7 +69,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 				"authenticationType":  "spnKey",
 				"serviceprincipalid":  "",
 				"serviceprincipalkey": "",
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 			},
 			Scheme: converter.String("ServicePrincipal"),
 		},
@@ -75,7 +77,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"creationMode":     "Automatic",
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
 		Id:          &azurermTestServiceEndpointAzureRMID,
@@ -100,7 +102,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 				"authenticationType":  "spnKey",
 				"serviceprincipalid":  "",
 				"serviceprincipalkey": "",
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 				"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
 			},
 			Scheme: converter.String("ServicePrincipal"),
@@ -109,7 +111,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"creationMode":     "Automatic",
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
 		Id:          &azurermTestServiceEndpointAzureRMID,
@@ -131,14 +133,14 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid": "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid": "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 			},
 			Scheme: converter.String("ManagedServiceIdentity"),
 		},
 		Data: &map[string]string{
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
 		Id:          &azurermTestServiceEndpointAzureRMID,
@@ -160,15 +162,15 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-				"serviceprincipalid": "bba07645-051c-44b4-b806-c34d33f3dcd2", //fake value
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
+				"serviceprincipalid": "bba07645-051c-44b4-b806-c34d33f3dcd2", // fake value
 			},
 			Scheme: converter.String("WorkloadIdentityFederation"),
 		},
 		Data: &map[string]string{
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 			"creationMode":     "Manual",
 		},
@@ -191,7 +193,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 				"serviceprincipalid": "",
 			},
 			Scheme: converter.String("WorkloadIdentityFederation"),
@@ -199,7 +201,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Data: &map[string]string{
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 			"creationMode":     "Automatic",
 		},
@@ -222,7 +224,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 	{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
-				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+				"tenantid":           "aba07645-051c-44b4-b806-c34d33f3dcd1", // fake value
 				"serviceprincipalid": "",
 				"scope":              "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
 			},
@@ -231,7 +233,7 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 		Data: &map[string]string{
 			"environment":      "AzureCloud",
 			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", // fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 			"creationMode":     "Automatic",
 		},
@@ -360,7 +362,8 @@ func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testin
 		buildClient.
 			EXPECT().
 			DeleteServiceEndpoint(clients.Ctx, serviceendpoint.DeleteServiceEndpointArgs{
-				ProjectIds: &[]string{azurermTestServiceEndpointAzureRMProjectID.String()}, EndpointId: resource.Id}).
+				ProjectIds: &[]string{azurermTestServiceEndpointAzureRMProjectID.String()}, EndpointId: resource.Id,
+			}).
 			Return(nil).
 			Times(1)
 

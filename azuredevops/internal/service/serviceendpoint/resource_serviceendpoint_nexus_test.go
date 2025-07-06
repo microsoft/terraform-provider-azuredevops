@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var nexusTestServiceEndpointIDpassword = uuid.New()
-var nexusRandomServiceEndpointProjectIDpassword = uuid.New()
-var nexusTestServiceEndpointProjectIDpassword = &nexusRandomServiceEndpointProjectIDpassword
+var (
+	nexusTestServiceEndpointIDpassword          = uuid.New()
+	nexusRandomServiceEndpointProjectIDpassword = uuid.New()
+	nexusTestServiceEndpointProjectIDpassword   = &nexusRandomServiceEndpointProjectIDpassword
+)
 
 var nexusTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -62,6 +64,7 @@ func testServiceEndpointNexus_ExpandFlatten_Roundtrip(t *testing.T, ep *servicee
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
+
 func TestServiceEndpointNexus_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointNexus_ExpandFlatten_Roundtrip(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
 }
@@ -89,6 +92,7 @@ func testServiceEndpointNexus_Create_DoesNotSwallowError(t *testing.T, ep *servi
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointNexus_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointNexus_Create_DoesNotSwallowError(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
 }
@@ -119,6 +123,7 @@ func testServiceEndpointNexus_Read_DoesNotSwallowError(t *testing.T, ep *service
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointNexus_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointNexus_Read_DoesNotSwallowError(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
 }
@@ -151,6 +156,7 @@ func testServiceEndpointNexus_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointNexus_Delete_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointNexus_Delete_DoesNotSwallowError(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
 }

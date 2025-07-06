@@ -14,12 +14,12 @@ import (
 func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forcePermission *PermissionType, forceReplace bool) error {
 	principal, ok := d.GetOk("principal")
 	if !ok {
-		return fmt.Errorf(" Failed to get 'principal' from schema")
+		return fmt.Errorf("Failed to get 'principal' from schema")
 	}
 
 	permissions, ok := d.GetOk("permissions")
 	if !ok {
-		return fmt.Errorf(" Failed to get 'permissions' from schema")
+		return fmt.Errorf("Failed to get 'permissions' from schema")
 	}
 
 	bReplace := d.Get("replace")
@@ -41,7 +41,8 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 				SubjectDescriptor: principal.(string),
 				Permissions:       permissionMap,
 			},
-		}}
+		},
+	}
 
 	if err := sn.SetPrincipalPermissions(&setPermissions); err != nil {
 		return err
@@ -56,10 +57,10 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 				principal.(string),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf(" Reading permissions for principal %s: %+v", err, principal.(string))
+				return nil, "", fmt.Errorf("Reading permissions for principal %s: %+v", err, principal.(string))
 			}
 			if len(*currentPermissions) != 1 {
-				return nil, "", fmt.Errorf(" Received multiple permission sets for principal [%s] from backend. Expected single value.", principal.(string))
+				return nil, "", fmt.Errorf("Received multiple permission sets for principal [%s] from backend. Expected single value.", principal.(string))
 			}
 
 			bInsnyc := false
@@ -83,7 +84,7 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for permission update. %v ", err)
+		return fmt.Errorf("waiting for permission update. %v ", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", sn.token, principal.(string)))
@@ -94,12 +95,12 @@ func SetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace, forc
 func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace) (*PrincipalPermission, error) {
 	principal, ok := d.GetOk("principal")
 	if !ok {
-		return nil, fmt.Errorf(" Failed to get 'principal' from schema")
+		return nil, fmt.Errorf("Failed to get 'principal' from schema")
 	}
 
 	permissions, ok := d.GetOk("permissions")
 	if !ok {
-		return nil, fmt.Errorf(" Failed to get 'permissions' from schema")
+		return nil, fmt.Errorf("Failed to get 'permissions' from schema")
 	}
 
 	principalList := []string{*converter.StringFromInterface(principal)}
@@ -107,11 +108,11 @@ func GetPrincipalPermissions(d *schema.ResourceData, sn *SecurityNamespace) (*Pr
 	if err != nil {
 		return nil, err
 	}
-	if principalPermissions == nil || len(*principalPermissions) <= 0 {
+	if principalPermissions == nil || len(*principalPermissions) == 0 {
 		return nil, nil
 	}
 	if len(*principalPermissions) != 1 {
-		return nil, fmt.Errorf(" Failed to retrieve current permissions for principal [%s]", principalList[0])
+		return nil, fmt.Errorf("Failed to retrieve current permissions for principal [%s]", principalList[0])
 	}
 	for key := range ((*principalPermissions)[0]).Permissions {
 		if _, ok := permissions.(map[string]interface{})[string(key)]; !ok {

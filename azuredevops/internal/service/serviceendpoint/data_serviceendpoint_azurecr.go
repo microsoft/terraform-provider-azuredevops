@@ -92,11 +92,11 @@ func dataSourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{})
 		d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
 
 		scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
-		s := strings.SplitN(scope, "/", -1)
+		s := strings.Split(scope, "/")
 		d.Set("resource_group", s[4])
 		d.Set("azurecr_name", s[8])
 
 		return nil
 	}
-	return fmt.Errorf(" Looking up service endpoint!")
+	return fmt.Errorf("Looking up service endpoint!")
 }

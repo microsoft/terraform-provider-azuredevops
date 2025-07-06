@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var npmTestServiceEndpointID = uuid.New()
-var npmRandomServiceEndpointProjectID = uuid.New()
-var npmTestServiceEndpointProjectID = &npmRandomServiceEndpointProjectID
+var (
+	npmTestServiceEndpointID          = uuid.New()
+	npmRandomServiceEndpointProjectID = uuid.New()
+	npmTestServiceEndpointProjectID   = &npmRandomServiceEndpointProjectID
+)
 
 var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{

@@ -109,7 +109,6 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		},
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
 	}
@@ -128,13 +127,12 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &feedID,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" failed get feed. Projecct ID: %s , Feed ID %s : . Error: %+v", projectId, feedID, err)
+		return fmt.Errorf("failed get feed. Projecct ID: %s , Feed ID %s : . Error: %+v", projectId, feedID, err)
 	}
 
 	if feedDetail != nil {
@@ -157,7 +155,6 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &name,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -175,7 +172,6 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &name,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -186,7 +182,6 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 				FeedId:  &name,
 				Project: &projectId,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -203,7 +198,7 @@ func isFeedRestorable(d *schema.ResourceData, m interface{}) bool {
 		Project: converter.String(d.Get("project_id").(string)),
 	})
 
-	return err == nil && *((*change).ChangeType) == feed.ChangeTypeValues.Delete
+	return err == nil && *(change.ChangeType) == feed.ChangeTypeValues.Delete
 }
 
 func restoreFeed(d *schema.ResourceData, m interface{}) error {
@@ -219,7 +214,6 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 			Value: false,
 		}},
 	})
-
 	if err != nil {
 		return err
 	}

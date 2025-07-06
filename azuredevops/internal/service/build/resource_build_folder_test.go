@@ -21,10 +21,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var testProjectUUID = uuid.New()
-var testProjectReference = core.TeamProjectReference{
-	Id: &testProjectUUID,
-}
+var (
+	testProjectUUID      = uuid.New()
+	testProjectReference = core.TeamProjectReference{
+		Id: &testProjectUUID,
+	}
+)
 
 var testPath = "\\"
 

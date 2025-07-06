@@ -96,9 +96,8 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		ProjectId: &projectID,
 		Team:      &teamData,
 	})
-
 	if err != nil {
-		return fmt.Errorf(" Creating Team: %+v", err)
+		return fmt.Errorf("Creating Team: %+v", err)
 	}
 
 	teamID := team.Id.String()
@@ -150,7 +149,6 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 		TeamId:         converter.String(teamID),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -184,7 +182,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 		StorageKey: team.Id,
 	})
 	if err != nil {
-		return fmt.Errorf(" get team descriptor. Error: %+v", err)
+		return fmt.Errorf("get team descriptor. Error: %+v", err)
 	}
 	d.Set("descriptor", descriptor.Value)
 
@@ -223,7 +221,6 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 			TeamId:    &teamID,
 			TeamData:  &teamData,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -233,7 +230,6 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 			TeamId:         converter.String(teamID),
 			ExpandIdentity: converter.Bool(false),
 		})
-
 		if err != nil {
 			return err
 		}
@@ -280,7 +276,6 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 		ProjectId: &projectID,
 		TeamId:    &teamID,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -302,7 +297,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				ExpandIdentity: converter.Bool(false),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf(" Reading team data: %+v", err)
+				return nil, "", fmt.Errorf("Reading team data: %+v", err)
 			}
 
 			bDescriptionUpdated := nil == description || *team.Description == *description
@@ -312,7 +307,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if administratorSet != nil {
 				actualAdministrators, err := getTeamAdministrators(d, clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf(" Reading team administrators: %+v", err)
+					return nil, "", fmt.Errorf("Reading team administrators: %+v", err)
 				}
 				bAdministratorsUpdated = actualAdministrators.Len() == administratorSet.Len()
 			}
@@ -322,7 +317,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				Team:    converter.String(teamID),
 			})
 			if err != nil {
-				return nil, "", fmt.Errorf(" Reading Team dashboard: %+v", err)
+				return nil, "", fmt.Errorf("Reading Team dashboard: %+v", err)
 			}
 			dashboardUpdate := true
 			if dashboards == nil && len(*dashboards) == 0 {
@@ -333,7 +328,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if memberSet != nil {
 				actualMemberships, err := getTeamMembers(clients, team)
 				if err != nil {
-					return nil, "", fmt.Errorf(" Reading team memberships: %+v", err)
+					return nil, "", fmt.Errorf("Reading team memberships: %+v", err)
 				}
 				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
 			}
@@ -351,7 +346,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
-		return fmt.Errorf(" waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
+		return fmt.Errorf("waiting for state change for team %s in project %s. %v ", teamID, projectID, err)
 	}
 
 	return nil
@@ -375,7 +370,7 @@ func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, sub
 	if err != nil {
 		return err
 	}
-	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentMemberSet.Len() <= 0 {
+	if (subjectDescriptors == nil || len(*subjectDescriptors) == 0) && currentMemberSet.Len() == 0 {
 		return nil
 	}
 	if subjectDescriptors == nil {
@@ -415,7 +410,6 @@ func getIdentitiesFromSubjects(clients *client.AggregatedClient, query linq.Quer
 	idlist, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 		SubjectDescriptors: converter.String(discriptors),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +511,7 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 	if err != nil {
 		return err
 	}
-	if (subjectDescriptors == nil || len(*subjectDescriptors) <= 0) && currentAdministratorSet.Len() <= 0 {
+	if (subjectDescriptors == nil || len(*subjectDescriptors) == 0) && currentAdministratorSet.Len() == 0 {
 		return nil
 	}
 
@@ -530,7 +524,6 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 		// determine the list of all removed administrators
 		linq.From(currentAdministrators).Except(linq.From(*subjectDescriptors)),
 		securityhelper.PermissionTypeValues.NotSet)
-
 	if err != nil {
 		return err
 	}
@@ -542,7 +535,6 @@ func updateTeamAdministrators(d *schema.ResourceData, clients *client.Aggregated
 		// determine the list of all added administrators
 		linq.From(*subjectDescriptors).Except(linq.From(currentAdministrators)),
 		securityhelper.PermissionTypeValues.Allow)
-
 	if err != nil {
 		return err
 	}
@@ -596,7 +588,7 @@ func setTeamAdministratorsPermissions(d *schema.ResourceData, clients *client.Ag
 func getSubjectDescriptors(clients *client.AggregatedClient, members *[]string) (*schema.Set, error) {
 	set := schema.NewSet(schema.HashString, nil)
 
-	if members == nil || len(*members) <= 0 {
+	if members == nil || len(*members) == 0 {
 		return set, nil
 	}
 
@@ -622,7 +614,6 @@ func getSubjectDescriptors(clients *client.AggregatedClient, members *[]string) 
 			memberIdentities, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
 				Descriptors: &descriptors,
 			})
-
 			if err != nil {
 				return nil, err
 			}

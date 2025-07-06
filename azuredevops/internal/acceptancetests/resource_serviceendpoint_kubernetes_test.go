@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_kubernetes) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_kubernetes
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -141,7 +139,7 @@ func checkSvcEndpointKubernetesExists(expectedName string) resource.TestCheckFun
 	return func(s *terraform.State) error {
 		serviceEndpointDef, ok := s.RootModule().Resources["azuredevops_serviceendpoint_kubernetes.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a service endpoint in the TF state")
+			return fmt.Errorf("Did not find a service endpoint in the TF state")
 		}
 
 		serviceEndpoint, err := getServiceEndpointKubernetesFromResource(serviceEndpointDef)
@@ -150,7 +148,7 @@ func checkSvcEndpointKubernetesExists(expectedName string) resource.TestCheckFun
 		}
 
 		if *serviceEndpoint.Name != expectedName {
-			return fmt.Errorf(" Service Endpoint has Name=%s, but expected Name=%s", *serviceEndpoint.Name, expectedName)
+			return fmt.Errorf("Service Endpoint has Name=%s, but expected Name=%s", *serviceEndpoint.Name, expectedName)
 		}
 
 		return nil
@@ -164,7 +162,7 @@ func checkSvcEndpointKubernetesDestroyed(s *terraform.State) error {
 		}
 
 		if _, err := getServiceEndpointKubernetesFromResource(res); err == nil {
-			return fmt.Errorf(" Unexpectedly found a service endpoint that should be deleted")
+			return fmt.Errorf("Unexpectedly found a service endpoint that should be deleted")
 		}
 	}
 

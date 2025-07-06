@@ -1,6 +1,4 @@
 //go:build (all || resource_repositorypolicy_author_email_patterns) && !resource_repositorypolicy_author_email_patterns
-// +build all resource_repositorypolicy_author_email_patterns
-// +build !resource_repositorypolicy_author_email_patterns
 
 package acceptancetests
 

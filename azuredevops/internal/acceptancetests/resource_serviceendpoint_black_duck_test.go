@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_black_duck) && !exclude_resource_serviceendpoint_black_duck
+
 package acceptancetests
 
 import (
