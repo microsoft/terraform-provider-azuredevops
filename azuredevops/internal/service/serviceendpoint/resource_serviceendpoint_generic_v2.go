@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,9 +22,10 @@ import (
 
 // Cache to store validated service endpoint types
 var (
-	serviceEndpointTypesCache = make(map[string]bool)
-	serviceEndpointTypesList  = make([]string, 0)
-	serviceEndpointTypesMutex sync.RWMutex
+	serviceEndpointTypesCache       = make(map[string]bool)
+	serviceEndpointTypesList        = make([]serviceendpoint.ServiceEndpointType, 0)
+	serviceEndpointTypesMutex       sync.RWMutex
+	serviceEndpointTypesInitialized bool
 )
 
 // EndpointConfig represents the configuration for a service endpoint
@@ -115,6 +117,43 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 	return r
 }
 
+// InitServiceEndpointTypes loads all service endpoint types from Azure DevOps
+// This can be called during provider initialization or when first needed
+func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Client) error {
+	serviceEndpointTypesMutex.Lock()
+	defer serviceEndpointTypesMutex.Unlock()
+
+	if serviceEndpointTypesInitialized {
+		return nil // Already initialized
+	}
+
+	args := serviceendpoint.GetServiceEndpointTypesArgs{}
+	serviceEndpointTypes, err := (*client).GetServiceEndpointTypes(ctx, args)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve service endpoint types: %v", err)
+	}
+
+	if serviceEndpointTypes == nil {
+		return fmt.Errorf("no service endpoint types available")
+	}
+
+	// Clear existing cache
+	serviceEndpointTypesCache = make(map[string]bool)
+	serviceEndpointTypesList = make([]serviceendpoint.ServiceEndpointType, 0, len(*serviceEndpointTypes))
+
+	// Populate cache with fetched types
+	for _, availableType := range *serviceEndpointTypes {
+		if availableType.Name != nil {
+			typeName := *availableType.Name
+			serviceEndpointTypesCache[typeName] = true
+			serviceEndpointTypesList = append(serviceEndpointTypesList, availableType)
+		}
+	}
+
+	serviceEndpointTypesInitialized = true
+	return nil
+}
+
 func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) (map[string]forminput.InputDescriptor, error) {
 	possibleAuthSchemes := make([]string, 0, len(*availableType.AuthenticationSchemes))
 	possibleAuthData := make(map[string]forminput.InputDescriptor)
@@ -196,60 +235,62 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 
 // validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
 func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
-	// Check cache first
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
+
+	// Check if types have been initialized yet
 	serviceEndpointTypesMutex.RLock()
-	if _, found := serviceEndpointTypesCache[serviceEndpointType]; found {
-		serviceEndpointTypesMutex.RUnlock()
-		return nil // Type is cached
-	}
+	initialized := serviceEndpointTypesInitialized
 	serviceEndpointTypesMutex.RUnlock()
 
-	// Get available service endpoint types from Azure DevOps
-	args := serviceendpoint.GetServiceEndpointTypesArgs{}
-
-	serviceEndpointTypes, err := clients.ServiceEndpointClient.GetServiceEndpointTypes(clients.Ctx, args)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve service endpoint types: %v", err)
-	}
-
-	if serviceEndpointTypes == nil {
-		return fmt.Errorf("no service endpoint types available")
-	}
-
-	// Update cache
-	serviceEndpointTypesMutex.Lock()
-	defer serviceEndpointTypesMutex.Unlock()
-
-	// Populate cache and check if the requested type exists
-	typeFound := false
-	for _, availableType := range *serviceEndpointTypes {
-		if availableType.Name != nil {
-			typeName := *availableType.Name
-			serviceEndpointTypesCache[typeName] = true
-			serviceEndpointTypesList = append(serviceEndpointTypesList, typeName)
-
-			if typeName == serviceEndpointType {
-				typeFound = true
-				if err := validateServiceEndpointType(&availableType, serviceEndpoint); err != nil {
-					return err
-				}
-			}
+	// If not initialized, initialize the cache
+	if !initialized {
+		if err := InitServiceEndpointTypes(clients.Ctx, &clients.ServiceEndpointClient); err != nil {
+			return fmt.Errorf("error initializing service endpoint types: %v", err)
 		}
 	}
 
-	// Print available types for debugging
-	fmt.Println("Available service endpoint types:")
-	for _, typeName := range serviceEndpointTypesList {
-		fmt.Printf("- %s\n", typeName)
+	// Check if the requested type exists in the cache
+	serviceEndpointTypesMutex.RLock()
+	typeFound := serviceEndpointTypesCache[serviceEndpointType]
+	var foundType *serviceendpoint.ServiceEndpointType
+
+	// Find the type details if it exists
+	if typeFound {
+		for _, availableType := range serviceEndpointTypesList {
+			if availableType.Name != nil && *availableType.Name == serviceEndpointType {
+				typeCopy := availableType // Create a copy to avoid race conditions
+				foundType = &typeCopy
+				break
+			}
+		}
+	}
+	serviceEndpointTypesMutex.RUnlock()
+
+	// If the type was found in the cache, validate it
+	if foundType != nil {
+		return validateServiceEndpointType(foundType, serviceEndpoint)
 	}
 
-	// Check if the requested type exists in the updated cache
-	if !typeFound {
-		return fmt.Errorf("service endpoint type '%s' is not available", serviceEndpointType)
+	// If the type wasn't found, prepare an error message with all valid types
+	serviceEndpointTypesMutex.RLock()
+	result := make([]string, 0, len(serviceEndpointTypesList))
+	for _, endpoint := range serviceEndpointTypesList {
+		if endpoint.DisplayName != nil && endpoint.Name != nil {
+			result = append(result, fmt.Sprintf("%s: %s", *endpoint.DisplayName, *endpoint.Name))
+		}
 	}
+	serviceEndpointTypesMutex.RUnlock()
 
-	return nil
+	return fmt.Errorf(
+		"service endpoint type '%s' is not available.\nValid types are:\n%s",
+		serviceEndpointType,
+		func() string {
+			if len(result) == 0 {
+				return "No service endpoint types available"
+			}
+			return strings.Join(result, "\n")
+		}(),
+	)
 }
 
 func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -655,6 +696,7 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 
 	// Validate service endpoint schema
 	if err := validateServiceEndpointSchema(clients, config); err != nil {
+		// If the error is about an invalid type, append the valid types with display names
 		return err
 	}
 
