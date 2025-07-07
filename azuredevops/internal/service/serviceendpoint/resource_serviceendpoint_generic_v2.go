@@ -3,12 +3,12 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -161,33 +161,22 @@ func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, conf
 	return possibleAuthData, nil
 }
 
-func validateFields(ctx context.Context, configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string, isConfigured bool) diag.Diagnostics {
-	var diags diag.Diagnostics
-
+func validateFields(ctx context.Context, configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string) error {
 	if len(configFields) == 0 {
-		// Only log a warning if this field is actually configured in the resource
-		if isConfigured {
-			message := fmt.Sprintf("Received empty configFields for service endpoint type '%s' for '%s' field. This indicates sensitive data or known-after-apply fields in configuration. Skipping validation.", endpointType, fieldType)
-			tflog.Warn(ctx, message)
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Skipping field validation for sensitive or known-after-apply data",
-				Detail:   message,
-			})
-		}
-		return diags
+		tflog.Warn(ctx, fmt.Sprintf("Recieved nil configFields for service endpoint type '%s' for '%s' field. This indicates sensitive data or known-after-apply fields in configuration. Skipping validation.", endpointType, fieldType))
+		return nil
 	}
 	// Check for unsupported fields
 	for key := range configFields {
 		if _, exists := possibleFields[key]; !exists {
-			return diag.FromErr(fmt.Errorf("service endpoint type '%s' does not support %s field '%s'. Supported fields: {%s}",
+			return fmt.Errorf("service endpoint type '%s' does not support %s field '%s'. Supported fields: {%s}",
 				endpointType, fieldType, key, func() string {
 					fields := make([]string, 0, len(possibleFields))
 					for k := range possibleFields {
 						fields = append(fields, k)
 					}
 					return fmt.Sprintf("%s", fields)
-				}()))
+				}())
 		}
 	}
 	// Check for missing required fields
@@ -200,43 +189,41 @@ func validateFields(ctx context.Context, configFields map[string]string, possibl
 		}
 	}
 	if len(missingFields) > 0 {
-		return diag.FromErr(fmt.Errorf("service endpoint type '%s' is missing required %s fields: {%s}", endpointType, fieldType, func() string {
+		return fmt.Errorf("service endpoint type '%s' is missing required %s fields: {%s}", endpointType, fieldType, func() string {
 			fields := make([]string, 0, len(missingFields))
 			for k, v := range missingFields {
 				fields = append(fields, fmt.Sprintf("Key: %s, Display Name: %s\n", k, v))
 			}
 			return fmt.Sprintf("%s", fields)
-		}()))
+		}())
 	}
-	return diags
+	return nil
 }
 
-func validateServiceEndpointType(ctx context.Context, availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) diag.Diagnostics {
-	var diags diag.Diagnostics
-
+func validateServiceEndpointType(ctx context.Context, availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) error {
 	// Validate Data fields
 	possibleData := make(map[string]forminput.InputDescriptor)
 	for _, data := range *availableType.InputDescriptors {
 		possibleData[*data.Id] = data
 	}
-
-	dataDiags := validateFields(ctx, config.Data, possibleData, "data", *availableType.Name, config.HasDataBlock)
-	diags = append(diags, dataDiags...)
+	if err := validateFields(ctx, config.Data, possibleData, "data", *availableType.Name); err != nil {
+		return err
+	}
 
 	// Validate AuthData fields
 	possibleAuthData, err := validateAuthScheme(availableType, config)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
+	}
+	if err := validateFields(ctx, config.AuthData, possibleAuthData, "auth", *availableType.Name); err != nil {
+		return err
 	}
 
-	authDiags := validateFields(ctx, config.AuthData, possibleAuthData, "auth", *availableType.Name, config.HasParametersBlock)
-	diags = append(diags, authDiags...)
-
-	return diags
+	return nil
 }
 
 // validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
-func validateServiceEndpointSchema(ctx context.Context, clients *client.AggregatedClient, serviceEndpoint EndpointConfig) diag.Diagnostics {
+func validateServiceEndpointSchema(ctx context.Context, clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
 
 	// Check if types have been initialized yet
@@ -247,7 +234,7 @@ func validateServiceEndpointSchema(ctx context.Context, clients *client.Aggregat
 	// If not initialized, initialize the cache
 	if !initialized {
 		if err := InitServiceEndpointTypes(clients.Ctx, &clients.ServiceEndpointClient); err != nil {
-			return diag.FromErr(fmt.Errorf("error initializing service endpoint types: %v", err))
+			return fmt.Errorf("error initializing service endpoint types: %v", err)
 		}
 	}
 
@@ -283,7 +270,7 @@ func validateServiceEndpointSchema(ctx context.Context, clients *client.Aggregat
 	}
 	serviceEndpointTypesMutex.RUnlock()
 
-	return diag.FromErr(fmt.Errorf(
+	return fmt.Errorf(
 		"service endpoint type '%s' is not available.\nValid types are:\n%s",
 		serviceEndpointType,
 		func() string {
@@ -292,7 +279,7 @@ func validateServiceEndpointSchema(ctx context.Context, clients *client.Aggregat
 			}
 			return strings.Join(result, "\n")
 		}(),
-	))
+	)
 }
 
 func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -335,10 +322,8 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 		Data:                data,
 	}
 
-	// Validate the service endpoint schema
-	diags := validateServiceEndpointSchema(ctx, clients, config)
-	if diags.HasError() {
-		return diags
+	if err := validateServiceEndpointSchema(ctx, clients, config); err != nil {
+		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %v", err))
 	}
 
 	serviceEndpoint, err := createGenericV2ServiceEndpoint(ctx, clients, name, projectID, description, serviceEndpointType, serverURL, authScheme, authParams, data)
@@ -352,9 +337,7 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 
 	d.SetId(serviceEndpoint.Id.String())
 
-	// Return any warnings that were generated during validation
-	readDiags := resourceServiceEndpointGenericV2Read(ctx, d, m)
-	return append(diags, readDiags...)
+	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
 func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -712,51 +695,42 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 		Data:                data,
 	}
 
-	// Validate service endpoint schema - only return actual errors, not warnings
-	diags := validateServiceEndpointSchema(ctx, clients, config)
-	if diags.HasError() {
-		for _, diagValue := range diags {
-			if diagValue.Severity == diag.Error {
-				return fmt.Errorf(diagValue.Summary + ": " + diagValue.Detail)
-			}
-		}
+	// Validate service endpoint schema
+	if err := validateServiceEndpointSchema(ctx, clients, config); err != nil {
+		// If the error is about an invalid type, append the valid types with display names
+		return err
 	}
 
 	return nil
 }
 
 // getAuthorizationDetailsFromDiff extracts authorization details from ResourceDiff
-func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, bool, error) {
+func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
 	authSet, ok := d.Get("authorization").(*schema.Set)
 	if !ok || authSet.Len() == 0 {
-		return "", nil, false, fmt.Errorf("no authorization configuration found")
+		return "", nil, fmt.Errorf("no authorization configuration found")
 	}
 
 	authData, ok := authSet.List()[0].(map[string]interface{})
 	if !ok {
-		return "", nil, false, fmt.Errorf("invalid authorization configuration format")
+		return "", nil, fmt.Errorf("invalid authorization configuration format")
 	}
 
 	scheme, ok := authData["scheme"].(string)
 	if !ok || scheme == "" {
-		return "", nil, false, fmt.Errorf("missing or invalid authorization scheme")
+		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
 	}
-
-	// Check if parameters block is explicitly configured
-	hasParametersBlock := false
-	rawConfig := d.GetRawConfig()
-	hasParametersBlock = !rawConfig.AsValueMap()["authorization"].GetAttr("parameters").IsNull()
 
 	params := make(map[string]string)
 	if paramsRaw, ok := authData["parameters"].(map[string]interface{}); ok {
 		for k, v := range paramsRaw {
 			strValue, ok := v.(string)
 			if !ok {
-				return "", nil, hasParametersBlock, fmt.Errorf("parameter %q has invalid type, expected string", k)
+				return "", nil, fmt.Errorf("parameter %q has invalid type, expected string", k)
 			}
 			params[k] = strValue
 		}
 	}
 
-	return scheme, params, hasParametersBlock, nil
+	return scheme, params, nil
 }
