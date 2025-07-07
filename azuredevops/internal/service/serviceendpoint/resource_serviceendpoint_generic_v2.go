@@ -23,8 +23,7 @@ import (
 
 // Cache to store validated service endpoint types
 var (
-	serviceEndpointTypesCache       = make(map[string]bool)
-	serviceEndpointTypesList        = make([]serviceendpoint.ServiceEndpointType, 0)
+	serviceEndpointTypesList        = make(map[string]serviceendpoint.ServiceEndpointType)
 	serviceEndpointTypesMutex       sync.RWMutex
 	serviceEndpointTypesInitialized bool
 )
@@ -35,9 +34,6 @@ type EndpointConfig struct {
 	AuthType            string
 	AuthData            map[string]string
 	Data                map[string]string
-	// Fields to track which fields are explicitly configured in the resource
-	HasDataBlock       bool
-	HasParametersBlock bool
 }
 
 // ResourceServiceEndpointGenericV2 schema and implementation for generic service endpoint resource
@@ -84,31 +80,21 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 				ValidateFunc:     validation.IsURLWithHTTPorHTTPS,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
-			"authorization": {
-				Type:     schema.TypeSet,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"scheme": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     true,
-							ValidateFunc: validation.StringIsNotWhiteSpace,
-						},
-						"parameters": {
-							Type:     schema.TypeMap,
-							Optional: true,
-							ForceNew: false,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
+			"authorization_type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"authorization_parameters": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: false,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
-			"data": {
+			"parameters": {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem: &schema.Schema{
@@ -141,16 +127,11 @@ func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Clien
 		return fmt.Errorf("no service endpoint types available")
 	}
 
-	// Clear existing cache
-	serviceEndpointTypesCache = make(map[string]bool)
-	serviceEndpointTypesList = make([]serviceendpoint.ServiceEndpointType, 0, len(*serviceEndpointTypes))
-
 	// Populate cache with fetched types
 	for _, availableType := range *serviceEndpointTypes {
 		if availableType.Name != nil {
 			typeName := *availableType.Name
-			serviceEndpointTypesCache[typeName] = true
-			serviceEndpointTypesList = append(serviceEndpointTypesList, availableType)
+			serviceEndpointTypesList[typeName] = availableType
 		}
 	}
 
