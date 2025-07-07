@@ -169,7 +169,6 @@ func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, conf
 
 // validateFields ensures that the provided configuration fields match the expected fields
 func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string, planTime bool) error {
-
 	// Skip validation at plan time if fields are empty (known-after-apply)
 	if planTime && len(configFields) == 0 {
 		return nil
