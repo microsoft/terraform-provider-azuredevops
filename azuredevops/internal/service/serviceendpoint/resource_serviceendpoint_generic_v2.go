@@ -160,7 +160,11 @@ func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, conf
 	return possibleAuthData, nil
 }
 
-func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string) error {
+func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string, planTime bool) error {
+	if planTime && len(configFields) == 0 {
+		// Plan time validation allows missing fields because known-after-apply fields are not set yet
+		return nil
+	}
 	// Check for unsupported fields
 	for key := range configFields {
 		if _, exists := possibleFields[key]; !exists {
@@ -195,13 +199,13 @@ func validateFields(configFields map[string]string, possibleFields map[string]fo
 	return nil
 }
 
-func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) error {
+func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig, planTime bool) error {
 	// Validate Data fields
 	possibleData := make(map[string]forminput.InputDescriptor)
 	for _, data := range *availableType.InputDescriptors {
 		possibleData[*data.Id] = data
 	}
-	if err := validateFields(config.Data, possibleData, "data", *availableType.Name); err != nil {
+	if err := validateFields(config.Data, possibleData, "data", *availableType.Name, planTime); err != nil {
 		return err
 	}
 
@@ -210,7 +214,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 	if err != nil {
 		return err
 	}
-	if err := validateFields(config.AuthData, possibleAuthData, "auth", *availableType.Name); err != nil {
+	if err := validateFields(config.AuthData, possibleAuthData, "auth", *availableType.Name, planTime); err != nil {
 		return err
 	}
 
@@ -218,7 +222,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 }
 
 // validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
-func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig) error {
+func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig, planTime bool) error {
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
 
 	// Check if types have been initialized yet
@@ -235,24 +239,12 @@ func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndp
 
 	// Check if the requested type exists in the cache
 	serviceEndpointTypesMutex.RLock()
-	typeFound := serviceEndpointTypesCache[serviceEndpointType]
-	var foundType *serviceendpoint.ServiceEndpointType
-
-	// Find the type details if it exists
-	if typeFound {
-		for _, availableType := range serviceEndpointTypesList {
-			if availableType.Name != nil && *availableType.Name == serviceEndpointType {
-				typeCopy := availableType // Create a copy to avoid race conditions
-				foundType = &typeCopy
-				break
-			}
-		}
-	}
+	foundType, ok := serviceEndpointTypesList[serviceEndpointType]
 	serviceEndpointTypesMutex.RUnlock()
 
 	// If the type was found in the cache, validate it
-	if foundType != nil {
-		return validateServiceEndpointType(foundType, serviceEndpoint)
+	if ok {
+		return validateServiceEndpointType(&foundType, serviceEndpoint, planTime)
 	}
 
 	// If the type wasn't found, prepare an error message with all valid types
@@ -293,22 +285,30 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 	}
 
 	// Get additional data
+	dataRaw, ok := d.Get("parameters").(map[string]interface{})
+	if !ok {
+		return diag.FromErr(fmt.Errorf("invalid data format for 'parameters'"))
+	}
+	// Convert additional data to the required format
 	data := make(map[string]string)
-	if dataRaw := d.Get("data"); dataRaw != nil {
-		dataMap, ok := dataRaw.(map[string]interface{})
-		if !ok {
-			return diag.FromErr(fmt.Errorf("invalid data format"))
-		}
-
-		for k, v := range dataMap {
-			strVal, ok := v.(string)
-			if !ok {
-				return diag.FromErr(fmt.Errorf("data value for key %q is not a string", k))
-			}
+	for k, v := range dataRaw {
+		if strVal, ok := v.(string); ok {
 			data[k] = strVal
+		} else {
+			return diag.FromErr(fmt.Errorf("data value for key '%s' is not a string", k))
 		}
 	}
+	// Has to be called again to validate known-after-apply fields
+	config := EndpointConfig{
+		ServiceEndpointType: serviceEndpointType,
+		AuthType:            authScheme,
+		AuthData:            authParams,
+		Data:                data,
+	}
 
+	if err := validateServiceEndpointSchema(clients, config, false); err != nil {
+		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %v", err))
+	}
 	serviceEndpoint, err := createGenericV2ServiceEndpoint(ctx, clients, name, projectID, description, serviceEndpointType, serverURL, authScheme, authParams, data)
 	if err != nil {
 		return diag.FromErr(err)
@@ -368,33 +368,30 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 	}
 
 	// Handle authorization
-	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
-		// Get current authorization block
-		authSet := d.Get("authorization").(*schema.Set)
-		if authSet.Len() > 0 {
-			authData := authSet.List()[0].(map[string]interface{})
+	if serviceEndpoint.Authorization != nil {
+		if err := d.Set("authorization_type", serviceEndpoint.Authorization.Scheme); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting authorization_type: %v", err))
+		}
 
-			// Update the scheme if it's changed
-			authScheme := *serviceEndpoint.Authorization.Scheme
-			if authData["scheme"] != authScheme {
-				// We need to recreate the authorization block with the updated scheme
-				newAuth := map[string]interface{}{
-					"scheme":     authScheme,
-					"parameters": authData["parameters"], // Keep existing parameters
-				}
-
-				// Convert to a set and set in state
-				newAuthSet := schema.NewSet(schema.HashResource(&schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"scheme":     {Type: schema.TypeString},
-						"parameters": {Type: schema.TypeMap},
-					},
-				}), []interface{}{newAuth})
-
-				if err := d.Set("authorization", newAuthSet); err != nil {
-					return diag.FromErr(fmt.Errorf("error setting authorization: %v", err))
-				}
+		if serviceEndpoint.Authorization.Parameters != nil {
+			authParams := make(map[string]string)
+			for k, v := range *serviceEndpoint.Authorization.Parameters {
+				authParams[k] = v
 			}
+			if err := d.Set("authorization_parameters", authParams); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting authorization_parameters: %v", err))
+			}
+		} else {
+			if err := d.Set("authorization_parameters", nil); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %v", err))
+			}
+		}
+	} else {
+		if err := d.Set("authorization_type", ""); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting authorization_type to empty: %v", err))
+		}
+		if err := d.Set("authorization_parameters", nil); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %v", err))
 		}
 	}
 
@@ -506,29 +503,21 @@ func resourceServiceEndpointGenericV2Delete(ctx context.Context, d *schema.Resou
 }
 
 func getAuthorizationDetails(d *schema.ResourceData) (string, map[string]string, error) {
-	authSet := d.Get("authorization").(*schema.Set)
-	if authSet.Len() == 0 {
-		return "", nil, fmt.Errorf("no authorization configuration found")
-	}
-
-	authData, ok := authSet.List()[0].(map[string]interface{})
-	if !ok {
-		return "", nil, fmt.Errorf("invalid authorization configuration format")
-	}
-
-	scheme, ok := authData["scheme"].(string)
+	scheme, ok := d.Get("authorization_type").(string)
 	if !ok || scheme == "" {
 		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
 	}
 
+	paramsRaw, ok := d.Get("authorization_parameters").(map[string]interface{})
+	if !ok {
+		return "", nil, fmt.Errorf("invalid authorization parameters format")
+	}
 	params := make(map[string]string)
-	if paramsRaw, ok := authData["parameters"].(map[string]interface{}); ok {
-		for k, v := range paramsRaw {
-			strValue, ok := v.(string)
-			if !ok {
-				return "", nil, fmt.Errorf("parameter %q has invalid type, expected string", k)
-			}
-			params[k] = strValue
+	for k, v := range paramsRaw {
+		if strVal, ok := v.(string); ok {
+			params[k] = strVal
+		} else {
+			return "", nil, fmt.Errorf("authorization parameter '%s' is not a string", k)
 		}
 	}
 
@@ -654,19 +643,16 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 	}
 
 	// Convert additional data to the required format
+	dataRaw, ok := d.Get("authorization_parameters").(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid authorization parameters format")
+	}
 	data := make(map[string]string)
-	if dataRaw := d.Get("data"); dataRaw != nil {
-		dataMap, ok := dataRaw.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid data format")
-		}
-
-		for k, v := range dataMap {
-			strVal, ok := v.(string)
-			if !ok {
-				return fmt.Errorf("data value for key %q is not a string", k)
-			}
-			data[k] = strVal
+	for k, v := range dataRaw {
+		if strVal, ok := v.(string); ok {
+			authParams[k] = strVal
+		} else {
+			return fmt.Errorf("authorization parameter '%s' is not a string", k)
 		}
 	}
 
@@ -679,7 +665,7 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 	}
 
 	// Validate service endpoint schema
-	if err := validateServiceEndpointSchema(clients, config); err != nil {
+	if err := validateServiceEndpointSchema(clients, config, true); err != nil {
 		// If the error is about an invalid type, append the valid types with display names
 		return err
 	}
@@ -689,31 +675,22 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 
 // getAuthorizationDetailsFromDiff extracts authorization details from ResourceDiff
 func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
-	authSet, ok := d.Get("authorization").(*schema.Set)
-	if !ok || authSet.Len() == 0 {
-		return "", nil, fmt.Errorf("no authorization configuration found")
-	}
-
-	authData, ok := authSet.List()[0].(map[string]interface{})
-	if !ok {
-		return "", nil, fmt.Errorf("invalid authorization configuration format")
-	}
-
-	scheme, ok := authData["scheme"].(string)
+	scheme, ok := d.Get("authorization_type").(string)
 	if !ok || scheme == "" {
 		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
 	}
-
-	params := make(map[string]string)
-	if paramsRaw, ok := authData["parameters"].(map[string]interface{}); ok {
-		for k, v := range paramsRaw {
-			strValue, ok := v.(string)
-			if !ok {
-				return "", nil, fmt.Errorf("parameter %q has invalid type, expected string", k)
-			}
-			params[k] = strValue
+	params, ok := d.Get("authorization_parameters").(map[string]interface{})
+	if !ok {
+		return "", nil, fmt.Errorf("invalid authorization parameters format")
+	}
+	authParams := make(map[string]string)
+	for k, v := range params {
+		if strVal, ok := v.(string); ok {
+			authParams[k] = strVal
+		} else {
+			return "", nil, fmt.Errorf("authorization parameter '%s' is not a string", k)
 		}
 	}
 
-	return scheme, params, nil
+	return scheme, authParams, nil
 }
