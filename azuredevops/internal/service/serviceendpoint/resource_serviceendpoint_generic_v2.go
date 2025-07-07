@@ -37,7 +37,7 @@ type EndpointConfig struct {
 
 // ResourceServiceEndpointGenericV2 schema and implementation for generic service endpoint resource
 func ResourceServiceEndpointGenericV2() *schema.Resource {
-	r := &schema.Resource{
+	return &schema.Resource{
 		CreateContext: resourceServiceEndpointGenericV2Create,
 		ReadContext:   resourceServiceEndpointGenericV2Read,
 		UpdateContext: resourceServiceEndpointGenericV2Update,
@@ -102,12 +102,9 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 			},
 		},
 	}
-
-	return r
 }
 
 // InitServiceEndpointTypes loads all service endpoint types from Azure DevOps
-// This can be called during provider initialization or when first needed
 func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Client) error {
 	serviceEndpointTypesMutex.Lock()
 	defer serviceEndpointTypesMutex.Unlock()
@@ -119,7 +116,7 @@ func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Clien
 	args := serviceendpoint.GetServiceEndpointTypesArgs{}
 	serviceEndpointTypes, err := (*client).GetServiceEndpointTypes(ctx, args)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve service endpoint types: %v", err)
+		return fmt.Errorf("failed to retrieve service endpoint types: %w", err)
 	}
 
 	if serviceEndpointTypes == nil {
@@ -138,73 +135,105 @@ func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Clien
 	return nil
 }
 
+// validateAuthScheme checks if the provided auth scheme is valid for the endpoint type
+// and returns the list of possible input descriptors for that auth scheme
 func validateAuthScheme(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig) (map[string]forminput.InputDescriptor, error) {
+	if availableType == nil || availableType.AuthenticationSchemes == nil {
+		return nil, fmt.Errorf("invalid service endpoint type definition")
+	}
+
 	possibleAuthSchemes := make([]string, 0, len(*availableType.AuthenticationSchemes))
 	possibleAuthData := make(map[string]forminput.InputDescriptor)
 
-	correctAuthScheme := false
-
 	for _, authScheme := range *availableType.AuthenticationSchemes {
+		if authScheme.Scheme == nil {
+			continue
+		}
+
 		possibleAuthSchemes = append(possibleAuthSchemes, *authScheme.Scheme)
-		if *authScheme.Scheme == config.AuthType {
-			correctAuthScheme = true
+
+		if *authScheme.Scheme == config.AuthType && authScheme.InputDescriptors != nil {
 			for _, data := range *authScheme.InputDescriptors {
-				possibleAuthData[*data.Id] = data
+				if data.Id != nil {
+					possibleAuthData[*data.Id] = data
+				}
 			}
+			return possibleAuthData, nil
 		}
 	}
-	if !correctAuthScheme {
-		return nil, fmt.Errorf("service endpoint type '%s' does not support authentication scheme '%s'. Supported schemes: %v",
-			*availableType.Name, config.AuthType, possibleAuthSchemes)
-	}
-	return possibleAuthData, nil
+
+	return nil, fmt.Errorf("service endpoint type '%s' does not support authentication scheme '%s'. Supported schemes: %v",
+		*availableType.Name, config.AuthType, possibleAuthSchemes)
 }
 
-func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor, fieldType, endpointType string, planTime bool) error {
+// validateFields ensures that the provided configuration fields match the expected fields
+func validateFields(configFields map[string]string, possibleFields map[string]forminput.InputDescriptor,
+	fieldType, endpointType string, planTime bool) error {
+
+	// Skip validation at plan time if fields are empty (known-after-apply)
 	if planTime && len(configFields) == 0 {
-		// Plan time validation allows missing fields because known-after-apply fields are not set yet
 		return nil
 	}
+
 	// Check for unsupported fields
+	invalidFields := make([]string, 0)
 	for key := range configFields {
 		if _, exists := possibleFields[key]; !exists {
-			return fmt.Errorf("service endpoint type '%s' does not support %s field '%s'. Supported fields: {%s}",
-				endpointType, fieldType, key, func() string {
-					fields := make([]string, 0, len(possibleFields))
-					for k := range possibleFields {
-						fields = append(fields, k)
-					}
-					return fmt.Sprintf("%s", fields)
-				}())
+			invalidFields = append(invalidFields, key)
 		}
 	}
+
+	if len(invalidFields) > 0 {
+		validFields := make([]string, 0, len(possibleFields))
+		for k := range possibleFields {
+			validFields = append(validFields, k)
+		}
+		return fmt.Errorf("service endpoint type '%s' does not support %s field(s): %v. Supported fields: %v",
+			endpointType, fieldType, invalidFields, validFields)
+	}
+
 	// Check for missing required fields
 	missingFields := make(map[string]string)
 	for key, value := range possibleFields {
 		if value.Validation != nil && value.Validation.IsRequired != nil && *value.Validation.IsRequired {
 			if _, exists := configFields[key]; !exists {
-				missingFields[key] = *value.Name
+				if value.Name != nil {
+					missingFields[key] = *value.Name
+				} else {
+					missingFields[key] = key
+				}
 			}
 		}
 	}
+
 	if len(missingFields) > 0 {
-		return fmt.Errorf("service endpoint type '%s' is missing required %s fields: {%s}", endpointType, fieldType, func() string {
-			fields := make([]string, 0, len(missingFields))
-			for k, v := range missingFields {
-				fields = append(fields, fmt.Sprintf("%s: %s", k, v))
-			}
-			return fmt.Sprintf("%s", fields)
-		}())
+		missingFieldList := make([]string, 0, len(missingFields))
+		for k, v := range missingFields {
+			missingFieldList = append(missingFieldList, fmt.Sprintf("%s: %s", k, v))
+		}
+		return fmt.Errorf("service endpoint type '%s' is missing required %s fields: %v",
+			endpointType, fieldType, missingFieldList)
 	}
+
 	return nil
 }
 
+// validateServiceEndpointType validates that the configuration matches the endpoint type requirements
 func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointType, config EndpointConfig, planTime bool) error {
+	if availableType == nil || availableType.Name == nil {
+		return fmt.Errorf("invalid service endpoint type definition")
+	}
+
 	// Validate Data fields
 	possibleData := make(map[string]forminput.InputDescriptor)
-	for _, data := range *availableType.InputDescriptors {
-		possibleData[*data.Id] = data
+	if availableType.InputDescriptors != nil {
+		for _, data := range *availableType.InputDescriptors {
+			if data.Id != nil {
+				possibleData[*data.Id] = data
+			}
+		}
 	}
+
 	if err := validateFields(config.Data, possibleData, "data", *availableType.Name, planTime); err != nil {
 		return err
 	}
@@ -214,6 +243,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 	if err != nil {
 		return err
 	}
+
 	if err := validateFields(config.AuthData, possibleAuthData, "auth", *availableType.Name, planTime); err != nil {
 		return err
 	}
@@ -221,7 +251,7 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 	return nil
 }
 
-// validateServiceEndpointSchema validates that the service endpoint type exists using the Azure DevOps API
+// validateServiceEndpointSchema validates that the service endpoint type exists and configuration is valid
 func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig, planTime bool) error {
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
 
@@ -233,7 +263,7 @@ func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndp
 	// If not initialized, initialize the cache
 	if !initialized {
 		if err := InitServiceEndpointTypes(clients.Ctx, &clients.ServiceEndpointClient); err != nil {
-			return fmt.Errorf("error initializing service endpoint types: %v", err)
+			return fmt.Errorf("error initializing service endpoint types: %w", err)
 		}
 	}
 
@@ -249,67 +279,43 @@ func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndp
 
 	// If the type wasn't found, prepare an error message with all valid types
 	serviceEndpointTypesMutex.RLock()
-	result := make([]string, 0, len(serviceEndpointTypesList))
+	availableTypes := make([]string, 0, len(serviceEndpointTypesList))
 	for _, endpoint := range serviceEndpointTypesList {
 		if endpoint.DisplayName != nil && endpoint.Name != nil {
-			result = append(result, fmt.Sprintf("%s: %s", *endpoint.DisplayName, *endpoint.Name))
+			availableTypes = append(availableTypes, fmt.Sprintf("%s: %s", *endpoint.DisplayName, *endpoint.Name))
 		}
 	}
 	serviceEndpointTypesMutex.RUnlock()
 
+	if len(availableTypes) == 0 {
+		return fmt.Errorf("service endpoint type '%s' is not available. No service endpoint types available",
+			serviceEndpointType)
+	}
+
 	return fmt.Errorf(
 		"service endpoint type '%s' is not available.\nValid types are:\n%s",
 		serviceEndpointType,
-		func() string {
-			if len(result) == 0 {
-				return "No service endpoint types available"
-			}
-			return strings.Join(result, "\n")
-		}(),
+		strings.Join(availableTypes, "\n"),
 	)
 }
 
+// resourceServiceEndpointGenericV2Create creates a new service endpoint
 func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	name := d.Get("service_endpoint_name").(string)
-	projectID := d.Get("project_id").(string)
-	description := d.Get("description").(string)
-	serviceEndpointType := d.Get("service_endpoint_type").(string)
-	serverURL := d.Get("server_url").(string)
-
-	// Get authorization details
-	authScheme, authParams, err := getAuthorizationDetails(d)
+	// Get configuration values from the resource data
+	config, err := getEndpointConfigFromResource(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Get additional data
-	dataRaw, ok := d.Get("parameters").(map[string]interface{})
-	if !ok {
-		return diag.FromErr(fmt.Errorf("invalid data format for 'parameters'"))
-	}
-	// Convert additional data to the required format
-	data := make(map[string]string)
-	for k, v := range dataRaw {
-		if strVal, ok := v.(string); ok {
-			data[k] = strVal
-		} else {
-			return diag.FromErr(fmt.Errorf("data value for key '%s' is not a string", k))
-		}
-	}
-	// Has to be called again to validate known-after-apply fields
-	config := EndpointConfig{
-		ServiceEndpointType: serviceEndpointType,
-		AuthType:            authScheme,
-		AuthData:            authParams,
-		Data:                data,
+	// Validate the service endpoint configuration
+	if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
+		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
 	}
 
-	if err := validateServiceEndpointSchema(clients, config, false); err != nil {
-		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %v", err))
-	}
-	serviceEndpoint, err := createGenericV2ServiceEndpoint(ctx, clients, name, projectID, description, serviceEndpointType, serverURL, authScheme, authParams, data)
+	// Create the service endpoint
+	serviceEndpoint, err := createGenericV2ServiceEndpoint(ctx, d, clients, config)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -319,10 +325,84 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(serviceEndpoint.Id.String())
-
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
+// getEndpointConfigFromResource extracts endpoint configuration from resource data
+func getEndpointConfigFromResource(d *schema.ResourceData) (*EndpointConfig, error) {
+	// Get authorization details
+	authScheme, authParams, err := getAuthorizationDetails(d)
+	if err != nil {
+		return nil, fmt.Errorf("error processing authorization details: %w", err)
+	}
+
+	// Get additional parameters
+	data, err := toStringMap(d.Get("parameters"), "parameters")
+	if err != nil {
+		return nil, err
+	}
+
+	return &EndpointConfig{
+		ServiceEndpointType: d.Get("service_endpoint_type").(string),
+		AuthType:            authScheme,
+		AuthData:            authParams,
+		Data:                data,
+	}, nil
+}
+
+// createGenericV2ServiceEndpoint creates a service endpoint in Azure DevOps
+func createGenericV2ServiceEndpoint(ctx context.Context, d *schema.ResourceData, clients *client.AggregatedClient, config *EndpointConfig) (*serviceendpoint.ServiceEndpoint, error) {
+	name := d.Get("service_endpoint_name").(string)
+	projectID := d.Get("project_id").(string)
+	description := d.Get("description").(string)
+	serverURL := d.Get("server_url").(string)
+
+	// Generate the project reference
+	projectUUID, err := uuid.Parse(projectID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid project ID: %w", err)
+	}
+
+	projectReference := serviceendpoint.ServiceEndpointProjectReference{
+		ProjectReference: &serviceendpoint.ProjectReference{
+			Id: &projectUUID,
+		},
+		Name:        converter.String(name),
+		Description: converter.String(description),
+	}
+
+	// Create service endpoint object
+	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
+		Name:                             converter.String(name),
+		Description:                      converter.String(description),
+		Type:                             converter.String(config.ServiceEndpointType),
+		Url:                              converter.String(serverURL),
+		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{projectReference},
+		Authorization: &serviceendpoint.EndpointAuthorization{
+			Scheme:     converter.String(config.AuthType),
+			Parameters: &config.AuthData,
+		},
+	}
+
+	// Handle additional data
+	if len(config.Data) > 0 {
+		serviceEndpoint.Data = &config.Data
+	}
+
+	// Create service endpoint in Azure DevOps
+	args := serviceendpoint.CreateServiceEndpointArgs{
+		Endpoint: serviceEndpoint,
+	}
+
+	createdEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(ctx, args)
+	if err != nil {
+		return nil, fmt.Errorf("error creating service endpoint: %w", err)
+	}
+
+	return createdEndpoint, nil
+}
+
+// resourceServiceEndpointGenericV2Read reads a service endpoint
 func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpointID := d.Id()
@@ -350,27 +430,41 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
-	// Update state with the latest information from the service endpoint
-	if err := d.Set("service_endpoint_name", serviceEndpoint.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting service_endpoint_name: %v", err))
+	return updateResourceDataFromServiceEndpoint(d, serviceEndpoint)
+}
+
+// updateResourceDataFromServiceEndpoint updates the resource data with values from the service endpoint
+func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) diag.Diagnostics {
+	if serviceEndpoint.Name != nil {
+		if err := d.Set("service_endpoint_name", *serviceEndpoint.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting service_endpoint_name: %w", err))
+		}
 	}
 
-	if err := d.Set("description", serviceEndpoint.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	if serviceEndpoint.Description != nil {
+		if err := d.Set("description", *serviceEndpoint.Description); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting description: %w", err))
+		}
 	}
 
-	if err := d.Set("service_endpoint_type", serviceEndpoint.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting service_endpoint_type: %v", err))
+	if serviceEndpoint.Type != nil {
+		if err := d.Set("service_endpoint_type", *serviceEndpoint.Type); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting service_endpoint_type: %w", err))
+		}
 	}
 
-	if err := d.Set("server_url", serviceEndpoint.Url); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting server_url: %v", err))
+	if serviceEndpoint.Url != nil {
+		if err := d.Set("server_url", *serviceEndpoint.Url); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting server_url: %w", err))
+		}
 	}
 
 	// Handle authorization
 	if serviceEndpoint.Authorization != nil {
-		if err := d.Set("authorization_type", serviceEndpoint.Authorization.Scheme); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_type: %v", err))
+		if serviceEndpoint.Authorization.Scheme != nil {
+			if err := d.Set("authorization_type", *serviceEndpoint.Authorization.Scheme); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting authorization_type: %w", err))
+			}
 		}
 
 		if serviceEndpoint.Authorization.Parameters != nil {
@@ -379,31 +473,31 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 				authParams[k] = v
 			}
 			if err := d.Set("authorization_parameters", authParams); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting authorization_parameters: %v", err))
+				return diag.FromErr(fmt.Errorf("error setting authorization_parameters: %w", err))
 			}
 		} else {
 			if err := d.Set("authorization_parameters", nil); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %v", err))
+				return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %w", err))
 			}
 		}
 	} else {
 		if err := d.Set("authorization_type", ""); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_type to empty: %v", err))
+			return diag.FromErr(fmt.Errorf("error setting authorization_type to empty: %w", err))
 		}
 		if err := d.Set("authorization_parameters", nil); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %v", err))
+			return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %w", err))
 		}
 	}
 
-	// Handle data - copy non-sensitive values
+	// Handle data parameters
 	if serviceEndpoint.Data != nil {
 		data := make(map[string]string)
 		for k, v := range *serviceEndpoint.Data {
 			data[k] = v
 		}
 		if len(data) > 0 {
-			if err := d.Set("data", data); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting data: %v", err))
+			if err := d.Set("parameters", data); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting parameters: %w", err))
 			}
 		}
 	}
@@ -411,6 +505,7 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
+// resourceServiceEndpointGenericV2Update updates an existing service endpoint
 func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpointID := d.Id()
@@ -422,66 +517,14 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// Update fields that have changed
-	if d.HasChange("service_endpoint_name") {
-		currentEndpoint.Name = converter.String(d.Get("service_endpoint_name").(string))
+	// Update the service endpoint with values from resource data
+	updatedEndpoint, err := updateServiceEndpointFromResourceData(d, currentEndpoint)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.HasChange("description") {
-		currentEndpoint.Description = converter.String(d.Get("description").(string))
-	}
-
-	if d.HasChange("server_url") {
-		currentEndpoint.Url = converter.String(d.Get("server_url").(string))
-	}
-
-	// Handle authorization updates if changed
-	if d.HasChange("authorization") {
-		authScheme, authParams, err := getAuthorizationDetails(d)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error processing authorization details: %v", err))
-		}
-
-		authorization := &serviceendpoint.EndpointAuthorization{
-			Scheme:     converter.String(authScheme),
-			Parameters: &authParams,
-		}
-
-		currentEndpoint.Authorization = authorization
-	}
-
-	// Handle data updates if changed
-	if d.HasChange("data") {
-		data := make(map[string]string)
-
-		// If there are existing data values, preserve them
-		if currentEndpoint.Data != nil {
-			for k, v := range *currentEndpoint.Data {
-				data[k] = v
-			}
-		}
-
-		// Update with new values
-		if dataRaw := d.Get("data"); dataRaw != nil {
-			dataMap, ok := dataRaw.(map[string]interface{})
-			if !ok {
-				return diag.FromErr(fmt.Errorf("invalid data format"))
-			}
-
-			for k, v := range dataMap {
-				strVal, ok := v.(string)
-				if !ok {
-					return diag.FromErr(fmt.Errorf("data value for key %q is not a string", k))
-				}
-				data[k] = strVal
-			}
-		}
-
-		currentEndpoint.Data = &data
-	}
-
-	// Update service endpoint
-	_, err = updateServiceEndpointGenericV2(ctx, clients, currentEndpoint)
+	// Update service endpoint in Azure DevOps
+	_, err = updateServiceEndpointGenericV2(ctx, clients, updatedEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -489,6 +532,46 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
+// updateServiceEndpointFromResourceData updates a service endpoint with values from resource data
+func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+	// Update fields that have changed
+	if d.HasChange("service_endpoint_name") {
+		endpoint.Name = converter.String(d.Get("service_endpoint_name").(string))
+	}
+
+	if d.HasChange("description") {
+		endpoint.Description = converter.String(d.Get("description").(string))
+	}
+
+	if d.HasChange("server_url") {
+		endpoint.Url = converter.String(d.Get("server_url").(string))
+	}
+
+	// Handle authorization updates if any auth fields changed
+	if d.HasChange("authorization_type") || d.HasChange("authorization_parameters") {
+		authScheme, authParams, err := getAuthorizationDetails(d)
+		if err != nil {
+			return nil, fmt.Errorf("error processing authorization details: %w", err)
+		}
+		endpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Scheme:     converter.String(authScheme),
+			Parameters: &authParams,
+		}
+	}
+
+	// Handle data updates if changed
+	if d.HasChange("parameters") {
+		data, err := toStringMap(d.Get("parameters"), "parameters")
+		if err != nil {
+			return nil, err
+		}
+		endpoint.Data = &data
+	}
+
+	return endpoint, nil
+}
+
+// resourceServiceEndpointGenericV2Delete deletes a service endpoint
 func resourceServiceEndpointGenericV2Delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	serviceEndpointID := d.Id()
@@ -502,98 +585,69 @@ func resourceServiceEndpointGenericV2Delete(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func getAuthorizationDetails(d *schema.ResourceData) (string, map[string]string, error) {
-	scheme, ok := d.Get("authorization_type").(string)
-	if !ok || scheme == "" {
+// toStringMap converts a raw interface{} to map[string]string
+func toStringMap(raw interface{}, fieldName string) (map[string]string, error) {
+	m, ok := raw.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid format for %s", fieldName)
+	}
+
+	result := make(map[string]string, len(m))
+	for k, v := range m {
+		s, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("%s value for key %q is not a string", fieldName, k)
+		}
+		result[k] = s
+	}
+	return result, nil
+}
+
+// getAuthorizationDetailsRaw extracts auth scheme and params from either ResourceData or ResourceDiff
+func getAuthorizationDetailsRaw(schemeVal interface{}, paramsVal interface{}) (string, map[string]string, error) {
+	scheme, _ := schemeVal.(string)
+	if scheme == "" {
 		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
 	}
 
-	paramsRaw, ok := d.Get("authorization_parameters").(map[string]interface{})
-	if !ok {
-		return "", nil, fmt.Errorf("invalid authorization parameters format")
+	params, err := toStringMap(paramsVal, "authorization_parameters")
+	if err != nil {
+		return "", nil, err
 	}
-	params := make(map[string]string)
-	for k, v := range paramsRaw {
-		if strVal, ok := v.(string); ok {
-			params[k] = strVal
-		} else {
-			return "", nil, fmt.Errorf("authorization parameter '%s' is not a string", k)
-		}
-	}
-
 	return scheme, params, nil
 }
 
-func createGenericV2ServiceEndpoint(ctx context.Context, clients *client.AggregatedClient, name, projectID, description, serviceEndpointType, serverURL, authScheme string, authParams map[string]string, data map[string]string) (*serviceendpoint.ServiceEndpoint, error) {
-	// Generate the project reference
-	projectReference := serviceendpoint.ServiceEndpointProjectReference{
-		ProjectReference: &serviceendpoint.ProjectReference{
-			Id: &uuid.UUID{}, // Will be filled later
-		},
-		Name:        converter.String(name),
-		Description: converter.String(description),
-	}
-
-	// Fill the project ID
-	projectUUID, err := uuid.Parse(projectID)
-	if err != nil {
-		return nil, fmt.Errorf("invalid project ID: %v", err)
-	}
-	projectReference.ProjectReference.Id = &projectUUID
-
-	// Create service endpoint object
-	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
-		Name:                             converter.String(name),
-		Description:                      converter.String(description),
-		Type:                             converter.String(serviceEndpointType),
-		Url:                              converter.String(serverURL),
-		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{projectReference},
-	}
-
-	// Handle authentication
-	authorization := &serviceendpoint.EndpointAuthorization{
-		Scheme:     converter.String(authScheme),
-		Parameters: &authParams,
-	}
-	serviceEndpoint.Authorization = authorization
-
-	// Handle additional data
-	if len(data) > 0 {
-		serviceEndpoint.Data = &data
-	}
-
-	// Create service endpoint in Azure DevOps
-	args := serviceendpoint.CreateServiceEndpointArgs{
-		Endpoint: serviceEndpoint,
-	}
-
-	createdEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(ctx, args)
-	if err != nil {
-		return nil, fmt.Errorf("error creating service endpoint: %v", err)
-	}
-
-	return createdEndpoint, nil
+// getAuthorizationDetails extracts auth scheme and params from ResourceData
+func getAuthorizationDetails(d *schema.ResourceData) (string, map[string]string, error) {
+	return getAuthorizationDetailsRaw(d.Get("authorization_type"), d.Get("authorization_parameters"))
 }
 
+// getAuthorizationDetailsFromDiff extracts auth scheme and params from ResourceDiff
+func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
+	return getAuthorizationDetailsRaw(d.Get("authorization_type"), d.Get("authorization_parameters"))
+}
+
+// getServiceEndpointGenericV2 retrieves a service endpoint from Azure DevOps
 func getServiceEndpointGenericV2(ctx context.Context, clients *client.AggregatedClient, endpointID, projectID string) (*serviceendpoint.ServiceEndpoint, error) {
-	ProjectUUID, err := uuid.Parse(endpointID)
+	endpointUUID, err := uuid.Parse(endpointID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid service endpoint ID: %v", err)
+		return nil, fmt.Errorf("invalid service endpoint ID: %w", err)
 	}
 
 	args := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: &ProjectUUID,
+		EndpointId: &endpointUUID,
 		Project:    converter.String(projectID),
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(ctx, args)
 	if err != nil {
-		return nil, fmt.Errorf("error looking up service endpoint: %v", err)
+		return nil, fmt.Errorf("error looking up service endpoint: %w", err)
 	}
 
 	return serviceEndpoint, nil
 }
 
+// updateServiceEndpointGenericV2 updates a service endpoint in Azure DevOps
 func updateServiceEndpointGenericV2(ctx context.Context, clients *client.AggregatedClient, serviceEndpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
 	args := serviceendpoint.UpdateServiceEndpointArgs{
 		Endpoint:   serviceEndpoint,
@@ -602,26 +656,27 @@ func updateServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 
 	updatedEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(ctx, args)
 	if err != nil {
-		return nil, fmt.Errorf("error updating service endpoint: %v", err)
+		return nil, fmt.Errorf("error updating service endpoint: %w", err)
 	}
 
 	return updatedEndpoint, nil
 }
 
+// deleteServiceEndpointGenericV2 deletes a service endpoint from Azure DevOps
 func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.AggregatedClient, endpointID, projectID string) error {
-	ProjectUUID, err := uuid.Parse(endpointID)
+	endpointUUID, err := uuid.Parse(endpointID)
 	if err != nil {
-		return fmt.Errorf("invalid service endpoint ID: %v", err)
+		return fmt.Errorf("invalid service endpoint ID: %w", err)
 	}
 
 	args := serviceendpoint.DeleteServiceEndpointArgs{
-		EndpointId: &ProjectUUID,
+		EndpointId: &endpointUUID,
 		ProjectIds: &[]string{projectID},
 	}
 
 	err = clients.ServiceEndpointClient.DeleteServiceEndpoint(ctx, args)
 	if err != nil {
-		return fmt.Errorf("error deleting service endpoint: %v", err)
+		return fmt.Errorf("error deleting service endpoint: %w", err)
 	}
 
 	return nil
@@ -629,8 +684,6 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 
 // customizeServiceEndpointGenericV2Diff validates the service endpoint configuration during the planning phase
 func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-	clients := m.(*client.AggregatedClient)
-
 	// Only validate on resource creation changes
 	if d.Id() != "" {
 		return nil
@@ -639,24 +692,14 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 	serviceEndpointType := d.Get("service_endpoint_type").(string)
 	authScheme, authParams, err := getAuthorizationDetailsFromDiff(d)
 	if err != nil {
-		return fmt.Errorf("error retrieving authorization details: %v", err)
+		return err
 	}
 
-	// Convert additional data to the required format
-	dataRaw, ok := d.Get("authorization_parameters").(map[string]interface{})
-	if !ok {
-		return fmt.Errorf("invalid authorization parameters format")
-	}
-	data := make(map[string]string)
-	for k, v := range dataRaw {
-		if strVal, ok := v.(string); ok {
-			authParams[k] = strVal
-		} else {
-			return fmt.Errorf("authorization parameter '%s' is not a string", k)
-		}
+	data, err := toStringMap(d.Get("parameters"), "parameters")
+	if err != nil {
+		return err
 	}
 
-	// Prepare endpoint config for validation
 	config := EndpointConfig{
 		ServiceEndpointType: serviceEndpointType,
 		AuthType:            authScheme,
@@ -664,33 +707,5 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 		Data:                data,
 	}
 
-	// Validate service endpoint schema
-	if err := validateServiceEndpointSchema(clients, config, true); err != nil {
-		// If the error is about an invalid type, append the valid types with display names
-		return err
-	}
-
-	return nil
-}
-
-// getAuthorizationDetailsFromDiff extracts authorization details from ResourceDiff
-func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
-	scheme, ok := d.Get("authorization_type").(string)
-	if !ok || scheme == "" {
-		return "", nil, fmt.Errorf("missing or invalid authorization scheme")
-	}
-	params, ok := d.Get("authorization_parameters").(map[string]interface{})
-	if !ok {
-		return "", nil, fmt.Errorf("invalid authorization parameters format")
-	}
-	authParams := make(map[string]string)
-	for k, v := range params {
-		if strVal, ok := v.(string); ok {
-			authParams[k] = strVal
-		} else {
-			return "", nil, fmt.Errorf("authorization parameter '%s' is not a string", k)
-		}
-	}
-
-	return scheme, authParams, nil
+	return validateServiceEndpointSchema(m.(*client.AggregatedClient), config, true)
 }
