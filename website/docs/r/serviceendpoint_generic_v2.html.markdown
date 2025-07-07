@@ -26,13 +26,10 @@ resource "azuredevops_serviceendpoint_generic_v2" "example" {
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://example.com"
-  
-  authorization {
-    scheme     = "UsernamePassword"
-    parameters = {
-      username = "username"
-      password = "password"
-    }
+  authorization_type    = "UsernamePassword"
+  authorization_parameters = {
+    username = "username"
+    password = "password"
   }
 }
 
@@ -43,15 +40,12 @@ resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://api.example.com"
-  
-  authorization {
-    scheme     = "Token"
-    parameters = {
-      apitoken = "your-api-token"
-    }
+  authorization_type    = "Token"
+  authorization_parameters = {
+    apitoken = "your-api-token"
   }
   
-  data = {
+  parameters = {
     releaseUrl = "https://releases.example.com"
   }
 }
@@ -66,17 +60,15 @@ The following arguments are supported:
 * `service_endpoint_type` - (Required) The type of the service endpoint. This can be any valid service endpoint type, such as "generic", "artifactory", etc.
 * `description` - (Optional) The description of the service endpoint. Defaults to "Managed by Terraform".
 * `server_url` - (Required) The URL of the server associated with the service endpoint.
-* `authorization` - (Required) Specifies the authorization scheme and parameters. This block supports:
-  * `scheme` - (Required) The authorization scheme. Common values include "UsernamePassword", "Token", "OAuth", etc.
-  * `parameters` - (Optional) Map of key/value pairs for the specific authorization scheme. These often include sensitive data like tokens, usernames, and passwords.
-* `data` - (Optional) Additional data associated with the service endpoint. This is a map of key/value pairs.
+* `authorization_type` - (Required) The authorization scheme to use. Common values include "UsernamePassword", "Token", "OAuth", etc.
+* `authorization_parameters` - (Optional) Map of key/value pairs for the specific authorization scheme. These often include sensitive data like tokens, usernames, and passwords.
+* `parameters` - (Optional) Additional data associated with the service endpoint. This is a map of key/value pairs.
 
 ## Attributes Reference
 
 In addition to the arguments listed above, the following attributes are exported:
 
 * `id` - The ID of the service endpoint.
-* `authorization_type` - The authorization type of the service endpoint (same as the `scheme` specified in the `authorization` block).
 
 ## Import
 

@@ -86,9 +86,10 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"authorization_parameters": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: false,
+				Type:      schema.TypeMap,
+				Optional:  true,
+				ForceNew:  false,
+				Sensitive: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
