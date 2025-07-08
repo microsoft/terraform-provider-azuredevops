@@ -29,7 +29,6 @@ func DataResourceServiceEndpointNpm() *schema.Resource {
 
 func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) error {
 	serviceEndpoint, err := dataSourceGetBaseServiceEndpoint(d, m)
-
 	if err != nil {
 		return err
 	}
@@ -43,5 +42,5 @@ func dataSourceServiceEndpointNpmRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 
-	return fmt.Errorf(" Looking up service endpoint!")
+	return fmt.Errorf("Looking up service endpoint!")
 }

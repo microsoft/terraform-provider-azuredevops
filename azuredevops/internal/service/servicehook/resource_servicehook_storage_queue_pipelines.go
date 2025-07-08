@@ -76,11 +76,7 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 
 func resourceServicehookStorageQueuePipelinesCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandServicehookStorageQueuePipelines(d)
-	if err != nil {
-		return err
-	}
-
+	subscription := expandServicehookStorageQueuePipelines(d)
 	createdSubscription, err := createSubscription(clients, subscription)
 	if err != nil {
 		return err
@@ -103,11 +99,7 @@ func resourceServicehookStorageQueuePipelinesRead(d *schema.ResourceData, m inte
 
 func resourceServicehookStorageQueuePipelinesUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	subscription, err := expandServicehookStorageQueuePipelines(d)
-	if err != nil {
-		return err
-	}
-
+	subscription := expandServicehookStorageQueuePipelines(d)
 	parsedID, err := uuid.Parse(d.Id())
 	if err != nil {
 		return err
@@ -130,7 +122,7 @@ func resourceServicehookStorageQueuePipelinesDelete(d *schema.ResourceData, m in
 	})
 }
 
-func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehooks.Subscription, error) {
+func expandServicehookStorageQueuePipelines(d *schema.ResourceData) *servicehooks.Subscription {
 	visiTimeout := strconv.Itoa(d.Get("visi_timeout").(int))
 	ttl := strconv.Itoa(d.Get("ttl").(int))
 	publisherInputs, eventType := expandPipelinesEventConfig(d)
@@ -148,7 +140,7 @@ func expandServicehookStorageQueuePipelines(d *schema.ResourceData) (*servicehoo
 		PublisherId:     converter.String("pipelines"),
 		PublisherInputs: &publisherInputs,
 		ResourceVersion: converter.String("5.1-preview.1"),
-	}, nil
+	}
 }
 
 func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscription *servicehooks.Subscription, accountKey string) {
@@ -178,7 +170,7 @@ func createSubscription(clients *client.AggregatedClient, subscription *serviceh
 			Subscription: subscription,
 		})
 	if err != nil {
-		return nil, fmt.Errorf(" creating subscription in Azure DevOps: %+v", err)
+		return nil, fmt.Errorf("creating subscription in Azure DevOps: %+v", err)
 	}
 
 	return createdSubscription, err

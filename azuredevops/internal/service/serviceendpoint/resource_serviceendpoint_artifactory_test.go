@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var artifactoryTestServiceEndpointIDpassword = uuid.New()
-var artifactoryRandomServiceEndpointProjectIDpassword = uuid.New()
-var artifactoryTestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
+var (
+	artifactoryTestServiceEndpointIDpassword          = uuid.New()
+	artifactoryRandomServiceEndpointProjectIDpassword = uuid.New()
+	artifactoryTestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+)
 
 var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -48,9 +50,11 @@ var artifactoryTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var artifactoryTestServiceEndpointID = uuid.New()
-var artifactoryRandomServiceEndpointProjectID = uuid.New()
-var artifactoryTestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var (
+	artifactoryTestServiceEndpointID          = uuid.New()
+	artifactoryRandomServiceEndpointProjectID = uuid.New()
+	artifactoryTestServiceEndpointProjectID   = &artifactoryRandomServiceEndpointProjectID
+)
 
 var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -122,9 +126,11 @@ func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep 
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactory_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactory_Create_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }
@@ -155,9 +161,11 @@ func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *s
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactory_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactory_Read_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }
@@ -202,6 +210,7 @@ func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorPassword(t *testin
 func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }

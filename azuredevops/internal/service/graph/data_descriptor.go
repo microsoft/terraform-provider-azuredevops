@@ -40,7 +40,7 @@ func dataSourceDescriptorRead(ctx context.Context, d *schema.ResourceData, m int
 	storageKey := d.Get("storage_key").(string)
 	storageKeyUUId, err := uuid.Parse(storageKey)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Invalid storage key: %s. Error: %+v", storageKey, err))
+		return diag.FromErr(fmt.Errorf("Invalid storage key: %s. Error: %+v", storageKey, err))
 	}
 
 	descriptor, err := clients.GraphClient.GetDescriptor(clients.Ctx, graph.GetDescriptorArgs{StorageKey: &storageKeyUUId})
@@ -48,7 +48,7 @@ func dataSourceDescriptorRead(ctx context.Context, d *schema.ResourceData, m int
 		if utils.ResponseWasNotFound(err) {
 			return diag.Errorf(" The specified storage key %s does not exist.", storageKey)
 		}
-		return diag.FromErr(fmt.Errorf(" Reading storage key: %s. Error: %+v", storageKey, err))
+		return diag.FromErr(fmt.Errorf("Reading storage key: %s. Error: %+v", storageKey, err))
 	}
 
 	d.SetId(storageKey)

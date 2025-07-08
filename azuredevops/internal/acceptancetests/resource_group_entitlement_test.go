@@ -1,6 +1,4 @@
 //go:build (all || resource_group_entitlement) && !exclude_resource_group_entitlement
-// +build all resource_group_entitlement
-// +build !exclude_resource_group_entitlement
 
 package acceptancetests
 
@@ -65,25 +63,24 @@ func checkGroupEntitlementExists() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resource, ok := s.RootModule().Resources["azuredevops_group_entitlement.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a GroupEntitlement in the TF state")
+			return fmt.Errorf("Did not find a GroupEntitlement in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 			GroupId: &id,
 		})
-
 		if err != nil {
 			return fmt.Errorf("GroupEntitlement with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if groupEntitlement == nil || groupEntitlement.Id == nil {
-			return fmt.Errorf(" GroupEntitlement with ID=%s cannot be found.", id)
+			return fmt.Errorf("GroupEntitlement with ID=%s cannot be found.", id)
 		}
 
 		return nil
@@ -95,7 +92,7 @@ func checkGroupEntitlementExists() resource.TestCheckFunc {
 func checkGroupEntitlementDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
-	//verify that every users referenced in the state does not exist in AzDO
+	// verify that every users referenced in the state does not exist in AzDO
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_group_entitlement" {
 			continue
@@ -103,13 +100,12 @@ func checkGroupEntitlementDestroyed(s *terraform.State) error {
 
 		id, err := uuid.Parse(resource.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(" Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
+			return fmt.Errorf("Parsing GroupEntitlement ID, got %s: %v", resource.Primary.ID, err)
 		}
 
 		groupEntitlement, err := clients.MemberEntitleManagementClient.GetGroupEntitlement(clients.Ctx, memberentitlementmanagement.GetGroupEntitlementArgs{
 			GroupId: &id,
 		})
-
 		if err != nil {
 			if utils.ResponseWasNotFound(err) {
 				return nil
@@ -118,7 +114,7 @@ func checkGroupEntitlementDestroyed(s *terraform.State) error {
 		}
 
 		if groupEntitlement != nil && groupEntitlement.LicenseRule != nil && string(*groupEntitlement.LicenseRule.Status) != "none" {
-			return fmt.Errorf(" Status should be none : %s with readGroupEntitlement error %v", string(*groupEntitlement.LicenseRule.Status), err)
+			return fmt.Errorf("Status should be none : %s with readGroupEntitlement error %v", string(*groupEntitlement.LicenseRule.Status), err)
 		}
 	}
 

@@ -1,6 +1,4 @@
 //go:build (all || resource_check_required_template) && !exclude_approvalsandchecks
-// +build all resource_check_required_template
-// +build !exclude_approvalsandchecks
 
 package acceptancetests
 

@@ -74,11 +74,7 @@ func ResourceServiceEndpointCheckMarxOneService() *schema.Resource {
 
 func resourceServiceEndpointCheckMarxOneServiceCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointCheckMarxOneService(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointCheckMarxOneService(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -100,7 +96,7 @@ func resourceServiceEndpointCheckMarxOneServiceRead(d *schema.ResourceData, m in
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -113,28 +109,20 @@ func resourceServiceEndpointCheckMarxOneServiceRead(d *schema.ResourceData, m in
 func resourceServiceEndpointCheckMarxOneServiceUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 
-	serviceEndpoint, err := expandServiceEndpointCheckMarxOneService(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointCheckMarxOneService(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 	return resourceServiceEndpointCheckMarxOneServiceRead(d, m)
 }
 
 func resourceServiceEndpointCheckMarxOneServiceDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointCheckMarxOneService(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointCheckMarxOneService(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointCheckMarxOneService(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointCheckMarxOneService(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 
 	if v, ok := d.GetOk("api_key"); ok {
@@ -156,7 +144,7 @@ func expandServiceEndpointCheckMarxOneService(d *schema.ResourceData) (*servicee
 	}
 	serviceEndpoint.Type = converter.String("CheckmarxASTService")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointCheckMarxOneService(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

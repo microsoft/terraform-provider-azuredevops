@@ -75,11 +75,7 @@ func ResourceServiceEndpointNuGet() *schema.Resource {
 
 func resourceServiceEndpointNuGetCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNuGet(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointNuGet(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -101,7 +97,7 @@ func resourceServiceEndpointNuGetRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -113,13 +109,9 @@ func resourceServiceEndpointNuGetRead(d *schema.ResourceData, m interface{}) err
 
 func resourceServiceEndpointNuGetUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNuGet(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointNuGet(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointNuGetRead(d, m)
@@ -127,15 +119,11 @@ func resourceServiceEndpointNuGetUpdate(d *schema.ResourceData, m interface{}) e
 
 func resourceServiceEndpointNuGetDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointNuGet(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointNuGet(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
-func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointNuGet(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externalnugetfeed")
 	serviceEndpoint.Url = converter.String(d.Get("feed_url").(string))
@@ -168,7 +156,7 @@ func expandServiceEndpointNuGet(d *schema.ResourceData) (*serviceendpoint.Servic
 			Scheme: converter.String("UsernamePassword"),
 		}
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointNuGet(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

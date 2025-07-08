@@ -1,3 +1,5 @@
+//go:build (all || resource_feed_retention_policy) && !exclude_resource_feed_retention_policy
+
 package acceptancetests
 
 import (
@@ -185,7 +187,7 @@ func checkFeedRetentionPolicyDestroyed(s *terraform.State) error {
 
 		if err == nil {
 			if policy != nil && (policy.CountLimit != nil || policy.DaysToKeepRecentlyDownloadedPackages != nil) {
-				return fmt.Errorf(" Feed Retention Policy (Feed ID: %s) should not exist", id)
+				return fmt.Errorf("Feed Retention Policy (Feed ID: %s) should not exist", id)
 			}
 		}
 	}
@@ -196,7 +198,7 @@ func CheckFeedRetentionPolicyExist(expectedCountLimit int) resource.TestCheckFun
 	return func(s *terraform.State) error {
 		res, ok := s.RootModule().Resources["azuredevops_feed_retention_policy.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a `azuredevops_feed_retention_policy` in the TF state")
+			return fmt.Errorf("Did not find a `azuredevops_feed_retention_policy` in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -207,13 +209,12 @@ func CheckFeedRetentionPolicyExist(expectedCountLimit int) resource.TestCheckFun
 			FeedId:  &id,
 			Project: &projectID,
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Feed Retention Policy with Feed ( Feed ID=%s ) cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("Feed Retention Policy with Feed ( Feed ID=%s ) cannot be found!. Error=%v", id, err)
 		}
 
 		if *policy.CountLimit != expectedCountLimit {
-			return fmt.Errorf(" Feed Retention Policy with ( Feed ID=%s ) has CountLimit=%d, but expected CountLimit=%d", id, *policy.CountLimit, expectedCountLimit)
+			return fmt.Errorf("Feed Retention Policy with ( Feed ID=%s ) has CountLimit=%d, but expected CountLimit=%d", id, *policy.CountLimit, expectedCountLimit)
 		}
 		return nil
 	}

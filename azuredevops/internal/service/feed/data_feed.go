@@ -59,20 +59,19 @@ func dataFeedRead(d *schema.ResourceData, m interface{}) error {
 		FeedId:  &identifier,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf(" reading feed during read: %+v", err)
+		return fmt.Errorf("reading feed during read: %+v", err)
 	}
 
 	if getFeed != nil {
-		d.SetId((*getFeed.Id).String())
+		d.SetId(getFeed.Id.String())
 		d.Set("name", *getFeed.Name)
-		d.Set("feed_id", (*getFeed.Id).String())
+		d.Set("feed_id", getFeed.Id.String())
 		if getFeed.Project != nil {
-			d.Set("project_id", (*getFeed.Project.Id).String())
+			d.Set("project_id", getFeed.Project.Id.String())
 		}
 	}
 

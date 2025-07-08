@@ -98,9 +98,8 @@ func genPolicyCreateFunc(crudArgs *policyCrudArgs) schema.CreateFunc { //nolint:
 			Configuration: policyConfig,
 			Project:       projectID,
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Creating policy in Azure DevOps: %+v", err)
+			return fmt.Errorf("Creating policy in Azure DevOps: %+v", err)
 		}
 
 		d.SetId(strconv.Itoa(*createPolicy.Id))
@@ -114,9 +113,8 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:stat
 		clients := m.(*client.AggregatedClient)
 		projectID := d.Get("project_id").(string)
 		policyID, err := strconv.Atoi(d.Id())
-
 		if err != nil {
-			return fmt.Errorf(" Converting policy ID to an integer: (%+v)", err)
+			return fmt.Errorf("Converting policy ID to an integer: (%+v)", err)
 		}
 
 		policyConfig, err := clients.PolicyClient.GetPolicyConfiguration(clients.Ctx, policy.GetPolicyConfigurationArgs{
@@ -130,7 +128,7 @@ func genPolicyReadFunc(crudArgs *policyCrudArgs) schema.ReadFunc { //nolint:stat
 		}
 
 		if err != nil {
-			return fmt.Errorf(" Looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
+			return fmt.Errorf("Looking up build policy configuration with ID (%v) and project ID (%v): %v", policyID, projectID, err)
 		}
 
 		return crudArgs.FlattenFunc(d, policyConfig, &projectID)
@@ -151,9 +149,8 @@ func genPolicyUpdateFunc(crudArgs *policyCrudArgs) schema.UpdateFunc { //nolint:
 			Configuration:   policyConfig,
 			Project:         projectID,
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Updating policy in Azure DevOps: %+v", err)
+			return fmt.Errorf("Updating policy in Azure DevOps: %+v", err)
 		}
 
 		return genPolicyReadFunc(crudArgs)(d, m)
@@ -173,9 +170,8 @@ func genPolicyDeleteFunc(crudArgs *policyCrudArgs) schema.DeleteFunc { //nolint:
 			ConfigurationId: policyConfig.Id,
 			Project:         projectID,
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Deleting policy in Azure DevOps: %+v", err)
+			return fmt.Errorf("Deleting policy in Azure DevOps: %+v", err)
 		}
 
 		return nil
@@ -192,7 +188,7 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 	}
 	err = d.Set("repository_ids", repoIds)
 	if err != nil {
-		return fmt.Errorf(" Unable to persist policy settings configuration: %+v", err)
+		return fmt.Errorf("Unable to persist policy settings configuration: %+v", err)
 	}
 	return nil
 }
@@ -200,14 +196,13 @@ func baseFlattenFunc(d *schema.ResourceData, policyConfig *policy.PolicyConfigur
 func flattenSettings(policyConfig *policy.PolicyConfiguration) ([]interface{}, error) {
 	policySettings := commonPolicySettings{}
 	policyAsJSON, err := json.Marshal(policyConfig.Settings)
-
 	if err != nil {
-		return nil, fmt.Errorf(" Unable to marshal policy settings into JSON: %+v", err)
+		return nil, fmt.Errorf("Unable to marshal policy settings into JSON: %+v", err)
 	}
 
 	err = json.Unmarshal(policyAsJSON, &policySettings)
 	if err != nil {
-		return nil, fmt.Errorf(" Unable to unmarshal policy settings. Error: %+v", err)
+		return nil, fmt.Errorf("Unable to unmarshal policy settings. Error: %+v", err)
 	}
 	var repoIds []interface{}
 	for _, scope := range policySettings.Scopes {
@@ -233,7 +228,7 @@ func baseExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.PolicyCon
 	if d.Id() != "" {
 		policyID, err := strconv.Atoi(d.Id())
 		if err != nil {
-			return nil, nil, fmt.Errorf(" parsing policy configuration ID: (%+v)", err)
+			return nil, nil, fmt.Errorf("parsing policy configuration ID: (%+v)", err)
 		}
 		policyConfig.Id = &policyID
 	}

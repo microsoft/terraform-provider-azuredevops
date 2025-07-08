@@ -50,11 +50,7 @@ func ResourceServiceEndpointAzureServiceBus() *schema.Resource {
 
 func resourceServiceEndpointAzureServiceBusCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureServiceBus(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointAzureServiceBus(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,12 +85,8 @@ func resourceServiceEndpointAzureServiceBusRead(ctx context.Context, d *schema.R
 
 func resourceServiceEndpointAzureServiceBusUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureServiceBus(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointAzureServiceBus(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return diag.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -103,18 +95,14 @@ func resourceServiceEndpointAzureServiceBusUpdate(ctx context.Context, d *schema
 
 func resourceServiceEndpointAzureServiceBusDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointAzureServiceBus(d)
-	if err != nil {
-		return diag.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if err = deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
+	serviceEndpoint := expandServiceEndpointAzureServiceBus(d)
+	if err := deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete)); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func expandServiceEndpointAzureServiceBus(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointAzureServiceBus(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -127,7 +115,7 @@ func expandServiceEndpointAzureServiceBus(d *schema.ResourceData) (*serviceendpo
 	serviceEndpoint.Data = &map[string]string{
 		"serviceBusQueueName": d.Get("queue_name").(string),
 	}
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointAzureServiceBus(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {

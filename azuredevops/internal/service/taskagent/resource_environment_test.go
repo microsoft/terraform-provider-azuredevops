@@ -20,8 +20,10 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var testEnvironmentProjectId = uuid.New()
-var testEnvironmentId = rand.Intn(100)
+var (
+	testEnvironmentProjectId = uuid.New()
+	testEnvironmentId        = rand.Intn(100)
+)
 
 var testEnvironment = taskagent.EnvironmentInstance{
 	Id:          &testEnvironmentId,

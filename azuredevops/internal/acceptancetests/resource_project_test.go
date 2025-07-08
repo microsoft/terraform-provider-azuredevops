@@ -1,6 +1,4 @@
 //go:build (all || core || resource_project) && !exclude_resource_project
-// +build all core resource_project
-// +build !exclude_resource_project
 
 package acceptancetests
 
@@ -214,7 +212,7 @@ func checkProjectExists(expectedName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		state, ok := s.RootModule().Resources["azuredevops_project.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a project in the TF state")
+			return fmt.Errorf("Did not find a project in the TF state")
 		}
 
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
@@ -224,13 +222,12 @@ func checkProjectExists(expectedName string) resource.TestCheckFunc {
 			IncludeCapabilities: converter.Bool(true),
 			IncludeHistory:      converter.Bool(false),
 		})
-
 		if err != nil {
-			return fmt.Errorf(" Project with ID=%s cannot be found!. Error=%v", id, err)
+			return fmt.Errorf("Project with ID=%s cannot be found!. Error=%v", id, err)
 		}
 
 		if *project.Name != expectedName {
-			return fmt.Errorf(" Project with ID=%s has Name=%s, but expected Name=%s", id, *project.Name, expectedName)
+			return fmt.Errorf("Project with ID=%s has Name=%s, but expected Name=%s", id, *project.Name, expectedName)
 		}
 
 		return nil
@@ -240,12 +237,12 @@ func checkProjectExists(expectedName string) resource.TestCheckFunc {
 func checkImportProject() resource.ImportStateCheckFunc {
 	return func(states []*terraform.InstanceState) error {
 		if len(states) != 1 {
-			return fmt.Errorf(" Expected project imported but not found in the state.")
+			return fmt.Errorf("Expected project imported but not found in the state.")
 		}
 		state := states[0]
 		projectId := state.ID
 		if err := uuid.Validate(projectId); err != nil {
-			return fmt.Errorf(" Project ID should be a valid UUID. Got: %s", projectId)
+			return fmt.Errorf("Project ID should be a valid UUID. Got: %s", projectId)
 		}
 		return nil
 	}

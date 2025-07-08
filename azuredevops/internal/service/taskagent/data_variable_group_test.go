@@ -2,13 +2,13 @@ package taskagent
 
 // The tests in this file use the mock clients in mock_client.go to mock out
 // the Azure DevOps client operations.
-//var azProjectRef = &core.TeamProjectReference{
+// var azProjectRef = &core.TeamProjectReference{
 //	Id:   testhelper.CreateUUID(),
 //	Name: converter.String("project-01"),
 //}
 
 //
-//func TestDataSourceVariableGroup_Read_VariableGroup(t *testing.T) {
+// func TestDataSourceVariableGroup_Read_VariableGroup(t *testing.T) {
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
 //
@@ -54,7 +54,7 @@ package taskagent
 //	require.Equal(t, resourceData.Get(vgProjectID), azProjectRef.Id.String())
 //}
 //
-//func TestDataSourceVariableGroup_Read_FindAllVariables(t *testing.T) {
+// func TestDataSourceVariableGroup_Read_FindAllVariables(t *testing.T) {
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
 //
@@ -108,7 +108,7 @@ package taskagent
 //	require.Equal(t, 2, variablesSet.Len())
 //}
 //
-//func TestDataSourceVariableGroup_Read_VariableGroupNotFound(t *testing.T) {
+// func TestDataSourceVariableGroup_Read_VariableGroupNotFound(t *testing.T) {
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
 //

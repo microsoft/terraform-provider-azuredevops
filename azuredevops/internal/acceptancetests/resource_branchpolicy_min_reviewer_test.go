@@ -1,6 +1,4 @@
 //go:build (all || resource_branchpolicy_min_reviewer_acceptance_test || policy) && (!exclude_resource_branchpolicy_min_reviewer_acceptance_test || !exclude_policy)
-// +build all resource_branchpolicy_min_reviewer_acceptance_test policy
-// +build !exclude_resource_branchpolicy_min_reviewer_acceptance_test !exclude_policy
 
 package acceptancetests
 
@@ -112,6 +110,7 @@ func TestAccBranchPolicyMinReviewers_resetAllVote(t *testing.T) {
 		},
 	})
 }
+
 func TestAccBranchPolicyMinReviewers_requiresImportError(t *testing.T) {
 	name := testutils.GenerateResourceName()
 	node := "azuredevops_branch_policy_min_reviewers.test"

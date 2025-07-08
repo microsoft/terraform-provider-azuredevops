@@ -1,6 +1,4 @@
 //go:build (all || resource_check_branch_control) && !exclude_approvalsandchecks
-// +build all resource_check_branch_control
-// +build !exclude_approvalsandchecks
 
 package acceptancetests
 

@@ -36,7 +36,7 @@ func ResourceDashboard() *schema.Resource {
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
 				idParts := strings.Split(d.Id(), "/")
 				if len(idParts) > 3 || len(idParts) < 2 {
-					return nil, fmt.Errorf(" Unexpected ID format (%q), Expected: <projetId>/<dasboardId> or <projetId>/<teamId>/<dasboardId>", d.Id())
+					return nil, fmt.Errorf("Unexpected ID format (%q), Expected: <projetId>/<dasboardId> or <projetId>/<teamId>/<dasboardId>", d.Id())
 				}
 
 				d.Set("project_id", idParts[0])
@@ -113,7 +113,6 @@ func resourceDashboardCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	resp, err := clients.DashboardClient.CreateDashboard(clients.Ctx, params)
-
 	if err != nil {
 		return diag.Errorf(" Creating dashboard. Error: %s", err)
 	}
@@ -171,7 +170,6 @@ func resourceDashboardRead(ctx context.Context, d *schema.ResourceData, m interf
 				ProjectId: converter.String(d.Get("project_id").(string)),
 				TeamId:    converter.String(resp.GroupId.String()),
 			})
-
 			if err != nil {
 				diag.Errorf(" Getting Dashboard with Team ID: %s. Error: %+v", resp.GroupId.String(), err)
 			}
@@ -253,7 +251,6 @@ func resourceDashboardDelete(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	err = clients.DashboardClient.DeleteDashboard(clients.Ctx, params)
-
 	if err != nil {
 		var wrapperErr azuredevops.WrappedError
 		if errors.As(err, &wrapperErr) {

@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_argocd) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_argocd
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 

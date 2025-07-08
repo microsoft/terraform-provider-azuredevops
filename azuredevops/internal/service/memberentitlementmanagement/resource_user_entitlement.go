@@ -125,12 +125,12 @@ func resourceUserEntitlementCreate(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	userEntitlement, err := expandUserEntitlement(d)
 	if err != nil {
-		return fmt.Errorf(" Creating user entitlement: %v", err)
+		return fmt.Errorf("Creating user entitlement: %v", err)
 	}
 
 	addedUserEntitlement, err := addUserEntitlement(clients, userEntitlement)
 	if err != nil {
-		return fmt.Errorf(" Creating user entitlement: %v", err)
+		return fmt.Errorf("Creating user entitlement: %v", err)
 	}
 
 	d.SetId(addedUserEntitlement.Id.String())
@@ -142,19 +142,18 @@ func resourceUserEntitlementRead(d *schema.ResourceData, m interface{}) error {
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
-		return fmt.Errorf(" Parsing UserEntitlementID: %s. %v", userEntitlementID, err)
+		return fmt.Errorf("Parsing UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
 	userEntitlement, err := clients.MemberEntitleManagementClient.GetUserEntitlement(clients.Ctx, memberentitlementmanagement.GetUserEntitlementArgs{
 		UserId: &id,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) || isUserDeleted(userEntitlement) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf(" Reading user entitlement: %v", err)
+		return fmt.Errorf("Reading user entitlement: %v", err)
 	}
 
 	flattenUserEntitlement(d, userEntitlement)
@@ -165,7 +164,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
-		return fmt.Errorf(" Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
+		return fmt.Errorf("Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
 	accountLicenseType, err := converter.AccountLicenseType(d.Get("account_license_type").(string))
@@ -174,7 +173,7 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 	}
 	licensingSource, ok := d.GetOk("licensing_source")
 	if !ok {
-		return fmt.Errorf(" Reading account licensing source for UserEntitlementID: %s", userEntitlementID)
+		return fmt.Errorf("Reading account licensing source for UserEntitlementID: %s", userEntitlementID)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -197,13 +196,12 @@ func resourceUserEntitlementUpdate(d *schema.ResourceData, m interface{}) error 
 				},
 			},
 		})
-
 	if err != nil {
-		return fmt.Errorf(" Updating user entitlement: %v", err)
+		return fmt.Errorf("Updating user entitlement: %v", err)
 	}
 
 	if !*patchResponse.IsSuccess {
-		return fmt.Errorf(" Updating user entitlement: %s", getUserEntitlementAPIErrorMessage(patchResponse.OperationResults))
+		return fmt.Errorf("Updating user entitlement: %s", getUserEntitlementAPIErrorMessage(patchResponse.OperationResults))
 	}
 	return resourceUserEntitlementRead(d, m)
 }
@@ -216,7 +214,7 @@ func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error 
 	userEntitlementID := d.Id()
 	id, err := uuid.Parse(userEntitlementID)
 	if err != nil {
-		return fmt.Errorf(" Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
+		return fmt.Errorf("Parsing UserEntitlement ID. UserEntitlementID: %s. %v", userEntitlementID, err)
 	}
 
 	clients := m.(*client.AggregatedClient)
@@ -224,9 +222,8 @@ func resourceUserEntitlementDelete(d *schema.ResourceData, m interface{}) error 
 	err = clients.MemberEntitleManagementClient.DeleteUserEntitlement(m.(*client.AggregatedClient).Ctx, memberentitlementmanagement.DeleteUserEntitlementArgs{
 		UserId: &id,
 	})
-
 	if err != nil {
-		return fmt.Errorf(" Deleting user entitlement: %v", err)
+		return fmt.Errorf("Deleting user entitlement: %v", err)
 	}
 
 	return nil
@@ -277,7 +274,6 @@ func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *membe
 	userEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddUserEntitlement(clients.Ctx, memberentitlementmanagement.AddUserEntitlementArgs{
 		UserEntitlement: userEntitlement,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +283,7 @@ func addUserEntitlement(clients *client.AggregatedClient, userEntitlement *membe
 		if userEntitlementsPostResponse.OperationResult != nil {
 			opResults = append(opResults, *userEntitlementsPostResponse.OperationResult)
 		}
-		return nil, fmt.Errorf(" Adding user entitlement: %s", getUserEntitlementAPIErrorMessage(&opResults))
+		return nil, fmt.Errorf("Adding user entitlement: %s", getUserEntitlementAPIErrorMessage(&opResults))
 	}
 
 	return userEntitlementsPostResponse.UserEntitlement, nil
@@ -312,7 +308,7 @@ func importUserEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.Res
 			return nil, err
 		}
 
-		if result == nil || len(*result) <= 0 {
+		if result == nil || len(*result) == 0 {
 			return nil, fmt.Errorf("No entitlement found for [%s]", upn)
 		}
 		if len(*result) > 1 {

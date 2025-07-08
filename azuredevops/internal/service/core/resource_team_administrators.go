@@ -76,7 +76,6 @@ func resourceTeamAdministratorsCreate(d *schema.ResourceData, m interface{}) err
 		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -108,7 +107,6 @@ func resourceTeamAdministratorsRead(d *schema.ResourceData, m interface{}) error
 		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
@@ -149,7 +147,6 @@ func resourceTeamAdministratorsUpdate(d *schema.ResourceData, m interface{}) err
 		TeamId:         converter.String(d.Get("team_id").(string)),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -192,7 +189,6 @@ func resourceTeamAdministratorsDelete(d *schema.ResourceData, m interface{}) err
 		TeamId:         converter.String(teamID),
 		ExpandIdentity: converter.Bool(false),
 	})
-
 	if err != nil {
 		return err
 	}

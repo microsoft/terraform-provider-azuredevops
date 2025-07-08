@@ -113,11 +113,7 @@ func ResourceServiceEndpointOpenshift() *schema.Resource {
 
 func resourceServiceEndpointOpenshiftCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	args, err := expandServiceEndpointOpenshift(d)
-	if err != nil {
-		return diag.Errorf(" Expanding service connection: %+v", err)
-	}
-
+	args := expandServiceEndpointOpenshift(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, args)
 	if err != nil {
 		return diag.Errorf("Creating service connection: %+v", err)
@@ -153,12 +149,8 @@ func resourceServiceEndpointOpenshiftRead(ctx context.Context, d *schema.Resourc
 
 func resourceServiceEndpointOpenshiftUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointOpenshift(d)
-	if err != nil {
-		return diag.Errorf(" Expanding service connection: %+v", err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+	serviceEndpoint := expandServiceEndpointOpenshift(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
 		return diag.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
@@ -167,19 +159,15 @@ func resourceServiceEndpointOpenshiftUpdate(ctx context.Context, d *schema.Resou
 
 func resourceServiceEndpointOpenshiftDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	args, err := expandServiceEndpointOpenshift(d)
-	if err != nil {
-		return diag.Errorf(" Expanding service connection: %+v", err)
-	}
-
-	err = deleteServiceEndpoint(clients, args, d.Timeout(schema.TimeoutDelete))
+	args := expandServiceEndpointOpenshift(d)
+	err := deleteServiceEndpoint(clients, args, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.Errorf(" Deleting service endpoint in Azure DevOps: %+v", err)
 	}
 	return nil
 }
 
-func expandServiceEndpointOpenshift(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointOpenshift(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	authType := ""
 	params := make(map[string]string)
@@ -244,7 +232,7 @@ func expandServiceEndpointOpenshift(d *schema.ResourceData) (*serviceendpoint.Se
 
 	serviceEndpoint.Type = converter.String("openshift")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) error {
@@ -255,7 +243,7 @@ func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *se
 		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
 			acceptUntrustedCerts, err := strconv.ParseBool((*params)["acceptUntrustedCerts"])
 			if err != nil {
-				return fmt.Errorf(" Parse `acceptUntrustedCerts`: %v", err)
+				return fmt.Errorf("Parse `acceptUntrustedCerts`: %v", err)
 			}
 			d.Set("accept_untrusted_certs", acceptUntrustedCerts)
 			d.Set("certificate_authority_file", (*params)["certificateAuthorityFile"])
@@ -263,7 +251,7 @@ func flattenServiceEndpointOpenshift(d *schema.ResourceData, serviceEndpoint *se
 		if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
 			acceptUntrustedCerts, err := strconv.ParseBool((*params)["acceptUntrustedCerts"])
 			if err != nil {
-				return fmt.Errorf(" Parse `acceptUntrustedCerts`: %v", err)
+				return fmt.Errorf("Parse `acceptUntrustedCerts`: %v", err)
 			}
 			d.Set("accept_untrusted_certs", acceptUntrustedCerts)
 			d.Set("certificate_authority_file", (*params)["certificateAuthorityFile"])

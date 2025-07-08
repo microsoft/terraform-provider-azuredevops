@@ -7,8 +7,9 @@ package serviceendpoint
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -19,14 +20,18 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-const errMsgCreateServiceEndpoint = "CreateServiceEndpoint() Failed"
-const errMsgUpdateServiceEndpoint = "UpdateServiceEndpoint() Failed"
-const errMsgGetServiceEndpoint = "GetServiceEndpoint() Failed"
-const errMsgDeleteServiceEndpoint = "DeleteServiceEndpoint() Failed"
+const (
+	errMsgCreateServiceEndpoint = "CreateServiceEndpoint() Failed"
+	errMsgUpdateServiceEndpoint = "UpdateServiceEndpoint() Failed"
+	errMsgGetServiceEndpoint    = "GetServiceEndpoint() Failed"
+	errMsgDeleteServiceEndpoint = "DeleteServiceEndpoint() Failed"
+)
 
-var kubernetesTestServiceEndpointID = uuid.New()
-var kubernetesRandomServiceEndpointProjectID = uuid.New()
-var kubernetesTestServiceEndpointProjectID = &kubernetesRandomServiceEndpointProjectID
+var (
+	kubernetesTestServiceEndpointID          = uuid.New()
+	kubernetesRandomServiceEndpointProjectID = uuid.New()
+	kubernetesTestServiceEndpointProjectID   = &kubernetesRandomServiceEndpointProjectID
+)
 
 var kubernetesTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{},

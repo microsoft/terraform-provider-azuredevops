@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_gitlab) && !exclude_resource_serviceendpoint_gitlab
+
 package acceptancetests
 
 import (

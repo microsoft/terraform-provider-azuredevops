@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_jfrog_xray_v2) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_jfrog_xray_v2
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -350,6 +348,7 @@ resource "azuredevops_serviceendpoint_jfrog_xray_v2" "import" {
 }
 `, template)
 }
+
 func hclSvcEndpointJFrogXRayV2ResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	template := hclSvcEndpointJFrogXRayV2ResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
 	return fmt.Sprintf(`

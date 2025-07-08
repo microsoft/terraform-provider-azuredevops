@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var platformV2TestServiceEndpointIDpassword = uuid.New()
-var platformV2RandomServiceEndpointProjectIDpassword = uuid.New()
-var platformV2TestServiceEndpointProjectIDpassword = &artifactoryRandomServiceEndpointProjectIDpassword
+var (
+	platformV2TestServiceEndpointIDpassword          = uuid.New()
+	platformV2RandomServiceEndpointProjectIDpassword = uuid.New()
+	platformV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+)
 
 var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -48,9 +50,11 @@ var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	},
 }
 
-var platformV2TestServiceEndpointID = uuid.New()
-var platformV2RandomServiceEndpointProjectID = uuid.New()
-var platformV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+var (
+	platformV2TestServiceEndpointID          = uuid.New()
+	platformV2RandomServiceEndpointProjectID = uuid.New()
+	platformV2TestServiceEndpointProjectID   = &artifactoryRandomServiceEndpointProjectID
+)
 
 var platformV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -91,6 +95,7 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 
 	}
 }
+
 func TestServiceEndpointplatformV2_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
@@ -122,9 +127,11 @@ func testServiceEndpointplatformV2_Create_DoesNotSwallowError(t *testing.T, ep *
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointplatformV2_Create_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointplatformV2_Create_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointplatformV2_Create_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
@@ -155,9 +162,11 @@ func testServiceEndpointplatformV2_Read_DoesNotSwallowError(t *testing.T, ep *se
 	err := r.Read(resourceData, clients)
 	require.Contains(t, err.Error(), "GetServiceEndpoint() Failed")
 }
+
 func TestServiceEndpointplatformV2_Read_DoesNotSwallowErrorToken(t *testing.T) {
 	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
+
 func TestServiceEndpointplatformV2_Read_DoesNotSwallowErrorPassword(t *testing.T) {
 	testServiceEndpointplatformV2_Read_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }

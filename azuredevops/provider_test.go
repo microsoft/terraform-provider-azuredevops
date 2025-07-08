@@ -301,7 +301,8 @@ func TestAuthOIDCToken(t *testing.T) {
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId, clientId, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string,
 			getAssertion func(context.Context) (string, error),
-			options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
+			options *azidentity.ClientAssertionCredentialOptions,
+		) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
@@ -319,7 +320,7 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	oidcToken := "buffalo123"
 	tempFile := t.TempDir() + "/clientSecret.txt"
-	err := os.WriteFile(tempFile, []byte(oidcToken), 0644)
+	err := os.WriteFile(tempFile, []byte(oidcToken), 0o644)
 	assert.Nil(t, err)
 
 	accessToken := "thepassword"
@@ -374,7 +375,7 @@ func TestAuthClientSecretFile(t *testing.T) {
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	clientSecret := "buffalo123"
 	tempFile := t.TempDir() + "/clientSecret.txt"
-	err := os.WriteFile(tempFile, []byte(clientSecret), 0644)
+	err := os.WriteFile(tempFile, []byte(clientSecret), 0o644)
 	assert.Nil(t, err)
 
 	accessToken := "thepassword"
@@ -402,7 +403,7 @@ func TestAuthTrfm(t *testing.T) {
 	clientId := "00000000-0000-0000-0000-000000000001"
 	tenantId := "00000000-0000-0000-0000-000000000002"
 	fakeTokenValue := "tokenvalue"
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", fakeTokenValue)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", fakeTokenValue)
 	accessToken := "thepassword"
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)
@@ -440,7 +441,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	resourceData.Set("use_oidc", true)
 
 	// Apply phase test
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_apply)
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_apply, clientId_apply, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
@@ -453,7 +454,7 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 	assert.Equal(t, "Bearer "+accessToken, token)
 
 	// Plan phase test
-	os.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
+	t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN", trfm_fake_token_plan)
 	mockIdentityClient.EXPECT().NewClientAssertionCredential(tenantId_plan, clientId_plan, gomock.Any(), nil).DoAndReturn(
 		func(tenantID, clientID string, getAssertion func(context.Context) (string, error), options *azidentity.ClientAssertionCredentialOptions) (*simpleTokenGetter, error) {
 			getter := simpleTokenGetter{token: accessToken}
@@ -494,7 +495,7 @@ func generateCert() []byte {
 
 	publicBytes := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	privateBytes := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
-	return append(publicBytes[:], privateBytes[:]...)
+	return append(publicBytes, privateBytes...)
 }
 
 func TestAuthClientCert(t *testing.T) {
@@ -535,7 +536,7 @@ func TestAuthClientCertFile(t *testing.T) {
 	cert := generateCert()
 	accessToken := "thepassword"
 	tempFile := t.TempDir() + "/clientCerts.pem"
-	err := os.WriteFile(tempFile, cert, 0644)
+	err := os.WriteFile(tempFile, cert, 0o644)
 	assert.Nil(t, err)
 
 	resourceData := schema.TestResourceDataRaw(t, azuredevops.Provider().Schema, nil)

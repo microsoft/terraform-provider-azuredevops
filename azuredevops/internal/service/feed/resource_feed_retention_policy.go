@@ -36,7 +36,7 @@ func ResourceFeedRetentionPolicy() *schema.Resource {
 				} else {
 					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id())
 					if err != nil {
-						return nil, fmt.Errorf(" Parsing the resource ID. Expect in format `projectID/feedID`. Error: %v", err)
+						return nil, fmt.Errorf("Parsing the resource ID. Expect in format `projectID/feedID`. Error: %v", err)
 					}
 
 					if projectNameOrID, err = tfhelper.GetRealProjectId(projectNameOrID, meta); err == nil {
@@ -91,9 +91,8 @@ func resourceFeedRetentionPolicyCreate(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Creating Feed Retention Policy. FeedId: %s, Error: %+v", feedId, err))
+		return diag.FromErr(fmt.Errorf("Creating Feed Retention Policy. FeedId: %s, Error: %+v", feedId, err))
 	}
 
 	d.SetId(feedId)
@@ -109,13 +108,12 @@ func resourceFeedRetentionPolicyRead(ctx context.Context, d *schema.ResourceData
 		FeedId:  &feedID,
 		Project: &projectId,
 	})
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf(" Failed get Feed Retention Policy. Projecct ID: %s , Feed ID: %s. Error: %+v", projectId, feedID, err))
+		return diag.FromErr(fmt.Errorf("Failed get Feed Retention Policy. Projecct ID: %s , Feed ID: %s. Error: %+v", projectId, feedID, err))
 	}
 
 	d.Set("feed_id", feedID)
@@ -145,9 +143,8 @@ func resourceFeedRetentionPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Updating Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
+		return diag.FromErr(fmt.Errorf("Updating Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
 	}
 	return resourceFeedRetentionPolicyRead(clients.Ctx, d, m)
 }
@@ -161,9 +158,8 @@ func resourceFeedRetentionPolicyDelete(ctx context.Context, d *schema.ResourceDa
 		FeedId:  &feedId,
 		Project: &projectId,
 	})
-
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Deleting Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
+		return diag.FromErr(fmt.Errorf("Deleting Feed Retention Policy. ProjectID: %s, FeedId: %s, Error: %+v", projectId, feedId, err))
 	}
 	return nil
 }

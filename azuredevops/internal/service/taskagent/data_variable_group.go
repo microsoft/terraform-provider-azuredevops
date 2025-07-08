@@ -110,12 +110,12 @@ func dataSourceVariableGroupRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if len(*variableGroups) == 0 {
-		return fmt.Errorf(" Unable to find variable group with name: %s", name)
+		return fmt.Errorf("Unable to find variable group with name: %s", name)
 	}
 
 	err = flattenVariableGroup(d, &(*variableGroups)[0], &projectID)
 	if err != nil {
-		return fmt.Errorf(" flattening variable group: %v", err)
+		return fmt.Errorf("flattening variable group: %v", err)
 	}
 
 	return nil

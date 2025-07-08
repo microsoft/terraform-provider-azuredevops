@@ -102,7 +102,6 @@ func dataSourceGitRepositoryFileRead(d *schema.ResourceData, m interface{}) erro
 		RepositoryId: &repoId,
 		CommitId:     repoItem.CommitId,
 	})
-
 	if err != nil {
 		return fmt.Errorf("Get commit failed, repositoryID: %s, commitID: %s. Error:  %+v", repoId, *repoItem.CommitId, err)
 	}

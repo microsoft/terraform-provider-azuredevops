@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_snyk) && !exclude_resource_serviceendpoint_snyk
+
 package acceptancetests
 
 import (

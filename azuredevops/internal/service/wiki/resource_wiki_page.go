@@ -76,7 +76,6 @@ func resourceWikiPageCreate(d *schema.ResourceData, m interface{}) error {
 		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
 		Path:           converter.String(d.Get("path").(string)),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -93,7 +92,6 @@ func resourceWikiPageRead(d *schema.ResourceData, m interface{}) error {
 		Path:           converter.String(d.Get("path").(string)),
 		IncludeContent: converter.Bool(true),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -114,7 +112,7 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
+		return fmt.Errorf("Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
 
 	pageLock.Lock()
@@ -129,7 +127,6 @@ func resourceWikiPageUpdate(d *schema.ResourceData, m interface{}) error {
 		WikiIdentifier: converter.String(d.Get("wiki_id").(string)),
 		Version:        converter.String(d.Get("etag").(string)),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -142,7 +139,7 @@ func resourceWikiPageDelete(d *schema.ResourceData, m interface{}) error {
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf(" Parse wiki page ID: %s. Error: %+v", d.Id(), err)
+		return fmt.Errorf("Parse wiki page ID: %s. Error: %+v", d.Id(), err)
 	}
 
 	pageLock.Lock()

@@ -1,6 +1,4 @@
 //go:build (all || resource_serviceendpoint_aws) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_aws
-// +build !exclude_serviceendpoints
 
 package acceptancetests
 
@@ -198,7 +196,6 @@ resource "azuredevops_serviceendpoint_aws" "test" {
   external_id       = "%s"
   use_oidc          = false
 }`, projectName, serviceEndpointName, description, sessionToken, rta, rsn, externalId)
-
 }
 
 func hclSvcEndpointAwsResourceOidc(projectName, serviceEndpointName string) string {

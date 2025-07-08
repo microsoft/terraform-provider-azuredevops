@@ -1,6 +1,4 @@
 //go:build (all || resource_variable_group) && !exclude_resource_variable_group
-// +build all resource_variable_group
-// +build !exclude_resource_variable_group
 
 package acceptancetests
 
@@ -185,7 +183,7 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 	return func(s *terraform.State) error {
 		varGroup, ok := s.RootModule().Resources["azuredevops_variable_group.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a variable group in the TF state")
+			return fmt.Errorf("Did not find a variable group in the TF state")
 		}
 
 		variableGroup, err := getVariableGroupFromResource(varGroup)
@@ -194,7 +192,7 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 		}
 
 		if *variableGroup.Name != expectedName {
-			return fmt.Errorf(" Variable Group has Name=%s, but expected %s", *variableGroup.Name, expectedName)
+			return fmt.Errorf("Variable Group has Name=%s, but expected %s", *variableGroup.Name, expectedName)
 		}
 
 		// testing Allow access with definition reference AzDo object
@@ -205,14 +203,14 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 
 		if expectedAllowAccess {
 			if len(*definitionReference) == 0 {
-				return fmt.Errorf("  reference should be not empty for allow access true")
+				return fmt.Errorf("reference should be not empty for allow access true")
 			}
 			if len(*definitionReference) > 0 && *(*definitionReference)[0].Authorized != expectedAllowAccess {
-				return fmt.Errorf(" Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
+				return fmt.Errorf("Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
 			}
 		} else {
 			if len(*definitionReference) > 0 {
-				return fmt.Errorf(" Definition reference should be empty for allow access false")
+				return fmt.Errorf("Definition reference should be empty for allow access false")
 			}
 		}
 		return nil
@@ -229,12 +227,12 @@ func checkVariableGroupDestroyed(s *terraform.State) error {
 
 		// Indicates the variable group still exists -- this should fail the test
 		if _, err := getVariableGroupFromResource(res); err == nil {
-			return fmt.Errorf(" Unexpectedly found a variable group that should be deleted")
+			return fmt.Errorf("Unexpectedly found a variable group that should be deleted")
 		}
 
 		// Indicates the definition reference still exists -- this should fail the test
 		if _, err := getDefinitionResourceFromVariableGroupResource(res); err == nil {
-			return fmt.Errorf(" Unexpectedly found a definition reference for allow access that should be deleted")
+			return fmt.Errorf("Unexpectedly found a definition reference for allow access that should be deleted")
 		}
 	}
 

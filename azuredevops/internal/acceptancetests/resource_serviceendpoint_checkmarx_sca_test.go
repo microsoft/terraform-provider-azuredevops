@@ -1,3 +1,5 @@
+//go:build (all || resource_serviceendpoint_checkmarx_sca) && !exclude_resource_serviceendpoint_checkmarx_sca
+
 package acceptancetests
 
 import (

@@ -1,6 +1,4 @@
 //go:build (all || resource_build_definition) && !exclude_resource_build_definition
-// +build all resource_build_definition
-// +build !exclude_resource_build_definition
 
 package acceptancetests
 
@@ -78,7 +76,8 @@ func TestAccBuildDefinition_pathUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "name", name),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "path", strings.ReplaceAll(pathSecond, `\\`, `\`)),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,
@@ -291,7 +290,8 @@ func TestAccBuildDefinition_otherGitRepositoryAgentJob_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.type", "AgentJob"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.#", "1"),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,
@@ -318,7 +318,8 @@ func TestAccBuildDefinition_otherGitRepositoryAgentJob_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.max_concurrency", "3"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.continue_on_error", "true"),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,
@@ -343,7 +344,8 @@ func TestAccBuildDefinition_otherGitRepositoryAgentJob_update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.max_concurrency", "2"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.continue_on_error", "false"),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,
@@ -473,7 +475,6 @@ func TestAccBuildDefinition_otherGitRepositoryAgentlessJob_multiConfiguration(t 
 			},
 		},
 	})
-
 }
 
 func TestAccBuildDefinition_otherGitRepositoryAgentlessJob_update(t *testing.T) {
@@ -500,7 +501,8 @@ func TestAccBuildDefinition_otherGitRepositoryAgentlessJob_update(t *testing.T) 
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.#", "1"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.type", "None"),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,
@@ -524,7 +526,8 @@ func TestAccBuildDefinition_otherGitRepositoryAgentlessJob_update(t *testing.T) 
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.multipliers", "multiplierstest"),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "jobs.0.target.0.execution_options.0.continue_on_error", "true"),
 				),
-			}, {
+			},
+			{
 				ResourceName:            tfBuildDefNode,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
 				ImportState:             true,

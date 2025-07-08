@@ -64,241 +64,248 @@ func (o *isReadIdentitiesArgs) String() string {
 	return "Equals to an identity.ReadIdentitiesArgs instance"
 }
 
-var securityNamespaceDescriptionProjectId = uuid.UUID(SecurityNamespaceIDValues.Project)
-var securityNamespaceDescriptionProjectEmpty = []security.SecurityNamespaceDescription{}
-var securityNamespaceDescriptionProject = []security.SecurityNamespaceDescription{
-	{
-		Name:        converter.String("Project"),
-		NamespaceId: &securityNamespaceDescriptionProjectId,
-		Actions: &[]security.ActionDefinition{
-			{
-				Name:        converter.String("GENERIC_READ"),
-				Bit:         converter.Int(1),
-				DisplayName: converter.String("View project-level information"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("GENERIC_WRITE"),
-				Bit:         converter.Int(2),
-				DisplayName: converter.String("Edit project-level information"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("DELETE"),
-				Bit:         converter.Int(4),
-				DisplayName: converter.String("Delete team project"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("PUBLISH_TEST_RESULTS"),
-				Bit:         converter.Int(8),
-				DisplayName: converter.String("Create test runs"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("ADMINISTER_BUILD"),
-				Bit:         converter.Int(16),
-				DisplayName: converter.String("Administer a build"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("START_BUILD"),
-				Bit:         converter.Int(32),
-				DisplayName: converter.String("Start a build"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("EDIT_BUILD_STATUS"),
-				Bit:         converter.Int(64),
-				DisplayName: converter.String("Edit build quality"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("UPDATE_BUILD"),
-				Bit:         converter.Int(128),
-				DisplayName: converter.String("Write to build operational store"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("DELETE_TEST_RESULTS"),
-				Bit:         converter.Int(256),
-				DisplayName: converter.String("Delete test runs"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("VIEW_TEST_RESULTS"),
-				Bit:         converter.Int(512),
-				DisplayName: converter.String("View test runs"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("MANAGE_TEST_ENVIRONMENTS"),
-				Bit:         converter.Int(2048),
-				DisplayName: converter.String("Manage test environments"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("MANAGE_TEST_CONFIGURATIONS"),
-				Bit:         converter.Int(4096),
-				DisplayName: converter.String("Manage test configurations"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("WORK_ITEM_DELETE"),
-				Bit:         converter.Int(8192),
-				DisplayName: converter.String("Delete and restore work items"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("WORK_ITEM_MOVE"),
-				Bit:         converter.Int(16384),
-				DisplayName: converter.String("Move work items out of this project"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("WORK_ITEM_PERMANENTLY_DELETE"),
-				Bit:         converter.Int(32768),
-				DisplayName: converter.String("Permanently delete work items"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("RENAME"),
-				Bit:         converter.Int(65536),
-				DisplayName: converter.String("Rename team project"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("MANAGE_PROPERTIES"),
-				Bit:         converter.Int(131072),
-				DisplayName: converter.String("Manage project properties"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("MANAGE_SYSTEM_PROPERTIES"),
-				Bit:         converter.Int(262144),
-				DisplayName: converter.String("Manage system project properties"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("BYPASS_PROPERTY_CACHE"),
-				Bit:         converter.Int(524288),
-				DisplayName: converter.String("Bypass project property cache"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("BYPASS_RULES"),
-				Bit:         converter.Int(1048576),
-				DisplayName: converter.String("Bypass rules on work item updates"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("SUPPRESS_NOTIFICATIONS"),
-				Bit:         converter.Int(2097152),
-				DisplayName: converter.String("Suppress notifications for work item updates"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("UPDATE_VISIBILITY"),
-				Bit:         converter.Int(4194304),
-				DisplayName: converter.String("Update project visibility"),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("CHANGE_PROCESS"),
-				Bit:         converter.Int(8388608),
-				DisplayName: converter.String("Change process of team project."),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("AGILETOOLS_BACKLOG"),
-				Bit:         converter.Int(16777216),
-				DisplayName: converter.String("Agile backlog management."),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
-			},
-			{
-				Name:        converter.String("AGILETOOLS_PLANS"),
-				Bit:         converter.Int(33554432),
-				DisplayName: converter.String("Agile plans."),
-				NamespaceId: &securityNamespaceDescriptionProjectId,
+var (
+	securityNamespaceDescriptionProjectId    = uuid.UUID(SecurityNamespaceIDValues.Project)
+	securityNamespaceDescriptionProjectEmpty = []security.SecurityNamespaceDescription{}
+	securityNamespaceDescriptionProject      = []security.SecurityNamespaceDescription{
+		{
+			Name:        converter.String("Project"),
+			NamespaceId: &securityNamespaceDescriptionProjectId,
+			Actions: &[]security.ActionDefinition{
+				{
+					Name:        converter.String("GENERIC_READ"),
+					Bit:         converter.Int(1),
+					DisplayName: converter.String("View project-level information"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("GENERIC_WRITE"),
+					Bit:         converter.Int(2),
+					DisplayName: converter.String("Edit project-level information"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("DELETE"),
+					Bit:         converter.Int(4),
+					DisplayName: converter.String("Delete team project"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("PUBLISH_TEST_RESULTS"),
+					Bit:         converter.Int(8),
+					DisplayName: converter.String("Create test runs"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("ADMINISTER_BUILD"),
+					Bit:         converter.Int(16),
+					DisplayName: converter.String("Administer a build"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("START_BUILD"),
+					Bit:         converter.Int(32),
+					DisplayName: converter.String("Start a build"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("EDIT_BUILD_STATUS"),
+					Bit:         converter.Int(64),
+					DisplayName: converter.String("Edit build quality"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("UPDATE_BUILD"),
+					Bit:         converter.Int(128),
+					DisplayName: converter.String("Write to build operational store"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("DELETE_TEST_RESULTS"),
+					Bit:         converter.Int(256),
+					DisplayName: converter.String("Delete test runs"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("VIEW_TEST_RESULTS"),
+					Bit:         converter.Int(512),
+					DisplayName: converter.String("View test runs"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("MANAGE_TEST_ENVIRONMENTS"),
+					Bit:         converter.Int(2048),
+					DisplayName: converter.String("Manage test environments"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("MANAGE_TEST_CONFIGURATIONS"),
+					Bit:         converter.Int(4096),
+					DisplayName: converter.String("Manage test configurations"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("WORK_ITEM_DELETE"),
+					Bit:         converter.Int(8192),
+					DisplayName: converter.String("Delete and restore work items"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("WORK_ITEM_MOVE"),
+					Bit:         converter.Int(16384),
+					DisplayName: converter.String("Move work items out of this project"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("WORK_ITEM_PERMANENTLY_DELETE"),
+					Bit:         converter.Int(32768),
+					DisplayName: converter.String("Permanently delete work items"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("RENAME"),
+					Bit:         converter.Int(65536),
+					DisplayName: converter.String("Rename team project"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("MANAGE_PROPERTIES"),
+					Bit:         converter.Int(131072),
+					DisplayName: converter.String("Manage project properties"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("MANAGE_SYSTEM_PROPERTIES"),
+					Bit:         converter.Int(262144),
+					DisplayName: converter.String("Manage system project properties"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("BYPASS_PROPERTY_CACHE"),
+					Bit:         converter.Int(524288),
+					DisplayName: converter.String("Bypass project property cache"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("BYPASS_RULES"),
+					Bit:         converter.Int(1048576),
+					DisplayName: converter.String("Bypass rules on work item updates"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("SUPPRESS_NOTIFICATIONS"),
+					Bit:         converter.Int(2097152),
+					DisplayName: converter.String("Suppress notifications for work item updates"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("UPDATE_VISIBILITY"),
+					Bit:         converter.Int(4194304),
+					DisplayName: converter.String("Update project visibility"),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("CHANGE_PROCESS"),
+					Bit:         converter.Int(8388608),
+					DisplayName: converter.String("Change process of team project."),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("AGILETOOLS_BACKLOG"),
+					Bit:         converter.Int(16777216),
+					DisplayName: converter.String("Agile backlog management."),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
+				{
+					Name:        converter.String("AGILETOOLS_PLANS"),
+					Bit:         converter.Int(33554432),
+					DisplayName: converter.String("Agile plans."),
+					NamespaceId: &securityNamespaceDescriptionProjectId,
+				},
 			},
 		},
-	},
-}
+	}
+)
 
-var projectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
-var projectAccessToken = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
-var projectAccessControlListEmpty = []security.AccessControlList{}
-var projectAccessControlList = []security.AccessControlList{{
-	AcesDictionary: &map[string]security.AccessControlEntry{
-		"Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74": {
-			Descriptor: converter.String("Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74"),
-			Allow:      converter.Int(4745),
-			Deny:       converter.Int(0),
+var (
+	projectID                     = "9083e944-8e9e-405e-960a-c80180aa71e6"
+	projectAccessToken            = fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", projectID)
+	projectAccessControlListEmpty = []security.AccessControlList{}
+	projectAccessControlList      = []security.AccessControlList{
+		{
+			AcesDictionary: &map[string]security.AccessControlEntry{
+				"Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74": {
+					Descriptor: converter.String("Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74"),
+					Allow:      converter.Int(4745),
+					Deny:       converter.Int(0),
+				},
+				"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1": {
+					Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1"),
+					Allow:      converter.Int(112),
+					Deny:       converter.Int(0),
+				},
+				"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1": {
+					Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1"),
+					Allow:      converter.Int(160),
+					Deny:       converter.Int(0),
+				},
+				"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2": {
+					Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2"),
+					Allow:      converter.Int(112),
+					Deny:       converter.Int(0),
+				},
+				"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1": {
+					Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1"),
+					Allow:      converter.Int(521),
+					Deny:       converter.Int(0),
+				},
+			},
+			Token: &projectAccessToken,
 		},
-		"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1": {
-			Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1"),
-			Allow:      converter.Int(112),
-			Deny:       converter.Int(0),
-		},
-		"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1": {
-			Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1"),
-			Allow:      converter.Int(160),
-			Deny:       converter.Int(0),
-		},
-		"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2": {
-			Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2"),
-			Allow:      converter.Int(112),
-			Deny:       converter.Int(0),
-		},
-		"Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1": {
-			Descriptor: converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1"),
-			Allow:      converter.Int(521),
-			Deny:       converter.Int(0),
-		},
-	},
-	Token: &projectAccessToken,
-},
-}
+	}
+)
 
-var projectIdentityListEmpty = []identity.Identity{}
-var projectIdentityList = []identity.Identity{
-	{
-		CustomDisplayName:   converter.String("Df609b046-3e4a-419a-a5d7-a0840414dc74 Build Service (ophiosdev)"),
-		Descriptor:          converter.String("Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74"),
-		Id:                  testhelper.ToUUID("79b8298b-7101-4a53-ad6d-1d3de0b495f1"),
-		ProviderDisplayName: converter.String("f609b046-3e4a-419a-a5d7-a0840414dc74"),
-		SubjectDescriptor:   converter.String("svc.Nzc3NGFjMDMtOGEyOS00NGFjLTg2ZjEtZmE0YmRlZDc4ZGUyOkJ1aWxkOmY2MDliMDQ2LTNlNGEtNDE5YS1hNWQ3LWEwODQwNDE0ZGM3NA"),
-		IsActive:            converter.Bool(true),
-	},
-	{
-		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1"),
-		Id:                  testhelper.ToUUID("b555cec9-60cf-4f6e-9626-670f964945c5"),
-		ProviderDisplayName: converter.String("[dev]\\Project Collection Administrators"),
-		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTAtMQ"),
-		IsActive:            converter.Bool(true),
-	},
-	{
-		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1"),
-		Id:                  testhelper.ToUUID("3e0ea031-f36c-4c43-ab70-34769dc5ba3a"),
-		ProviderDisplayName: converter.String("[dev]\\Project Collection Build Service Accounts"),
-		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMQ"),
-		IsActive:            converter.Bool(true),
-	},
-	{
-		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2"),
-		Id:                  testhelper.ToUUID("e1c911d1-592e-451b-84d2-6c81dbb895c0"),
-		ProviderDisplayName: converter.String("[dev]\\Project Collection Build Administrators"),
-		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMg"),
-		IsActive:            converter.Bool(true),
-	},
-	{
-		Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1"),
-		Id:                  testhelper.ToUUID("b167c23a-27eb-4c59-aa7c-09794f38a556"),
-		ProviderDisplayName: converter.String("[dev]\\Project Collection Test Service Accounts"),
-		SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTQtMQ"),
-		IsActive:            converter.Bool(true),
-	},
-}
+var (
+	projectIdentityListEmpty = []identity.Identity{}
+	projectIdentityList      = []identity.Identity{
+		{
+			CustomDisplayName:   converter.String("Df609b046-3e4a-419a-a5d7-a0840414dc74 Build Service (ophiosdev)"),
+			Descriptor:          converter.String("Microsoft.TeamFoundation.ServiceIdentity;7774ac03-8a29-44ac-86f1-fa4bded78de2:Build:f609b046-3e4a-419a-a5d7-a0840414dc74"),
+			Id:                  testhelper.ToUUID("79b8298b-7101-4a53-ad6d-1d3de0b495f1"),
+			ProviderDisplayName: converter.String("f609b046-3e4a-419a-a5d7-a0840414dc74"),
+			SubjectDescriptor:   converter.String("svc.Nzc3NGFjMDMtOGEyOS00NGFjLTg2ZjEtZmE0YmRlZDc4ZGUyOkJ1aWxkOmY2MDliMDQ2LTNlNGEtNDE5YS1hNWQ3LWEwODQwNDE0ZGM3NA"),
+			IsActive:            converter.Bool(true),
+		},
+		{
+			Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-0-1"),
+			Id:                  testhelper.ToUUID("b555cec9-60cf-4f6e-9626-670f964945c5"),
+			ProviderDisplayName: converter.String("[dev]\\Project Collection Administrators"),
+			SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTAtMQ"),
+			IsActive:            converter.Bool(true),
+		},
+		{
+			Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-1"),
+			Id:                  testhelper.ToUUID("3e0ea031-f36c-4c43-ab70-34769dc5ba3a"),
+			ProviderDisplayName: converter.String("[dev]\\Project Collection Build Service Accounts"),
+			SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMQ"),
+			IsActive:            converter.Bool(true),
+		},
+		{
+			Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-1-2"),
+			Id:                  testhelper.ToUUID("e1c911d1-592e-451b-84d2-6c81dbb895c0"),
+			ProviderDisplayName: converter.String("[dev]\\Project Collection Build Administrators"),
+			SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTEtMg"),
+			IsActive:            converter.Bool(true),
+		},
+		{
+			Descriptor:          converter.String("Microsoft.TeamFoundation.Identity;S-1-9-1551374245-4251810032-2399672646-2899062471-1578266062-0-0-0-4-1"),
+			Id:                  testhelper.ToUUID("b167c23a-27eb-4c59-aa7c-09794f38a556"),
+			ProviderDisplayName: converter.String("[dev]\\Project Collection Test Service Accounts"),
+			SubjectDescriptor:   converter.String("vssgp.Uy0xLTktMTU1MTM3NDI0NS00MjUxODEwMDMyLTIzOTk2NzI2NDYtMjg5OTA2MjQ3MS0xNTc4MjY2MDYyLTAtMC0wLTQtMQ"),
+			IsActive:            converter.Bool(true),
+		},
+	}
+)
 
 func TestSecurityNamespace_GetActionDefinitions_HandleError(t *testing.T) {
 	ctrl := gomock.NewController(t)

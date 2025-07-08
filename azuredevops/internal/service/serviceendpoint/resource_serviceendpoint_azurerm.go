@@ -213,7 +213,7 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 					},
 					EndpointId: resp.Id,
 				}); delErr != nil {
-				return fmt.Errorf(" Delete service endpoint error %v", delErr)
+				return fmt.Errorf("Delete service endpoint error %v", delErr)
 			}
 			return err
 		}
@@ -235,7 +235,7 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
@@ -264,9 +264,8 @@ func resourceServiceEndpointAzureRMUpdate(d *schema.ResourceData, m interface{})
 		}
 	}
 	_, err = updateServiceEndpoint(clients, serviceEndpoint)
-
 	if err != nil {
-		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointAzureRMRead(d, m)
@@ -432,7 +431,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 		if serverUrl, ok := d.GetOk("server_url"); ok {
 			endpointUrl = serverUrl.(string)
 		} else {
-			return nil, fmt.Errorf(" `server_url` is required when `environment` is `AzureStack`")
+			return nil, fmt.Errorf("`server_url` is required when `environment` is `AzureStack`")
 		}
 	}
 
@@ -487,7 +486,7 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("server_url", serviceEndpoint.Url)
 	}
 
-	s := strings.SplitN(scope, "/", -1)
+	s := strings.Split(scope, "/")
 	if len(s) == 5 {
 		d.Set("resource_group", s[4])
 	}
@@ -520,7 +519,7 @@ func validateScopeLevel(scopeMap map[string][]string) error {
 	var mgmtElementCount int
 	for _, ele := range scopeMap["managementGroup"] {
 		if ele == "" {
-			mgmtElementCount = mgmtElementCount + 1
+			mgmtElementCount++
 		}
 	}
 

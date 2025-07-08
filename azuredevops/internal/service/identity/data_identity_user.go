@@ -50,13 +50,13 @@ func dataIdentitySourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Query ADO for list of identity user with filter
 	filterUser, err := getIdentityUsersWithFilterValue(clients, searchFilter, userName)
 	if err != nil {
-		return fmt.Errorf(" Finding user with filter %s. Error: %v", searchFilter, err)
+		return fmt.Errorf("Finding user with filter %s. Error: %v", searchFilter, err)
 	}
 
 	// Filter for the desired user in the FilterUsers results
 	targetUser := validateIdentityUser(filterUser, userName, searchFilter)
 	if targetUser == nil {
-		return fmt.Errorf(" Could not find user with name: %s, with filter: %s", userName, searchFilter)
+		return fmt.Errorf("Could not find user with name: %s, with filter: %s", userName, searchFilter)
 	}
 
 	// Set id and user list for users data resource
@@ -74,7 +74,6 @@ func getIdentityUsersWithFilterValue(clients *client.AggregatedClient, searchFil
 		SearchFilter: &searchFilter, // Filter to get users
 		FilterValue:  &filterValue,  // Search String for user
 	})
-
 	if err != nil {
 		return nil, err
 	}

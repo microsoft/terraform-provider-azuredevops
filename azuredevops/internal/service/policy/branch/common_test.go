@@ -23,25 +23,27 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var projectID = uuid.New().String()
-var randomUUID = uuid.New()
-var testPolicy = &policy.PolicyConfiguration{
-	Id:         converter.Int(1),
-	IsEnabled:  converter.Bool(true),
-	IsBlocking: converter.Bool(true),
-	Type: &policy.PolicyTypeRef{
-		Id: &randomUUID,
-	},
-	Settings: map[string]interface{}{
-		"scope": []map[string]interface{}{
-			{
-				"repositoryId": "test-repo-id",
-				"refName":      "test-ref-name",
-				"matchKind":    "test-match-kind",
+var (
+	projectID  = uuid.New().String()
+	randomUUID = uuid.New()
+	testPolicy = &policy.PolicyConfiguration{
+		Id:         converter.Int(1),
+		IsEnabled:  converter.Bool(true),
+		IsBlocking: converter.Bool(true),
+		Type: &policy.PolicyTypeRef{
+			Id: &randomUUID,
+		},
+		Settings: map[string]interface{}{
+			"scope": []map[string]interface{}{
+				{
+					"repositoryId": "test-repo-id",
+					"refName":      "test-ref-name",
+					"matchKind":    "test-match-kind",
+				},
 			},
 		},
-	},
-}
+	}
+)
 
 var testResource = genBasePolicyResource(&policyCrudArgs{
 	baseFlattenFunc,

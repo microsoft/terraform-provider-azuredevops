@@ -1,6 +1,4 @@
 //go:build (all || core || resource_git_repository) && !exclude_resource_git_repository
-// +build all core resource_git_repository
-// +build !exclude_resource_git_repository
 
 package acceptancetests
 
@@ -200,7 +198,8 @@ func TestAccGitRepository_importGitRepository(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfRepoNode, "web_url"),
 					resource.TestCheckResourceAttr(tfRepoNode, "initialization.#", "1"),
 					checkGitRepoExists(gitRepoName),
-				)},
+				),
+			},
 		},
 	})
 }
@@ -234,10 +233,10 @@ func TestAccGitRepository_import_by_name(t *testing.T) {
 					func(state *terraform.State) error {
 						id, ok := state.RootModule().Resources["id"]
 						if !ok {
-							return fmt.Errorf(" Resource `ID` not found in state")
+							return fmt.Errorf("Resource `ID` not found in state")
 						}
 						if err := uuid.Validate(id.String()); err != nil {
-							return fmt.Errorf(" Resource `ID` is not in UUID format. Current value: %s", id.String())
+							return fmt.Errorf("Resource `ID` is not in UUID format. Current value: %s", id.String())
 						}
 						return nil
 					},
@@ -406,7 +405,7 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 
 		gitRepo, ok := s.RootModule().Resources["azuredevops_git_repository.test"]
 		if !ok {
-			return fmt.Errorf(" Did not find a repo definition in the TF state")
+			return fmt.Errorf("Did not find a repo definition in the TF state")
 		}
 
 		repoID := gitRepo.Primary.ID
@@ -418,7 +417,7 @@ func checkGitRepoExists(expectedName string) resource.TestCheckFunc {
 		}
 
 		if *repo.Name != expectedName {
-			return fmt.Errorf(" AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
+			return fmt.Errorf("AzDO Git Repository has Name=%s, but expected Name=%s", *repo.Name, expectedName)
 		}
 
 		return nil

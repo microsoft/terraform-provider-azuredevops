@@ -201,7 +201,7 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -223,7 +223,7 @@ func resourceServiceEndpointKubernetesUpdate(d *schema.ResourceData, m interface
 	}
 
 	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" updating service endpoint in Azure DevOps: %+v", err)
+		return fmt.Errorf("updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointKubernetesRead(d, m)
@@ -349,7 +349,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		}
 		clusterAdmin, err := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
 		if err != nil {
-			return fmt.Errorf(" Parsing `cluster_admin` value. Error: %+v", err)
+			return fmt.Errorf("Parsing `cluster_admin` value. Error: %+v", err)
 		}
 		configItems := map[string]interface{}{
 			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
@@ -381,7 +381,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
 					acceptUntrustedCerts, err := strconv.ParseBool(v)
 					if err != nil {
-						return fmt.Errorf(" failed to parse `accept_untrusted_certs`: %+v ", err)
+						return fmt.Errorf("failed to parse `accept_untrusted_certs`: %+v ", err)
 					}
 					kubeconfig["accept_untrusted_certs"] = acceptUntrustedCerts
 				}
@@ -415,7 +415,7 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 			if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
 				acceptUntrustedCerts, err := strconv.ParseBool(v)
 				if err != nil {
-					return fmt.Errorf(" Pparse `accept_untrusted_certs`. Error: %+v ", err)
+					return fmt.Errorf("Pparse `accept_untrusted_certs`. Error: %+v ", err)
 				}
 				serviceAccount["accept_untrusted_certs"] = acceptUntrustedCerts
 			}

@@ -222,7 +222,7 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	_, err = clients.WorkItemTrackingClient.UpdateWorkItem(clients.Ctx, args)
 	if err != nil {
-		return fmt.Errorf(" Update work item. Project ID: %s, Work Item: %s, Error: %+v", project, d.Id(), err)
+		return fmt.Errorf("Update work item. Project ID: %s, Work Item: %s, Error: %+v", project, d.Id(), err)
 	}
 
 	return resourceWorkItemRead(d, m)

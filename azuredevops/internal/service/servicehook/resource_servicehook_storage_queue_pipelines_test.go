@@ -61,7 +61,8 @@ var testResourceSubscriptionStorageQueue = []servicehooks.Subscription{
 			"stageResultId": "mystageresult",
 		},
 		ResourceVersion: converter.String("5.1-preview.1"),
-	}, {
+	},
+	{
 		Id:               &subscriptionStorageQueueID,
 		ConsumerActionId: converter.String("enqueue"),
 		ConsumerId:       converter.String("azureStorageQueue"),

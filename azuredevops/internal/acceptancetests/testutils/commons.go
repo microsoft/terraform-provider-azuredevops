@@ -23,6 +23,7 @@ func GetProvider() *schema.Provider {
 
 func GetProviderFactories() map[string]func() (*schema.Provider, error) {
 	return map[string]func() (*schema.Provider, error){
+		//nolint:unparam
 		"azuredevops": func() (*schema.Provider, error) {
 			return GetProvider(), nil
 		},

@@ -62,11 +62,7 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 
 func resourceServiceEndpointRunPipelineCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointRunPipeline(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointRunPipeline(d)
 	serviceEndPoint, err := createServiceEndpoint(d, clients, serviceEndpoint)
 	if err != nil {
 		return err
@@ -88,7 +84,7 @@ func resourceServiceEndpointRunPipelineRead(d *schema.ResourceData, m interface{
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -100,13 +96,9 @@ func resourceServiceEndpointRunPipelineRead(d *schema.ResourceData, m interface{
 
 func resourceServiceEndpointRunPipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointRunPipeline(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
-	if _, err = updateServiceEndpoint(clients, serviceEndpoint); err != nil {
-		return fmt.Errorf(" Updating service endpoint in Azure DevOps: %+v", err)
+	serviceEndpoint := expandServiceEndpointRunPipeline(d)
+	if _, err := updateServiceEndpoint(clients, serviceEndpoint); err != nil {
+		return fmt.Errorf("Updating service endpoint in Azure DevOps: %+v", err)
 	}
 
 	return resourceServiceEndpointRunPipelineRead(d, m)
@@ -114,16 +106,12 @@ func resourceServiceEndpointRunPipelineUpdate(d *schema.ResourceData, m interfac
 
 func resourceServiceEndpointRunPipelineDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
-	serviceEndpoint, err := expandServiceEndpointRunPipeline(d)
-	if err != nil {
-		return fmt.Errorf(errMsgTfConfigRead, err)
-	}
-
+	serviceEndpoint := expandServiceEndpointRunPipeline(d)
 	return deleteServiceEndpoint(clients, serviceEndpoint, d.Timeout(schema.TimeoutDelete))
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, error) {
+func expandServiceEndpointRunPipeline(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("azdoapi")
 
@@ -143,13 +131,13 @@ func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.
 	releaseUrl := fmt.Sprint("https://vsrm.dev.azure.com/", org)
 	data["releaseUrl"] = releaseUrl
 	serviceEndpoint.Data = &data
-	return serviceEndpoint, nil
+	return serviceEndpoint
 }
 
 func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
 	authPerson := make(map[string]string)
 	if len(d.List()) == 1 {
-		val := d.List()[0].(map[string]interface{}) //auth_personal block may have only one element inside
+		val := d.List()[0].(map[string]interface{}) // auth_personal block may have only one element inside
 		authPerson["apitoken"] = val["personal_access_token"].(string)
 	}
 	return authPerson

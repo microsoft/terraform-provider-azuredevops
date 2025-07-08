@@ -19,9 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var jenkinsTestServiceEndpointIDPassword = uuid.New()
-var jenkinsRandomServiceEndpointProjectIDPassword = uuid.New()
-var jenkinsTestServiceEndpointProjectIDPassword = &jenkinsRandomServiceEndpointProjectIDPassword
+var (
+	jenkinsTestServiceEndpointIDPassword          = uuid.New()
+	jenkinsRandomServiceEndpointProjectIDPassword = uuid.New()
+	jenkinsTestServiceEndpointProjectIDPassword   = &jenkinsRandomServiceEndpointProjectIDPassword
+)
 
 var jenkinsTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 	Authorization: &serviceendpoint.EndpointAuthorization{
@@ -65,6 +67,7 @@ func testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t *testing.T, ep *servic
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
 }
+
 func TestServiceEndpointJenkins_ExpandFlatten_RoundtripPassword(t *testing.T) {
 	testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDPassword)
 }
@@ -90,7 +93,6 @@ func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T)
 
 	err := r.Create(resourceData, clients)
 	require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
-
 }
 
 // verifies that if an error is produced on read, the error is not swallowed

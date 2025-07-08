@@ -44,7 +44,7 @@ func dataSourceAgentQueueRead(d *schema.ResourceData, m interface{}) error {
 
 	agentQueue, err := getAgentQueueByName(clients, d.Get("name").(string), d.Get("project_id").(string))
 	if err != nil {
-		return fmt.Errorf(" getting agent queue by name: %v", err)
+		return fmt.Errorf("getting agent queue by name: %v", err)
 	}
 
 	d.SetId(strconv.Itoa(*agentQueue.Id))
@@ -71,17 +71,16 @@ func getAgentQueueByName(clients *client.AggregatedClient, name, projectID strin
 		Project:   &projectID,
 		QueueName: &name,
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	if len(*agentQueues) > 1 {
-		return nil, fmt.Errorf(" Found multiple agent queues for name: %s. Agent queues found: %+v", name, agentQueues)
+		return nil, fmt.Errorf("Found multiple agent queues for name: %s. Agent queues found: %+v", name, agentQueues)
 	}
 
 	if len(*agentQueues) == 0 {
-		return nil, fmt.Errorf(" Unable to find agent queues with name: %s", name)
+		return nil, fmt.Errorf("Unable to find agent queues with name: %s", name)
 	}
 
 	return &(*agentQueues)[0], nil
