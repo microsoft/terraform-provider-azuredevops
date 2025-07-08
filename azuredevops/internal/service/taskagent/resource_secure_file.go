@@ -320,8 +320,18 @@ func resourceSecureFileCreate(d *schema.ResourceData, m interface{}) error {
 func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	projectID := d.Get("project_id").(string)
-	secureFileID := d.Id()
-	finalUrl := getSecureFileURL(clients, projectID, secureFileID, nil)
+	name := d.Get("name").(string)
+
+	// Build URL for listing secure files
+	listURL := "_apis/distributedtask/securefiles"
+	queryParams := url.Values{}
+	queryParams.Add("api-version", "6.0-preview.1")
+
+	finalUrl := strings.TrimRight(clients.OrganizationURL, "/") + "/" +
+		strings.TrimLeft(projectID, "/") + "/" +
+		strings.TrimLeft(listURL, "/") + "?" +
+		queryParams.Encode()
+
 	request, err := clients.RawClient.CreateRequestMessage(
 		clients.Ctx,
 		http.MethodGet,
@@ -335,32 +345,60 @@ func resourceSecureFileRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error creating request message: %v", err)
 	}
+
 	response, err := clients.RawClient.SendRequest(request)
 	if err != nil {
-		return fmt.Errorf("error sending secure file read request: %v", err)
+		return fmt.Errorf("error sending secure file list request: %v", err)
 	}
-	if response.StatusCode == http.StatusNotFound {
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return clients.RawClient.UnwrapError(response)
+	}
+
+	var result struct {
+		Value []map[string]interface{} `json:"value"`
+	}
+	if err := clients.RawClient.UnmarshalBody(response, &result); err != nil {
+		return fmt.Errorf("error parsing secure file list response: %v", err)
+	}
+
+	var found map[string]interface{}
+	for _, sf := range result.Value {
+		if sfName, ok := sf["name"].(string); ok && sfName == name {
+			found = sf
+			break
+		}
+	}
+
+	// If the secure file was not found, clear the ID to mark it as deleted
+	if found == nil {
 		d.SetId("")
 		return nil
 	}
-	var secureFile map[string]interface{}
-	err = clients.RawClient.UnmarshalBody(response, &secureFile)
-	if err != nil {
-		return fmt.Errorf("error parsing secure file response: %v", err)
+
+	// Set ID and attributes
+	secureFileID, ok := found["id"].(string)
+	if !ok {
+		return fmt.Errorf("could not get secure file ID from response")
 	}
-	if name, ok := secureFile["name"].(string); ok {
-		d.Set("name", name)
+	d.SetId(secureFileID)
+
+	// Get properties
+	props := getSecureFileProperties(found)
+	propertiesToSet := make(map[string]interface{})
+	for k, v := range props {
+		if k != "file_hash_sha1" && k != "file_hash_sha256" {
+			propertiesToSet[k] = v
+		}
 	}
-	props := getSecureFileProperties(secureFile)
-	delete(props, "file_hash_sha1")
-	delete(props, "file_hash_sha256")
-	d.Set("properties", props)
+	d.Set("properties", propertiesToSet)
 
 	// Read allow_access
 	allowAccess, err := readSecureFileAllowAccess(clients, projectID, secureFileID)
 	if err == nil {
 		d.Set("allow_access", allowAccess)
 	}
+
 	return nil
 }
 
