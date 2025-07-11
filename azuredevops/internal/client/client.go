@@ -79,14 +79,14 @@ type AggregatedClient struct {
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
-func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL string) (*AggregatedClient, error) {
+func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string) (*AggregatedClient, error) {
 	ctx := context.Background()
 
 	if strings.EqualFold(organizationURL, "") {
 		return nil, fmt.Errorf("the url of the Azure DevOps is required")
 	}
 
-	connection, err := sdk.NewDynamicAuthorizationConnection(organizationURL, azdoTokenProvider)
+	connection, err := sdk.NewConnection(organizationURL, authProvider)
 	if err != nil {
 		return nil, err
 	}
