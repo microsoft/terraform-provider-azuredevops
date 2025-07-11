@@ -16,10 +16,10 @@ import (
 
 // Creates a new Azure DevOps connection instance using a personal access token.
 func NewPatConnection(organizationUrl string, personalAccessToken string) *Connection {
-	authorizationString := CreateBasicAuthHeaderValue("", personalAccessToken)
 	organizationUrl = normalizeUrl(organizationUrl)
+	authProvider := NewAuthProviderPAT(personalAccessToken)
 	return &Connection{
-		AuthorizationString:     authorizationString,
+		AuthProvider:            authProvider,
 		BaseUrl:                 organizationUrl,
 		SuppressFedAuthRedirect: true,
 	}
@@ -34,7 +34,7 @@ func NewAnonymousConnection(organizationUrl string) *Connection {
 }
 
 type Connection struct {
-	AuthorizationString     string
+	AuthProvider            AuthProvider
 	BaseUrl                 string
 	UserAgent               string
 	SuppressFedAuthRedirect bool

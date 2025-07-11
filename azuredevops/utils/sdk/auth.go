@@ -12,12 +12,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 )
 
 type GHIdTokenResponse struct {
@@ -110,23 +110,15 @@ func (o *OIDCCredentialProvder) GetToken(ctx context.Context, opts policy.TokenR
 	return creds.GetToken(ctx, opts)
 }
 
-func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentityFuncs IdentityFuncsI) (func() (string, error), error) {
+func GetAuthProvider(ctx context.Context, d *schema.ResourceData, azIdentityFuncs IdentityFuncsI) (azuredevops.AuthProvider, error) {
 	// Personal Access Token
 	if personal_access_token, ok := d.GetOk("personal_access_token"); ok {
-		tokenFunction := func() (string, error) {
-			auth := "_:" + personal_access_token.(string)
-			return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth)), nil
-		}
-		return tokenFunction, nil
+		return azuredevops.NewAuthProviderPAT(personal_access_token.(string)), nil
 	}
 
 	// Azure Authentication Schemes
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
-	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
-	tokenOptions := policy.TokenRequestOptions{
-		Scopes: []string{AzureDevOpsAppDefaultScope},
-	}
 
 	var cred TokenGetter
 	var err error
@@ -305,39 +297,15 @@ func GetAuthTokenProvider(ctx context.Context, d *schema.ResourceData, azIdentit
 		return nil, fmt.Errorf("No valid credentials found.")
 	}
 
-	provider := newAzTokenProvider(cred, context.Background(), tokenOptions)
-	return provider.GetToken, nil
-}
-
-type AzTokenProvider struct {
-	ctx         context.Context
-	cred        TokenGetter
-	opts        policy.TokenRequestOptions
-	cachedToken *azcore.AccessToken
-}
-
-func newAzTokenProvider(cred TokenGetter, ctx context.Context, opts policy.TokenRequestOptions) *AzTokenProvider {
-	return &AzTokenProvider{
-		cred:        cred,
-		ctx:         ctx,
-		opts:        opts,
-		cachedToken: nil,
-	}
+	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
+	ap := azuredevops.NewAuthProviderAAD(cred, policy.TokenRequestOptions{
+		Scopes: []string{AzureDevOpsAppDefaultScope},
+	})
+	return ap, nil
 }
 
 func AssertionProviderFromString(assertion string) func(context.Context) (string, error) {
 	return func(context.Context) (string, error) {
 		return assertion, nil
 	}
-}
-
-func (provider *AzTokenProvider) GetToken() (string, error) {
-	if provider.cachedToken == nil || provider.cachedToken.ExpiresOn.Before(time.Now().Local().Add(-5*time.Minute)) {
-		cachedToken, err := provider.cred.GetToken(provider.ctx, provider.opts)
-		provider.cachedToken = &cachedToken
-		if err != nil {
-			return "", err
-		}
-	}
-	return "Bearer " + provider.cachedToken.Token, nil
 }
