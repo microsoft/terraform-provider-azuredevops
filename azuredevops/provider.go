@@ -333,13 +333,13 @@ func Provider() *schema.Provider {
 
 func providerConfigure() schema.ConfigureContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		tokenFunction, err := sdk.GetAuthTokenProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
+		authProvider, err := sdk.GetAuthProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 
 		organizationUrl := d.Get("org_service_url").(string)
-		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl)
+		azdoClient, err := client.GetAzdoClient(authProvider, organizationUrl)
 		if err != nil {
 			return nil, diag.FromErr(clientErrorHandle(err, organizationUrl))
 		}

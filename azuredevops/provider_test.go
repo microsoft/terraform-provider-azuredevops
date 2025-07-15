@@ -264,9 +264,9 @@ func TestAuthPAT(t *testing.T) {
 	testToken := "thepassword"
 	resourceData.Set("personal_access_token", testToken)
 
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Basic "+base64.StdEncoding.EncodeToString([]byte("_:"+testToken)), token)
 }
@@ -303,9 +303,9 @@ func TestAuthOIDCToken(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -333,9 +333,9 @@ func TestAuthOIDCTokenFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -358,9 +358,9 @@ func TestAuthClientSecret(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -387,9 +387,9 @@ func TestAuthClientSecretFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -413,9 +413,9 @@ func TestAuthTrfm(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -444,9 +444,9 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 
@@ -457,9 +457,9 @@ func TestAuthTrfmPlanApply(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err = sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err = sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err = resp()
+	token, err = resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -518,9 +518,9 @@ func TestAuthClientCert(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -551,9 +551,9 @@ func TestAuthClientCertFile(t *testing.T) {
 			getter := simpleTokenGetter{token: accessToken}
 			return &getter, nil
 		}).Times(1)
-	resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+	resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 	assert.Nil(t, err)
-	token, err := resp()
+	token, err := resp.GetAuth(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, "Bearer "+accessToken, token)
 }
@@ -605,9 +605,9 @@ func TestGHActionsNoAudience(t *testing.T) {
 				getter := simpleTokenGetter{token: accessToken}
 				return &getter, nil
 			}).Times(1)
-		resp, err := sdk.GetAuthTokenProvider(context.Background(), resourceData, mockIdentityClient)
+		resp, err := sdk.GetAuthProvider(context.Background(), resourceData, mockIdentityClient)
 		assert.Nil(t, err)
-		token, err := resp()
+		token, err := resp.GetAuth(context.Background())
 		assert.Nil(t, err)
 		assert.Equal(t, "Bearer "+accessToken, token)
 	}

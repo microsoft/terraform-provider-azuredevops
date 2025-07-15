@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -70,7 +71,7 @@ func NewClientWithOptions(connection *Connection, baseUrl string, options ...Cli
 	client := &Client{
 		baseUrl:                 baseUrl,
 		client:                  httpClient,
-		authorization:           connection.AuthorizationString,
+		authProvider:            connection.AuthProvider,
 		suppressFedAuthRedirect: connection.SuppressFedAuthRedirect,
 		forceMsaPassThrough:     connection.ForceMsaPassThrough,
 		userAgent:               connection.UserAgent,
@@ -84,7 +85,7 @@ func NewClientWithOptions(connection *Connection, baseUrl string, options ...Cli
 type Client struct {
 	baseUrl                 string
 	client                  *http.Client
-	authorization           string
+	authProvider            AuthProvider
 	suppressFedAuthRedirect bool
 	forceMsaPassThrough     bool
 	userAgent               string
@@ -169,9 +170,14 @@ func (client *Client) CreateRequestMessage(ctx context.Context,
 		req = req.WithContext(ctx)
 	}
 
-	if client.authorization != "" {
-		req.Header.Add(headerKeyAuthorization, client.authorization)
+	if client.authProvider != nil {
+		auth, err := client.authProvider.GetAuth(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get auth from auth cache: %v", err)
+		}
+		req.Header.Add(headerKeyAuthorization, auth)
 	}
+
 	accept := acceptMediaType
 	if apiVersion != "" {
 		accept += ";api-version=" + apiVersion
