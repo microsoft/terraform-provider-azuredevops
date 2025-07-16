@@ -213,34 +213,6 @@ func Provider() *schema.Provider {
 				Description:  "The service principal tenant id which should be used.",
 				ValidateFunc: validation.IsUUID,
 			},
-			"client_id_plan": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_PLAN", nil),
-				Description:  "The service principal client id which should be used during a plan operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"tenant_id_plan": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_PLAN", nil),
-				Description:  "The service principal tenant id which should be used during a plan operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"client_id_apply": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_APPLY", nil),
-				Description:  "The service principal client id which should be used during an apply operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"tenant_id_apply": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_APPLY", nil),
-				Description:  "The service principal tenant id which should be used during an apply operation in Terraform Cloud..",
-				ValidateFunc: validation.IsUUID,
-			},
 			"oidc_request_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -277,12 +249,6 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", nil),
 				Description: "Set the audience when requesting OIDC tokens.",
-			},
-			"oidc_tfc_tag": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", nil),
-				Description: "Terraform Cloud dynamic credential provider tag.",
 			},
 			"client_certificate_path": {
 				Type:        schema.TypeString,

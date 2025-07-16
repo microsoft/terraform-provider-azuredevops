@@ -159,61 +159,6 @@ func GetAuthProvider(ctx context.Context, d *schema.ResourceData, azIdentityFunc
 				clientID:        clientID,
 				azIdentityFuncs: azIdentityFuncs,
 			}
-		} else {
-			// OIDC Token from Terraform Cloud
-			tfc_token_env_var := "TFC_WORKLOAD_IDENTITY_TOKEN"
-			if oidc_tfc_tag, ok := d.GetOk("oidc_tfc_tag"); ok && oidc_tfc_tag.(string) != "" {
-				tfc_token_env_var = "TFC_WORKLOAD_IDENTITY_TOKEN_" + oidc_tfc_tag.(string)
-			}
-
-			workloadIdentityToken := os.Getenv(tfc_token_env_var)
-			if workloadIdentityToken == "" {
-				return nil, errors.New("No OIDC token found in " + tfc_token_env_var + " environment variable.")
-			}
-
-			// Check if plan & apply phases use different service principals
-			if clientIdPlan, ok := d.GetOk("client_id_plan"); ok {
-				clientIdApply := d.Get("client_id_apply").(string)
-				tenantIdPlan := d.Get("tenant_id_plan").(string)
-				tenantIdApply := d.Get("tenant_id_apply").(string)
-
-				// Parse which phase we're in from the OIDC token
-				workloadIdentityTokenUnmarshalled := HCPWorkloadToken{}
-				jwtParts := strings.Split(workloadIdentityToken, ".")
-				if len(jwtParts) != 3 {
-					return nil, errors.New("Unable to split TFC_WORKLOAD_IDENTITY_TOKEN jwt")
-				}
-				jwtClaims := jwtParts[1]
-				if i := len(jwtClaims) % 4; i != 0 {
-					jwtClaims += strings.Repeat("=", 4-i)
-				}
-				tokenClaims, err := base64.StdEncoding.DecodeString(jwtClaims)
-				if err != nil {
-					return nil, err
-				}
-				err = json.Unmarshal(tokenClaims, &workloadIdentityTokenUnmarshalled)
-				if err != nil {
-					return nil, err
-				}
-
-				switch runPhase := strings.ToLower(workloadIdentityTokenUnmarshalled.RunPhase); runPhase {
-				case "apply":
-					clientID = clientIdApply
-					tenantID = tenantIdApply
-				case "plan":
-					clientID = clientIdPlan.(string)
-					tenantID = tenantIdPlan
-				default:
-					return nil, fmt.Errorf("Unrecognized workspace run phase: %s", runPhase)
-				}
-			} else if clientID == "" {
-				return nil, fmt.Errorf("Either client_id or client_id_plan must be set when using Terraform Cloud Workload Identity Token authentication.")
-			}
-
-			cred, err = azIdentityFuncs.NewClientAssertionCredential(tenantID, clientID, AssertionProviderFromString(workloadIdentityToken), nil)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 
