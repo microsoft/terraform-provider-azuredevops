@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/entrauth/aztfauth"
@@ -382,7 +381,7 @@ func GetAuthProvider(ctx context.Context, d *schema.ResourceData) (azuredevops.A
 	}
 
 	cred, err := aztfauth.NewCredential(aztfauth.Option{
-		Logger:                     log.New(os.Stderr, "[DEBUG] ", log.LstdFlags|log.Lmsgprefix),
+		Logger:                     log.New(log.Default().Writer(), "[DEBUG] ", log.LstdFlags|log.Lmsgprefix),
 		TenantId:                   d.Get("tenant_id").(string),
 		ClientId:                   d.Get("client_id").(string),
 		ClientIdFile:               d.Get("client_id_file_path").(string),
