@@ -17,6 +17,7 @@ steps:
         set -e
 
         export TF_ACC=1
+        export AZDO_ORG_SERVICE_URL=$(AZDO_ORG_SERVICE_URL)
         export ARM_TENANT_ID=$tenantId
         export ARM_CLIENT_ID=$servicePrincipalId
         export ARM_OIDC_TOKEN=$idToken
@@ -24,7 +25,7 @@ steps:
         export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
-        go test -run=" TestAccProviderAuth_oidc" .
+        go test -run="TestAccProviderAuth_oidc" .
 
   - task: AzureCLI@2
     displayName: Acc Tests with ADO OIDC request
@@ -37,6 +38,7 @@ steps:
         set -e
 
         export TF_ACC=1
+        export AZDO_ORG_SERVICE_URL=$(AZDO_ORG_SERVICE_URL)
         export ARM_TENANT_ID=$tenantId
         export ARM_CLIENT_ID=$servicePrincipalId
         export ARM_OIDC_REQUEST_TOKEN=$(AccessToken)
@@ -45,4 +47,4 @@ steps:
         export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
-        go test -run=" TestAccProviderAuth_oidc" .
+        go test -run="TestAccProviderAuth_oidc" .
