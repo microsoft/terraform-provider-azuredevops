@@ -405,7 +405,6 @@ func GetAuthProvider(ctx context.Context, d *schema.ResourceData) (azuredevops.A
 		UseAzureCLI:                d.Get("use_cli").(bool),
 		AdditionallyAllowedTenants: auxTenants,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to new credential")
 	}

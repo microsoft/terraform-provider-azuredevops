@@ -1,7 +1,6 @@
 package acceptancetests
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -28,9 +27,9 @@ func TestAccProviderAuth_oidc(t *testing.T) {
 }
 
 func providerAuthConfig() string {
-	return fmt.Sprintf(`
+	return `
 data "azuredevops_projects" "test" {
   name  = "Test Project"
   state = "wellFormed"
-}`)
+}`
 }
