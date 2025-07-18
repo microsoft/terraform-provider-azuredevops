@@ -1,5 +1,4 @@
 name: OIDC Auth Test
-on: [workflow_dispatch]
 
 on:
   workflow_dispatch:
