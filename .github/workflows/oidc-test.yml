@@ -20,7 +20,7 @@ jobs:
         run: |
           set -e
           cd azuredevops/internal/acceptancetests
-          go test -run="TestAccProviderAuth_oidc" .
+          go test -v -run="TestAccProviderAuth" .
         env:
           TF_ACC: 1
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}

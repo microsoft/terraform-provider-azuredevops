@@ -8,10 +8,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccProviderAuth_oidc(t *testing.T) {
-	if ok := os.Getenv("ARM_USE_OIDC"); ok == "" {
-		t.Skip("Skipping as `ARM_USE_OIDC` is not specified")
-	}
+func TestAccProviderAuth(t *testing.T) {
 	if ok := os.Getenv("AZDO_ORG_SERVICE_URL"); ok == "" {
 		t.Skip("Skipping as `AZDO_ORG_SERVICE_URL` is not specified")
 	}

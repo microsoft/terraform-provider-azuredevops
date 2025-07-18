@@ -25,7 +25,7 @@ steps:
         export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
-        go test -run="TestAccProviderAuth_oidc" .
+        go test -v -run="TestAccProviderAuth" .
 
   - task: AzureCLI@2
     displayName: Acc Tests with ADO OIDC request
@@ -47,4 +47,4 @@ steps:
         export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
-        go test -run="TestAccProviderAuth_oidc" .
+        go test -v -run="TestAccProviderAuth" .
