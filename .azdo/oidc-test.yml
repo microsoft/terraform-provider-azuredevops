@@ -1,5 +1,5 @@
 pool:
-  name: pool-ubuntu-2004
+  vmImage: ubuntu-latest
 
 steps:
   - task: GoTool@0
