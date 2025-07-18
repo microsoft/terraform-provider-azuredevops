@@ -300,19 +300,19 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_OIDC", nil),
-				Description: "Use an OIDC token to authenticate to a service principal.",
+				Description: "Use an OIDC token to authenticate to a service principal. Defaults to `false`.",
 			},
 			"use_cli": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_CLI", nil),
-				Description: "Use Azure CLI to authenticate.",
+				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_CLI", true),
+				Description: "Use Azure CLI to authenticate. Defaults to `true`.",
 			},
 			"use_msi": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_MSI", nil),
-				Description: "Use an Azure Managed Service Identity.",
+				Description: "Use an Azure Managed Service Identity. Defaults to `false`.",
 			},
 		},
 	}
