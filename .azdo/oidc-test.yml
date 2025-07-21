@@ -47,6 +47,6 @@ steps:
       TF_ACC: 1
       AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        ARM_USE_OIDC: true
-        ARM_USE_CLI: false
+      ARM_USE_OIDC: true
+      ARM_USE_CLI: false
         
