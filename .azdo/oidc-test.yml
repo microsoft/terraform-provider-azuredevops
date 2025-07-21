@@ -16,16 +16,17 @@ steps:
       inlineScript: |
         set -e
 
-        export TF_ACC=1
-        export AZDO_ORG_SERVICE_URL=$(AZDO_ORG_SERVICE_URL)
         export ARM_TENANT_ID=$tenantId
         export ARM_CLIENT_ID=$servicePrincipalId
         export ARM_OIDC_TOKEN=$idToken
-        export ARM_USE_OIDC=true
-        export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
         go test -v -run="TestAccProviderAuth" .
+      env:
+        TF_ACC: 1
+        AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+        ARM_USE_OIDC: true
+        ARM_USE_CLI: false
 
   - task: AzureCLI@2
     displayName: Acc Tests with ADO OIDC request
@@ -37,14 +38,15 @@ steps:
       inlineScript: |
         set -e
 
-        export TF_ACC=1
-        export AZDO_ORG_SERVICE_URL=$(AZDO_ORG_SERVICE_URL)
         export ARM_TENANT_ID=$tenantId
         export ARM_CLIENT_ID=$servicePrincipalId
-        export ARM_OIDC_REQUEST_TOKEN=$(AccessToken)
-        # AZURESUBSCRIPTION_SERVICE_CONNECTION_ID is auto populated in ADO
-        export ARM_USE_OIDC=true
-        export ARM_USE_CLI=false
 
         cd azuredevops/internal/acceptancetests
         go test -v -run="TestAccProviderAuth" .
+      env:
+        TF_ACC: 1
+        AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        ARM_USE_OIDC: true
+        ARM_USE_CLI: false
+        
