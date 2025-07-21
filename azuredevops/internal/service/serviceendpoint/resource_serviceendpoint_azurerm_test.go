@@ -567,53 +567,52 @@ func initializeFeaturesWithValidate(validate bool) []map[string]interface{} {
 }
 
 func TestAzureRMServiceEndpointSharedProjectIDs(t *testing.T) {
-    mainProjectID := uuid.New().String()
-    sharedProjectID1 := uuid.New().String()
-    sharedProjectID2 := uuid.New().String()
-
+	mainProjectID := uuid.New().String()
+	sharedProjectID1 := uuid.New().String()
+	sharedProjectID2 := uuid.New().String()
 
 	resource.Test(t, resource.TestCase{
-		Providers:    testutils.GetProviders(),
+		Providers: testutils.GetProviders(),
 		CheckDestroy: func(s *terraform.State) error {
 			buildClient := azdosdkmocks.NewMockServiceendpointClient(gomock.NewController(t))
-			return testAccCheckAzureRMServiceEndpointDestroy(s, buildClient)
+			return testCheckAzureRMServiceEndpointDestroy(s, buildClient)
 		},
-        Steps: []resource.TestStep{
-            {
-                Config: testAccAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{sharedProjectID1}),
-                Check: resource.ComposeTestCheckFunc(
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "1"),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.0", sharedProjectID1),
-                ),
-            },
-            {
-                Config: testAccAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{sharedProjectID1, sharedProjectID2}),
-                Check: resource.ComposeTestCheckFunc(
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "2"),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.0", sharedProjectID1),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.1", sharedProjectID2),
-                ),
-            },
-            {
-                Config: testAccAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{}),
-                Check: resource.ComposeTestCheckFunc(
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
-                    resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "0"),
-                ),
-            },
-        },
-    })
+		Steps: []resource.TestStep{
+			{
+				Config: testAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{sharedProjectID1}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "1"),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.0", sharedProjectID1),
+				),
+			},
+			{
+				Config: testAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{sharedProjectID1, sharedProjectID2}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "2"),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.0", sharedProjectID1),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.1", sharedProjectID2),
+				),
+			},
+			{
+				Config: testAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID, []string{}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "project_id", mainProjectID),
+					resource.TestCheckResourceAttr("azuredevops_serviceendpoint_azurerm.test", "shared_project_ids.#", "0"),
+				),
+			},
+		},
+	})
 }
 
 func testAzureRMServiceEndpointSharedProjectIDsConfig(mainProjectID string, sharedProjectIDs []string) string {
-    sharedProjectIDsConfig := ""
-    for _, id := range sharedProjectIDs {
-        sharedProjectIDsConfig += fmt.Sprintf(`"%s",`, id)
-    }
+	sharedProjectIDsConfig := ""
+	for _, id := range sharedProjectIDs {
+		sharedProjectIDsConfig += fmt.Sprintf(`"%s",`, id)
+	}
 
-    return fmt.Sprintf(`
+	return fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "test" {
   project_id                        = "%s"
   azurerm_subscription_id           = "00000000-0000-0000-0000-000000000000"
@@ -632,16 +631,16 @@ resource "azuredevops_serviceendpoint_azurerm" "test" {
 func testCheckAzureRMServiceEndpointDestroy(s *terraform.State, buildClient serviceendpoint.Client) error {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-    for _, rs := range s.RootModule().Resources {
-        if rs.Type != "azuredevops_serviceendpoint_azurerm" {
-            continue
-        }
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "azuredevops_serviceendpoint_azurerm" {
+			continue
+		}
 
-        projectID := rs.Primary.Attributes["project_id"]
-        endpointID := rs.Primary.ID
+		projectID := rs.Primary.Attributes["project_id"]
+		endpointID := rs.Primary.ID
 
-        _, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
-            Project:    converter.String(projectID),
+		_, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
+			Project: converter.String(projectID),
 			EndpointId: func(id string) *uuid.UUID {
 				parsedID, err := uuid.Parse(id)
 				if err != nil {
@@ -649,12 +648,12 @@ func testCheckAzureRMServiceEndpointDestroy(s *terraform.State, buildClient serv
 				}
 				return &parsedID
 			}(endpointID),
-        })
+		})
 
-        if err == nil {
-            return fmt.Errorf("Service endpoint still exists: %s", endpointID)
-        }
-    }
+		if err == nil {
+			return fmt.Errorf("Service endpoint still exists: %s", endpointID)
+		}
+	}
 
-    return nil
+	return nil
 }
