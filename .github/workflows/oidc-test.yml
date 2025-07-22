@@ -1,8 +1,5 @@
 name: OIDC Auth Test
 
-on:
-  workflow_dispatch:
-
 permissions:
   id-token: write
   contents: read
