@@ -71,63 +71,20 @@ The following arguments are supported in the `provider` block:
 
 - `client_id` - The client id used when authenticating to a service principal or the principal id when
 authenticating with a user specified managed service identity. It can also be sourced from
-the `ARM_CLIENT_ID` environment variable.
+the `ARM_CLIENT_ID` or `AZURE_CLIENT_ID` environment variable.
+
+- `client_id_file_path` - The path to a file containing a client id to authenticate. It can also be sourced from the `ARM_CLIENT_ID_FILE_PATH` environment variable.
 
 - `tenant_id` - The tenant id used when authenticating to a service principal.
 It can also be sourced from the `ARM_TENANT_ID` environment variable.
 
-- `client_id_plan` - The client id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during a plan operation in Terraform Cloud. `client_id` may be used if
-the id is the same for plan & apply.
-It can also be sourced from the `ARM_CLIENT_ID_PLAN` environment variable.
-
-- `client_id_apply` - The client id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during an apply operation in Terraform Cloud. `client_id` may be used if
-the id is the same for plan & apply.
-It can also be sourced from the `ARM_CLIENT_ID_APPLY` environment variable.
-
-- `tenant_id_plan` - The tenant id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during a plan operation in Terraform Cloud. `tenant_id` may be used if
-the id is the same for plan & apply.
-It can also be sourced from the `ARM_TENANT_ID_PLAN` environment variable.
-
-- `tenant_id_apply` - The tenant id used when authenticating to a service principal using the Terraform
-Cloud workload identity token during an apply operation in Terraform Cloud. `tenant_id` may be used if
-the id is the same for plan & apply.
-It can also be sourced from the `ARM_TENANT_ID_APPLY` environment variable.
+- `auxiliary_tenant_ids` - List of auxiliary Tenant IDs required for multi-tenancy and cross-tenant scenarios. This can also be sourced from the `ARM_AUXILIARY_TENANT_IDS` environment variable.
 
 - `client_secret` - The client secret used to authenticate to a service principal.
 It can also be sourced from the `ARM_CLIENT_SECRET` environment variable.
 
 - `client_secret_path` - The path to a file containing a client secret to authenticate to a service principal.
-It can also be sourced from the `ARM_CLIENT_SECRET_PATH` environment variable.
-
-- `oidc_audience` - Specifies the oidc audience to request when using an `oidc_request_url`, most commonly with GitHub Actions.
-It can also be sourced from the `ARM_OIDC_AUDIENCE` environment variable.
-
-- `oidc_request_token` - The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.
-It can also be sourced from the `ARM_OIDC_REQUEST_TOKEN` or `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables.
-
-- `oidc_request_url` - The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.
-It can also be sourced from the `ARM_OIDC_REQUEST_URL` or `ACTIONS_ID_TOKEN_REQUEST_URL` environment variables.
-
-- `oidc_tfc_tag` - Terraform Cloud dynamic credential provider tag. It can also be sourced from the `ARM_OIDC_TFC_TAG` environment variable.
-
-- `oidc_token` - An OIDC token to authenticate to a service principal.
-It can also be sourced from the `ARM_OIDC_TOKEN` environment variable.
-
-- `oidc_token_file_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
-It can also be sourced from the `AZDO_TOKEN_PATH` environment variable.
-
-- `oidc_github_actions` - Boolean, set to true to use a GitHub Actions OIDC token to authenticate to a service principal.
-It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS` environment variable.
-
-- `oidc_github_actions_audience` - Custom audience for the GitHub Actions OIDC token.
-It can also be sourced from the `ARM_OIDC_GITHUB_ACTIONS_AUDIENCE` environment variable.
-
-- `use_oidc` - Boolean, enables OIDC auth methods. It can also be sourced from the `ARM_USE_OIDC` environment variable.
-
-- `use_msi` - Boolean, enables authentication with a Managed Service Identity in Azure. It can also be sourced from the `ARM_USE_MSI` environment variable.
+It can also be sourced from the `ARM_CLIENT_SECRET_PATH` or `ARM_CLIENT_SECRET_FILE_PATH` environment variable.
 
 - `client_certificate_path` - The path to a file containing a certificate to authenticate to a service
 principal, typically a .pfx file.
@@ -139,3 +96,23 @@ It can also be sourced from the `ARM_CLIENT_CERTIFICATE` environment variable.
 - `client_certificate_password` - This is the password associated with a certificate provided
 by `client_certificate_path` or `client_certificate`. It can also be sourced
 from the `ARM_CLIENT_CERTIFICATE_PASSWORD` environment variable.
+
+- `oidc_token` - An OIDC token to authenticate to a service principal.
+It can also be sourced from the `ARM_OIDC_TOKEN` environment variable.
+
+- `oidc_token_file_path` - The path to a file containing nn OIDC token to authenticate to a service principal.
+It can also be sourced from the `AZDO_TOKEN_PATH`, or `AZURE_FEDERATED_TOKEN_FILE` environment variable.
+
+- `oidc_request_token` - The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.
+It can also be sourced from the `ARM_OIDC_REQUEST_TOKEN`, `ACTIONS_ID_TOKEN_REQUEST_TOKEN`, `SYSTEM_ACCESSTOKEN` environment variables.
+
+- `oidc_request_url` - The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.
+It can also be sourced from the `ARM_OIDC_REQUEST_URL`, `ACTIONS_ID_TOKEN_REQUEST_URL` or `SYSTEM_OIDCREQUESTURI` environment variables.
+
+- `oidc_azure_service_connection_id` - The Azure Pipelines Service Connection ID to use for authentication. This can also be sourced from the `ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID`, `ARM_OIDC_AZURE_SERVICE_CONNECTION_ID`, or `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID` environment variables.
+
+- `use_oidc` - Boolean, enables OIDC auth methods. It can also be sourced from the `ARM_USE_OIDC` environment variable.
+
+- `use_msi` - Boolean, enables authentication with a Managed Service Identity in Azure. It can also be sourced from the `ARM_USE_MSI` environment variable.
+
+- `use_cli` - Should Azure CLI be used for authentication? This can also be sourced from the `ARM_USE_CLI` environment variable. Defaults to `true`.

@@ -7,7 +7,15 @@ description: |-
 
 # Azure DevOps Provider: Authenticating to a Service Principal with an OIDC Token
 
-The Azure DevOps provider supports service principals through a variety of authentication methods, including workload identity federation from any OIDC compliant token issuer.
+The Azure DevOps provider supports service principals through a variety of authentication methods, including workload identity federation from any OIDC compliant token issuer. The OIDC token will be used to exchange for an AAD access token, which will be used for the authentication.
+
+The OIDC token can be provided via three different ways:
+
+- By plain OIDC token: This is the most straight forward, whilst restricted method, in that the OIDC token is designed to be short lived. If the AAD access token expires, the provider will use this OIDC token to exchange for another AAD access token, which will most likely fail due to the OIDC token has expired.
+
+- By OIDC token file: This is mainly for supporting AAD authentication when [running in Azure Kubernetes Service clusters](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=dotnet).
+
+- By OIDC request token: This is the recommended way to authenticate when running in Github Action, or Azure DevOps Pipeline.
 
 ## Service Principal Configuration
 
@@ -20,16 +28,76 @@ using [Azure PowerShell](https://learn.microsoft.com/en-us/azure/active-director
 
 ## Provider Configuration
 
-The `use_oidc` must be set to `true` to use OIDC token.
+The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration, which are provided via `tenant_id` and `client_id`. Meanwhile, the `use_oidc` must be set to `true` to use OIDC token flows.
 
-The provider will need the Directory (tenant) ID and the Application (client) ID from the Azure AD app registration. They may be provided via the `ARM_TENANT_ID` and `ARM_CLIENT_ID` environment variables, or in the provider configuration block with the `tenant_id` and `client_id` attributes.
+For the different OIDC token flows, different configurations are needed:
 
-The token may be provided as a base64 encoded string, or by a file on the filesystem with the `ARM_OIDC_TOKEN` or `ARM_OIDC_TOKEN_FILE_PATH` environment variables, or in the provider configuration block with the `oidc_token` or `oidc_token_file_path` attributes.
+- Plain OIDC token: `oidc_token`
+- OIDC token file: `oidc_token_file_path`
+- OIDC request token:
+    - Azure DevOps Pipeline:
+        - `oidc_request_token`
+        - `oidc_request_url`: Not necessary as it can be sourced from `SYSTEM_OIDCREQUESTURI`, which is populated by ADO pipelines.
+        - `oidc_azure_service_connection_id`: Not necessary as it can be sourced from `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID`, which is populated by tasks like `AzureCLI@2`.
+    - Github Action: 
+        - `oidc_request_token`: Not necessary as it can be sourced from `ACTIONS_ID_TOKEN_REQUEST_TOKEN`, which is populated by Github Action. 
+        - `oidc_request_url`: Not necessary as it can be sourced from `ACTIONS_ID_TOKEN_REQUEST_URL`, which is populated by Github Action.
 
-### How to use in different CI/CD pipelines
+## Examples
 
-#### GitHub Actions
-When running Terraform in GitHub Actions, the provider will detect the `ACTIONS_ID_TOKEN_REQUEST_URL` and `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables set by the GitHub Actions runtime. You can also specify the `ARM_OIDC_REQUEST_TOKEN` and `ARM_OIDC_REQUEST_URL` environment variables.
+### Plain OIDC token
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = ">=1"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url = "https://dev.azure.com/my-org"
+  client_id  = "00000000-0000-0000-0000-000000000001"
+  tenant_id  = "00000000-0000-0000-0000-000000000001"
+  use_oidc   = true
+  oidc_token = "top-secret-base64-encoded-oidc-token-string"
+}
+
+resource "azuredevops_project" "project" {
+  name        = "Test Project"
+  description = "Test Project Description"
+}
+```
+
+### OIDC token file
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = ">=1"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url      = "https://dev.azure.com/my-org"
+  client_id            = "00000000-0000-0000-0000-000000000001"
+  tenant_id            = "00000000-0000-0000-0000-000000000001"
+  use_oidc             = true
+  oidc_token_file_path = "C:\\my_oidc_token.txt"
+}
+
+resource "azuredevops_project" "project" {
+  name        = "Test Project"
+  description = "Test Project Description"
+}
+```
+
+### GitHub Actions
 
 For GitHub Actions workflows, you'll need to ensure the workflow has `write` permissions for the `id-token`.
 
@@ -38,48 +106,25 @@ permissions:
   id-token: write
 ```
 
+Meanwhile, follow the [Azure document](https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-create-trust?pivots=identity-wif-apps-methods-azp) to configure your app to trust an external identity provider.
+
 For more information about OIDC in GitHub Actions, see [official documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-cloud-providers).
 
-#### Azure Pipelines
-When running Terraform in Azure Pipelines using two of the most popular Terraform extensions ([Azure Pipelines Terraform Tasks](https://marketplace.visualstudio.com/items?itemName=JasonBJohnson.azure-pipelines-tasks-terraform) or [DevLabs Terraform](https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks)), the environment variables `ARM_TENANT_ID`, `ARM_CLIENT_ID`, and `ARM_OIDC_TOKEN` are automatically configured when using service connections configured for federated credentials.
-
-As a result, the only configuration needed is as follows:
 
 ```hcl
 terraform {
   required_providers {
     azuredevops = {
       source  = "microsoft/azuredevops"
-      version = ">=1.0.1"
+      version = ">=1"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url = "https://dev.azure.com/my-org"
-  use_oidc        = true
-}
-```
-
-### Examples
-
-#### Providing the token through the file system
-
-```hcl
-terraform {
-  required_providers {
-    azuredevops = {
-      source  = "microsoft/azuredevops"
-      version = ">=1.0.1"
-    }
-  }
-}
-
-provider "azuredevops" {
-  org_service_url = "https://dev.azure.com/my-org"
+  org_service_url      = "https://dev.azure.com/my-org"
   client_id            = "00000000-0000-0000-0000-000000000001"
   tenant_id            = "00000000-0000-0000-0000-000000000001"
-  oidc_token_file_path = "C:\\my_oidc_token.txt"
   use_oidc             = true
 }
 
@@ -89,81 +134,42 @@ resource "azuredevops_project" "project" {
 }
 ```
 
-#### Providing the token directly as a string
+#### Azure Pipelines
 
-```hcl
-terraform {
-  required_providers {
-    azuredevops = {
-      source  = "microsoft/azuredevops"
-      version = ">=1.0.1"
-    }
-  }
-}
+Follow the [ADO document](https://learn.microsoft.com/en-gb/azure/devops/pipelines/release/configure-workload-identity?view=azure-devops&tabs=app-registration) to set a workload identity service connection.
 
-provider "azuredevops" {
-  org_service_url = "https://dev.azure.com/my-org"
-  client_id  = "00000000-0000-0000-0000-000000000001"
-  tenant_id  = "00000000-0000-0000-0000-000000000001"
-  oidc_token = "top-secret-base64-encoded-oidc-token-string"
-  use_oidc   = true
-}
+It is recommend to use the `AzureCLI@2` task as below (note the azureSubscription input parameter):
 
-resource "azuredevops_project" "project" {
-  name        = "Test Project"
-  description = "Test Project Description"
-}
+```yaml
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: $(SERVICE_CONNECTION_ID)
+    scriptType: bash
+    scriptLocation: "inlineScript"
+    inlineScript: |
+      # Terraform commands
+  env:
+    ARM_USE_OIDC: true
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    SYSTEM_OIDCREQUESTURI: $(System.OidcRequestUri)
+    ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID: $(SERVICE_CONNECTION_ID)
 ```
 
-
-#### Configure the provider to authenticate with the Terraform Cloud workload identity token
-
-```hcl
-terraform {
-  required_providers {
-    azuredevops = {
-      source  = "microsoft/azuredevops"
-      version = ">=1.0.1"
-    }
-  }
-}
-
-provider "azuredevops" {
-  org_service_url = "https://dev.azure.com/my-org"
-  client_id = "00000000-0000-0000-0000-000000000001"
-  tenant_id = "00000000-0000-0000-0000-000000000001"
-  use_oidc  = true
-}
-
-resource "azuredevops_project" "project" {
-  name        = "Test Project"
-  description = "Test Project Description"
-}
-```
-
-#### Configure the provider to authenticate with the Terraform Cloud workload identity token with different plan & apply service principals
+As a result, the only configuration needed is as follows:
 
 ```hcl
 terraform {
   required_providers {
     azuredevops = {
       source  = "microsoft/azuredevops"
-      version = ">=1.0.1"
+      version = ">=1"
     }
   }
 }
 
 provider "azuredevops" {
-  org_service_url = "https://dev.azure.com/my-org"
-  client_id_plan  = "00000000-0000-0000-0000-000000000001"
-  client_id_apply = "00000000-0000-0000-0000-000000000001"
-  tenant_id_plan  = "00000000-0000-0000-0000-000000000001"
-  tenant_id_apply = "00000000-0000-0000-0000-000000000001"
-  use_oidc        = true
-}
-
-resource "azuredevops_project" "project" {
-  name        = "Test Project"
-  description = "Test Project Description"
+  org_service_url      = "https://dev.azure.com/my-org"
+  client_id            = "00000000-0000-0000-0000-000000000001"
+  tenant_id            = "00000000-0000-0000-0000-000000000001"
 }
 ```
