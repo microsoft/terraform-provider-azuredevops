@@ -1,5 +1,7 @@
 name: OIDC Auth Test
 
+on: [push]
+
 permissions:
   id-token: write
   contents: read
