@@ -233,7 +233,7 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 	require.True(t, ok)
 	require.NotNil(t, usersSet)
 	require.Equal(t, 1, usersSet.Len())
-	u, _ := flattenUser(&usrList1[0])
+	u := flattenUser(&usrList1[0])
 	require.True(t, usersSet.Contains(u))
 }
 

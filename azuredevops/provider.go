@@ -136,6 +136,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_visualstudiomarketplace":     serviceendpoint.ResourceServiceEndpointMarketplace(),
 			"azuredevops_servicehook_permissions":                     permissions.ResourceServiceHookPermissions(),
 			"azuredevops_servicehook_storage_queue_pipelines":         servicehook.ResourceServicehookStorageQueuePipelines(),
+			"azuredevops_servicehook_webhook_tfs":                     servicehook.ResourceServicehookWebhookTfs(),
 			"azuredevops_service_principal_entitlement":               memberentitlementmanagement.ResourceServicePrincipalEntitlement(),
 			"azuredevops_tagging_permissions":                         permissions.ResourceTaggingPermissions(),
 			"azuredevops_team":                                        core.ResourceTeam(),

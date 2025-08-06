@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
@@ -399,7 +398,7 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 				aceItem.Allow = new(int)
 			}
 
-			switch strings.ToLower(string(value)) {
+			switch string(value) {
 			case "deny":
 				*aceItem.Allow = (*aceItem.Allow) &^ (*actionDef.Bit)
 				*aceItem.Deny = (*aceItem.Deny) | (*actionDef.Bit)
