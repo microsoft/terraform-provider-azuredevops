@@ -23,8 +23,8 @@ var tfsResourceBlock2ApiType = map[string]string{
 	"repository_renamed":               "git.repo.renamed",
 	"repository_status_changed":        "git.repo.statuschanged",
 
-	// Code Events - TFVC
-	"tfvc_checkin": "tfvc.checkin",
+	// // Code Events - TFVC
+	// "tfvc_checkin": "tfvc.checkin",
 
 	// Work Item Events
 	"work_item_created":   "workitem.created",
@@ -699,14 +699,14 @@ func expandTfsEventConfig(d *schema.ResourceData) (map[string]string, string) {
 			}
 		}
 	}
-	if inputsList := d.Get("tfvc_checkin"); len(inputsList.([]interface{})) > 0 {
-		eventType = "tfvc_checkin"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["path"]; exists && val.(string) != "" {
-				eventConfig["path"] = val.(string)
-			}
-		}
-	}
+	// if inputsList := d.Get("tfvc_checkin"); len(inputsList.([]interface{})) > 0 {
+	// 	eventType = "tfvc_checkin"
+	// 	if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
+	// 		if val, exists := inputs[0].(map[string]interface{})["path"]; exists && val.(string) != "" {
+	// 			eventConfig["path"] = val.(string)
+	// 		}
+	// 	}
+	// }
 	if inputsList := d.Get("work_item_created"); len(inputsList.([]interface{})) > 0 {
 		eventType = "work_item_created"
 		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
@@ -901,10 +901,10 @@ func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []i
 			eventConfig["repository_id"] = val
 		}
 
-	case "tfvc_checkin":
-		if val, exists := event["path"]; exists {
-			eventConfig["path"] = val
-		}
+	// case "tfvc_checkin":
+	// 	if val, exists := event["path"]; exists {
+	// 		eventConfig["path"] = val
+	// 	}
 
 	case "work_item_created", "work_item_deleted", "work_item_restored":
 		if val, exists := event["workItemType"]; exists {
