@@ -7,9 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 func TestAccServicehookWebhookTfs_basic(t *testing.T) {
@@ -179,13 +182,34 @@ func CheckServicehookWebhookTfsDestroyed(s *terraform.State) error {
 	return nil
 }
 
-// Helper function to get the service hook subscription from the test resource data
-func getServiceHookSubscriptionFromResource(resource *terraform.ResourceState) (*string, error) {
+func getServiceHookSubscriptionFromResource(resource *terraform.ResourceState) (interface{}, error) {
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+
 	subscriptionID := resource.Primary.ID
+	projectID := resource.Primary.Attributes["project_id"]
 
 	if subscriptionID == "" {
 		return nil, fmt.Errorf("No service hook subscription ID is set")
 	}
 
-	return &subscriptionID, nil
+	if projectID == "" {
+		return nil, fmt.Errorf("No project ID is set")
+	}
+	// Parse the subscription ID as UUID
+	subscriptionUUID, err := uuid.Parse(subscriptionID)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid subscription ID format: %v", err)
+	}
+
+	// Try to get the subscription from the service - if it exists, this will succeed
+	// If it's been deleted, this should return an error
+	subscription, err := clients.ServiceHooksClient.GetSubscription(clients.Ctx, servicehooks.GetSubscriptionArgs{
+		SubscriptionId: &subscriptionUUID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return subscription, nil
 }
