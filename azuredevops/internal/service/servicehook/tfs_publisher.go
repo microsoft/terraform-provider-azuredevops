@@ -23,8 +23,8 @@ var tfsResourceBlock2ApiType = map[string]string{
 	"repository_renamed":               "git.repo.renamed",
 	"repository_status_changed":        "git.repo.statuschanged",
 
-	// // Code Events - TFVC
-	// "tfvc_checkin": "tfvc.checkin",
+	// Code Events - TFVC
+	"tfvc_checkin": "tfvc.checkin",
 
 	// Work Item Events
 	"work_item_created":   "workitem.created",
@@ -54,8 +54,8 @@ var tfsApiType2ResourceBlock = map[string]string{
 	"git.repo.renamed":                          "repository_renamed",
 	"git.repo.statuschanged":                    "repository_status_changed",
 
-	// // Code Events - TFVC
-	// "tfvc.checkin": "tfvc_checkin",
+	// Code Events - TFVC
+	"tfvc.checkin": "tfvc_checkin",
 
 	// Work Item Events
 	"workitem.created":   "work_item_created",
@@ -85,7 +85,7 @@ func genTfsPublisherSchema() map[string]*schema.Schema {
 		"repository_status_changed",
 		"service_connection_created",
 		"service_connection_updated",
-		// "tfvc_checkin",
+		"tfvc_checkin",
 		"work_item_commented",
 		"work_item_created",
 		"work_item_deleted",
@@ -390,22 +390,22 @@ func genTfsPublisherSchema() map[string]*schema.Schema {
 			},
 		},
 
-		// // TFVC Events
-		// "tfvc_checkin": {
-		// 	Type:         schema.TypeList,
-		// 	Optional:     true,
-		// 	MaxItems:     1,
-		// 	ExactlyOneOf: eventTypes,
-		// 	Elem: &schema.Resource{
-		// 		Schema: map[string]*schema.Schema{
-		// 			"path": {
-		// 				Type:        schema.TypeString,
-		// 				Required:    true,
-		// 				Description: "Include only events for check-ins that change files under a specific path.",
-		// 			},
-		// 		},
-		// 	},
-		// },
+		// TFVC Events
+		"tfvc_checkin": {
+			Type:         schema.TypeList,
+			Optional:     true,
+			MaxItems:     1,
+			ExactlyOneOf: eventTypes,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"path": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Include only events for check-ins that change files under a specific path.",
+					},
+				},
+			},
+		},
 
 		// Work Item Events
 		"work_item_commented": {
@@ -699,14 +699,14 @@ func expandTfsEventConfig(d *schema.ResourceData) (map[string]string, string) {
 			}
 		}
 	}
-	// if inputsList := d.Get("tfvc_checkin"); len(inputsList.([]interface{})) > 0 {
-	// 	eventType = "tfvc_checkin"
-	// 	if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-	// 		if val, exists := inputs[0].(map[string]interface{})["path"]; exists && val.(string) != "" {
-	// 			eventConfig["path"] = val.(string)
-	// 		}
-	// 	}
-	// }
+	if inputsList := d.Get("tfvc_checkin"); len(inputsList.([]interface{})) > 0 {
+		eventType = "tfvc_checkin"
+		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
+			if val, exists := inputs[0].(map[string]interface{})["path"]; exists && val.(string) != "" {
+				eventConfig["path"] = val.(string)
+			}
+		}
+	}
 	if inputsList := d.Get("work_item_created"); len(inputsList.([]interface{})) > 0 {
 		eventType = "work_item_created"
 		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
@@ -901,10 +901,10 @@ func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []i
 			eventConfig["repository_id"] = val
 		}
 
-	// case "tfvc_checkin":
-	// 	if val, exists := event["path"]; exists {
-	// 		eventConfig["path"] = val
-	// 	}
+	case "tfvc_checkin":
+		if val, exists := event["path"]; exists {
+			eventConfig["path"] = val
+		}
 
 	case "work_item_created", "work_item_deleted", "work_item_restored":
 		if val, exists := event["workItemType"]; exists {
