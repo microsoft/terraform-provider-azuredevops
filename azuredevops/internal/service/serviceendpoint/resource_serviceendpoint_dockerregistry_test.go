@@ -61,10 +61,11 @@ func TestServiceEndpointDockerRegistry_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip := expandServiceEndpointDockerRegistry(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointDockerRegistry(resourceData)
 
 	require.Equal(t, dockerRegistryTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, dockerRegistryTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed

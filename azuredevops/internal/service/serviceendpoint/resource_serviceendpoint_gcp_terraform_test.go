@@ -61,10 +61,11 @@ func TestServiceEndpointGcp_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*gcpForTerraformTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointGcp(resourceData, &gcpForTerraformTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip := expandServiceEndpointGcp(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointGcp(resourceData)
 
 	require.Equal(t, gcpForTerraformTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, gcpForTerraformTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed

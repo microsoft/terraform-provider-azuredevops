@@ -57,8 +57,9 @@ func testServiceEndpointNexus_ExpandFlatten_Roundtrip(t *testing.T, ep *servicee
 		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointNexus(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip := expandServiceEndpointNexus(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointNexus(resourceData)
 
+		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}

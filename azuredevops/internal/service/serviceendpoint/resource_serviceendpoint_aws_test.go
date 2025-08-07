@@ -61,10 +61,11 @@ func TestServiceEndpointAws_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip := expandServiceEndpointAws(resourceData)
+	serviceEndpointAfterRoundTrip, err := expandServiceEndpointAws(resourceData)
 
 	require.Equal(t, awsTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, awsTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
+	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
