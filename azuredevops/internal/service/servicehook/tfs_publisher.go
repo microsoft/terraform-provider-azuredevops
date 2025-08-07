@@ -365,7 +365,7 @@ func genTfsPublisherSchema() map[string]*schema.Schema {
 			ExactlyOneOf: eventTypes,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"project": {
+					"project_id": {
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "Include only events for service connections created in a specific project.",
@@ -381,7 +381,7 @@ func genTfsPublisherSchema() map[string]*schema.Schema {
 			ExactlyOneOf: eventTypes,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"project": {
+					"project_id": {
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "Include only events for service connections updated in a specific project.",
