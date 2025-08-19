@@ -32,7 +32,7 @@ github.com/Azure/azure-sdk-for-go/sdk/internal/log
 github.com/Azure/azure-sdk-for-go/sdk/internal/poller
 github.com/Azure/azure-sdk-for-go/sdk/internal/temporal
 github.com/Azure/azure-sdk-for-go/sdk/internal/uuid
-# github.com/Azure/entrauth v0.0.0-20250717031544-5435286359f8
+# github.com/Azure/entrauth v0.0.0-20250819004238-dc2a3f58cbb7
 ## explicit; go 1.24.1
 github.com/Azure/entrauth
 github.com/Azure/entrauth/aztfauth
