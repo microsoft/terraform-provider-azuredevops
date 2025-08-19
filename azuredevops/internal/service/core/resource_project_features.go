@@ -114,7 +114,14 @@ func resourceProjectFeaturesRead(ctx context.Context, d *schema.ResourceData, m 
 		d.SetId("")
 		return diag.FromErr(fmt.Errorf("failed to retrieve current feature states for project: %s", projectID))
 	}
-	d.Set("features", currentFeatureStates)
+
+	// Convert the upstream feature states to the expected map format
+	upstreamFeatures := make(map[string]interface{})
+	for featureType, enabledValue := range *currentFeatureStates {
+		upstreamFeatures[string(featureType)] = string(enabledValue)
+	}
+
+	d.Set("features", upstreamFeatures)
 	return nil
 }
 
@@ -136,20 +143,13 @@ func resourceProjectFeaturesDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func getConfiguredProjectFeatureStates(ctx context.Context, fc featuremanagement.Client, featureStates *map[string]interface{}, projectID string) (*map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue, error) {
-	if featureStates == nil {
-		return nil, nil
-	}
 
 	currentFeatureStates, err := getProjectFeatureStates(ctx, fc, projectID)
 	if err != nil {
 		return nil, err
 	}
 
-	for k := range *currentFeatureStates {
-		if _, ok := (*featureStates)[string(k)]; !ok {
-			delete(*currentFeatureStates, k)
-		}
-	}
+	// Return all features as they exist upstream, without filtering
 	return currentFeatureStates, nil
 }
 
