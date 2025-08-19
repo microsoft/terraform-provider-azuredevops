@@ -34,14 +34,6 @@ func DataProjectFeatures() *schema.Resource {
 func dataProjectFeaturesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	name := d.Get("name").(string)
-	id := d.Get("project_id").(string)
-
-	identifier := id
-	if identifier == "" {
-		identifier = name
-	}
-
 	projectID := d.Get("project_id").(string)
 	featureStates := d.Get("features").(map[string]interface{})
 	currentFeatureStates, err := getConfiguredProjectFeatureStates(ctx, clients.FeatureManagementClient, &featureStates, projectID)
