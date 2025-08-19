@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.18.1
-	github.com/Azure/entrauth v0.0.0-20250717031544-5435286359f8
+	github.com/Azure/entrauth v0.0.0-20250819004238-dc2a3f58cbb7
 	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
