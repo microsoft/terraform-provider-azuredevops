@@ -35,7 +35,7 @@ resource "azuredevops_group" "example" {
 resource "azuredevops_securityrole_assignment" "example" {
   scope       = "distributedtask.environmentreferencerole"
   resource_id = format("%s_%s", azuredevops_project.example.id, azuredevops_environment.example.id)
-  identity_id = azuredevops_group.example.origin_id
+  identity_id = azuredevops_group.example.group_id
   role_name   = "Administrator"
 }
 ```
@@ -67,4 +67,4 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Relevant Links
 
-- [Azure DevOps Service REST API 7.0 - Authorize Definition Resource](https://docs.microsoft.com/en-us/rest/api/azure/devops/build/resources/authorize%20definition%20resources?view=azure-devops-rest-7.0)
+- [Azure DevOps Service REST API 7.0 - Authorize Definition Resource](https://learn.microsoft.com/en-us/rest/api/azure/devops/securityroles/roleassignments/set-role-assignments?view=azure-devops-rest-7.0&tabs=HTTP)
