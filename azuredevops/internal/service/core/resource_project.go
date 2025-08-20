@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/featuremanagement"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -86,6 +85,7 @@ func ResourceProject() *schema.Resource {
 			},
 			"features": {
 				Type:         schema.TypeMap,
+				Computed:     true,
 				Optional:     true,
 				ValidateFunc: validateProjectFeatures,
 				Elem: &schema.Schema{
@@ -473,15 +473,10 @@ func flattenProject(clients *client.AggregatedClient, d *schema.ResourceData, pr
 		}
 	}
 
-	var currentFeatureStates *map[ProjectFeatureType]featuremanagement.ContributedFeatureEnabledValue
-	features, ok := d.GetOk("features")
-	if ok {
-		featureStates := features.(map[string]interface{})
-		states, err := getConfiguredProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, &featureStates, project.Id.String())
-		if err != nil {
-			return err
-		}
-		currentFeatureStates = states
+	featureStates := d.Get("features").(map[string]interface{})
+	currentFeatureStates, err := getConfiguredProjectFeatureStates(clients.Ctx, clients.FeatureManagementClient, &featureStates, project.Id.String())
+	if err != nil {
+		return err
 	}
 
 	d.Set("name", project.Name)
