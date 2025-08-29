@@ -367,36 +367,33 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		d.Set("azure_subscription", configItemList)
 	case "Kubeconfig":
 		var kubeconfig map[string]interface{}
-		kubeconfigSet := d.Get("kubeconfig").([]interface{})
-		configuration := kubeconfigSet[0].(map[string]interface{})
 
-		if len(configuration) > 0 {
-			kubeconfig = map[string]interface{}{}
+		kubeconfig = map[string]interface{}{}
 
-			if v, ok := configuration["kube_config"]; ok {
+		if kubeconfigSet := d.Get("kubeconfig").([]interface{}); len(kubeconfigSet) != 0 {
+			if v, ok := kubeconfigSet[0].(map[string]interface{})["kube_config"]; ok {
 				kubeconfig["kube_config"] = v.(string)
 			}
-
-			if serviceEndpoint.Data != nil {
-				if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
-					acceptUntrustedCerts, err := strconv.ParseBool(v)
-					if err != nil {
-						return fmt.Errorf("failed to parse `accept_untrusted_certs`: %+v ", err)
-					}
-					kubeconfig["accept_untrusted_certs"] = acceptUntrustedCerts
-				}
-			}
-
-			if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
-				if v, ok := (*serviceEndpoint.Authorization.Parameters)["clusterContext"]; ok {
-					kubeconfig["cluster_context"] = v
-				}
-			}
-
-			kubeconfigList := make([]map[string]interface{}, 1)
-			kubeconfigList[0] = kubeconfig
-			d.Set("kubeconfig", kubeconfigList)
 		}
+
+		if serviceEndpoint.Data != nil {
+			if v, ok := (*serviceEndpoint.Data)["acceptUntrustedCerts"]; ok {
+				acceptUntrustedCerts, err := strconv.ParseBool(v)
+				if err != nil {
+					return fmt.Errorf("failed to parse `accept_untrusted_certs`: %+v ", err)
+				}
+				kubeconfig["accept_untrusted_certs"] = acceptUntrustedCerts
+			}
+		}
+
+		if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Parameters != nil {
+			if v, ok := (*serviceEndpoint.Authorization.Parameters)["clusterContext"]; ok {
+				kubeconfig["cluster_context"] = v
+			}
+		}
+		kubeconfigList := make([]map[string]interface{}, 1)
+		kubeconfigList[0] = kubeconfig
+		d.Set("kubeconfig", kubeconfigList)
 	case "ServiceAccount":
 		var serviceAccount map[string]interface{}
 		serviceAccountSet := d.Get("service_account").([]interface{})
