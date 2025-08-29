@@ -175,3 +175,47 @@ resource "azuredevops_serviceendpoint_kubernetes" "serviceendpoint" {
     ca_cert = "Mzk1MjgkdmRnN0pi[...]mHHRUH14gw4Q=="
   }
 }
+
+# Example Service Hook: Webhook for work item creation
+resource "azuredevops_servicehook_subscription" "workitem_created_webhook" {
+  project_id         = azuredevops_project.project.id
+  publisher_id       = "tfs"
+  event_type         = "workitem.created"
+  consumer_id        = "webHooks"
+  consumer_action_id = "httpRequest"
+
+  publisher_inputs = {
+    # Filter for Bug work items only
+    workItemType = "Bug"
+  }
+
+  consumer_inputs = {
+    # Replace with your webhook URL
+    url = "https://webhook.example.com/workitem-created"
+  }
+
+  resource_version = "1.0"
+  status          = "enabled"
+}
+
+# Example Service Hook: Webhook for build completion
+resource "azuredevops_servicehook_subscription" "build_complete_webhook" {
+  project_id         = azuredevops_project.project.id
+  publisher_id       = "tfs"
+  event_type         = "build.complete"
+  consumer_id        = "webHooks"
+  consumer_action_id = "httpRequest"
+
+  publisher_inputs = {
+    # Filter for builds from our build definition
+    buildDefinition = azuredevops_build_definition.build.id
+  }
+
+  consumer_inputs = {
+    # Replace with your webhook URL
+    url = "https://webhook.example.com/build-complete"
+  }
+
+  resource_version = "1.0"
+  status          = "enabled"
+}
