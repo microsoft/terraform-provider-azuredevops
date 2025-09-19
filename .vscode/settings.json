@@ -38,7 +38,10 @@
         "deepCompletion": true // enable deep completion
     },
     "cSpell.words": [
+        "azuredevops",
         "hashicorp",
-        "azuredevops"
+        "Wiql",
+        "workitemquery",
+        "workitemtracking"
     ]
 }
