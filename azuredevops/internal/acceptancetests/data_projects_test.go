@@ -1,5 +1,3 @@
-//go:build (all || core || data_sources || resource_project || data_projects) && (!data_sources || !exclude_data_projects)
-
 package acceptancetests
 
 import (
@@ -60,10 +58,10 @@ data "azuredevops_projects" "test" {
 }
 
 func hclDataSourceProjectsEmptyResult() string {
-	return fmt.Sprintf(`
+	return `
 data "azuredevops_projects" "test" {
   name  = "invalid_name"
   state = "wellFormed"
 }
-`)
+`
 }

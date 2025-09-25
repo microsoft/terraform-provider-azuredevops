@@ -1,5 +1,3 @@
-//go:build (all || core || workitem) && !exclude_resource_workitem
-
 package acceptancetests
 
 import (

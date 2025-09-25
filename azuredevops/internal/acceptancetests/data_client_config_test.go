@@ -1,5 +1,3 @@
-//go:build all || core
-
 package acceptancetests
 
 import (

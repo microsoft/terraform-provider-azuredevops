@@ -1,5 +1,3 @@
-//go:build (all || pipeline_authorization) && !exclude_pipeline_authorization
-
 package acceptancetests
 
 import (

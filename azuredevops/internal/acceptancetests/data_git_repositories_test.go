@@ -1,5 +1,3 @@
-//go:build (all || data_sources || git || data_git_repositories) && (!exclude_data_sources || !exclude_git || !exclude_data_git_repositories)
-
 package acceptancetests
 
 import (

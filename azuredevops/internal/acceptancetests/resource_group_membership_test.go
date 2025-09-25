@@ -1,5 +1,3 @@
-//go:build (all || core || resource_group_membership) && !exclude_resource_group_membership
-
 package acceptancetests
 
 import (

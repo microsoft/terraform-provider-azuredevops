@@ -1,5 +1,3 @@
-//go:build (all || resource_build_definition) && !exclude_resource_build_definition
-
 package acceptancetests
 
 import (
@@ -608,7 +606,6 @@ func checkForVariableValues(tfNode string, expectedVals ...string) resource.Test
 			if !found {
 				return fmt.Errorf("Did not find variable with value %s", expectedVal)
 			}
-
 		}
 
 		return nil

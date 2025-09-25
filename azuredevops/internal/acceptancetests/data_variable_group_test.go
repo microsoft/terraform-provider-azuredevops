@@ -1,5 +1,3 @@
-//go:build (all || data_sources || data_variable_group) && (!exclude_data_sources || !exclude_data_variable_group)
-
 package acceptancetests
 
 import (

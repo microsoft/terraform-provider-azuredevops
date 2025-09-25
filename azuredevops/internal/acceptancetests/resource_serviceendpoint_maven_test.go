@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_maven) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (
@@ -351,24 +349,6 @@ resource "azuredevops_serviceendpoint_maven" "import" {
   repository_id         = "test-repository"
   authentication_token {
     token = "redacted"
-  }
-}
-`, template)
-}
-
-func hclSvcEndpointMavenResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
-	template := hclSvcEndpointMavenResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
-	return fmt.Sprintf(`
-%s
-resource "azuredevops_serviceendpoint_maven" "import" {
-  project_id            = azuredevops_serviceendpoint_maven.test.project_id
-  service_endpoint_name = azuredevops_serviceendpoint_maven.test.service_endpoint_name
-  description           = azuredevops_serviceendpoint_maven.test.description
-  url                   = azuredevops_serviceendpoint_maven.test.url
-  repository_id         = "test-repository"
-  authentication_basic {
-    username = "u"
-    password = "redacted"
   }
 }
 `, template)
