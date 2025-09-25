@@ -1,5 +1,3 @@
-//go:build (all || core || resource_git_repository) && !exclude_resource_git_repository
-
 package acceptancetests
 
 import (

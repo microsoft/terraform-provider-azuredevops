@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_visualstudiomarketplace) && !exclude_resource_serviceendpoint_visualstudiomarketplace
-
 package acceptancetests
 
 import (

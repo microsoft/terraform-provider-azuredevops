@@ -1,5 +1,3 @@
-//go:build (all || data_environment) && !exclude_data_environment
-
 package acceptancetests
 
 import (

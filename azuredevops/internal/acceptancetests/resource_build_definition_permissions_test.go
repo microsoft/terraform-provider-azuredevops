@@ -1,5 +1,3 @@
-//go:build (all || permissions || resource_build_definition_permissions) && (!exclude_permissions || !exclude_resource_build_definition_permissions)
-
 package acceptancetests
 
 import (

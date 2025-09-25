@@ -1,5 +1,3 @@
-//go:build (all || resource_dashboard) && !exclude_resource_dashboard
-
 package acceptancetests
 
 import (

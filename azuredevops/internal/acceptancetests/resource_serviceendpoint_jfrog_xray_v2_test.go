@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_jfrog_xray_v2) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (

@@ -1,5 +1,3 @@
-//go:build (all || resource_feed_retention_policy) && !exclude_resource_feed_retention_policy
-
 package acceptancetests
 
 import (

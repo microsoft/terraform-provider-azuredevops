@@ -1,5 +1,3 @@
-//go:build (all || core || resource_project) && !exclude_resource_project
-
 package acceptancetests
 
 import (

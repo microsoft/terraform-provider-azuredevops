@@ -1,5 +1,3 @@
-//go:build (all || data_sources || data_descriptor) && (!exclude_data_sources || !exclude_data_descriptor)
-
 package acceptancetests
 
 import (

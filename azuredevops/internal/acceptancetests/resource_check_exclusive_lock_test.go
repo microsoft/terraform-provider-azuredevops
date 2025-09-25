@@ -1,5 +1,3 @@
-//go:build (all || resource_check_exclusive_lock) && !exclude_approvalsandchecks
-
 package acceptancetests
 
 import (

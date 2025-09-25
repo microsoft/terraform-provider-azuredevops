@@ -1,5 +1,3 @@
-//go:build (all || resource_variable_group) && !exclude_resource_variable_group
-
 package acceptancetests
 
 // The tests in this file use the mock clients in mock_client.go to mock out

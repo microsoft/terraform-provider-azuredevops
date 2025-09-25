@@ -1,5 +1,3 @@
-//go:build (all || resource_policy_reserved_names) && !resource_policy_reserved_names
-
 package acceptancetests
 
 import (

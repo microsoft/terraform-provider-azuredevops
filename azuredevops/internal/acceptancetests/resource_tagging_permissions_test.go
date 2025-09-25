@@ -1,5 +1,3 @@
-//go:build (all || permissions || resource_tagging_permissions) && (!exclude_permissions || !exclude_resource_tagging_permissions)
-
 package acceptancetests
 
 import (

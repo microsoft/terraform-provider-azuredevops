@@ -1,5 +1,3 @@
-//go:build (all || core || data_sources || data_securityrole_definitions) && (!data_sources || !exclude_data_securityrole_definitions)
-
 package acceptancetests
 
 import (

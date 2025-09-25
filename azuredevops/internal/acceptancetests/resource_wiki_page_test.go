@@ -1,5 +1,3 @@
-//go:build (all || wiki || resource_wiki) && !exclude_resource_wiki
-
 package acceptancetests
 
 import (
