@@ -384,10 +384,18 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 			IsSecret: converter.Bool(false),
 		}
 	}
+
+	secretChanged := d.HasChange("secret_variable")
 	for _, variable := range d.Get("secret_variable").(*schema.Set).List() {
 		asMap := variable.(map[string]interface{})
+
+		var val *string = nil
+		if secretChanged {
+			val = converter.String(asMap["value"].(string))
+		}
+
 		variableMap[asMap["name"].(string)] = taskagent.VariableValue{
-			Value:    converter.String(asMap["value"].(string)),
+			Value:    val,
 			IsSecret: converter.Bool(true),
 		}
 	}
