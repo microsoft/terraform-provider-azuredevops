@@ -63,5 +63,5 @@ data "azuredevops_groups" "groups" {
 }
 
 func hclGroupsDataSourceAllGroups() string {
-	return fmt.Sprintf(`data "azuredevops_groups" "groups" {}`)
+	return `data "azuredevops_groups" "groups" {}`
 }

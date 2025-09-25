@@ -346,20 +346,3 @@ resource "azuredevops_serviceendpoint_jfrog_xray_v2" "import" {
 }
 `, template)
 }
-
-func hclSvcEndpointJFrogXRayV2ResourceRequiresImportUsernamePassword(projectName string, serviceEndpointName string, description string) string {
-	template := hclSvcEndpointJFrogXRayV2ResourceBasicUsernamePassword(projectName, serviceEndpointName, description)
-	return fmt.Sprintf(`
-%s
-resource "azuredevops_serviceendpoint_jfrog_xray_v2" "import" {
-  project_id            = azuredevops_serviceendpoint_jfrog_xray_v2.test.project_id
-  service_endpoint_name = azuredevops_serviceendpoint_jfrog_xray_v2.test.service_endpoint_name
-  description           = azuredevops_serviceendpoint_jfrog_xray_v2.test.description
-  url                   = azuredevops_serviceendpoint_jfrog_xray_v2.test.url
-  authentication_basic {
-    username = "u"
-    password = "redacted"
-  }
-}
-`, template)
-}

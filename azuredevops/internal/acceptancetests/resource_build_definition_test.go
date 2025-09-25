@@ -606,7 +606,6 @@ func checkForVariableValues(tfNode string, expectedVals ...string) resource.Test
 			if !found {
 				return fmt.Errorf("Did not find variable with value %s", expectedVal)
 			}
-
 		}
 
 		return nil

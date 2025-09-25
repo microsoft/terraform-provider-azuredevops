@@ -100,7 +100,7 @@ func TestAccWikiPageResource_requireImportError(t *testing.T) {
 			},
 			{
 				Config:      hclProjectWikiPageImport(projectName),
-				ExpectError: regexp.MustCompile(fmt.Sprintf(`The page '/path' specified in the add operation already exists in the wiki. Please specify a new page path.`)),
+				ExpectError: regexp.MustCompile(`The page '/path' specified in the add operation already exists in the wiki. Please specify a new page path.`),
 			},
 		},
 	})

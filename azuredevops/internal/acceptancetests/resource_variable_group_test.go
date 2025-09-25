@@ -159,10 +159,8 @@ func checkVariableGroupExists(expectedName string, expectedAllowAccess bool) res
 			if len(*definitionReference) > 0 && *(*definitionReference)[0].Authorized != expectedAllowAccess {
 				return fmt.Errorf("Variable Group has Allow_access=%t, but expected %t", *(*definitionReference)[0].Authorized, expectedAllowAccess)
 			}
-		} else {
-			if len(*definitionReference) > 0 {
-				return fmt.Errorf("Definition reference should be empty for allow access false")
-			}
+		} else if len(*definitionReference) > 0 {
+			return fmt.Errorf("Definition reference should be empty for allow access false")
 		}
 		return nil
 	}

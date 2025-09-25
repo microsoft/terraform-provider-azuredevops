@@ -198,7 +198,6 @@ func checkGroupDestroyed(s *terraform.State) error {
 			}
 			return fmt.Errorf("Group with ID %s should not exist in scope %s", id, resource.Primary.Attributes["scope"])
 		}
-
 	}
 
 	return nil

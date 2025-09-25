@@ -462,7 +462,7 @@ func readGitRepo(clients *client.AggregatedClient, repoID string, projectID stri
 			return nil, err
 		}
 		for _, gitRepo := range *allRepo {
-			if strings.EqualFold((*gitRepo.Id).String(), repoID) ||
+			if strings.EqualFold(gitRepo.Id.String(), repoID) ||
 				strings.EqualFold(*gitRepo.Name, repoID) {
 				repo = &gitRepo
 				break

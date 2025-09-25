@@ -58,10 +58,10 @@ data "azuredevops_projects" "test" {
 }
 
 func hclDataSourceProjectsEmptyResult() string {
-	return fmt.Sprintf(`
+	return `
 data "azuredevops_projects" "test" {
   name  = "invalid_name"
   state = "wellFormed"
 }
-`)
+`
 }
