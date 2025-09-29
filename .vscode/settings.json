@@ -38,7 +38,9 @@
         "deepCompletion": true // enable deep completion
     },
     "cSpell.words": [
+        "azdosdkmocks",
         "azuredevops",
+        "gomock",
         "hashicorp",
         "Wiql",
         "workitemquery",

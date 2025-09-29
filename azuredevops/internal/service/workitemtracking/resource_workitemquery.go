@@ -1,4 +1,4 @@
-package queries
+package workitemtracking
 
 import (
 	"context"
@@ -42,11 +42,24 @@ func ResourceQuery() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 
-			"parent_path": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 256),
+			// The ID of the parent folder.
+			// It should not be specified if 'area' is specified.
+			"parent_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.IsUUID,
+				ConflictsWith: []string{"area"},
+			},
+
+			// If specified, the area should be one of either 'Shared Queries' or 'My Queries'.
+			// It should not be specified if 'parent_id' is specified.
+			"area": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
+				ConflictsWith: []string{"parent_id"},
 			},
 
 			"wiql": {
@@ -54,11 +67,6 @@ func ResourceQuery() *schema.Resource {
 				Required: true,
 				// The value of 32000 matches the restrictions in Azure DevOps.
 				ValidateFunc: validation.StringLenBetween(1, 32000),
-			},
-
-			"path": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
@@ -69,9 +77,22 @@ func resourceQueryCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	projectID := d.Get("project_id").(string)
 
+	// A parent ID and area cannot be set together.
+	if d.Get("area").(string) != "" && d.Get("parent_id").(string) != "" {
+		return diag.Errorf("Only one of 'area' or 'parent_id' should be set.")
+	}
+
+	// Use the area
+	parent := d.Get("area").(string)
+
+	// Or if it's not set, use the parent ID
+	if parent == "" {
+		parent = d.Get("parent_id").(string)
+	}
+
 	params := workitemtracking.CreateQueryArgs{
 		Project: &projectID,
-		Query:   converter.String(d.Get("parent_path").(string)),
+		Query:   &parent,
 		PostedQuery: &workitemtracking.QueryHierarchyItem{
 			Name:     converter.String(d.Get("name").(string)),
 			Wiql:     converter.String(d.Get("wiql").(string)),
@@ -84,6 +105,10 @@ func resourceQueryCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf(" Creating query. Error: %s", err)
 	}
 
+	if resp.Id == nil {
+		return diag.Errorf(" Creating query. Error: ID was nil")
+	}
+
 	d.SetId(resp.Id.String())
 
 	return resourceQueryRead(clients.Ctx, d, m)
@@ -91,6 +116,10 @@ func resourceQueryCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 func resourceQueryRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
+
+	if d.Id() == "" {
+		return diag.Errorf(" Reading query: ID was not set")
+	}
 
 	id := d.Id()
 
@@ -108,10 +137,12 @@ func resourceQueryRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf(" Getting query with id: %s. Error: %+v", id, err)
 	}
 
+	// Check that the query is not a folder
+	if resp.IsFolder != nil && *resp.IsFolder {
+		return diag.Errorf(" The query with id: %s is a folder. Expected a query.", id)
+	}
+
 	if resp != nil {
-		if resp.Path != nil {
-			d.Set("path", resp.Path)
-		}
 		if resp.Name != nil {
 			d.Set("name", resp.Name)
 		}

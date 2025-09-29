@@ -28,7 +28,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/queries"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
@@ -149,8 +148,8 @@ func Provider() *schema.Provider {
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
-			"azuredevops_workitemquery":                               queries.ResourceQuery(),
-			"azuredevops_workitemquery_folder":                        queries.ResourceQueryFolder(),
+			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
+			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                     taskagent.DataAgentPool(),

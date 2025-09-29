@@ -1,4 +1,4 @@
-package queries
+package workitemtracking
 
 import (
 	"context"
@@ -42,17 +42,24 @@ func ResourceQueryFolder() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 
-			"parent_path": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 256),
+			// The ID of the parent folder.
+			// It should not be specified if 'area' is specified.
+			"parent_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.IsUUID,
+				ConflictsWith: []string{"area"},
 			},
 
-			// Add 'path' attribute to store the full path of the query folder. This is read-only and computed.
-			"path": {
-				Type:     schema.TypeString,
-				Computed: true,
+			// If specified, the area should be one of either 'Shared Queries' or 'My Queries'.
+			// It should not be specified if 'parent_id' is specified.
+			"area": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
+				ConflictsWith: []string{"parent_id"},
 			},
 		},
 	}
@@ -63,9 +70,22 @@ func resourceQueryFolderCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	projectID := d.Get("project_id").(string)
 
+	// A parent ID and area cannot be set together.
+	if d.Get("area").(string) != "" && d.Get("parent_id").(string) != "" {
+		return diag.Errorf("Only one of 'area' or 'parent_id' should be set.")
+	}
+
+	// Use the area
+	parent := d.Get("area").(string)
+
+	// Or if it's not set, use the parent ID
+	if parent == "" {
+		parent = d.Get("parent_id").(string)
+	}
+
 	params := workitemtracking.CreateQueryArgs{
 		Project: &projectID,
-		Query:   converter.String(d.Get("parent_path").(string)),
+		Query:   &parent,
 		PostedQuery: &workitemtracking.QueryHierarchyItem{
 			Name:     converter.String(d.Get("name").(string)),
 			IsFolder: converter.Bool(true),
@@ -77,12 +97,20 @@ func resourceQueryFolderCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.Errorf(" Creating query folder. Error: %s", err)
 	}
 
+	if resp.Id == nil {
+		return diag.Errorf(" Creating query folder. Error: ID was nil")
+	}
+
 	d.SetId(resp.Id.String())
 	return resourceQueryFolderRead(clients.Ctx, d, m)
 }
 
 func resourceQueryFolderRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
+
+	if d.Id() == "" {
+		return diag.Errorf(" Reading query folder: ID was not set")
+	}
 
 	id := d.Id()
 
@@ -101,9 +129,6 @@ func resourceQueryFolderRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if resp != nil {
-		if resp.Path != nil {
-			d.Set("path", resp.Path)
-		}
 		if resp.Name != nil {
 			d.Set("name", resp.Name)
 		}
