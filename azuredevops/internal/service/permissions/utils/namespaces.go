@@ -244,7 +244,7 @@ func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*se
 		return nil, nil
 	}
 
-	var descriptors *string = nil
+	var descriptors *string
 	val := linq.From(*descriptorList).
 		Aggregate(func(r interface{}, i interface{}) interface{} {
 			if r.(string) == "" {
