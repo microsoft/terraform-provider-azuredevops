@@ -9,7 +9,7 @@ description: |-
 
 Manages a Work Item Query Folder in Azure DevOps.
 
-Folders allow you to organize queries beneath either the `Shared Queries` or `My Queries` root, or within other folders.
+Folders allow you to organize queries in a hierarchy beneath either the `Shared Queries` or `My Queries` root folder (area).
 You must provide exactly one of `area` (either `Shared Queries` or `My Queries`) or `parent_id` (an existing folder's ID) when creating a folder.
 
 ## Example Usage
@@ -84,11 +84,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Work Item Query Folders can be imported using their GUID:
-
-```sh
-terraform import azuredevops_workitemquery_folder.example 00000000-0000-0000-0000-000000000000
-```
+The resource does not support import.
 
 ## PAT Permissions Required
 

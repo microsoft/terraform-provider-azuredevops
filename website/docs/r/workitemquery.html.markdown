@@ -11,6 +11,8 @@ Manages a Work Item Query (WIQL based list / tree query) in Azure DevOps.
 
 A query can live either directly under one of the root areas `Shared Queries` or `My Queries`, or inside another query folder. You must provide exactly one of `area` (either `Shared Queries` or `My Queries`) or `parent_id` (an existing folder's ID) when creating a query.
 
+The WIQL (Work Item Query Language) statement is used to define the query logic. See the [WIQL Syntax Reference](https://learn.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops) for more information.
+
 ## Example Usage
 
 ### Basic query under Shared Queries
@@ -23,7 +25,6 @@ resource "azuredevops_project" "example" {
   visibility         = "private"
 }
 
-# Create a simple flat query directly under the Shared Queries root
 resource "azuredevops_workitemquery" "all_issues" {
   project_id = azuredevops_project.example.id
   name       = "All Active Issues"
@@ -48,7 +49,6 @@ resource "azuredevops_project" "example" {
   visibility         = "private"
 }
 
-# Folder (will be created first) – see azuredevops_workitemquery_folder
 resource "azuredevops_workitemquery_folder" "team_folder" {
   project_id = azuredevops_project.example.id
   name       = "Team"
@@ -79,7 +79,6 @@ resource "azuredevops_project" "example" {
   visibility         = "private"
 }
 
-# Folder (will be created first) – see azuredevops_workitemquery_folder
 resource "azuredevops_workitemquery_folder" "team_folder" {
   project_id = azuredevops_project.example.id
   name       = "Team"
@@ -100,18 +99,18 @@ resource "azuredevops_workitemquery" "my_team_bugs" {
 }
 
 data "azuredevops_group" "example-readers" {
-  project_id = data.azuredevops_project.example.id
+  project_id = azuredevops_project.example.id
   name       = "Readers"
 }
 
 resource "azuredevops_workitemquery_permissions" "query_permissions" {
-  project_id = data.azuredevops_project.example.id
+  project_id = azuredevops_project.example.id
   # Permissions can only be set for folders and queries under 'Shared Queries'.
   # The path here is relative to the 'Shared Queries' folder.
   path = format(
     "%s/%s",
     azuredevops_workitemquery_folder.team_folder.name,
-    azuredevops_workitemquery_folder.my_team_bugs.name
+    azuredevops_workitemquery.my_team_bugs.name
   )
   principal  = data.azuredevops_group.example-readers.id
   permissions = {
@@ -163,11 +162,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Work Item Queries can be imported using their ID:
-
-```sh
-terraform import azuredevops_workitemquery.example 00000000-0000-0000-0000-000000000000
-```
+The resource does not support import.
 
 ## PAT Permissions Required
 
