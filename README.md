@@ -64,7 +64,7 @@ If you're on Windows you'll also need:
 
 * [Git for Windows](https://git-scm.com/download/win)
 
-If you what to use the `makefile` build strategy on Windows it's required to install
+If you want to use the `makefile` build strategy on Windows it's required to install
 
 * [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm)
 

@@ -117,6 +117,8 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_wiki",
 		"azuredevops_wiki_page",
 		"azuredevops_workitem",
+		"azuredevops_workitemquery",
+		"azuredevops_workitemquery_folder",
 		"azuredevops_workitemquery_permissions",
 	}
 
