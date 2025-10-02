@@ -1,8 +1,7 @@
-//go:build (all || workitemtracking || resource_workitemquery_folder) && (!exclude_workitemtracking || !resource_workitemquery_folder)
-
 package acceptancetests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -14,13 +13,7 @@ func TestAccWorkItemQueryFolder_UnderArea(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	folderName := "tfacc-folder-area"
 
-	config := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery_folder" "folder" {
-  project_id = azuredevops_project.project.id
-  name       = "` + folderName + `"
-  area       = "My Queries"
-}
-`
+	config := hclWorkItemQueryFolderUnderArea(projectName, folderName)
 
 	res := "azuredevops_workitemquery_folder.folder"
 	resource.ParallelTest(t, resource.TestCase{
@@ -44,19 +37,7 @@ func TestAccWorkItemQueryFolder_UnderFolder(t *testing.T) {
 	parentFolderName := "tfacc-folder-parent"
 	childFolderName := "tfacc-folder-child"
 
-	config := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery_folder" "parent" {
-  project_id = azuredevops_project.project.id
-  name       = "` + parentFolderName + `"
-  area       = "My Queries"
-}
-
-resource "azuredevops_workitemquery_folder" "child" {
-  project_id = azuredevops_project.project.id
-  name       = "` + childFolderName + `"
-  parent_id  = azuredevops_workitemquery_folder.parent.id
-}
-`
+	config := hclWorkItemQueryFolderUnderFolder(projectName, parentFolderName, childFolderName)
 
 	parentRes := "azuredevops_workitemquery_folder.parent"
 	childRes := "azuredevops_workitemquery_folder.child"
@@ -74,4 +55,30 @@ resource "azuredevops_workitemquery_folder" "child" {
 			),
 		}},
 	})
+}
+
+func hclWorkItemQueryFolderUnderArea(projectName, folderName string) string {
+	return testutils.HclProjectResource(projectName) + fmt.Sprintf(`
+resource "azuredevops_workitemquery_folder" "folder" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  area       = "My Queries"
+}
+`, folderName)
+}
+
+func hclWorkItemQueryFolderUnderFolder(projectName, parentFolderName, childFolderName string) string {
+	return testutils.HclProjectResource(projectName) + fmt.Sprintf(`
+resource "azuredevops_workitemquery_folder" "parent" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  area       = "My Queries"
+}
+
+resource "azuredevops_workitemquery_folder" "child" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  parent_id  = azuredevops_workitemquery_folder.parent.id
+}
+`, parentFolderName, childFolderName)
 }

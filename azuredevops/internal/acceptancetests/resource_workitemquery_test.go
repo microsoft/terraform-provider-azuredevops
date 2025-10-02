@@ -1,8 +1,7 @@
-//go:build (all || workitemtracking || resource_workitemquery) && (!exclude_workitemtracking || !resource_workitemquery)
-
 package acceptancetests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,14 +14,7 @@ func TestAccWorkItemQuery_UnderArea(t *testing.T) {
 	queryName := "tfacc-query-area"
 	wiql := "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 
-	config := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery" "query" {
-  project_id = azuredevops_project.project.id
-  name       = "` + queryName + `"
-  area       = "My Queries"
-  wiql       = "` + wiql + `"
-}
-`
+	config := hclWorkItemQueryResource(projectName, queryName, wiql)
 
 	res := "azuredevops_workitemquery.query"
 	resource.ParallelTest(t, resource.TestCase{
@@ -47,20 +39,7 @@ func TestAccWorkItemQuery_UnderFolder(t *testing.T) {
 	queryName := "tfacc-query-under-folder"
 	wiql := "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 
-	config := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery_folder" "folder" {
-  project_id = azuredevops_project.project.id
-  name       = "` + folderName + `"
-  area       = "My Queries"
-}
-
-resource "azuredevops_workitemquery" "query" {
-  project_id = azuredevops_project.project.id
-  name       = "` + queryName + `"
-  parent_id  = azuredevops_workitemquery_folder.folder.id
-  wiql       = "` + wiql + `"
-}
-`
+	config := hclWorkItemQueryUnderFolderResource(projectName, folderName, queryName, wiql)
 
 	folderRes := "azuredevops_workitemquery_folder.folder"
 	queryRes := "azuredevops_workitemquery.query"
@@ -80,6 +59,7 @@ resource "azuredevops_workitemquery" "query" {
 		}},
 	})
 }
+
 // Update existing query (name + WIQL)
 func TestAccWorkItemQuery_Update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
@@ -88,23 +68,8 @@ func TestAccWorkItemQuery_Update(t *testing.T) {
 	initialWiql := "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 	updatedWiql := "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project ORDER BY [System.Id] DESC"
 
-	configCreate := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery" "query" {
-  project_id = azuredevops_project.project.id
-  name       = "` + initialName + `"
-  area       = "My Queries"
-  wiql       = "` + initialWiql + `"
-}
-`
-
-	configUpdate := testutils.HclProjectResource(projectName) + `
-resource "azuredevops_workitemquery" "query" {
-  project_id = azuredevops_project.project.id
-  name       = "` + updatedName + `"
-  area       = "My Queries"
-  wiql       = "` + updatedWiql + `"
-}
-`
+	configCreate := hclWorkItemQueryResource(projectName, initialName, initialWiql)
+	configUpdate := hclWorkItemQueryResource(projectName, updatedName, updatedWiql)
 
 	res := "azuredevops_workitemquery.query"
 	resource.ParallelTest(t, resource.TestCase{
@@ -130,4 +95,34 @@ resource "azuredevops_workitemquery" "query" {
 			},
 		},
 	})
+}
+
+// Helpers
+
+func hclWorkItemQueryResource(projectName, queryName, wiql string) string {
+	return fmt.Sprintf(`%s
+resource "azuredevops_workitemquery" "query" {
+  project_id = azuredevops_project.project.id
+  name       = %q
+  area       = "My Queries"
+  wiql       = %q
+}
+`, testutils.HclProjectResource(projectName), queryName, wiql)
+}
+
+func hclWorkItemQueryUnderFolderResource(projectName, folderName, queryName, wiql string) string {
+	return fmt.Sprintf(`%s
+resource "azuredevops_workitemquery_folder" "folder" {
+  project_id = azuredevops_project.project.id
+  name       = %q
+  area       = "My Queries"
+}
+
+resource "azuredevops_workitemquery" "query" {
+  project_id = azuredevops_project.project.id
+  name       = %q
+  parent_id  = azuredevops_workitemquery_folder.folder.id
+  wiql       = %q
+}
+`, testutils.HclProjectResource(projectName), folderName, queryName, wiql)
 }
