@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_azuredevops) && !resource_serviceendpoint_azuredevops
-
 package acceptancetests
 
 import (

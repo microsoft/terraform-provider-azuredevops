@@ -33,7 +33,7 @@ linters:
     - staticcheck # checks rules from staticcheck. It's not the same thing as the staticcheck binary.
     - unused # checks Go code for unused constants, variables, functions and types.
     - unconvert # checks for unnecessary type conversions.
-    - unparam # reports unused function parameters.
+    # - unparam # reports unused function parameters.
     - wastedassign # finds wasted assignment statements
     - whitespace # checks for unnecessary newlines at the start and end of functions, if, for, etc. (
 

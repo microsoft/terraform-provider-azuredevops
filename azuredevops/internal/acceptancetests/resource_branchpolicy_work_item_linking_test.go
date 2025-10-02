@@ -1,5 +1,3 @@
-//go:build (all || resource_branchpolicy_work_item_linking) && !exclude_resource_branchpolicy_work_item_linking
-
 package acceptancetests
 
 import (

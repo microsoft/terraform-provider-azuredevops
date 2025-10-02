@@ -1,5 +1,3 @@
-//go:build (all || core || resource_securityrole_assignment) && !exclude_resource_securityrole_assignment
-
 package acceptancetests
 
 import (

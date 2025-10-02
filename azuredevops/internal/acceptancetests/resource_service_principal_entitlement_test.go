@@ -1,5 +1,3 @@
-//go:build (all || resource_service_principal_entitlement) && !exclude_resource_service_principal_entitlement
-
 package acceptancetests
 
 import (

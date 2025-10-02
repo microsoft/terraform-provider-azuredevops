@@ -1,5 +1,3 @@
-//go:build (all || azuredevops_serviceendpoint_octopusdeploy) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (

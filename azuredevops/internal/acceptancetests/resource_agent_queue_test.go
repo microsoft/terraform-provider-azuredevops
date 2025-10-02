@@ -1,5 +1,3 @@
-//go:build (all || resource_agent_queue) && !exclude_resource_agent_queue
-
 package acceptancetests
 
 import (

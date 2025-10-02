@@ -1,5 +1,3 @@
-//go:build (all || resource_environment_resource_kubernetes) && !exclude_resource_environment_resource_kubernetes
-
 package acceptancetests
 
 import (

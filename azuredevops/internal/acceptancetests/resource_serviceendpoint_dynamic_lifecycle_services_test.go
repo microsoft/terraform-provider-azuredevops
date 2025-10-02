@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_dynamic_lifecycle_services) && !exclude_resource_serviceendpoint_dynamic_lifecycle_services
-
 package acceptancetests
 
 import (

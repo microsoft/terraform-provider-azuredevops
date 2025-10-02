@@ -1,5 +1,3 @@
-//go:build (all || data_sources || data_variable_group) && (!exclude_data_sources || !exclude_data_variable_group)
-
 package acceptancetests
 
 import (
@@ -30,6 +28,7 @@ func TestAccVariableGroupDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "variable.#"),
 					resource.TestCheckResourceAttr(tfNode, "variable.#", "3"),
+					resource.TestCheckResourceAttr(tfNode, "secret_variable.#", "3"),
 				),
 			},
 		},

@@ -1,5 +1,3 @@
-//go:build (all || resource_check_rest_api) && !exclude_resource_check_rest_api
-
 package acceptancetests
 
 import (

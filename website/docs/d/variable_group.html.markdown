@@ -48,6 +48,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `variable` - One or more `variable` blocks as documented below.
 
+* `secret_variable` - One or more `secret_variable` blocks as documented below.
+
 * `key_vault` - A list of `key_vault` blocks as documented below.
 
 ---
@@ -58,9 +60,13 @@ A `variable` block supports the following:
 
 * `value` - The value of the variable.
 
-* `secret_value` - The secret value of the variable.
+---
 
-* `is_secret` - A boolean flag describing if the variable value is sensitive.
+A `secret_variable` block supports the following:
+
+* `name` - The key value used for the secret variable.
+
+* `value` - The value of the secret variable, which is always `null` as the API won't return it.
 
 ---
 

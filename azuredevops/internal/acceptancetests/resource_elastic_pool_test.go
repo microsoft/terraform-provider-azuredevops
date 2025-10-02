@@ -1,5 +1,3 @@
-//go:build (all || resource_elasticpool) && !exclude_resource_elasticpool
-
 package acceptancetests
 
 import (

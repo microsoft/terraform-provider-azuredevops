@@ -1,5 +1,3 @@
-//go:build (all || resource_policy_path_lenght) && !resource_policy_path_lenght
-
 package acceptancetests
 
 import (
