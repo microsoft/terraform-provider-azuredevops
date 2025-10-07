@@ -112,10 +112,7 @@ func getSubscription(clients *client.AggregatedClient, subscriptionID *uuid.UUID
 			SubscriptionId: subscriptionID,
 		})
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			return nil, nil // Return nil subscription when not found, this is expected behavior for Terraform
-		}
-		return nil, fmt.Errorf(errMsgSubscriptionRead, subscriptionID, err)
+		return nil, err
 	}
 
 	return subscription, nil

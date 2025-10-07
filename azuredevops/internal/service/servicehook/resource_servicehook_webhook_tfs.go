@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -115,14 +116,12 @@ func resourceServicehookWebhookTfsRead(d *schema.ResourceData, m interface{}) er
 	subscriptionId := converter.UUID(d.Id())
 	subscription, err := getSubscription(clients, subscriptionId)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			log.Printf("[INFO] Service hook subscription not found. ID: %s", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return err
-	}
-
-	// Handle the case where subscription was not found (returns nil)
-	if subscription == nil {
-		log.Printf("[INFO] Service hook subscription not found. ID: %s", d.Id())
-		d.SetId("")
-		return nil
 	}
 
 	flattenServicehookWebhookTfs(d, subscription)
