@@ -111,11 +111,7 @@ func getSubscription(clients *client.AggregatedClient, subscriptionID *uuid.UUID
 		servicehooks.GetSubscriptionArgs{
 			SubscriptionId: subscriptionID,
 		})
-	if err != nil {
-		return nil, err
-	}
-
-	return subscription, nil
+	return subscription, err
 }
 
 // isSubscriptionDeleted checks if a service hook subscription has been deleted
