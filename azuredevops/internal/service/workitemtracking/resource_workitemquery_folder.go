@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceQueryFolder() *schema.Resource {
@@ -18,14 +19,12 @@ func ResourceQueryFolder() *schema.Resource {
 		CreateContext: resourceQueryFolderCreate,
 		ReadContext:   resourceQueryFolderRead,
 		DeleteContext: resourceQueryFolderDelete,
+		Importer: 	   tfhelper.ImportProjectQualifiedResource(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Read:   schema.DefaultTimeout(2 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
-		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -45,21 +44,21 @@ func ResourceQueryFolder() *schema.Resource {
 			// The ID of the parent folder.
 			// It should not be specified if 'area' is specified.
 			"parent_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ValidateFunc:  validation.IsUUID,
-				ConflictsWith: []string{"area"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
+				ExactlyOneOf: []string{"parent_id", "area"},
 			},
 
 			// If specified, the area should be one of either 'Shared Queries' or 'My Queries'.
 			// It should not be specified if 'parent_id' is specified.
 			"area": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ValidateFunc:  validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
-				ConflictsWith: []string{"parent_id"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
+				ExactlyOneOf: []string{"parent_id", "area"},
 			},
 		},
 	}
@@ -70,15 +69,7 @@ func resourceQueryFolderCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	projectID := d.Get("project_id").(string)
 
-	// A parent ID and area cannot be set together.
-	if d.Get("area").(string) != "" && d.Get("parent_id").(string) != "" {
-		return diag.Errorf("Only one of 'area' or 'parent_id' should be set.")
-	}
-
-	// Use the area
 	parent := d.Get("area").(string)
-
-	// Or if it's not set, use the parent ID
 	if parent == "" {
 		parent = d.Get("parent_id").(string)
 	}

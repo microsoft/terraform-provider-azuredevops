@@ -66,22 +66,6 @@ func TestResourceQuery_CreateRead_Success(t *testing.T) {
 	assert.Equal(t, wiql, d.Get("wiql"))
 }
 
-// Test error when both area and parent_id set.
-func TestResourceQuery_Create_Error_AreaAndParentBothSet(t *testing.T) {
-	d := getQueryResourceData(t, map[string]interface{}{
-		"name":       "Invalid",
-		"wiql":       "SELECT 1",
-		"parent_id":  uuid.NewString(),
-		"area":       "Shared Queries",
-		"project_id": uuid.NewString(),
-	})
-
-	diags := resourceQueryCreate(context.Background(), d, &client.AggregatedClient{})
-
-	assert.Len(t, diags, 1)
-	assert.Contains(t, diags[0].Summary, "Only one of 'area' or 'parent_id'")
-}
-
 // Test read marks resource removed on 404.
 func TestResourceQuery_Read_NotFound_ClearsID(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -198,33 +182,6 @@ func TestResourceQuery_Update_ModifiesFields(t *testing.T) {
 	assert.Empty(t, diags)
 	assert.Equal(t, newWiql, d.Get("wiql"))
 	assert.Equal(t, newName, d.Get("name"))
-}
-
-// Test update clears ID when underlying GetQuery returns not found.
-func TestResourceQuery_Update_NotFound_ClearsID(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-	clients := &client.AggregatedClient{WorkItemTrackingClient: mockClient, Ctx: context.Background()}
-
-	projectID := uuid.NewString()
-	queryID := uuid.NewString()
-
-	d := getQueryResourceData(t, map[string]interface{}{
-		"name":       "MyQuery",
-		"wiql":       "SELECT 1",
-		"parent_id":  uuid.NewString(),
-		"project_id": projectID,
-	})
-	d.SetId(queryID)
-	code := 404
-
-	mockClient.EXPECT().GetQuery(clients.Ctx, gomock.Any()).Return(nil, azuredevops.WrappedError{StatusCode: &code}).Times(1)
-
-	diags := resourceQueryUpdate(context.Background(), d, clients)
-
-	assert.Empty(t, diags)
-	assert.Empty(t, d.Id())
 }
 
 // Test delete calls DeleteQuery.

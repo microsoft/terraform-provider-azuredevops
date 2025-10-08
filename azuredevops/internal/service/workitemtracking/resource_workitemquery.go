@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceQuery() *schema.Resource {
@@ -19,14 +20,12 @@ func ResourceQuery() *schema.Resource {
 		ReadContext:   resourceQueryRead,
 		UpdateContext: resourceQueryUpdate,
 		DeleteContext: resourceQueryDelete,
+		Importer:      tfhelper.ImportProjectQualifiedResource(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Read:   schema.DefaultTimeout(2 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
-		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -45,21 +44,21 @@ func ResourceQuery() *schema.Resource {
 			// The ID of the parent folder.
 			// It should not be specified if 'area' is specified.
 			"parent_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ValidateFunc:  validation.IsUUID,
-				ConflictsWith: []string{"area"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
+				ExactlyOneOf: []string{"parent_id", "area"},
 			},
 
 			// If specified, the area should be one of either 'Shared Queries' or 'My Queries'.
 			// It should not be specified if 'parent_id' is specified.
 			"area": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ValidateFunc:  validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
-				ConflictsWith: []string{"parent_id"},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"Shared Queries", "My Queries"}, false),
+				ExactlyOneOf: []string{"parent_id", "area"},
 			},
 
 			"wiql": {
@@ -77,15 +76,7 @@ func resourceQueryCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	projectID := d.Get("project_id").(string)
 
-	// A parent ID and area cannot be set together.
-	if d.Get("area").(string) != "" && d.Get("parent_id").(string) != "" {
-		return diag.Errorf("Only one of 'area' or 'parent_id' should be set.")
-	}
-
-	// Use the area
 	parent := d.Get("area").(string)
-
-	// Or if it's not set, use the parent ID
 	if parent == "" {
 		parent = d.Get("parent_id").(string)
 	}
@@ -103,6 +94,10 @@ func resourceQueryCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	resp, err := clients.WorkItemTrackingClient.CreateQuery(clients.Ctx, params)
 	if err != nil {
 		return diag.Errorf(" Creating query. Error: %s", err)
+	}
+
+	if resp == nil {
+		return diag.Errorf(" Creating query. Error: response was nil")
 	}
 
 	if resp.Id == nil {
@@ -137,11 +132,6 @@ func resourceQueryRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf(" Getting query with id: %s. Error: %+v", id, err)
 	}
 
-	// Check that the query is not a folder
-	if resp.IsFolder != nil && *resp.IsFolder {
-		return diag.Errorf(" The query with id: %s is a folder. Expected a query.", id)
-	}
-
 	if resp != nil {
 		if resp.Name != nil {
 			d.Set("name", resp.Name)
@@ -150,12 +140,17 @@ func resourceQueryRead(ctx context.Context, d *schema.ResourceData, m interface{
 			d.Set("wiql", resp.Wiql)
 		}
 	}
+
+	// Check that the query is not a folder
+	if resp.IsFolder != nil && *resp.IsFolder {
+		return diag.Errorf(" The query with id: %s is a folder. Expected a query.", id)
+	}
+
 	return nil
 }
 
 func resourceQueryUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	var diags diag.Diagnostics
 
 	id := d.Id()
 
@@ -166,10 +161,6 @@ func resourceQueryUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	existing, err := clients.WorkItemTrackingClient.GetQuery(clients.Ctx, params)
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
 		return diag.Errorf(" Getting query with id: %s. Error: %+v", id, err)
 	}
 
@@ -192,10 +183,7 @@ func resourceQueryUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf(" Updating query with ID: %s. Error detail: %+v", id, err)
 	}
 
-	readDiags := resourceQueryRead(clients.Ctx, d, m)
-	diags = append(diags, readDiags...)
-
-	return diags
+	return resourceQueryRead(clients.Ctx, d, m)
 }
 
 func resourceQueryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

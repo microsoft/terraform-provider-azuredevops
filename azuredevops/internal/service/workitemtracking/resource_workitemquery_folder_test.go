@@ -63,27 +63,6 @@ func TestResourceQueryFolder_CreateRead_Success(t *testing.T) {
 	assert.Equal(t, name, d.Get("name"))
 }
 
-// Test that specifying both area and parent_id returns an error diagnostic.
-func TestResourceQueryFolder_Create_Error_AreaAndParentBothSet(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-	clients := &client.AggregatedClient{WorkItemTrackingClient: mockClient, Ctx: context.Background()}
-
-	d := getQueryFolderResourceData(t, map[string]interface{}{
-		"name":       "Invalid",
-		"project_id": uuid.NewString(),
-		"parent_id":  uuid.NewString(),
-		"area":       "Shared Queries",
-	})
-
-	diags := resourceQueryFolderCreate(context.Background(), d, clients)
-
-	assert.Len(t, diags, 1)
-	assert.Contains(t, diags[0].Summary, "Only one of 'area' or 'parent_id'")
-}
-
 // Test read sets ID to empty when underlying API indicates the folder isn't found (404).
 func TestResourceQueryFolder_Read_NotFound_ClearsID(t *testing.T) {
 	ctrl := gomock.NewController(t)
