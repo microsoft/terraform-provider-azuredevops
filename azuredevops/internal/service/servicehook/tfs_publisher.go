@@ -688,9 +688,6 @@ func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []i
 		return "", []interface{}{nil}
 	}
 	eventType := tfsApiType2ResourceBlock[*subscription.EventType]
-	if isNilTfsEventConfig(*subscription.PublisherInputs) {
-		return eventType, []interface{}{nil}
-	}
 
 	event := *subscription.PublisherInputs
 	eventConfig := make(map[string]interface{})
@@ -768,14 +765,4 @@ func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []i
 	}
 
 	return eventType, []interface{}{eventConfig}
-}
-
-// isNilTfsEventConfig checks if TFS event config is empty
-func isNilTfsEventConfig(eventConfig map[string]string) bool {
-	for key := range eventConfig {
-		if key != "projectId" && key != "tfsSubscriptionId" && eventConfig[key] != "" {
-			return false
-		}
-	}
-	return true
 }

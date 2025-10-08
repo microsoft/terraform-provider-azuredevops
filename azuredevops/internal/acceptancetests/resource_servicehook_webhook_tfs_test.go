@@ -168,48 +168,34 @@ func TestAccServicehookWebhookTfs_WithResourceDetails(t *testing.T) {
 }
 
 func CheckServicehookWebhookTfsDestroyed(s *terraform.State) error {
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+
 	for _, resource := range s.RootModule().Resources {
 		if resource.Type != "azuredevops_servicehook_webhook_tfs" {
 			continue
 		}
 
-		// indicates the subscription still exists - this should fail the test
-		if _, err := getServiceHookSubscriptionFromResource(resource); err == nil {
+		subscriptionID := resource.Primary.ID
+		if subscriptionID == "" {
+			return fmt.Errorf("No service hook subscription ID is set")
+		}
+
+		// Parse the subscription ID as UUID
+		subscriptionUUID, err := uuid.Parse(subscriptionID)
+		if err != nil {
+			return fmt.Errorf("Invalid subscription ID format: %v", err)
+		}
+
+		// Try to get the subscription from the service - if it exists, this should fail the test
+		// If it's been deleted, this should return an error (which is expected)
+		_, err = clients.ServiceHooksClient.GetSubscription(clients.Ctx, servicehooks.GetSubscriptionArgs{
+			SubscriptionId: &subscriptionUUID,
+		})
+
+		if err == nil {
 			return fmt.Errorf("Unexpectedly found a service hook subscription that should be deleted")
 		}
 	}
 
 	return nil
-}
-
-func getServiceHookSubscriptionFromResource(resource *terraform.ResourceState) (interface{}, error) {
-	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-
-	subscriptionID := resource.Primary.ID
-	projectID := resource.Primary.Attributes["project_id"]
-
-	if subscriptionID == "" {
-		return nil, fmt.Errorf("No service hook subscription ID is set")
-	}
-
-	if projectID == "" {
-		return nil, fmt.Errorf("No project ID is set")
-	}
-	// Parse the subscription ID as UUID
-	subscriptionUUID, err := uuid.Parse(subscriptionID)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid subscription ID format: %v", err)
-	}
-
-	// Try to get the subscription from the service - if it exists, this will succeed
-	// If it's been deleted, this should return an error
-	subscription, err := clients.ServiceHooksClient.GetSubscription(clients.Ctx, servicehooks.GetSubscriptionArgs{
-		SubscriptionId: &subscriptionUUID,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return subscription, nil
 }
