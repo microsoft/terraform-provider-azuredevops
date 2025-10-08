@@ -695,141 +695,76 @@ func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []i
 	event := *subscription.PublisherInputs
 	eventConfig := make(map[string]interface{})
 
+	// Helper function to add field from event to eventConfig if it exists
+	addFieldIfExists := func(apiKey, schemaKey string) {
+		if val, exists := event[apiKey]; exists {
+			eventConfig[schemaKey] = val
+		}
+	}
+
 	// Set filters based on event type
 	switch eventType {
 	case "build_completed":
-		if val, exists := event["buildStatus"]; exists {
-			eventConfig["build_status"] = val
-		}
-		if val, exists := event["definitionName"]; exists {
-			eventConfig["definition_name"] = val
-		}
+		addFieldIfExists("buildStatus", "build_status")
+		addFieldIfExists("definitionName", "definition_name")
 
 	case "git_push":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
-		if val, exists := event["branch"]; exists {
-			eventConfig["branch"] = val
-		}
-		if val, exists := event["pushedBy"]; exists {
-			eventConfig["pushed_by"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
+		addFieldIfExists("branch", "branch")
+		addFieldIfExists("pushedBy", "pushed_by")
 
 	case "git_pull_request_created":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
-		if val, exists := event["branch"]; exists {
-			eventConfig["branch"] = val
-		}
-		if val, exists := event["pullrequestCreatedBy"]; exists {
-			eventConfig["pull_request_created_by"] = val
-		}
-		if val, exists := event["pullrequestReviewersContains"]; exists {
-			eventConfig["pull_request_reviewers_contains"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
+		addFieldIfExists("branch", "branch")
+		addFieldIfExists("pullrequestCreatedBy", "pull_request_created_by")
+		addFieldIfExists("pullrequestReviewersContains", "pull_request_reviewers_contains")
 
 	case "git_pull_request_updated":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
-		if val, exists := event["branch"]; exists {
-			eventConfig["branch"] = val
-		}
-		if val, exists := event["notificationType"]; exists {
-			eventConfig["notification_type"] = val
-		}
-		if val, exists := event["pullrequestCreatedBy"]; exists {
-			eventConfig["pull_request_created_by"] = val
-		}
-		if val, exists := event["pullrequestReviewersContains"]; exists {
-			eventConfig["pull_request_reviewers_contains"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
+		addFieldIfExists("branch", "branch")
+		addFieldIfExists("notificationType", "notification_type")
+		addFieldIfExists("pullrequestCreatedBy", "pull_request_created_by")
+		addFieldIfExists("pullrequestReviewersContains", "pull_request_reviewers_contains")
 
 	case "git_pull_request_merge_attempted":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
-		if val, exists := event["branch"]; exists {
-			eventConfig["branch"] = val
-		}
-		if val, exists := event["pullrequestCreatedBy"]; exists {
-			eventConfig["pull_request_created_by"] = val
-		}
-		if val, exists := event["pullrequestReviewersContains"]; exists {
-			eventConfig["pull_request_reviewers_contains"] = val
-		}
-		if val, exists := event["mergeResult"]; exists {
-			eventConfig["merge_result"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
+		addFieldIfExists("branch", "branch")
+		addFieldIfExists("pullrequestCreatedBy", "pull_request_created_by")
+		addFieldIfExists("pullrequestReviewersContains", "pull_request_reviewers_contains")
+		addFieldIfExists("mergeResult", "merge_result")
 
 	case "git_pull_request_commented":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
-		if val, exists := event["branch"]; exists {
-			eventConfig["branch"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
+		addFieldIfExists("branch", "branch")
 
 	case "repository_created":
-		if val, exists := event["projectId"]; exists {
-			eventConfig["project_id"] = val
-		}
+		addFieldIfExists("projectId", "project_id")
 
 	case "repository_deleted", "repository_forked", "repository_renamed", "repository_status_changed":
-		if val, exists := event["repository"]; exists {
-			eventConfig["repository_id"] = val
-		}
+		addFieldIfExists("repository", "repository_id")
 
 	case "tfvc_checkin":
-		if val, exists := event["path"]; exists {
-			eventConfig["path"] = val
-		}
+		addFieldIfExists("path", "path")
 
 	case "work_item_created", "work_item_deleted", "work_item_restored":
-		if val, exists := event["workItemType"]; exists {
-			eventConfig["work_item_type"] = val
-		}
-		if val, exists := event["areaPath"]; exists {
-			eventConfig["area_path"] = val
-		}
-		if val, exists := event["tag"]; exists {
-			eventConfig["tag"] = val
-		}
+		addFieldIfExists("workItemType", "work_item_type")
+		addFieldIfExists("areaPath", "area_path")
+		addFieldIfExists("tag", "tag")
 
 	case "work_item_updated":
-		if val, exists := event["workItemType"]; exists {
-			eventConfig["work_item_type"] = val
-		}
-		if val, exists := event["areaPath"]; exists {
-			eventConfig["area_path"] = val
-		}
-		if val, exists := event["tag"]; exists {
-			eventConfig["tag"] = val
-		}
-		if val, exists := event["changedFields"]; exists {
-			eventConfig["changed_fields"] = val
-		}
+		addFieldIfExists("workItemType", "work_item_type")
+		addFieldIfExists("areaPath", "area_path")
+		addFieldIfExists("tag", "tag")
+		addFieldIfExists("changedFields", "changed_fields")
 
 	case "work_item_commented":
-		if val, exists := event["workItemType"]; exists {
-			eventConfig["work_item_type"] = val
-		}
-		if val, exists := event["areaPath"]; exists {
-			eventConfig["area_path"] = val
-		}
-		if val, exists := event["tag"]; exists {
-			eventConfig["tag"] = val
-		}
-		if val, exists := event["commentPattern"]; exists {
-			eventConfig["comment_pattern"] = val
-		}
+		addFieldIfExists("workItemType", "work_item_type")
+		addFieldIfExists("areaPath", "area_path")
+		addFieldIfExists("tag", "tag")
+		addFieldIfExists("commentPattern", "comment_pattern")
 
 	case "service_connection_created", "service_connection_updated":
-		if val, exists := event["project"]; exists {
-			eventConfig["project"] = val
-		}
+		addFieldIfExists("project", "project")
 	}
 
 	return eventType, []interface{}{eventConfig}
