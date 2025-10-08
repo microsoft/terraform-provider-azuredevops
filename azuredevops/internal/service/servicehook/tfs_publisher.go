@@ -563,240 +563,118 @@ func genTfsPublisherSchema() map[string]*schema.Schema {
 // expandTfsEventConfig expands the TFS event configuration from schema
 func expandTfsEventConfig(d *schema.ResourceData) (map[string]string, string) {
 	eventConfig := make(map[string]string)
-	var eventType string
 
-	// Check each TFS event type (similar to pipelines implementation)
-	if inputsList := d.Get("build_completed"); len(inputsList.([]interface{})) > 0 {
-		eventType = "build_completed"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["build_status"]; exists && val.(string) != "" {
-				eventConfig["buildStatus"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["definition_name"]; exists && val.(string) != "" {
-				eventConfig["definitionName"] = val.(string)
+	eventTypes := []string{
+		"build_completed",
+		"git_pull_request_commented",
+		"git_pull_request_created",
+		"git_pull_request_merge_attempted",
+		"git_pull_request_updated",
+		"git_push",
+		"repository_created",
+		"repository_deleted",
+		"repository_forked",
+		"repository_renamed",
+		"repository_status_changed",
+		"service_connection_created",
+		"service_connection_updated",
+		"tfvc_checkin",
+		"work_item_commented",
+		"work_item_created",
+		"work_item_deleted",
+		"work_item_restored",
+		"work_item_updated",
+	}
+
+	// eventSelector selects the specified event config.
+	// Returns: event type and the raw event config
+	eventSelector := func(d *schema.ResourceData) (string, map[string]interface{}) {
+		for _, evt := range eventTypes {
+			if l := d.Get(evt); len(l.([]interface{})) != 0 {
+				if rawConfig, ok := l.([]interface{})[0].(map[string]interface{}); ok {
+					return evt, rawConfig
+				} else {
+					// This can happen when the event config's nested fields are all optional and absent in the config
+					return evt, map[string]interface{}{}
+				}
 			}
 		}
+		return "", nil
 	}
-	if inputsList := d.Get("git_push"); len(inputsList.([]interface{})) > 0 {
-		eventType = "git_push"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["branch"]; exists && val.(string) != "" {
-				eventConfig["branch"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pushed_by"]; exists && val.(string) != "" {
-				eventConfig["pushedBy"] = val.(string)
-			}
+
+	eventType, rawConfig := eventSelector(d)
+
+	// Helper function to extract string from rawConfig and add to eventConfig if non-empty
+	addField := func(schemaKey, apiKey string) {
+		if val, ok := rawConfig[schemaKey].(string); ok && val != "" {
+			eventConfig[apiKey] = val
 		}
 	}
-	if inputsList := d.Get("git_pull_request_created"); len(inputsList.([]interface{})) > 0 {
-		eventType = "git_pull_request_created"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["branch"]; exists && val.(string) != "" {
-				eventConfig["branch"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_created_by"]; exists && val.(string) != "" {
-				eventConfig["pullrequestCreatedBy"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_reviewers_contains"]; exists && val.(string) != "" {
-				eventConfig["pullrequestReviewersContains"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("git_pull_request_updated"); len(inputsList.([]interface{})) > 0 {
-		eventType = "git_pull_request_updated"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["branch"]; exists && val.(string) != "" {
-				eventConfig["branch"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["notification_type"]; exists && val.(string) != "" {
-				eventConfig["notificationType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_created_by"]; exists && val.(string) != "" {
-				eventConfig["pullrequestCreatedBy"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_reviewers_contains"]; exists && val.(string) != "" {
-				eventConfig["pullrequestReviewersContains"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("git_pull_request_merge_attempted"); len(inputsList.([]interface{})) > 0 {
-		eventType = "git_pull_request_merge_attempted"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["branch"]; exists && val.(string) != "" {
-				eventConfig["branch"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_created_by"]; exists && val.(string) != "" {
-				eventConfig["pullrequestCreatedBy"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["pull_request_reviewers_contains"]; exists && val.(string) != "" {
-				eventConfig["pullrequestReviewersContains"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["merge_result"]; exists && val.(string) != "" {
-				eventConfig["mergeResult"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("git_pull_request_commented"); len(inputsList.([]interface{})) > 0 {
-		eventType = "git_pull_request_commented"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["branch"]; exists && val.(string) != "" {
-				eventConfig["branch"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("repository_created"); len(inputsList.([]interface{})) > 0 {
-		eventType = "repository_created"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["project_id"]; exists && val.(string) != "" {
-				eventConfig["projectId"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("repository_deleted"); len(inputsList.([]interface{})) > 0 {
-		eventType = "repository_deleted"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("repository_forked"); len(inputsList.([]interface{})) > 0 {
-		eventType = "repository_forked"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("repository_renamed"); len(inputsList.([]interface{})) > 0 {
-		eventType = "repository_renamed"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("repository_status_changed"); len(inputsList.([]interface{})) > 0 {
-		eventType = "repository_status_changed"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["repository_id"]; exists && val.(string) != "" {
-				eventConfig["repository"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("tfvc_checkin"); len(inputsList.([]interface{})) > 0 {
-		eventType = "tfvc_checkin"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["path"]; exists && val.(string) != "" {
-				eventConfig["path"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("work_item_created"); len(inputsList.([]interface{})) > 0 {
-		eventType = "work_item_created"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["work_item_type"]; exists && val.(string) != "" {
-				eventConfig["workItemType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["area_path"]; exists && val.(string) != "" {
-				eventConfig["areaPath"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["tag"]; exists && val.(string) != "" {
-				eventConfig["tag"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("work_item_updated"); len(inputsList.([]interface{})) > 0 {
-		eventType = "work_item_updated"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["work_item_type"]; exists && val.(string) != "" {
-				eventConfig["workItemType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["area_path"]; exists && val.(string) != "" {
-				eventConfig["areaPath"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["tag"]; exists && val.(string) != "" {
-				eventConfig["tag"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["changed_fields"]; exists && val.(string) != "" {
-				eventConfig["changedFields"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("work_item_deleted"); len(inputsList.([]interface{})) > 0 {
-		eventType = "work_item_deleted"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["work_item_type"]; exists && val.(string) != "" {
-				eventConfig["workItemType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["area_path"]; exists && val.(string) != "" {
-				eventConfig["areaPath"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["tag"]; exists && val.(string) != "" {
-				eventConfig["tag"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("work_item_restored"); len(inputsList.([]interface{})) > 0 {
-		eventType = "work_item_restored"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["work_item_type"]; exists && val.(string) != "" {
-				eventConfig["workItemType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["area_path"]; exists && val.(string) != "" {
-				eventConfig["areaPath"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["tag"]; exists && val.(string) != "" {
-				eventConfig["tag"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("work_item_commented"); len(inputsList.([]interface{})) > 0 {
-		eventType = "work_item_commented"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["work_item_type"]; exists && val.(string) != "" {
-				eventConfig["workItemType"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["area_path"]; exists && val.(string) != "" {
-				eventConfig["areaPath"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["tag"]; exists && val.(string) != "" {
-				eventConfig["tag"] = val.(string)
-			}
-			if val, exists := inputs[0].(map[string]interface{})["comment_pattern"]; exists && val.(string) != "" {
-				eventConfig["commentPattern"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("service_connection_created"); len(inputsList.([]interface{})) > 0 {
-		eventType = "service_connection_created"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["project"]; exists && val.(string) != "" {
-				eventConfig["project"] = val.(string)
-			}
-		}
-	}
-	if inputsList := d.Get("service_connection_updated"); len(inputsList.([]interface{})) > 0 {
-		eventType = "service_connection_updated"
-		if inputs, ok := inputsList.([]interface{}); ok && inputs[0] != nil {
-			if val, exists := inputs[0].(map[string]interface{})["project"]; exists && val.(string) != "" {
-				eventConfig["project"] = val.(string)
-			}
+
+	// Map schema fields to API fields based on event type
+	if rawConfig != nil {
+		switch eventType {
+		case "build_completed":
+			addField("build_status", "buildStatus")
+			addField("definition_name", "definitionName")
+
+		case "git_push":
+			addField("repository_id", "repository")
+			addField("branch", "branch")
+			addField("pushed_by", "pushedBy")
+
+		case "git_pull_request_created":
+			addField("repository_id", "repository")
+			addField("branch", "branch")
+			addField("pull_request_created_by", "pullrequestCreatedBy")
+			addField("pull_request_reviewers_contains", "pullrequestReviewersContains")
+
+		case "git_pull_request_updated":
+			addField("repository_id", "repository")
+			addField("branch", "branch")
+			addField("notification_type", "notificationType")
+			addField("pull_request_created_by", "pullrequestCreatedBy")
+			addField("pull_request_reviewers_contains", "pullrequestReviewersContains")
+
+		case "git_pull_request_merge_attempted":
+			addField("repository_id", "repository")
+			addField("branch", "branch")
+			addField("pull_request_created_by", "pullrequestCreatedBy")
+			addField("pull_request_reviewers_contains", "pullrequestReviewersContains")
+			addField("merge_result", "mergeResult")
+
+		case "git_pull_request_commented":
+			addField("repository_id", "repository")
+			addField("branch", "branch")
+
+		case "repository_created":
+			addField("project_id", "projectId")
+
+		case "repository_deleted", "repository_forked", "repository_renamed", "repository_status_changed":
+			addField("repository_id", "repository")
+
+		case "tfvc_checkin":
+			addField("path", "path")
+
+		case "work_item_created", "work_item_deleted", "work_item_restored":
+			addField("work_item_type", "workItemType")
+			addField("area_path", "areaPath")
+			addField("tag", "tag")
+
+		case "work_item_updated":
+			addField("work_item_type", "workItemType")
+			addField("area_path", "areaPath")
+			addField("tag", "tag")
+			addField("changed_fields", "changedFields")
+
+		case "work_item_commented":
+			addField("work_item_type", "workItemType")
+			addField("area_path", "areaPath")
+			addField("tag", "tag")
+			addField("comment_pattern", "commentPattern")
+
+		case "service_connection_created", "service_connection_updated":
+			addField("project", "project")
 		}
 	}
 
@@ -806,6 +684,9 @@ func expandTfsEventConfig(d *schema.ResourceData) (map[string]string, string) {
 
 // flattenTfsEventConfig flattens the TFS event configuration to schema
 func flattenTfsEventConfig(subscription *servicehooks.Subscription) (string, []interface{}) {
+	if subscription == nil {
+		return "", []interface{}{nil}
+	}
 	eventType := tfsApiType2ResourceBlock[*subscription.EventType]
 	if isNilTfsEventConfig(*subscription.PublisherInputs) {
 		return eventType, []interface{}{nil}

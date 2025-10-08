@@ -2,14 +2,12 @@ package servicehook
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 const (
@@ -112,24 +110,4 @@ func getSubscription(clients *client.AggregatedClient, subscriptionID *uuid.UUID
 			SubscriptionId: subscriptionID,
 		})
 	return subscription, err
-}
-
-// isSubscriptionDeleted checks if a service hook subscription has been deleted
-func isSubscriptionDeleted(d *schema.ResourceData, err error, subscription *servicehooks.Subscription, args *servicehooks.GetSubscriptionArgs) bool {
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			log.Printf("[INFO] Service hook subscription not found. ID: (%v)", args.SubscriptionId)
-			d.SetId("")
-			return true
-		}
-		return false
-	}
-
-	if subscription == nil || subscription.Id == nil {
-		log.Printf("[INFO] Service hook subscription not found. ID: (%v)", args.SubscriptionId)
-		d.SetId("")
-		return true
-	}
-
-	return false
 }
