@@ -194,7 +194,7 @@ func expandServicehookWebhookTfs(d *schema.ResourceData) *servicehooks.Subscript
 		}
 	}
 
-	subscription := &servicehooks.Subscription{
+	return &servicehooks.Subscription{
 		ConsumerActionId: converter.String("httpRequest"),
 		ConsumerId:       converter.String("webHooks"),
 		ConsumerInputs:   &consumerInputs,
@@ -203,8 +203,6 @@ func expandServicehookWebhookTfs(d *schema.ResourceData) *servicehooks.Subscript
 		PublisherInputs:  &publisherInputs,
 		ResourceVersion:  converter.String("7.1"),
 	}
-
-	return subscription
 }
 
 func flattenServicehookWebhookTfs(d *schema.ResourceData, subscription *servicehooks.Subscription) {
