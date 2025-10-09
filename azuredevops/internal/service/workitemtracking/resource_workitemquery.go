@@ -165,6 +165,10 @@ func resourceQueryUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		QueryUpdate: existing,
 	}
 
+	if d.HasChange("wiql") {
+		updateArgs.QueryUpdate.Wiql = converter.String(d.Get("wiql").(string))
+	}
+
 	if d.HasChange("name") {
 		updateArgs.QueryUpdate.Name = converter.String(d.Get("name").(string))
 	}
