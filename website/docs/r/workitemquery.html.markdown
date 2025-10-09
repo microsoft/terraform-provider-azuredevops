@@ -162,13 +162,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-A Work Item Query can be imported using the following format `projectId/queryId`.
-
-For example:
-
-```sh
-terraform import azuredevops_workitemquery.example 00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
-```
+The resource does not support import.
 
 ## PAT Permissions Required
 

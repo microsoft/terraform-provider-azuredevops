@@ -11,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceQuery() *schema.Resource {
@@ -20,7 +19,6 @@ func ResourceQuery() *schema.Resource {
 		ReadContext:   resourceQueryRead,
 		UpdateContext: resourceQueryUpdate,
 		DeleteContext: resourceQueryDelete,
-		Importer:      tfhelper.ImportProjectQualifiedResource(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Read:   schema.DefaultTimeout(2 * time.Minute),
@@ -136,9 +134,6 @@ func resourceQueryRead(ctx context.Context, d *schema.ResourceData, m interface{
 		if resp.Name != nil {
 			d.Set("name", resp.Name)
 		}
-		if resp.Wiql != nil {
-			d.Set("wiql", resp.Wiql)
-		}
 	}
 
 	// Check that the query is not a folder
@@ -168,10 +163,6 @@ func resourceQueryUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		Project:     converter.String(d.Get("project_id").(string)),
 		Query:       &id,
 		QueryUpdate: existing,
-	}
-
-	if d.HasChange("wiql") {
-		updateArgs.QueryUpdate.Wiql = converter.String(d.Get("wiql").(string))
 	}
 
 	if d.HasChange("name") {

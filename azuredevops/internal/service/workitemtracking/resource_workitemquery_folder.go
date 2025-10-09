@@ -11,7 +11,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceQueryFolder() *schema.Resource {
@@ -19,7 +18,6 @@ func ResourceQueryFolder() *schema.Resource {
 		CreateContext: resourceQueryFolderCreate,
 		ReadContext:   resourceQueryFolderRead,
 		DeleteContext: resourceQueryFolderDelete,
-		Importer: 	   tfhelper.ImportProjectQualifiedResource(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Read:   schema.DefaultTimeout(2 * time.Minute),
