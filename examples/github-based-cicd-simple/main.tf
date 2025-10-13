@@ -41,3 +41,47 @@ resource "azuredevops_build_definition" "nightly_build" {
     service_connection_id = azuredevops_serviceendpoint_github.github_serviceendpoint.id
   }
 }
+
+# Example Service Hook: Webhook for Git push events
+resource "azuredevops_servicehook_subscription" "git_push_webhook" {
+  project_id         = azuredevops_project.project.id
+  publisher_id       = "tfs"
+  event_type         = "git.push"
+  consumer_id        = "webHooks"
+  consumer_action_id = "httpRequest"
+
+  publisher_inputs = {
+    # Filter for pushes to master branch only
+    branch = "refs/heads/master"
+  }
+
+  consumer_inputs = {
+    # Replace with your webhook URL
+    url = "https://webhook.example.com/git-push"
+  }
+
+  resource_version = "1.0"
+  status          = "enabled"
+}
+
+# Example Service Hook: Webhook for build completion
+resource "azuredevops_servicehook_subscription" "build_complete_webhook" {
+  project_id         = azuredevops_project.project.id
+  publisher_id       = "tfs"
+  event_type         = "build.complete"
+  consumer_id        = "webHooks"
+  consumer_action_id = "httpRequest"
+
+  publisher_inputs = {
+    # Filter for builds from our build definition
+    buildDefinition = azuredevops_build_definition.nightly_build.id
+  }
+
+  consumer_inputs = {
+    # Replace with your webhook URL
+    url = "https://webhook.example.com/build-complete"
+  }
+
+  resource_version = "1.0"
+  status          = "enabled"
+}
