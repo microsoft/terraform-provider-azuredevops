@@ -623,13 +623,16 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 			removeProjectsStr[i] = v.(string)
 		}
 		// Remove old shared projects
-		clients.ServiceEndpointClient.DeleteServiceEndpoint(
+		err = clients.ServiceEndpointClient.DeleteServiceEndpoint(
 			clients.Ctx,
 			serviceendpoint.DeleteServiceEndpointArgs{
 				ProjectIds: &removeProjectsStr,
 				EndpointId: currentEndpoint.Id,
 			},
 		)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to remove shared service endpoint from projects: %v", err))
+		}
 	}
 
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
