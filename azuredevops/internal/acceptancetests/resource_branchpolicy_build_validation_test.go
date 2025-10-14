@@ -1,5 +1,3 @@
-//go:build (all || resource_branchpolicy_build_validation) && !exclude_resource_branchpolicy_build_validation
-
 package acceptancetests
 
 import (

@@ -31,7 +31,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
@@ -79,17 +78,19 @@ type AggregatedClient struct {
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
-func GetAzdoClient(azdoTokenProvider func() (string, error), organizationURL string) (*AggregatedClient, error) {
+func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string) (*AggregatedClient, error) {
 	ctx := context.Background()
 
 	if strings.EqualFold(organizationURL, "") {
 		return nil, fmt.Errorf("the url of the Azure DevOps is required")
 	}
 
-	connection, err := sdk.NewDynamicAuthorizationConnection(organizationURL, azdoTokenProvider)
-	if err != nil {
-		return nil, err
+	connection := &azuredevops.Connection{
+		AuthProvider:            authProvider,
+		BaseUrl:                 strings.ToLower(strings.TrimRight(organizationURL, "/")),
+		SuppressFedAuthRedirect: true,
 	}
+
 	setUserAgent(connection)
 
 	coreClient, err := core.NewClient(ctx, connection)

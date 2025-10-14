@@ -1,5 +1,3 @@
-//go:build (all || core || data_sources || data_groups) && (!exclude_data_sources || !exclude_data_groups)
-
 package acceptancetests
 
 import (
@@ -65,5 +63,5 @@ data "azuredevops_groups" "groups" {
 }
 
 func hclGroupsDataSourceAllGroups() string {
-	return fmt.Sprintf(`data "azuredevops_groups" "groups" {}`)
+	return `data "azuredevops_groups" "groups" {}`
 }

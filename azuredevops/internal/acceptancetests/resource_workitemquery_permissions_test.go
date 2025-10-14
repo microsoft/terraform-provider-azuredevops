@@ -1,5 +1,3 @@
-//go:build (all || permissions || resource_workitemquery_permissions) && (!exclude_permissions || !resource_workitemquery_permissions)
-
 package acceptancetests
 
 import (

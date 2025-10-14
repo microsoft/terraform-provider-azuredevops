@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_generic_git) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (

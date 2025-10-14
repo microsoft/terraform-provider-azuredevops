@@ -374,18 +374,27 @@ resource "azuredevops_variable_group" "vg" {
 	description = "A sample variable group."
 	allow_access = %t
 	variable {
-		name      = "key1"
-		secret_value  = "value1"
-		is_secret = true
+		name   = "key1"
+		value  = "value1"
 	}
-
 	variable {
 		name  = "key2"
 		value = "value2"
 	}
-
 	variable {
 		name = "key3"
+	}
+
+	secret_variable {
+		name   = "skey1"
+		value  = "value1"
+	}
+	secret_variable {
+		name  = "skey2"
+		value = "value2"
+	}
+	secret_variable {
+		name = "skey3"
 	}
 }`, variableGroupName, allowAccess)
 }

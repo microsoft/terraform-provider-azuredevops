@@ -1,5 +1,3 @@
-//go:build (all || resource_group_entitlement) && !exclude_resource_group_entitlement
-
 package acceptancetests
 
 import (

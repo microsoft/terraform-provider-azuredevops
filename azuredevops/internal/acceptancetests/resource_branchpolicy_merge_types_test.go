@@ -1,5 +1,3 @@
-//go:build (all || resource_branchpolicy_merge_types) && !exclude_resource_branchpolicy_merge_types
-
 package acceptancetests
 
 import (

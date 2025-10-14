@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_azurerm) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (
@@ -219,7 +217,10 @@ func TestAccServiceEndpointAzureRm_WorkloadFederation_Manual_CreateAndUpdate(t *
 	azureDevOpsOrgName := "terraform-provider-azuredevops"
 
 	if os.Getenv("AZDO_ORG_SERVICE_URL") != "" {
-		azureDevOpsOrgUrl, _ := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
+		azureDevOpsOrgUrl, err := url.Parse(os.Getenv("AZDO_ORG_SERVICE_URL"))
+		if err != nil {
+			t.Fatal(err)
+		}
 		azureDevOpsOrgName = path.Base(azureDevOpsOrgUrl.Path)
 	}
 

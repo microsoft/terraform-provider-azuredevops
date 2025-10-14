@@ -1,5 +1,3 @@
-//go:build (all || core || resource_team_administrators) && !exclude_resource_team_administrators
-
 package acceptancetests
 
 import (

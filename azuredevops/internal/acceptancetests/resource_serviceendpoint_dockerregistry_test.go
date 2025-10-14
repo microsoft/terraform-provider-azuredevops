@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_dockerregistry) && !exclude_serviceendpoints
-
 package acceptancetests
 
 import (

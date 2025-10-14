@@ -1,5 +1,3 @@
-//go:build (all || resource_serviceendpoint_ssh) && !resource_serviceendpoint_ssh
-
 package acceptancetests
 
 import (

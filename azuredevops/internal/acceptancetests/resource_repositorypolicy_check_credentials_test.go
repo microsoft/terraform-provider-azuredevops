@@ -1,5 +1,3 @@
-//go:build (all || resource_policy_check_credentials) && !resource_policy_check_credentials
-
 package acceptancetests
 
 import (

@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/entrauth/aztfauth"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -31,7 +34,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -147,6 +149,8 @@ func Provider() *schema.Provider {
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
+			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
+			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                     taskagent.DataAgentPool(),
@@ -204,87 +208,32 @@ func Provider() *schema.Provider {
 			"client_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
-				Description:  "The service principal client or managed service principal id which should be used.",
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"ARM_CLIENT_ID", "AZURE_CLIENT_ID"}, nil),
+				Description:  "The service principal client id which should be used for AAD auth.",
 				ValidateFunc: validation.IsUUID,
+			},
+			"client_id_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_ID_FILE_PATH", nil),
+				Description: "The path to a file containing the Client ID which should be used.",
 			},
 			"tenant_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
-				Description:  "The service principal tenant id which should be used.",
+				Description:  "The service principal tenant id which should be used for AAD auth.",
 				ValidateFunc: validation.IsUUID,
 			},
-			"client_id_plan": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_PLAN", nil),
-				Description:  "The service principal client id which should be used during a plan operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"tenant_id_plan": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_PLAN", nil),
-				Description:  "The service principal tenant id which should be used during a plan operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"client_id_apply": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID_APPLY", nil),
-				Description:  "The service principal client id which should be used during an apply operation in Terraform Cloud.",
-				ValidateFunc: validation.IsUUID,
-			},
-			"tenant_id_apply": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID_APPLY", nil),
-				Description:  "The service principal tenant id which should be used during an apply operation in Terraform Cloud..",
-				ValidateFunc: validation.IsUUID,
-			},
-			"oidc_request_token": {
-				Type:        schema.TypeString,
+			"auxiliary_tenant_ids": {
+				Type:        schema.TypeList,
 				Optional:    true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN"}, nil),
-				Description: "The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.",
-			},
-			"oidc_request_url": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL"}, nil),
-				Description: "The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.",
-			},
-			"oidc_token": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_TOKEN", nil),
-				Description: "OIDC token to authenticate as a service principal.",
-			},
-			"oidc_token_file_path": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_TOKEN_FILE_PATH", nil),
-				Description: "OIDC token from file to authenticate as a service principal.",
-			},
-			"use_oidc": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_OIDC", nil),
-				Description: "Use an OIDC token to authenticate to a service principal.",
-			},
-			"oidc_audience": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_AUDIENCE", nil),
-				Description: "Set the audience when requesting OIDC tokens.",
-			},
-			"oidc_tfc_tag": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_TFC_TAG", nil),
-				Description: "Terraform Cloud dynamic credential provider tag.",
+				DefaultFunc: schema.EnvDefaultFunc("ARM_AUXILIARY_TENANT_IDS", nil),
+				Description: "List of auxiliary Tenant IDs required for multi-tenancy and cross-tenant scenarios.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.IsUUID,
+				},
 			},
 			"client_certificate_path": {
 				Type:        schema.TypeString,
@@ -316,14 +265,57 @@ func Provider() *schema.Provider {
 			"client_secret_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_SECRET_PATH", nil),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_CLIENT_SECRET_PATH", "ARM_CLIENT_SECRET_FILE_PATH"}, nil),
 				Description: "Path to a file containing a client secret for authenticating to  a service principal.",
+			},
+			"oidc_request_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_TOKEN", "SYSTEM_ACCESSTOKEN"}, nil),
+				Description: "The bearer token for the request to the OIDC provider. For use when authenticating as a Service Principal using OpenID Connect.",
+			},
+			"oidc_request_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_REQUEST_URL", "ACTIONS_ID_TOKEN_REQUEST_URL", "SYSTEM_OIDCREQUESTURI"}, nil),
+				Description: "The URL for the OIDC provider from which to request an ID token. For use when authenticating as a Service Principal using OpenID Connect.",
+			},
+			"oidc_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("ARM_OIDC_TOKEN", nil),
+				Description: "OIDC token to authenticate as a service principal.",
+			},
+			"oidc_token_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_OIDC_TOKEN_FILE_PATH", "AZURE_FEDERATED_TOKEN_FILE"}, nil),
+				Description: "OIDC token from file to authenticate as a service principal.",
+			},
+			"oidc_azure_service_connection_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID", "ARM_OIDC_AZURE_SERVICE_CONNECTION_ID", "AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"}, nil),
+				Description: "The Azure Pipelines Service Connection ID to use for authentication.",
+			},
+			"use_oidc": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_OIDC", nil),
+				Description: "Use an OIDC token to authenticate to a service principal. Defaults to `false`.",
+			},
+			"use_cli": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_CLI", true),
+				Description: "Use Azure CLI to authenticate. Defaults to `true`.",
 			},
 			"use_msi": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ARM_USE_MSI", nil),
-				Description: "Use an Azure Managed Service Identity.",
+				Description: "Use an Azure Managed Service Identity. Defaults to `false`.",
 			},
 		},
 	}
@@ -335,13 +327,13 @@ func Provider() *schema.Provider {
 
 func providerConfigure() schema.ConfigureContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		tokenFunction, err := sdk.GetAuthTokenProvider(ctx, d, sdk.AzIdentityFuncsImpl{})
+		authProvider, err := GetAuthProvider(ctx, d)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 
 		organizationUrl := d.Get("org_service_url").(string)
-		azdoClient, err := client.GetAzdoClient(tokenFunction, organizationUrl)
+		azdoClient, err := client.GetAzdoClient(authProvider, organizationUrl)
 		if err != nil {
 			return nil, diag.FromErr(clientErrorHandle(err, organizationUrl))
 		}
@@ -378,4 +370,51 @@ func buildError(statusCode int, orgUrl string) error {
 		return fmt.Errorf("You are not authorized to access Azure DevOps Organization %s", orgUrl)
 	}
 	return nil
+}
+
+func GetAuthProvider(ctx context.Context, d *schema.ResourceData) (azuredevops.AuthProvider, error) {
+	// Personal Access Token
+	if personal_access_token, ok := d.GetOk("personal_access_token"); ok {
+		return azuredevops.NewAuthProviderPAT(personal_access_token.(string)), nil
+	}
+
+	// AAD Authentication
+	var auxTenants []string
+	for _, tid := range d.Get("auxiliary_tenant_ids").([]any) {
+		auxTenants = append(auxTenants, tid.(string))
+	}
+
+	cred, err := aztfauth.NewCredential(aztfauth.Option{
+		Logger:                     log.New(log.Default().Writer(), "[DEBUG] ", log.LstdFlags|log.Lmsgprefix),
+		TenantId:                   d.Get("tenant_id").(string),
+		ClientId:                   d.Get("client_id").(string),
+		ClientIdFile:               d.Get("client_id_file_path").(string),
+		UseClientSecret:            true,
+		ClientSecret:               d.Get("client_secret").(string),
+		ClientSecretFile:           d.Get("client_secret_path").(string),
+		UseClientCert:              true,
+		ClientCertBase64:           d.Get("client_certificate").(string),
+		ClientCertPfxFile:          d.Get("client_certificate_path").(string),
+		ClientCertPassword:         []byte(d.Get("client_certificate_password").(string)),
+		UseOIDCToken:               d.Get("use_oidc").(bool),
+		OIDCToken:                  d.Get("oidc_token").(string),
+		UseOIDCTokenFile:           d.Get("use_oidc").(bool),
+		OIDCTokenFile:              d.Get("oidc_token_file_path").(string),
+		UseOIDCTokenRequest:        d.Get("use_oidc").(bool),
+		OIDCRequestToken:           d.Get("oidc_request_token").(string),
+		OIDCRequestURL:             d.Get("oidc_request_url").(string),
+		ADOServiceConnectionId:     d.Get("oidc_azure_service_connection_id").(string),
+		UseMSI:                     d.Get("use_msi").(bool),
+		UseAzureCLI:                d.Get("use_cli").(bool),
+		AdditionallyAllowedTenants: auxTenants,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to new credential")
+	}
+
+	AzureDevOpsAppDefaultScope := "499b84ac-1321-427f-aa17-267ca6975798/.default"
+	ap := azuredevops.NewAuthProviderAAD(cred, policy.TokenRequestOptions{
+		Scopes: []string{AzureDevOpsAppDefaultScope},
+	})
+	return ap, nil
 }

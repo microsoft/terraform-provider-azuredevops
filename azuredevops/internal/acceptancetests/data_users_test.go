@@ -1,5 +1,3 @@
-//go:build (all || data_sources || data_users) && (!exclude_data_sources || !exclude_data_users)
-
 package acceptancetests
 
 import (

@@ -1,5 +1,3 @@
-//go:build (all || permissions || resource_servicehook_permissions) && (!exclude_permissions || !exclude_resource_servicehook_permissions)
-
 package acceptancetests
 
 import (

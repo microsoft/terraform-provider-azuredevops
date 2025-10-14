@@ -1,5 +1,3 @@
-//go:build (all || resource_check_required_template) && !exclude_approvalsandchecks
-
 package acceptancetests
 
 import (
@@ -93,7 +91,7 @@ func TestAccServicehookStorageQueuePipelines_accountKeyError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testutils.HclServicehookStorageQeueuePipelinesResourceWithStageEvent(projectName, "accountkey", "testqueue", "Canceled", "Canceled"),
-				ExpectError: regexp.MustCompile("expected length of account_key to be in the range \\(64 - 100\\)"),
+				ExpectError: regexp.MustCompile(`expected length of account_key to be in the range (64 - 100)`),
 			},
 		},
 	})
