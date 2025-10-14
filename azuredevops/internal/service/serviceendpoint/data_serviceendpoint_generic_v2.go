@@ -26,6 +26,13 @@ func DataServiceEndpointGenericV2() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
+			"shared_project_ids": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			// Use service_endpoint_id to look up by ID
 			"service_endpoint_id": {
 				Type:         schema.TypeString,
@@ -146,6 +153,19 @@ func dataServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceDat
 		if len(authorization) > 0 {
 			d.Set("authorization_parameters", authorization)
 		}
+	}
+
+	// Populate shared_project_ids
+	var sharedProjectIDs []string
+	for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+		if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+			ref.ProjectReference.Id.String() != d.Get("project_id").(string) {
+			sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
+		}
+	}
+	err = d.Set("shared_project_ids", sharedProjectIDs)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error setting shared_project_ids: %w", err))
 	}
 
 	return nil

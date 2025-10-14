@@ -57,6 +57,14 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
+			"shared_project_ids": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A list of additional project IDs where the service endpoint should be shared.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"service_endpoint_name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -324,6 +332,38 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(serviceEndpoint.Id.String())
+	if sharedProjectIDs, ok := d.GetOk("shared_project_ids"); ok {
+		projectIDsList := sharedProjectIDs.([]interface{})
+		if len(projectIDsList) > 0 {
+			// Build an array of project references
+			projectReferences := make([]serviceendpoint.ServiceEndpointProjectReference, 0, len(projectIDsList))
+			for _, projectIDRaw := range projectIDsList {
+				projectIDStr := projectIDRaw.(string)
+				id, err := uuid.Parse(projectIDStr)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("invalid shared project ID '%s': %v", projectIDStr, err))
+				}
+
+				projectReferences = append(projectReferences, serviceendpoint.ServiceEndpointProjectReference{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: &id,
+					},
+				})
+			}
+
+			// Make a single API call with all project references
+			err := clients.ServiceEndpointClient.ShareServiceEndpoint(
+				clients.Ctx,
+				serviceendpoint.ShareServiceEndpointArgs{
+					EndpointProjectReferences: &projectReferences,
+					EndpointId:                serviceEndpoint.Id,
+				},
+			)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to share service endpoint with projects: %v", err))
+			}
+		}
+	}
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
@@ -501,6 +541,19 @@ func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoi
 		}
 	}
 
+	// Populate shared_project_ids
+	var sharedProjectIDs []string
+	for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+		if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+			ref.ProjectReference.Id.String() != d.Get("project_id").(string) {
+			sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
+		}
+	}
+	err := d.Set("shared_project_ids", sharedProjectIDs)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error setting shared_project_ids: %w", err))
+	}
+
 	return nil
 }
 
@@ -526,6 +579,57 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 	_, err = updateServiceEndpointGenericV2(ctx, clients, updatedEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Handle shared_project_ids updates
+	if d.HasChange("shared_project_ids") {
+		oldVal, newVal := d.GetChange("shared_project_ids")
+		oldSet := schema.NewSet(schema.HashString, oldVal.([]interface{}))
+		newSet := schema.NewSet(schema.HashString, newVal.([]interface{}))
+
+		projectIDsList := newSet.Difference(oldSet).List()
+		// Build an array of project references
+		projectReferences := make([]serviceendpoint.ServiceEndpointProjectReference, 0, len(projectIDsList))
+		for _, projectIDRaw := range projectIDsList {
+			projectIDStr := projectIDRaw.(string)
+			id, err := uuid.Parse(projectIDStr)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("invalid shared project ID '%s': %v", projectIDStr, err))
+			}
+
+			projectReferences = append(projectReferences, serviceendpoint.ServiceEndpointProjectReference{
+				ProjectReference: &serviceendpoint.ProjectReference{
+					Id: &id,
+				},
+			})
+		}
+
+		// Make a single API call with all project references
+		err := clients.ServiceEndpointClient.ShareServiceEndpoint(
+			clients.Ctx,
+			serviceendpoint.ShareServiceEndpointArgs{
+				EndpointProjectReferences: &projectReferences,
+				EndpointId:                currentEndpoint.Id,
+			},
+		)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to share service endpoint with projects: %v", err))
+		}
+
+		// Convert []interface{} to []string
+		removeProjects := oldSet.Difference(newSet).List()
+		removeProjectsStr := make([]string, len(removeProjects))
+		for i, v := range removeProjects {
+			removeProjectsStr[i] = v.(string)
+		}
+		// Remove old shared projects
+		clients.ServiceEndpointClient.DeleteServiceEndpoint(
+			clients.Ctx,
+			serviceendpoint.DeleteServiceEndpointArgs{
+				ProjectIds: &removeProjectsStr,
+				EndpointId: currentEndpoint.Id,
+			},
+		)
 	}
 
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
@@ -575,8 +679,9 @@ func resourceServiceEndpointGenericV2Delete(ctx context.Context, d *schema.Resou
 	clients := m.(*client.AggregatedClient)
 	serviceEndpointID := d.Id()
 	projectID := d.Get("project_id").(string)
-
-	err := deleteServiceEndpointGenericV2(ctx, clients, serviceEndpointID, projectID)
+	sharedProjectIDs := d.Get("shared_project_ids").([]string)
+	projectIDs := append([]string{projectID}, sharedProjectIDs...)
+	err := deleteServiceEndpointGenericV2(ctx, clients, serviceEndpointID, projectIDs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -662,7 +767,7 @@ func updateServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 }
 
 // deleteServiceEndpointGenericV2 deletes a service endpoint from Azure DevOps
-func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.AggregatedClient, endpointID, projectID string) error {
+func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.AggregatedClient, endpointID string, projectIDs []string) error {
 	endpointUUID, err := uuid.Parse(endpointID)
 	if err != nil {
 		return fmt.Errorf("invalid service endpoint ID: %w", err)
@@ -670,7 +775,7 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 
 	args := serviceendpoint.DeleteServiceEndpointArgs{
 		EndpointId: &endpointUUID,
-		ProjectIds: &[]string{projectID},
+		ProjectIds: &projectIDs,
 	}
 
 	err = clients.ServiceEndpointClient.DeleteServiceEndpoint(ctx, args)
