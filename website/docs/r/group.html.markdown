@@ -56,6 +56,9 @@ The following arguments are supported:
 
   ~> **NOTE:** It's possible to define group members both within the `azuredevops_group` resource via the members block and by using the `azuredevops_group_membership` resource. However it's not possible to use both methods to manage group members, since there'll be conflicts.
 
+* `skip_destroy` - (Optional) Meta argument to skip group destroy API call. Might be useful when deployment identity does not have
+sufficient organization permissions to do so. Only works in conjunction with `origin_id`.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
