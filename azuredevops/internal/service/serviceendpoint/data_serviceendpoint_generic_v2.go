@@ -33,22 +33,22 @@ func DataServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			// Use service_endpoint_id to look up by ID
-			"service_endpoint_id": {
+			// Use id to look up by ID
+			"id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
-				ExactlyOneOf: []string{"service_endpoint_id", "service_endpoint_name"},
+				ExactlyOneOf: []string{"id", "name"},
 			},
-			// Use service_endpoint_name to look up by name
-			"service_endpoint_name": {
+			// Use name to look up by name
+			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				ExactlyOneOf: []string{"service_endpoint_id", "service_endpoint_name"},
+				ExactlyOneOf: []string{"id", "name"},
 			},
 			// Read-only fields that are returned
-			"service_endpoint_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -60,7 +60,7 @@ func DataServiceEndpointGenericV2() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"authorization_type": {
+			"authorization_scheme": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -87,11 +87,11 @@ func dataServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceDat
 	var err error
 
 	// Look up service endpoint by ID if provided
-	if id, ok := d.GetOk("service_endpoint_id"); ok {
+	if id, ok := d.GetOk("id"); ok {
 		serviceEndpointID = id.(string)
 	} else {
 		// Look up service endpoint by name if ID not provided
-		serviceEndpointName := d.Get("service_endpoint_name").(string)
+		serviceEndpointName := d.Get("name").(string)
 		serviceEndpointID, err = findServiceEndpointByName(ctx, clients, serviceEndpointName, projectID)
 		if err != nil {
 			return diag.FromErr(err)
@@ -114,11 +114,11 @@ func dataServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceDat
 	d.SetId(serviceEndpointID)
 
 	if serviceEndpoint.Name != nil {
-		d.Set("service_endpoint_name", *serviceEndpoint.Name)
+		d.Set("name", *serviceEndpoint.Name)
 	}
 
 	if serviceEndpoint.Type != nil {
-		d.Set("service_endpoint_type", *serviceEndpoint.Type)
+		d.Set("type", *serviceEndpoint.Type)
 	}
 
 	if serviceEndpoint.Description != nil {
@@ -130,7 +130,7 @@ func dataServiceEndpointGenericV2Read(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
-		d.Set("authorization_type", *serviceEndpoint.Authorization.Scheme)
+		d.Set("authorization_scheme", *serviceEndpoint.Authorization.Scheme)
 	}
 
 	// Set data fields

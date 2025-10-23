@@ -65,7 +65,7 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"service_endpoint_name": {
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -75,7 +75,7 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 				Optional: true,
 				Default:  "Managed by Terraform",
 			},
-			"service_endpoint_type": {
+			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -87,7 +87,7 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 				ValidateFunc:     validation.IsURLWithHTTPorHTTPS,
 				DiffSuppressFunc: suppress.CaseDifference,
 			},
-			"authorization_type": {
+			"authorization_scheme": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -382,7 +382,7 @@ func getEndpointConfigFromResource(d *schema.ResourceData) (*EndpointConfig, err
 	}
 
 	return &EndpointConfig{
-		ServiceEndpointType: d.Get("service_endpoint_type").(string),
+		ServiceEndpointType: d.Get("type").(string),
 		AuthType:            authScheme,
 		AuthData:            authParams,
 		Data:                data,
@@ -391,7 +391,7 @@ func getEndpointConfigFromResource(d *schema.ResourceData) (*EndpointConfig, err
 
 // createGenericV2ServiceEndpoint creates a service endpoint in Azure DevOps
 func createGenericV2ServiceEndpoint(ctx context.Context, d *schema.ResourceData, clients *client.AggregatedClient, config *EndpointConfig) (*serviceendpoint.ServiceEndpoint, error) {
-	name := d.Get("service_endpoint_name").(string)
+	name := d.Get("name").(string)
 	projectID := d.Get("project_id").(string)
 	description := d.Get("description").(string)
 	serverURL := d.Get("server_url").(string)
@@ -469,14 +469,9 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
-	return updateResourceDataFromServiceEndpoint(d, serviceEndpoint)
-}
-
-// updateResourceDataFromServiceEndpoint updates the resource data with values from the service endpoint
-func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) diag.Diagnostics {
 	if serviceEndpoint.Name != nil {
-		if err := d.Set("service_endpoint_name", *serviceEndpoint.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting service_endpoint_name: %w", err))
+		if err := d.Set("name", *serviceEndpoint.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting name: %w", err))
 		}
 	}
 
@@ -487,8 +482,8 @@ func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoi
 	}
 
 	if serviceEndpoint.Type != nil {
-		if err := d.Set("service_endpoint_type", *serviceEndpoint.Type); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting service_endpoint_type: %w", err))
+		if err := d.Set("type", *serviceEndpoint.Type); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting type: %w", err))
 		}
 	}
 
@@ -501,8 +496,8 @@ func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoi
 	// Handle authorization
 	if serviceEndpoint.Authorization != nil {
 		if serviceEndpoint.Authorization.Scheme != nil {
-			if err := d.Set("authorization_type", *serviceEndpoint.Authorization.Scheme); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting authorization_type: %w", err))
+			if err := d.Set("authorization_scheme", *serviceEndpoint.Authorization.Scheme); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting authorization_scheme: %w", err))
 			}
 		}
 
@@ -520,8 +515,8 @@ func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoi
 			}
 		}
 	} else {
-		if err := d.Set("authorization_type", ""); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_type to empty: %w", err))
+		if err := d.Set("authorization_scheme", ""); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting authorization_scheme to empty: %w", err))
 		}
 		if err := d.Set("authorization_parameters", nil); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %w", err))
@@ -549,7 +544,7 @@ func updateResourceDataFromServiceEndpoint(d *schema.ResourceData, serviceEndpoi
 			sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
 		}
 	}
-	err := d.Set("shared_project_ids", sharedProjectIDs)
+	err = d.Set("shared_project_ids", sharedProjectIDs)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error setting shared_project_ids: %w", err))
 	}
@@ -641,8 +636,8 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 // updateServiceEndpointFromResourceData updates a service endpoint with values from resource data
 func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
 	// Update fields that have changed
-	if d.HasChange("service_endpoint_name") {
-		endpoint.Name = converter.String(d.Get("service_endpoint_name").(string))
+	if d.HasChange("name") {
+		endpoint.Name = converter.String(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {
@@ -654,7 +649,7 @@ func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *ser
 	}
 
 	// Handle authorization updates if any auth fields changed
-	if d.HasChange("authorization_type") || d.HasChange("authorization_parameters") {
+	if d.HasChange("authorization_scheme") || d.HasChange("authorization_parameters") {
 		authScheme, authParams, err := getAuthorizationDetails(d)
 		if err != nil {
 			return nil, fmt.Errorf("error processing authorization details: %w", err)
@@ -726,12 +721,12 @@ func getAuthorizationDetailsRaw(schemeVal interface{}, paramsVal interface{}) (s
 
 // getAuthorizationDetails extracts auth scheme and params from ResourceData
 func getAuthorizationDetails(d *schema.ResourceData) (string, map[string]string, error) {
-	return getAuthorizationDetailsRaw(d.Get("authorization_type"), d.Get("authorization_parameters"))
+	return getAuthorizationDetailsRaw(d.Get("authorization_scheme"), d.Get("authorization_parameters"))
 }
 
 // getAuthorizationDetailsFromDiff extracts auth scheme and params from ResourceDiff
 func getAuthorizationDetailsFromDiff(d *schema.ResourceDiff) (string, map[string]string, error) {
-	return getAuthorizationDetailsRaw(d.Get("authorization_type"), d.Get("authorization_parameters"))
+	return getAuthorizationDetailsRaw(d.Get("authorization_scheme"), d.Get("authorization_parameters"))
 }
 
 // getServiceEndpointGenericV2 retrieves a service endpoint from Azure DevOps
@@ -796,7 +791,7 @@ func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	serviceEndpointType := d.Get("service_endpoint_type").(string)
+	serviceEndpointType := d.Get("type").(string)
 	authScheme, authParams, err := getAuthorizationDetailsFromDiff(d)
 	if err != nil {
 		return err

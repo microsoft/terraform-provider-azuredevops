@@ -1,11 +1,9 @@
-//go:build (all || resource_serviceendpoint_generic_v2) && !exclude_resource_serviceendpoint_generic_v2
-// +build all resource_serviceendpoint_generic_v2
-// +build !exclude_resource_serviceendpoint_generic_v2
-
 package acceptancetests
 
 import (
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"regexp"
 	"testing"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // Tests basic functionality of the Generic Service Endpoint V2 resource
@@ -34,11 +31,11 @@ func TestAccServiceEndpointGenericV2_Basic(t *testing.T) {
 				Config: hclServiceEndpointGenericV2TokenBasic(projectName, serviceEndpointName, serviceEndpointType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", "Managed by Terraform"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", "https://github.com"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "service_endpoint_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "id"),
 				),
 			},
 			{
@@ -70,8 +67,8 @@ func TestAccServiceEndpointGenericV2_Update(t *testing.T) {
 				Config: hclServiceEndpointGenericV2TokenCustomUrl(projectName, serviceEndpointName, serviceEndpointType, serverUrlInitial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", serverUrlInitial),
 				),
 			},
@@ -79,8 +76,8 @@ func TestAccServiceEndpointGenericV2_Update(t *testing.T) {
 				Config: hclServiceEndpointGenericV2TokenCustomUrl(projectName, serviceEndpointName, serviceEndpointType, serverUrlUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "server_url", serverUrlUpdated),
 				),
 			},
@@ -107,8 +104,8 @@ func TestAccServiceEndpointGenericV2_UsernamePassword(t *testing.T) {
 				Config: hclServiceEndpointGenericV2UsernamePassword(projectName, serviceEndpointName, serviceEndpointType, username, password),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
 				),
 			},
 			{
@@ -140,8 +137,8 @@ func TestAccServiceEndpointGenericV2_Certificate(t *testing.T) {
 				Config: hclServiceEndpointGenericV2Certificate(projectName, serviceEndpointName, serviceEndpointType, certificate, certPassword),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
 				),
 			},
 			{
@@ -171,7 +168,7 @@ func TestAccServiceEndpointGenericV2_WithData(t *testing.T) {
 				Config: hclServiceEndpointGenericV2WithData(projectName, serviceEndpointName, serviceEndpointType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "data.environment", "test"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "data.region", "us-west-1"),
 				),
@@ -186,7 +183,7 @@ func TestAccServiceEndpointGenericV2_WithData(t *testing.T) {
 	})
 }
 
-// Tests resource validation for service_endpoint_type in Generic Service Endpoint V2
+// Tests resource validation for type in Generic Service Endpoint V2
 func TestAccServiceEndpointGenericV2_ValidateServiceEndpointType(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointName := testutils.GenerateResourceName()
@@ -219,9 +216,9 @@ func hclServiceEndpointGenericV2TokenBasic(projectName string, serviceEndpointNa
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
+  name = "%s"
   description           = "Managed by Terraform"
-  service_endpoint_type = "%s"
+  type = "%s"
   server_url            = "https://github.com"
 
   authorization {
@@ -242,9 +239,9 @@ func hclServiceEndpointGenericV2TokenCustomUrl(projectName string, serviceEndpoi
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
+  name = "%s"
   description           = "Managed by Terraform"
-  service_endpoint_type = "%s"
+  type = "%s"
   server_url            = "%s"
 
   authorization {
@@ -265,9 +262,9 @@ func hclServiceEndpointGenericV2UsernamePassword(projectName string, serviceEndp
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
+  name = "%s"
   description           = "Managed by Terraform"
-  service_endpoint_type = "%s"
+  type = "%s"
   server_url            = "https://example.com"
 
   authorization {
@@ -288,9 +285,9 @@ func hclServiceEndpointGenericV2Certificate(projectName string, serviceEndpointN
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
+  name = "%s"
   description           = "Managed by Terraform"
-  service_endpoint_type = "%s"
+  type = "%s"
   server_url            = "https://example.com"
 
   authorization {
@@ -313,9 +310,9 @@ func hclServiceEndpointGenericV2WithData(projectName string, serviceEndpointName
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id            = azuredevops_project.project.id
-  service_endpoint_name = "%s"
+  name = "%s"
   description           = "Managed by Terraform"
-  service_endpoint_type = "%s"
+  type = "%s"
   server_url            = "https://example.com"
 
   authorization {
