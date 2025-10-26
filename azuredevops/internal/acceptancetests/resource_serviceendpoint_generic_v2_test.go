@@ -3,8 +3,8 @@ package acceptancetests
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -183,6 +183,121 @@ func TestAccServiceEndpointGenericV2_WithData(t *testing.T) {
 	})
 }
 
+// Tests shared_project_ids functionality for Generic Service Endpoint V2
+func TestAccServiceEndpointGenericV2_SharedProjects(t *testing.T) {
+	projectName1 := testutils.GenerateResourceName()
+	projectName2 := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceEndpointType := "generic"
+
+	resourceType := "azuredevops_serviceendpoint_generic_v2"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclServiceEndpointGenericV2WithSharedProjects(projectName1, projectName2, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttrPair(tfSvcEpNode, "shared_project_ids.*", "azuredevops_project.project2", "id"),
+				),
+			},
+			{
+				ResourceName:            tfSvcEpNode,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"authorization"},
+			},
+		},
+	})
+}
+
+// Tests updating shared_project_ids for Generic Service Endpoint V2
+func TestAccServiceEndpointGenericV2_SharedProjectsUpdate(t *testing.T) {
+	projectName1 := testutils.GenerateResourceName()
+	projectName2 := testutils.GenerateResourceName()
+	projectName3 := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceEndpointType := "generic"
+
+	resourceType := "azuredevops_serviceendpoint_generic_v2"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclServiceEndpointGenericV2WithSharedProjects(projectName1, projectName2, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttrPair(tfSvcEpNode, "shared_project_ids.*", "azuredevops_project.project2", "id"),
+				),
+			},
+			{
+				Config: hclServiceEndpointGenericV2WithMultipleSharedProjects(projectName1, projectName2, projectName3, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(tfSvcEpNode, "shared_project_ids.*", "azuredevops_project.project2", "id"),
+					resource.TestCheckTypeSetElemAttrPair(tfSvcEpNode, "shared_project_ids.*", "azuredevops_project.project3", "id"),
+				),
+			},
+			{
+				Config: hclServiceEndpointGenericV2WithSharedProjects(projectName1, projectName3, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttrPair(tfSvcEpNode, "shared_project_ids.*", "azuredevops_project.project2", "id"),
+				),
+			},
+		},
+	})
+}
+
+// Tests removing all shared_project_ids for Generic Service Endpoint V2
+func TestAccServiceEndpointGenericV2_SharedProjectsRemoveAll(t *testing.T) {
+	projectName1 := testutils.GenerateResourceName()
+	projectName2 := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceEndpointType := "generic"
+
+	resourceType := "azuredevops_serviceendpoint_generic_v2"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclServiceEndpointGenericV2WithSharedProjects(projectName1, projectName2, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "1"),
+				),
+			},
+			{
+				Config: hclServiceEndpointGenericV2TokenBasic(projectName1, serviceEndpointName, serviceEndpointType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "shared_project_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 // Tests resource validation for type in Generic Service Endpoint V2
 func TestAccServiceEndpointGenericV2_ValidateServiceEndpointType(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
@@ -330,26 +445,99 @@ resource "azuredevops_serviceendpoint_generic_v2" "test" {
 }`, projectResource, serviceEndpointName, serviceEndpointType)
 }
 
+// Helper function to generate HCL for a generic service endpoint with shared projects
+func hclServiceEndpointGenericV2WithSharedProjects(projectName1 string, projectName2 string, serviceEndpointName string, serviceEndpointType string) string {
+	projectResource1 := testutils.HclProjectResource(projectName1)
+	projectResource2 := testutils.HclProjectResource(projectName2)
+	// Replace "project" with "project2" in the second project
+	projectResource2 = strings.Replace(projectResource2, "azuredevops_project\" \"project", "azuredevops_project\" \"project2", 1)
+	return fmt.Sprintf(`
+%s
+
+%s
+
+resource "azuredevops_serviceendpoint_generic_v2" "test" {
+  project_id            = azuredevops_project.project.id
+  name = "%s"
+  description           = "Managed by Terraform"
+  type = "%s"
+  server_url            = "https://example.com"
+
+  shared_project_ids = [
+    azuredevops_project.project2.id
+  ]
+
+  authorization {
+    scheme = "Token"
+    parameters = {
+      token      = "test-token"
+      token_type = "PersonalAccessToken"
+    }
+  }
+}`, projectResource1, projectResource2, serviceEndpointName, serviceEndpointType)
+}
+
+// Helper function to generate HCL for a generic service endpoint with multiple shared projects
+func hclServiceEndpointGenericV2WithMultipleSharedProjects(projectName1 string, projectName2 string, projectName3 string, serviceEndpointName string, serviceEndpointType string) string {
+	projectResource1 := testutils.HclProjectResource(projectName1)
+	projectResource2 := testutils.HclProjectResource(projectName2)
+	projectResource3 := testutils.HclProjectResource(projectName3)
+	// Replace "project" with "project2" and "project3" in the additional projects
+	projectResource2 = strings.Replace(projectResource2, "azuredevops_project\" \"project", "azuredevops_project\" \"project2", 1)
+	projectResource3 = strings.Replace(projectResource3, "azuredevops_project\" \"project", "azuredevops_project\" \"project3", 1)
+	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
+resource "azuredevops_serviceendpoint_generic_v2" "test" {
+  project_id            = azuredevops_project.project.id
+  name = "%s"
+  description           = "Managed by Terraform"
+  type = "%s"
+  server_url            = "https://example.com"
+
+  shared_project_ids = [
+    azuredevops_project.project2.id,
+    azuredevops_project.project3.id
+  ]
+
+  authorization {
+    scheme = "Token"
+    parameters = {
+      token      = "test-token"
+      token_type = "PersonalAccessToken"
+    }
+  }
+}`, projectResource1, projectResource2, projectResource3, serviceEndpointName, serviceEndpointType)
+}
+
 // checkServiceEndpointDestroyed verifies that all service endpoints with the specified type have been destroyed
 func checkServiceEndpointDestroyed(resourceType string) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
 		// verify that every service endpoint referenced in the state does not exist in AzDO
-		for _, resource := range s.RootModule().Resources {
-			if resource.Type != resourceType {
+		for _, res := range s.RootModule().Resources {
+			if res.Type != resourceType {
 				continue
 			}
 
-			endpointID := resource.Primary.ID
-			projectID := resource.Primary.Attributes["project_id"]
+			endpointIDStr := res.Primary.ID
+			endpointID, err := uuid.Parse(endpointIDStr)
+			if err != nil {
+				return fmt.Errorf("Service Endpoint ID %s is not a valid UUID: %v", endpointIDStr, err)
+			}
+			projectIDStr := res.Primary.Attributes["project_id"]
 
-			// Ensure the service endpoint does not exist
-			_, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
+			// Ensure the service endpoint does not exist in the main project
+			_, err = clients.ServiceEndpointClient.GetServiceEndpointDetails(
 				clients.Ctx,
 				serviceendpoint.GetServiceEndpointDetailsArgs{
-					EndpointId: converter.String(endpointID),
-					Project:    converter.String(projectID),
+					EndpointId: &endpointID,
+					Project:    &projectIDStr,
 				},
 			)
 
