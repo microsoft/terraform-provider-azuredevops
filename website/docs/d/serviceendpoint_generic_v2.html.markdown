@@ -30,17 +30,17 @@ data "azuredevops_serviceendpoint_generic_v2" "example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to which the service endpoint belongs.
-* `service_endpoint_id` - (Optional) The ID of the service endpoint to retrieve. One of `service_endpoint_id` or `service_endpoint_name` must be specified.
-* `service_endpoint_name` - (Optional) The name of the service endpoint to retrieve. One of `service_endpoint_id` or `service_endpoint_name` must be specified.
+* `id` - (Optional) The ID of the service endpoint to retrieve. One of `service_endpoint_id` or `service_endpoint_name` must be specified.
+* `name` - (Optional) The name of the service endpoint to retrieve. One of `service_endpoint_id` or `service_endpoint_name` must be specified.
 
 ## Attributes Reference
 
 In addition to the arguments listed above, the following attributes are exported:
 
 * `id` - The ID of the service endpoint.
-* `service_endpoint_type` - The type of the service endpoint.
+* `type` - The type of the service endpoint.
 * `description` - The description of the service endpoint.
 * `server_url` - The URL of the server associated with the service endpoint.
-* `authorization_type` - The authorization type of the service endpoint.
+* `authorization_scheme` - The authorization type of the service endpoint.
 * `authorization_parameters` - The authorization parameters of the service endpoint.
 * `data` - Additional data of the service endpoint.

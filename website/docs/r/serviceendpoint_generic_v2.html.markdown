@@ -56,11 +56,11 @@ resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
 The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project to which the service endpoint belongs.
-* `service_endpoint_name` - (Required) The name of the service endpoint.
-* `service_endpoint_type` - (Required) The type of the service endpoint. This can be any valid service endpoint type, such as "generic", "artifactory", etc.
+* `name` - (Required) The name of the service endpoint.
+* `type` - (Required) The type of the service endpoint. This can be any valid service endpoint type, such as "generic", "artifactory", etc.
 * `description` - (Optional) The description of the service endpoint. Defaults to "Managed by Terraform".
 * `server_url` - (Required) The URL of the server associated with the service endpoint.
-* `authorization_type` - (Required) The authorization scheme to use. Common values include "UsernamePassword", "Token", "OAuth", etc.
+* `authorization_scheme` - (Required) The authorization scheme to use. Common values include "UsernamePassword", "Token", "OAuth", etc.
 * `authorization_parameters` - (Optional) Map of key/value pairs for the specific authorization scheme. These often include sensitive data like tokens, usernames, and passwords.
 * `parameters` - (Optional) Additional data associated with the service endpoint. This is a map of key/value pairs.
 
