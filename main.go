@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
 )
@@ -16,6 +17,8 @@ func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		Debug:        debug,
 		ProviderAddr: "registry.terraform.io/microsoft/azuredevops",
-		ProviderFunc: azuredevops.Provider,
+		ProviderFunc: func() *schema.Provider {
+			return azuredevops.Provider()
+		},
 	})
 }
