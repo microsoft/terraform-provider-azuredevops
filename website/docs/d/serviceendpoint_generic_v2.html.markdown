@@ -14,14 +14,14 @@ Use this data source to access information about an existing Generic Service End
 ```hcl
 # Get service endpoint by ID
 data "azuredevops_serviceendpoint_generic_v2" "example" {
-  project_id          = azuredevops_project.example.id
-  service_endpoint_id = "00000000-0000-0000-0000-000000000000"
+  project_id = azuredevops_project.example.id
+  id         = "00000000-0000-0000-0000-000000000000"
 }
 
 # Get service endpoint by name
 data "azuredevops_serviceendpoint_generic_v2" "example" {
-  project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Example Generic Service Endpoint"
+  project_id = azuredevops_project.example.id
+  name       = "Example Generic Service Endpoint"
 }
 ```
 
@@ -37,6 +37,7 @@ The following arguments are supported:
 
 In addition to the arguments listed above, the following attributes are exported:
 
+* `shared_project_ids` - The list of project IDs where the service endpoint is shared.
 * `id` - The ID of the service endpoint.
 * `type` - The type of the service endpoint.
 * `description` - The description of the service endpoint.

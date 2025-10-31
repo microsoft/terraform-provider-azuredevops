@@ -22,11 +22,11 @@ resource "azuredevops_project" "example" {
 # Basic username/password authentication
 resource "azuredevops_serviceendpoint_generic_v2" "example" {
   project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Example Generic Service Endpoint"
+  name = "Example Generic Service Endpoint"
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://example.com"
-  authorization_type    = "UsernamePassword"
+  authorization_scheme    = "UsernamePassword"
   authorization_parameters = {
     username = "username"
     password = "password"
@@ -36,11 +36,11 @@ resource "azuredevops_serviceendpoint_generic_v2" "example" {
 # Token-based authentication
 resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
   project_id            = azuredevops_project.example.id
-  service_endpoint_name = "Token-based Service Endpoint"
+  name = "Token-based Service Endpoint"
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://api.example.com"
-  authorization_type    = "Token"
+  authorization_scheme    = "Token"
   authorization_parameters = {
     apitoken = "your-api-token"
   }
@@ -58,6 +58,7 @@ The following arguments are supported:
 * `project_id` - (Required) The ID of the project to which the service endpoint belongs.
 * `name` - (Required) The name of the service endpoint.
 * `type` - (Required) The type of the service endpoint. This can be any valid service endpoint type, such as "generic", "artifactory", etc.
+* `shared_project_ids` - (Optional) A list of project IDs where the service endpoint should be shared.
 * `description` - (Optional) The description of the service endpoint. Defaults to "Managed by Terraform".
 * `server_url` - (Required) The URL of the server associated with the service endpoint.
 * `authorization_scheme` - (Required) The authorization scheme to use. Common values include "UsernamePassword", "Token", "OAuth", etc.
@@ -75,5 +76,5 @@ In addition to the arguments listed above, the following attributes are exported
 Service endpoints can be imported using the project ID and service endpoint ID:
 
 ```
-terraform import azuredevops_serviceendpoint_generic_v2.example <project_id>/<service_endpoint_id>
+terraform import azuredevops_serviceendpoint_generic_v2.example <project_id>/<id>
 ```
