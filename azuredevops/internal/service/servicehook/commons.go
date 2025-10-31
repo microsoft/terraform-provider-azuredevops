@@ -5,29 +5,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
-
-const (
-	errMsgTfConfigRead       = "Reading terraform configuration: %+v"
-	errMsgSubscriptionRead   = "Looking up service hook subscription given ID (%s): %v"
-	errMsgSubscriptionDelete = "Deleting service hook subscription. SubscriptionID: %s. %v"
-)
-
-// baseSchema returns the base schema elements that are common to all service hook resources
-func baseSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IsUUID,
-			Description:  "The ID of the project where the service hook subscription will be created",
-		},
-	}
-}
 
 // createSubscription creates a new service hook subscription in Azure DevOps
 func createSubscription(d *schema.ResourceData, clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
@@ -84,18 +64,6 @@ func deleteSubscription(clients *client.AggregatedClient, subscriptionID *uuid.U
 	}
 
 	return nil
-}
-
-// subscriptionGetArgs creates the arguments for retrieving a service hook subscription
-func subscriptionGetArgs(d *schema.ResourceData) (*servicehooks.GetSubscriptionArgs, error) {
-	subscriptionID, err := uuid.Parse(d.Id())
-	if err != nil {
-		return nil, fmt.Errorf("parsing the subscription ID from the Terraform resource data: %v", err)
-	}
-
-	return &servicehooks.GetSubscriptionArgs{
-		SubscriptionId: &subscriptionID,
-	}, nil
 }
 
 // getSubscription retrieves a service hook subscription from Azure DevOps

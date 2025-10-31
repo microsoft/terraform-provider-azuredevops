@@ -22,7 +22,7 @@ func HclServicehookWebhookTfsResourceWithGitPushEvent(projectName, url string) s
 resource "azuredevops_servicehook_webhook_tfs" "test" {
   project_id = azuredevops_project.project.id
   url        = "%s"
-  
+
   git_push {
     branch = "main"
   }
@@ -39,7 +39,7 @@ func HclServicehookWebhookTfsResourceWithWorkItemCreatedEvent(projectName, url s
 resource "azuredevops_servicehook_webhook_tfs" "test" {
   project_id = azuredevops_project.project.id
   url        = "%s"
-  
+
   work_item_created {
     work_item_type = "Bug"
     area_path      = "\\%s"
@@ -57,14 +57,14 @@ func HclServicehookWebhookTfsResourceWithHeadersAndAuth(projectName, url string)
 resource "azuredevops_servicehook_webhook_tfs" "test" {
   project_id = azuredevops_project.project.id
   url        = "%s"
-  
+
   git_push {}
-  
+
   http_headers = {
     "X-Custom-Header" = "Test Value"
     "Content-Type"    = "application/json"
   }
-  
+
   basic_auth_username = "testuser"
   basic_auth_password = "testpassword"
 }
@@ -80,9 +80,9 @@ func HclServicehookWebhookTfsResourceWithResourceDetails(projectName, url string
 resource "azuredevops_servicehook_webhook_tfs" "test" {
   project_id = azuredevops_project.project.id
   url        = "%s"
-  
+
   git_push {}
-  
+
   resource_details_to_send  = "minimal"
   messages_to_send          = "text"
   detailed_messages_to_send = "html"

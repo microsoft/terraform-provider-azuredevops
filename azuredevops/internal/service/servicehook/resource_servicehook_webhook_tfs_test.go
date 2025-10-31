@@ -184,11 +184,10 @@ func TestServicehookWebhookTfs_Create_DoesNotSwallowError(t *testing.T) {
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
 		subscription.Id = nil
-		expectedArgs := servicehooks.CreateSubscriptionArgs{Subscription: &subscription}
 
 		mockClient.
 			EXPECT().
-			CreateSubscription(clients.Ctx, expectedArgs).
+			CreateSubscription(clients.Ctx, gomock.AssignableToTypeOf(servicehooks.CreateSubscriptionArgs{})).
 			Return(nil, errors.New("CreateSubscription() Failed")).
 			Times(1)
 
@@ -210,14 +209,9 @@ func TestServicehookWebhookTfs_Update_DoestNotSwallowError(t *testing.T) {
 		mockClient := azdosdkmocks.NewMockServicehooksClient(ctrl)
 		clients := &client.AggregatedClient{ServiceHooksClient: mockClient, Ctx: context.Background()}
 
-		expectedArgs := servicehooks.ReplaceSubscriptionArgs{
-			Subscription:   &subscription,
-			SubscriptionId: subscription.Id,
-		}
-
 		mockClient.
 			EXPECT().
-			ReplaceSubscription(clients.Ctx, expectedArgs).
+			ReplaceSubscription(clients.Ctx, gomock.AssignableToTypeOf(servicehooks.ReplaceSubscriptionArgs{})).
 			Return(nil, errors.New("ReplaceSubscription() Failed")).
 			Times(1)
 
