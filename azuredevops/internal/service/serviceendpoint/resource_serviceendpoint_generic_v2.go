@@ -22,9 +22,9 @@ import (
 
 // Cache to store validated service endpoint types
 var (
-	serviceEndpointTypesList        = make(map[string]serviceendpoint.ServiceEndpointType)
-	serviceEndpointTypesMutex       sync.RWMutex
-	serviceEndpointTypesInitialized bool
+	serviceEndpointTypesList = make(map[string]serviceendpoint.ServiceEndpointType)
+	serviceEndpointTypesOnce sync.Once
+	serviceEndpointTypesErr  error
 )
 
 // EndpointConfig represents the configuration for a service endpoint
@@ -115,33 +115,29 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 
 // InitServiceEndpointTypes loads all service endpoint types from Azure DevOps
 func InitServiceEndpointTypes(ctx context.Context, client *serviceendpoint.Client) error {
-	serviceEndpointTypesMutex.Lock()
-	defer serviceEndpointTypesMutex.Unlock()
-
-	if serviceEndpointTypesInitialized {
-		return nil // Already initialized
-	}
-
-	args := serviceendpoint.GetServiceEndpointTypesArgs{}
-	serviceEndpointTypes, err := (*client).GetServiceEndpointTypes(ctx, args)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve service endpoint types: %w", err)
-	}
-
-	if serviceEndpointTypes == nil {
-		return fmt.Errorf("no service endpoint types available")
-	}
-
-	// Populate cache with fetched types
-	for _, availableType := range *serviceEndpointTypes {
-		if availableType.Name != nil {
-			typeName := *availableType.Name
-			serviceEndpointTypesList[typeName] = availableType
+	serviceEndpointTypesOnce.Do(func() {
+		args := serviceendpoint.GetServiceEndpointTypesArgs{}
+		serviceEndpointTypes, err := (*client).GetServiceEndpointTypes(ctx, args)
+		if err != nil {
+			serviceEndpointTypesErr = fmt.Errorf("failed to retrieve service endpoint types: %w", err)
+			return
 		}
-	}
 
-	serviceEndpointTypesInitialized = true
-	return nil
+		if serviceEndpointTypes == nil {
+			serviceEndpointTypesErr = fmt.Errorf("no service endpoint types available")
+			return
+		}
+
+		// Populate cache with fetched types
+		for _, availableType := range *serviceEndpointTypes {
+			if availableType.Name != nil {
+				typeName := *availableType.Name
+				serviceEndpointTypesList[typeName] = availableType
+			}
+		}
+	})
+
+	return serviceEndpointTypesErr
 }
 
 // validateAuthScheme checks if the provided auth scheme is valid for the endpoint type
@@ -262,22 +258,13 @@ func validateServiceEndpointType(availableType *serviceendpoint.ServiceEndpointT
 func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndpoint EndpointConfig, planTime bool) error {
 	serviceEndpointType := serviceEndpoint.ServiceEndpointType
 
-	// Check if types have been initialized yet
-	serviceEndpointTypesMutex.RLock()
-	initialized := serviceEndpointTypesInitialized
-	serviceEndpointTypesMutex.RUnlock()
-
-	// If not initialized, initialize the cache
-	if !initialized {
-		if err := InitServiceEndpointTypes(clients.Ctx, &clients.ServiceEndpointClient); err != nil {
-			return fmt.Errorf("error initializing service endpoint types: %w", err)
-		}
+	// Initialize the cache (sync.Once ensures this only happens once)
+	if err := InitServiceEndpointTypes(clients.Ctx, &clients.ServiceEndpointClient); err != nil {
+		return fmt.Errorf("error initializing service endpoint types: %w", err)
 	}
 
 	// Check if the requested type exists in the cache
-	serviceEndpointTypesMutex.RLock()
 	foundType, ok := serviceEndpointTypesList[serviceEndpointType]
-	serviceEndpointTypesMutex.RUnlock()
 
 	// If the type was found in the cache, validate it
 	if ok {
@@ -285,14 +272,12 @@ func validateServiceEndpointSchema(clients *client.AggregatedClient, serviceEndp
 	}
 
 	// If the type wasn't found, prepare an error message with all valid types
-	serviceEndpointTypesMutex.RLock()
 	availableTypes := make([]string, 0, len(serviceEndpointTypesList))
 	for _, endpoint := range serviceEndpointTypesList {
 		if endpoint.DisplayName != nil && endpoint.Name != nil {
 			availableTypes = append(availableTypes, fmt.Sprintf("%s: %s", *endpoint.DisplayName, *endpoint.Name))
 		}
 	}
-	serviceEndpointTypesMutex.RUnlock()
 
 	if len(availableTypes) == 0 {
 		return fmt.Errorf("service endpoint type '%s' is not available. No service endpoint types available",

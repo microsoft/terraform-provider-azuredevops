@@ -37,6 +37,7 @@ func DataServiceEndpointGenericV2() *schema.Resource {
 			"id": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.IsUUID,
 				ExactlyOneOf: []string{"id", "name"},
 			},
@@ -44,6 +45,7 @@ func DataServiceEndpointGenericV2() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 				ExactlyOneOf: []string{"id", "name"},
 			},
