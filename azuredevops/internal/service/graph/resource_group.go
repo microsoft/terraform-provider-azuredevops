@@ -83,6 +83,13 @@ func ResourceGroup() *schema.Resource {
 				Set:        schema.HashString,
 			},
 
+			"skip_destroy": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				ConflictsWith: []string{"mail", "display_name", "scope"},
+			},
+
 			"url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -287,11 +294,15 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
+	skipDestroy := d.Get("skip_destroy").(bool)
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Succeed", "Failed"},
 		Refresh: func() (interface{}, string, error) {
+			if skipDestroy {
+				return "", "Succeed", nil
+			}
 			err := clients.GraphClient.DeleteGroup(clients.Ctx, graph.DeleteGroupArgs{
 				GroupDescriptor: converter.String(d.Id()),
 			})
