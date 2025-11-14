@@ -34,6 +34,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtrackingprocess"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -150,6 +151,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
+			"azuredevops_workitemtrackingprocess_processes":           workitemtrackingprocess.ResourceProcesses(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                     taskagent.DataAgentPool(),
