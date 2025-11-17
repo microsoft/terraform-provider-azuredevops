@@ -320,6 +320,9 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 	if sharedProjectIDs, ok := d.GetOk("shared_project_ids"); ok {
 		projectIDsList := sharedProjectIDs.([]interface{})
 		if len(projectIDsList) > 0 {
+			name := d.Get("name").(string)
+			description := d.Get("description").(string)
+
 			// Build an array of project references
 			projectReferences := make([]serviceendpoint.ServiceEndpointProjectReference, 0, len(projectIDsList))
 			for _, projectIDRaw := range projectIDsList {
@@ -333,6 +336,8 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 					ProjectReference: &serviceendpoint.ProjectReference{
 						Id: &id,
 					},
+					Name:        converter.String(name),
+					Description: converter.String(description),
 				})
 			}
 
@@ -486,25 +491,12 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 			}
 		}
 
-		if serviceEndpoint.Authorization.Parameters != nil {
-			authParams := make(map[string]string)
-			for k, v := range *serviceEndpoint.Authorization.Parameters {
-				authParams[k] = v
-			}
-			if err := d.Set("authorization_parameters", authParams); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting authorization_parameters: %w", err))
-			}
-		} else {
-			if err := d.Set("authorization_parameters", nil); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %w", err))
-			}
-		}
+		// Note: We intentionally do NOT set authorization_parameters from the API response.
+		// The API returns empty/masked values for security reasons, which would cause
+		// Terraform to detect spurious changes. We rely on the state to preserve these values.
 	} else {
 		if err := d.Set("authorization_scheme", ""); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting authorization_scheme to empty: %w", err))
-		}
-		if err := d.Set("authorization_parameters", nil); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting authorization_parameters to nil: %w", err))
 		}
 	}
 
@@ -523,10 +515,13 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 
 	// Populate shared_project_ids
 	var sharedProjectIDs []string
-	for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
-		if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
-			ref.ProjectReference.Id.String() != d.Get("project_id").(string) {
-			sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
+	// ServiceEndpointProjectReferences can be null, so we check for that
+	if serviceEndpoint.ServiceEndpointProjectReferences != nil {
+		for _, ref := range *serviceEndpoint.ServiceEndpointProjectReferences {
+			if ref.ProjectReference != nil && ref.ProjectReference.Id != nil &&
+				ref.ProjectReference.Id.String() != d.Get("project_id").(string) {
+				sharedProjectIDs = append(sharedProjectIDs, ref.ProjectReference.Id.String())
+			}
 		}
 	}
 	err = d.Set("shared_project_ids", sharedProjectIDs)
@@ -568,50 +563,60 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 		newSet := schema.NewSet(schema.HashString, newVal.([]interface{}))
 
 		projectIDsList := newSet.Difference(oldSet).List()
-		// Build an array of project references
-		projectReferences := make([]serviceendpoint.ServiceEndpointProjectReference, 0, len(projectIDsList))
-		for _, projectIDRaw := range projectIDsList {
-			projectIDStr := projectIDRaw.(string)
-			id, err := uuid.Parse(projectIDStr)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("invalid shared project ID '%s': %v", projectIDStr, err))
+
+		if len(projectIDsList) > 0 {
+			name := d.Get("name").(string)
+			description := d.Get("description").(string)
+
+			// Build an array of project references
+			projectReferences := make([]serviceendpoint.ServiceEndpointProjectReference, 0, len(projectIDsList))
+			for _, projectIDRaw := range projectIDsList {
+				projectIDStr := projectIDRaw.(string)
+				id, err := uuid.Parse(projectIDStr)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("invalid shared project ID '%s': %v", projectIDStr, err))
+				}
+
+				projectReferences = append(projectReferences, serviceendpoint.ServiceEndpointProjectReference{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: &id,
+					},
+					Name:        converter.String(name),
+					Description: converter.String(description),
+				})
 			}
 
-			projectReferences = append(projectReferences, serviceendpoint.ServiceEndpointProjectReference{
-				ProjectReference: &serviceendpoint.ProjectReference{
-					Id: &id,
+			// Make a single API call with all project references
+			err := clients.ServiceEndpointClient.ShareServiceEndpoint(
+				clients.Ctx,
+				serviceendpoint.ShareServiceEndpointArgs{
+					EndpointProjectReferences: &projectReferences,
+					EndpointId:                currentEndpoint.Id,
 				},
-			})
-		}
-
-		// Make a single API call with all project references
-		err := clients.ServiceEndpointClient.ShareServiceEndpoint(
-			clients.Ctx,
-			serviceendpoint.ShareServiceEndpointArgs{
-				EndpointProjectReferences: &projectReferences,
-				EndpointId:                currentEndpoint.Id,
-			},
-		)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to share service endpoint with projects: %v", err))
+			)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to share service endpoint with projects: %v", err))
+			}
 		}
 
 		// Convert []interface{} to []string
 		removeProjects := oldSet.Difference(newSet).List()
-		removeProjectsStr := make([]string, len(removeProjects))
-		for i, v := range removeProjects {
-			removeProjectsStr[i] = v.(string)
-		}
-		// Remove old shared projects
-		err = clients.ServiceEndpointClient.DeleteServiceEndpoint(
-			clients.Ctx,
-			serviceendpoint.DeleteServiceEndpointArgs{
-				ProjectIds: &removeProjectsStr,
-				EndpointId: currentEndpoint.Id,
-			},
-		)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to remove shared service endpoint from projects: %v", err))
+		if len(removeProjects) > 0 {
+			removeProjectsStr := make([]string, len(removeProjects))
+			for i, v := range removeProjects {
+				removeProjectsStr[i] = v.(string)
+			}
+			// Remove old shared projects
+			err = clients.ServiceEndpointClient.DeleteServiceEndpoint(
+				clients.Ctx,
+				serviceendpoint.DeleteServiceEndpointArgs{
+					ProjectIds: &removeProjectsStr,
+					EndpointId: currentEndpoint.Id,
+				},
+			)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to remove shared service endpoint from projects: %v", err))
+			}
 		}
 	}
 
@@ -662,7 +667,15 @@ func resourceServiceEndpointGenericV2Delete(ctx context.Context, d *schema.Resou
 	clients := m.(*client.AggregatedClient)
 	serviceEndpointID := d.Id()
 	projectID := d.Get("project_id").(string)
-	sharedProjectIDs := d.Get("shared_project_ids").([]string)
+	sharedProjectIDsRaw := d.Get("shared_project_ids")
+	var sharedProjectIDs []string
+	if sharedProjectIDsRaw != nil {
+		sharedProjectIDsList := sharedProjectIDsRaw.([]interface{})
+		sharedProjectIDs = make([]string, len(sharedProjectIDsList))
+		for i, v := range sharedProjectIDsList {
+			sharedProjectIDs[i] = v.(string)
+		}
+	}
 	projectIDs := append([]string{projectID}, sharedProjectIDs...)
 	err := deleteServiceEndpointGenericV2(ctx, clients, serviceEndpointID, projectIDs)
 	if err != nil {

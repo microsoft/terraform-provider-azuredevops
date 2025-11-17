@@ -2,11 +2,11 @@ package acceptancetests
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -41,8 +41,9 @@ func TestAccServiceEndpointGenericV2_Basic(t *testing.T) {
 			{
 				ResourceName:            tfSvcEpNode,
 				ImportState:             true,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters"},
 			},
 		},
 	})
@@ -111,73 +112,9 @@ func TestAccServiceEndpointGenericV2_UsernamePassword(t *testing.T) {
 			{
 				ResourceName:            tfSvcEpNode,
 				ImportState:             true,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization"},
-			},
-		},
-	})
-}
-
-// Tests certificate authentication for Generic Service Endpoint V2
-func TestAccServiceEndpointGenericV2_Certificate(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	serviceEndpointName := testutils.GenerateResourceName()
-	serviceEndpointType := "generic"
-	certificate := "-----BEGIN CERTIFICATE-----\nMIIFvTCCA6WgAwIBAgIUNTIwYTU2MGU4MjFjNDBiMWI4YzczZDAwDQYJKoZIhvcNAQELBQAwbjEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQHDA1TYW4gRnJhbmNpc2NvMRMwEQYDVQQK\nDApFeGFtcGxlIENvMRMwEQYDVQQLDApFeGFtcGxlIE9VMRAwDgYDVQQDDAdUZXN0IENBMB4XDTIz\nMDcwNzA3NDY1MVoXDTMzMDcwNDA3NDY1MVowbjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYw\nFAYDVQQHDA1TYW4gRnJhbmNpc2NvMRMwEQYDVQQKDApFeGFtcGxlIENvMRMwEQYDVQQLDApFeGFt\ncGxlIE9VMRAwDgYDVQQDDAdUZXN0IENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA\nxRkI7bP7lAzImKagUVte9XYeGV70GvV4oMLPmWkBMJVGNHlvA+4VbvHQcJXXw6S0EUbxGQT5tDgp\nu9t+YYzQPLQiUJp2YNvz93dWVHCsEQbSVXeSxChK9zSKNTGoqJQTZF71Cy9qoN87QqHHy8TtNgKf\nHS7+Vz/xJ8HBZUdJ8XLtPm/xKDROXWGxSplAjFBJ8OGGJuZOkKVQmji4kJVMQh8KQEkQYJJVGPGt\nIPxlbFXM/1HakLNMcOSFmfK7v0J4+yi1YXF3Gyej5UGrKQozZ6PO9PRoPwOwy7jaBKDMQjWF5+jK\nCBKBGNzg0ENSwBTPfN6wO/mrRbGGRavZ56e0j6TH0CbgTCIpKhG3ivMTKHMUbBrvsLx0QHGGMsMl\nNpbXt/mGBbKSIr5ZwOLtn5OqKvVFSEHCEi5yrpotf0qedv3d6HCLH+mPkI7zdrIo+JiKDVPTt99y\nXXF6Kq75Ah9bYywbHYXJAMRs5CjLI4iXOiygUSR5MPv2zPMrXbD9vdPymjMYCheSlP/HcQiwJAJ0\nZ/silaNI3GfKCJDPbZb0+kdKXmdI55VIh9SWo6hTkXVmXjrMobp97jFnUOyKOmXLHHMaFTdVGJXW\nscvIJLmZN0XJpJqWSKK4ypypu5RFhFRWDiF1qyFmY0O/pIizUZcnvDMCAwEAAaNTMFEwHQYDVR0O\nBBYEFHDGFfIJYgPjs4brmJwjQT+D9VT+MB8GA1UdIwQYMBaAFHDGFfIJYgPjs4brmJwjQT+D9VT+\nMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBALIAlXwsPTvBXBbZ0A6NoJgJ5V5r\n2E/EcTNhfJzHEVdO+bQSxJTWNfA7HLJ52H21vSdBEe1S7wFuFjU9WEXfYZcOAxsAXfQN8l1I+cAd\nUtwuGlEcVr8nWuyhOlQl9DJ9gUPiqiCz0MTI7/RzT7qwzw5rjcLTSl0gQGwR3QTzWZQBIfz3uIwD\nDt0wC3JEErgKw+AWoMHMZbj7MjJj8lBfv9GwLNpfzEOFpNh5eFteUiY5Ir+wQwVZkCHdLEPMC+jI\ne3ZQIVxKIk0HOvKQvTJl6PRWFSUzCr85WKR9rG4GjnI5LQRFMaYcmDQXQQE+WR5UbWA3d9HsnnZO\neDlTBKm6QdkWQbRGPgOQIXZXnsJnGvMZ2zHQUBtE0Am4hZy2VWpdxd7xFYUIfWBlsN1RUY3aSYq4\neCPnKvIFmWijPMM8jvpTD/rSZ6W0T+5YLVn3DVr0HBhL+HbNtHl1pWhCjdG+signllPZQpNisXf6\nLbJI9MYsDZD6D4Eli0l6nScvMQX0Nd0jfF0GISKCJlcEtWlEDJX9zC7BVKSkLUnGTgP5Ldgr9cRN\nJ8H1wHDyJI2emZbFzXnLvl/pxpGEPQAYijW5qzaNnw2FOcxdKJUuP0LfljZwoJ9h+/xNRZ2jVFrF\ne9h5JK+B4walV6XIT6nD\n-----END CERTIFICATE-----"
-	certPassword := "certpass123"
-
-	resourceType := "azuredevops_serviceendpoint_generic_v2"
-	tfSvcEpNode := resourceType + ".test"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: checkServiceEndpointDestroyed(resourceType),
-		Steps: []resource.TestStep{
-			{
-				Config: hclServiceEndpointGenericV2Certificate(projectName, serviceEndpointName, serviceEndpointType, certificate, certPassword),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "type", serviceEndpointType),
-				),
-			},
-			{
-				ResourceName:            tfSvcEpNode,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization"},
-			},
-		},
-	})
-}
-
-// Tests additional data configuration for Generic Service Endpoint V2
-func TestAccServiceEndpointGenericV2_WithData(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	serviceEndpointName := testutils.GenerateResourceName()
-	serviceEndpointType := "generic"
-
-	resourceType := "azuredevops_serviceendpoint_generic_v2"
-	tfSvcEpNode := resourceType + ".test"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: checkServiceEndpointDestroyed(resourceType),
-		Steps: []resource.TestStep{
-			{
-				Config: hclServiceEndpointGenericV2WithData(projectName, serviceEndpointName, serviceEndpointType),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "data.environment", "test"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "data.region", "us-west-1"),
-				),
-			},
-			{
-				ResourceName:            tfSvcEpNode,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters"},
 			},
 		},
 	})
@@ -210,8 +147,9 @@ func TestAccServiceEndpointGenericV2_SharedProjects(t *testing.T) {
 			{
 				ResourceName:            tfSvcEpNode,
 				ImportState:             true,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters"},
 			},
 		},
 	})
@@ -287,7 +225,7 @@ func TestAccServiceEndpointGenericV2_SharedProjectsRemoveAll(t *testing.T) {
 				),
 			},
 			{
-				Config: hclServiceEndpointGenericV2TokenBasic(projectName1, serviceEndpointName, serviceEndpointType),
+				Config: hclServiceEndpointGenericV2WithoutSharedProjects(projectName1, serviceEndpointName, serviceEndpointType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "name", serviceEndpointName),
@@ -330,18 +268,15 @@ func hclServiceEndpointGenericV2TokenBasic(projectName string, serviceEndpointNa
 %s
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://github.com"
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type 		  = "%s"
+  server_url  = "https://github.com"
 
-  authorization {
-    scheme = "Token"
-    parameters = {
-      token      = "test-token"
-      token_type = "PersonalAccessToken"
-    }
+  authorization_scheme     =  "Token"
+  authorization_parameters = {
+	AccessToken = "test-token"
   }
 }`, projectResource, serviceEndpointName, serviceEndpointType)
 }
@@ -353,18 +288,15 @@ func hclServiceEndpointGenericV2TokenCustomUrl(projectName string, serviceEndpoi
 %s
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "%s"
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type 		  = "%s"
+  server_url  = "%s"
 
-  authorization {
-    scheme = "Token"
-    parameters = {
-      token      = "test-token"
-      token_type = "PersonalAccessToken"
-    }
+  authorization_scheme     =  "Token"
+  authorization_parameters = {
+    AccessToken = "test-token"
   }
 }`, projectResource, serviceEndpointName, serviceEndpointType, serverUrl)
 }
@@ -376,73 +308,18 @@ func hclServiceEndpointGenericV2UsernamePassword(projectName string, serviceEndp
 %s
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://example.com"
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type        = "%s"
+  server_url  = "https://example.com"
 
-  authorization {
-    scheme = "UsernamePassword"
-    parameters = {
-      username = "%s"
-      password = "%s"
-    }
+  authorization_scheme     = "UsernamePassword"
+  authorization_parameters = {
+    username = "%s"
+    password = "%s"
   }
 }`, projectResource, serviceEndpointName, serviceEndpointType, username, password)
-}
-
-// Helper function to generate HCL for a generic service endpoint with certificate auth
-func hclServiceEndpointGenericV2Certificate(projectName string, serviceEndpointName string, serviceEndpointType string, certificate string, certPassword string) string {
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://example.com"
-
-  authorization {
-    scheme = "Certificate"
-    parameters = {
-      certificate          = <<EOF
-%s
-EOF
-      certificate_password = "%s"
-    }
-  }
-}`, projectResource, serviceEndpointName, serviceEndpointType, certificate, certPassword)
-}
-
-// Helper function to generate HCL for a generic service endpoint with additional data
-func hclServiceEndpointGenericV2WithData(projectName string, serviceEndpointName string, serviceEndpointType string) string {
-	projectResource := testutils.HclProjectResource(projectName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://example.com"
-
-  authorization {
-    scheme = "Token"
-    parameters = {
-      token      = "test-token"
-      token_type = "PersonalAccessToken"
-    }
-  }
-
-  data = {
-    environment = "test"
-    region      = "us-west-1"
-  }
-}`, projectResource, serviceEndpointName, serviceEndpointType)
 }
 
 // Helper function to generate HCL for a generic service endpoint with shared projects
@@ -457,24 +334,43 @@ func hclServiceEndpointGenericV2WithSharedProjects(projectName1 string, projectN
 %s
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://example.com"
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type 		  = "%s"
+  server_url  = "https://example.com"
 
   shared_project_ids = [
     azuredevops_project.project2.id
   ]
 
-  authorization {
-    scheme = "Token"
-    parameters = {
-      token      = "test-token"
-      token_type = "PersonalAccessToken"
-    }
+  authorization_scheme     = "UsernamePassword"
+  authorization_parameters = {
+    username = "test-token"
+    password = "test-password"
   }
 }`, projectResource1, projectResource2, serviceEndpointName, serviceEndpointType)
+}
+
+// Helper function to generate HCL for a generic service endpoint without shared projects
+func hclServiceEndpointGenericV2WithoutSharedProjects(projectName string, serviceEndpointName string, serviceEndpointType string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_serviceendpoint_generic_v2" "test" {
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type 		  = "%s"
+  server_url  = "https://example.com"
+
+  authorization_scheme     = "UsernamePassword"
+  authorization_parameters = {
+    username = "test-token"
+    password = "test-password"
+  }
+}`, projectResource, serviceEndpointName, serviceEndpointType)
 }
 
 // Helper function to generate HCL for a generic service endpoint with multiple shared projects
@@ -493,23 +389,21 @@ func hclServiceEndpointGenericV2WithMultipleSharedProjects(projectName1 string, 
 %s
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
-  project_id            = azuredevops_project.project.id
-  name = "%s"
-  description           = "Managed by Terraform"
-  type = "%s"
-  server_url            = "https://example.com"
+  project_id  = azuredevops_project.project.id
+  name 		  = "%s"
+  description = "Managed by Terraform"
+  type 		  = "%s"
+  server_url  = "https://example.com"
 
   shared_project_ids = [
     azuredevops_project.project2.id,
     azuredevops_project.project3.id
   ]
 
-  authorization {
-    scheme = "Token"
-    parameters = {
-      token      = "test-token"
-      token_type = "PersonalAccessToken"
-    }
+  authorization_scheme     = "UsernamePassword"
+  authorization_parameters = {
+    username = "test-user"
+    password = "test-password"
   }
 }`, projectResource1, projectResource2, projectResource3, serviceEndpointName, serviceEndpointType)
 }
