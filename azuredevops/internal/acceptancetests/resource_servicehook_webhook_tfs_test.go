@@ -1,3 +1,5 @@
+//go:build (all || resource_servicehook_webhook_tfs) && !exclude_servicehooks
+
 package acceptancetests
 
 import (
@@ -212,7 +214,11 @@ func TestAccServicehookWebhookTfs_WithHeaders(t *testing.T) {
 				ResourceName:      tfCheckNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateCheck:  checkImportProject(),
+				ImportStateVerifyIgnore: []string{
+					"basic_auth_password",
+					"basic_auth_username",
+				},
+				ImportStateCheck: checkImportProject(),
 			},
 		},
 	})
