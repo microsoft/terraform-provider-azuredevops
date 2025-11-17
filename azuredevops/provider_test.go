@@ -106,6 +106,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_visualstudiomarketplace",
 		"azuredevops_servicehook_permissions",
 		"azuredevops_servicehook_storage_queue_pipelines",
+		"azuredevops_servicehook_webhook_tfs",
 		"azuredevops_service_principal_entitlement",
 		"azuredevops_tagging_permissions",
 		"azuredevops_team",
