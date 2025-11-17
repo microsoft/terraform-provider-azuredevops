@@ -7,6 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 func ResourceProcesses() *schema.Resource {
@@ -110,6 +113,28 @@ func ResourceProcesses() *schema.Resource {
 }
 
 func createResourceProcess(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+
+	createProcessModel := &workitemtrackingprocess.CreateProcessModel{
+		Name:                converter.String(d.Get("name").(string)),
+		ParentProcessTypeId: converter.UUID(d.Get("parent_process_type_id").(string)),
+	}
+	if description, ok := d.GetOk("description"); ok {
+		createProcessModel.Description = converter.String(description.(string))
+	}
+	if referenceName, ok := d.GetOk("reference_name"); ok {
+		createProcessModel.ReferenceName = converter.String(referenceName.(string))
+	}
+
+	args := workitemtrackingprocess.CreateNewProcessArgs{
+		CreateRequest: createProcessModel,
+	}
+	processInfo, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
+	if err != nil {
+		return diag.Errorf("Creating process. Error %s", err)
+	}
+
+	d.SetId(processInfo.TypeId.String())
 	return readResourceProcess(ctx, d, m)
 }
 
