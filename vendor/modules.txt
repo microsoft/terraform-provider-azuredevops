@@ -310,6 +310,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure
