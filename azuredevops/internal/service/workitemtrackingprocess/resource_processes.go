@@ -81,7 +81,7 @@ func ResourceProcesses() *schema.Resource {
 				Description:  "Specifies the expand option when getting the process",
 			},
 			"projects": {
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
