@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -112,7 +113,7 @@ func ResourceProcesses() *schema.Resource {
 	}
 }
 
-func createResourceProcess(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	createProcessModel := &workitemtrackingprocess.CreateProcessModel{
@@ -131,21 +132,66 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	processInfo, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
 	if err != nil {
-		return diag.Errorf("Creating process. Error %s", err)
+		return diag.Errorf(" Creating process. Error %+v", err)
 	}
 
 	d.SetId(processInfo.TypeId.String())
 	return readResourceProcess(ctx, d, m)
 }
 
-func readResourceProcess(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+var getProcessExpandLevelMap = map[string]workitemtrackingprocess.GetProcessExpandLevel{
+	"none":     workitemtrackingprocess.GetProcessExpandLevelValues.None,
+	"projects": workitemtrackingprocess.GetProcessExpandLevelValues.Projects,
+}
+
+func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+	processId := d.Id()
+
+	expand := getProcessExpandLevelMap[d.Get("expand").(string)]
+
+	getProcessArgs := workitemtrackingprocess.GetProcessByItsIdArgs{
+		ProcessTypeId: converter.UUID(processId),
+		Expand:        &expand,
+	}
+	process, err := clients.WorkItemTrackingProcessClient.GetProcessByItsId(ctx, getProcessArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf(" Getting process with id: %s. Error: %+v", processId, err)
+	}
+
+	d.Set("name", process.Name)
+	d.Set("description", process.Description)
+	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	d.Set("reference_name", process.ReferenceName)
+	d.Set("is_default", process.IsDefault)
+	d.Set("is_enabled", process.IsEnabled)
+	d.Set("customization_type", string(*process.CustomizationType))
+
+	if process.Projects != nil {
+		var projects []map[string]any
+		for _, p := range *process.Projects {
+			project := map[string]any{
+				"id":          p.Id,
+				"description": p.Description,
+				"name":        p.Name,
+				"url":         p.Url,
+			}
+			projects = append(projects, project)
+		}
+		d.Set("projects", projects)
+	}
+
 	return nil
 }
 
-func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	return readResourceProcess(ctx, d, m)
 }
 
-func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	return nil
 }
