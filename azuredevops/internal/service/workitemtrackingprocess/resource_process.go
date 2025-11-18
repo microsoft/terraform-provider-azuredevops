@@ -36,10 +36,10 @@ func ResourceProcess() *schema.Resource {
 				Description:  "Name of the process",
 			},
 			"description": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-				Description:  "Description of the process",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "Description of the process",
 			},
 			"parent_process_type_id": {
 				Type:         schema.TypeString,
@@ -118,10 +118,8 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 
 	createProcessModel := &workitemtrackingprocess.CreateProcessModel{
 		Name:                converter.String(d.Get("name").(string)),
+		Description:         converter.String(d.Get("description").(string)),
 		ParentProcessTypeId: converter.UUID(d.Get("parent_process_type_id").(string)),
-	}
-	if description, ok := d.GetOk("description"); ok {
-		createProcessModel.Description = converter.String(description.(string))
 	}
 	if referenceName, ok := d.GetOk("reference_name"); ok {
 		createProcessModel.ReferenceName = converter.String(referenceName.(string))
