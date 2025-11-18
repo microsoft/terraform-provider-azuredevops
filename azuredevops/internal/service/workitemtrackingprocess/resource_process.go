@@ -187,6 +187,24 @@ func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+
+	updateProcessModel := &workitemtrackingprocess.UpdateProcessModel{
+		Name:        converter.String(d.Get("name").(string)),
+		Description: converter.String(d.Get("description").(string)),
+		IsDefault:   converter.Bool(d.Get("is_default").(bool)),
+		IsEnabled:   converter.Bool(d.Get("is_enabled").(bool)),
+	}
+
+	args := workitemtrackingprocess.EditProcessArgs{
+		UpdateRequest: updateProcessModel,
+	}
+	processInfo, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
+	if err != nil {
+		return diag.Errorf(" Update process. Error %+v", err)
+	}
+
+	d.SetId(processInfo.TypeId.String())
 	return readResourceProcess(ctx, d, m)
 }
 

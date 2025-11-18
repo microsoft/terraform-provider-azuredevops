@@ -85,3 +85,68 @@ func TestProcesses_Create_Successful(t *testing.T) {
 	assert.NotNil(t, projects)
 	assert.Equal(t, 0, projects.Len())
 }
+
+func TestProcesses_Update_Successful(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	parentID := uuid.New()
+	typeID := uuid.New()
+	name := "MyProcess"
+	description := "My Process Description"
+	referenceName := "My.Process.ReferenceName"
+	expectedProcessInfo := &workitemtrackingprocess.ProcessInfo{
+		TypeId:              &typeID,
+		Name:                &name,
+		Description:         &description,
+		IsDefault:           converter.Bool(true),
+		IsEnabled:           converter.Bool(false),
+		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
+		ParentProcessTypeId: &parentID,
+		ReferenceName:       &referenceName,
+	}
+
+	mockClient.EXPECT().EditProcess(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.EditProcessArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, name, *args.UpdateRequest.Name)
+			assert.Equal(t, description, *args.UpdateRequest.Description)
+			assert.True(t, *args.UpdateRequest.IsDefault)
+			assert.False(t, *args.UpdateRequest.IsEnabled)
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+
+	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+
+	d := getProcessResourceData(t, map[string]any{
+		"name":                   name,
+		"parent_process_type_id": parentID.String(),
+		"description":            description,
+		"reference_name":         referenceName,
+		"is_default":             true,
+		"is_enabled":             false,
+	})
+
+	diags := updateResourceProcess(context.Background(), d, clients)
+
+	assert.Empty(t, diags)
+	assert.Equal(t, typeID.String(), d.Id())
+	assert.Equal(t, name, d.Get("name"))
+	assert.Equal(t, description, d.Get("description"))
+	assert.Equal(t, referenceName, d.Get("reference_name"))
+	assert.Equal(t, parentID.String(), d.Get("parent_process_type_id"))
+	assert.Equal(t, true, d.Get("is_default"))
+	assert.Equal(t, false, d.Get("is_enabled"))
+	assert.Equal(t, "inherited", d.Get("customization_type"))
+	projects := d.Get("projects").(*schema.Set)
+	assert.NotNil(t, projects)
+	assert.Equal(t, 0, projects.Len())
+}
