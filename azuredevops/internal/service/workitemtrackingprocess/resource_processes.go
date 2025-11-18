@@ -13,7 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func ResourceProcesses() *schema.Resource {
+func ResourceProcess() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createResourceProcess,
 		ReadContext:   readResourceProcess,
