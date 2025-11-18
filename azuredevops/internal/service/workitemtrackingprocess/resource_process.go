@@ -134,6 +134,14 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	d.SetId(processInfo.TypeId.String())
+
+	isDefault := d.Get("is_default").(bool)
+	isEnabled := d.Get("is_enabled").(bool)
+	if *processInfo.IsDefault != isDefault ||
+		*processInfo.IsEnabled != isEnabled {
+		return updateResourceProcess(ctx, d, m)
+	}
+
 	return readResourceProcess(ctx, d, m)
 }
 
@@ -197,14 +205,14 @@ func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	args := workitemtrackingprocess.EditProcessArgs{
+		ProcessTypeId: converter.UUID(d.Id()),
 		UpdateRequest: updateProcessModel,
 	}
-	processInfo, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
+	_, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update process. Error %+v", err)
 	}
 
-	d.SetId(processInfo.TypeId.String())
 	return readResourceProcess(ctx, d, m)
 }
 

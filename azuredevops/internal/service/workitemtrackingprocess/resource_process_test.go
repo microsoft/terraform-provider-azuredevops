@@ -86,6 +86,75 @@ func TestProcesses_Create_Successful(t *testing.T) {
 	assert.Equal(t, 0, projects.Len())
 }
 
+func TestProcesses_CreateWithDefault_Successful(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	parentID := uuid.New()
+	typeID := uuid.New()
+	name := "MyProcess"
+	referenceName := "My.Process.ReferenceName"
+	expectedProcessInfo := &workitemtrackingprocess.ProcessInfo{
+		TypeId:              &typeID,
+		Name:                &name,
+		Description:         converter.String(""),
+		IsDefault:           converter.Bool(false),
+		IsEnabled:           converter.Bool(true),
+		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
+		ParentProcessTypeId: &parentID,
+		ReferenceName:       &referenceName,
+	}
+
+	mockClient.EXPECT().CreateNewProcess(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.CreateNewProcessArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, name, *args.CreateRequest.Name)
+			assert.Equal(t, parentID, *args.CreateRequest.ParentProcessTypeId)
+			assert.Nil(t, args.CreateRequest.ReferenceName)
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+	mockClient.EXPECT().EditProcess(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.EditProcessArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
+			assert.Equal(t, name, *args.UpdateRequest.Name)
+			assert.True(t, *args.UpdateRequest.IsDefault)
+			assert.True(t, *args.UpdateRequest.IsEnabled)
+			expectedProcessInfo.IsDefault = args.UpdateRequest.IsDefault
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+
+	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+
+	d := getProcessResourceData(t, map[string]any{
+		"name":                   name,
+		"parent_process_type_id": parentID.String(),
+		"is_default":             true,
+	})
+
+	diags := createResourceProcess(context.Background(), d, clients)
+
+	assert.Empty(t, diags)
+	assert.Equal(t, typeID.String(), d.Id())
+	assert.Equal(t, name, d.Get("name"))
+	assert.Equal(t, referenceName, d.Get("reference_name"))
+	assert.Equal(t, parentID.String(), d.Get("parent_process_type_id"))
+	assert.Equal(t, true, d.Get("is_default"))
+	assert.Equal(t, true, d.Get("is_enabled"))
+	assert.Equal(t, "inherited", d.Get("customization_type"))
+	projects := d.Get("projects").(*schema.Set)
+	assert.NotNil(t, projects)
+	assert.Equal(t, 0, projects.Len())
+}
+
 func TestProcesses_Update_Successful(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -111,6 +180,7 @@ func TestProcesses_Update_Successful(t *testing.T) {
 
 	mockClient.EXPECT().EditProcess(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.EditProcessArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
 			assert.Equal(t, name, *args.UpdateRequest.Name)
 			assert.Equal(t, description, *args.UpdateRequest.Description)
 			assert.True(t, *args.UpdateRequest.IsDefault)
@@ -134,6 +204,7 @@ func TestProcesses_Update_Successful(t *testing.T) {
 		"is_default":             true,
 		"is_enabled":             false,
 	})
+	d.SetId(typeID.String())
 
 	diags := updateResourceProcess(context.Background(), d, clients)
 
