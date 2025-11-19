@@ -75,6 +75,7 @@ func DataProcesses() *schema.Resource {
 						},
 						"projects": {
 							Type: schema.TypeSet,
+							Set:  getProjectHash,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
@@ -169,6 +170,7 @@ func readProcesses(ctx context.Context, d *schema.ResourceData, m any) diag.Diag
 				}
 				projects = append(projects, project)
 			}
+			process["projects"] = projects
 		}
 		processes = append(processes, process)
 	}
@@ -185,5 +187,9 @@ func readProcesses(ctx context.Context, d *schema.ResourceData, m any) diag.Diag
 }
 
 func getProcessHash(v interface{}) int {
+	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
+}
+
+func getProjectHash(v interface{}) int {
 	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
 }
