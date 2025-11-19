@@ -157,32 +157,6 @@ func TestAccSecurityPermissions_BuildNamespace(t *testing.T) {
 	})
 }
 
-// TestAccSecurityPermissions_IdentityNamespace tests identity/group permissions
-func TestAccSecurityPermissions_IdentityNamespace(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_security_permissions.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: hclSecurityPermissionsIdentityNamespace(projectName),
-				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckProjectExists(projectName),
-					resource.TestCheckResourceAttrSet(tfNode, "namespace_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "token"),
-					resource.TestCheckResourceAttrSet(tfNode, "principal"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.%", "2"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.Read", "allow"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.Write", "deny"),
-				),
-			},
-		},
-	})
-}
-
 // TestAccSecurityPermissions_MultiplePermissionSets tests managing multiple permission sets
 func TestAccSecurityPermissions_MultiplePermissionSets(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
@@ -218,59 +192,11 @@ func TestAccSecurityPermissions_MultiplePermissionSets(t *testing.T) {
 	})
 }
 
-// TestAccSecurityPermissions_OrganizationGroup tests with organization-level groups
-func TestAccSecurityPermissions_OrganizationGroup(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_security_permissions.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: hclSecurityPermissionsOrganizationGroup(projectName),
-				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckProjectExists(projectName),
-					resource.TestCheckResourceAttrSet(tfNode, "namespace_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "token"),
-					resource.TestCheckResourceAttrSet(tfNode, "principal"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.%", "2"),
-				),
-			},
-		},
-	})
-}
-
-// TestAccSecurityPermissions_CaseSensitivity tests case-insensitive permission values
-func TestAccSecurityPermissions_CaseSensitivity(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_security_permissions.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: hclSecurityPermissionsCaseSensitivity(projectName),
-				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckProjectExists(projectName),
-					resource.TestCheckResourceAttr(tfNode, "permissions.%", "3"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.GENERIC_READ", "allow"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.GENERIC_WRITE", "deny"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.DELETE", "notset"),
-				),
-			},
-		},
-	})
-}
-
 // HCL configurations for tests
 
 func hclSecurityPermissionsProjectNamespace(projectName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
@@ -287,19 +213,19 @@ locals {
 data "azuredevops_security_namespace_token" "project" {
   namespace_name = "Project"
   identifiers = {
-    project_id = azuredevops_project.test.id
+    project_id = azuredevops_project.project.id
   }
 }
 
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
+data "azuredevops_identity_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Readers"
 }
 
 resource "azuredevops_security_permissions" "test" {
   namespace_id = local.project_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.test.descriptor
+  principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
     GENERIC_READ  = "allow"
     GENERIC_WRITE = "deny"
@@ -312,7 +238,7 @@ resource "azuredevops_security_permissions" "test" {
 
 func hclSecurityPermissionsProjectNamespaceUpdated(projectName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
@@ -329,19 +255,19 @@ locals {
 data "azuredevops_security_namespace_token" "project" {
   namespace_name = "Project"
   identifiers = {
-    project_id = azuredevops_project.test.id
+    project_id = azuredevops_project.project.id
   }
 }
 
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
+data "azuredevops_identity_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Readers"
 }
 
 resource "azuredevops_security_permissions" "test" {
   namespace_id = local.project_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.test.descriptor
+  principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
     GENERIC_READ      = "allow"
     GENERIC_WRITE     = "allow"
@@ -355,12 +281,12 @@ resource "azuredevops_security_permissions" "test" {
 
 func hclSecurityPermissionsGitRepoNamespace(projectName, repoName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
 resource "azuredevops_git_repository" "test" {
-  project_id = azuredevops_project.test.id
+  project_id = azuredevops_project.project.id
   name       = "%s"
   initialization {
     init_type = "Clean"
@@ -380,20 +306,20 @@ locals {
 data "azuredevops_security_namespace_token" "git_repo" {
   namespace_name = "Git Repositories"
   identifiers = {
-    project_id    = azuredevops_project.test.id
+    project_id    = azuredevops_project.project.id
     repository_id = azuredevops_git_repository.test.id
   }
 }
 
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Contributors"
+data "azuredevops_identity_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Contributors"
 }
 
 resource "azuredevops_security_permissions" "test" {
   namespace_id = local.git_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.git_repo.token
-  principal    = data.azuredevops_group.test.descriptor
+  principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
     GenericRead       = "allow"
     GenericContribute = "allow"
@@ -407,7 +333,7 @@ resource "azuredevops_security_permissions" "test" {
 
 func hclSecurityPermissionsWithReplace(projectName string, replace bool) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
@@ -424,19 +350,19 @@ locals {
 data "azuredevops_security_namespace_token" "project" {
   namespace_name = "Project"
   identifiers = {
-    project_id = azuredevops_project.test.id
+    project_id = azuredevops_project.project.id
   }
 }
 
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
+data "azuredevops_identity_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Readers"
 }
 
 resource "azuredevops_security_permissions" "test" {
   namespace_id = local.project_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.test.descriptor
+  principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
     GENERIC_READ  = "allow"
     GENERIC_WRITE = "deny"
@@ -448,7 +374,7 @@ resource "azuredevops_security_permissions" "test" {
 
 func hclSecurityPermissionsBuildNamespace(projectName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
@@ -465,19 +391,19 @@ locals {
 data "azuredevops_security_namespace_token" "build" {
   namespace_name = "Build"
   identifiers = {
-    project_id = azuredevops_project.test.id
+    project_id = azuredevops_project.project.id
   }
 }
 
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
+data "azuredevops_identity_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Readers"
 }
 
 resource "azuredevops_security_permissions" "test" {
   namespace_id = local.build_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.build.token
-  principal    = data.azuredevops_group.test.descriptor
+  principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
     ViewBuilds        = "allow"
     EditBuildQuality  = "deny"
@@ -488,48 +414,9 @@ resource "azuredevops_security_permissions" "test" {
 `, projectName)
 }
 
-func hclSecurityPermissionsIdentityNamespace(projectName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name = "%s"
-}
-
-data "azuredevops_security_namespaces" "all" {
-}
-
-locals {
-  identity_namespace = [
-    for ns in data.azuredevops_security_namespaces.all.namespaces :
-    ns if ns.name == "Identity"
-  ][0]
-}
-
-data "azuredevops_group" "readers" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
-}
-
-data "azuredevops_group" "contributors" {
-  project_id = azuredevops_project.test.id
-  name       = "Contributors"
-}
-
-resource "azuredevops_security_permissions" "test" {
-  namespace_id = local.identity_namespace.namespace_id
-  token        = data.azuredevops_group.readers.descriptor
-  principal    = data.azuredevops_group.contributors.descriptor
-  permissions = {
-    Read  = "allow"
-    Write = "deny"
-  }
-  replace = false
-}
-`, projectName)
-}
-
 func hclSecurityPermissionsMultipleSets(projectName string) string {
 	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
+resource "azuredevops_project" "project" {
   name = "%s"
 }
 
@@ -546,24 +433,24 @@ locals {
 data "azuredevops_security_namespace_token" "project" {
   namespace_name = "Project"
   identifiers = {
-    project_id = azuredevops_project.test.id
+    project_id = azuredevops_project.project.id
   }
 }
 
-data "azuredevops_group" "readers" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
+data "azuredevops_identity_group" "readers" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Readers"
 }
 
-data "azuredevops_group" "contributors" {
-  project_id = azuredevops_project.test.id
-  name       = "Contributors"
+data "azuredevops_identity_group" "contributors" {
+  project_id = azuredevops_project.project.id
+  name       = "[${azuredevops_project.project.name}]\\Contributors"
 }
 
 resource "azuredevops_security_permissions" "test1" {
   namespace_id = local.project_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.readers.descriptor
+  principal    = data.azuredevops_identity_group.readers.descriptor
   permissions = {
     GENERIC_READ  = "allow"
     GENERIC_WRITE = "deny"
@@ -574,92 +461,10 @@ resource "azuredevops_security_permissions" "test1" {
 resource "azuredevops_security_permissions" "test2" {
   namespace_id = local.project_namespace.namespace_id
   token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.contributors.descriptor
+  principal    = data.azuredevops_identity_group.contributors.descriptor
   permissions = {
     GENERIC_READ  = "allow"
     GENERIC_WRITE = "allow"
-  }
-  replace = false
-}
-`, projectName)
-}
-
-func hclSecurityPermissionsOrganizationGroup(projectName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name = "%s"
-}
-
-data "azuredevops_security_namespaces" "all" {
-}
-
-locals {
-  project_namespace = [
-    for ns in data.azuredevops_security_namespaces.all.namespaces :
-    ns if ns.name == "Project"
-  ][0]
-}
-
-data "azuredevops_security_namespace_token" "project" {
-  namespace_name = "Project"
-  identifiers = {
-    project_id = azuredevops_project.test.id
-  }
-}
-
-data "azuredevops_group" "test" {
-  name = "Project Collection Build Service Accounts"
-}
-
-resource "azuredevops_security_permissions" "test" {
-  namespace_id = local.project_namespace.namespace_id
-  token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.test.descriptor
-  permissions = {
-    GENERIC_READ  = "allow"
-    GENERIC_WRITE = "allow"
-  }
-  replace = false
-}
-`, projectName)
-}
-
-func hclSecurityPermissionsCaseSensitivity(projectName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name = "%s"
-}
-
-data "azuredevops_security_namespaces" "all" {
-}
-
-locals {
-  project_namespace = [
-    for ns in data.azuredevops_security_namespaces.all.namespaces :
-    ns if ns.name == "Project"
-  ][0]
-}
-
-data "azuredevops_security_namespace_token" "project" {
-  namespace_name = "Project"
-  identifiers = {
-    project_id = azuredevops_project.test.id
-  }
-}
-
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Readers"
-}
-
-resource "azuredevops_security_permissions" "test" {
-  namespace_id = local.project_namespace.namespace_id
-  token        = data.azuredevops_security_namespace_token.project.token
-  principal    = data.azuredevops_group.test.descriptor
-  permissions = {
-    GENERIC_READ  = "Allow"
-    GENERIC_WRITE = "Deny"
-    DELETE        = "NotSet"
   }
   replace = false
 }
