@@ -54,7 +54,7 @@ func ResourceGenericPermissions() *schema.Resource {
 				Required: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{"allow", "deny", "notset", "Allow", "Deny", "NotSet", "ALLOW", "DENY", "NOTSET"}, false),
+					ValidateFunc: validation.StringInSlice([]string{"allow", "deny", "notset"}, false),
 				},
 				Description: "Map of permission names to values (allow, deny, or notset)",
 			},
@@ -190,10 +190,30 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 				return "Waiting", "Waiting", nil
 			}
 
+			currentAllow := 0
+			currentDeny := 0
+			if aceEntry.Allow != nil {
+				currentAllow = *aceEntry.Allow
+			}
+			if aceEntry.Deny != nil {
+				currentDeny = *aceEntry.Deny
+			}
+
 			// Check if permissions match
-			if aceEntry.Allow != nil && *aceEntry.Allow == allowBits &&
-				aceEntry.Deny != nil && *aceEntry.Deny == denyBits {
-				return "Synced", "Synced", nil
+			if replace {
+				// For replace mode, require exact match
+				if currentAllow == allowBits && currentDeny == denyBits {
+					return "Synced", "Synced", nil
+				}
+			} else {
+				// For merge mode, check if desired bits are set and notset bits are cleared
+				allowMatch := (currentAllow & allowBits) == allowBits
+				denyMatch := (currentDeny & denyBits) == denyBits
+				notSetCleared := (currentAllow&notSetBits) == 0 && (currentDeny&notSetBits) == 0
+
+				if allowMatch && denyMatch && notSetCleared {
+					return "Synced", "Synced", nil
+				}
 			}
 
 			return "Waiting", "Waiting", nil
