@@ -1,14 +1,10 @@
 package serviceendpoint
 
 import (
-	"fmt"
 	"maps"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/validate"
 )
 
 // DataSourceServiceEndpointJFrogArtifactoryV2 schema and implementation for JFrog Artifactory service endpoint resource
@@ -26,7 +22,6 @@ func DataSourceServiceEndpointJFrogArtifactoryV2() *schema.Resource {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		},
 	})
 
 	return r
@@ -41,7 +36,7 @@ func DataSourceServiceEndpointJFrogArtifactoryV2Read(d *schema.ResourceData, m i
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
 		return err
 	}
-        doBaseFlattening(d, serviceEndpoint)
+	doBaseFlattening(d, serviceEndpoint)
 	d.Set("url", serviceEndpoint.Url)
 	return nil
 }

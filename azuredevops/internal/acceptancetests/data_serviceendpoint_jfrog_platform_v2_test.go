@@ -43,6 +43,7 @@ resource "azuredevops_project" "test" {
 resource "azuredevops_serviceendpoint_jfrog_platform_v2" "test" {
   project_id            = azuredevops_project.test.id
   service_endpoint_name = "%[1]s"
+  url                   = "https://platform.example.com"
   token                 = "0000000000000000000000000000000000000000"
   description           = "Managed by Terraform"
 }
