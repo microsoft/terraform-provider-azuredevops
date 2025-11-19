@@ -290,3 +290,27 @@ func TestProcesses_Update_Successful(t *testing.T) {
 	assert.NotNil(t, projects)
 	assert.Equal(t, 0, projects.Len())
 }
+
+func TestProcesses_Delete_Successful(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	typeID := uuid.New()
+
+	mockClient.EXPECT().DeleteProcessById(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.DeleteProcessByIdArgs) error {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
+			return nil
+		},
+	).Times(1)
+
+	d := getProcessResourceData(t, map[string]any{})
+	d.SetId(typeID.String())
+
+	diags := deleteResourceProcess(context.Background(), d, clients)
+
+	assert.Empty(t, diags)
+}

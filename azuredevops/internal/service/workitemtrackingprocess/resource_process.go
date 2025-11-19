@@ -217,5 +217,16 @@ func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 }
 
 func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+
+	args := workitemtrackingprocess.DeleteProcessByIdArgs{
+		ProcessTypeId: converter.UUID(d.Id()),
+	}
+
+	err := clients.WorkItemTrackingProcessClient.DeleteProcessById(ctx, args)
+	if err != nil {
+		return diag.Errorf(" Delete process. Error %+v", err)
+	}
+
 	return nil
 }
