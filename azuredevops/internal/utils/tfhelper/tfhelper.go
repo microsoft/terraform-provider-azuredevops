@@ -1,6 +1,7 @@
 package tfhelper
 
 import (
+	"context"
 	"fmt"
 	"hash/crc32"
 	"strconv"
@@ -169,6 +170,29 @@ func ImportProjectQualifiedResourceUUID() *schema.ResourceImporter {
 				return []*schema.ResourceData{d}, nil
 			}
 			return nil, err
+		},
+	}
+}
+
+// An importer that sets default values for a resource
+func ImportDefaultValues(s map[string]*schema.Schema, innerContextFunc schema.StateContextFunc) *schema.ResourceImporter {
+	return &schema.ResourceImporter{
+		StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			for name, sch := range s {
+				def, err := sch.DefaultValue()
+				if err != nil {
+					return nil, fmt.Errorf("error reading default for %q: %w", name, err)
+				}
+				if def == nil {
+					continue
+				}
+
+				if err := d.Set(name, def); err != nil {
+					return nil, fmt.Errorf("error setting default for %q: %w", name, err)
+				}
+			}
+
+			return innerContextFunc(ctx, d, meta)
 		},
 	}
 }
