@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // initialized once, so it can be shared by each acceptance test
@@ -116,4 +117,33 @@ func RunTestsInSequence(t *testing.T, tests map[string]map[string]func(t *testin
 			}
 		})
 	}
+}
+
+// TestCheckAttr returns a TestCheckFunc that checks the attribute value at key using a predicate function
+func TestCheckAttr(addr, key string, fn func(string) error) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[addr]
+		if !ok {
+			return fmt.Errorf("resource %s not found", addr)
+		}
+		v, ok := rs.Primary.Attributes[key]
+		if !ok {
+			return fmt.Errorf("attribute %s not found", key)
+		}
+		return fn(v)
+	}
+}
+
+// TestCheckAttrGreaterThan returns a TestCheckFunc that checks that the attribute value at key is greater than count
+func TestCheckAttrGreaterThan(addr, key string, count int) resource.TestCheckFunc {
+	return TestCheckAttr(addr, key, func(v string) error {
+		actualCount, err := converter.ASCIIToIntPtr(v)
+		if err != nil {
+			return err
+		}
+		if *actualCount <= count {
+			return fmt.Errorf("expected %s to be greater than %d, got %d", key, count, *actualCount)
+		}
+		return nil
+	})
 }
