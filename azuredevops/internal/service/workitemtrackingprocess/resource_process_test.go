@@ -14,13 +14,16 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 func getProcessResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
 	r := ResourceProcess()
-	return schema.TestResourceDataRaw(t, r.Schema, input)
+	data := schema.TestResourceDataRaw(t, r.Schema, input)
+	testhelper.ValidateResourceData(t, data, r)
+	return data
 }
 
 func TestProcesses_Create_Successful(t *testing.T) {
@@ -320,7 +323,10 @@ func TestProcesses_Delete_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	d := getProcessResourceData(t, map[string]any{})
+	d := getProcessResourceData(t, map[string]any{
+		"name": "MyProcess",
+		"parent_process_type_id": uuid.New().String(),
+	})
 	d.SetId(typeID.String())
 
 	diags := deleteResourceProcess(context.Background(), d, clients)
