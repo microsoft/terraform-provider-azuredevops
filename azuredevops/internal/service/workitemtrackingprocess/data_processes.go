@@ -25,7 +25,7 @@ func DataProcesses() *schema.Resource {
 				Optional:     true,
 				Default:      "none",
 				ValidateFunc: validation.StringInSlice([]string{"none", "projects"}, false),
-				Description:  "Specifies the expand option when getting the processes",
+				Description:  "Specifies the expand option when getting the processes.",
 			},
 			"processes": {
 				Type:     schema.TypeSet,
@@ -41,22 +41,22 @@ func DataProcesses() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the process",
+							Description: "Name of the process.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Description of the process",
+							Description: "Description of the process.",
 						},
 						"parent_process_type_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the parent process",
+							Description: "ID of the parent process.",
 						},
 						"reference_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Reference name of process being created. If not specified, server will assign a unique reference name",
+							Description: "Reference name of process being created. If not specified, server will assign a unique reference name.",
 						},
 						"is_default": {
 							Type:        schema.TypeBool,
@@ -71,7 +71,7 @@ func DataProcesses() *schema.Resource {
 						"customization_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before",
+							Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.",
 						},
 						"projects": {
 							Type: schema.TypeSet,
@@ -81,27 +81,27 @@ func DataProcesses() *schema.Resource {
 									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The ID of the project",
+										Description: "The ID of the project.",
 									},
 									"description": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Description of the project",
+										Description: "Description of the project.",
 									},
 									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Name of the project",
+										Description: "Name of the project.",
 									},
 									"url": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Url of the project",
+										Description: "Url of the project.",
 									},
 								},
 							},
 							Computed:    true,
-							Description: "Returns associated projects when using the 'projects' expand option",
+							Description: "Returns associated projects when using the 'projects' expand option.",
 						},
 					},
 				},
