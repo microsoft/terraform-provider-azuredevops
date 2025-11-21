@@ -324,7 +324,7 @@ func TestProcesses_Delete_Successful(t *testing.T) {
 	).Times(1)
 
 	d := getProcessResourceData(t, map[string]any{
-		"name": "MyProcess",
+		"name":                   "MyProcess",
 		"parent_process_type_id": uuid.New().String(),
 	})
 	d.SetId(typeID.String())
