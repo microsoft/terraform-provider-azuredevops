@@ -33,33 +33,8 @@ func getDataProcessResourceData(t *testing.T, input map[string]interface{}) *sch
 
 func TestDataProcess_Get(t *testing.T) {
 	id := "59788636-ed1e-4e20-a7d1-93ee382beba7"
-	processWithExpand := workitemtrackingprocess.ProcessInfo{
-		TypeId:              converter.UUID(id),
-		Name:                converter.String("FirstProc"),
-		Description:         converter.String("My first process"),
-		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
-		IsDefault:           converter.Bool(false),
-		IsEnabled:           converter.Bool(true),
-		ParentProcessTypeId: converter.ToPtr(uuid.New()),
-		Projects: &[]workitemtrackingprocess.ProjectReference{
-			{
-				Id:          converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
-				Name:        converter.String("Project1"),
-				Description: converter.String("My first project"),
-				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
-			},
-		},
-	}
-
-	processWithoutExpand := workitemtrackingprocess.ProcessInfo{
-		TypeId:              converter.UUID(id),
-		Name:                converter.String("FirstProc"),
-		Description:         converter.String("My first process"),
-		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
-		IsDefault:           converter.Bool(false),
-		IsEnabled:           converter.Bool(true),
-		ParentProcessTypeId: converter.ToPtr(uuid.New()),
-	}
+	processWithExpand := createProcessInfo(id, true)
+	processWithoutExpand := createProcessInfo(id, false)
 
 	testCases := []struct {
 		name            string
@@ -73,7 +48,7 @@ func TestDataProcess_Get(t *testing.T) {
 			input: map[string]any{
 				"id": id,
 			},
-			processToReturn: processWithoutExpand,
+			processToReturn: *processWithoutExpand,
 			expectedReturn: map[string]string{
 				"expand":                 "none",
 				"id":                     processWithoutExpand.TypeId.String(),
@@ -93,7 +68,7 @@ func TestDataProcess_Get(t *testing.T) {
 				"id":     id,
 				"expand": "projects",
 			},
-			processToReturn: processWithExpand,
+			processToReturn: *processWithExpand,
 			expectedReturn: map[string]string{
 				"expand": "projects",
 
@@ -168,4 +143,28 @@ func TestDataProcess_Get(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createProcessInfo(id string, includeProject bool) *workitemtrackingprocess.ProcessInfo {
+	process := workitemtrackingprocess.ProcessInfo{
+		TypeId:              converter.UUID(id),
+		Name:                converter.String("FirstProc"),
+		Description:         converter.String("My first process"),
+		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
+		IsDefault:           converter.Bool(false),
+		IsEnabled:           converter.Bool(true),
+		ParentProcessTypeId: converter.ToPtr(uuid.New()),
+	}
+	if includeProject {
+		process.Projects = &[]workitemtrackingprocess.ProjectReference{
+			{
+				Id:          converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
+				Name:        converter.String("Project1"),
+				Description: converter.String("My first project"),
+				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
+			},
+		}
+	}
+
+	return &process
 }
