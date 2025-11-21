@@ -44,6 +44,14 @@ func TestProcesses_Create_Successful(t *testing.T) {
 		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
 		ParentProcessTypeId: &parentID,
 		ReferenceName:       &referenceName,
+		Projects: &[]workitemtrackingprocess.ProjectReference{
+			{
+				Id:          converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
+				Name:        converter.String("Project1"),
+				Description: converter.String("My first project"),
+				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
+			},
+		},
 	}
 
 	mockClient.EXPECT().CreateNewProcess(clients.Ctx, gomock.Any()).DoAndReturn(
@@ -83,7 +91,12 @@ func TestProcesses_Create_Successful(t *testing.T) {
 	assert.Equal(t, "inherited", d.Get("customization_type"))
 	projects := d.Get("projects").(*schema.Set)
 	assert.NotNil(t, projects)
-	assert.Equal(t, 0, projects.Len())
+	assert.Equal(t, 1, projects.Len())
+	project := projects.List()[0].(map[string]any)
+	assert.Equal(t, "382fe225-6483-4655-846f-4ac5f7654453", project["id"])
+	assert.Equal(t, "Project1", project["name"])
+	assert.Equal(t, "My first project", project["description"])
+	assert.Equal(t, "vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e", project["url"])
 }
 
 func TestProcesses_CreateWithDefault_Successful(t *testing.T) {

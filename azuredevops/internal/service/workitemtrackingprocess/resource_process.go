@@ -181,7 +181,7 @@ func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) dia
 		var projects []map[string]any
 		for _, p := range *process.Projects {
 			project := map[string]any{
-				"id":          p.Id,
+				"id":          p.Id.String(),
 				"description": p.Description,
 				"name":        p.Name,
 				"url":         p.Url,
