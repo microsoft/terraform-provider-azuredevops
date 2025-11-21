@@ -27,9 +27,10 @@ func DataProcesses() *schema.Resource {
 				Description:  "Specifies the expand option when getting the processes.",
 			},
 			"processes": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Set:      getProcessHash,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "A list of all processes including system and inherited.",
+				Set:         getProcessHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
