@@ -21,7 +21,6 @@ func DataProcesses() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"expand": {
 				Type:         schema.TypeString,
-				ForceNew:     true,
 				Optional:     true,
 				Default:      "none",
 				ValidateFunc: validation.StringInSlice([]string{"none", "projects"}, false),
