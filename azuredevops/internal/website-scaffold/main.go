@@ -479,8 +479,33 @@ func (gen documentationGenerator) buildIndentForExample(level int) string {
 }
 
 func (gen documentationGenerator) buildDescriptionForArgument(name string, field *schema.Schema, blockName string) string {
+	generateBlockHint := func() string {
+		if field.Elem != nil {
+			if _, ok := field.Elem.(*schema.Resource); ok {
+				fmtBlock := func(name string, maxItem int, blockIsBefore bool) string {
+					var head string
+					if maxItem == 1 {
+						head = fmt.Sprintf("A `%s` block", name)
+					} else {
+						head = fmt.Sprintf("One or more `%s` blocks", name)
+					}
+
+					var tail string
+					if blockIsBefore {
+						tail = "as defined above."
+					} else {
+						tail = "as defined below."
+					}
+					return head + " " + tail
+				}
+				return fmtBlock(name, field.MaxItems, gen.blockIsBefore(name, blockName))
+			}
+		}
+		return ""
+	}
+
 	if field.Description != "" {
-		return field.Description
+		return fmt.Sprintf("%s %s", generateBlockHint(), field.Description)
 	}
 
 	if name == "name" {
@@ -503,26 +528,8 @@ func (gen documentationGenerator) buildDescriptionForArgument(name string, field
 		return "The ID of the TODO."
 	}
 
-	if field.Elem != nil {
-		if _, ok := field.Elem.(*schema.Resource); ok {
-			fmtBlock := func(name string, maxItem int, blockIsBefore bool) string {
-				var head string
-				if maxItem == 1 {
-					head = fmt.Sprintf("A `%s` block", name)
-				} else {
-					head = fmt.Sprintf("One or more `%s` blocks", name)
-				}
-
-				var tail string
-				if blockIsBefore {
-					tail = "as defined above."
-				} else {
-					tail = "as defined below."
-				}
-				return head + " " + tail
-			}
-			return fmtBlock(name, field.MaxItems, gen.blockIsBefore(name, blockName))
-		}
+	if blockHint := generateBlockHint(); blockHint != "" {
+		return blockHint
 	}
 
 	switch field.Type {
@@ -534,8 +541,36 @@ func (gen documentationGenerator) buildDescriptionForArgument(name string, field
 }
 
 func (gen documentationGenerator) buildDescriptionForAttribute(name string, field *schema.Schema, blockName string) string {
+	generateBlockHint := func() string {
+		if field.Elem != nil {
+			if _, ok := field.Elem.(*schema.Schema); ok {
+				if gen.blockIsBefore(name, blockName) {
+					return fmt.Sprintf("A `%s` block as defined above.", name)
+				} else {
+					return fmt.Sprintf("A `%s` block as defined below.", name)
+				}
+			}
+
+			if _, ok := field.Elem.(*schema.Resource); ok {
+				if gen.blockIsBefore(name, blockName) {
+					return fmt.Sprintf("A `%s` block as defined above.", name)
+				} else {
+					return fmt.Sprintf("A `%s` block as defined below.", name)
+				}
+			}
+		}
+		if field.Type == schema.TypeList {
+			if gen.blockIsBefore(name, blockName) {
+				return fmt.Sprintf("A `%s` block as defined above.", name)
+			} else {
+				return fmt.Sprintf("A `%s` block as defined below.", name)
+			}
+		}
+		return ""
+	}
+
 	if field.Description != "" {
-		return field.Description
+		return fmt.Sprintf("%s %s", generateBlockHint(), field.Description)
 	}
 
 	if name == "name" {
@@ -554,29 +589,8 @@ func (gen documentationGenerator) buildDescriptionForAttribute(name string, fiel
 		return "The ID of the TODO."
 	}
 
-	if field.Elem != nil {
-		if _, ok := field.Elem.(*schema.Schema); ok {
-			if gen.blockIsBefore(name, blockName) {
-				return fmt.Sprintf("A `%s` block as defined above.", name)
-			} else {
-				return fmt.Sprintf("A `%s` block as defined below.", name)
-			}
-		}
-
-		if _, ok := field.Elem.(*schema.Resource); ok {
-			if gen.blockIsBefore(name, blockName) {
-				return fmt.Sprintf("A `%s` block as defined above.", name)
-			} else {
-				return fmt.Sprintf("A `%s` block as defined below.", name)
-			}
-		}
-	}
-	if field.Type == schema.TypeList {
-		if gen.blockIsBefore(name, blockName) {
-			return fmt.Sprintf("A `%s` block as defined above.", name)
-		} else {
-			return fmt.Sprintf("A `%s` block as defined below.", name)
-		}
+	if blockHint := generateBlockHint(); blockHint != "" {
+		return blockHint
 	}
 
 	return "TODO."
