@@ -178,6 +178,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_azurerm":        serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":      serviceendpoint.DataResourceServiceEndpointBitbucket(),
 			"azuredevops_serviceendpoint_dockerregistry": serviceendpoint.DataResourceServiceEndpointDockerRegistry(),
+			"azuredevops_serviceendpoint_generic":        serviceendpoint.DataServiceEndpointGeneric(),
 			"azuredevops_serviceendpoint_github":         serviceendpoint.DataServiceEndpointGithub(),
 			"azuredevops_serviceendpoint_npm":            serviceendpoint.DataResourceServiceEndpointNpm(),
 			"azuredevops_serviceendpoint_sonarcloud":     serviceendpoint.DataResourceServiceEndpointSonarCloud(),
