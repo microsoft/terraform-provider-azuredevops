@@ -110,6 +110,15 @@ data "azuredevops_serviceendpoint_github" "serviceendpoint" {
 }`
 }
 
+// HclServiceEndpointGenericDataSourceWithServiceEndpointID HCL describing a data source for an AzDO service endpoint
+func HclServiceEndpointGenericDataSourceWithServiceEndpointID() string {
+	return `
+data "azuredevops_serviceendpoint_generic" "serviceendpoint" {
+  project_id = azuredevops_project.project.id
+  service_endpoint_id         = azuredevops_serviceendpoint_github.serviceendpoint.id
+}`
+}
+
 // HclServiceEndpointGitHubDataSourceWithServiceEndpointName HCL describing a data source for an AzDO service endpoint
 func HclServiceEndpointGitHubDataSourceWithServiceEndpointName(serviceEndpointName string) string {
 	return fmt.Sprintf(`
