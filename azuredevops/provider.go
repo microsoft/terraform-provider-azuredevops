@@ -173,6 +173,7 @@ func Provider() *schema.Provider {
 			"azuredevops_iteration":                      workitemtracking.DataIteration(),
 			"azuredevops_project":                        core.DataProject(),
 			"azuredevops_projects":                       core.DataProjects(),
+			"azuredevops_project_features":               core.DataProjectFeatures(),
 			"azuredevops_securityrole_definitions":       securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_azurecr":        serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_azurerm":        serviceendpoint.DataServiceEndpointAzureRM(),
