@@ -139,7 +139,14 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	isEnabled := d.Get("is_enabled").(bool)
 	if *processInfo.IsDefault != isDefault ||
 		*processInfo.IsEnabled != isEnabled {
-		return updateResourceProcess(ctx, d, m)
+		err := updateResourceProcess(ctx, d, m)
+		if err != nil {
+			return err
+		}
+		// Circumvent eventual consistency of the read api as there is no proper way of dealing with this upstream
+		d.Set("is_default", isDefault)
+		d.Set("is_enabled", isEnabled)
+		return nil
 	}
 
 	return readResourceProcess(ctx, d, m)

@@ -40,7 +40,33 @@ func TestAccWorkitemtrackingprocessProcess_Basic(t *testing.T) {
 	})
 }
 
-func TestAccWorkitemtrackingprocessProcess_Disable(t *testing.T) {
+func TestAccWorkitemtrackingprocessProcess_CreateDisabled(t *testing.T) {
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_process.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: disabledProcess(processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", processName),
+					resource.TestCheckResourceAttr(tfNode, "is_enabled", "false"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getProcessStateIdFunc(tfNode),
+			},
+		},
+	})
+}
+
+func TestAccWorkitemtrackingprocessProcess_CreateAndUpdate(t *testing.T) {
 	processName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_workitemtrackingprocess_process.test"
 
@@ -62,7 +88,7 @@ func TestAccWorkitemtrackingprocessProcess_Disable(t *testing.T) {
 				ImportStateIdFunc: getProcessStateIdFunc(tfNode),
 			},
 			{
-				Config: disableProcess(processName),
+				Config: disabledProcess(processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "is_enabled", "false"),
 				),
@@ -86,7 +112,7 @@ resource "azuredevops_workitemtrackingprocess_process" "test" {
 `, name)
 }
 
-func disableProcess(name string) string {
+func disabledProcess(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtrackingprocess_process" "test" {
   name                   = "%s"
