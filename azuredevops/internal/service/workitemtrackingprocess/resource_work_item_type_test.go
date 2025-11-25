@@ -101,3 +101,32 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		t.Errorf("Resource data attributes mismatch (-want +got):\n%s", diff)
 	}
 }
+
+func TestWorkItemType_Delete_Successful(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	referenceName := "MyNewAgileProcess.MyWorkItemType"
+
+	mockClient.EXPECT().DeleteProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.DeleteProcessWorkItemTypeArgs) error {
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, referenceName, *args.WitRefName)
+			return nil
+		},
+	).Times(1)
+
+	d := getWorkItemTypeResourceData(t, map[string]any{
+		"name":       "MyWorkItemType",
+		"process_id": processId.String(),
+	})
+	d.SetId(referenceName)
+
+	diags := deleteResourceWorkItemType(context.Background(), d, clients)
+
+	assert.Empty(t, diags)
+}
