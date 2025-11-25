@@ -127,6 +127,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_octopusdeploy":               serviceendpoint.ResourceServiceEndpointOctopusDeploy(),
 			"azuredevops_serviceendpoint_openshift":                   serviceendpoint.ResourceServiceEndpointOpenshift(),
 			"azuredevops_serviceendpoint_permissions":                 permissions.ResourceServiceEndpointPermissions(),
+			"azuredevops_serviceendpoint_powerplatform":               serviceendpoint.ResourceServiceEndpointPowerPlatform(),
 			"azuredevops_serviceendpoint_runpipeline":                 serviceendpoint.ResourceServiceEndpointRunPipeline(),
 			"azuredevops_serviceendpoint_servicefabric":               serviceendpoint.ResourceServiceEndpointServiceFabric(),
 			"azuredevops_serviceendpoint_snyk":                        serviceendpoint.ResourceServiceEndpointSnyk(),
