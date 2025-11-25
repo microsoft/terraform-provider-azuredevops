@@ -154,7 +154,6 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 			return fmt.Errorf("Marshalling JSON. Error: %+v", parseErr)
 		}
 		return fmt.Errorf("getting ClassificationNode failed. %s. Error: %w", js, err)
-
 	}
 
 	d.SetId(node.Identifier.String())
@@ -249,7 +248,6 @@ func DeleteClassificationNode(clients *client.AggregatedClient, d *schema.Resour
 	}
 
 	err = clients.WorkItemTrackingClient.DeleteClassificationNode(clients.Ctx, deleteArgs)
-
 	if err != nil {
 		return fmt.Errorf("wrror in getting the hierarchy: %v", err)
 	}

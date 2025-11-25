@@ -87,6 +87,7 @@ func checkIterationDestroyed(s *terraform.State) error {
 
 		id, err := strconv.Atoi(resource.Primary.ID)
 		if err != nil {
+			return fmt.Errorf("Iteration ID=%d cannot be parsed!. Error=%v", id, err)
 		}
 
 		projectID := resource.Primary.Attributes["project_id"]
