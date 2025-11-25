@@ -104,6 +104,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_serviceendpoint_sonarqube",
 		"azuredevops_serviceendpoint_ssh",
 		"azuredevops_serviceendpoint_visualstudiomarketplace",
+		"azuredevops_serviceendpoint_project_permissions",
 		"azuredevops_servicehook_permissions",
 		"azuredevops_servicehook_storage_queue_pipelines",
 		"azuredevops_service_principal_entitlement",
