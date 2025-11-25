@@ -1,11 +1,12 @@
 package serviceendpoint
 
 import (
-	"fmt"
+	"context"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -17,10 +18,10 @@ import (
 
 func ResourceServiceEndpointProjectPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCreateOrUpdateServiceEndpointProjectPermissions,
-		Read:   resourceReadServiceEndpointProjectPermissions,
-		Update: resourceCreateOrUpdateServiceEndpointProjectPermissions,
-		Delete: resourceDeleteServiceEndpointProjectPermissions,
+		CreateContext: resourceCreateOrUpdateServiceEndpointProjectPermissions,
+		ReadContext:   resourceReadServiceEndpointProjectPermissions,
+		UpdateContext: resourceCreateOrUpdateServiceEndpointProjectPermissions,
+		DeleteContext: resourceDeleteServiceEndpointProjectPermissions,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(2 * time.Minute),
 			Read:   schema.DefaultTimeout(1 * time.Minute),
@@ -67,16 +68,16 @@ func ResourceServiceEndpointProjectPermissions() *schema.Resource {
 	}
 }
 
-func resourceCreateOrUpdateServiceEndpointProjectPermissions(d *schema.ResourceData, m interface{}) error {
+func resourceCreateOrUpdateServiceEndpointProjectPermissions(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	endpointID, err := uuid.Parse(d.Get("service_endpoint_id").(string))
 	if err != nil {
-		return fmt.Errorf("invalid service_endpoint_id: %v", err)
+		return diag.Errorf("invalid service_endpoint_id: %v", err)
 	}
 	targetProjectID, err := uuid.Parse(d.Get("project_id").(string))
 	if err != nil {
-		return fmt.Errorf("invalid project_id: %v", err)
+		return diag.Errorf("invalid project_id: %v", err)
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
@@ -87,7 +88,7 @@ func resourceCreateOrUpdateServiceEndpointProjectPermissions(d *schema.ResourceD
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("Error finding service endpoint: %+v", err)
+		return diag.Errorf("Error finding service endpoint: %+v", err)
 	}
 
 	oldSet, newSet := d.GetChange("project_reference")
@@ -162,19 +163,22 @@ func resourceCreateOrUpdateServiceEndpointProjectPermissions(d *schema.ResourceD
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("Error updating service endpoint references: %+v", err)
+		return diag.Errorf("Error updating service endpoint references: %+v", err)
 	}
 
 	d.SetId(endpointID.String())
-	return resourceReadServiceEndpointProjectPermissions(d, m)
+	return resourceReadServiceEndpointProjectPermissions(clients.Ctx, d, m)
 }
 
-func resourceReadServiceEndpointProjectPermissions(d *schema.ResourceData, m interface{}) error {
+func resourceReadServiceEndpointProjectPermissions(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	endpointIDStr := d.Get("service_endpoint_id").(string)
 	targetProjectIDStr := d.Get("project_id").(string)
-	endpointID, _ := uuid.Parse(endpointIDStr)
+	endpointID, err := uuid.Parse(endpointIDStr)
+	if err != nil {
+		return diag.Errorf("f%s", err)
+	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
 		clients.Ctx,
@@ -183,13 +187,12 @@ func resourceReadServiceEndpointProjectPermissions(d *schema.ResourceData, m int
 			Project:    converter.String(targetProjectIDStr),
 		},
 	)
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading service endpoint: %+v", err)
+		return diag.Errorf("Error reading service endpoint: %+v", err)
 	}
 
 	expectedProjects := make(map[string]bool)
@@ -225,7 +228,7 @@ func resourceReadServiceEndpointProjectPermissions(d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceDeleteServiceEndpointProjectPermissions(d *schema.ResourceData, m interface{}) error {
+func resourceDeleteServiceEndpointProjectPermissions(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	endpointID := uuid.MustParse(d.Get("service_endpoint_id").(string))
@@ -238,12 +241,11 @@ func resourceDeleteServiceEndpointProjectPermissions(d *schema.ResourceData, m i
 			Project:    converter.String(targetProjectIDStr),
 		},
 	)
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil
 		}
-		return err
+		return diag.Errorf("f%s", err)
 	}
 
 	projectsToDelete := make(map[string]bool)
@@ -275,5 +277,5 @@ func resourceDeleteServiceEndpointProjectPermissions(d *schema.ResourceData, m i
 		},
 	)
 
-	return err
+	return diag.Errorf("f%s", err)
 }

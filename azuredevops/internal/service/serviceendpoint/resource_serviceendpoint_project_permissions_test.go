@@ -114,7 +114,7 @@ func TestServiceEndpointProjectPermissions_Create_AppendsReference(t *testing.T)
 		}).
 		Times(1)
 
-	err := r.Create(resourceData, clients)
+	err := r.CreateContext(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 }
 
@@ -154,7 +154,6 @@ func TestServiceEndpointProjectPermissions_Delete_RemovesOnlyTarget(t *testing.T
 		EXPECT().
 		UpdateServiceEndpoint(clients.Ctx, gomock.Any()).
 		DoAndReturn(func(ctx context.Context, args serviceendpoint.UpdateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error) {
-
 			refs := *args.Endpoint.ServiceEndpointProjectReferences
 			require.Len(t, refs, 1, "Should only have Owner left")
 			require.Equal(t, permissionsTestOwnerProjectID.String(), refs[0].ProjectReference.Id.String())
@@ -163,7 +162,7 @@ func TestServiceEndpointProjectPermissions_Delete_RemovesOnlyTarget(t *testing.T
 		}).
 		Times(1)
 
-	err := r.Delete(resourceData, clients)
+	err := r.DeleteContext(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 }
 
@@ -199,7 +198,7 @@ func TestServiceEndpointProjectPermissions_Read_FiltersExpectedProjects(t *testi
 		Return(&endpointMixed, nil).
 		Times(1)
 
-	err := r.Read(resourceData, clients)
+	err := r.ReadContext(clients.Ctx, resourceData, clients)
 	require.Nil(t, err)
 
 	// Verify that the state only contains Target1, not Owner and not Target2
@@ -228,8 +227,9 @@ func TestServiceEndpointProjectPermissions_Create_DoesNotSwallowError(t *testing
 		Return(nil, errors.New("GetServiceEndpointDetails() Failed")).
 		Times(1)
 
-	err := r.Create(resourceData, clients)
-	require.Contains(t, err.Error(), "GetServiceEndpointDetails() Failed")
+	diag := r.CreateContext(clients.Ctx, resourceData, clients)
+	require.True(t, diag.HasError(), "Expected diagnostics to have an error")
+	require.Contains(t, diag[0].Summary, "GetServiceEndpointDetails() Failed")
 }
 
 // Test: Error propagation on Update
@@ -259,8 +259,9 @@ func TestServiceEndpointProjectPermissions_Update_DoesNotSwallowError(t *testing
 		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
 		Times(1)
 
-	err := r.Update(resourceData, clients)
-	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+	diags := r.UpdateContext(clients.Ctx, resourceData, clients)
+	require.True(t, diags.HasError(), "Expected diagnostics to have an error")
+	require.Contains(t, diags[0].Summary, "UpdateServiceEndpoint() Failed")
 }
 
 // Test: Error propagation on Delete
@@ -281,6 +282,7 @@ func TestServiceEndpointProjectPermissions_Delete_DoesNotSwallowError(t *testing
 		Return(nil, errors.New("GetServiceEndpointDetails() Failed")).
 		Times(1)
 
-	err := r.Delete(resourceData, clients)
-	require.Contains(t, err.Error(), "GetServiceEndpointDetails() Failed")
+	diags := r.DeleteContext(clients.Ctx, resourceData, clients)
+	require.True(t, diags.HasError(), "Expected diagnostics to have an error")
+	require.Contains(t, diags[0].Summary, "GetServiceEndpointDetails() Failed")
 }
