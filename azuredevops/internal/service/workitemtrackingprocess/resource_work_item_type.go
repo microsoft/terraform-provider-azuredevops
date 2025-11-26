@@ -148,7 +148,36 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 }
 
 func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	return readResourceWorkItemType(ctx, d, m)
+	clients := m.(*client.AggregatedClient)
+
+	referenceName := d.Id()
+	processId := d.Get("process_id").(string)
+
+	updateWorkItemType := &workitemtrackingprocess.UpdateProcessWorkItemTypeRequest{
+		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+	}
+	if v, ok := d.GetOk("color"); ok {
+		updateWorkItemType.Color = converter.String(v.(string))
+	}
+	if v, ok := d.GetOk("description"); ok {
+		updateWorkItemType.Description = converter.String(v.(string))
+	}
+	if v, ok := d.GetOk("icon"); ok {
+		updateWorkItemType.Icon = converter.String(v.(string))
+	}
+
+	args := workitemtrackingprocess.UpdateProcessWorkItemTypeArgs{
+		ProcessId:          converter.UUID(processId),
+		WitRefName:         &referenceName,
+		WorkItemTypeUpdate: updateWorkItemType,
+	}
+
+	updatedWorkItemType, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemType(ctx, args)
+	if err != nil {
+		return diag.Errorf(" Update work item type. Error %+v", err)
+	}
+
+	return flattenWorkItemType(d, updatedWorkItemType)
 }
 
 func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
