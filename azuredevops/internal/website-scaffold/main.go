@@ -230,6 +230,11 @@ func (gen documentationGenerator) argumentsBlock() string {
 			if field.ForceNew {
 				value += fmt.Sprintf(" Changing this forces a new %s to be created.", gen.brandName)
 			}
+			defaultText := gen.generateDefaultText(field)
+			if defaultText != "" {
+				value += fmt.Sprintf(" %s", defaultText)
+			}
+
 			fields += fmt.Sprintf("* `%s` - (%s) %s\n\n", fieldName, status, value)
 		}
 
@@ -288,6 +293,11 @@ func (gen documentationGenerator) attributesBlock() string {
 			}
 
 			value := gen.buildDescriptionForAttribute(fieldName, field, blockName)
+			defaultText := gen.generateDefaultText(field)
+			if defaultText != "" {
+				value += fmt.Sprintf(" %s", defaultText)
+			}
+
 			fields += fmt.Sprintf("* `%s` - %s\n\n", fieldName, value)
 		}
 
@@ -594,6 +604,25 @@ func (gen documentationGenerator) buildDescriptionForAttribute(name string, fiel
 	}
 
 	return "TODO."
+}
+
+func (gen documentationGenerator) generateDefaultText(field *schema.Schema) string {
+	template := "Default: %s"
+	if field.Default != nil {
+		if v, ok := field.Default.(bool); ok {
+			return fmt.Sprintf(template, strconv.FormatBool(v))
+		}
+
+		if v, ok := field.Default.(int); ok {
+			return fmt.Sprintf(template, fmt.Sprintf("%d", v))
+		}
+
+		if v, ok := field.Default.(string); ok {
+			return fmt.Sprintf(template, fmt.Sprintf("\"%s\"", v))
+		}
+	}
+
+	return ""
 }
 
 func (gen documentationGenerator) determineDefaultValueForExample(name string, field *schema.Schema) string {
