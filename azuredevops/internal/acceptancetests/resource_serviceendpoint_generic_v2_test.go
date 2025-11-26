@@ -269,14 +269,14 @@ func hclServiceEndpointGenericV2TokenBasic(projectName string, serviceEndpointNa
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
-  type 		  = "%s"
+  type        = "%s"
   server_url  = "https://github.com"
 
-  authorization_scheme     =  "Token"
+  authorization_scheme = "Token"
   authorization_parameters = {
-	AccessToken = "test-token"
+    AccessToken = "test-token"
   }
 }`, projectResource, serviceEndpointName, serviceEndpointType)
 }
@@ -289,12 +289,12 @@ func hclServiceEndpointGenericV2TokenCustomUrl(projectName string, serviceEndpoi
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
-  type 		  = "%s"
+  type        = "%s"
   server_url  = "%s"
 
-  authorization_scheme     =  "Token"
+  authorization_scheme = "Token"
   authorization_parameters = {
     AccessToken = "test-token"
   }
@@ -309,12 +309,12 @@ func hclServiceEndpointGenericV2UsernamePassword(projectName string, serviceEndp
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
   type        = "%s"
   server_url  = "https://example.com"
 
-  authorization_scheme     = "UsernamePassword"
+  authorization_scheme = "UsernamePassword"
   authorization_parameters = {
     username = "%s"
     password = "%s"
@@ -335,16 +335,16 @@ func hclServiceEndpointGenericV2WithSharedProjects(projectName1 string, projectN
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
-  type 		  = "%s"
+  type        = "%s"
   server_url  = "https://example.com"
 
   shared_project_ids = [
     azuredevops_project.project2.id
   ]
 
-  authorization_scheme     = "UsernamePassword"
+  authorization_scheme = "UsernamePassword"
   authorization_parameters = {
     username = "test-token"
     password = "test-password"
@@ -360,12 +360,12 @@ func hclServiceEndpointGenericV2WithoutSharedProjects(projectName string, servic
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
-  type 		  = "%s"
+  type        = "%s"
   server_url  = "https://example.com"
 
-  authorization_scheme     = "UsernamePassword"
+  authorization_scheme = "UsernamePassword"
   authorization_parameters = {
     username = "test-token"
     password = "test-password"
@@ -390,9 +390,9 @@ func hclServiceEndpointGenericV2WithMultipleSharedProjects(projectName1 string, 
 
 resource "azuredevops_serviceendpoint_generic_v2" "test" {
   project_id  = azuredevops_project.project.id
-  name 		  = "%s"
+  name        = "%s"
   description = "Managed by Terraform"
-  type 		  = "%s"
+  type        = "%s"
   server_url  = "https://example.com"
 
   shared_project_ids = [
@@ -400,7 +400,7 @@ resource "azuredevops_serviceendpoint_generic_v2" "test" {
     azuredevops_project.project3.id
   ]
 
-  authorization_scheme     = "UsernamePassword"
+  authorization_scheme = "UsernamePassword"
   authorization_parameters = {
     username = "test-user"
     password = "test-password"
