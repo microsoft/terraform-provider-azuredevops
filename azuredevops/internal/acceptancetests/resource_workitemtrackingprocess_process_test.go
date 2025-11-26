@@ -16,7 +16,7 @@ func TestAccWorkitemtrackingprocessProcess_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
+		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: process(processName),
@@ -46,7 +46,7 @@ func TestAccWorkitemtrackingprocessProcess_CreateDisabled(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
+		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: disabledProcess(processName),
@@ -72,7 +72,7 @@ func TestAccWorkitemtrackingprocessProcess_CreateAndUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProjectDestroyed,
+		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: process(processName),
