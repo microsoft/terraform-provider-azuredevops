@@ -41,7 +41,7 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 			Type:          schema.TypeBool,
 			Optional:      true,
 			Default:       false,
-			ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes"},
+			ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes", "settings.0.on_each_iteration_require_vote"},
 		},
 
 		"on_each_iteration_require_vote": {

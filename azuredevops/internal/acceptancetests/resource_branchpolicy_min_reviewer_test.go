@@ -169,8 +169,7 @@ resource "azuredevops_branch_policy_min_reviewers" "test" {
     submitter_can_vote                     = false
     allow_completion_with_rejects_or_waits = false
     on_push_reset_approved_votes           = true
-	// NIEUW: basiswaarde
-    on_each_iteration_require_vote         = false
+	on_each_iteration_require_vote         = false
     scope {
       repository_id  = data.azuredevops_git_repository.test.id
       repository_ref = "refs/heads/release"
@@ -196,7 +195,6 @@ resource "azuredevops_branch_policy_min_reviewers" "test" {
     allow_completion_with_rejects_or_waits = true
     last_pusher_cannot_approve             = true
     on_last_iteration_require_vote         = true
-	// NIEUW: update-waarde
 	on_each_iteration_require_vote         = true
     scope {
       repository_id  = data.azuredevops_git_repository.test.id
