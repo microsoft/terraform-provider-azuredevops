@@ -152,6 +152,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
+			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                        taskagent.DataAgentPool(),
