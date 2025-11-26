@@ -21,15 +21,15 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_serviceendpoint_powerplatform" "example" {
-  project_id                       = data.azuredevops_project.project.id
-  service_endpoint_name            = "PowerPlaform-connection"
-  description                      = "Managed by Terraform"
-  url                              = "https://dev-environment.crm11.dynamics.com/"
- credentials {
-   serviceprincipalid    = "00000000-0000-0000-0000-000000000000"
-   serviceprincipalkey   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-   tenantId              = "00000000-0000-0000-0000-000000000000"
- }
+  project_id            = data.azuredevops_project.project.id
+  service_endpoint_name = "PowerPlaform-connection"
+  description           = "Managed by Terraform"
+  url                   = "https://dev-environment.crm11.dynamics.com/"
+  credentials {
+    serviceprincipalid  = "00000000-0000-0000-0000-000000000000"
+    serviceprincipalkey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    tenantId            = "00000000-0000-0000-0000-000000000000"
+  }
 }
 ```
 
