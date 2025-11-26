@@ -51,6 +51,7 @@ func ResourceWorkItemType() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Color hexadecimal code to represent the work item type.",
+				Default:     "009ccc",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -61,6 +62,7 @@ func ResourceWorkItemType() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Icon to represent the work item type.",
+				Default:     "icon_clipboard",
 			},
 			"inherits_from": {
 				Type:        schema.TypeString,
@@ -118,7 +120,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 
 	createdWorkItemType, err := clients.WorkItemTrackingProcessClient.CreateProcessWorkItemType(ctx, args)
 	if err != nil {
-		return diag.Errorf(" Creating process. Error %+v", err)
+		return diag.Errorf(" Creating work item type. Error %+v", err)
 	}
 	d.SetId(*createdWorkItemType.ReferenceName)
 	return flattenWorkItemType(d, createdWorkItemType)
