@@ -3,6 +3,7 @@ package workitemtrackingprocess
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -48,10 +49,11 @@ func ResourceWorkItemType() *schema.Resource {
 				Description:  "The ID of the process the work item type belongs to.",
 			},
 			"color": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Color hexadecimal code to represent the work item type.",
-				Default:     "009ccc",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Color hexadecimal code to represent the work item type.",
+				Default:      "#009ccc",
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^#[0-9a-fA-F]{6}$`), "Must be a hexadecimal color code, i.e. #009ccc"),
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -98,16 +100,12 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	workItemTypeRequest := workitemtrackingprocess.CreateProcessWorkItemTypeRequest{
 		Name:       converter.String(d.Get("name").(string)),
 		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+		Color:      getColor(d),
+		Icon:       converter.String(d.Get("icon").(string)),
 	}
 
-	if v, ok := d.GetOk("color"); ok {
-		workItemTypeRequest.Color = converter.String(v.(string))
-	}
 	if v, ok := d.GetOk("description"); ok {
 		workItemTypeRequest.Description = converter.String(v.(string))
-	}
-	if v, ok := d.GetOk("icon"); ok {
-		workItemTypeRequest.Icon = converter.String(v.(string))
 	}
 	if v, ok := d.GetOk("inherits_from"); ok {
 		workItemTypeRequest.InheritsFrom = converter.String(v.(string))
@@ -123,7 +121,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 		return diag.Errorf(" Creating work item type. Error %+v", err)
 	}
 	d.SetId(*createdWorkItemType.ReferenceName)
-	return flattenWorkItemType(d, createdWorkItemType)
+	return setWorkItemType(d, createdWorkItemType)
 }
 
 func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -146,7 +144,7 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
 	}
 
-	return flattenWorkItemType(d, workItemType)
+	return setWorkItemType(d, workItemType)
 }
 
 func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -157,15 +155,11 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 
 	updateWorkItemType := &workitemtrackingprocess.UpdateProcessWorkItemTypeRequest{
 		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
-	}
-	if v, ok := d.GetOk("color"); ok {
-		updateWorkItemType.Color = converter.String(v.(string))
+		Color:      getColor(d),
+		Icon:       converter.String(d.Get("icon").(string)),
 	}
 	if v, ok := d.GetOk("description"); ok {
 		updateWorkItemType.Description = converter.String(v.(string))
-	}
-	if v, ok := d.GetOk("icon"); ok {
-		updateWorkItemType.Icon = converter.String(v.(string))
 	}
 
 	args := workitemtrackingprocess.UpdateProcessWorkItemTypeArgs{
@@ -179,7 +173,7 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 		return diag.Errorf(" Update work item type. Error %+v", err)
 	}
 
-	return flattenWorkItemType(d, updatedWorkItemType)
+	return setWorkItemType(d, updatedWorkItemType)
 }
 
 func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -201,13 +195,22 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	return nil
 }
 
-func flattenWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
+func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
 	d.Set("name", workItemType.Name)
 	d.Set("description", workItemType.Description)
 	d.Set("is_disabled", workItemType.IsDisabled)
-	d.Set("color", workItemType.Color)
+	setColor(d, workItemType)
 	d.Set("icon", workItemType.Icon)
 	d.Set("inherits_from", workItemType.Inherits)
 	d.Set("url", workItemType.Url)
 	return nil
+}
+
+func getColor(d *schema.ResourceData) *string {
+	return converter.String(
+		strings.ReplaceAll(d.Get("color").(string), "#", ""))
+}
+
+func setColor(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) {
+	d.Set("color", fmt.Sprintf("#%s", *workItemType.Color))
 }
