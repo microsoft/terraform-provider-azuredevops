@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/audit"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
@@ -79,6 +80,7 @@ type AggregatedClient struct {
 	Ctx                           context.Context
 	SecurityRolesClient           securityroles.Client
 	WorkClient                    work.Client
+	AuditClient                   audit.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -238,6 +240,12 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		return nil, err
 	}
 
+	auditClient, err := audit.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): audit.NewClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -269,6 +277,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
 		WorkClient:                    workClient,
+		AuditClient:                   auditClient,
 		Ctx:                           ctx,
 	}
 
