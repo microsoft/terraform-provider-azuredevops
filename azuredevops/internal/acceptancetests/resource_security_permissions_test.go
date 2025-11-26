@@ -405,9 +405,9 @@ resource "azuredevops_security_permissions" "test" {
   token        = data.azuredevops_security_namespace_token.build.token
   principal    = data.azuredevops_identity_group.test.descriptor
   permissions = {
-    ViewBuilds        = "allow"
-    EditBuildQuality  = "deny"
-    DeleteBuilds      = "deny"
+    ViewBuilds       = "allow"
+    EditBuildQuality = "deny"
+    DeleteBuilds     = "deny"
   }
   replace = false
 }
