@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,4 +53,8 @@ func readProcess(clients *client.AggregatedClient, identifier uuid.UUID) (*core.
 	return clients.CoreClient.GetProcessById(clients.Ctx, core.GetProcessByIdArgs{
 		ProcessId: &identifier,
 	})
+}
+
+func GenerateWorkItemTypeName() string {
+	return strings.ReplaceAll(GenerateResourceName(), "-", "")
 }
