@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ---
 
-* `expand` - (Optional)  Specifies the expand option when getting the processes.
+* `expand` - (Optional)  Specifies the expand option when getting the processes. Default: "none"
 
 ## Attributes Reference
 
