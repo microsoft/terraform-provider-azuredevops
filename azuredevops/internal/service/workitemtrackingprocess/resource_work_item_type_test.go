@@ -7,6 +7,7 @@ package workitemtrackingprocess
 import (
 	"context"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -39,15 +40,16 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 	name := "MyWorkItemType"
 	description := "My Process Description"
 	icon := "icon_crown"
-	color := "009ccc"
+	color := "#009ccc"
 	isDisabled := false
 	inheritsFrom := "MyParent"
 	referenceName := "MyNewAgileProcess.MyWorkItemType"
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
+	colorWithoutHash := strings.ReplaceAll(color, "#", "")
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
-		Color:         &color,
+		Color:         &colorWithoutHash,
 		Inherits:      &inheritsFrom,
 		IsDisabled:    &isDisabled,
 		Customization: &workitemtrackingprocess.CustomizationTypeValues.Custom,
@@ -61,7 +63,7 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		func(ctx context.Context, args workitemtrackingprocess.CreateProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
 			assert.Equal(t, name, *args.WorkItemType.Name)
 			assert.Equal(t, description, *args.WorkItemType.Description)
-			assert.Equal(t, color, *args.WorkItemType.Color)
+			assert.Equal(t, colorWithoutHash, *args.WorkItemType.Color)
 			assert.Equal(t, icon, *args.WorkItemType.Icon)
 			assert.Equal(t, inheritsFrom, *args.WorkItemType.InheritsFrom)
 			assert.Equal(t, isDisabled, *args.WorkItemType.IsDisabled)
@@ -142,15 +144,16 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 	name := "MyWorkItemType"
 	description := "My Process Description"
 	icon := "icon_crown"
-	color := "009ccc"
+	color := "#009ccc"
 	isDisabled := false
 	inheritsFrom := "MyParent"
 	referenceName := "MyNewAgileProcess.MyWorkItemType"
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
+	colorWithoutHash := strings.ReplaceAll(color, "#", "")
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
-		Color:         &color,
+		Color:         &colorWithoutHash,
 		Inherits:      &inheritsFrom,
 		IsDisabled:    &isDisabled,
 		Customization: &workitemtrackingprocess.CustomizationTypeValues.Custom,
@@ -209,15 +212,16 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 	name := "MyWorkItemType"
 	description := "My Process Description"
 	icon := "icon_crown"
-	color := "009ccc"
+	color := "#009ccc"
 	isDisabled := false
 	inheritsFrom := "MyParent"
 	referenceName := "MyNewAgileProcess.MyWorkItemType"
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
+	colorWithoutHash := strings.ReplaceAll(color, "#", "")
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
-		Color:         &color,
+		Color:         &colorWithoutHash,
 		Inherits:      &inheritsFrom,
 		IsDisabled:    &isDisabled,
 		Customization: &workitemtrackingprocess.CustomizationTypeValues.Custom,
@@ -232,7 +236,7 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 			assert.Equal(t, processId, *args.ProcessId)
 			assert.Equal(t, referenceName, *args.WitRefName)
 			assert.Equal(t, description, *args.WorkItemTypeUpdate.Description)
-			assert.Equal(t, color, *args.WorkItemTypeUpdate.Color)
+			assert.Equal(t, colorWithoutHash, *args.WorkItemTypeUpdate.Color)
 			assert.Equal(t, icon, *args.WorkItemTypeUpdate.Icon)
 			assert.Equal(t, isDisabled, *args.WorkItemTypeUpdate.IsDisabled)
 
