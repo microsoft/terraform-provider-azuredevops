@@ -102,6 +102,11 @@ func DataProcess() *schema.Resource {
 	}
 }
 
+var getProcessExpandLevelMap = map[string]workitemtrackingprocess.GetProcessExpandLevel{
+	"none":     workitemtrackingprocess.GetProcessExpandLevelValues.None,
+	"projects": workitemtrackingprocess.GetProcessExpandLevelValues.Projects,
+}
+
 func readDataProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	processId := d.Get("id").(string)

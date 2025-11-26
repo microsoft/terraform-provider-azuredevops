@@ -22,7 +22,6 @@ func TestAccWorkitemtrackingprocessProcess_Basic(t *testing.T) {
 				Config: process(processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", processName),
-					resource.TestCheckResourceAttr(tfNode, "expand", "none"),
 					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
 					resource.TestCheckResourceAttr(tfNode, "is_default", "false"),
 					resource.TestCheckResourceAttr(tfNode, "is_enabled", "true"),

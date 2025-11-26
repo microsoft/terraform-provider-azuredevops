@@ -73,42 +73,6 @@ func ResourceProcess() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.",
 			},
-			"expand": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "none",
-				ValidateFunc: validation.StringInSlice([]string{"none", "projects"}, false),
-				Description:  "Specifies the expand option when getting the process.",
-			},
-			"projects": {
-				Type: schema.TypeSet,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the project.",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Description of the project.",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the project.",
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Url of the project.",
-						},
-					},
-				},
-				Computed:    true,
-				Description: "Returns associated projects when using the 'projects' expand option.",
-			},
 		},
 	}
 }
@@ -143,7 +107,7 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 		if err != nil {
 			return err
 		}
-		// Circumvent eventual consistency of the read api as there is no proper way of dealing with this upstream
+		// Circumvent eventual consistency of the read api as there is no proper way of dealing with this downstream
 		d.Set("is_default", isDefault)
 		d.Set("is_enabled", isEnabled)
 		return nil
@@ -152,24 +116,13 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	return readResourceProcess(ctx, d, m)
 }
 
-var getProcessExpandLevelMap = map[string]workitemtrackingprocess.GetProcessExpandLevel{
-	"none":     workitemtrackingprocess.GetProcessExpandLevelValues.None,
-	"projects": workitemtrackingprocess.GetProcessExpandLevelValues.Projects,
-}
-
 func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	processId := d.Id()
 
-	// Might not be set during import
-	if _, exists := d.GetOk("expand"); !exists {
-		d.Set("expand", "none")
-	}
-	expand := getProcessExpandLevelMap[d.Get("expand").(string)]
-
 	getProcessArgs := workitemtrackingprocess.GetProcessByItsIdArgs{
 		ProcessTypeId: converter.UUID(processId),
-		Expand:        &expand,
+		Expand:        &workitemtrackingprocess.GetProcessExpandLevelValues.None,
 	}
 	process, err := clients.WorkItemTrackingProcessClient.GetProcessByItsId(ctx, getProcessArgs)
 	if err != nil {
@@ -187,20 +140,6 @@ func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) dia
 	d.Set("is_default", process.IsDefault)
 	d.Set("is_enabled", process.IsEnabled)
 	d.Set("customization_type", string(*process.CustomizationType))
-
-	if process.Projects != nil {
-		var projects []map[string]any
-		for _, p := range *process.Projects {
-			project := map[string]any{
-				"id":          p.Id.String(),
-				"description": p.Description,
-				"name":        p.Name,
-				"url":         p.Url,
-			}
-			projects = append(projects, project)
-		}
-		d.Set("projects", projects)
-	}
 
 	return nil
 }
