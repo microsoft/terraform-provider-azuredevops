@@ -104,7 +104,7 @@ resource "azuredevops_project" "test" {
 resource "azuredevops_feed" "test" {
   name       = "%[1]s"
   project_id = azuredevops_project.test.id
-  
+
   upstream_sources {
     name                 = "%[2]s"
     protocol             = "npm"
