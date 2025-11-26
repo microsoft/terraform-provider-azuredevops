@@ -61,13 +61,13 @@ resource "azuredevops_serviceendpoint_project_permissions" "example-share" {
   project_id = azuredevops_project.example1.id
   serviceendpoint_id = azuredevops_serviceendpoint_azuredevops.example.id
 
-  project_reference = {
+  project_reference {
     project_id            = azuredevops_project.example2.id
     service_endpoint_name = "service-connection-shared"
     description           = "Service Connection Shared by Terraform - Cluster Two"
   }
 
-  project_reference = {
+  project_reference {
     project_id            = azuredevops_project.example3.id
     service_endpoint_name = "service-connection-shared"
     description           = "Service Connection Shared by Terraform - Cluster Three"

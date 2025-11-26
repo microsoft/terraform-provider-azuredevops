@@ -95,7 +95,7 @@ resource "azuredevops_serviceendpoint_azuredevops" "example" {
 }
 
 resource "azuredevops_serviceendpoint_project_permissions" "test" {
-  project_id         = azuredevops_project.p1.id
+  project_id          = azuredevops_project.p1.id
   service_endpoint_id = azuredevops_serviceendpoint_azuredevops.example.id
 
   %[5]s
