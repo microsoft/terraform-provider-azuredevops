@@ -28,13 +28,11 @@ The following arguments are supported:
 
 ---
 
-* `description` - (Optional)  Description of the process.
+* `description` - (Optional)  Description of the process. Default: ""
 
-* `expand` - (Optional)  Specifies the expand option when getting the process.
+* `is_default` - (Optional)  Is the process default? Default: false
 
-* `is_default` - (Optional)  Is the process default?
-
-* `is_enabled` - (Optional)  Is the process enabled?
+* `is_enabled` - (Optional)  Is the process enabled? Default: true
 
 * `reference_name` - (Optional)  Reference name of process being created. If not specified, server will assign a unique reference name. Changing this forces a new process to be created.
 
@@ -45,20 +43,6 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `id` - The ID of the process.
 
 * `customization_type` -  Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.
-
-* `projects` - A `projects` block as defined below. Returns associated projects when using the 'projects' expand option.
-
----
-
-A `projects` block exports the following:
-
-* `description` -  Description of the project.
-
-* `id` -  The ID of the project.
-
-* `name` -  Name of the project.
-
-* `url` -  Url of the project.
 
 ## Relevant Links
 

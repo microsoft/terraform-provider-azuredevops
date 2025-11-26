@@ -47,14 +47,6 @@ func TestProcesses_Create_Successful(t *testing.T) {
 		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
 		ParentProcessTypeId: &parentID,
 		ReferenceName:       &referenceName,
-		Projects: &[]workitemtrackingprocess.ProjectReference{
-			{
-				Id:          converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
-				Name:        converter.String("Project1"),
-				Description: converter.String("My first project"),
-				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
-			},
-		},
 	}
 
 	mockClient.EXPECT().CreateNewProcess(clients.Ctx, gomock.Any()).DoAndReturn(
@@ -63,13 +55,6 @@ func TestProcesses_Create_Successful(t *testing.T) {
 			assert.Equal(t, description, *args.CreateRequest.Description)
 			assert.Equal(t, parentID, *args.CreateRequest.ParentProcessTypeId)
 			assert.Equal(t, referenceName, *args.CreateRequest.ReferenceName)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
 			return expectedProcessInfo, nil
 		},
 	).Times(1)
@@ -92,14 +77,6 @@ func TestProcesses_Create_Successful(t *testing.T) {
 	assert.Equal(t, false, d.Get("is_default"))
 	assert.Equal(t, true, d.Get("is_enabled"))
 	assert.Equal(t, "inherited", d.Get("customization_type"))
-	projects := d.Get("projects").(*schema.Set)
-	assert.NotNil(t, projects)
-	assert.Equal(t, 1, projects.Len())
-	project := projects.List()[0].(map[string]any)
-	assert.Equal(t, "382fe225-6483-4655-846f-4ac5f7654453", project["id"])
-	assert.Equal(t, "Project1", project["name"])
-	assert.Equal(t, "My first project", project["description"])
-	assert.Equal(t, "vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e", project["url"])
 }
 
 func TestProcesses_CreateWithDefault_Successful(t *testing.T) {
@@ -143,13 +120,6 @@ func TestProcesses_CreateWithDefault_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
 	d := getProcessResourceData(t, map[string]any{
 		"name":                   name,
 		"parent_process_type_id": parentID.String(),
@@ -166,9 +136,6 @@ func TestProcesses_CreateWithDefault_Successful(t *testing.T) {
 	assert.Equal(t, true, d.Get("is_default"))
 	assert.Equal(t, true, d.Get("is_enabled"))
 	assert.Equal(t, "inherited", d.Get("customization_type"))
-	projects := d.Get("projects").(*schema.Set)
-	assert.NotNil(t, projects)
-	assert.Equal(t, 0, projects.Len())
 }
 
 func TestProcesses_CreateWithDisabled_Successful(t *testing.T) {
@@ -212,13 +179,6 @@ func TestProcesses_CreateWithDisabled_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
 	d := getProcessResourceData(t, map[string]any{
 		"name":                   name,
 		"parent_process_type_id": parentID.String(),
@@ -235,9 +195,6 @@ func TestProcesses_CreateWithDisabled_Successful(t *testing.T) {
 	assert.Equal(t, false, d.Get("is_default"))
 	assert.Equal(t, false, d.Get("is_enabled"))
 	assert.Equal(t, "inherited", d.Get("customization_type"))
-	projects := d.Get("projects").(*schema.Set)
-	assert.NotNil(t, projects)
-	assert.Equal(t, 0, projects.Len())
 }
 
 func TestProcesses_Update_Successful(t *testing.T) {
@@ -274,13 +231,6 @@ func TestProcesses_Update_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
 	d := getProcessResourceData(t, map[string]any{
 		"name":                   name,
 		"parent_process_type_id": parentID.String(),
@@ -302,9 +252,6 @@ func TestProcesses_Update_Successful(t *testing.T) {
 	assert.Equal(t, true, d.Get("is_default"))
 	assert.Equal(t, false, d.Get("is_enabled"))
 	assert.Equal(t, "inherited", d.Get("customization_type"))
-	projects := d.Get("projects").(*schema.Set)
-	assert.NotNil(t, projects)
-	assert.Equal(t, 0, projects.Len())
 }
 
 func TestProcesses_Delete_Successful(t *testing.T) {

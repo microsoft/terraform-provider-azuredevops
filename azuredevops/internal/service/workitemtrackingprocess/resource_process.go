@@ -73,42 +73,6 @@ func ResourceProcess() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.",
 			},
-			"expand": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "none",
-				ValidateFunc: validation.StringInSlice([]string{"none", "projects"}, false),
-				Description:  "Specifies the expand option when getting the process.",
-			},
-			"projects": {
-				Type: schema.TypeSet,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the project.",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Description of the project.",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the project.",
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Url of the project.",
-						},
-					},
-				},
-				Computed:    true,
-				Description: "Returns associated projects when using the 'projects' expand option.",
-			},
 		},
 	}
 }
@@ -128,48 +92,30 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	args := workitemtrackingprocess.CreateNewProcessArgs{
 		CreateRequest: createProcessModel,
 	}
-	processInfo, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
+	createdProcess, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Creating process. Error %+v", err)
 	}
 
-	d.SetId(processInfo.TypeId.String())
+	d.SetId(createdProcess.TypeId.String())
 
 	isDefault := d.Get("is_default").(bool)
 	isEnabled := d.Get("is_enabled").(bool)
-	if *processInfo.IsDefault != isDefault ||
-		*processInfo.IsEnabled != isEnabled {
-		err := updateResourceProcess(ctx, d, m)
-		if err != nil {
-			return err
-		}
-		// Circumvent eventual consistency of the read api as there is no proper way of dealing with this upstream
-		d.Set("is_default", isDefault)
-		d.Set("is_enabled", isEnabled)
-		return nil
+	if *createdProcess.IsDefault != isDefault ||
+		*createdProcess.IsEnabled != isEnabled {
+		return updateResourceProcess(ctx, d, m)
 	}
 
-	return readResourceProcess(ctx, d, m)
-}
-
-var getProcessExpandLevelMap = map[string]workitemtrackingprocess.GetProcessExpandLevel{
-	"none":     workitemtrackingprocess.GetProcessExpandLevelValues.None,
-	"projects": workitemtrackingprocess.GetProcessExpandLevelValues.Projects,
+	return flattenProcess(d, createdProcess)
 }
 
 func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	processId := d.Id()
 
-	// Might not be set during import
-	if _, exists := d.GetOk("expand"); !exists {
-		d.Set("expand", "none")
-	}
-	expand := getProcessExpandLevelMap[d.Get("expand").(string)]
-
 	getProcessArgs := workitemtrackingprocess.GetProcessByItsIdArgs{
 		ProcessTypeId: converter.UUID(processId),
-		Expand:        &expand,
+		Expand:        &workitemtrackingprocess.GetProcessExpandLevelValues.None,
 	}
 	process, err := clients.WorkItemTrackingProcessClient.GetProcessByItsId(ctx, getProcessArgs)
 	if err != nil {
@@ -180,29 +126,7 @@ func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.Errorf(" Getting process with id: %s. Error: %+v", processId, err)
 	}
 
-	d.Set("name", process.Name)
-	d.Set("description", process.Description)
-	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
-	d.Set("reference_name", process.ReferenceName)
-	d.Set("is_default", process.IsDefault)
-	d.Set("is_enabled", process.IsEnabled)
-	d.Set("customization_type", string(*process.CustomizationType))
-
-	if process.Projects != nil {
-		var projects []map[string]any
-		for _, p := range *process.Projects {
-			project := map[string]any{
-				"id":          p.Id.String(),
-				"description": p.Description,
-				"name":        p.Name,
-				"url":         p.Url,
-			}
-			projects = append(projects, project)
-		}
-		d.Set("projects", projects)
-	}
-
-	return nil
+	return flattenProcess(d, process)
 }
 
 func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -219,12 +143,12 @@ func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 		ProcessTypeId: converter.UUID(d.Id()),
 		UpdateRequest: updateProcessModel,
 	}
-	_, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
+	updatedProcess, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update process. Error %+v", err)
 	}
 
-	return readResourceProcess(ctx, d, m)
+	return flattenProcess(d, updatedProcess)
 }
 
 func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -238,6 +162,18 @@ func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	if err != nil {
 		return diag.Errorf(" Delete process. Error %+v", err)
 	}
+
+	return nil
+}
+
+func flattenProcess(d *schema.ResourceData, process *workitemtrackingprocess.ProcessInfo) diag.Diagnostics {
+	d.Set("name", process.Name)
+	d.Set("description", process.Description)
+	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	d.Set("reference_name", process.ReferenceName)
+	d.Set("is_default", process.IsDefault)
+	d.Set("is_enabled", process.IsEnabled)
+	d.Set("customization_type", string(*process.CustomizationType))
 
 	return nil
 }
