@@ -1,7 +1,7 @@
 package servicehook
 
 import (
-	"fmt"
+	"log"
 	"maps"
 	"strconv"
 	"time"
@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
@@ -77,7 +78,7 @@ func ResourceServicehookStorageQueuePipelines() *schema.Resource {
 func resourceServicehookStorageQueuePipelinesCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	subscription := expandServicehookStorageQueuePipelines(d)
-	createdSubscription, err := createSubscription(clients, subscription)
+	createdSubscription, err := createSubscription(d, clients, subscription)
 	if err != nil {
 		return err
 	}
@@ -91,8 +92,14 @@ func resourceServicehookStorageQueuePipelinesRead(d *schema.ResourceData, m inte
 	subscriptionId := converter.UUID(d.Id())
 	subscription, err := getSubscription(clients, subscriptionId)
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			log.Printf("[INFO] Service hook subscription not found. ID: %s", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
+
 	flattenServicehookStorageQueuePipelines(d, subscription, d.Get("account_key").(string))
 	return nil
 }
@@ -116,10 +123,9 @@ func resourceServicehookStorageQueuePipelinesUpdate(d *schema.ResourceData, m in
 
 func resourceServicehookStorageQueuePipelinesDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
+	subscriptionID := converter.UUID(d.Id())
 
-	return clients.ServiceHooksClient.DeleteSubscription(clients.Ctx, servicehooks.DeleteSubscriptionArgs{
-		SubscriptionId: converter.UUID(d.Id()),
-	})
+	return deleteSubscription(clients, subscriptionID)
 }
 
 func expandServicehookStorageQueuePipelines(d *schema.ResourceData) *servicehooks.Subscription {
@@ -161,36 +167,4 @@ func flattenServicehookStorageQueuePipelines(d *schema.ResourceData, subscriptio
 	d.Set("queue_name", (*subscription.ConsumerInputs)["queueName"])
 	d.Set("visi_timeout", visiTimeout)
 	d.Set("ttl", ttl)
-}
-
-func createSubscription(clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
-	createdSubscription, err := clients.ServiceHooksClient.CreateSubscription(
-		clients.Ctx,
-		servicehooks.CreateSubscriptionArgs{
-			Subscription: subscription,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("creating subscription in Azure DevOps: %+v", err)
-	}
-
-	return createdSubscription, err
-}
-
-func updateSubscription(clients *client.AggregatedClient, subscription *servicehooks.Subscription) (*servicehooks.Subscription, error) {
-	updatedSubscription, err := clients.ServiceHooksClient.ReplaceSubscription(
-		clients.Ctx,
-		servicehooks.ReplaceSubscriptionArgs{
-			Subscription:   subscription,
-			SubscriptionId: subscription.Id,
-		})
-
-	return updatedSubscription, err
-}
-
-func getSubscription(client *client.AggregatedClient, subscriptionID *uuid.UUID) (*servicehooks.Subscription, error) {
-	return client.ServiceHooksClient.GetSubscription(
-		client.Ctx,
-		servicehooks.GetSubscriptionArgs{
-			SubscriptionId: subscriptionID,
-		})
 }
