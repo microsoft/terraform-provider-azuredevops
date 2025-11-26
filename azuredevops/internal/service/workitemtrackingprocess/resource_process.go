@@ -92,28 +92,21 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	args := workitemtrackingprocess.CreateNewProcessArgs{
 		CreateRequest: createProcessModel,
 	}
-	processInfo, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
+	createdProcess, err := clients.WorkItemTrackingProcessClient.CreateNewProcess(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Creating process. Error %+v", err)
 	}
 
-	d.SetId(processInfo.TypeId.String())
+	d.SetId(createdProcess.TypeId.String())
 
 	isDefault := d.Get("is_default").(bool)
 	isEnabled := d.Get("is_enabled").(bool)
-	if *processInfo.IsDefault != isDefault ||
-		*processInfo.IsEnabled != isEnabled {
-		err := updateResourceProcess(ctx, d, m)
-		if err != nil {
-			return err
-		}
-		// Circumvent eventual consistency of the read api as there is no proper way of dealing with this downstream
-		d.Set("is_default", isDefault)
-		d.Set("is_enabled", isEnabled)
-		return nil
+	if *createdProcess.IsDefault != isDefault ||
+		*createdProcess.IsEnabled != isEnabled {
+		return updateResourceProcess(ctx, d, m)
 	}
 
-	return readResourceProcess(ctx, d, m)
+	return flattenProcess(d, createdProcess)
 }
 
 func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -133,15 +126,7 @@ func readResourceProcess(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.Errorf(" Getting process with id: %s. Error: %+v", processId, err)
 	}
 
-	d.Set("name", process.Name)
-	d.Set("description", process.Description)
-	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
-	d.Set("reference_name", process.ReferenceName)
-	d.Set("is_default", process.IsDefault)
-	d.Set("is_enabled", process.IsEnabled)
-	d.Set("customization_type", string(*process.CustomizationType))
-
-	return nil
+	return flattenProcess(d, process)
 }
 
 func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -158,12 +143,12 @@ func updateResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 		ProcessTypeId: converter.UUID(d.Id()),
 		UpdateRequest: updateProcessModel,
 	}
-	_, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
+	updatedProcess, err := clients.WorkItemTrackingProcessClient.EditProcess(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update process. Error %+v", err)
 	}
 
-	return readResourceProcess(ctx, d, m)
+	return flattenProcess(d, updatedProcess)
 }
 
 func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -177,6 +162,18 @@ func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 	if err != nil {
 		return diag.Errorf(" Delete process. Error %+v", err)
 	}
+
+	return nil
+}
+
+func flattenProcess(d *schema.ResourceData, process *workitemtrackingprocess.ProcessInfo) diag.Diagnostics {
+	d.Set("name", process.Name)
+	d.Set("description", process.Description)
+	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	d.Set("reference_name", process.ReferenceName)
+	d.Set("is_default", process.IsDefault)
+	d.Set("is_enabled", process.IsEnabled)
+	d.Set("customization_type", string(*process.CustomizationType))
 
 	return nil
 }

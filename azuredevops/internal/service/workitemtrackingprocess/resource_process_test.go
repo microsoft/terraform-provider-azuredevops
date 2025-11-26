@@ -59,13 +59,6 @@ func TestProcesses_Create_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
 	d := getProcessResourceData(t, map[string]any{
 		"name":                   name,
 		"parent_process_type_id": parentID.String(),
@@ -123,13 +116,6 @@ func TestProcesses_CreateWithDefault_Successful(t *testing.T) {
 			assert.True(t, *args.UpdateRequest.IsDefault)
 			assert.True(t, *args.UpdateRequest.IsEnabled)
 			expectedProcessInfo.IsDefault = args.UpdateRequest.IsDefault
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
 			return expectedProcessInfo, nil
 		},
 	).Times(1)
@@ -193,13 +179,6 @@ func TestProcesses_CreateWithDisabled_Successful(t *testing.T) {
 		},
 	).Times(1)
 
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
 	d := getProcessResourceData(t, map[string]any{
 		"name":                   name,
 		"parent_process_type_id": parentID.String(),
@@ -248,13 +227,6 @@ func TestProcesses_Update_Successful(t *testing.T) {
 			assert.Equal(t, description, *args.UpdateRequest.Description)
 			assert.True(t, *args.UpdateRequest.IsDefault)
 			assert.False(t, *args.UpdateRequest.IsEnabled)
-			return expectedProcessInfo, nil
-		},
-	).Times(1)
-
-	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
-			assert.Equal(t, typeID, *args.ProcessTypeId)
 			return expectedProcessInfo, nil
 		},
 	).Times(1)
