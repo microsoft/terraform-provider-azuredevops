@@ -197,3 +197,78 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 		t.Errorf("Resource data attributes mismatch (-want +got):\n%s", diff)
 	}
 }
+
+func TestWorkItemType_Update_Successful(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	name := "MyWorkItemType"
+	description := "My Process Description"
+	icon := "icon_crown"
+	color := "009ccc"
+	isDisabled := false
+	inheritsFrom := "MyParent"
+	referenceName := "MyNewAgileProcess.MyWorkItemType"
+	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
+
+	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
+		Icon:          &icon,
+		Color:         &color,
+		Inherits:      &inheritsFrom,
+		IsDisabled:    &isDisabled,
+		Customization: &workitemtrackingprocess.CustomizationTypeValues.Custom,
+		Description:   &description,
+		Name:          &name,
+		ReferenceName: &referenceName,
+		Url:           &url,
+	}
+
+	mockClient.EXPECT().UpdateProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.UpdateProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, referenceName, *args.WitRefName)
+			assert.Equal(t, description, *args.WorkItemTypeUpdate.Description)
+			assert.Equal(t, color, *args.WorkItemTypeUpdate.Color)
+			assert.Equal(t, icon, *args.WorkItemTypeUpdate.Icon)
+			assert.Equal(t, isDisabled, *args.WorkItemTypeUpdate.IsDisabled)
+
+			return returnWorkItemType, nil
+		},
+	).Times(1)
+
+	d := getWorkItemTypeResourceData(t, map[string]any{
+		"process_id":    processId.String(),
+		"name":          name,
+		"color":         color,
+		"icon":          icon,
+		"inherits_from": inheritsFrom,
+		"is_disabled":   isDisabled,
+		"description":   description,
+	})
+	d.SetId(referenceName)
+
+	diags := updateResourceWorkItemType(context.Background(), d, clients)
+	assert.Empty(t, diags)
+
+	expectedWorkItem := map[string]string{
+		"process_id":    processId.String(),
+		"name":          name,
+		"description":   description,
+		"icon":          icon,
+		"color":         color,
+		"inherits_from": inheritsFrom,
+		"is_disabled":   strconv.FormatBool(isDisabled),
+		"id":            referenceName,
+		"url":           url,
+	}
+	diffOptions := []cmp.Option{
+		cmpopts.EquateEmpty(),
+	}
+	if diff := cmp.Diff(expectedWorkItem, d.State().Attributes, diffOptions...); diff != "" {
+		t.Errorf("Resource data attributes mismatch (-want +got):\n%s", diff)
+	}
+}
