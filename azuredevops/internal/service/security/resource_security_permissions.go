@@ -171,7 +171,6 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 				Descriptors:         &principal,
 				IncludeExtendedInfo: &[]bool{true}[0],
 			})
-
 			if err != nil {
 				return nil, "", fmt.Errorf("reading permissions: %v", err)
 			}
@@ -275,7 +274,6 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 		Descriptors:         &principal,
 		IncludeExtendedInfo: &bTrue,
 	})
-
 	if err != nil {
 		return fmt.Errorf("querying ACL: %v", err)
 	}
@@ -318,11 +316,12 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 			return fmt.Errorf("permission '%s' not found in namespace %s", permName, namespaceID.String())
 		}
 
-		if (allowBits & bit) != 0 {
+		switch {
+		case (allowBits & bit) != 0:
 			currentPermissions[permName] = "allow"
-		} else if (denyBits & bit) != 0 {
+		case (denyBits & bit) != 0:
 			currentPermissions[permName] = "deny"
-		} else {
+		default:
 			currentPermissions[permName] = "notset"
 		}
 	}
@@ -381,7 +380,6 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 		Descriptors:         &principal,
 		IncludeExtendedInfo: &bTrue,
 	})
-
 	if err != nil {
 		return fmt.Errorf("querying current ACL: %v", err)
 	}
@@ -455,7 +453,6 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 		SecurityNamespaceId: &namespaceID,
 		Container:           container,
 	})
-
 	if err != nil {
 		return fmt.Errorf("removing managed permissions: %v", err)
 	}
