@@ -14,7 +14,7 @@ Manages a Project Area.
 ```hcl
 resource "azuredevops_area" "example" {
   project_id = "Area"
-  name = "example"
+  name       = "example"
 }
 ```
 

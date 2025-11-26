@@ -140,7 +140,7 @@ resource "azuredevops_iteration" "test" {
   project_id = azuredevops_project.test.id
   name       = "%s"
   path       = "\\"
-  
+
   attributes {
     start_date  = "%s"
     finish_date = "%s"

@@ -14,7 +14,7 @@ Manages a Project Iteration.
 ```hcl
 resource "azuredevops_iteration" "example" {
   project_id = "Iteration"
-  name = "example"
+  name       = "example"
 }
 ```
 
