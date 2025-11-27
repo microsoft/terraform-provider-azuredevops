@@ -193,7 +193,8 @@ func Provider() *schema.Provider {
 			"azuredevops_variable_group":                       taskagent.DataVariableGroup(),
 			"azuredevops_workitemtrackingprocess_process":      workitemtrackingprocess.DataProcess(),
 			"azuredevops_workitemtrackingprocess_processes":    workitemtrackingprocess.DataProcesses(),
-			"azuredevops_workitemtrackingprocess_workitemtype": workitemtrackingprocess.DataWorkItemType(),
+			"azuredevops_workitemtrackingprocess_workitemtype":  workitemtrackingprocess.DataWorkItemType(),
+			"azuredevops_workitemtrackingprocess_workitemtypes": workitemtrackingprocess.DataWorkItemTypes(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {
