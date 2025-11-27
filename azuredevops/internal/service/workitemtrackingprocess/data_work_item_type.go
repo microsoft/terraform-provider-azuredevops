@@ -94,7 +94,7 @@ func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType
 		"reference_name": workItemType.ReferenceName,
 		"name":           workItemType.Name,
 		"description":    workItemType.Description,
-		"color":          fmt.Sprintf("#%s", *workItemType.Color),
+		"color":          convertColorToResource(workItemType),
 		"icon":           workItemType.Icon,
 		"is_disabled":    workItemType.IsDisabled,
 		"inherits_from":  workItemType.Inherits,
