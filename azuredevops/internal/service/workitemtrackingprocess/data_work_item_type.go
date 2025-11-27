@@ -2,6 +2,7 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -88,6 +89,20 @@ func getWorkItemTypeSchema() map[string]*schema.Schema {
 	}
 }
 
+func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType) map[string]any {
+	return map[string]any{
+		"reference_name": workItemType.ReferenceName,
+		"name":           workItemType.Name,
+		"description":    workItemType.Description,
+		"color":          fmt.Sprintf("#%s", *workItemType.Color),
+		"icon":           workItemType.Icon,
+		"is_disabled":    workItemType.IsDisabled,
+		"inherits_from":  workItemType.Inherits,
+		"customization":  string(*workItemType.Customization),
+		"url":            workItemType.Url,
+	}
+}
+
 func readDataWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	processId := d.Get("process_id").(string)
@@ -109,14 +124,10 @@ func readDataWorkItemType(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
 	}
 
-	d.Set("name", workItemType.Name)
-	d.Set("description", workItemType.Description)
-	d.Set("is_disabled", workItemType.IsDisabled)
-	d.Set("color", "#"+*workItemType.Color)
-	d.Set("icon", workItemType.Icon)
-	d.Set("inherits_from", workItemType.Inherits)
-	d.Set("customization", string(*workItemType.Customization))
-	d.Set("url", workItemType.Url)
+	workItemTypeMap := workItemTypeToMap(workItemType)
+	for key, value := range workItemTypeMap {
+		d.Set(key, value)
+	}
 
 	d.SetId(referenceName)
 

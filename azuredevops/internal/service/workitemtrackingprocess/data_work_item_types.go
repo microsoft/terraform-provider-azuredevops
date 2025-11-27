@@ -2,7 +2,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -57,18 +56,7 @@ func readWorkItemTypes(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	workItemTypes := make([]any, 0)
 	for _, retrievedWorkItemType := range *retrievedWorkItemTypes {
-		workItemType := map[string]any{
-			"reference_name": retrievedWorkItemType.ReferenceName,
-			"name":           retrievedWorkItemType.Name,
-			"description":    retrievedWorkItemType.Description,
-			"color":          fmt.Sprintf("#%s", *retrievedWorkItemType.Color),
-			"icon":           retrievedWorkItemType.Icon,
-			"is_disabled":    retrievedWorkItemType.IsDisabled,
-			"inherits_from":  retrievedWorkItemType.Inherits,
-			"customization":  string(*retrievedWorkItemType.Customization),
-			"url":            retrievedWorkItemType.Url,
-		}
-		workItemTypes = append(workItemTypes, workItemType)
+		workItemTypes = append(workItemTypes, workItemTypeToMap(&retrievedWorkItemType))
 	}
 
 	d.SetId(processId)
