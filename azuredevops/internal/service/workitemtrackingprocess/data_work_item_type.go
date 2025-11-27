@@ -1,0 +1,111 @@
+package workitemtrackingprocess
+
+import (
+	"context"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+)
+
+func DataWorkItemType() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: readDataWorkItemType,
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(5 * time.Minute),
+		},
+		Schema: map[string]*schema.Schema{
+			"process_id": {
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
+				Description:      "The ID of the process.",
+			},
+			"reference_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The reference name of the work item type.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the work item type.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Description of the work item type.",
+			},
+			"color": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Color hexadecimal code to represent the work item type.",
+			},
+			"icon": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Icon to represent the work item type.",
+			},
+			"is_disabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates if the work item type is disabled.",
+			},
+			"inherits_from": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Parent work item type reference name.",
+			},
+			"customization": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates the type of customization on this work item type.",
+			},
+			"url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL of the work item type.",
+			},
+		},
+	}
+}
+
+func readDataWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+	processId := d.Get("process_id").(string)
+	referenceName := d.Get("reference_name").(string)
+
+	expand := workitemtrackingprocess.GetWorkItemTypeExpandValues.None
+
+	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
+		ProcessId:  converter.UUID(processId),
+		WitRefName: &referenceName,
+		Expand:     &expand,
+	}
+	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
+	}
+
+	d.Set("name", workItemType.Name)
+	d.Set("description", workItemType.Description)
+	d.Set("is_disabled", workItemType.IsDisabled)
+	d.Set("color", "#"+*workItemType.Color)
+	d.Set("icon", workItemType.Icon)
+	d.Set("inherits_from", workItemType.Inherits)
+	d.Set("customization", string(*workItemType.Customization))
+	d.Set("url", workItemType.Url)
+
+	d.SetId(referenceName)
+
+	return nil
+}
