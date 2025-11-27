@@ -173,6 +173,9 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 		return diag.Errorf(" Update work item type. Error %+v", err)
 	}
 
+	// Note! There is a bug in the PATCH endpoint where the response has icon always set to null. POST and GET doesn't seem to have this issue.
+	updatedWorkItemType.Icon = updateWorkItemType.Icon
+
 	return setWorkItemType(d, updatedWorkItemType)
 }
 

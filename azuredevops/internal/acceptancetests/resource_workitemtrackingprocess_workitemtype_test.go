@@ -11,6 +11,7 @@ import (
 
 func TestAccWorkitemtrackingprocessWorkItemType_Basic(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_workitemtrackingprocess_workitemtype.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -19,13 +20,15 @@ func TestAccWorkitemtrackingprocessWorkItemType_Basic(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicWorkItemType(workItemTypeName),
+				Config: basicWorkItemType(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
 					resource.TestCheckResourceAttr(tfNode, "is_disabled", "false"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
+					resource.TestCheckResourceAttrSet(tfNode, "icon"),
+					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
 				),
 			},
 			{
@@ -38,8 +41,58 @@ func TestAccWorkitemtrackingprocessWorkItemType_Basic(t *testing.T) {
 	})
 }
 
-func basicWorkItemType(name string) string {
+func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
+
+	tfNode := "azuredevops_workitemtrackingprocess_workitemtype.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: basicWorkItemType(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
+					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
+					resource.TestCheckResourceAttr(tfNode, "is_disabled", "false"),
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "color"),
+					resource.TestCheckResourceAttrSet(tfNode, "icon"),
+					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+			{
+				Config: disabledWorkItemType(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
+					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
+					resource.TestCheckResourceAttr(tfNode, "is_disabled", "true"),
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "color"),
+					resource.TestCheckResourceAttrSet(tfNode, "icon"),
+					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+		},
+	})
+}
+
+func basicWorkItemType(name string, processName string) string {
 	process := process(processName)
 	return fmt.Sprintf(`
 %s
@@ -47,6 +100,19 @@ func basicWorkItemType(name string) string {
 resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
   name       = "%s"
   process_id = azuredevops_workitemtrackingprocess_process.test.id
+}
+`, process, name)
+}
+
+func disabledWorkItemType(name string, processName string) string {
+	process := process(processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  name        = "%s"
+  process_id  = azuredevops_workitemtrackingprocess_process.test.id
+  is_disabled = true
 }
 `, process, name)
 }
