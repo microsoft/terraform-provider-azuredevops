@@ -20,7 +20,7 @@ func toWorkItemTypeMap(wit *workitemtrackingprocess.ProcessWorkItemType) map[str
 	return map[string]any{
 		"reference_name": *wit.ReferenceName,
 		"name":           *wit.Name,
-		"description":    *wit.Description,
+		"description":    converter.ToString(wit.Description, ""),
 		"color":          "#" + *wit.Color,
 		"icon":           *wit.Icon,
 		"is_disabled":    *wit.IsDisabled,
@@ -37,6 +37,7 @@ func TestDataWorkItemTypes_List(t *testing.T) {
 	processId := "59788636-ed1e-4e20-a7d1-93ee382beba7"
 	workItemType1 := createProcessWorkItemType("Custom.WorkItemType1")
 	workItemType2 := createProcessWorkItemType("Custom.WorkItemType2")
+	workItemType2.Description = nil
 
 	testCases := []struct {
 		name                  string
