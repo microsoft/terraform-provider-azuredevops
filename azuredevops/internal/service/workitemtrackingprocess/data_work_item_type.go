@@ -14,63 +14,76 @@ import (
 )
 
 func DataWorkItemType() *schema.Resource {
+	workItemTypeSchema := getWorkItemTypeSchema()
+
+	// Add the required input fields that are specific to the single work item type data source
+	workItemTypeSchema["process_id"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Required:         true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
+		Description:      "The ID of the process.",
+	}
+	workItemTypeSchema["reference_name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The reference name of the work item type.",
+	}
+
 	return &schema.Resource{
 		ReadContext: readDataWorkItemType,
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
-		Schema: map[string]*schema.Schema{
-			"process_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
-				Description:      "The ID of the process.",
-			},
-			"reference_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The reference name of the work item type.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the work item type.",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Description of the work item type.",
-			},
-			"color": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Color hexadecimal code to represent the work item type.",
-			},
-			"icon": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Icon to represent the work item type.",
-			},
-			"is_disabled": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates if the work item type is disabled.",
-			},
-			"inherits_from": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Parent work item type reference name.",
-			},
-			"customization": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Indicates the type of customization on this work item type.",
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "URL of the work item type.",
-			},
+		Schema: workItemTypeSchema,
+	}
+}
+
+func getWorkItemTypeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"reference_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Reference name of the work item type.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the work item type.",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Description of the work item type.",
+		},
+		"color": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Color hexadecimal code to represent the work item type.",
+		},
+		"icon": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Icon to represent the work item type.",
+		},
+		"is_disabled": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates if the work item type is disabled.",
+		},
+		"inherits_from": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Parent work item type reference name.",
+		},
+		"customization": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Indicates the type of customization on this work item type.",
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "URL of the work item type.",
 		},
 	}
 }
