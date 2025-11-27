@@ -52,7 +52,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 
 data "azuredevops_workitemtrackingprocess_workitemtype" "test" {
   process_id     = azuredevops_workitemtrackingprocess_workitemtype.test.process_id
-  reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
 }
 `, process, workItemTypeName)
 }

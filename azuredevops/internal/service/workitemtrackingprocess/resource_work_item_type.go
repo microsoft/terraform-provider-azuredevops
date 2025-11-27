@@ -85,6 +85,11 @@ func ResourceWorkItemType() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "Name of work item type.",
 			},
+			"reference_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Reference name of the work item type.",
+			},
 			"url": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -205,6 +210,7 @@ func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingproce
 	setColor(d, workItemType)
 	d.Set("icon", workItemType.Icon)
 	d.Set("inherits_from", workItemType.Inherits)
+	d.Set("reference_name", workItemType.ReferenceName)
 	d.Set("url", workItemType.Url)
 	return nil
 }

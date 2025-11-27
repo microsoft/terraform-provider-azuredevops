@@ -86,15 +86,16 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":    processId.String(),
-		"name":          name,
-		"description":   description,
-		"icon":          icon,
-		"color":         color,
-		"inherits_from": inheritsFrom,
-		"is_disabled":   strconv.FormatBool(isDisabled),
-		"id":            referenceName,
-		"url":           url,
+		"process_id":     processId.String(),
+		"name":           name,
+		"description":    description,
+		"icon":           icon,
+		"color":          color,
+		"inherits_from":  inheritsFrom,
+		"is_disabled":    strconv.FormatBool(isDisabled),
+		"id":             referenceName,
+		"reference_name": referenceName,
+		"url":            url,
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
@@ -183,15 +184,16 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":    processId.String(),
-		"name":          name,
-		"description":   description,
-		"icon":          icon,
-		"color":         color,
-		"inherits_from": inheritsFrom,
-		"is_disabled":   strconv.FormatBool(isDisabled),
-		"id":            referenceName,
-		"url":           url,
+		"process_id":     processId.String(),
+		"name":           name,
+		"description":    description,
+		"icon":           icon,
+		"color":          color,
+		"inherits_from":  inheritsFrom,
+		"is_disabled":    strconv.FormatBool(isDisabled),
+		"id":             referenceName,
+		"reference_name": referenceName,
+		"url":            url,
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
@@ -259,15 +261,16 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":    processId.String(),
-		"name":          name,
-		"description":   description,
-		"icon":          icon,
-		"color":         color,
-		"inherits_from": inheritsFrom,
-		"is_disabled":   strconv.FormatBool(isDisabled),
-		"id":            referenceName,
-		"url":           url,
+		"process_id":     processId.String(),
+		"name":           name,
+		"description":    description,
+		"icon":           icon,
+		"color":          color,
+		"inherits_from":  inheritsFrom,
+		"is_disabled":    strconv.FormatBool(isDisabled),
+		"id":             referenceName,
+		"reference_name": referenceName,
+		"url":            url,
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),

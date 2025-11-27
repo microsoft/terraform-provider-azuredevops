@@ -29,6 +29,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
 					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
 				),
 			},
 			{
@@ -62,6 +63,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
 					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
 				),
 			},
 			{
@@ -80,6 +82,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
 					resource.TestCheckResourceAttr(tfNode, "inherits_from", ""),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
 				),
 			},
 			{
