@@ -47,6 +47,7 @@ import (
 // Azure DevOps client.
 type AggregatedClient struct {
 	OrganizationURL               string
+	RawClient                     azuredevops.Client
 	CoreClient                    core.Client
 	BuildClient                   build.Client
 	DashboardClient               dashboard.Client
@@ -92,6 +93,12 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 	}
 
 	setUserAgent(connection)
+
+	rawClient := azuredevops.NewClient(connection, organizationURL)
+	if rawClient == nil {
+		log.Printf("getAzdoClient(): azuredevops.NewClient failed.")
+		return nil, fmt.Errorf("failed to create Azure DevOps client")
+	}
 
 	coreClient, err := core.NewClient(ctx, connection)
 	if err != nil {
@@ -224,6 +231,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
+		RawClient:                     *rawClient,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
 		DashboardClient:               dashboardClient,
