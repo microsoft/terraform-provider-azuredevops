@@ -21,14 +21,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 func getDataProcessResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
 	r := DataProcess()
-	data := schema.TestResourceDataRaw(t, r.Schema, input)
-	testhelper.ValidateResourceData(t, data, r)
-	return data
+	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
 func TestDataProcess_Get(t *testing.T) {

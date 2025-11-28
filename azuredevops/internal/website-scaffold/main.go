@@ -205,6 +205,11 @@ func (gen documentationGenerator) argumentsBlock() string {
 		for _, fieldName := range gen.sortFields(input) {
 			field := input[fieldName]
 
+			// nothing to see here, move along
+			if !field.Optional && !field.Required {
+				continue
+			}
+
 			if onlyRequired && !field.Required {
 				continue
 			}
@@ -230,11 +235,6 @@ func (gen documentationGenerator) argumentsBlock() string {
 			if field.ForceNew {
 				value += fmt.Sprintf(" Changing this forces a new %s to be created.", gen.brandName)
 			}
-			defaultText := gen.generateDefaultText(field)
-			if defaultText != "" {
-				value += fmt.Sprintf(" %s", defaultText)
-			}
-
 			fields += fmt.Sprintf("* `%s` - (%s) %s\n\n", fieldName, status, value)
 		}
 
@@ -293,11 +293,6 @@ func (gen documentationGenerator) attributesBlock() string {
 			}
 
 			value := gen.buildDescriptionForAttribute(fieldName, field, blockName)
-			defaultText := gen.generateDefaultText(field)
-			if defaultText != "" {
-				value += fmt.Sprintf(" %s", defaultText)
-			}
-
 			fields += fmt.Sprintf("* `%s` - %s\n\n", fieldName, value)
 		}
 
@@ -489,35 +484,6 @@ func (gen documentationGenerator) buildIndentForExample(level int) string {
 }
 
 func (gen documentationGenerator) buildDescriptionForArgument(name string, field *schema.Schema, blockName string) string {
-	generateBlockHint := func() string {
-		if field.Elem != nil {
-			if _, ok := field.Elem.(*schema.Resource); ok {
-				fmtBlock := func(name string, maxItem int, blockIsBefore bool) string {
-					var head string
-					if maxItem == 1 {
-						head = fmt.Sprintf("A `%s` block", name)
-					} else {
-						head = fmt.Sprintf("One or more `%s` blocks", name)
-					}
-
-					var tail string
-					if blockIsBefore {
-						tail = "as defined above."
-					} else {
-						tail = "as defined below."
-					}
-					return head + " " + tail
-				}
-				return fmtBlock(name, field.MaxItems, gen.blockIsBefore(name, blockName))
-			}
-		}
-		return ""
-	}
-
-	if field.Description != "" {
-		return fmt.Sprintf("%s %s", generateBlockHint(), field.Description)
-	}
-
 	if name == "name" {
 		if blockName == "" {
 			if gen.isDataSource {
@@ -538,8 +504,26 @@ func (gen documentationGenerator) buildDescriptionForArgument(name string, field
 		return "The ID of the TODO."
 	}
 
-	if blockHint := generateBlockHint(); blockHint != "" {
-		return blockHint
+	if field.Elem != nil {
+		if _, ok := field.Elem.(*schema.Resource); ok {
+			fmtBlock := func(name string, maxItem int, blockIsBefore bool) string {
+				var head string
+				if maxItem == 1 {
+					head = fmt.Sprintf("A `%s` block", name)
+				} else {
+					head = fmt.Sprintf("One or more `%s` blocks", name)
+				}
+
+				var tail string
+				if blockIsBefore {
+					tail = "as defined above."
+				} else {
+					tail = "as defined below."
+				}
+				return head + " " + tail
+			}
+			return fmtBlock(name, field.MaxItems, gen.blockIsBefore(name, blockName))
+		}
 	}
 
 	switch field.Type {
@@ -551,38 +535,6 @@ func (gen documentationGenerator) buildDescriptionForArgument(name string, field
 }
 
 func (gen documentationGenerator) buildDescriptionForAttribute(name string, field *schema.Schema, blockName string) string {
-	generateBlockHint := func() string {
-		if field.Elem != nil {
-			if _, ok := field.Elem.(*schema.Schema); ok {
-				if gen.blockIsBefore(name, blockName) {
-					return fmt.Sprintf("A `%s` block as defined above.", name)
-				} else {
-					return fmt.Sprintf("A `%s` block as defined below.", name)
-				}
-			}
-
-			if _, ok := field.Elem.(*schema.Resource); ok {
-				if gen.blockIsBefore(name, blockName) {
-					return fmt.Sprintf("A `%s` block as defined above.", name)
-				} else {
-					return fmt.Sprintf("A `%s` block as defined below.", name)
-				}
-			}
-		}
-		if field.Type == schema.TypeList {
-			if gen.blockIsBefore(name, blockName) {
-				return fmt.Sprintf("A `%s` block as defined above.", name)
-			} else {
-				return fmt.Sprintf("A `%s` block as defined below.", name)
-			}
-		}
-		return ""
-	}
-
-	if field.Description != "" {
-		return fmt.Sprintf("%s %s", generateBlockHint(), field.Description)
-	}
-
 	if name == "name" {
 		if blockName == "" {
 			return fmt.Sprintf("The name of this %s.", gen.brandName)
@@ -599,30 +551,32 @@ func (gen documentationGenerator) buildDescriptionForAttribute(name string, fiel
 		return "The ID of the TODO."
 	}
 
-	if blockHint := generateBlockHint(); blockHint != "" {
-		return blockHint
+	if field.Elem != nil {
+		if _, ok := field.Elem.(*schema.Schema); ok {
+			if gen.blockIsBefore(name, blockName) {
+				return fmt.Sprintf("A `%s` block as defined above.", name)
+			} else {
+				return fmt.Sprintf("A `%s` block as defined below.", name)
+			}
+		}
+
+		if _, ok := field.Elem.(*schema.Resource); ok {
+			if gen.blockIsBefore(name, blockName) {
+				return fmt.Sprintf("A `%s` block as defined above.", name)
+			} else {
+				return fmt.Sprintf("A `%s` block as defined below.", name)
+			}
+		}
+	}
+	if field.Type == schema.TypeList {
+		if gen.blockIsBefore(name, blockName) {
+			return fmt.Sprintf("A `%s` block as defined above.", name)
+		} else {
+			return fmt.Sprintf("A `%s` block as defined below.", name)
+		}
 	}
 
 	return "TODO."
-}
-
-func (gen documentationGenerator) generateDefaultText(field *schema.Schema) string {
-	template := "Default: %s"
-	if field.Default != nil {
-		if v, ok := field.Default.(bool); ok {
-			return fmt.Sprintf(template, strconv.FormatBool(v))
-		}
-
-		if v, ok := field.Default.(int); ok {
-			return fmt.Sprintf(template, fmt.Sprintf("%d", v))
-		}
-
-		if v, ok := field.Default.(string); ok {
-			return fmt.Sprintf(template, fmt.Sprintf("\"%s\"", v))
-		}
-	}
-
-	return ""
 }
 
 func (gen documentationGenerator) determineDefaultValueForExample(name string, field *schema.Schema) string {
