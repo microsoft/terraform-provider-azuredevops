@@ -205,6 +205,11 @@ func (gen documentationGenerator) argumentsBlock() string {
 		for _, fieldName := range gen.sortFields(input) {
 			field := input[fieldName]
 
+			// nothing to see here, move along
+			if !field.Optional && !field.Required {
+				continue
+			}
+
 			if onlyRequired && !field.Required {
 				continue
 			}
@@ -479,10 +484,6 @@ func (gen documentationGenerator) buildIndentForExample(level int) string {
 }
 
 func (gen documentationGenerator) buildDescriptionForArgument(name string, field *schema.Schema, blockName string) string {
-	if field.Description != "" {
-		return field.Description
-	}
-
 	if name == "name" {
 		if blockName == "" {
 			if gen.isDataSource {
@@ -534,10 +535,6 @@ func (gen documentationGenerator) buildDescriptionForArgument(name string, field
 }
 
 func (gen documentationGenerator) buildDescriptionForAttribute(name string, field *schema.Schema, blockName string) string {
-	if field.Description != "" {
-		return field.Description
-	}
-
 	if name == "name" {
 		if blockName == "" {
 			return fmt.Sprintf("The name of this %s.", gen.brandName)
