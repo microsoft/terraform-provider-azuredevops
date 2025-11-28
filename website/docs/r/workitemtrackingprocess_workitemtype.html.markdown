@@ -2,12 +2,12 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_workitemtrackingprocess_workitemtype"
 description: |-
-  Manages a work item type.
+  Manages a work item type for a process.
 ---
 
 # azuredevops_workitemtrackingprocess_workitemtype
 
-Manages a work item type.
+Manages a work item type for a process.
 
 ## Example Usage
 
@@ -71,8 +71,8 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-work item types can be imported using the `resource id`, e.g.
+work item types can be imported using the complete resource id `process_id/reference_name`, e.g.
 
 ```shell
-terraform import azuredevops_workitemtrackingprocess_workitemtype.example 00000000-0000-0000-0000-000000000000
+terraform import azuredevops_workitemtrackingprocess_workitemtype.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType
 ```

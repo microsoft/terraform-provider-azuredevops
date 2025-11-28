@@ -12,12 +12,12 @@ Use this data source to access information about all work item types in a proces
 ## Example Usage
 
 ```hcl
-data "azuredevops_workitemtrackingprocess_workitemtypes" "all" {
+data "azuredevops_workitemtrackingprocess_workitemtypes" "custom_process" {
   process_id = "f22ab9cc-acad-47ab-b31d-e43ef8d72b89"
 }
 
 output "work_item_types" {
-  value = data.azuredevops_workitemtrackingprocess_workitemtypes.all.work_item_types
+  value = data.azuredevops_workitemtrackingprocess_workitemtypes.custom_process.work_item_types
 }
 ```
 
