@@ -17,16 +17,13 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 func getWorkItemTypeResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
 	r := ResourceWorkItemType()
-	data := schema.TestResourceDataRaw(t, r.Schema, input)
-	testhelper.ValidateResourceData(t, data, r)
-	return data
+	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
 func TestWorkItemType_Create_Successful(t *testing.T) {

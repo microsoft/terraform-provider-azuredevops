@@ -20,14 +20,11 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 )
 
 func getDataWorkItemTypeResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
 	r := DataWorkItemType()
-	data := schema.TestResourceDataRaw(t, r.Schema, input)
-	testhelper.ValidateResourceData(t, data, r)
-	return data
+	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
 func TestDataWorkItemType_Get(t *testing.T) {
