@@ -176,6 +176,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_variable_group",
 		"azuredevops_workitemtrackingprocess_process",
 		"azuredevops_workitemtrackingprocess_processes",
+		"azuredevops_workitemtrackingprocess_workitemtype",
+		"azuredevops_workitemtrackingprocess_workitemtypes",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap
