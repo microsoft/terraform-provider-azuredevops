@@ -89,17 +89,22 @@ func getWorkItemTypeSchema() map[string]*schema.Schema {
 }
 
 func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType) map[string]any {
-	return map[string]any{
+	wit := map[string]any{
 		"reference_name": workItemType.ReferenceName,
 		"name":           workItemType.Name,
-		"description":    workItemType.Description,
 		"color":          convertColorToResource(workItemType),
 		"icon":           workItemType.Icon,
 		"is_disabled":    workItemType.IsDisabled,
-		"inherits_from":  workItemType.Inherits,
 		"customization":  string(*workItemType.Customization),
 		"url":            workItemType.Url,
 	}
+	if workItemType.Description != nil {
+		wit["description"] = workItemType.Description
+	}
+	if workItemType.Inherits != nil {
+		wit["inherits_from"] = workItemType.Inherits
+	}
+	return wit
 }
 
 func readDataWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
