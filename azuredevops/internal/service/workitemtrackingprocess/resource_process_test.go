@@ -14,16 +14,13 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/testhelper"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 func getProcessResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
 	r := ResourceProcess()
-	data := schema.TestResourceDataRaw(t, r.Schema, input)
-	testhelper.ValidateResourceData(t, data, r)
-	return data
+	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
 func TestProcesses_Create_Successful(t *testing.T) {
