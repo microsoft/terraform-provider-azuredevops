@@ -205,11 +205,15 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 
 func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
 	d.Set("name", workItemType.Name)
-	d.Set("description", workItemType.Description)
+	if workItemType.Description != nil {
+		d.Set("description", workItemType.Description)
+	}
 	d.Set("is_disabled", workItemType.IsDisabled)
 	d.Set("color", convertColorToResource(workItemType))
 	d.Set("icon", workItemType.Icon)
-	d.Set("inherits_from", workItemType.Inherits)
+	if workItemType.Inherits != nil {
+		d.Set("inherits_from", workItemType.Inherits)
+	}
 	d.Set("reference_name", workItemType.ReferenceName)
 	d.Set("url", workItemType.Url)
 	return nil
