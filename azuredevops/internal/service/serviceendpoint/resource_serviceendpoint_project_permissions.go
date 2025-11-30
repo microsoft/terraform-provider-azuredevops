@@ -81,7 +81,7 @@ func resourceCreateOrUpdateServiceEndpointProjectPermissions(ctx context.Context
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
-		clients.Ctx,
+		ctx,
 		serviceendpoint.GetServiceEndpointDetailsArgs{
 			EndpointId: &endpointID,
 			Project:    converter.String(targetProjectID.String()),
