@@ -270,7 +270,7 @@ func resourceDeleteServiceEndpointProjectPermissions(ctx context.Context, d *sch
 	serviceEndpoint.ServiceEndpointProjectReferences = &newRefs
 
 	_, err = clients.ServiceEndpointClient.UpdateServiceEndpoint(
-		clients.Ctx,
+		ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
 			EndpointId: &endpointID,
 			Endpoint:   serviceEndpoint,
