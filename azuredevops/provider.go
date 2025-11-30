@@ -163,6 +163,7 @@ func Provider() *schema.Provider {
 			"azuredevops_descriptor":                     graph.DataDescriptor(),
 			"azuredevops_environment":                    taskagent.DataEnvironment(),
 			"azuredevops_feed":                           feed.DataFeed(),
+			"azuredevops_feeds":                          feed.DataFeeds(),
 			"azuredevops_git_repositories":               git.DataGitRepositories(),
 			"azuredevops_git_repository":                 git.DataGitRepository(),
 			"azuredevops_git_repository_file":            git.DataGitRepositoryFile(),

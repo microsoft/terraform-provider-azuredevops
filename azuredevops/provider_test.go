@@ -144,6 +144,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_descriptor",
 		"azuredevops_environment",
 		"azuredevops_feed",
+		"azuredevops_feeds",
 		"azuredevops_git_repositories",
 		"azuredevops_git_repository",
 		"azuredevops_git_repository_file",
