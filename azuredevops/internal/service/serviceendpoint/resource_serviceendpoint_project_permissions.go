@@ -156,7 +156,7 @@ func resourceCreateOrUpdateServiceEndpointProjectPermissions(ctx context.Context
 
 	serviceEndpoint.ServiceEndpointProjectReferences = &newReferences
 	_, err = clients.ServiceEndpointClient.UpdateServiceEndpoint(
-		clients.Ctx,
+		ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
 			EndpointId: &endpointID,
 			Endpoint:   serviceEndpoint,
