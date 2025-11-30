@@ -181,7 +181,7 @@ func resourceReadServiceEndpointProjectPermissions(ctx context.Context, d *schem
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(
-		clients.Ctx,
+		ctx,
 		serviceendpoint.GetServiceEndpointDetailsArgs{
 			EndpointId: &endpointID,
 			Project:    converter.String(targetProjectIDStr),
