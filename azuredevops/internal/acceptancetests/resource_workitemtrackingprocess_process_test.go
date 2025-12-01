@@ -106,19 +106,19 @@ func process(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtrackingprocess_process" "test" {
   name                   = "%s"
-  parent_process_type_id = "adcc42ab-9882-485e-a3ed-7678f01f66bc" // Wellknown system process
+  parent_process_type_id = "%s"
 }
-`, name)
+`, name, agileSystemProcessTypeId)
 }
 
 func disabledProcess(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtrackingprocess_process" "test" {
   name                   = "%s"
-  parent_process_type_id = "adcc42ab-9882-485e-a3ed-7678f01f66bc" // Wellknown system process
+  parent_process_type_id = "%s"
   is_enabled			 = false
 }
-`, name)
+`, name, agileSystemProcessTypeId)
 }
 
 func getProcessStateIdFunc(tfNode string) resource.ImportStateIdFunc {
@@ -127,3 +127,8 @@ func getProcessStateIdFunc(tfNode string) resource.ImportStateIdFunc {
 		return res.Primary.Attributes["id"], nil
 	}
 }
+
+// Sourced from https://learn.microsoft.com/en-us/rest/api/azure/devops/processes/processes/list?view=azure-devops-rest-7.1&tabs=HTTP#get-the-list-of-processes
+const (
+	agileSystemProcessTypeId string = "adcc42ab-9882-485e-a3ed-7678f01f66bc"
+)
