@@ -6,8 +6,10 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"maps"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
@@ -276,4 +278,38 @@ func TestProcesses_Delete_Successful(t *testing.T) {
 	diags := deleteResourceProcess(context.Background(), d, clients)
 
 	assert.Empty(t, diags)
+}
+
+func TestProcesses_Read_APIReturnsNoProperties(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	typeID := uuid.New()
+	expectedProcessInfo := &workitemtrackingprocess.ProcessInfo{
+		TypeId: &typeID,
+	}
+
+	mockClient.EXPECT().GetProcessByItsId(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessByItsIdArgs) (*workitemtrackingprocess.ProcessInfo, error) {
+			assert.Equal(t, typeID, *args.ProcessTypeId)
+			return expectedProcessInfo, nil
+		},
+	).Times(1)
+
+	d := getProcessResourceData(t, map[string]any{})
+	d.SetId(typeID.String())
+
+	stateBefore := make(map[string]string)
+	maps.Copy(stateBefore, d.State().Attributes)
+
+	diags := readResourceProcess(context.Background(), d, clients)
+	assert.Empty(t, diags)
+
+	stateAfter := d.State().Attributes
+	if diff := cmp.Diff(stateBefore, stateAfter); diff != "" {
+		t.Errorf("expected no resource attribute changes: (-before +after):\n%s", diff)
+	}
 }
