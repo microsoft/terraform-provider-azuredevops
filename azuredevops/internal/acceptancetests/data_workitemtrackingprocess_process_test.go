@@ -1,6 +1,7 @@
 package acceptancetests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,7 +17,7 @@ func TestAccWorkitemtrackingprocessProcess_DataSource_Get(t *testing.T) {
 			{
 				Config: hclDataSourceAgileSystemProcess(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "id", "adcc42ab-9882-485e-a3ed-7678f01f66bc"),
+					resource.TestCheckResourceAttr(tfNode, "id", agileSystemProcessTypeId),
 				),
 			},
 		},
@@ -24,9 +25,9 @@ func TestAccWorkitemtrackingprocessProcess_DataSource_Get(t *testing.T) {
 }
 
 func hclDataSourceAgileSystemProcess() string {
-	return `
+	return fmt.Sprintf(`
 data "azuredevops_workitemtrackingprocess_process" "agile" {
-	id = "adcc42ab-9882-485e-a3ed-7678f01f66bc"
+	id = "%s"
 }
-`
+`, agileSystemProcessTypeId)
 }

@@ -101,8 +101,8 @@ func createResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 
 	isDefault := d.Get("is_default").(bool)
 	isEnabled := d.Get("is_enabled").(bool)
-	if *createdProcess.IsDefault != isDefault ||
-		*createdProcess.IsEnabled != isEnabled {
+	if createdProcess.IsDefault == nil || *createdProcess.IsDefault != isDefault ||
+		createdProcess.IsEnabled == nil || *createdProcess.IsEnabled != isEnabled {
 		return updateResourceProcess(ctx, d, m)
 	}
 
@@ -167,13 +167,27 @@ func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 }
 
 func flattenProcess(d *schema.ResourceData, process *workitemtrackingprocess.ProcessInfo) diag.Diagnostics {
-	d.Set("name", process.Name)
-	d.Set("description", process.Description)
-	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
-	d.Set("reference_name", process.ReferenceName)
-	d.Set("is_default", process.IsDefault)
-	d.Set("is_enabled", process.IsEnabled)
-	d.Set("customization_type", string(*process.CustomizationType))
+	if process.Name != nil {
+		d.Set("name", process.Name)
+	}
+	if process.Description != nil {
+		d.Set("description", process.Description)
+	}
+	if process.ParentProcessTypeId != nil {
+		d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	}
+	if process.ReferenceName != nil {
+		d.Set("reference_name", process.ReferenceName)
+	}
+	if process.IsDefault != nil {
+		d.Set("is_default", process.IsDefault)
+	}
+	if process.IsEnabled != nil {
+		d.Set("is_enabled", process.IsEnabled)
+	}
+	if process.CustomizationType != nil {
+		d.Set("customization_type", string(*process.CustomizationType))
+	}
 
 	return nil
 }
