@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -29,33 +28,9 @@ func getDataProcessesResourceData(t *testing.T, input map[string]interface{}) *s
 }
 
 func TestDataProcesses_ListProcesses(t *testing.T) {
-	process1 := workitemtrackingprocess.ProcessInfo{
-		TypeId:              converter.UUID("59788636-ed1e-4e20-a7d1-93ee382beba7"),
-		Name:                converter.String("FirstProc"),
-		Description:         converter.String("My first process"),
-		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.Inherited,
-		IsDefault:           converter.Bool(false),
-		IsEnabled:           converter.Bool(true),
-		ParentProcessTypeId: converter.ToPtr(uuid.New()),
-		Projects: &[]workitemtrackingprocess.ProjectReference{
-			{
-				Id:          converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
-				Name:        converter.String("Project1"),
-				Description: converter.String("My first project"),
-				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
-			},
-		},
-	}
-
-	process2 := workitemtrackingprocess.ProcessInfo{
-		TypeId:              converter.UUID("2166b5b0-8b17-4c9d-9360-d46526a021bf"),
-		Name:                converter.String("SecondProc"),
-		Description:         converter.String("My second process"),
-		CustomizationType:   &workitemtrackingprocess.CustomizationTypeValues.System,
-		IsDefault:           converter.Bool(true),
-		IsEnabled:           converter.Bool(false),
-		ParentProcessTypeId: converter.ToPtr(uuid.New()),
-	}
+	process1 := createProcessInfo("59788636-ed1e-4e20-a7d1-93ee382beba7", true)
+	process2 := createProcessInfo("2166b5b0-8b17-4c9d-9360-d46526a021bf", false)
+	minimalProcessWithExpand := createMinimalProcessInfo("57ad2818-2b64-4192-9f4d-2207dd8b0553", true)
 
 	testCases := []struct {
 		name              string
@@ -67,7 +42,7 @@ func TestDataProcesses_ListProcesses(t *testing.T) {
 		{
 			name:              "success, no expand",
 			input:             map[string]any{},
-			processesToReturn: []workitemtrackingprocess.ProcessInfo{process2},
+			processesToReturn: []workitemtrackingprocess.ProcessInfo{*process2},
 			expectedReturn: map[string]string{
 				"expand":                           "none",
 				"id":                               "none",
@@ -88,7 +63,7 @@ func TestDataProcesses_ListProcesses(t *testing.T) {
 			input: map[string]any{
 				"expand": "projects",
 			},
-			processesToReturn: []workitemtrackingprocess.ProcessInfo{process1, process2},
+			processesToReturn: []workitemtrackingprocess.ProcessInfo{*process1, *process2},
 			expectedReturn: map[string]string{
 				"expand":      "projects",
 				"id":          "projects",
@@ -117,6 +92,32 @@ func TestDataProcesses_ListProcesses(t *testing.T) {
 				"processes.3089581493.customization_type":     string(*process2.CustomizationType),
 				"processes.3089581493.projects.#":             "0",
 				"processes.3089581493.reference_name":         "",
+			},
+		},
+		{
+			name: "success, with minimal attributes",
+			input: map[string]any{
+				"expand": "projects",
+			},
+			processesToReturn: []workitemtrackingprocess.ProcessInfo{*minimalProcessWithExpand},
+			expectedReturn: map[string]string{
+				"expand":      "projects",
+				"id":          "projects",
+				"processes.#": "1",
+
+				"processes.2306438555.id":                              minimalProcessWithExpand.TypeId.String(),
+				"processes.2306438555.name":                            "",
+				"processes.2306438555.description":                     "",
+				"processes.2306438555.parent_process_type_id":          "",
+				"processes.2306438555.is_default":                      "false",
+				"processes.2306438555.is_enabled":                      "false",
+				"processes.2306438555.customization_type":              "",
+				"processes.2306438555.reference_name":                  "",
+				"processes.2306438555.projects.#":                      "1",
+				"processes.2306438555.projects.1967634730.id":          (*minimalProcessWithExpand.Projects)[0].Id.String(),
+				"processes.2306438555.projects.1967634730.name":        "",
+				"processes.2306438555.projects.1967634730.description": "",
+				"processes.2306438555.projects.1967634730.url":         "",
 			},
 		},
 		{
