@@ -61,6 +61,19 @@ func TestDataWorkItemType_Get(t *testing.T) {
 			},
 		},
 		{
+			name: "success_empty",
+			input: map[string]any{
+				"process_id":     processId,
+				"reference_name": referenceName,
+			},
+			workItemTypeToReturn: *createEmptyProcessWorkItemType(referenceName),
+			expectedReturn: map[string]string{
+				"id":             referenceName,
+				"process_id":     processId,
+				"reference_name": referenceName,
+			},
+		},
+		{
 			name: "error from API",
 			input: map[string]any{
 				"process_id":     processId,
@@ -128,5 +141,11 @@ func createProcessWorkItemType(referenceName string) *workitemtrackingprocess.Pr
 		Inherits:      converter.String("System.WorkItemType"),
 		Customization: &workitemtrackingprocess.CustomizationTypeValues.Custom,
 		Url:           converter.String("https://dev.azure.com/org/_apis/work/processes/process-id/workitemtypes/Custom.WorkItemType"),
+	}
+}
+
+func createEmptyProcessWorkItemType(referenceName string) *workitemtrackingprocess.ProcessWorkItemType {
+	return &workitemtrackingprocess.ProcessWorkItemType{
+		ReferenceName: converter.String(referenceName),
 	}
 }

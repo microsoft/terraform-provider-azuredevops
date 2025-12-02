@@ -6,6 +6,7 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"maps"
 	"strconv"
 	"strings"
 	"testing"
@@ -197,6 +198,48 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 	}
 	if diff := cmp.Diff(expectedWorkItem, d.State().Attributes, diffOptions...); diff != "" {
 		t.Errorf("Resource data attributes mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestWorkItemType_Read_APIReturnsNoProperties(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	referenceName := "MyNewAgileProcess.MyWorkItemType"
+
+	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
+		ReferenceName: &referenceName,
+	}
+
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.None, *args.Expand)
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, referenceName, *args.WitRefName)
+
+			return returnWorkItemType, nil
+		},
+	).Times(1)
+
+	d := getWorkItemTypeResourceData(t, map[string]any{
+		"process_id":     processId.String(),
+		"reference_name": referenceName,
+	})
+	d.SetId(referenceName)
+
+	stateBefore := make(map[string]string)
+	maps.Copy(stateBefore, d.State().Attributes)
+
+	diags := readResourceWorkItemType(context.Background(), d, clients)
+	assert.Empty(t, diags)
+
+	stateAfter := d.State().Attributes
+	if diff := cmp.Diff(stateBefore, stateAfter); diff != "" {
+		t.Errorf("expected no resource attribute changes: (-before +after):\n%s", diff)
 	}
 }
 

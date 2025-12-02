@@ -89,14 +89,28 @@ func getWorkItemTypeSchema() map[string]*schema.Schema {
 }
 
 func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType) map[string]any {
-	wit := map[string]any{
-		"reference_name": workItemType.ReferenceName,
-		"name":           workItemType.Name,
-		"color":          convertColorToResource(workItemType),
-		"icon":           workItemType.Icon,
-		"is_disabled":    workItemType.IsDisabled,
-		"customization":  string(*workItemType.Customization),
-		"url":            workItemType.Url,
+	wit := map[string]any{}
+
+	if workItemType.ReferenceName != nil {
+		wit["reference_name"] = workItemType.ReferenceName
+	}
+	if workItemType.Name != nil {
+		wit["name"] = workItemType.Name
+	}
+	if workItemType.Color != nil {
+		wit["color"] = convertColorToResource(*workItemType.Color)
+	}
+	if workItemType.Icon != nil {
+		wit["icon"] = workItemType.Icon
+	}
+	if workItemType.IsDisabled != nil {
+		wit["is_disabled"] = workItemType.IsDisabled
+	}
+	if workItemType.Customization != nil {
+		wit["customization"] = string(*workItemType.Customization)
+	}
+	if workItemType.Url != nil {
+		wit["url"] = workItemType.Url
 	}
 	if workItemType.Description != nil {
 		wit["description"] = workItemType.Description

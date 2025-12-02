@@ -204,18 +204,30 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
-	d.Set("name", workItemType.Name)
+	if workItemType.Name != nil {
+		d.Set("name", workItemType.Name)
+	}
 	if workItemType.Description != nil {
 		d.Set("description", workItemType.Description)
 	}
-	d.Set("is_disabled", workItemType.IsDisabled)
-	d.Set("color", convertColorToResource(workItemType))
-	d.Set("icon", workItemType.Icon)
+	if workItemType.IsDisabled != nil {
+		d.Set("is_disabled", workItemType.IsDisabled)
+	}
+	if workItemType.Color != nil {
+		d.Set("color", convertColorToResource(*workItemType.Color))
+	}
+	if workItemType.Icon != nil {
+		d.Set("icon", workItemType.Icon)
+	}
 	if workItemType.Inherits != nil {
 		d.Set("inherits_from", workItemType.Inherits)
 	}
-	d.Set("reference_name", workItemType.ReferenceName)
-	d.Set("url", workItemType.Url)
+	if workItemType.ReferenceName != nil {
+		d.Set("reference_name", workItemType.ReferenceName)
+	}
+	if workItemType.Url != nil {
+		d.Set("url", workItemType.Url)
+	}
 	return nil
 }
 
@@ -224,6 +236,6 @@ func convertColorToApi(d *schema.ResourceData) *string {
 		strings.ReplaceAll(d.Get("color").(string), "#", ""))
 }
 
-func convertColorToResource(workItemType *workitemtrackingprocess.ProcessWorkItemType) string {
-	return fmt.Sprintf("#%s", *workItemType.Color)
+func convertColorToResource(apiFormattedColor string) string {
+	return fmt.Sprintf("#%s", apiFormattedColor)
 }
