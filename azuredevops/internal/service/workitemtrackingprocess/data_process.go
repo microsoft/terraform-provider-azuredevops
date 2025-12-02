@@ -126,22 +126,43 @@ func readDataProcess(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 		return diag.Errorf(" Getting process with id: %s. Error: %+v", processId, err)
 	}
 
-	d.Set("name", process.Name)
-	d.Set("description", process.Description)
-	d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
-	d.Set("reference_name", process.ReferenceName)
-	d.Set("is_default", process.IsDefault)
-	d.Set("is_enabled", process.IsEnabled)
-	d.Set("customization_type", string(*process.CustomizationType))
+	if process.Name != nil {
+		d.Set("name", process.Name)
+	}
+	if process.Description != nil {
+		d.Set("description", process.Description)
+	}
+	if process.ParentProcessTypeId != nil {
+		d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	}
+	if process.ReferenceName != nil {
+		d.Set("reference_name", process.ReferenceName)
+	}
+	if process.IsDefault != nil {
+		d.Set("is_default", process.IsDefault)
+	}
+	if process.IsEnabled != nil {
+		d.Set("is_enabled", process.IsEnabled)
+	}
+	if process.CustomizationType != nil {
+		d.Set("customization_type", string(*process.CustomizationType))
+	}
 
 	if process.Projects != nil {
 		var projects []map[string]any
 		for _, p := range *process.Projects {
-			project := map[string]any{
-				"id":          p.Id.String(),
-				"description": p.Description,
-				"name":        p.Name,
-				"url":         p.Url,
+			project := map[string]any{}
+			if p.Id != nil {
+				project["id"] = p.Id.String()
+			}
+			if p.Description != nil {
+				project["description"] = p.Description
+			}
+			if p.Name != nil {
+				project["name"] = p.Name
+			}
+			if p.Url != nil {
+				project["url"] = p.Url
 			}
 			projects = append(projects, project)
 		}

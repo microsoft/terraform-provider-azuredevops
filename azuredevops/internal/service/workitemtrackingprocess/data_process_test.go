@@ -32,6 +32,7 @@ func TestDataProcess_Get(t *testing.T) {
 	id := "59788636-ed1e-4e20-a7d1-93ee382beba7"
 	processWithExpand := createProcessInfo(id, true)
 	processWithoutExpand := createProcessInfo(id, false)
+	minimalProcessWithExpand := createMinimalProcessInfo(id, true)
 
 	testCases := []struct {
 		name            string
@@ -56,7 +57,6 @@ func TestDataProcess_Get(t *testing.T) {
 				"is_default":             strconv.FormatBool(*processWithoutExpand.IsDefault),
 				"is_enabled":             strconv.FormatBool(*processWithoutExpand.IsEnabled),
 				"projects.#":             "0",
-				"reference_name":         "",
 			},
 		},
 		{
@@ -76,12 +76,29 @@ func TestDataProcess_Get(t *testing.T) {
 				"is_default":                      strconv.FormatBool(*processWithExpand.IsDefault),
 				"is_enabled":                      strconv.FormatBool(*processWithExpand.IsEnabled),
 				"customization_type":              string(*processWithExpand.CustomizationType),
-				"reference_name":                  "",
 				"projects.#":                      "1",
 				"projects.1967634730.id":          (*processWithExpand.Projects)[0].Id.String(),
 				"projects.1967634730.name":        *(*processWithExpand.Projects)[0].Name,
 				"projects.1967634730.description": *(*processWithExpand.Projects)[0].Description,
 				"projects.1967634730.url":         *(*processWithExpand.Projects)[0].Url,
+			},
+		},
+		{
+			name: "success, minimal attributes returned",
+			input: map[string]any{
+				"id":     id,
+				"expand": "projects",
+			},
+			processToReturn: *minimalProcessWithExpand,
+			expectedReturn: map[string]string{
+				"expand": "projects",
+
+				"id":                              minimalProcessWithExpand.TypeId.String(),
+				"projects.#":                      "1",
+				"projects.1967634730.id":          (*minimalProcessWithExpand.Projects)[0].Id.String(),
+				"projects.1967634730.name":        "",
+				"projects.1967634730.description": "",
+				"projects.1967634730.url":         "",
 			},
 		},
 		{
@@ -159,6 +176,21 @@ func createProcessInfo(id string, includeProject bool) *workitemtrackingprocess.
 				Name:        converter.String("Project1"),
 				Description: converter.String("My first project"),
 				Url:         converter.String("vstfs:///Classification/TeamProject/6da06557-5456-48c8-b6dc-f111e39a023e"),
+			},
+		}
+	}
+
+	return &process
+}
+
+func createMinimalProcessInfo(id string, includeProject bool) *workitemtrackingprocess.ProcessInfo {
+	process := workitemtrackingprocess.ProcessInfo{
+		TypeId: converter.UUID(id),
+	}
+	if includeProject {
+		process.Projects = &[]workitemtrackingprocess.ProjectReference{
+			{
+				Id: converter.UUID("382fe225-6483-4655-846f-4ac5f7654453"),
 			},
 		}
 	}
