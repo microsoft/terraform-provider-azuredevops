@@ -7,8 +7,6 @@ package workitemtrackingprocess
 import (
 	"context"
 	"errors"
-	"fmt"
-	"hash/crc32"
 	"strconv"
 	"testing"
 
@@ -21,47 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
-
-func getValueOrDefault[T any](ptr *T, defaultValue T) T {
-	if ptr != nil {
-		return *ptr
-	}
-	return defaultValue
-}
-
-func toExpectedWorkItemTypes(processId string, wits ...*workitemtrackingprocess.ProcessWorkItemType) map[string]string {
-	m := map[string]string{
-		"id":                processId,
-		"process_id":        processId,
-		"work_item_types.#": fmt.Sprintf("%d", len(wits)),
-	}
-
-	for _, wit := range wits {
-		setWitAttribute := func(name string, value string) {
-			m[fmt.Sprintf("work_item_types.%d.%s", crc32.ChecksumIEEE([]byte(*wit.ReferenceName)), name)] = value
-		}
-
-		setWitAttribute("description", getValueOrDefault(wit.Description, ""))
-		setWitAttribute("inherits_from", getValueOrDefault(wit.Inherits, ""))
-		setWitAttribute("reference_name", getValueOrDefault(wit.ReferenceName, ""))
-		setWitAttribute("name", getValueOrDefault(wit.Name, ""))
-		if wit.Color != nil {
-			setWitAttribute("color", "#"+*wit.Color)
-		} else {
-			setWitAttribute("color", "")
-		}
-		setWitAttribute("icon", getValueOrDefault(wit.Icon, ""))
-		setWitAttribute("is_disabled", strconv.FormatBool(getValueOrDefault(wit.IsDisabled, false)))
-		if wit.Customization != nil {
-			setWitAttribute("customization", string(*wit.Customization))
-		} else {
-			setWitAttribute("customization", "")
-		}
-		setWitAttribute("url", getValueOrDefault(wit.Url, ""))
-	}
-
-	return m
-}
 
 func TestDataWorkItemTypes_List(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -85,7 +42,41 @@ func TestDataWorkItemTypes_List(t *testing.T) {
 				"process_id": processId,
 			},
 			workItemTypesToReturn: []workitemtrackingprocess.ProcessWorkItemType{*workItemType1, *workItemType2, *emptyWorkItemType},
-			expectedReturn:        toExpectedWorkItemTypes(processId, workItemType1, workItemType2, emptyWorkItemType),
+			expectedReturn: map[string]string{
+				"id":                processId,
+				"process_id":        processId,
+				"work_item_types.#": "3",
+
+				"work_item_types.3092183233.description":    *workItemType1.Description,
+				"work_item_types.3092183233.inherits_from":  *workItemType1.Inherits,
+				"work_item_types.3092183233.reference_name": *workItemType1.ReferenceName,
+				"work_item_types.3092183233.name":           *workItemType1.Name,
+				"work_item_types.3092183233.color":          "#" + *workItemType1.Color,
+				"work_item_types.3092183233.icon":           *workItemType1.Icon,
+				"work_item_types.3092183233.is_disabled":    strconv.FormatBool(*workItemType1.IsDisabled),
+				"work_item_types.3092183233.customization":  string(*workItemType1.Customization),
+				"work_item_types.3092183233.url":            *workItemType1.Url,
+
+				"work_item_types.558344571.description":    *workItemType2.Description,
+				"work_item_types.558344571.inherits_from":  *workItemType2.Inherits,
+				"work_item_types.558344571.reference_name": *workItemType2.ReferenceName,
+				"work_item_types.558344571.name":           *workItemType2.Name,
+				"work_item_types.558344571.color":          "#" + *workItemType2.Color,
+				"work_item_types.558344571.icon":           *workItemType2.Icon,
+				"work_item_types.558344571.is_disabled":    strconv.FormatBool(*workItemType2.IsDisabled),
+				"work_item_types.558344571.customization":  string(*workItemType2.Customization),
+				"work_item_types.558344571.url":            *workItemType2.Url,
+
+				"work_item_types.3142816001.color":          "",
+				"work_item_types.3142816001.customization":  "",
+				"work_item_types.3142816001.description":    "",
+				"work_item_types.3142816001.icon":           "",
+				"work_item_types.3142816001.inherits_from":  "",
+				"work_item_types.3142816001.is_disabled":    "false",
+				"work_item_types.3142816001.name":           "",
+				"work_item_types.3142816001.reference_name": *emptyWorkItemType.ReferenceName,
+				"work_item_types.3142816001.url":            "",
+			},
 		},
 		{
 			name: "error",
