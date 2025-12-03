@@ -292,11 +292,7 @@ func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingproce
 	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
 		var pages []map[string]any
 		for _, page := range *workItemType.Layout.Pages {
-			pageMap, err := setPage(page)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			pages = append(pages, pageMap)
+			pages = append(pages, setPage(page))
 		}
 		if err := d.Set("pages", pages); err != nil {
 			return diag.FromErr(err)
@@ -314,63 +310,48 @@ func convertColorToResource(apiFormattedColor string) string {
 	return fmt.Sprintf("#%s", apiFormattedColor)
 }
 
-func setControl(control workitemtrackingprocess.Control) (map[string]any, error) {
-	if control.Id == nil {
-		return nil, fmt.Errorf("control is missing required id field")
+func setControl(control workitemtrackingprocess.Control) map[string]any {
+	controlMap := map[string]any{}
+	if control.Id != nil {
+		controlMap["id"] = *control.Id
 	}
-	return map[string]any{
-		"id": *control.Id,
-	}, nil
+	return controlMap
 }
 
-func setGroup(group workitemtrackingprocess.Group) (map[string]any, error) {
-	if group.Id == nil {
-		return nil, fmt.Errorf("group is missing required id field")
-	}
-	groupMap := map[string]any{
-		"id": *group.Id,
+func setGroup(group workitemtrackingprocess.Group) map[string]any {
+	groupMap := map[string]any{}
+	if group.Id != nil {
+		groupMap["id"] = *group.Id
 	}
 	if group.Controls != nil {
 		var controls []map[string]any
 		for _, control := range *group.Controls {
-			controlMap, err := setControl(control)
-			if err != nil {
-				return nil, err
-			}
-			controls = append(controls, controlMap)
+			controls = append(controls, setControl(control))
 		}
 		groupMap["controls"] = controls
 	}
-	return groupMap, nil
+	return groupMap
 }
 
-func setSection(section workitemtrackingprocess.Section) (map[string]any, error) {
-	if section.Id == nil {
-		return nil, fmt.Errorf("section is missing required id field")
-	}
-	sectionMap := map[string]any{
-		"id": *section.Id,
+func setSection(section workitemtrackingprocess.Section) map[string]any {
+	sectionMap := map[string]any{}
+	if section.Id != nil {
+		sectionMap["id"] = *section.Id
 	}
 	if section.Groups != nil {
 		var groups []map[string]any
 		for _, group := range *section.Groups {
-			groupMap, err := setGroup(group)
-			if err != nil {
-				return nil, err
-			}
-			groups = append(groups, groupMap)
+			groups = append(groups, setGroup(group))
 		}
 		sectionMap["groups"] = groups
 	}
-	return sectionMap, nil
+	return sectionMap
 }
 
-func setPage(page workitemtrackingprocess.Page) (map[string]any, error) {
-	if page.Id == nil {
-		return nil, fmt.Errorf("page is missing required id field")
-	}
-	pageMap := map[string]any{
-		"id": *page.Id,
+func setPage(page workitemtrackingprocess.Page) map[string]any {
+	pageMap := map[string]any{}
+	if page.Id != nil {
+		pageMap["id"] = *page.Id
 	}
 	if page.PageType != nil {
 		pageMap["page_type"] = string(*page.PageType)
@@ -378,13 +359,9 @@ func setPage(page workitemtrackingprocess.Page) (map[string]any, error) {
 	if page.Sections != nil {
 		var sections []map[string]any
 		for _, section := range *page.Sections {
-			sectionMap, err := setSection(section)
-			if err != nil {
-				return nil, err
-			}
-			sections = append(sections, sectionMap)
+			sections = append(sections, setSection(section))
 		}
 		pageMap["sections"] = sections
 	}
-	return pageMap, nil
+	return pageMap
 }
