@@ -139,31 +139,7 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
 	}
 
-	// Find the group by ID
-	var foundGroup *workitemtrackingprocess.Group
-	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
-		for _, page := range *workItemType.Layout.Pages {
-			if page.Sections != nil {
-				for _, section := range *page.Sections {
-					if section.Groups != nil {
-						for _, group := range *section.Groups {
-							if group.Id != nil && *group.Id == groupId {
-								foundGroup = &group
-								break
-							}
-						}
-					}
-					if foundGroup != nil {
-						break
-					}
-				}
-			}
-			if foundGroup != nil {
-				break
-			}
-		}
-	}
-
+	foundGroup := findGroupById(workItemType.Layout, groupId)
 	if foundGroup == nil {
 		d.SetId("")
 		return nil
@@ -265,6 +241,54 @@ func setWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess
 	}
 	if group.Visible != nil {
 		d.Set("visible", group.Visible)
+	}
+	return nil
+}
+
+func findGroupById(layout *workitemtrackingprocess.FormLayout, groupId string) *workitemtrackingprocess.Group {
+	if layout == nil {
+		return nil
+	}
+	pages := layout.Pages
+	if pages == nil {
+		return nil
+	}
+	for _, page := range *pages {
+		group := findGroupInPage(&page, groupId)
+		if group != nil {
+			return group
+		}
+	}
+	return nil
+}
+
+func findGroupInPage(page *workitemtrackingprocess.Page, groupId string) *workitemtrackingprocess.Group {
+	sections := page.Sections
+	if sections == nil {
+		return nil
+	}
+	for _, section := range *sections {
+		group := findGroupInSection(&section, groupId)
+		if group != nil {
+			return group
+		}
+	}
+	return nil
+}
+
+func findGroupInSection(section *workitemtrackingprocess.Section, groupId string) *workitemtrackingprocess.Group {
+	groups := section.Groups
+	if groups == nil {
+		return nil
+	}
+	for _, group := range *groups {
+		id := group.Id
+		if id == nil {
+			continue
+		}
+		if *id == groupId {
+			return &group
+		}
 	}
 	return nil
 }
