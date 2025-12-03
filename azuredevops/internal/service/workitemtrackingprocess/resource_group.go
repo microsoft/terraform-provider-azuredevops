@@ -43,14 +43,12 @@ func ResourceGroup() *schema.Resource {
 			"page_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "The ID of the page to add the group to.",
 			},
 			"section_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "The ID of the section to add the group to.",
 			},
@@ -178,6 +176,34 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	clients := m.(*client.AggregatedClient)
 
 	groupId := d.Id()
+	processId := d.Get("process_id").(string)
+	witRefName := d.Get("work_item_type_reference_name").(string)
+	pageId := d.Get("page_id").(string)
+	sectionId := d.Get("section_id").(string)
+
+	// Check if page_id or section_id has changed - if so, move the group first
+	if d.HasChange("page_id") || d.HasChange("section_id") {
+		oldPageId, _ := d.GetChange("page_id")
+		oldSectionId, _ := d.GetChange("section_id")
+		moveArgs := workitemtrackingprocess.MoveGroupToPageArgs{
+			ProcessId:  converter.UUID(processId),
+			WitRefName: converter.String(witRefName),
+			PageId:     converter.String(pageId),
+			SectionId:  converter.String(sectionId),
+			GroupId:    &groupId,
+			Group: &workitemtrackingprocess.Group{
+				Id: &groupId,
+			},
+			RemoveFromPageId:    converter.String(oldPageId.(string)),
+			RemoveFromSectionId: converter.String(oldSectionId.(string)),
+		}
+
+		_, err := clients.WorkItemTrackingProcessClient.MoveGroupToPage(ctx, moveArgs)
+		if err != nil {
+			return diag.Errorf(" Moving group. Error %+v", err)
+		}
+	}
+
 	updateGroup := &workitemtrackingprocess.Group{
 		Visible: converter.Bool(d.Get("visible").(bool)),
 	}
@@ -190,10 +216,10 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	args := workitemtrackingprocess.UpdateGroupArgs{
-		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
-		PageId:     converter.String(d.Get("page_id").(string)),
-		SectionId:  converter.String(d.Get("section_id").(string)),
+		ProcessId:  converter.UUID(processId),
+		WitRefName: converter.String(witRefName),
+		PageId:     converter.String(pageId),
+		SectionId:  converter.String(sectionId),
 		GroupId:    &groupId,
 		Group:      updateGroup,
 	}
