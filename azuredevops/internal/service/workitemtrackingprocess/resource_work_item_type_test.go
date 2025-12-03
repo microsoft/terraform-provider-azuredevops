@@ -189,18 +189,21 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 										{
 											Id: &controlId2,
 										},
+										{},
 									},
 								},
 								{
 									Id:       &groupId2,
 									Controls: &[]workitemtrackingprocess.Control{},
 								},
+								{},
 							},
 						},
 						{
 							Id:     &sectionId2,
 							Groups: &[]workitemtrackingprocess.Group{},
 						},
+						{},
 					},
 				},
 				{
@@ -208,6 +211,7 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 					PageType: &workitemtrackingprocess.PageTypeValues.History,
 					Sections: &[]workitemtrackingprocess.Section{},
 				},
+				{},
 			},
 		},
 	}
@@ -243,14 +247,14 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 		"reference_name": referenceName,
 		"url":            url,
 
-		"pages.#":                                   "2",
+		"pages.#":                                   "3",
 		"pages.0.id":                                pageId1,
 		"pages.0.page_type":                         "custom",
-		"pages.0.sections.#":                        "2",
+		"pages.0.sections.#":                        "3",
 		"pages.0.sections.0.id":                     sectionId1,
-		"pages.0.sections.0.groups.#":               "2",
+		"pages.0.sections.0.groups.#":               "3",
 		"pages.0.sections.0.groups.0.id":            groupId1,
-		"pages.0.sections.0.groups.0.controls.#":    "2",
+		"pages.0.sections.0.groups.0.controls.#":    "3",
 		"pages.0.sections.0.groups.0.controls.0.id": controlId1,
 		"pages.0.sections.0.groups.0.controls.1.id": controlId2,
 		"pages.0.sections.0.groups.1.id":            groupId2,
