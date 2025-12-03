@@ -95,6 +95,67 @@ func ResourceWorkItemType() *schema.Resource {
 				Computed:    true,
 				Description: "Url of the work item type.",
 			},
+			"pages": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of pages for the work item type.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the page.",
+						},
+						"page_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of the page.",
+						},
+						"sections": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of sections in the page.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ID of the section.",
+									},
+									"groups": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "List of groups in the section.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The ID of the group.",
+												},
+												"controls": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "List of controls in the group.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The ID of the control.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -138,7 +199,7 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
 		ProcessId:  converter.UUID(processId),
 		WitRefName: &referenceName,
-		Expand:     &workitemtrackingprocess.GetWorkItemTypeExpandValues.None,
+		Expand:     &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
 	}
 	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
 	if err != nil {
@@ -228,6 +289,19 @@ func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingproce
 	if workItemType.Url != nil {
 		d.Set("url", workItemType.Url)
 	}
+	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
+		var pages []map[string]any
+		for _, page := range *workItemType.Layout.Pages {
+			pageMap, err := setPage(page)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			pages = append(pages, pageMap)
+		}
+		if err := d.Set("pages", pages); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	return nil
 }
 
@@ -238,4 +312,79 @@ func convertColorToApi(d *schema.ResourceData) *string {
 
 func convertColorToResource(apiFormattedColor string) string {
 	return fmt.Sprintf("#%s", apiFormattedColor)
+}
+
+func setControl(control workitemtrackingprocess.Control) (map[string]any, error) {
+	if control.Id == nil {
+		return nil, fmt.Errorf("control is missing required id field")
+	}
+	return map[string]any{
+		"id": *control.Id,
+	}, nil
+}
+
+func setGroup(group workitemtrackingprocess.Group) (map[string]any, error) {
+	if group.Id == nil {
+		return nil, fmt.Errorf("group is missing required id field")
+	}
+	groupMap := map[string]any{
+		"id": *group.Id,
+	}
+	if group.Controls != nil {
+		var controls []map[string]any
+		for _, control := range *group.Controls {
+			controlMap, err := setControl(control)
+			if err != nil {
+				return nil, err
+			}
+			controls = append(controls, controlMap)
+		}
+		groupMap["controls"] = controls
+	}
+	return groupMap, nil
+}
+
+func setSection(section workitemtrackingprocess.Section) (map[string]any, error) {
+	if section.Id == nil {
+		return nil, fmt.Errorf("section is missing required id field")
+	}
+	sectionMap := map[string]any{
+		"id": *section.Id,
+	}
+	if section.Groups != nil {
+		var groups []map[string]any
+		for _, group := range *section.Groups {
+			groupMap, err := setGroup(group)
+			if err != nil {
+				return nil, err
+			}
+			groups = append(groups, groupMap)
+		}
+		sectionMap["groups"] = groups
+	}
+	return sectionMap, nil
+}
+
+func setPage(page workitemtrackingprocess.Page) (map[string]any, error) {
+	if page.Id == nil {
+		return nil, fmt.Errorf("page is missing required id field")
+	}
+	pageMap := map[string]any{
+		"id": *page.Id,
+	}
+	if page.PageType != nil {
+		pageMap["page_type"] = string(*page.PageType)
+	}
+	if page.Sections != nil {
+		var sections []map[string]any
+		for _, section := range *page.Sections {
+			sectionMap, err := setSection(section)
+			if err != nil {
+				return nil, err
+			}
+			sections = append(sections, sectionMap)
+		}
+		pageMap["sections"] = sections
+	}
+	return pageMap, nil
 }

@@ -150,6 +150,17 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
 	colorWithoutHash := strings.ReplaceAll(color, "#", "")
+
+	// Create full pages structure
+	controlId1 := "control-1"
+	controlId2 := "control-2"
+	groupId1 := "group-1"
+	groupId2 := "group-2"
+	sectionId1 := "section-1"
+	sectionId2 := "section-2"
+	pageId1 := "page-1"
+	pageId2 := "page-2"
+
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
 		Color:         &colorWithoutHash,
@@ -160,11 +171,50 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 		Name:          &name,
 		ReferenceName: &referenceName,
 		Url:           &url,
+		Layout: &workitemtrackingprocess.FormLayout{
+			Pages: &[]workitemtrackingprocess.Page{
+				{
+					Id:       &pageId1,
+					PageType: &workitemtrackingprocess.PageTypeValues.Custom,
+					Sections: &[]workitemtrackingprocess.Section{
+						{
+							Id: &sectionId1,
+							Groups: &[]workitemtrackingprocess.Group{
+								{
+									Id: &groupId1,
+									Controls: &[]workitemtrackingprocess.Control{
+										{
+											Id: &controlId1,
+										},
+										{
+											Id: &controlId2,
+										},
+									},
+								},
+								{
+									Id:       &groupId2,
+									Controls: &[]workitemtrackingprocess.Control{},
+								},
+							},
+						},
+						{
+							Id:     &sectionId2,
+							Groups: &[]workitemtrackingprocess.Group{},
+						},
+					},
+				},
+				{
+					Id:       &pageId2,
+					PageType: &workitemtrackingprocess.PageTypeValues.History,
+					Sections: &[]workitemtrackingprocess.Section{},
+				},
+			},
+		},
 	}
 
 	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
-			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.None, *args.Expand)
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
 			assert.Equal(t, processId, *args.ProcessId)
 			assert.Equal(t, referenceName, *args.WitRefName)
 
@@ -192,6 +242,24 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 		"id":             referenceName,
 		"reference_name": referenceName,
 		"url":            url,
+
+		"pages.#":                                   "2",
+		"pages.0.id":                                pageId1,
+		"pages.0.page_type":                         "custom",
+		"pages.0.sections.#":                        "2",
+		"pages.0.sections.0.id":                     sectionId1,
+		"pages.0.sections.0.groups.#":               "2",
+		"pages.0.sections.0.groups.0.id":            groupId1,
+		"pages.0.sections.0.groups.0.controls.#":    "2",
+		"pages.0.sections.0.groups.0.controls.0.id": controlId1,
+		"pages.0.sections.0.groups.0.controls.1.id": controlId2,
+		"pages.0.sections.0.groups.1.id":            groupId2,
+		"pages.0.sections.0.groups.1.controls.#":    "0",
+		"pages.0.sections.1.id":                     sectionId2,
+		"pages.0.sections.1.groups.#":               "0",
+		"pages.1.id":                                pageId2,
+		"pages.1.page_type":                         "history",
+		"pages.1.sections.#":                        "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
@@ -217,7 +285,7 @@ func TestWorkItemType_Read_APIReturnsNoProperties(t *testing.T) {
 
 	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
-			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.None, *args.Expand)
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
 			assert.Equal(t, processId, *args.ProcessId)
 			assert.Equal(t, referenceName, *args.WitRefName)
 
