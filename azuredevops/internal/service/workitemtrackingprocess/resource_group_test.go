@@ -25,14 +25,6 @@ func getGroupResourceData(t *testing.T, input map[string]any) *schema.ResourceDa
 	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
-// Simulates an already created group (persisted in state)
-func getPersistedGroupResourceData(t *testing.T, id string, input map[string]any) *schema.ResourceData {
-	r := ResourceGroup()
-	d := schema.TestResourceDataRaw(t, r.Schema, input)
-	d.SetId(id)
-	return r.Data(d.State())
-}
-
 func TestGroup_Create_Successful(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -231,19 +223,29 @@ func TestGroup_Update_Successful(t *testing.T) {
 	pageId := "page-1"
 	sectionId := "section-1"
 	groupId := "group-1"
-	initialLabel := "My Group"
-	initialOrder := 1
-	initialVisible := true
-	updatedLabel := "Updated Group Label"
-	updatedOrder := 2
-	updatedVisible := false
+	label := "My Group"
+	order := 1
+	visible := true
 
 	returnGroup := &workitemtrackingprocess.Group{
 		Id:      &groupId,
-		Label:   &updatedLabel,
-		Order:   &updatedOrder,
-		Visible: &updatedVisible,
+		Label:   &label,
+		Order:   &order,
+		Visible: &visible,
 	}
+
+	// TestResourceDataRaw treats all fields as changed, so HasChange will return true
+	// This means MoveGroupToPage will be called even though we're not actually moving
+	mockClient.EXPECT().MoveGroupToPage(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.MoveGroupToPageArgs) (*workitemtrackingprocess.Group, error) {
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, witRefName, *args.WitRefName)
+			assert.Equal(t, pageId, *args.PageId)
+			assert.Equal(t, sectionId, *args.SectionId)
+			assert.Equal(t, groupId, *args.GroupId)
+			return returnGroup, nil
+		},
+	).Times(1)
 
 	mockClient.EXPECT().UpdateGroup(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.UpdateGroupArgs) (*workitemtrackingprocess.Group, error) {
@@ -252,28 +254,24 @@ func TestGroup_Update_Successful(t *testing.T) {
 			assert.Equal(t, pageId, *args.PageId)
 			assert.Equal(t, sectionId, *args.SectionId)
 			assert.Equal(t, groupId, *args.GroupId)
-			assert.Equal(t, updatedLabel, *args.Group.Label)
-			assert.Equal(t, updatedOrder, *args.Group.Order)
-			assert.Equal(t, updatedVisible, *args.Group.Visible)
+			assert.Equal(t, label, *args.Group.Label)
+			assert.Equal(t, order, *args.Group.Order)
+			assert.Equal(t, visible, *args.Group.Visible)
 
 			return returnGroup, nil
 		},
 	).Times(1)
 
-	d := getPersistedGroupResourceData(t, groupId, map[string]any{
+	d := getGroupResourceData(t, map[string]any{
 		"process_id":                    processId.String(),
 		"work_item_type_reference_name": witRefName,
 		"page_id":                       pageId,
 		"section_id":                    sectionId,
-		"label":                         initialLabel,
-		"order":                         initialOrder,
-		"visible":                       initialVisible,
+		"label":                         label,
+		"order":                         order,
+		"visible":                       visible,
 	})
-
-	// Set the new values
-	d.Set("label", updatedLabel)
-	d.Set("order", updatedOrder)
-	d.Set("visible", updatedVisible)
+	d.SetId(groupId)
 
 	diags := updateResourceGroup(context.Background(), d, clients)
 	assert.Empty(t, diags)
@@ -283,9 +281,9 @@ func TestGroup_Update_Successful(t *testing.T) {
 		"work_item_type_reference_name": witRefName,
 		"page_id":                       pageId,
 		"section_id":                    sectionId,
-		"label":                         updatedLabel,
-		"order":                         strconv.Itoa(updatedOrder),
-		"visible":                       strconv.FormatBool(updatedVisible),
+		"label":                         label,
+		"order":                         strconv.Itoa(order),
+		"visible":                       strconv.FormatBool(visible),
 		"id":                            groupId,
 	}
 	diffOptions := []cmp.Option{
