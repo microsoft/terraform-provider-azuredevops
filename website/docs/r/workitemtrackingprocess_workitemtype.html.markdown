@@ -52,9 +52,43 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the work item type.
 
+* `pages` - A `pages` block as defined below.
+
 * `reference_name` -  Reference name of the work item type.
 
 * `url` -  Url of the work item type.
+
+---
+
+A `controls` block exports the following:
+
+* `id` - The ID of the control.
+
+---
+
+A `groups` block exports the following:
+
+* `controls` - A `controls` block as defined above.
+
+* `id` - The ID of the group.
+
+---
+
+A `pages` block exports the following:
+
+* `id` - The ID of the page.
+
+* `page_type` - The type of the page.
+
+* `sections` - A `sections` block as defined below.
+
+---
+
+A `sections` block exports the following:
+
+* `groups` - A `groups` block as defined above.
+
+* `id` - The ID of the section.
 
 ## Relevant Links
 
