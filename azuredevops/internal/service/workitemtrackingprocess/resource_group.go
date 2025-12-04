@@ -72,6 +72,7 @@ func ResourceGroup() *schema.Resource {
 			"order": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "Order in which the group should appear in the section.",
 			},
 			"visible": {

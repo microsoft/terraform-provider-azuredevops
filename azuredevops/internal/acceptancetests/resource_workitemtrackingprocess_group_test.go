@@ -33,6 +33,7 @@ func TestAccWorkitemtrackingprocessGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckNoResourceAttr(tfNode, "order"),
 				),
 			},
 			{
