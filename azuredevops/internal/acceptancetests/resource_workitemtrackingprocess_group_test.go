@@ -96,7 +96,6 @@ func TestAccWorkitemtrackingprocessGroup_Update(t *testing.T) {
 	})
 }
 
-
 func TestAccWorkitemtrackingprocessGroup_Move(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
