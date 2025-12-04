@@ -114,7 +114,8 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	if v, ok := d.GetOk("id"); ok {
 		group.Id = converter.String(v.(string))
 	}
-	if v, ok := d.GetOk("order"); ok {
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("order"); ok {
 		group.Order = converter.Int(v.(int))
 	}
 
@@ -209,7 +210,8 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	if v, ok := d.GetOk("label"); ok {
 		updateGroup.Label = converter.String(v.(string))
 	}
-	if v, ok := d.GetOk("order"); ok {
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("order"); ok {
 		updateGroup.Order = converter.Int(v.(int))
 	}
 

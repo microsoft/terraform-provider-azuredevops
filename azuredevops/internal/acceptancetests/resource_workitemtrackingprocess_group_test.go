@@ -83,7 +83,6 @@ func TestAccWorkitemtrackingprocessGroup_Update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "section_id"),
 					resource.TestCheckResourceAttr(tfNode, "label", "Updated Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
-					resource.TestCheckResourceAttr(tfNode, "order", "2"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
@@ -217,7 +216,6 @@ resource "azuredevops_workitemtrackingprocess_group" "test" {
   section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
   label                          = "Updated Group"
   visible                        = false
-  order                          = 2
 }
 `, workItemType)
 }

@@ -39,7 +39,7 @@ func TestGroup_Create_Successful(t *testing.T) {
 	sectionId := "section-1"
 	groupId := "group-1"
 	label := "My Group"
-	order := 1
+	order := 0
 	visible := true
 
 	returnGroup := &workitemtrackingprocess.Group{
