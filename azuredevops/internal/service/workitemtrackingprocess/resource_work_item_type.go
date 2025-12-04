@@ -187,7 +187,9 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 		return diag.Errorf(" Creating work item type. Error %+v", err)
 	}
 	d.SetId(*createdWorkItemType.ReferenceName)
-	return setWorkItemType(d, createdWorkItemType)
+
+	// The POST operation doesn't support layout expand, so we have to call read and risk eventual consistency problems
+	return readResourceWorkItemType(ctx, d, m)
 }
 
 func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -234,15 +236,13 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 		WorkItemTypeUpdate: updateWorkItemType,
 	}
 
-	updatedWorkItemType, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemType(ctx, args)
+	_, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemType(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update work item type. Error %+v", err)
 	}
 
-	// Note! There is a bug in the PATCH endpoint where the response has icon always set to null. POST and GET doesn't seem to have this issue.
-	updatedWorkItemType.Icon = updateWorkItemType.Icon
-
-	return setWorkItemType(d, updatedWorkItemType)
+	// The PATCH operation doesn't support layout expand, so we have to call read and risk eventual consistency problems
+	return readResourceWorkItemType(ctx, d, m)
 }
 
 func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
