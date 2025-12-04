@@ -44,6 +44,10 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 	referenceName := "MyNewAgileProcess.MyWorkItemType"
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
+	pageId := "page-1"
+	sectionId := "section-1"
+	groupId := "group-1"
+
 	colorWithoutHash := strings.ReplaceAll(color, "#", "")
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
@@ -57,6 +61,28 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		Url:           &url,
 	}
 
+	withLayout := func(wit *workitemtrackingprocess.ProcessWorkItemType) *workitemtrackingprocess.ProcessWorkItemType {
+		wit.Layout = &workitemtrackingprocess.FormLayout{
+			Pages: &[]workitemtrackingprocess.Page{
+				{
+					Id:       &pageId,
+					PageType: &workitemtrackingprocess.PageTypeValues.Custom,
+					Sections: &[]workitemtrackingprocess.Section{
+						{
+							Id: &sectionId,
+							Groups: &[]workitemtrackingprocess.Group{
+								{
+									Id: &groupId,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		return wit
+	}
+
 	mockClient.EXPECT().CreateProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.CreateProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
 			assert.Equal(t, name, *args.WorkItemType.Name)
@@ -67,6 +93,17 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 			assert.Equal(t, isDisabled, *args.WorkItemType.IsDisabled)
 
 			return returnWorkItemType, nil
+		},
+	).Times(1)
+
+	// Create calls read to get the full state including layout
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, referenceName, *args.WitRefName)
+
+			return withLayout(returnWorkItemType), nil
 		},
 	).Times(1)
 
@@ -94,6 +131,15 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		"id":             referenceName,
 		"reference_name": referenceName,
 		"url":            url,
+
+		"pages.#":                              "1",
+		"pages.0.id":                           pageId,
+		"pages.0.page_type":                    "custom",
+		"pages.0.sections.#":                   "1",
+		"pages.0.sections.0.id":                sectionId,
+		"pages.0.sections.0.groups.#":          "1",
+		"pages.0.sections.0.groups.0.id":       groupId,
+		"pages.0.sections.0.groups.0.controls.#": "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
@@ -332,6 +378,10 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 	referenceName := "MyNewAgileProcess.MyWorkItemType"
 	url := "https://dev.azure.com/foo/_apis/work/processes/4bab314e-358e-4bf3-9508-806ba6ac0c30/workItemTypes/MyNewAgileProcess.MyWorkItemType"
 
+	pageId := "page-1"
+	sectionId := "section-1"
+	groupId := "group-1"
+
 	colorWithoutHash := strings.ReplaceAll(color, "#", "")
 	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
 		Icon:          &icon,
@@ -345,6 +395,28 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 		Url:           &url,
 	}
 
+	withLayout := func(wit *workitemtrackingprocess.ProcessWorkItemType) *workitemtrackingprocess.ProcessWorkItemType {
+		wit.Layout = &workitemtrackingprocess.FormLayout{
+			Pages: &[]workitemtrackingprocess.Page{
+				{
+					Id:       &pageId,
+					PageType: &workitemtrackingprocess.PageTypeValues.Custom,
+					Sections: &[]workitemtrackingprocess.Section{
+						{
+							Id: &sectionId,
+							Groups: &[]workitemtrackingprocess.Group{
+								{
+									Id: &groupId,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		return wit
+	}
+
 	mockClient.EXPECT().UpdateProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.UpdateProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
 			assert.Equal(t, processId, *args.ProcessId)
@@ -355,6 +427,17 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 			assert.Equal(t, isDisabled, *args.WorkItemTypeUpdate.IsDisabled)
 
 			return returnWorkItemType, nil
+		},
+	).Times(1)
+
+	// Update calls read to get the full state including layout
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, referenceName, *args.WitRefName)
+
+			return withLayout(returnWorkItemType), nil
 		},
 	).Times(1)
 
@@ -383,6 +466,15 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 		"id":             referenceName,
 		"reference_name": referenceName,
 		"url":            url,
+
+		"pages.#":                                "1",
+		"pages.0.id":                             pageId,
+		"pages.0.page_type":                      "custom",
+		"pages.0.sections.#":                     "1",
+		"pages.0.sections.0.id":                  sectionId,
+		"pages.0.sections.0.groups.#":            "1",
+		"pages.0.sections.0.groups.0.id":         groupId,
+		"pages.0.sections.0.groups.0.controls.#": "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),

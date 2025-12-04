@@ -66,6 +66,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
 					resource.TestCheckNoResourceAttr(tfNode, "inherits_from"),
 					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "pages.#"),
 				),
 			},
 			{
@@ -86,6 +87,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
 					resource.TestCheckNoResourceAttr(tfNode, "inherits_from"),
 					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "pages.#"),
 				),
 			},
 			{
