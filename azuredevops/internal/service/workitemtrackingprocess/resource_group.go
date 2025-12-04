@@ -2,6 +2,8 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -24,6 +26,9 @@ func ResourceGroup() *schema.Resource {
 			Read:   schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: importResourceGroup,
 		},
 		Schema: map[string]*schema.Schema{
 			"process_id": {
@@ -77,6 +82,22 @@ func ResourceGroup() *schema.Resource {
 			},
 		},
 	}
+}
+
+func importResourceGroup(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	// Import ID format: process_id/work_item_type_reference_name/page_id/section_id/group_id
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 5 {
+		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_reference_name/page_id/section_id/group_id")
+	}
+
+	d.Set("process_id", parts[0])
+	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("page_id", parts[2])
+	d.Set("section_id", parts[3])
+	d.SetId(parts[4])
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

@@ -405,6 +405,73 @@ func TestGroup_FindGroupById(t *testing.T) {
 	}
 }
 
+func TestGroup_Import(t *testing.T) {
+	tests := []struct {
+		name                          string
+		importId                      string
+		expectError                   bool
+		errorContains                 string
+		expectedProcessId             string
+		expectedWorkItemTypeReference string
+		expectedPageId                string
+		expectedSectionId             string
+		expectedGroupId               string
+	}{
+		{
+			name:                          "valid import id",
+			importId:                      "00000000-0000-0000-0000-000000000001/MyProcess.MyWorkItemType/page-1/section-1/group-1",
+			expectError:                   false,
+			expectedProcessId:             "00000000-0000-0000-0000-000000000001",
+			expectedWorkItemTypeReference: "MyProcess.MyWorkItemType",
+			expectedPageId:                "page-1",
+			expectedSectionId:             "section-1",
+			expectedGroupId:               "group-1",
+		},
+		{
+			name:          "missing parts",
+			importId:      "process-id/wit-ref-name/page-id",
+			expectError:   true,
+			errorContains: "invalid import ID format",
+		},
+		{
+			name:          "too many parts",
+			importId:      "process-id/wit-ref-name/page-id/section-id/group-id/extra",
+			expectError:   true,
+			errorContains: "invalid import ID format",
+		},
+		{
+			name:          "empty string",
+			importId:      "",
+			expectError:   true,
+			errorContains: "invalid import ID format",
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			d := getGroupResourceData(t, map[string]any{})
+			d.SetId(testCase.importId)
+
+			result, err := importResourceGroup(context.Background(), d, nil)
+
+			if testCase.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.errorContains)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Len(t, result, 1)
+				assert.Equal(t, testCase.expectedProcessId, d.Get("process_id"))
+				assert.Equal(t, testCase.expectedWorkItemTypeReference, d.Get("work_item_type_reference_name"))
+				assert.Equal(t, testCase.expectedPageId, d.Get("page_id"))
+				assert.Equal(t, testCase.expectedSectionId, d.Get("section_id"))
+				assert.Equal(t, testCase.expectedGroupId, d.Id())
+			}
+		})
+	}
+}
+
 func TestGroup_Update_Successful(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
