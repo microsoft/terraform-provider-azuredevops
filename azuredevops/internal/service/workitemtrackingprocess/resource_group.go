@@ -171,29 +171,6 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	pageId := d.Get("page_id").(string)
 	sectionId := d.Get("section_id").(string)
 
-	// Check if page_id or section_id has changed - if so, move the group first
-	if d.HasChange("page_id") || d.HasChange("section_id") {
-		oldPageId, _ := d.GetChange("page_id")
-		oldSectionId, _ := d.GetChange("section_id")
-		moveArgs := workitemtrackingprocess.MoveGroupToPageArgs{
-			ProcessId:  converter.UUID(processId),
-			WitRefName: converter.String(witRefName),
-			PageId:     converter.String(pageId),
-			SectionId:  converter.String(sectionId),
-			GroupId:    &groupId,
-			Group: &workitemtrackingprocess.Group{
-				Id: &groupId,
-			},
-			RemoveFromPageId:    converter.String(oldPageId.(string)),
-			RemoveFromSectionId: converter.String(oldSectionId.(string)),
-		}
-
-		_, err := clients.WorkItemTrackingProcessClient.MoveGroupToPage(ctx, moveArgs)
-		if err != nil {
-			return diag.Errorf(" Moving group. Error %+v", err)
-		}
-	}
-
 	updateGroup := &workitemtrackingprocess.Group{
 		Visible: converter.Bool(d.Get("visible").(bool)),
 	}
@@ -204,6 +181,29 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("order"); ok {
 		updateGroup.Order = converter.Int(v.(int))
+	}
+
+	// Check if page_id or section_id has changed - if so, move the group (which also updates it)
+	if d.HasChange("page_id") || d.HasChange("section_id") {
+		oldPageId, _ := d.GetChange("page_id")
+		oldSectionId, _ := d.GetChange("section_id")
+		moveArgs := workitemtrackingprocess.MoveGroupToPageArgs{
+			ProcessId:           converter.UUID(processId),
+			WitRefName:          converter.String(witRefName),
+			PageId:              converter.String(pageId),
+			SectionId:           converter.String(sectionId),
+			GroupId:             &groupId,
+			Group:               updateGroup,
+			RemoveFromPageId:    converter.String(oldPageId.(string)),
+			RemoveFromSectionId: converter.String(oldSectionId.(string)),
+		}
+
+		movedGroup, err := clients.WorkItemTrackingProcessClient.MoveGroupToPage(ctx, moveArgs)
+		if err != nil {
+			return diag.Errorf(" Moving group. Error %+v", err)
+		}
+
+		return setWorkItemTypeGroup(d, movedGroup)
 	}
 
 	args := workitemtrackingprocess.UpdateGroupArgs{

@@ -497,19 +497,9 @@ func TestGroup_Update_Successful(t *testing.T) {
 
 	// TestResourceDataRaw treats all fields as changed, so HasChange will return true
 	// This means MoveGroupToPage will be called even though we're not actually moving
+	// MoveGroupToPage also updates the group, so UpdateGroup is not called
 	mockClient.EXPECT().MoveGroupToPage(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.MoveGroupToPageArgs) (*workitemtrackingprocess.Group, error) {
-			assert.Equal(t, processId, *args.ProcessId)
-			assert.Equal(t, witRefName, *args.WitRefName)
-			assert.Equal(t, pageId, *args.PageId)
-			assert.Equal(t, sectionId, *args.SectionId)
-			assert.Equal(t, groupId, *args.GroupId)
-			return returnGroup, nil
-		},
-	).Times(1)
-
-	mockClient.EXPECT().UpdateGroup(clients.Ctx, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, args workitemtrackingprocess.UpdateGroupArgs) (*workitemtrackingprocess.Group, error) {
 			assert.Equal(t, processId, *args.ProcessId)
 			assert.Equal(t, witRefName, *args.WitRefName)
 			assert.Equal(t, pageId, *args.PageId)
@@ -518,7 +508,6 @@ func TestGroup_Update_Successful(t *testing.T) {
 			assert.Equal(t, label, *args.Group.Label)
 			assert.Equal(t, order, *args.Group.Order)
 			assert.Equal(t, visible, *args.Group.Visible)
-
 			return returnGroup, nil
 		},
 	).Times(1)
