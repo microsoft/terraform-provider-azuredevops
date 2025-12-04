@@ -63,12 +63,6 @@ func ResourceGroup() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "Label for the group.",
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the group.",
-			},
 			"order": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -110,9 +104,6 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	if v, ok := d.GetOk("label"); ok {
 		group.Label = converter.String(v.(string))
-	}
-	if v, ok := d.GetOk("id"); ok {
-		group.Id = converter.String(v.(string))
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("order"); ok {
@@ -254,9 +245,6 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func setWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess.Group) diag.Diagnostics {
-	if group.Id != nil {
-		d.Set("id", group.Id)
-	}
 	if group.Label != nil {
 		d.Set("label", group.Label)
 	}

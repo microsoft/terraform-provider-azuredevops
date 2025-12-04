@@ -96,36 +96,6 @@ func TestAccWorkitemtrackingprocessGroup_Update(t *testing.T) {
 	})
 }
 
-func TestAccWorkitemtrackingprocessGroup_WithCustomId(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_group.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: groupWithCustomId(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
-					resource.TestCheckResourceAttrSet(tfNode, "page_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "section_id"),
-					resource.TestCheckResourceAttr(tfNode, "label", "Custom ID Group"),
-					resource.TestCheckResourceAttr(tfNode, "id", "custom-group-id"),
-				),
-			},
-			{
-				ResourceName:      tfNode,
-				ImportStateIdFunc: groupImportStateIdFunc(tfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
 
 func TestAccWorkitemtrackingprocessGroup_Move(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
@@ -216,22 +186,6 @@ resource "azuredevops_workitemtrackingprocess_group" "test" {
   section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
   label                          = "Updated Group"
   visible                        = false
-}
-`, workItemType)
-}
-
-func groupWithCustomId(workItemTypeName string, processName string) string {
-	workItemType := basicWorkItemType(workItemTypeName, processName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_workitemtrackingprocess_group" "test" {
-  process_id                     = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
-  label                          = "Custom ID Group"
-  id                             = "custom-group-id"
 }
 `, workItemType)
 }
