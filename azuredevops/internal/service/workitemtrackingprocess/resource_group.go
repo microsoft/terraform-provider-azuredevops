@@ -59,7 +59,7 @@ func ResourceGroup() *schema.Resource {
 			},
 			"label": {
 				Type:             schema.TypeString,
-				Optional:         true,
+				Required:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "Label for the group.",
 			},
@@ -99,11 +99,8 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	clients := m.(*client.AggregatedClient)
 
 	group := workitemtrackingprocess.Group{
+		Label:   converter.String(d.Get("label").(string)),
 		Visible: converter.Bool(d.Get("visible").(bool)),
-	}
-
-	if v, ok := d.GetOk("label"); ok {
-		group.Label = converter.String(v.(string))
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("order"); ok {
@@ -172,11 +169,8 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	sectionId := d.Get("section_id").(string)
 
 	updateGroup := &workitemtrackingprocess.Group{
+		Label:   converter.String(d.Get("label").(string)),
 		Visible: converter.Bool(d.Get("visible").(bool)),
-	}
-
-	if v, ok := d.GetOk("label"); ok {
-		updateGroup.Label = converter.String(v.(string))
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("order"); ok {

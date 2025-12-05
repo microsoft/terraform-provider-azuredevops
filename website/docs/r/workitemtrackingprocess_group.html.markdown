@@ -46,9 +46,9 @@ The following arguments are supported:
 
 * `section_id` - (Required) The ID of the section to add the group to. Changing this moves the group to the new section.
 
----
+* `label` - (Required) Label for the group.
 
-* `label` - (Optional) Label for the group.
+---
 
 * `order` - (Optional) Order in which the group should appear in the section.
 
