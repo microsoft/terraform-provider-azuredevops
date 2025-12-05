@@ -265,38 +265,27 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
-	if workItemType.Name != nil {
-		d.Set("name", workItemType.Name)
-	}
-	if workItemType.Description != nil {
-		d.Set("description", workItemType.Description)
-	}
-	if workItemType.IsDisabled != nil {
-		d.Set("is_disabled", workItemType.IsDisabled)
-	}
+	d.Set("name", workItemType.Name)
+	d.Set("description", workItemType.Description)
+	d.Set("is_disabled", workItemType.IsDisabled)
 	if workItemType.Color != nil {
 		d.Set("color", convertColorToResource(*workItemType.Color))
+	} else {
+		d.Set("color", nil)
 	}
-	if workItemType.Icon != nil {
-		d.Set("icon", workItemType.Icon)
-	}
-	if workItemType.Inherits != nil {
-		d.Set("inherits_from", workItemType.Inherits)
-	}
-	if workItemType.ReferenceName != nil {
-		d.Set("reference_name", workItemType.ReferenceName)
-	}
-	if workItemType.Url != nil {
-		d.Set("url", workItemType.Url)
-	}
+	d.Set("icon", workItemType.Icon)
+	d.Set("inherits_from", workItemType.Inherits)
+	d.Set("reference_name", workItemType.ReferenceName)
+	d.Set("url", workItemType.Url)
+
+	var pages []map[string]any
 	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
-		var pages []map[string]any
 		for _, page := range *workItemType.Layout.Pages {
 			pages = append(pages, setPage(page))
 		}
-		if err := d.Set("pages", pages); err != nil {
-			return diag.FromErr(err)
-		}
+	}
+	if err := d.Set("pages", pages); err != nil {
+		return diag.FromErr(err)
 	}
 	return nil
 }

@@ -6,7 +6,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"maps"
 	"strconv"
 	"strings"
 	"testing"
@@ -349,15 +348,25 @@ func TestWorkItemType_Read_APIReturnsNoProperties(t *testing.T) {
 	})
 	d.SetId(referenceName)
 
-	stateBefore := make(map[string]string)
-	maps.Copy(stateBefore, d.State().Attributes)
-
 	diags := readResourceWorkItemType(context.Background(), d, clients)
 	assert.Empty(t, diags)
 
-	stateAfter := d.State().Attributes
-	if diff := cmp.Diff(stateBefore, stateAfter); diff != "" {
-		t.Errorf("expected no resource attribute changes: (-before +after):\n%s", diff)
+	// When API returns nil for all properties except reference_name, state should reflect that
+	expectedState := map[string]string{
+		"id":             referenceName,
+		"process_id":     processId.String(),
+		"name":           "",
+		"description":    "",
+		"is_disabled":    "false",
+		"color":          "",
+		"icon":           "",
+		"inherits_from":  "",
+		"reference_name": referenceName,
+		"url":            "",
+		"pages.#":        "0",
+	}
+	if diff := cmp.Diff(expectedState, d.State().Attributes); diff != "" {
+		t.Errorf("expected resource attributes to correspond to the API response: (-expected +got):\n%s", diff)
 	}
 }
 
