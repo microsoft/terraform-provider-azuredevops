@@ -6,7 +6,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"maps"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -302,14 +301,21 @@ func TestProcesses_Read_APIReturnsNoProperties(t *testing.T) {
 	d := getProcessResourceData(t, map[string]any{})
 	d.SetId(typeID.String())
 
-	stateBefore := make(map[string]string)
-	maps.Copy(stateBefore, d.State().Attributes)
-
 	diags := readResourceProcess(context.Background(), d, clients)
 	assert.Empty(t, diags)
 
-	stateAfter := d.State().Attributes
-	if diff := cmp.Diff(stateBefore, stateAfter); diff != "" {
-		t.Errorf("expected no resource attribute changes: (-before +after):\n%s", diff)
+	// When API returns nil for all properties, state should reflect that
+	expectedState := map[string]string{
+		"id":                     typeID.String(),
+		"name":                   "",
+		"description":            "",
+		"parent_process_type_id": "",
+		"reference_name":         "",
+		"is_default":             "false",
+		"is_enabled":             "false",
+		"customization_type":     "",
+	}
+	if diff := cmp.Diff(expectedState, d.State().Attributes); diff != "" {
+		t.Errorf("expected resource attributes to correspond to the API response: (-expected +got):\n%s", diff)
 	}
 }
