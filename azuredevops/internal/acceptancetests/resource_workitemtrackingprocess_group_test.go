@@ -66,6 +66,7 @@ func TestAccWorkitemtrackingprocessGroup_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 				),
 			},
 			{
@@ -84,6 +85,7 @@ func TestAccWorkitemtrackingprocessGroup_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Updated Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 				),
 			},
 			{
@@ -140,6 +142,7 @@ func TestAccWorkitemtrackingprocessGroup_Move(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 					resource.TestCheckResourceAttrWith(tfNode, "section_id", func(value string) error {
 						if value == originalSectionId {
 							return fmt.Errorf("section_id should have changed, but is still %s", originalSectionId)
