@@ -131,13 +131,13 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		"reference_name": referenceName,
 		"url":            url,
 
-		"pages.#":                              "1",
-		"pages.0.id":                           pageId,
-		"pages.0.page_type":                    "custom",
-		"pages.0.sections.#":                   "1",
-		"pages.0.sections.0.id":                sectionId,
-		"pages.0.sections.0.groups.#":          "1",
-		"pages.0.sections.0.groups.0.id":       groupId,
+		"pages.#":                                "1",
+		"pages.0.id":                             pageId,
+		"pages.0.page_type":                      "custom",
+		"pages.0.sections.#":                     "1",
+		"pages.0.sections.0.id":                  sectionId,
+		"pages.0.sections.0.groups.#":            "1",
+		"pages.0.sections.0.groups.0.id":         groupId,
 		"pages.0.sections.0.groups.0.controls.#": "0",
 	}
 	diffOptions := []cmp.Option{
