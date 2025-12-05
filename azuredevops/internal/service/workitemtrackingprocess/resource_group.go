@@ -245,15 +245,9 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func setWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess.Group) diag.Diagnostics {
-	if group.Label != nil {
-		d.Set("label", group.Label)
-	}
-	if group.Order != nil {
-		d.Set("order", group.Order)
-	}
-	if group.Visible != nil {
-		d.Set("visible", group.Visible)
-	}
+	d.Set("label", group.Label)
+	d.Set("order", group.Order)
+	d.Set("visible", group.Visible)
 	return nil
 }
 
