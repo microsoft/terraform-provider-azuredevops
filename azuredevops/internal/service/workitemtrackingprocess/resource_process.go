@@ -167,26 +167,20 @@ func deleteResourceProcess(ctx context.Context, d *schema.ResourceData, m any) d
 }
 
 func flattenProcess(d *schema.ResourceData, process *workitemtrackingprocess.ProcessInfo) diag.Diagnostics {
-	if process.Name != nil {
-		d.Set("name", process.Name)
-	}
-	if process.Description != nil {
-		d.Set("description", process.Description)
-	}
+	d.Set("name", process.Name)
+	d.Set("description", process.Description)
 	if process.ParentProcessTypeId != nil {
 		d.Set("parent_process_type_id", process.ParentProcessTypeId.String())
+	} else {
+		d.Set("parent_process_type_id", nil)
 	}
-	if process.ReferenceName != nil {
-		d.Set("reference_name", process.ReferenceName)
-	}
-	if process.IsDefault != nil {
-		d.Set("is_default", process.IsDefault)
-	}
-	if process.IsEnabled != nil {
-		d.Set("is_enabled", process.IsEnabled)
-	}
+	d.Set("reference_name", process.ReferenceName)
+	d.Set("is_default", process.IsDefault)
+	d.Set("is_enabled", process.IsEnabled)
 	if process.CustomizationType != nil {
 		d.Set("customization_type", string(*process.CustomizationType))
+	} else {
+		d.Set("customization_type", nil)
 	}
 
 	return nil
