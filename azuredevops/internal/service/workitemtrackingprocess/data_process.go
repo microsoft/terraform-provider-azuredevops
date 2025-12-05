@@ -69,8 +69,7 @@ func DataProcess() *schema.Resource {
 				Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.",
 			},
 			"projects": {
-				Type: schema.TypeSet,
-				Set:  getProjectHash,
+				Type: schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

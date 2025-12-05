@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func DataProcesses() *schema.Resource {
@@ -27,10 +26,9 @@ func DataProcesses() *schema.Resource {
 				Description:  "Specifies the expand option when getting the processes.",
 			},
 			"processes": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of all processes including system and inherited.",
-				Set:         getProcessHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -74,8 +72,7 @@ func DataProcesses() *schema.Resource {
 							Description: "Indicates the type of customization on this process. System Process is default process. Inherited Process is modified process that was System process before.",
 						},
 						"projects": {
-							Type: schema.TypeSet,
-							Set:  getProjectHash,
+							Type: schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
@@ -186,10 +183,3 @@ func readProcesses(ctx context.Context, d *schema.ResourceData, m any) diag.Diag
 	return nil
 }
 
-func getProcessHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
-}
-
-func getProjectHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
-}
