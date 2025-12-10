@@ -116,7 +116,7 @@ func disabledProcess(name string) string {
 resource "azuredevops_workitemtrackingprocess_process" "test" {
   name                   = "%s"
   parent_process_type_id = "%s"
-  is_enabled			 = false
+  is_enabled             = false
 }
 `, name, agileSystemProcessTypeId)
 }

@@ -13,7 +13,7 @@ Manages a process.
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_process" "custom_agile" {
-  name = "custom_agile"
+  name                   = "custom_agile"
   parent_process_type_id = "adcc42ab-9882-485e-a3ed-7678f01f66bc" // Agile
 }
 ```
