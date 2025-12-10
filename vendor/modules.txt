@@ -123,6 +123,7 @@ github.com/golang/protobuf/ptypes/empty
 # github.com/google/go-cmp v0.6.0
 ## explicit; go 1.13
 github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/cmpopts
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
@@ -310,6 +311,7 @@ github.com/microsoft/azure-devops-go-api/azuredevops/v7/test
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking
+github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure

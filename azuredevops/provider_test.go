@@ -122,6 +122,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_workitemquery",
 		"azuredevops_workitemquery_folder",
 		"azuredevops_workitemquery_permissions",
+		"azuredevops_workitemtrackingprocess_process",
 	}
 
 	resources := azuredevops.Provider().ResourcesMap
@@ -172,6 +173,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_user",
 		"azuredevops_users",
 		"azuredevops_variable_group",
+		"azuredevops_workitemtrackingprocess_process",
+		"azuredevops_workitemtrackingprocess_processes",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap
