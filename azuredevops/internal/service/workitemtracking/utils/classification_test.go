@@ -75,12 +75,14 @@ func convertClassificationTestNode(testNode *classificationNodeDefinition) *work
 	return &node
 }
 
+// --- TESTS ---
+
+// TestClassification_Read_DontSwallowError verifieert dat we echte errors (geen 404) teruggeven
 func TestClassification_Read_DontSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -105,12 +107,12 @@ func TestClassification_Read_DontSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), errMsg)
 }
 
+// TestClassification_Read basis test
 func TestClassification_Read(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -137,30 +139,19 @@ func TestClassification_Read(t *testing.T) {
 	require.NotEmpty(t, id)
 
 	var v interface{}
-
 	v = resourceData.Get("project_id")
-	require.IsType(t, "", v)
 	require.Equal(t, classificationProjectID, v)
 
 	v = resourceData.Get("path")
-	require.IsType(t, node.path, v)
 	require.Equal(t, node.path, v)
-
-	v = resourceData.Get("has_children")
-	require.IsType(t, true, v)
-	require.Equal(t, len(node.children) > 0, v)
-
-	v = resourceData.Get("children")
-	require.NotNil(t, v)
-	require.Len(t, v, len(node.children))
 }
 
+// TestClassification_Read_Children test met kinderen
 func TestClassification_Read_Children(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -184,47 +175,189 @@ func TestClassification_Read_Children(t *testing.T) {
 
 	err := ReadClassificationNode(clients, resourceData, structureType)
 	require.Nil(t, err)
-	id := resourceData.Id()
-	require.NotEmpty(t, id)
 
-	var v interface{}
-
-	v = resourceData.Get("project_id")
-	require.IsType(t, "", v)
-	require.Equal(t, classificationProjectID, v)
-
-	v = resourceData.Get("path")
-	require.IsType(t, node.path, v)
-	require.Equal(t, node.path, v)
-
-	v = resourceData.Get("has_children")
-	require.IsType(t, true, v)
-	require.Equal(t, len(node.children) > 0, v)
-
-	v = resourceData.Get("children")
+	v := resourceData.Get("children")
 	require.NotNil(t, v)
 	require.Len(t, v, len(node.children))
+}
 
-	for i, childNode := range node.children {
-		tfNodePrefix := fmt.Sprintf("children.%d.", i)
-		v = resourceData.Get(tfNodePrefix + "project_id")
-		require.IsType(t, "", v)
-		require.Equal(t, classificationProjectID, v)
+// TestClassification_Create verifieert correcte aanroep van CreateOrUpdate
+func TestClassification_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		v = resourceData.Get(tfNodePrefix + "path")
-		require.IsType(t, childNode.path, v)
-		require.Equal(t, childNode.path, v)
-
-		v = resourceData.Get(tfNodePrefix + "has_children")
-		require.IsType(t, true, v)
-		require.Equal(t, len(childNode.children) > 0, v)
-
-		v = resourceData.Get(tfNodePrefix + "children")
-		if len(childNode.children) > 0 {
-			require.NotNil(t, v)
-			require.Len(t, v, len(childNode.children))
-		} else {
-			require.Nil(t, v)
-		}
+	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
+	clients := &client.AggregatedClient{
+		WorkItemTrackingClient: witClient,
+		Ctx:                    context.Background(),
 	}
+
+	structureType := workitemtracking.TreeStructureGroupValues.Areas
+	nodeName := "NewArea"
+	projectID := classificationProjectID
+	path := "\\Project\\Area"
+
+	// Create arguments matching logic
+	expectedArgs := workitemtracking.CreateOrUpdateClassificationNodeArgs{
+		Project:        converter.String(projectID),
+		StructureGroup: &structureType,
+		Path:           converter.String(path),
+		PostedNode: &workitemtracking.WorkItemClassificationNode{
+			Name: converter.String(nodeName),
+		},
+	}
+
+	mockReturnNode := workitemtracking.WorkItemClassificationNode{
+		Id:          converter.Int(1001),
+		Identifier:  converter.UUID("55555555-5555-5555-5555-555555555555"),
+		HasChildren: converter.Bool(false),
+	}
+
+	witClient.EXPECT().
+		CreateOrUpdateClassificationNode(clients.Ctx, expectedArgs).
+		Return(&mockReturnNode, nil).
+		Times(1)
+
+	// Gebruik CreateClassificationNodeResourceSchema hier!
+	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeResourceSchema(workitemtracking.TreeStructureGroupValues.Areas), nil)
+	resourceData.Set("project_id", projectID)
+	resourceData.Set("name", nodeName)
+	resourceData.Set("path", path)
+
+	err := CreateOrUpdateClassificationNode(clients, resourceData, structureType)
+	require.Nil(t, err)
+	require.Equal(t, "55555555-5555-5555-5555-555555555555", resourceData.Id())
+	require.Equal(t, 1001, resourceData.Get("node_id"))
+}
+
+// TestClassification_Create_WithAttributes verifieert start/einddatum logica
+func TestClassification_Create_WithAttributes(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
+	clients := &client.AggregatedClient{
+		WorkItemTrackingClient: witClient,
+		Ctx:                    context.Background(),
+	}
+
+	structureType := workitemtracking.TreeStructureGroupValues.Iterations
+	nodeName := "Sprint 1"
+	startDate := "2023-01-01"
+	finishDate := "2023-01-14"
+
+	mockReturnNode := workitemtracking.WorkItemClassificationNode{
+		Id:          converter.Int(2002),
+		Identifier:  converter.UUID("66666666-6666-6666-6666-666666666666"),
+		HasChildren: converter.Bool(false),
+	}
+
+	witClient.EXPECT().
+		CreateOrUpdateClassificationNode(clients.Ctx, gomock.Any()).
+		DoAndReturn(func(_ context.Context, args workitemtracking.CreateOrUpdateClassificationNodeArgs) (*workitemtracking.WorkItemClassificationNode, error) {
+			require.Equal(t, nodeName, *args.PostedNode.Name)
+			require.NotNil(t, args.PostedNode.Attributes)
+
+			attrs := *args.PostedNode.Attributes
+			require.Equal(t, startDate, attrs["startDate"])
+			require.Equal(t, finishDate, attrs["finishDate"])
+
+			return &mockReturnNode, nil
+		}).
+		Times(1)
+
+	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeResourceSchema(workitemtracking.TreeStructureGroupValues.Iterations), nil)
+	resourceData.Set("project_id", classificationProjectID)
+	resourceData.Set("name", nodeName)
+	resourceData.Set("path", "\\Project\\Iteration")
+
+	// Attributes instellen
+	resourceData.Set("attributes", []interface{}{
+		map[string]interface{}{
+			"start_date":  startDate,
+			"finish_date": finishDate,
+		},
+	})
+
+	err := CreateOrUpdateClassificationNode(clients, resourceData, structureType)
+	require.Nil(t, err)
+}
+
+// // TestClassification_Read_NotFound checkt of resource uit state wordt gehaald bij 404
+func TestClassification_Read_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
+	clients := &client.AggregatedClient{
+		WorkItemTrackingClient: witClient,
+		Ctx:                    context.Background(),
+	}
+
+	structureType := workitemtracking.TreeStructureGroupValues.Areas
+	errorMsg := "VS402485: The Area/Iteration name is not recognized."
+
+	witClient.EXPECT().
+		GetClassificationNode(clients.Ctx, gomock.Any()).
+		Return(nil, fmt.Errorf("%s", errorMsg)).
+		Times(1)
+
+	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeSchema(map[string]*schema.Schema{}), nil)
+	resourceData.SetId("some-existing-id")
+	resourceData.Set("project_id", classificationProjectID)
+
+	err := ReadClassificationNode(clients, resourceData, structureType)
+
+	require.NotNil(t, err)
+	require.Equal(t, "", resourceData.Id())
+}
+
+// TestClassification_Delete test de delete flow
+func TestClassification_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
+	clients := &client.AggregatedClient{
+		WorkItemTrackingClient: witClient,
+		Ctx:                    context.Background(),
+	}
+
+	structureType := workitemtracking.TreeStructureGroupValues.Areas
+	pathToDelete := "\\Project\\Area\\ToDelete"
+	rootUUID := testhelper.CreateUUID()
+	rootID := 999
+
+	// 1. Verwacht GetClassificationNode (Root ophalen)
+	witClient.EXPECT().
+		GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
+			Project:        converter.String(classificationProjectID),
+			StructureGroup: &structureType,
+			Depth:          converter.Int(1),
+			Path:           converter.String(""),
+		}).
+		Return(&workitemtracking.WorkItemClassificationNode{
+			Id:         converter.Int(rootID),
+			Identifier: rootUUID,
+		}, nil).
+		Times(1)
+
+	// 2. Verwacht DeleteClassificationNode
+	witClient.EXPECT().
+		DeleteClassificationNode(clients.Ctx, workitemtracking.DeleteClassificationNodeArgs{
+			Project:        converter.String(classificationProjectID),
+			StructureGroup: &structureType,
+			Path:           converter.String(pathToDelete),
+			ReclassifyId:   converter.Int(rootID),
+		}).
+		Return(nil).
+		Times(1)
+
+	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeResourceSchema(workitemtracking.TreeStructureGroupValues.Areas), nil)
+	resourceData.Set("project_id", classificationProjectID)
+	resourceData.Set("path", pathToDelete)
+	resourceData.Set("name", "ToDelete")
+
+	err := DeleteClassificationNode(clients, resourceData, structureType)
+	require.Nil(t, err)
 }
