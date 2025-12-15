@@ -507,7 +507,7 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 		)
 
 		if isKeyVaultVariableGroupType(variableGroup.Type) {
-			variable, err = flattenKeyVaultVariable(variableAsJSON, varName)
+			variable, isSecret, err = flattenKeyVaultVariable(variableAsJSON, varName)
 		} else {
 			variable, isSecret, err = flattenVariable(d, variableAsJSON, varName)
 		}
@@ -524,11 +524,11 @@ func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableG
 	return variables, secretVariables, nil
 }
 
-func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]interface{}, error) {
+func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]interface{}, bool, error) {
 	var variable taskagent.AzureKeyVaultVariableValue
 	err := json.Unmarshal(variableAsJSON, &variable)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
+		return nil, false, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
 	}
 
 	variableMap := map[string]interface{}{
@@ -540,7 +540,7 @@ func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]
 	if variable.Expires != nil {
 		variableMap["expires"] = variable.Expires.String()
 	}
-	return variableMap, nil
+	return variableMap, false, nil
 }
 
 func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName string) (map[string]interface{}, bool, error) {
