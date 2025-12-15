@@ -42,7 +42,7 @@ The following arguments are supported:
 
 * `icon` - (Optional)  Icon to represent the work item type. Default: "icon_clipboard"
 
-* `inherits_from` - (Optional)  Parent work item type for work item type. Changing this forces a new work item type to be created.
+* `parent_work_item_reference_name` - (Optional) Reference name of the parent work item type. Changing this forces a new work item type to be created.
 
 * `is_disabled` - (Optional)  True if the work item type need to be disabled. Default: false
 

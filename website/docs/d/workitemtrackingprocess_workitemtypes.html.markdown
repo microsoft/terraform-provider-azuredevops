@@ -47,7 +47,7 @@ A `work_item_types` block exports the following:
 
 * `icon` -  Icon to represent the work item type.
 
-* `inherits_from` -  Parent work item type reference name.
+* `parent_work_item_reference_name` - Reference name of the parent work item type.
 
 * `is_disabled` -  Indicates if the work item type is disabled.
 

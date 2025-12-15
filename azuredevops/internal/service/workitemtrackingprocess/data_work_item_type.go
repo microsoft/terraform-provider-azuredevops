@@ -70,7 +70,7 @@ func getWorkItemTypeSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Indicates if the work item type is disabled.",
 		},
-		"inherits_from": {
+		"parent_work_item_reference_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Parent work item type reference name.",
@@ -116,7 +116,7 @@ func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType
 		wit["description"] = workItemType.Description
 	}
 	if workItemType.Inherits != nil {
-		wit["inherits_from"] = workItemType.Inherits
+		wit["parent_work_item_reference_name"] = workItemType.Inherits
 	}
 	return wit
 }

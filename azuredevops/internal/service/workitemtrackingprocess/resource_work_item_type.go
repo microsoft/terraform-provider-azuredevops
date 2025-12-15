@@ -66,11 +66,11 @@ func ResourceWorkItemType() *schema.Resource {
 				Description: "Icon to represent the work item type.",
 				Default:     "icon_clipboard",
 			},
-			"inherits_from": {
+			"parent_work_item_reference_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Parent work item type for work item type.",
+				Description: "Reference name of the parent work item type.",
 			},
 			"is_disabled": {
 				Type:        schema.TypeBool,
@@ -173,7 +173,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	if v, ok := d.GetOk("description"); ok {
 		workItemTypeRequest.Description = converter.String(v.(string))
 	}
-	if v, ok := d.GetOk("inherits_from"); ok {
+	if v, ok := d.GetOk("parent_work_item_reference_name"); ok {
 		workItemTypeRequest.InheritsFrom = converter.String(v.(string))
 	}
 
@@ -274,7 +274,7 @@ func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingproce
 		d.Set("color", nil)
 	}
 	d.Set("icon", workItemType.Icon)
-	d.Set("inherits_from", workItemType.Inherits)
+	d.Set("parent_work_item_reference_name", workItemType.Inherits)
 	d.Set("reference_name", workItemType.ReferenceName)
 	d.Set("url", workItemType.Url)
 

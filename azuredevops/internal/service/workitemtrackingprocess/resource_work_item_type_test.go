@@ -107,29 +107,29 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 	).Times(1)
 
 	d := getWorkItemTypeResourceData(t, map[string]any{
-		"process_id":    processId.String(),
-		"name":          name,
-		"color":         color,
-		"icon":          icon,
-		"inherits_from": inheritsFrom,
-		"is_disabled":   isDisabled,
-		"description":   description,
+		"process_id":                      processId.String(),
+		"name":                            name,
+		"color":                           color,
+		"icon":                            icon,
+		"parent_work_item_reference_name": inheritsFrom,
+		"is_disabled":                     isDisabled,
+		"description":                     description,
 	})
 
 	diags := createResourceWorkItemType(context.Background(), d, clients)
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":     processId.String(),
-		"name":           name,
-		"description":    description,
-		"icon":           icon,
-		"color":          color,
-		"inherits_from":  inheritsFrom,
-		"is_disabled":    strconv.FormatBool(isDisabled),
-		"id":             referenceName,
-		"reference_name": referenceName,
-		"url":            url,
+		"process_id":                      processId.String(),
+		"name":                            name,
+		"description":                     description,
+		"icon":                            icon,
+		"color":                           color,
+		"parent_work_item_reference_name": inheritsFrom,
+		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"id":                              referenceName,
+		"reference_name":                  referenceName,
+		"url":                             url,
 
 		"pages.#":                                "1",
 		"pages.0.id":                             pageId,
@@ -281,16 +281,16 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":     processId.String(),
-		"name":           name,
-		"description":    description,
-		"icon":           icon,
-		"color":          color,
-		"inherits_from":  inheritsFrom,
-		"is_disabled":    strconv.FormatBool(isDisabled),
-		"id":             referenceName,
-		"reference_name": referenceName,
-		"url":            url,
+		"process_id":                      processId.String(),
+		"name":                            name,
+		"description":                     description,
+		"icon":                            icon,
+		"color":                           color,
+		"parent_work_item_reference_name": inheritsFrom,
+		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"id":                              referenceName,
+		"reference_name":                  referenceName,
+		"url":                             url,
 
 		"pages.#":                                   "3",
 		"pages.0.id":                                pageId1,
@@ -353,17 +353,17 @@ func TestWorkItemType_Read_APIReturnsNoProperties(t *testing.T) {
 
 	// When API returns nil for all properties except reference_name, state should reflect that
 	expectedState := map[string]string{
-		"id":             referenceName,
-		"process_id":     processId.String(),
-		"name":           "",
-		"description":    "",
-		"is_disabled":    "false",
-		"color":          "",
-		"icon":           "",
-		"inherits_from":  "",
-		"reference_name": referenceName,
-		"url":            "",
-		"pages.#":        "0",
+		"id":                              referenceName,
+		"process_id":                      processId.String(),
+		"name":                            "",
+		"description":                     "",
+		"is_disabled":                     "false",
+		"color":                           "",
+		"icon":                            "",
+		"parent_work_item_reference_name": "",
+		"reference_name":                  referenceName,
+		"url":                             "",
+		"pages.#":                         "0",
 	}
 	if diff := cmp.Diff(expectedState, d.State().Attributes); diff != "" {
 		t.Errorf("expected resource attributes to correspond to the API response: (-expected +got):\n%s", diff)
@@ -451,13 +451,13 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 	).Times(1)
 
 	d := getWorkItemTypeResourceData(t, map[string]any{
-		"process_id":    processId.String(),
-		"name":          name,
-		"color":         color,
-		"icon":          icon,
-		"inherits_from": inheritsFrom,
-		"is_disabled":   isDisabled,
-		"description":   description,
+		"process_id":                      processId.String(),
+		"name":                            name,
+		"color":                           color,
+		"icon":                            icon,
+		"parent_work_item_reference_name": inheritsFrom,
+		"is_disabled":                     isDisabled,
+		"description":                     description,
 	})
 	d.SetId(referenceName)
 
@@ -465,16 +465,16 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 	assert.Empty(t, diags)
 
 	expectedWorkItem := map[string]string{
-		"process_id":     processId.String(),
-		"name":           name,
-		"description":    description,
-		"icon":           icon,
-		"color":          color,
-		"inherits_from":  inheritsFrom,
-		"is_disabled":    strconv.FormatBool(isDisabled),
-		"id":             referenceName,
-		"reference_name": referenceName,
-		"url":            url,
+		"process_id":                      processId.String(),
+		"name":                            name,
+		"description":                     description,
+		"icon":                            icon,
+		"color":                           color,
+		"parent_work_item_reference_name": inheritsFrom,
+		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"id":                              referenceName,
+		"reference_name":                  referenceName,
+		"url":                             url,
 
 		"pages.#":                                "1",
 		"pages.0.id":                             pageId,
