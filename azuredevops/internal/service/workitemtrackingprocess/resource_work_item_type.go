@@ -215,7 +215,7 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
 	}
 
-	return setWorkItemType(d, workItemType)
+	return flattenWorkItemType(d, workItemType)
 }
 
 func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -267,7 +267,7 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	return nil
 }
 
-func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
+func flattenWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
 	d.Set("name", workItemType.Name)
 	d.Set("description", workItemType.Description)
 	if workItemType.IsDisabled != nil {
@@ -288,7 +288,7 @@ func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingproce
 	var pages []map[string]any
 	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
 		for _, page := range *workItemType.Layout.Pages {
-			pages = append(pages, setPage(page))
+			pages = append(pages, flattenPage(page))
 		}
 	}
 	if err := d.Set("pages", pages); err != nil {
@@ -306,7 +306,7 @@ func convertColorToResource(apiFormattedColor string) string {
 	return fmt.Sprintf("#%s", apiFormattedColor)
 }
 
-func setControl(control workitemtrackingprocess.Control) map[string]any {
+func flattenControl(control workitemtrackingprocess.Control) map[string]any {
 	controlMap := map[string]any{}
 	if control.Id != nil {
 		controlMap["id"] = *control.Id
@@ -314,7 +314,7 @@ func setControl(control workitemtrackingprocess.Control) map[string]any {
 	return controlMap
 }
 
-func setGroup(group workitemtrackingprocess.Group) map[string]any {
+func flattenGroup(group workitemtrackingprocess.Group) map[string]any {
 	groupMap := map[string]any{}
 	if group.Id != nil {
 		groupMap["id"] = *group.Id
@@ -322,14 +322,14 @@ func setGroup(group workitemtrackingprocess.Group) map[string]any {
 	if group.Controls != nil {
 		var controls []map[string]any
 		for _, control := range *group.Controls {
-			controls = append(controls, setControl(control))
+			controls = append(controls, flattenControl(control))
 		}
 		groupMap["controls"] = controls
 	}
 	return groupMap
 }
 
-func setSection(section workitemtrackingprocess.Section) map[string]any {
+func flattenSection(section workitemtrackingprocess.Section) map[string]any {
 	sectionMap := map[string]any{}
 	if section.Id != nil {
 		sectionMap["id"] = *section.Id
@@ -337,14 +337,14 @@ func setSection(section workitemtrackingprocess.Section) map[string]any {
 	if section.Groups != nil {
 		var groups []map[string]any
 		for _, group := range *section.Groups {
-			groups = append(groups, setGroup(group))
+			groups = append(groups, flattenGroup(group))
 		}
 		sectionMap["groups"] = groups
 	}
 	return sectionMap
 }
 
-func setPage(page workitemtrackingprocess.Page) map[string]any {
+func flattenPage(page workitemtrackingprocess.Page) map[string]any {
 	pageMap := map[string]any{}
 	if page.Id != nil {
 		pageMap["id"] = *page.Id
@@ -355,7 +355,7 @@ func setPage(page workitemtrackingprocess.Page) map[string]any {
 	if page.Sections != nil {
 		var sections []map[string]any
 		for _, section := range *page.Sections {
-			sections = append(sections, setSection(section))
+			sections = append(sections, flattenSection(section))
 		}
 		pageMap["sections"] = sections
 	}
