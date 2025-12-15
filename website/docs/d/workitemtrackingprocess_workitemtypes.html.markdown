@@ -49,7 +49,7 @@ A `work_item_types` block exports the following:
 
 * `parent_work_item_reference_name` - Reference name of the parent work item type.
 
-* `is_disabled` -  Indicates if the work item type is disabled.
+* `is_enabled` - Indicates if the work item type is enabled.
 
 * `name` -  Name of the work item type.
 

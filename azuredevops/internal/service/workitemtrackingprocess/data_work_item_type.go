@@ -65,10 +65,10 @@ func getWorkItemTypeSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Icon to represent the work item type.",
 		},
-		"is_disabled": {
+		"is_enabled": {
 			Type:        schema.TypeBool,
 			Computed:    true,
-			Description: "Indicates if the work item type is disabled.",
+			Description: "Indicates if the work item type is enabled.",
 		},
 		"parent_work_item_reference_name": {
 			Type:        schema.TypeString,
@@ -104,7 +104,7 @@ func workItemTypeToMap(workItemType *workitemtrackingprocess.ProcessWorkItemType
 		wit["icon"] = workItemType.Icon
 	}
 	if workItemType.IsDisabled != nil {
-		wit["is_disabled"] = workItemType.IsDisabled
+		wit["is_enabled"] = !*workItemType.IsDisabled
 	}
 	if workItemType.Customization != nil {
 		wit["customization"] = string(*workItemType.Customization)

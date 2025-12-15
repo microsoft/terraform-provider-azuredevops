@@ -44,7 +44,7 @@ The following arguments are supported:
 
 * `parent_work_item_reference_name` - (Optional) Reference name of the parent work item type. Changing this forces a new work item type to be created.
 
-* `is_disabled` - (Optional)  True if the work item type need to be disabled. Default: false
+* `is_enabled` - (Optional) True if the work item type is enabled. Default: true
 
 ## Attributes Reference
 

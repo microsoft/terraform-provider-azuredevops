@@ -72,11 +72,11 @@ func ResourceWorkItemType() *schema.Resource {
 				ForceNew:    true,
 				Description: "Reference name of the parent work item type.",
 			},
-			"is_disabled": {
+			"is_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
-				Description: "True if the work item type need to be disabled.",
+				Default:     true,
+				Description: "True if the work item type is enabled.",
 			},
 			"name": {
 				Type:             schema.TypeString,
@@ -165,7 +165,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 
 	workItemTypeRequest := workitemtrackingprocess.CreateProcessWorkItemTypeRequest{
 		Name:       converter.String(d.Get("name").(string)),
-		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+		IsDisabled: converter.Bool(!d.Get("is_enabled").(bool)),
 		Color:      convertColorToApi(d),
 		Icon:       converter.String(d.Get("icon").(string)),
 	}
@@ -222,7 +222,7 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	processId := d.Get("process_id").(string)
 
 	updateWorkItemType := &workitemtrackingprocess.UpdateProcessWorkItemTypeRequest{
-		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+		IsDisabled: converter.Bool(!d.Get("is_enabled").(bool)),
 		Color:      convertColorToApi(d),
 		Icon:       converter.String(d.Get("icon").(string)),
 	}
@@ -267,7 +267,11 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
 	d.Set("name", workItemType.Name)
 	d.Set("description", workItemType.Description)
-	d.Set("is_disabled", workItemType.IsDisabled)
+	if workItemType.IsDisabled != nil {
+		d.Set("is_enabled", !*workItemType.IsDisabled)
+	} else {
+		d.Set("is_enabled", true)
+	}
 	if workItemType.Color != nil {
 		d.Set("color", convertColorToResource(*workItemType.Color))
 	} else {

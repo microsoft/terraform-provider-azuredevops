@@ -112,7 +112,7 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		"color":                           color,
 		"icon":                            icon,
 		"parent_work_item_reference_name": inheritsFrom,
-		"is_disabled":                     isDisabled,
+		"is_enabled":                      !isDisabled,
 		"description":                     description,
 	})
 
@@ -126,7 +126,7 @@ func TestWorkItemType_Create_Successful(t *testing.T) {
 		"icon":                            icon,
 		"color":                           color,
 		"parent_work_item_reference_name": inheritsFrom,
-		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"is_enabled":                      strconv.FormatBool(!isDisabled),
 		"id":                              referenceName,
 		"reference_name":                  referenceName,
 		"url":                             url,
@@ -287,7 +287,7 @@ func TestWorkItemType_Read_Successful(t *testing.T) {
 		"icon":                            icon,
 		"color":                           color,
 		"parent_work_item_reference_name": inheritsFrom,
-		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"is_enabled":                      strconv.FormatBool(!isDisabled),
 		"id":                              referenceName,
 		"reference_name":                  referenceName,
 		"url":                             url,
@@ -357,7 +357,7 @@ func TestWorkItemType_Read_APIReturnsNoProperties(t *testing.T) {
 		"process_id":                      processId.String(),
 		"name":                            "",
 		"description":                     "",
-		"is_disabled":                     "false",
+		"is_enabled":                      "true",
 		"color":                           "",
 		"icon":                            "",
 		"parent_work_item_reference_name": "",
@@ -456,7 +456,7 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 		"color":                           color,
 		"icon":                            icon,
 		"parent_work_item_reference_name": inheritsFrom,
-		"is_disabled":                     isDisabled,
+		"is_enabled":                      !isDisabled,
 		"description":                     description,
 	})
 	d.SetId(referenceName)
@@ -471,7 +471,7 @@ func TestWorkItemType_Update_Successful(t *testing.T) {
 		"icon":                            icon,
 		"color":                           color,
 		"parent_work_item_reference_name": inheritsFrom,
-		"is_disabled":                     strconv.FormatBool(isDisabled),
+		"is_enabled":                      strconv.FormatBool(!isDisabled),
 		"id":                              referenceName,
 		"reference_name":                  referenceName,
 		"url":                             url,

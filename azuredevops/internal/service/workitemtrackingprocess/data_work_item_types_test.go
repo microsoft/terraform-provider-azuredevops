@@ -53,7 +53,7 @@ func TestDataWorkItemTypes_List(t *testing.T) {
 				"work_item_types.3092183233.name":                            *workItemType1.Name,
 				"work_item_types.3092183233.color":                           "#" + *workItemType1.Color,
 				"work_item_types.3092183233.icon":                            *workItemType1.Icon,
-				"work_item_types.3092183233.is_disabled":                     strconv.FormatBool(*workItemType1.IsDisabled),
+				"work_item_types.3092183233.is_enabled":                      strconv.FormatBool(!*workItemType1.IsDisabled),
 				"work_item_types.3092183233.customization":                   string(*workItemType1.Customization),
 				"work_item_types.3092183233.url":                             *workItemType1.Url,
 
@@ -63,7 +63,7 @@ func TestDataWorkItemTypes_List(t *testing.T) {
 				"work_item_types.558344571.name":                            *workItemType2.Name,
 				"work_item_types.558344571.color":                           "#" + *workItemType2.Color,
 				"work_item_types.558344571.icon":                            *workItemType2.Icon,
-				"work_item_types.558344571.is_disabled":                     strconv.FormatBool(*workItemType2.IsDisabled),
+				"work_item_types.558344571.is_enabled":                      strconv.FormatBool(!*workItemType2.IsDisabled),
 				"work_item_types.558344571.customization":                   string(*workItemType2.Customization),
 				"work_item_types.558344571.url":                             *workItemType2.Url,
 
@@ -72,7 +72,7 @@ func TestDataWorkItemTypes_List(t *testing.T) {
 				"work_item_types.3142816001.description":                     "",
 				"work_item_types.3142816001.icon":                            "",
 				"work_item_types.3142816001.parent_work_item_reference_name": "",
-				"work_item_types.3142816001.is_disabled":                     "false",
+				"work_item_types.3142816001.is_enabled":                      "false",
 				"work_item_types.3142816001.name":                            "",
 				"work_item_types.3142816001.reference_name":                  *emptyWorkItemType.ReferenceName,
 				"work_item_types.3142816001.url":                             "",

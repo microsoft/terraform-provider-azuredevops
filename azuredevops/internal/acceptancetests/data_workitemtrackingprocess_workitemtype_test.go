@@ -29,7 +29,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_DataSource_Get(t *testing.T) {
 					resource.TestCheckResourceAttrPair(tfDataNode, "description", tfResourceNode, "description"),
 					resource.TestCheckResourceAttrPair(tfDataNode, "color", tfResourceNode, "color"),
 					resource.TestCheckResourceAttrPair(tfDataNode, "icon", tfResourceNode, "icon"),
-					resource.TestCheckResourceAttrPair(tfDataNode, "is_disabled", tfResourceNode, "is_disabled"),
+					resource.TestCheckResourceAttrPair(tfDataNode, "is_enabled", tfResourceNode, "is_enabled"),
 					resource.TestCheckResourceAttrPair(tfDataNode, "url", tfResourceNode, "url"),
 				),
 			},

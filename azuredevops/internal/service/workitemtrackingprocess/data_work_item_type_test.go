@@ -54,7 +54,7 @@ func TestDataWorkItemType_Get(t *testing.T) {
 				"description":                     *workItemType.Description,
 				"color":                           "#" + *workItemType.Color,
 				"icon":                            *workItemType.Icon,
-				"is_disabled":                     strconv.FormatBool(*workItemType.IsDisabled),
+				"is_enabled":                      strconv.FormatBool(!*workItemType.IsDisabled),
 				"parent_work_item_reference_name": *workItemType.Inherits,
 				"customization":                   string(*workItemType.Customization),
 				"url":                             *workItemType.Url,
