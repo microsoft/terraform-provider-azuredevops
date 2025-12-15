@@ -186,6 +186,9 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	if err != nil {
 		return diag.Errorf(" Creating work item type. Error %+v", err)
 	}
+	if createdWorkItemType.ReferenceName == nil {
+		return diag.Errorf(" Creating work item type. Reference name is nil")
+	}
 	d.SetId(*createdWorkItemType.ReferenceName)
 
 	// The POST operation doesn't support layout expand, so we have to call read and risk eventual consistency problems
