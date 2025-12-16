@@ -34,9 +34,9 @@ func ResourceFeedRetentionPolicy() *schema.Resource {
 				if len(ids) == 1 {
 					d.SetId(ids[0])
 				} else {
-					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id())
+					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id(), "projectID/feedID")
 					if err != nil {
-						return nil, fmt.Errorf("Parsing the resource ID. Expect in format `projectID/feedID`. Error: %v", err)
+						return nil, fmt.Errorf("Parsing the resource ID. Error: %v", err)
 					}
 
 					if projectNameOrID, err = tfhelper.GetRealProjectId(projectNameOrID, meta); err == nil {

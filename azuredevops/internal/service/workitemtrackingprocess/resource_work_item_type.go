@@ -14,6 +14,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceWorkItemType() *schema.Resource {
@@ -24,13 +25,12 @@ func ResourceWorkItemType() *schema.Resource {
 		DeleteContext: deleteResourceWorkItemType,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
-				id := d.Id()
-				parts := strings.SplitN(id, "/", 2)
-				if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
-					return nil, fmt.Errorf("unexpected format of ID (%s), expected process_id/reference_name", id)
+				processId, referenceName, err := tfhelper.ParseImportedName(d.Id(), "process_id/reference_name")
+				if err != nil {
+					return nil, err
 				}
-				d.Set("process_id", parts[0])
-				d.SetId(parts[1])
+				d.Set("process_id", processId)
+				d.SetId(referenceName)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
