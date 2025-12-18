@@ -125,7 +125,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	d.SetId(*createdGroup.Id)
-	return flattenWorkItemTypeGroup(d, createdGroup)
+	return readResourceGroup(ctx, d, m)
 }
 
 func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -156,7 +156,10 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return nil
 	}
 
-	return flattenWorkItemTypeGroup(d, foundGroup)
+	d.Set("label", foundGroup.Label)
+	d.Set("order", foundGroup.Order)
+	d.Set("visible", foundGroup.Visible)
+	return nil
 }
 
 func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -192,12 +195,12 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 			RemoveFromSectionId: converter.String(oldSectionId.(string)),
 		}
 
-		movedGroup, err := clients.WorkItemTrackingProcessClient.MoveGroupToPage(ctx, moveArgs)
+		_, err := clients.WorkItemTrackingProcessClient.MoveGroupToPage(ctx, moveArgs)
 		if err != nil {
 			return diag.Errorf(" Moving group. Error %+v", err)
 		}
 
-		return flattenWorkItemTypeGroup(d, movedGroup)
+		return readResourceGroup(ctx, d, m)
 	}
 
 	args := workitemtrackingprocess.UpdateGroupArgs{
@@ -209,12 +212,12 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		Group:      updateGroup,
 	}
 
-	updatedGroup, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
+	_, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update group. Error %+v", err)
 	}
 
-	return flattenWorkItemTypeGroup(d, updatedGroup)
+	return readResourceGroup(ctx, d, m)
 }
 
 func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -235,13 +238,6 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.Errorf(" Delete group. Error %+v", err)
 	}
 
-	return nil
-}
-
-func flattenWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess.Group) diag.Diagnostics {
-	d.Set("label", group.Label)
-	d.Set("order", group.Order)
-	d.Set("visible", group.Visible)
 	return nil
 }
 

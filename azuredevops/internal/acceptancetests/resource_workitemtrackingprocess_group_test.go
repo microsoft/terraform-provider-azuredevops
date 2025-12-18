@@ -33,7 +33,7 @@ func TestAccWorkitemtrackingprocessGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckNoResourceAttr(tfNode, "order"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 				),
 			},
 			{
@@ -120,6 +120,7 @@ func TestAccWorkitemtrackingprocessGroup_Move(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Group"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 					resource.TestCheckResourceAttrWith(tfNode, "section_id", func(value string) error {
 						originalSectionId = value
 						return nil

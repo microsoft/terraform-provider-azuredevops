@@ -26,6 +26,27 @@ func getGroupResourceData(t *testing.T, input map[string]any) *schema.ResourceDa
 	return schema.TestResourceDataRaw(t, r.Schema, input)
 }
 
+func createProcessWorkItemTypeWithGroup(witRefName, pageId, sectionId string, group workitemtrackingprocess.Group) *workitemtrackingprocess.ProcessWorkItemType {
+	return &workitemtrackingprocess.ProcessWorkItemType{
+		ReferenceName: &witRefName,
+		Layout: &workitemtrackingprocess.FormLayout{
+			Pages: &[]workitemtrackingprocess.Page{
+				{
+					Id: &pageId,
+					Sections: &[]workitemtrackingprocess.Section{
+						{
+							Id: &sectionId,
+							Groups: &[]workitemtrackingprocess.Group{
+								group,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func TestGroup_Create_Successful(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -60,6 +81,18 @@ func TestGroup_Create_Successful(t *testing.T) {
 			assert.Equal(t, visible, *args.Group.Visible)
 
 			return returnGroup, nil
+		},
+	).Times(1)
+
+	returnWorkItemType := createProcessWorkItemTypeWithGroup(witRefName, pageId, sectionId, *returnGroup)
+
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, witRefName, *args.WitRefName)
+
+			return returnWorkItemType, nil
 		},
 	).Times(1)
 
@@ -148,29 +181,13 @@ func TestGroup_Read_Successful(t *testing.T) {
 	order := 1
 	visible := true
 
-	returnWorkItemType := &workitemtrackingprocess.ProcessWorkItemType{
-		ReferenceName: &witRefName,
-		Layout: &workitemtrackingprocess.FormLayout{
-			Pages: &[]workitemtrackingprocess.Page{
-				{
-					Id: &pageId,
-					Sections: &[]workitemtrackingprocess.Section{
-						{
-							Id: &sectionId,
-							Groups: &[]workitemtrackingprocess.Group{
-								{
-									Id:      &groupId,
-									Label:   &label,
-									Order:   &order,
-									Visible: &visible,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+	returnGroup := workitemtrackingprocess.Group{
+		Id:      &groupId,
+		Label:   &label,
+		Order:   &order,
+		Visible: &visible,
 	}
+	returnWorkItemType := createProcessWorkItemTypeWithGroup(witRefName, pageId, sectionId, returnGroup)
 
 	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
@@ -509,6 +526,18 @@ func TestGroup_Update_Successful(t *testing.T) {
 			assert.Equal(t, order, *args.Group.Order)
 			assert.Equal(t, visible, *args.Group.Visible)
 			return returnGroup, nil
+		},
+	).Times(1)
+
+	returnWorkItemType := createProcessWorkItemTypeWithGroup(witRefName, pageId, sectionId, *returnGroup)
+
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			assert.Equal(t, workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout, *args.Expand)
+			assert.Equal(t, processId, *args.ProcessId)
+			assert.Equal(t, witRefName, *args.WitRefName)
+
+			return returnWorkItemType, nil
 		},
 	).Times(1)
 
