@@ -5,8 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 )
@@ -24,13 +26,6 @@ func ResourceWorkItemTrackingProcessPermissions() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: securityhelper.CreatePermissionResourceSchema(map[string]*schema.Schema{
-			"parent_process_id": {
-				Type:         schema.TypeString,
-				ValidateFunc: validation.IsUUID,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The ID of the parent process.",
-			},
 			"process_id": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
@@ -94,16 +89,28 @@ func resourceProcessPermissionsDelete(d *schema.ResourceData, m interface{}) err
 }
 
 func createProcessToken(d *schema.ResourceData, clients *client.AggregatedClient) (string, error) {
-	parentProcessID, ok := d.GetOk("parent_process_id")
-	if !ok {
-		return "", fmt.Errorf("Failed to get 'parent_process_id' from schema")
-	}
-
-	processID, ok := d.GetOk("process_id")
+	processIDStr, ok := d.GetOk("process_id")
 	if !ok {
 		return "", fmt.Errorf("Failed to get 'process_id' from schema")
 	}
 
-	aclToken := fmt.Sprintf("$PROCESS:%s:%s:", parentProcessID.(string), processID.(string))
+	processID, err := uuid.Parse(processIDStr.(string))
+	if err != nil {
+		return "", fmt.Errorf("Failed to parse 'process_id' as UUID: %w", err)
+	}
+
+	process, err := clients.WorkItemTrackingProcessClient.GetProcessByItsId(clients.Ctx, workitemtrackingprocess.GetProcessByItsIdArgs{
+		ProcessTypeId: &processID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("Failed to get process: %w", err)
+	}
+
+	var aclToken string
+	if process.ParentProcessTypeId != nil && *process.ParentProcessTypeId != uuid.Nil {
+		aclToken = fmt.Sprintf("$PROCESS:%s:%s:", process.ParentProcessTypeId.String(), processID.String())
+	} else {
+		aclToken = fmt.Sprintf("$PROCESS:%s:", processID.String())
+	}
 	return aclToken, nil
 }
