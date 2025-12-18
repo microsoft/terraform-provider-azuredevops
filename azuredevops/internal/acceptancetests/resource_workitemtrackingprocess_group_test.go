@@ -167,11 +167,11 @@ func basicGroup(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_group" "test" {
-  process_id                     = azuredevops_workitemtrackingprocess_process.test.id
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
-  label                          = "Test Group"
+  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  section_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
+  label                         = "Test Group"
 }
 `, workItemType)
 }
@@ -182,12 +182,12 @@ func updatedGroup(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_group" "test" {
-  process_id                     = azuredevops_workitemtrackingprocess_process.test.id
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
-  label                          = "Updated Group"
-  visible                        = false
+  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  section_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
+  label                         = "Updated Group"
+  visible                       = false
 }
 `, workItemType)
 }
@@ -198,11 +198,11 @@ func movedGroup(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_group" "test" {
-  process_id                     = azuredevops_workitemtrackingprocess_process.test.id
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  section_id                     = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[1].id
-  label                          = "Test Group"
+  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  section_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[1].id
+  label                         = "Test Group"
 }
 `, workItemType)
 }

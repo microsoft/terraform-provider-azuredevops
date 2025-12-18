@@ -27,7 +27,7 @@ func TestAccWorkitemtrackingprocessProcess_DataSource_Get(t *testing.T) {
 func hclDataSourceAgileSystemProcess() string {
 	return fmt.Sprintf(`
 data "azuredevops_workitemtrackingprocess_process" "agile" {
-	id = "%s"
+  id = "%s"
 }
 `, agileSystemProcessTypeId)
 }
