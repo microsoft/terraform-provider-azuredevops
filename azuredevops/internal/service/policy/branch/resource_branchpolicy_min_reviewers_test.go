@@ -41,6 +41,7 @@ func TestBranchPolicyMinReviewers_ExpandFlatten_Roundtrip(t *testing.T) {
 			"requireVoteOnLastIteration":  true,
 			"resetRejectionsOnSourcePush": true,
 			"blockLastPusherVote":         true,
+			"requireVoteOnEachIteration":  true,
 		},
 	}
 
