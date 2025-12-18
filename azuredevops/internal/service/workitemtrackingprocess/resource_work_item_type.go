@@ -14,6 +14,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceWorkItemType() *schema.Resource {
@@ -24,13 +25,12 @@ func ResourceWorkItemType() *schema.Resource {
 		DeleteContext: deleteResourceWorkItemType,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
-				id := d.Id()
-				parts := strings.SplitN(id, "/", 2)
-				if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
-					return nil, fmt.Errorf("unexpected format of ID (%s), expected process_id/reference_name", id)
+				processId, referenceName, err := tfhelper.ParseImportedName(d.Id(), "process_id/reference_name")
+				if err != nil {
+					return nil, err
 				}
-				d.Set("process_id", parts[0])
-				d.SetId(parts[1])
+				d.Set("process_id", processId)
+				d.SetId(referenceName)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -66,17 +66,17 @@ func ResourceWorkItemType() *schema.Resource {
 				Description: "Icon to represent the work item type.",
 				Default:     "icon_clipboard",
 			},
-			"inherits_from": {
+			"parent_work_item_reference_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Parent work item type for work item type.",
+				Description: "Reference name of the parent work item type.",
 			},
-			"is_disabled": {
+			"is_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
-				Description: "True if the work item type need to be disabled.",
+				Default:     true,
+				Description: "True if the work item type is enabled.",
 			},
 			"name": {
 				Type:             schema.TypeString,
@@ -165,7 +165,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 
 	workItemTypeRequest := workitemtrackingprocess.CreateProcessWorkItemTypeRequest{
 		Name:       converter.String(d.Get("name").(string)),
-		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+		IsDisabled: converter.Bool(!d.Get("is_enabled").(bool)),
 		Color:      convertColorToApi(d),
 		Icon:       converter.String(d.Get("icon").(string)),
 	}
@@ -173,7 +173,7 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	if v, ok := d.GetOk("description"); ok {
 		workItemTypeRequest.Description = converter.String(v.(string))
 	}
-	if v, ok := d.GetOk("inherits_from"); ok {
+	if v, ok := d.GetOk("parent_work_item_reference_name"); ok {
 		workItemTypeRequest.InheritsFrom = converter.String(v.(string))
 	}
 
@@ -185,6 +185,9 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	createdWorkItemType, err := clients.WorkItemTrackingProcessClient.CreateProcessWorkItemType(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Creating work item type. Error %+v", err)
+	}
+	if createdWorkItemType.ReferenceName == nil {
+		return diag.Errorf(" Creating work item type. Reference name is nil")
 	}
 	d.SetId(*createdWorkItemType.ReferenceName)
 
@@ -212,7 +215,7 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
 	}
 
-	return setWorkItemType(d, workItemType)
+	return flattenWorkItemType(d, workItemType)
 }
 
 func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -222,7 +225,7 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	processId := d.Get("process_id").(string)
 
 	updateWorkItemType := &workitemtrackingprocess.UpdateProcessWorkItemTypeRequest{
-		IsDisabled: converter.Bool(d.Get("is_disabled").(bool)),
+		IsDisabled: converter.Bool(!d.Get("is_enabled").(bool)),
 		Color:      convertColorToApi(d),
 		Icon:       converter.String(d.Get("icon").(string)),
 	}
@@ -264,24 +267,28 @@ func deleteResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	return nil
 }
 
-func setWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
+func flattenWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingprocess.ProcessWorkItemType) diag.Diagnostics {
 	d.Set("name", workItemType.Name)
 	d.Set("description", workItemType.Description)
-	d.Set("is_disabled", workItemType.IsDisabled)
+	if workItemType.IsDisabled != nil {
+		d.Set("is_enabled", !*workItemType.IsDisabled)
+	} else {
+		d.Set("is_enabled", true)
+	}
 	if workItemType.Color != nil {
 		d.Set("color", convertColorToResource(*workItemType.Color))
 	} else {
 		d.Set("color", nil)
 	}
 	d.Set("icon", workItemType.Icon)
-	d.Set("inherits_from", workItemType.Inherits)
+	d.Set("parent_work_item_reference_name", workItemType.Inherits)
 	d.Set("reference_name", workItemType.ReferenceName)
 	d.Set("url", workItemType.Url)
 
 	var pages []map[string]any
 	if workItemType.Layout != nil && workItemType.Layout.Pages != nil {
 		for _, page := range *workItemType.Layout.Pages {
-			pages = append(pages, setPage(page))
+			pages = append(pages, flattenPage(page))
 		}
 	}
 	if err := d.Set("pages", pages); err != nil {
@@ -299,7 +306,7 @@ func convertColorToResource(apiFormattedColor string) string {
 	return fmt.Sprintf("#%s", apiFormattedColor)
 }
 
-func setControl(control workitemtrackingprocess.Control) map[string]any {
+func flattenControl(control workitemtrackingprocess.Control) map[string]any {
 	controlMap := map[string]any{}
 	if control.Id != nil {
 		controlMap["id"] = *control.Id
@@ -307,7 +314,7 @@ func setControl(control workitemtrackingprocess.Control) map[string]any {
 	return controlMap
 }
 
-func setGroup(group workitemtrackingprocess.Group) map[string]any {
+func flattenGroup(group workitemtrackingprocess.Group) map[string]any {
 	groupMap := map[string]any{}
 	if group.Id != nil {
 		groupMap["id"] = *group.Id
@@ -315,14 +322,14 @@ func setGroup(group workitemtrackingprocess.Group) map[string]any {
 	if group.Controls != nil {
 		var controls []map[string]any
 		for _, control := range *group.Controls {
-			controls = append(controls, setControl(control))
+			controls = append(controls, flattenControl(control))
 		}
 		groupMap["controls"] = controls
 	}
 	return groupMap
 }
 
-func setSection(section workitemtrackingprocess.Section) map[string]any {
+func flattenSection(section workitemtrackingprocess.Section) map[string]any {
 	sectionMap := map[string]any{}
 	if section.Id != nil {
 		sectionMap["id"] = *section.Id
@@ -330,14 +337,14 @@ func setSection(section workitemtrackingprocess.Section) map[string]any {
 	if section.Groups != nil {
 		var groups []map[string]any
 		for _, group := range *section.Groups {
-			groups = append(groups, setGroup(group))
+			groups = append(groups, flattenGroup(group))
 		}
 		sectionMap["groups"] = groups
 	}
 	return sectionMap
 }
 
-func setPage(page workitemtrackingprocess.Page) map[string]any {
+func flattenPage(page workitemtrackingprocess.Page) map[string]any {
 	pageMap := map[string]any{}
 	if page.Id != nil {
 		pageMap["id"] = *page.Id
@@ -348,7 +355,7 @@ func setPage(page workitemtrackingprocess.Page) map[string]any {
 	if page.Sections != nil {
 		var sections []map[string]any
 		for _, section := range *page.Sections {
-			sections = append(sections, setSection(section))
+			sections = append(sections, flattenSection(section))
 		}
 		pageMap["sections"] = sections
 	}

@@ -36,9 +36,10 @@ resource "azuredevops_variable_group" "example" {
     value = "val1"
   }
 
-  secret_variable {
-    name  = "skey1"
-    value = "sval1"
+  variable {
+    name         = "key2"
+    secret_value = "val2"
+    is_secret    = true
   }
 }
 ```
@@ -98,9 +99,7 @@ The following arguments are supported:
 
 * `allow_access` - (Required) Boolean that indicate if this variable group is shared by all pipelines of this project.
 
-* `variable` - (Optional) One or more `variable` blocks as documented below.
-
-* `secret_variable` - (Optional) One or more `secret_variable` blocks as documented below.
+* `variable` - (Required) One or more `variable` blocks as documented below.
 
 ---
 
@@ -112,17 +111,15 @@ The following arguments are supported:
 
 A `variable` block supports the following:
 
+!> **Warning** variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes
+
 * `name` - (Required) The key value used for the variable. Must be unique within the Variable Group.
 
 * `value` - (Optional) The value of the variable. If omitted, it will default to empty string.
 
----
+* `secret_value` - (Optional) The secret value of the variable. If omitted, it will default to empty string. Used when `is_secret` set to `true`.
 
-A `secret_variable` block supports the following:
-
-* `name` - (Required) The key value used for the secret variable. Must be unique within the Variable Group.
-
-* `value` - (Optional) The value of the secret variable. If omitted, it will default to empty string.
+* `is_secret` - (Optional) A boolean flag describing if the variable value is sensitive. Defaults to `false`.
 
 ---
 

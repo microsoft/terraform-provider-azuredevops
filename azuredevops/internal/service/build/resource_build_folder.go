@@ -26,7 +26,7 @@ func ResourceBuildFolder() *schema.Resource {
 		Delete: resourceBuildFolderDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-				projectNameOrID, path, err := tfhelper.ParseImportedName(d.Id())
+				projectNameOrID, path, err := tfhelper.ParseImportedName(d.Id(), "projectid/resourceName")
 				if err != nil {
 					return nil, fmt.Errorf("parsing the resource ID from the Terraform resource data: %v", err)
 				}

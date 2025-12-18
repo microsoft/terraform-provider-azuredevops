@@ -10,7 +10,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func DataWorkItemTypes() *schema.Resource {
@@ -27,10 +26,9 @@ func DataWorkItemTypes() *schema.Resource {
 				Description:      "The ID of the process.",
 			},
 			"work_item_types": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of work item types for the process.",
-				Set:         getWorkItemTypeHash,
 				Elem: &schema.Resource{
 					Schema: getWorkItemTypeSchema(),
 				},
@@ -67,8 +65,4 @@ func readWorkItemTypes(ctx context.Context, d *schema.ResourceData, m any) diag.
 	}
 
 	return nil
-}
-
-func getWorkItemTypeHash(v any) int {
-	return tfhelper.HashString(v.(map[string]any)["reference_name"].(string))
 }

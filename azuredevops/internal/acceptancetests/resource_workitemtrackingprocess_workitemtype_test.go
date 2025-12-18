@@ -24,7 +24,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttr(tfNode, "is_disabled", "false"),
+					resource.TestCheckResourceAttr(tfNode, "is_enabled", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
@@ -57,7 +57,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttr(tfNode, "is_disabled", "false"),
+					resource.TestCheckResourceAttr(tfNode, "is_enabled", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
@@ -76,7 +76,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", workItemTypeName),
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttr(tfNode, "is_disabled", "true"),
+					resource.TestCheckResourceAttr(tfNode, "is_enabled", "false"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "color"),
 					resource.TestCheckResourceAttrSet(tfNode, "icon"),
@@ -112,9 +112,9 @@ func disabledWorkItemType(name string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
-  name        = "%s"
-  process_id  = azuredevops_workitemtrackingprocess_process.test.id
-  is_disabled = true
+  name       = "%s"
+  process_id = azuredevops_workitemtrackingprocess_process.test.id
+  is_enabled = false
 }
 `, process, name)
 }
