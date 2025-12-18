@@ -125,7 +125,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	d.SetId(*createdGroup.Id)
-	return setWorkItemTypeGroup(d, createdGroup)
+	return flattenWorkItemTypeGroup(d, createdGroup)
 }
 
 func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -156,7 +156,7 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return nil
 	}
 
-	return setWorkItemTypeGroup(d, foundGroup)
+	return flattenWorkItemTypeGroup(d, foundGroup)
 }
 
 func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -197,7 +197,7 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 			return diag.Errorf(" Moving group. Error %+v", err)
 		}
 
-		return setWorkItemTypeGroup(d, movedGroup)
+		return flattenWorkItemTypeGroup(d, movedGroup)
 	}
 
 	args := workitemtrackingprocess.UpdateGroupArgs{
@@ -214,7 +214,7 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.Errorf(" Update group. Error %+v", err)
 	}
 
-	return setWorkItemTypeGroup(d, updatedGroup)
+	return flattenWorkItemTypeGroup(d, updatedGroup)
 }
 
 func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -238,7 +238,7 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	return nil
 }
 
-func setWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess.Group) diag.Diagnostics {
+func flattenWorkItemTypeGroup(d *schema.ResourceData, group *workitemtrackingprocess.Group) diag.Diagnostics {
 	d.Set("label", group.Label)
 	d.Set("order", group.Order)
 	d.Set("visible", group.Visible)
