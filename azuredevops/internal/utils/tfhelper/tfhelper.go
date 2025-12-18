@@ -59,16 +59,17 @@ func ParseImportedID(id string) (string, int, error) {
 	return project, resourceID, nil
 }
 
-// ParseImportedName parse the imported Id (Name) from the terraform import
-func ParseImportedName(id string) (string, string, error) {
+// ParseImportedName parse the imported Id (Name) from the terraform import.
+// The expected format of id should consist of two parts separated by /, i.e. <part1>/<part2>
+func ParseImportedName(id string, expectedFormat string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
-		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceName", id)
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected %s", id, expectedFormat)
 	}
-	project := parts[0]
-	resourceID := parts[1]
+	part1 := parts[0]
+	part2 := parts[1]
 
-	return project, resourceID, nil
+	return part1, part2, nil
 }
 
 // ParseImportedUUID parse the imported uuid from the terraform import
@@ -109,7 +110,7 @@ func ExpandStringSet(d *schema.Set) []string {
 func ImportProjectQualifiedResource() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
+			projectNameOrID, resourceID, err := ParseImportedName(d.Id(), "projectid/resourceName")
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
@@ -131,7 +132,7 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
+			projectNameOrID, resourceID, err := ParseImportedName(d.Id(), "projectid/resourceName")
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
