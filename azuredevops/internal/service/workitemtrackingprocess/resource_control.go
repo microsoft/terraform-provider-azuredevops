@@ -274,6 +274,7 @@ func readResourceControlWithError(ctx context.Context, d *schema.ResourceData, m
 	controlId := d.Id()
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_reference_name").(string)
+	groupId := d.Get("group_id").(string)
 
 	// Get the work item type with layout expanded
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
@@ -286,15 +287,23 @@ func readResourceControlWithError(ctx context.Context, d *schema.ResourceData, m
 		return err
 	}
 
-	foundControl, foundGroupId := findControlById(workItemType.Layout, controlId)
-	if foundControl == nil {
+	group := findGroupById(workItemType.Layout, groupId)
+	if group == nil {
 		return azuredevops.WrappedError{
 			StatusCode: converter.Int(404),
-			Message:    converter.String(fmt.Sprintf("control %s not found in layout", controlId)),
+			Message:    converter.String(fmt.Sprintf("group %s not found in layout", groupId)),
 		}
 	}
 
-	d.Set("group_id", foundGroupId)
+	foundControl := findControlInGroup(group, controlId)
+	if foundControl == nil {
+		return azuredevops.WrappedError{
+			StatusCode: converter.Int(404),
+			Message:    converter.String(fmt.Sprintf("control %s not found in group %s", controlId, groupId)),
+		}
+	}
+
+	d.Set("group_id", groupId)
 	d.Set("label", foundControl.Label)
 	d.Set("order", foundControl.Order)
 	d.Set("visible", foundControl.Visible)
@@ -417,51 +426,6 @@ func deleteResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	return nil
-}
-
-func findControlById(layout *workitemtrackingprocess.FormLayout, controlId string) (*workitemtrackingprocess.Control, string) {
-	if layout == nil {
-		return nil, ""
-	}
-	pages := layout.Pages
-	if pages == nil {
-		return nil, ""
-	}
-	for _, page := range *pages {
-		control, groupId := findControlInPage(&page, controlId)
-		if control != nil {
-			return control, groupId
-		}
-	}
-	return nil, ""
-}
-
-func findControlInPage(page *workitemtrackingprocess.Page, controlId string) (*workitemtrackingprocess.Control, string) {
-	sections := page.Sections
-	if sections == nil {
-		return nil, ""
-	}
-	for _, section := range *sections {
-		control, groupId := findControlInSection(&section, controlId)
-		if control != nil {
-			return control, groupId
-		}
-	}
-	return nil, ""
-}
-
-func findControlInSection(section *workitemtrackingprocess.Section, controlId string) (*workitemtrackingprocess.Control, string) {
-	groups := section.Groups
-	if groups == nil {
-		return nil, ""
-	}
-	for _, group := range *groups {
-		control := findControlInGroup(&group, controlId)
-		if control != nil {
-			return control, *group.Id
-		}
-	}
-	return nil, ""
 }
 
 func findControlInGroup(group *workitemtrackingprocess.Group, controlId string) *workitemtrackingprocess.Control {
