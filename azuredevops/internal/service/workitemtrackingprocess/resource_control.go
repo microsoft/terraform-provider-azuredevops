@@ -102,16 +102,19 @@ func ResourceControl() *schema.Resource {
 			},
 			"control_type": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Type of the control.",
 			},
 			"inherited": {
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
 				Description: "A value indicating whether this layout node has been inherited from a parent layout.",
 			},
 			"overridden": {
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
 				Description: "A value indicating whether this layout node has been overridden by a child layout.",
 			},
@@ -202,6 +205,17 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("height"); ok {
 		control.Height = converter.Int(v.(int))
+	}
+	if v, ok := d.GetOk("control_type"); ok {
+		control.ControlType = converter.String(v.(string))
+	}
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("inherited"); ok {
+		control.Inherited = converter.Bool(v.(bool))
+	}
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("overridden"); ok {
+		control.Overridden = converter.Bool(v.(bool))
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {
@@ -305,6 +319,17 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("height"); ok {
 		control.Height = converter.Int(v.(int))
+	}
+	if v, ok := d.GetOk("control_type"); ok {
+		control.ControlType = converter.String(v.(string))
+	}
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("inherited"); ok {
+		control.Inherited = converter.Bool(v.(bool))
+	}
+	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
+	if v, ok := d.GetOkExists("overridden"); ok {
+		control.Overridden = converter.Bool(v.(bool))
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {

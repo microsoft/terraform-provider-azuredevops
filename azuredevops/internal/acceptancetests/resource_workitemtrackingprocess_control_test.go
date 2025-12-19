@@ -84,8 +84,14 @@ func TestAccWorkitemtrackingprocessControl_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Updated Control"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "true"),
+					resource.TestCheckResourceAttr(tfNode, "order", "0"),
+					resource.TestCheckResourceAttr(tfNode, "metadata", "test metadata"),
+					resource.TestCheckResourceAttr(tfNode, "watermark", "Enter a title"),
+					resource.TestCheckResourceAttr(tfNode, "height", "0"),
+					resource.TestCheckResourceAttr(tfNode, "control_type", "FieldControl"),
+					resource.TestCheckResourceAttr(tfNode, "inherited", "false"),
+					resource.TestCheckResourceAttr(tfNode, "overridden", "false"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "order"),
 				),
 			},
 			{
@@ -204,6 +210,9 @@ resource "azuredevops_workitemtrackingprocess_control" "test" {
   label                         = "Updated Control"
   visible                       = false
   read_only                     = true
+  order                         = 0
+  metadata                      = "test metadata"
+  watermark                     = "Enter a title"
 }
 `, workItemType)
 }
