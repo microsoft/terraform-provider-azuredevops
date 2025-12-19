@@ -22,7 +22,7 @@ func TestAccWorkitemtrackingprocessProcessPermissions_SetPermissions(t *testing.
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "principal"),
-					resource.TestCheckResourceAttr(tfNode, "permissions.%", "4"),
+					resource.TestCheckResourceAttr(tfNode, "permissions.%", "3"),
 				),
 			},
 		},
@@ -46,7 +46,6 @@ resource "azuredevops_workitemtrackingprocess_process_permissions" "test" {
   permissions = {
     "Edit"                         = "Allow"
     "Delete"                       = "Deny"
-    "Create"                       = "NotSet"
     "AdministerProcessPermissions" = "Allow"
   }
 }
