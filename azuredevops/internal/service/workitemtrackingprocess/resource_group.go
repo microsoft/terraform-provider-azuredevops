@@ -2,8 +2,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -242,11 +239,6 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	if err != nil {
 		label := d.Get("label").(string)
-		var wrappedErr azuredevops.WrappedError
-		if errors.As(err, &wrappedErr) {
-			errJson, _ := json.MarshalIndent(wrappedErr, "", "  ")
-			return diag.Errorf(" Delete group %s. Error: %s", label, string(errJson))
-		}
 		return diag.Errorf(" Delete group %s. Error %+v", label, err)
 	}
 
