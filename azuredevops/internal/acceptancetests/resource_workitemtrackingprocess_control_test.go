@@ -166,6 +166,41 @@ func TestAccWorkitemtrackingprocessControl_Move(t *testing.T) {
 	})
 }
 
+func TestAccWorkitemtrackingprocessControl_Contribution(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_control.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: contributionControl(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
+					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
+					resource.TestCheckResourceAttrSet(tfNode, "group_id"),
+					resource.TestCheckResourceAttr(tfNode, "is_contribution", "true"),
+					resource.TestCheckResourceAttr(tfNode, "contribution.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "contribution.0.contribution_id", "ms-devlabs.vsts-extensions-multivalue-control.multivalue-form-control"),
+					resource.TestCheckResourceAttr(tfNode, "contribution.0.height", "50"),
+					resource.TestCheckResourceAttr(tfNode, "contribution.0.inputs.FieldName", "System.Tags"),
+					resource.TestCheckResourceAttr(tfNode, "contribution.0.inputs.Values", "Option1;Option2;Option3"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: controlImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func basicControl(workItemTypeName string, processName string) string {
 	workItemType := basicWorkItemType(workItemTypeName, processName)
 	return fmt.Sprintf(`
@@ -244,6 +279,43 @@ resource "azuredevops_workitemtrackingprocess_control" "test" {
   group_id                      = azuredevops_workitemtrackingprocess_group.test2.id
   control_id                    = "System.Title"
   label                         = "Test Control"
+}
+`, workItemType)
+}
+
+func contributionControl(workItemTypeName string, processName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_extension" "test" {
+  publisher_id = "ms-devlabs"
+  extension_id = "vsts-extensions-multivalue-control"
+}
+
+resource "azuredevops_workitemtrackingprocess_group" "test" {
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  section_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
+  label                         = "Test Group"
+}
+
+resource "azuredevops_workitemtrackingprocess_control" "test" {
+  depends_on                    = [azuredevops_extension.test]
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  group_id                      = azuredevops_workitemtrackingprocess_group.test.id
+  control_id                    = "ms-devlabs.vsts-extensions-multivalue-control.multivalue-form-control"
+  is_contribution               = true
+  contribution {
+    contribution_id = "ms-devlabs.vsts-extensions-multivalue-control.multivalue-form-control"
+    height          = 50
+    inputs = {
+      FieldName = "System.Tags"
+      Values    = "Option1;Option2;Option3"
+    }
+  }
 }
 `, workItemType)
 }

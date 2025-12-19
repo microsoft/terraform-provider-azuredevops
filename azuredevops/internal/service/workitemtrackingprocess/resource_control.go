@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -229,7 +230,12 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 		Control:    &control,
 	}
 
-	createdControl, err := clients.WorkItemTrackingProcessClient.CreateControlInGroup(ctx, args)
+	var createdControl *workitemtrackingprocess.Control
+	err := retryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		var createErr error
+		createdControl, createErr = clients.WorkItemTrackingProcessClient.CreateControlInGroup(ctx, args)
+		return createErr
+	})
 	if err != nil {
 		return diag.Errorf(" Creating control. Error %+v", err)
 	}
@@ -239,10 +245,30 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	d.SetId(*createdControl.Id)
-	return readResourceControl(ctx, d, m)
+
+	// Retry reading the control to handle eventual consistency
+	err = retryOnNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		return readResourceControlWithError(ctx, d, m)
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func readResourceControl(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	err := readResourceControlWithError(ctx, d, m)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+	return nil
+}
+
+func readResourceControlWithError(ctx context.Context, d *schema.ResourceData, m any) error {
 	clients := m.(*client.AggregatedClient)
 
 	controlId := d.Id()
@@ -257,17 +283,15 @@ func readResourceControl(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
+		return err
 	}
 
 	foundControl, foundGroupId := findControlById(workItemType.Layout, controlId)
 	if foundControl == nil {
-		d.SetId("")
-		return nil
+		return azuredevops.WrappedError{
+			StatusCode: converter.Int(404),
+			Message:    converter.String(fmt.Sprintf("control %s not found in layout", controlId)),
+		}
 	}
 
 	d.Set("group_id", foundGroupId)
