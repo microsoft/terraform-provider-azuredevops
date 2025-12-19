@@ -315,11 +315,11 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	if d.HasChange("group_id") {
 		oldGroupId, _ := d.GetChange("group_id")
 		moveArgs := workitemtrackingprocess.MoveControlToGroupArgs{
-			ProcessId:       converter.UUID(processId),
-			WitRefName:      converter.String(witRefName),
-			GroupId:         converter.String(groupId),
-			ControlId:       &controlId,
-			Control:         control,
+			ProcessId:         converter.UUID(processId),
+			WitRefName:        converter.String(witRefName),
+			GroupId:           converter.String(groupId),
+			ControlId:         &controlId,
+			Control:           control,
 			RemoveFromGroupId: converter.String(oldGroupId.(string)),
 		}
 
@@ -359,11 +359,11 @@ func deleteResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 		ControlId:  &controlId,
 	}
 
-	err := clients.WorkItemTrackingProcessClient.RemoveControlFromGroup(ctx, args)
+	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+		return clients.WorkItemTrackingProcessClient.RemoveControlFromGroup(ctx, args)
+	})
+
 	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			return nil
-		}
 		return diag.Errorf(" Delete control. Error %+v", err)
 	}
 
