@@ -80,7 +80,7 @@ func dataSourceServiceEndpointAzureCRRead(d *schema.ResourceData, m interface{})
 		if err = checkServiceConnection(serviceEndpoint); err != nil {
 			return err
 		}
-		doBaseFlattening(d, serviceEndpoint)
+		doBaseFlatteningForDataSource(d, serviceEndpoint)
 		d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
 		d.Set("azurecr_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
 		d.Set("azurecr_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
