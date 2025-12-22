@@ -172,7 +172,7 @@ func TestFlattenContribution(t *testing.T) {
 			},
 		},
 		{
-			name: "empty contribution",
+			name:  "empty contribution",
 			input: &workitemtrackingprocess.WitContribution{},
 			expected: []interface{}{
 				map[string]interface{}{},
