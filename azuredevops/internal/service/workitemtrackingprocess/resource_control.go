@@ -95,12 +95,6 @@ func ResourceControl() *schema.Resource {
 				Computed:    true,
 				Description: "Watermark text for the textbox.",
 			},
-			"height": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Height of the control, for html controls.",
-			},
 			"control_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -202,10 +196,6 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("height"); ok {
-		control.Height = converter.Int(v.(int))
 	}
 	if v, ok := d.GetOk("control_type"); ok {
 		control.ControlType = converter.String(v.(string))
@@ -310,7 +300,6 @@ func readResourceControlWithError(ctx context.Context, d *schema.ResourceData, m
 	d.Set("read_only", foundControl.ReadOnly)
 	d.Set("metadata", foundControl.Metadata)
 	d.Set("watermark", foundControl.Watermark)
-	d.Set("height", foundControl.Height)
 	d.Set("control_type", foundControl.ControlType)
 	d.Set("inherited", foundControl.Inherited)
 	d.Set("overridden", foundControl.Overridden)
@@ -348,10 +337,6 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("height"); ok {
-		control.Height = converter.Int(v.(int))
 	}
 	if v, ok := d.GetOk("control_type"); ok {
 		control.ControlType = converter.String(v.(string))

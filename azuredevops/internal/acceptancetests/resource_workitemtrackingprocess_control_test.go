@@ -87,7 +87,6 @@ func TestAccWorkitemtrackingprocessControl_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "order", "0"),
 					resource.TestCheckResourceAttr(tfNode, "metadata", "test metadata"),
 					resource.TestCheckResourceAttr(tfNode, "watermark", "Enter a title"),
-					resource.TestCheckResourceAttr(tfNode, "height", "0"),
 					resource.TestCheckResourceAttr(tfNode, "control_type", "FieldControl"),
 					resource.TestCheckResourceAttr(tfNode, "inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "overridden", "false"),

@@ -106,8 +106,6 @@ The following arguments are supported:
 
 * `watermark` - (Optional) Watermark text for the textbox.
 
-* `height` - (Optional) Height of the control, for HTML controls.
-
 * `control_type` - (Optional) Type of the control.
 
 * `inherited` - (Optional) A value indicating whether this layout node has been inherited from a parent layout.
