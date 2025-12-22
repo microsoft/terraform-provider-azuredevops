@@ -111,9 +111,8 @@ func ResourceGroup() *schema.Resource {
 						},
 						"order": {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
-							Description: "Order in which the control should appear in the group.",
+							Description: "Order in which the control appears in the group. Determined by the position in the control list.",
 						},
 						"metadata": {
 							Type:        schema.TypeString,
@@ -226,9 +225,8 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 			if label, ok := controlMap["label"].(string); ok {
 				control.Label = converter.String(label)
 			}
-			if order, ok := controlMap["order"].(int); ok {
-				control.Order = converter.Int(order)
-			}
+			// Use the list index as the order
+			control.Order = converter.Int(i)
 			if metadata, ok := controlMap["metadata"].(string); ok {
 				control.Metadata = converter.String(metadata)
 			}

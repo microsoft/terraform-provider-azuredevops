@@ -125,8 +125,6 @@ A `control` block supports the following:
 
 * `read_only` - (Optional) A value indicating if the control is read only. Default: `false`
 
-* `order` - (Optional) Order in which the control should appear in the group.
-
 * `metadata` - (Optional) Inner text of the control.
 
 * `watermark` - (Optional) Watermark text for the textbox.
@@ -152,6 +150,16 @@ A `contribution` block supports the following:
 In addition to the Arguments listed above - the following Attributes are exported:
 
 * `id` - The ID of the group.
+
+The `control` block exports:
+
+* `order` - Order in which the control appears in the group. Determined by the position in the control list.
+
+* `control_type` - Type of the control (e.g., HtmlFieldControl, FieldControl).
+
+* `inherited` - A value indicating whether this control has been inherited from a parent layout.
+
+* `overridden` - A value indicating whether this control has been overridden by a child layout.
 
 ## Relevant Links
 
