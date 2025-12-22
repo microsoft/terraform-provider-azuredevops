@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
@@ -92,6 +93,7 @@ func Provider() *schema.Provider {
 			"azuredevops_repository_policy_max_path_length":           repository.ResourceRepositoryMaxPathLength(),
 			"azuredevops_repository_policy_reserved_names":            repository.ResourceRepositoryReservedNames(),
 			"azuredevops_resource_authorization":                      build.ResourceResourceAuthorization(),
+			"azuredevops_security_permissions":                        security.ResourceGenericPermissions(),
 			"azuredevops_securityrole_assignment":                     securityroles.ResourceSecurityRoleAssignment(),
 			"azuredevops_serviceendpoint_generic_v2":                  serviceendpoint.ResourceServiceEndpointGenericV2(),
 			"azuredevops_serviceendpoint_argocd":                      serviceendpoint.ResourceServiceEndpointArgoCD(),
