@@ -106,8 +106,6 @@ The following arguments are supported:
 
 * `watermark` - (Optional) Watermark text for the textbox.
 
-* `control_type` - (Optional) Type of the control.
-
 * `inherited` - (Optional) A value indicating whether this layout node has been inherited from a parent layout.
 
 * `overridden` - (Optional) A value indicating whether this layout node has been overridden by a child layout.
@@ -133,6 +131,8 @@ A `contribution` block supports the following:
 In addition to the Arguments listed above - the following Attributes are exported:
 
 * `id` - The ID of the control.
+
+* `control_type` - The type of the control (e.g., FieldControl, HtmlFieldControl, DateTimeControl).
 
 ## Relevant Links
 

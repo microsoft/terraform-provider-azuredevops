@@ -97,7 +97,6 @@ func ResourceControl() *schema.Resource {
 			},
 			"control_type": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Type of the control.",
 			},
@@ -196,9 +195,6 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	if v, ok := d.GetOk("control_type"); ok {
-		control.ControlType = converter.String(v.(string))
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("inherited"); ok {
@@ -337,9 +333,6 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	if v, ok := d.GetOk("control_type"); ok {
-		control.ControlType = converter.String(v.(string))
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("inherited"); ok {
