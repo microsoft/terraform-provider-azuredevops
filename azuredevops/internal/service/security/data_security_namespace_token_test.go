@@ -37,6 +37,38 @@ func TestGenerateToken_GitRepositoriesWithoutRepository(t *testing.T) {
 	assert.Equal(t, "repoV2/abc-123", token)
 }
 
+func TestGenerateToken_GitRepositoriesWithRefName(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, DataSecurityNamespaceToken().Schema, map[string]interface{}{
+		"identifiers": map[string]interface{}{
+			"project_id":    "abc-123",
+			"repository_id": "def-456",
+			"ref_name":      "refs/heads/master",
+		},
+	})
+
+	namespaceID := uuid.MustParse("2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87")
+	token, err := generateToken(d, namespaceID)
+
+	assert.NoError(t, err)
+	// "master" in UTF-16LE hex: 6d0061007300740065007200
+	assert.Equal(t, "repoV2/abc-123/def-456/refs/heads/6d0061007300740065007200/", token)
+}
+
+func TestGenerateToken_GitRepositoriesWithRefName_MissingRepo(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, DataSecurityNamespaceToken().Schema, map[string]interface{}{
+		"identifiers": map[string]interface{}{
+			"project_id": "abc-123",
+			"ref_name":   "refs/heads/master",
+		},
+	})
+
+	namespaceID := uuid.MustParse("2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87")
+	_, err := generateToken(d, namespaceID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ref_name provided without repository_id")
+}
+
 func TestGenerateToken_ProjectNamespace(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, DataSecurityNamespaceToken().Schema, map[string]interface{}{
 		"identifiers": map[string]interface{}{
