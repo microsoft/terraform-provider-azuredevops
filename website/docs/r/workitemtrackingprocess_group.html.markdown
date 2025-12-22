@@ -111,7 +111,7 @@ The following arguments are supported:
 
 * `visible` - (Optional) A value indicating if the group should be visible or not. Default: `true`
 
-* `control` - (Optional) Controls to be created with the group. Required for HTML controls which cannot be added to existing groups. A `control` block as defined below.
+* `control` - (Optional) Controls to be created with the group. Required for HTML controls which cannot be added to existing groups. This is mutally exclusive with 'azuredevops_workitemtrackingprocess_control' resources. A `control` block as defined below.
 
 ---
 
