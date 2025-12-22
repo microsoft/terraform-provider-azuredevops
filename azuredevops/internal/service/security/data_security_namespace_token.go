@@ -23,7 +23,7 @@ type TokenTemplate struct {
 	// OptionalIdentifiers are the identifiers that may be provided
 	OptionalIdentifiers []string
 	// BuildFunc is an optional custom function to build the token
-	BuildFunc func(identifiers map[string]string) string
+	BuildFunc func(identifiers map[string]string) (string, error)
 }
 
 func stringToUTF16LEHex(s string) string {
@@ -47,7 +47,12 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	"2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87": {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"repository_id", "ref_name"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
+			if _, hasRef := identifiers["ref_name"]; hasRef {
+				if _, hasRepo := identifiers["repository_id"]; !hasRepo {
+					return "", fmt.Errorf("ref_name provided without repository_id; ref_name needs it's parent repository_id to build the token")
+				}
+			}
 			if repoID, hasRepo := identifiers["repository_id"]; hasRepo {
 				if refName, hasRef := identifiers["ref_name"]; hasRef {
 					// split refName. The first 2 segments should stay as is, the rest need to be stringToUTF16LEHex
@@ -60,11 +65,11 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 					}
 					// join back the segments
 					refName = strings.Join(segments, "/")
-					return fmt.Sprintf("repoV2/%s/%s/%s/", identifiers["project_id"], repoID, refName)
+					return fmt.Sprintf("repoV2/%s/%s/%s/", identifiers["project_id"], repoID, refName), nil
 				}
-				return fmt.Sprintf("repoV2/%s/%s", identifiers["project_id"], repoID)
+				return fmt.Sprintf("repoV2/%s/%s", identifiers["project_id"], repoID), nil
 			}
-			return fmt.Sprintf("repoV2/%s", identifiers["project_id"])
+			return fmt.Sprintf("repoV2/%s", identifiers["project_id"]), nil
 		},
 	},
 	// Project namespace
@@ -79,7 +84,7 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	"33344d9c-fc72-4d6f-aba5-fa317101a7e9": {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"path", "build_definition_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			projectID := identifiers["project_id"]
 			buildDefID, hasBuildDef := identifiers["build_definition_id"]
 			path, hasPath := identifiers["path"]
@@ -88,23 +93,28 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 				if hasPath && path != "" && path != "\\" {
 					// Remove leading/trailing slashes and convert backslashes to forward slashes
 					transformedPath := strings.Trim(strings.ReplaceAll(path, "\\", "/"), "/")
-					return fmt.Sprintf("%s/%s/%s", projectID, transformedPath, buildDefID)
+					return fmt.Sprintf("%s/%s/%s", projectID, transformedPath, buildDefID), nil
 				}
-				return fmt.Sprintf("%s/%s", projectID, buildDefID)
+				return fmt.Sprintf("%s/%s", projectID, buildDefID), nil
 			}
-			return projectID
+			if hasPath {
+				// Remove leading/trailing slashes and convert backslashes to forward slashes
+				transformedPath := strings.Trim(strings.ReplaceAll(path, "\\", "/"), "/")
+				return fmt.Sprintf("%s/%s", projectID, transformedPath), nil
+			}
+			return projectID, nil
 		},
 	},
 	// Service Endpoints namespace
 	"49b48001-ca20-4adc-8111-5b60c903a50c": {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"serviceendpoint_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			projectID := identifiers["project_id"]
 			if seID, hasSE := identifiers["serviceendpoint_id"]; hasSE {
-				return fmt.Sprintf("endpoints/%s/%s", projectID, seID)
+				return fmt.Sprintf("endpoints/%s/%s", projectID, seID), nil
 			}
-			return fmt.Sprintf("endpoints/%s", projectID)
+			return fmt.Sprintf("endpoints/%s", projectID), nil
 		},
 	},
 	// CSS namespace (Areas)
@@ -112,13 +122,13 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	"83e28ad4-2d72-4ceb-97b0-c7726d5502c3": {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"node_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			// Format: vstfs:///Classification/Node/<NodeIdentifier>
 			// For nested: vstfs:///Classification/Node/<RootID>:vstfs:///Classification/Node/<ChildID>
 			if nodeID, hasNode := identifiers["node_id"]; hasNode {
-				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID)
+				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID), nil
 			}
-			return ""
+			return "", nil
 		},
 	},
 	// Iteration namespace
@@ -126,35 +136,35 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	"bf7bfa03-b2b7-47db-8113-fa2e002cc5b1": {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"node_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			// Format: vstfs:///Classification/Node/<NodeIdentifier>
 			// For nested: vstfs:///Classification/Node/<RootID>:vstfs:///Classification/Node/<ChildID>
 			if nodeID, hasNode := identifiers["node_id"]; hasNode {
-				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID)
+				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID), nil
 			}
-			return ""
+			return "", nil
 		},
 	},
 	// Tagging namespace
 	"bb50f182-8e5e-40b8-bc21-e8752a1e7ae2": {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"project_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			if projectID, hasProject := identifiers["project_id"]; hasProject {
-				return fmt.Sprintf("/%s", projectID)
+				return fmt.Sprintf("/%s", projectID), nil
 			}
-			return ""
+			return "", nil
 		},
 	},
 	// Service Hooks namespace
 	"cb594ebe-87dd-4fc9-ac2c-6a10a4c92046": {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"project_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			if projectID, hasProject := identifiers["project_id"]; hasProject {
-				return fmt.Sprintf("PublisherSecurity/%s", projectID)
+				return fmt.Sprintf("PublisherSecurity/%s", projectID), nil
 			}
-			return "PublisherSecurity"
+			return "PublisherSecurity", nil
 		},
 	},
 	// Work Item Query Folders namespace
@@ -162,12 +172,12 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	"71356614-aad7-4757-8f2c-0fb3bff6f680": {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"query_id"},
-		BuildFunc: func(identifiers map[string]string) string {
+		BuildFunc: func(identifiers map[string]string) (string, error) {
 			projectID := identifiers["project_id"]
 			if queryID, hasQuery := identifiers["query_id"]; hasQuery {
-				return fmt.Sprintf("$/%s/%s", projectID, queryID)
+				return fmt.Sprintf("$/%s/%s", projectID, queryID), nil
 			}
-			return fmt.Sprintf("$/%s", projectID)
+			return fmt.Sprintf("$/%s", projectID), nil
 		},
 	},
 	// Analytics namespace
@@ -190,9 +200,23 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	},
 	// Process namespace
 	"2dab47f9-bd70-49ed-9bd5-8eb051e59c02": {
-		Template:            "$PROCESS:",
 		RequiredIdentifiers: []string{},
-		OptionalIdentifiers: []string{},
+		OptionalIdentifiers: []string{"workitem_template_id", "process_id"},
+		BuildFunc: func(identifiers map[string]string) (string, error) {
+			// if process_id is given but not workitem_template_id, throw an error
+			if _, hasProcess := identifiers["process_id"]; hasProcess {
+				if _, hasTemplate := identifiers["workitem_template_id"]; !hasTemplate {
+					return "", fmt.Errorf("process_id provided without workitem_template_id; process_id needs it's parent workitem_template_id to build the token")
+				}
+			}
+			if templateID, hasTemplate := identifiers["workitem_template_id"]; hasTemplate {
+				if processID, hasProcess := identifiers["process_id"]; hasProcess {
+					return fmt.Sprintf("$PROCESS:%s:%s:", processID, templateID), nil
+				}
+				return fmt.Sprintf("$PROCESS:%s:", templateID), nil
+			}
+			return "$PROCESS:", nil
+		},
 	},
 	// AuditLog namespace
 	"a6cc6381-a1ca-4b36-b3c1-4e65211e82b6": {
@@ -379,7 +403,7 @@ func generateToken(d *schema.ResourceData, namespaceID uuid.UUID) (string, error
 
 	// If there's a custom build function, use it
 	if template.BuildFunc != nil {
-		return template.BuildFunc(identifiers), nil
+		return template.BuildFunc(identifiers)
 	}
 
 	// Build the list of values to substitute into the template
