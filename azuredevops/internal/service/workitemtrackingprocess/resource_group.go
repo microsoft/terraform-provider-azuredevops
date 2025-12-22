@@ -78,7 +78,6 @@ func ResourceGroup() *schema.Resource {
 			"control": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Controls to be created with the group. Required for HTML controls which cannot be added to existing groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
