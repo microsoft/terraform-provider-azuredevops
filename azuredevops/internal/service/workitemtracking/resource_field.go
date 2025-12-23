@@ -243,8 +243,11 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
+	if d.HasChange("is_locked") && d.HasChange("is_deleted") {
+		return diag.Errorf("cannot update is_locked and is_deleted at the same time")
+	}
 
+	clients := m.(*client.AggregatedClient)
 	referenceName := d.Id()
 
 	var project *string
@@ -252,14 +255,28 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		project = converter.String(v.(string))
 	}
 
-	if d.HasChanges("is_locked", "is_deleted") {
+	if d.HasChange("is_locked") {
 		isLocked := d.Get("is_locked").(bool)
+		args := workitemtracking.UpdateWorkItemFieldArgs{
+			FieldNameOrRefName: &referenceName,
+			Project:            project,
+			Payload: &workitemtracking.FieldUpdate{
+				IsLocked: &isLocked,
+			},
+		}
+
+		_, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
+		if err != nil {
+			return diag.Errorf("updating field %s: %+v", referenceName, err)
+		}
+	}
+
+	if d.HasChange("is_deleted") {
 		isDeleted := d.Get("is_deleted").(bool)
 		args := workitemtracking.UpdateWorkItemFieldArgs{
 			FieldNameOrRefName: &referenceName,
 			Project:            project,
 			Payload: &workitemtracking.FieldUpdate{
-				IsLocked:  &isLocked,
 				IsDeleted: &isDeleted,
 			},
 		}
