@@ -78,6 +78,7 @@ func ResourceGroup() *schema.Resource {
 			"control": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Controls to be created with the group. Required for HTML controls which cannot be added to existing groups. This is mutally exclusive with the 'azuredevops_workitemtrackingprocess_control' resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
