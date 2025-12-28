@@ -9,6 +9,8 @@ description: |-
 
 Use this data source to access information about security namespaces within Azure DevOps. Security namespaces define the security model for different resources and operations in Azure DevOps.
 
+~> **NOTE:** If you need to find a specific security namespace by name or ID, consider using the [azuredevops_security_namespace](security_namespace.html) data source.
+
 ## Example Usage
 
 ### List All Security Namespaces
@@ -22,27 +24,6 @@ output "namespaces" {
 }
 ```
 
-### Find a Specific Namespace by Name
-
-```hcl
-data "azuredevops_security_namespaces" "all" {
-}
-
-locals {
-  git_namespace = [
-    for ns in data.azuredevops_security_namespaces.all.namespaces :
-    ns if ns.name == "Git Repositories"
-  ][0]
-}
-
-output "git_namespace_id" {
-  value = local.git_namespace.namespace_id
-}
-
-output "git_permissions" {
-  value = local.git_namespace.actions
-}
-```
 
 ### Discover Available Permissions for a Namespace
 
@@ -84,19 +65,16 @@ The following attributes are exported:
 
 A `namespace` block exports the following:
 
-* `namespace_id` - The unique identifier (UUID) of the security namespace.
+* `id` - The unique identifier (UUID) of the security namespace.
 
 * `name` - The name of the security namespace (e.g., "Git Repositories", "Project").
 
 * `display_name` - The display name of the security namespace.
 
-* `description` - The description of the security namespace (if available).
-
 * `actions` - A set of available actions (permissions) in this namespace. Each `action` block exports the following:
   * `name` - The name of the action/permission.
   * `display_name` - The display name of the action/permission.
   * `bit` - The bit value for this permission (used in permission calculations).
-  * `namespace_id` - The namespace ID this action belongs to.
 
 ## Common Security Namespaces
 
