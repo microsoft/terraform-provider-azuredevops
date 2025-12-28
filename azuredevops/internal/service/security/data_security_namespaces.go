@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 var (
@@ -29,7 +28,6 @@ func DataSecurityNamespaces() *schema.Resource {
 			"namespaces": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Set:      getSecurityNamespaceHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -102,10 +100,6 @@ func dataSecurityNamespacesRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func getSecurityNamespaceHash(v interface{}) int {
-	return tfhelper.HashString(v.(map[string]interface{})["id"].(string))
 }
 
 func flattenSecurityNamespaces(namespaces *[]security.SecurityNamespaceDescription) []interface{} {
