@@ -29,13 +29,9 @@ func CheckFieldDestroyed(s *terraform.State) error {
 		}
 
 		referenceName := resource.Primary.ID
-		var project *string
-		if projectID, ok := resource.Primary.Attributes["project_id"]; ok && projectID != "" {
-			project = &projectID
-		}
 
 		err := retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
-			_, err := readField(clients, referenceName, project)
+			_, err := readField(clients, referenceName)
 			if err == nil {
 				return retry.RetryableError(fmt.Errorf("field with reference name %s should not exist", referenceName))
 			}
@@ -53,9 +49,8 @@ func CheckFieldDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func readField(clients *client.AggregatedClient, referenceName string, project *string) (*workitemtracking.WorkItemField2, error) {
+func readField(clients *client.AggregatedClient, referenceName string) (*workitemtracking.WorkItemField2, error) {
 	return clients.WorkItemTrackingClient.GetWorkItemField(clients.Ctx, workitemtracking.GetWorkItemFieldArgs{
 		FieldNameOrRefName: &referenceName,
-		Project:            project,
 	})
 }

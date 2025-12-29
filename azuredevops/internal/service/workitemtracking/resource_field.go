@@ -2,9 +2,7 @@ package workitemtracking
 
 import (
 	"context"
-	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,7 +28,7 @@ func ResourceField() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceFieldImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -69,13 +67,6 @@ func ResourceField() *schema.Resource {
 					"identity",
 				}, false)),
 				Description: "The type of the field. Possible values: `string`, `integer`, `dateTime`, `plainText`, `html`, `treePath`, `history`, `double`, `guid`, `boolean`, `identity`.",
-			},
-			"project_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
-				Description:      "The ID of the project. If not specified, the field is created at the organization level.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -191,14 +182,8 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	field := expandField(d)
 
-	var project *string
-	if v, ok := d.GetOk("project_id"); ok {
-		project = converter.String(v.(string))
-	}
-
 	args := workitemtracking.CreateWorkItemFieldArgs{
 		WorkItemField: field,
-		Project:       project,
 	}
 
 	createdField, err := clients.WorkItemTrackingClient.CreateWorkItemField(clients.Ctx, args)
@@ -219,14 +204,8 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 	referenceName := d.Id()
 
-	var project *string
-	if v, ok := d.GetOk("project_id"); ok {
-		project = converter.String(v.(string))
-	}
-
 	args := workitemtracking.GetWorkItemFieldArgs{
 		FieldNameOrRefName: &referenceName,
-		Project:            project,
 	}
 
 	field, err := clients.WorkItemTrackingClient.GetWorkItemField(clients.Ctx, args)
@@ -250,16 +229,10 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 	referenceName := d.Id()
 
-	var project *string
-	if v, ok := d.GetOk("project_id"); ok {
-		project = converter.String(v.(string))
-	}
-
 	if d.HasChange("is_locked") {
 		isLocked := d.Get("is_locked").(bool)
 		args := workitemtracking.UpdateWorkItemFieldArgs{
 			FieldNameOrRefName: &referenceName,
-			Project:            project,
 			Payload: &workitemtracking.FieldUpdate{
 				IsLocked: &isLocked,
 			},
@@ -275,7 +248,6 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		isDeleted := d.Get("is_deleted").(bool)
 		args := workitemtracking.UpdateWorkItemFieldArgs{
 			FieldNameOrRefName: &referenceName,
-			Project:            project,
 			Payload: &workitemtracking.FieldUpdate{
 				IsDeleted: &isDeleted,
 			},
@@ -295,14 +267,8 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 
 	referenceName := d.Id()
 
-	var project *string
-	if v, ok := d.GetOk("project_id"); ok {
-		project = converter.String(v.(string))
-	}
-
 	args := workitemtracking.DeleteWorkItemFieldArgs{
 		FieldNameOrRefName: &referenceName,
-		Project:            project,
 	}
 
 	err := clients.WorkItemTrackingClient.DeleteWorkItemField(clients.Ctx, args)
@@ -314,22 +280,6 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	return nil
-}
-
-func resourceFieldImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.Split(d.Id(), "/")
-
-	switch len(parts) {
-	case 1:
-		d.SetId(parts[0])
-	case 2:
-		d.Set("project_id", parts[0])
-		d.SetId(parts[1])
-	default:
-		return nil, fmt.Errorf("invalid import ID format, expected: reference_name or project_id/reference_name")
-	}
-
-	return []*schema.ResourceData{d}, nil
 }
 
 func expandField(d *schema.ResourceData) *workitemtracking.WorkItemField2 {

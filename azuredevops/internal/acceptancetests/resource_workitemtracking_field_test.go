@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -43,7 +42,6 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
@@ -83,7 +81,6 @@ func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
@@ -109,7 +106,6 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
@@ -136,7 +132,6 @@ func TestAccWorkItemTrackingField_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 			{
 				Config: fieldUpdated(fieldName),
@@ -150,51 +145,9 @@ func TestAccWorkItemTrackingField_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
-}
-
-func TestAccWorkItemTrackingField_ProjectScoped(t *testing.T) {
-	fieldName := testutils.GenerateFieldName()
-	projectName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtracking_field.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: fieldProjectScoped(projectName, fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-				),
-			},
-			{
-				ResourceName:      tfNode,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: computeFieldImportID(tfNode),
-			},
-		},
-	})
-}
-
-func computeFieldImportID(resourceNode string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceNode]
-		if !ok {
-			return "", fmt.Errorf("Resource node not found: %s", resourceNode)
-		}
-		projectID := rs.Primary.Attributes["project_id"]
-		if projectID != "" {
-			return fmt.Sprintf("%s/%s", projectID, rs.Primary.Attributes["id"]), nil
-		}
-		return rs.Primary.Attributes["id"], nil
-	}
 }
 
 func fieldBasic(name string) string {
@@ -247,23 +200,4 @@ resource "azuredevops_workitemtracking_field" "test" {
   is_locked      = true
 }
 `, name, name)
-}
-
-func fieldProjectScoped(projectName, fieldName string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_project" "test" {
-  name               = "%s"
-  description        = "Test project for field"
-  visibility         = "private"
-  version_control    = "Git"
-  work_item_template = "Agile"
-}
-
-resource "azuredevops_workitemtracking_field" "test" {
-  project_id     = azuredevops_project.test.id
-  name           = "%s"
-  reference_name = "Custom.%s"
-  type           = "string"
-}
-`, projectName, fieldName, fieldName)
 }
