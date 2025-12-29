@@ -12,6 +12,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_area",
 		"azuredevops_area_permissions",
 		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_branch_policy_build_validation",
@@ -45,6 +46,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_group",
 		"azuredevops_group_entitlement",
 		"azuredevops_group_membership",
+		"azuredevops_iteration",
 		"azuredevops_iteration_permissions",
 		"azuredevops_library_permissions",
 		"azuredevops_pipeline_authorization",
