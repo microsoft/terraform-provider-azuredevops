@@ -9,6 +9,8 @@ description: |-
 
 Manages a work item field in Azure DevOps.
 
+~> **Note:** Custom fields are created at the organization level, not the project level. The Azure DevOps API does not support project-scoped custom fields.
+
 ## Example Usage
 
 ### Basic Field
@@ -29,21 +31,6 @@ resource "azuredevops_workitemtracking_field" "priority" {
   reference_name = "Custom.Priority"
   type           = "integer"
   description    = "A custom priority field for work items"
-}
-```
-
-### Project-scoped Field
-
-```hcl
-resource "azuredevops_project" "example" {
-  name = "Example Project"
-}
-
-resource "azuredevops_workitemtracking_field" "example" {
-  project_id     = azuredevops_project.example.id
-  name           = "Project Field"
-  reference_name = "Custom.ProjectField"
-  type           = "string"
 }
 ```
 
@@ -69,6 +56,17 @@ resource "azuredevops_workitemtracking_field" "notes" {
 }
 ```
 
+### Restore a Deleted Field
+
+```hcl
+resource "azuredevops_workitemtracking_field" "restored" {
+  name           = "Restored Field"
+  reference_name = "Custom.RestoredField"
+  type           = "string"
+  restore        = true
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -80,8 +78,6 @@ The following arguments are supported:
 * `type` - (Required) The type of the field. Possible values: `string`, `integer`, `dateTime`, `plainText`, `html`, `treePath`, `history`, `double`, `guid`, `boolean`, `identity`. Changing this forces a new field to be created.
 
 ---
-
-* `project_id` - (Optional) The ID of the project. If not specified, the field is created at the organization level. Changing this forces a new field to be created.
 
 * `description` - (Optional) The description of the field. Changing this forces a new field to be created.
 
@@ -103,7 +99,7 @@ The following arguments are supported:
 
 * `is_locked` - (Optional) Indicates whether this field is locked for editing. Default: `false`.
 
-* `is_deleted` - (Optional) Indicates whether this field is deleted. Can be set to `false` to restore a deleted field. Default: `false`.
+* `restore` - (Optional) Set to `true` to restore a previously deleted field instead of creating a new one. When set to `true`, the resource will attempt to restore the field with the specified `reference_name`.
 
 ## Attributes Reference
 
@@ -138,16 +134,8 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Fields can be imported using the reference name (for organization-level fields) or `project_id/reference_name` (for project-level fields).
-
-Organization-level field:
+Fields can be imported using the reference name:
 
 ```shell
 terraform import azuredevops_workitemtracking_field.example Custom.MyCustomField
-```
-
-Project-level field:
-
-```shell
-terraform import azuredevops_workitemtracking_field.example 00000000-0000-0000-0000-000000000000/Custom.MyCustomField
 ```
