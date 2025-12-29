@@ -411,6 +411,8 @@ func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2
 	}
 	if field.IsDeleted != nil {
 		d.Set("is_deleted", *field.IsDeleted)
+	} else {
+		d.Set("is_deleted", false)
 	}
 
 	if field.SupportedOperations != nil {

@@ -109,6 +109,7 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
@@ -132,12 +133,24 @@ func TestAccWorkItemTrackingField_Update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: computeFieldImportID(tfNode),
+			},
+			{
 				Config: fieldUpdated(fieldName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "is_locked", "true"),
-					resource.TestCheckResourceAttr(tfNode, "is_deleted", "true"),
+					resource.TestCheckResourceAttr(tfNode, "is_deleted", "false"),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: computeFieldImportID(tfNode),
 			},
 		},
 	})
@@ -232,7 +245,6 @@ resource "azuredevops_workitemtracking_field" "test" {
   reference_name = "Custom.%s"
   type           = "string"
   is_locked      = true
-  is_deleted     = true
 }
 `, name, name)
 }
