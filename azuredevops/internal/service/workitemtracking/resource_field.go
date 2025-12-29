@@ -148,11 +148,10 @@ func ResourceField() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the field resource.",
 			},
-			"is_deleted": {
+			"restore": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
-				Description: "Indicates whether this field is deleted. Default: `false`.",
+				Description: "Set to `true` to restore a previously deleted field.",
 			},
 			"supported_operations": {
 				Type:        schema.TypeList,
@@ -181,21 +180,39 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	field := expandField(d)
+	restore := d.Get("restore").(bool)
 
-	args := workitemtracking.CreateWorkItemFieldArgs{
-		WorkItemField: field,
+	if restore {
+		// Restore a previously deleted field by setting is_deleted = false
+		isDeleted := false
+		args := workitemtracking.UpdateWorkItemFieldArgs{
+			FieldNameOrRefName: field.ReferenceName,
+			Payload: &workitemtracking.FieldUpdate{
+				IsDeleted: &isDeleted,
+			},
+		}
+
+		restoredField, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
+		if err != nil {
+			return diag.Errorf("restoring field %s: %+v", *field.ReferenceName, err)
+		}
+		d.SetId(*restoredField.ReferenceName)
+	} else {
+		// Create a new field
+		args := workitemtracking.CreateWorkItemFieldArgs{
+			WorkItemField: field,
+		}
+
+		createdField, err := clients.WorkItemTrackingClient.CreateWorkItemField(clients.Ctx, args)
+		if err != nil {
+			return diag.Errorf("creating field: %+v", err)
+		}
+
+		if createdField.ReferenceName == nil {
+			return diag.Errorf("created field has no reference name")
+		}
+		d.SetId(*createdField.ReferenceName)
 	}
-
-	createdField, err := clients.WorkItemTrackingClient.CreateWorkItemField(clients.Ctx, args)
-	if err != nil {
-		return diag.Errorf("creating field: %+v", err)
-	}
-
-	if createdField.ReferenceName == nil {
-		return diag.Errorf("created field has no reference name")
-	}
-
-	d.SetId(*createdField.ReferenceName)
 	return resourceFieldRead(ctx, d, m)
 }
 
@@ -222,10 +239,6 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if d.HasChange("is_locked") && d.HasChange("is_deleted") {
-		return diag.Errorf("cannot update is_locked and is_deleted at the same time")
-	}
-
 	clients := m.(*client.AggregatedClient)
 	referenceName := d.Id()
 
@@ -235,21 +248,6 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 			FieldNameOrRefName: &referenceName,
 			Payload: &workitemtracking.FieldUpdate{
 				IsLocked: &isLocked,
-			},
-		}
-
-		_, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
-		if err != nil {
-			return diag.Errorf("updating field %s: %+v", referenceName, err)
-		}
-	}
-
-	if d.HasChange("is_deleted") {
-		isDeleted := d.Get("is_deleted").(bool)
-		args := workitemtracking.UpdateWorkItemFieldArgs{
-			FieldNameOrRefName: &referenceName,
-			Payload: &workitemtracking.FieldUpdate{
-				IsDeleted: &isDeleted,
 			},
 		}
 
@@ -291,7 +289,6 @@ func expandField(d *schema.ResourceData) *workitemtracking.WorkItemField2 {
 		Type:                &fieldType,
 		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
 		CanSortBy:           converter.Bool(d.Get("can_sort_by").(bool)),
-		IsDeleted:           converter.Bool(d.Get("is_deleted").(bool)),
 		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
 		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
 		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
@@ -358,11 +355,6 @@ func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2
 	}
 	if field.Url != nil {
 		d.Set("url", *field.Url)
-	}
-	if field.IsDeleted != nil {
-		d.Set("is_deleted", *field.IsDeleted)
-	} else {
-		d.Set("is_deleted", false)
 	}
 
 	if field.SupportedOperations != nil {
