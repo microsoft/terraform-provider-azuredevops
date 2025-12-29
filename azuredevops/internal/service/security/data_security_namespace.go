@@ -21,7 +21,7 @@ func DataSecurityNamespace() *schema.Resource {
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"namespace_id"},
+				ConflictsWith: []string{"id"},
 				Description:   "The name of the security namespace",
 			},
 			"id": {
