@@ -27,8 +27,8 @@ func TestAccDataSecurityNamespaces_basic(t *testing.T) {
 						}
 
 						namespaces := rs.Primary.Attributes["namespaces.#"]
-						count, _ := strconv.Atoi(namespaces)
-						if count == 0 {
+						count, err := strconv.Atoi(namespaces)
+						if count == 0 || err != nil {
 							return fmt.Errorf("Security namespaces list is empty")
 						}
 						return nil
