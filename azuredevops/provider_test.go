@@ -116,6 +116,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_user_entitlement",
 		"azuredevops_variable_group",
 		"azuredevops_variable_group_permissions",
+		"azuredevops_variable_group_variable",
 		"azuredevops_wiki",
 		"azuredevops_wiki_page",
 		"azuredevops_workitem",
