@@ -56,7 +56,10 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 			{
 				Config: basicField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", "Custom.TestField"),
+					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
+					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
 					resource.TestCheckResourceAttr(tfNode, "required", "false"),
 				),
@@ -68,9 +71,12 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
 			},
 			{
-				Config: updatedField(workItemTypeName, processName),
+				Config: updatedField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", "Custom.TestField"),
+					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
+					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "required", "true"),
 					resource.TestCheckResourceAttr(tfNode, "default_value_json", "\"default\""),
 				),
@@ -101,22 +107,13 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
 `, testProcessAndWit, testField)
 }
 
-func updatedField(workItemTypeName string, processName string) string {
+func updatedField(workItemTypeName string, processName string, fieldName string) string {
+	testProcessAndWit := basicWorkItemType(workItemTypeName, processName)
+	testField := fieldBasic(fieldName)
 	return fmt.Sprintf(`
-resource "azuredevops_workitemtrackingprocess_process" "test" {
-  name = "%s"
-}
+%s
 
-resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
-  name       = "%s"
-  process_id = azuredevops_workitemtrackingprocess_process.test.id
-}
-
-resource "azuredevops_workitemtracking_field" "test" {
-  name           = "TestField"
-  reference_name = "Custom.TestField"
-  type           = "string"
-}
+%s
 
 resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id              = azuredevops_workitemtrackingprocess_process.test.id
@@ -125,7 +122,7 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   required                = true
   default_value_json      = "\"default\""
 }
-`, processName, workItemTypeName)
+`, testProcessAndWit, testField)
 }
 
 func getFieldStateIdFunc(tfNode string) resource.ImportStateIdFunc {
