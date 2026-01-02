@@ -5,10 +5,22 @@
 package workitemtrackingprocess
 
 import (
+	"context"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
+	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
+
+func getFieldResourceData(t *testing.T, input map[string]interface{}) *schema.ResourceData {
+	r := ResourceField()
+	return schema.TestResourceDataRaw(t, r.Schema, input)
+}
 
 func TestExpandDefaultValue(t *testing.T) {
 	tests := []struct {
@@ -125,4 +137,81 @@ func TestFlattenDefaultValue(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestField_Create_InvalidDefaultValueJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          "Custom.MyField",
+		"default_value_json":      "not valid json",
+	})
+
+	diags := resourceFieldCreate(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "invalid JSON for default_value_json")
+}
+
+func TestField_Update_InvalidDefaultValueJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          "Custom.MyField",
+		"default_value_json":      "not valid json",
+	})
+	d.SetId("Custom.MyField")
+
+	diags := resourceFieldUpdate(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "invalid JSON for default_value_json")
+}
+
+func TestField_Read_InvalidDefaultValueFromAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	fieldRefName := "Custom.MyField"
+	fieldName := "MyField"
+	// Create a value that cannot be marshaled to JSON (channel)
+	unmarshalableValue := make(chan int)
+
+	mockClient.EXPECT().GetWorkItemTypeField(clients.Ctx, gomock.Any()).Return(
+		&workitemtrackingprocess.ProcessWorkItemTypeField{
+			ReferenceName: &fieldRefName,
+			Name:          &fieldName,
+			DefaultValue:  unmarshalableValue,
+		}, nil,
+	).Times(1)
+
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          fieldRefName,
+	})
+	d.SetId(fieldRefName)
+
+	diags := resourceFieldRead(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "failed to marshal default_value")
 }
