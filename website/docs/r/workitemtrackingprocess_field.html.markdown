@@ -38,19 +38,7 @@ resource "azuredevops_workitemtrackingprocess_field" "example" {
   work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
   reference_name          = azuredevops_workitemtracking_field.example.reference_name
   required                = true
-  default_value_json      = "\"Medium\""
-}
-```
-
-### Add a field with allowed values
-
-```hcl
-resource "azuredevops_workitemtrackingprocess_field" "example" {
-  process_id              = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  reference_name          = "Custom.Status"
-  allowed_values          = ["Open", "In Progress", "Closed"]
-  default_value_json      = "\"Open\""
+  default_value           = "Medium"
 }
 ```
 
@@ -66,15 +54,13 @@ The following arguments are supported:
 
 ---
 
-* `default_value_json` - (Optional) The default value of the field as a JSON-encoded string. For string values use `"\"value\""`, for integers use `"42"`, for booleans use `"true"` or `"false"`.
+* `default_value` - (Optional) The default value of the field.
 
 * `read_only` - (Optional) If true, the field cannot be edited. Default: `false`.
 
 * `required` - (Optional) If true, the field cannot be empty. Default: `false`.
 
 * `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields. Default: `false`.
-
-* `allowed_values` - (Optional) The list of field allowed values.
 
 ## Attributes Reference
 
