@@ -133,7 +133,11 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if v, ok := d.GetOk("default_value_json"); ok {
-		fieldRequest.DefaultValue = expandDefaultValue(v.(string))
+		defaultValue, err := expandDefaultValue(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		fieldRequest.DefaultValue = defaultValue
 	}
 
 	if v, ok := d.GetOk("allowed_values"); ok {
@@ -183,7 +187,9 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf("reading field %s: %+v", fieldRefName, err)
 	}
 
-	flattenProcessField(d, field)
+	if err := flattenProcessField(d, field); err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 
@@ -201,7 +207,11 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if v, ok := d.GetOk("default_value_json"); ok {
-		fieldUpdate.DefaultValue = expandDefaultValue(v.(string))
+		defaultValue, err := expandDefaultValue(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		fieldUpdate.DefaultValue = defaultValue
 	}
 
 	if v, ok := d.GetOk("allowed_values"); ok {
@@ -257,28 +267,27 @@ func expandAllowedValues(values []interface{}) []string {
 }
 
 // expandDefaultValue parses a JSON string from Terraform into a value for the API.
-func expandDefaultValue(jsonStr string) interface{} {
+func expandDefaultValue(jsonStr string) (interface{}, error) {
 	if jsonStr == "" {
-		return nil
+		return nil, nil
 	}
 	var value interface{}
 	if err := json.Unmarshal([]byte(jsonStr), &value); err != nil {
-		// If it's not valid JSON, treat it as a plain string
-		return jsonStr
+		return nil, fmt.Errorf("invalid JSON for default_value_json: %w", err)
 	}
-	return value
+	return value, nil
 }
 
 // flattenDefaultValue converts the API's default value to a JSON string for Terraform state.
-func flattenDefaultValue(value interface{}) string {
+func flattenDefaultValue(value interface{}) (string, error) {
 	if value == nil {
-		return ""
+		return "", nil
 	}
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
-		return fmt.Sprintf("%v", value)
+		return "", fmt.Errorf("failed to marshal default_value %v to JSON: %w", value, err)
 	}
-	return string(jsonBytes)
+	return string(jsonBytes), nil
 }
 
 func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
@@ -292,7 +301,7 @@ func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.ProcessWorkItemTypeField) {
+func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.ProcessWorkItemTypeField) error {
 	if field.Name != nil {
 		d.Set("name", *field.Name)
 	}
@@ -306,7 +315,11 @@ func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.
 		d.Set("description", *field.Description)
 	}
 	if field.DefaultValue != nil {
-		d.Set("default_value_json", flattenDefaultValue(field.DefaultValue))
+		defaultValue, err := flattenDefaultValue(field.DefaultValue)
+		if err != nil {
+			return err
+		}
+		d.Set("default_value_json", defaultValue)
 	}
 	if field.ReadOnly != nil {
 		d.Set("read_only", *field.ReadOnly)
@@ -341,4 +354,5 @@ func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.
 	if field.Url != nil {
 		d.Set("url", *field.Url)
 	}
+	return nil
 }
