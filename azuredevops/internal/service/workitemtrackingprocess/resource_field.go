@@ -91,10 +91,10 @@ func ResourceField() *schema.Resource {
 				Default:     false,
 				Description: "Allow setting field value to a group identity. Only applies to identity fields.",
 			},
-			"allowed_values": {
+			"allowed_values_json": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The list of field allowed values.",
+				Description: "The list of field allowed values as JSON-encoded strings.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -140,8 +140,11 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		fieldRequest.DefaultValue = defaultValue
 	}
 
-	if v, ok := d.GetOk("allowed_values"); ok {
-		allowedValues := expandAllowedValues(v.([]interface{}))
+	if v, ok := d.GetOk("allowed_values_json"); ok {
+		allowedValues, err := expandAllowedValues(v.([]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		fieldRequest.AllowedValues = &allowedValues
 	}
 
@@ -214,8 +217,11 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		fieldUpdate.DefaultValue = defaultValue
 	}
 
-	if v, ok := d.GetOk("allowed_values"); ok {
-		allowedValues := expandAllowedValues(v.([]interface{}))
+	if v, ok := d.GetOk("allowed_values_json"); ok {
+		allowedValues, err := expandAllowedValues(v.([]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		fieldUpdate.AllowedValues = &allowedValues
 	}
 
@@ -258,12 +264,37 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func expandAllowedValues(values []interface{}) []string {
+// expandAllowedValues parses a list of JSON strings from Terraform into string values for the API.
+func expandAllowedValues(values []interface{}) ([]string, error) {
+	if len(values) == 0 {
+		return nil, nil
+	}
 	result := make([]string, len(values))
 	for i, v := range values {
-		result[i] = v.(string)
+		jsonStr := v.(string)
+		var value string
+		if err := json.Unmarshal([]byte(jsonStr), &value); err != nil {
+			return nil, fmt.Errorf("invalid JSON for allowed_values_json[%d]: %s. %w", i, jsonStr, err)
+		}
+		result[i] = value
 	}
-	return result
+	return result, nil
+}
+
+// flattenAllowedValues converts the API's allowed values to a list of JSON strings for Terraform state.
+func flattenAllowedValues(values *[]interface{}) ([]string, error) {
+	if values == nil || len(*values) == 0 {
+		return nil, nil
+	}
+	result := make([]string, len(*values))
+	for i, v := range *values {
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal allowed_values[%d] %v to JSON: %w", i, v, err)
+		}
+		result[i] = string(jsonBytes)
+	}
+	return result, nil
 }
 
 // expandDefaultValue parses a JSON string from Terraform into a value for the API.
@@ -337,13 +368,11 @@ func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.
 		d.Set("allow_groups", false)
 	}
 	if field.AllowedValues != nil {
-		allowedValues := make([]string, len(*field.AllowedValues))
-		for i, v := range *field.AllowedValues {
-			if strVal, ok := v.(string); ok {
-				allowedValues[i] = strVal
-			}
+		allowedValues, err := flattenAllowedValues(field.AllowedValues)
+		if err != nil {
+			return err
 		}
-		d.Set("allowed_values", allowedValues)
+		d.Set("allowed_values_json", allowedValues)
 	}
 	if field.Customization != nil {
 		d.Set("customization", string(*field.Customization))

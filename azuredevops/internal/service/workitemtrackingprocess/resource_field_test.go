@@ -24,11 +24,10 @@ func getFieldResourceData(t *testing.T, input map[string]interface{}) *schema.Re
 
 func TestExpandDefaultValue(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       string
-		expected    interface{}
-		expectError bool
-		errorMsg    string
+		name     string
+		input    string
+		expected interface{}
+		errorMsg string
 	}{
 		{
 			name:     "valid JSON string",
@@ -56,23 +55,21 @@ func TestExpandDefaultValue(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name:        "invalid JSON",
-			input:       "not valid json",
-			expectError: true,
-			errorMsg:    "invalid JSON for default_value_json",
+			name:     "invalid JSON",
+			input:    "not valid json",
+			errorMsg: "invalid JSON for default_value_json",
 		},
 		{
-			name:        "invalid JSON syntax",
-			input:       `{"key": }`,
-			expectError: true,
-			errorMsg:    "invalid JSON for default_value_json",
+			name:     "invalid JSON syntax",
+			input:    `{"key": }`,
+			errorMsg: "invalid JSON for default_value_json",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := expandDefaultValue(tc.input)
-			if tc.expectError {
+			if tc.errorMsg != "" {
 				assert.Error(t, err)
 				assert.Nil(t, result)
 				assert.Contains(t, err.Error(), tc.errorMsg)
@@ -86,11 +83,10 @@ func TestExpandDefaultValue(t *testing.T) {
 
 func TestFlattenDefaultValue(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       interface{}
-		expected    string
-		expectError bool
-		errorMsg    string
+		name     string
+		input    interface{}
+		expected string
+		errorMsg string
 	}{
 		{
 			name:     "nil value",
@@ -122,12 +118,17 @@ func TestFlattenDefaultValue(t *testing.T) {
 			input:    true,
 			expected: "true",
 		},
+		{
+			name:     "unmarshalable value",
+			input:    make(chan int),
+			errorMsg: "failed to marshal default_value",
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := flattenDefaultValue(tc.input)
-			if tc.expectError {
+			if tc.errorMsg != "" {
 				assert.Error(t, err)
 				assert.Empty(t, result)
 				assert.Contains(t, err.Error(), tc.errorMsg)
@@ -137,6 +138,171 @@ func TestFlattenDefaultValue(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExpandAllowedValues(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []interface{}
+		expected []string
+		errorMsg string
+	}{
+		{
+			name:     "empty slice",
+			input:    []interface{}{},
+			expected: nil,
+		},
+		{
+			name:     "valid JSON strings",
+			input:    []interface{}{`"value1"`, `"value2"`},
+			expected: []string{"value1", "value2"},
+		},
+		{
+			name:     "invalid JSON",
+			input:    []interface{}{`"valid"`, `not valid json`},
+			errorMsg: "invalid JSON for allowed_values_json[1]",
+		},
+		{
+			name:     "non-string JSON value",
+			input:    []interface{}{`42`},
+			errorMsg: "invalid JSON for allowed_values_json[0]",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := expandAllowedValues(tc.input)
+			if tc.errorMsg != "" {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+				assert.Contains(t, err.Error(), tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestFlattenAllowedValues(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    *[]interface{}
+		expected []string
+		errorMsg string
+	}{
+		{
+			name:     "nil slice",
+			input:    nil,
+			expected: nil,
+		},
+		{
+			name:     "empty slice",
+			input:    &[]interface{}{},
+			expected: nil,
+		},
+		{
+			name:     "string values",
+			input:    &[]interface{}{"value1", "value2"},
+			expected: []string{`"value1"`, `"value2"`},
+		},
+		{
+			name:     "unmarshalable value",
+			input:    &[]interface{}{make(chan int)},
+			errorMsg: "failed to marshal allowed_values[0]",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := flattenAllowedValues(tc.input)
+			if tc.errorMsg != "" {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+				assert.Contains(t, err.Error(), tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestField_Create_InvalidAllowedValuesJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          "Custom.MyField",
+		"allowed_values_json":     []interface{}{"not valid json"},
+	})
+
+	diags := resourceFieldCreate(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "invalid JSON for allowed_values_json[0]")
+}
+
+func TestField_Update_InvalidAllowedValuesJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          "Custom.MyField",
+		"allowed_values_json":     []interface{}{"not valid json"},
+	})
+	d.SetId("Custom.MyField")
+
+	diags := resourceFieldUpdate(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "invalid JSON for allowed_values_json[0]")
+}
+
+func TestField_Read_InvalidAllowedValuesFromAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	fieldRefName := "Custom.MyField"
+	fieldName := "MyField"
+	// Create a value that cannot be marshaled to JSON (channel)
+	unmarshalableValue := make(chan int)
+
+	mockClient.EXPECT().GetWorkItemTypeField(clients.Ctx, gomock.Any()).Return(
+		&workitemtrackingprocess.ProcessWorkItemTypeField{
+			ReferenceName: &fieldRefName,
+			Name:          &fieldName,
+			AllowedValues: &[]interface{}{unmarshalableValue},
+		}, nil,
+	).Times(1)
+
+	d := getFieldResourceData(t, map[string]interface{}{
+		"process_id":              processId.String(),
+		"work_item_type_ref_name": "MyWorkItemType",
+		"reference_name":          fieldRefName,
+	})
+	d.SetId(fieldRefName)
+
+	diags := resourceFieldRead(context.Background(), d, clients)
+
+	assert.NotEmpty(t, diags)
+	assert.Contains(t, diags[0].Summary, "failed to marshal allowed_values[0]")
 }
 
 func TestField_Create_InvalidDefaultValueJSON(t *testing.T) {

@@ -79,6 +79,9 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "required", "true"),
 					resource.TestCheckResourceAttr(tfNode, "default_value_json", "\"default\""),
+					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.#", "2"),
+					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.0", "\"default\""),
+					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.1", "\"option2\""),
 				),
 			},
 			{
@@ -121,6 +124,7 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   reference_name          = azuredevops_workitemtracking_field.test.reference_name
   required                = true
   default_value_json      = "\"default\""
+  allowed_values_json     = ["\"default\"", "\"option2\""]
 }
 `, testProcessAndWit, testField)
 }
