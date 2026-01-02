@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":                            memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),
 			"azuredevops_variable_group_permissions":                  permissions.ResourceVariableGroupPermissions(),
+			"azuredevops_variable_group_variable":                     taskagent.ResourceVariableGroupVariable(),
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
