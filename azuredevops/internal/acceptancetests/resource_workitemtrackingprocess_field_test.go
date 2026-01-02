@@ -26,8 +26,8 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
 					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
 					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "string"),
 					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttrSet(tfNode, "type"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
 					resource.TestCheckResourceAttr(tfNode, "required", "false"),
 				),
@@ -59,6 +59,7 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
 					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
 					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "string"),
 					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
 					resource.TestCheckResourceAttr(tfNode, "required", "false"),
@@ -76,12 +77,10 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
 					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
 					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "string"),
 					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttr(tfNode, "required", "true"),
-					resource.TestCheckResourceAttr(tfNode, "default_value_json", "\"default\""),
-					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.#", "2"),
-					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.0", "\"default\""),
-					resource.TestCheckResourceAttr(tfNode, "allowed_values_json.1", "\"option2\""),
+					resource.TestCheckResourceAttr(tfNode, "default_value", "default"),
 				),
 			},
 			{
@@ -123,8 +122,7 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   reference_name          = azuredevops_workitemtracking_field.test.reference_name
   required                = true
-  default_value_json      = "\"default\""
-  allowed_values_json     = ["\"default\"", "\"option2\""]
+  default_value           = "default"
 }
 `, testProcessAndWit, testField)
 }
