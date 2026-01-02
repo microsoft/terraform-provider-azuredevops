@@ -310,12 +310,18 @@ func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.
 	}
 	if field.ReadOnly != nil {
 		d.Set("read_only", *field.ReadOnly)
+	} else {
+		d.Set("read_only", false)
 	}
 	if field.Required != nil {
 		d.Set("required", *field.Required)
+	} else {
+		d.Set("required", false)
 	}
 	if field.AllowGroups != nil {
 		d.Set("allow_groups", *field.AllowGroups)
+	} else {
+		d.Set("allow_groups", false)
 	}
 	if field.AllowedValues != nil {
 		allowedValues := make([]string, len(*field.AllowedValues))

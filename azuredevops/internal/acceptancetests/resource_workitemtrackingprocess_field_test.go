@@ -12,6 +12,7 @@ import (
 func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
+	fieldName := testutils.GenerateFieldName()
 	tfNode := "azuredevops_workitemtrackingprocess_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -20,12 +21,12 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicField(workItemTypeName, processName),
+				Config: basicField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", "Custom.TestField"),
-					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_ref_name"),
-					resource.TestCheckResourceAttrSet(tfNode, "name"),
+					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
+					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
 					resource.TestCheckResourceAttrSet(tfNode, "type"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
 					resource.TestCheckResourceAttr(tfNode, "required", "false"),
@@ -44,6 +45,7 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
+	fieldName := testutils.GenerateFieldName()
 	tfNode := "azuredevops_workitemtrackingprocess_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -52,7 +54,7 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicField(workItemTypeName, processName),
+				Config: basicField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "reference_name", "Custom.TestField"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
@@ -83,29 +85,20 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	})
 }
 
-func basicField(workItemTypeName string, processName string) string {
+func basicField(workItemTypeName string, processName string, fieldName string) string {
+	testProcessAndWit := basicWorkItemType(workItemTypeName, processName)
+	testField := fieldBasic(fieldName)
 	return fmt.Sprintf(`
-resource "azuredevops_workitemtrackingprocess_process" "test" {
-  name = "%s"
-}
+%s
 
-resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
-  name       = "%s"
-  process_id = azuredevops_workitemtrackingprocess_process.test.id
-}
-
-resource "azuredevops_workitemtracking_field" "test" {
-  name           = "TestField"
-  reference_name = "Custom.TestField"
-  type           = "string"
-}
+%s
 
 resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id              = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   reference_name          = azuredevops_workitemtracking_field.test.reference_name
 }
-`, processName, workItemTypeName)
+`, testProcessAndWit, testField)
 }
 
 func updatedField(workItemTypeName string, processName string) string {
