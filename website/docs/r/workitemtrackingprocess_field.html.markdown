@@ -9,11 +9,7 @@ description: |-
 
 Manages a field for a work item type in a process. This resource adds an existing field to a work item type and allows configuring field-specific settings like default value, required, and read-only status.
 
-~> **Note:** The field must already exist at the organization level (created via `azuredevops_workitemtracking_field`) before it can be added to a work item type.
-
 ## Example Usage
-
-### Add an existing field to a work item type
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_process" "example" {
