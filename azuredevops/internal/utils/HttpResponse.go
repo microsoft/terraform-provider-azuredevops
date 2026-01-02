@@ -15,12 +15,12 @@ func ResponseWasNotFound(err error) bool {
 		return statusNotFound
 	}
 
-	// Some APIs return 400 BadRequest with the VS800075 error message if
-	// DevOps Project doesn't exist. If parent project doesn't exist, all
-	// child resources are considered "doesn't exist".
+	// Some APIs return 400 BadRequest with specific error codes when resources don't exist:
+	// - VS800075: DevOps Project doesn't exist (all child resources are considered "doesn't exist")
+	// - VS402806: Work item type does not contain field (field was removed or work item type deleted)
 	statusBadRequest := ResponseWasStatusCode(err, http.StatusBadRequest)
 	if statusBadRequest {
-		return ResponseContainsStatusMessage(err, "VS800075")
+		return ResponseContainsStatusMessage(err, "VS800075", "VS402806")
 	}
 	return false
 }
@@ -38,8 +38,8 @@ func ResponseWasStatusCode(err error, statusCode int) bool {
 	return false
 }
 
-// ResponseContainsStatusMessage is used for check if error message contains specific message
-func ResponseContainsStatusMessage(err error, statusMessage string) bool {
+// ResponseContainsStatusMessage is used for check if error message contains any of the specified messages
+func ResponseContainsStatusMessage(err error, statusMessages ...string) bool {
 	if err == nil {
 		return false
 	}
@@ -47,7 +47,11 @@ func ResponseContainsStatusMessage(err error, statusMessage string) bool {
 		if wrapperErr.Message == nil {
 			return false
 		}
-		return strings.Contains(*wrapperErr.Message, statusMessage)
+		for _, statusMessage := range statusMessages {
+			if strings.Contains(*wrapperErr.Message, statusMessage) {
+				return true
+			}
+		}
 	}
 	return false
 }
