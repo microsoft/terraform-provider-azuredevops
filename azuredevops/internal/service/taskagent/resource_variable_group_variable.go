@@ -92,7 +92,7 @@ func resourceVariableGroupVariableCreateUpdate(d *schema.ResourceData, m interfa
 	name := d.Get("name").(string)
 	id := fmt.Sprintf("%s/%d/%s", projectId, variableGroupId, name)
 
-	// Existance check
+	// Existence check
 	if d.IsNewResource() {
 		if _, ok := vars[name]; ok {
 			return tfhelper.ImportAsExistsError(VariableGroupVariable, id)
