@@ -247,10 +247,11 @@ func (opt Option) buildClientCertificateCredOpt() (entrauth.CredentialOption, er
 		return nil, err
 	}
 	return entrauth.ClientCertificateCredentialOption{
-		TenantId: *tenantId,
-		ClientId: *clientId,
-		CertData: certs,
-		CertKey:  key,
+		TenantId:             *tenantId,
+		ClientId:             *clientId,
+		CertData:             certs,
+		CertKey:              key,
+		SendCertificateChain: opt.SendCertificateChain,
 
 		ClientOptions:              opt.ClientOptions,
 		AdditionallyAllowedTenants: opt.AdditionallyAllowedTenants,
