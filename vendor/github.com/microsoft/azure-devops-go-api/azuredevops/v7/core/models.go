@@ -229,8 +229,8 @@ type sourceControlTypesValuesType struct {
 }
 
 var SourceControlTypesValues = sourceControlTypesValuesType{
-	Tfvc: "tfvc",
-	Git:  "git",
+	Tfvc: "Tfvc",
+	Git:  "Git",
 }
 
 // The Team Context for an operation.
@@ -270,7 +270,7 @@ type TeamProject struct {
 	// The links to other objects related to this object.
 	Links interface{} `json:"_links,omitempty"`
 	// Set of capabilities this project has (such as process template & version control).
-	Capabilities *map[string]map[string]string `json:"capabilities,omitempty"`
+	Capabilities *TeamProjectCapabilities `json:"capabilities,omitempty"`
 	// The shallow ref to the default team.
 	DefaultTeam *WebApiTeamRef `json:"defaultTeam,omitempty"`
 }

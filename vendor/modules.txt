@@ -126,6 +126,8 @@ github.com/hashicorp/terraform-plugin-framework/resource/identityschema
 github.com/hashicorp/terraform-plugin-framework/resource/schema
 github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults
 github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier
+github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault
+github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
 github.com/hashicorp/terraform-plugin-framework/schema/validator
 github.com/hashicorp/terraform-plugin-framework/tfsdk
 github.com/hashicorp/terraform-plugin-framework/types
@@ -136,6 +138,7 @@ github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag
 github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatorfuncerr
 github.com/hashicorp/terraform-plugin-framework-validators/internal/schemavalidator
 github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
+github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
 # github.com/hashicorp/terraform-plugin-go v0.29.0
 ## explicit; go 1.24.0
 github.com/hashicorp/terraform-plugin-go/internal/logging
@@ -182,7 +185,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.0.0-00010101000000-000000000000 => github.com/magodo/azure-devops-go-api/azuredevops/v7 v7.0.0-20250711060739-8a0bc4f93533
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.0.0-00010101000000-000000000000 => ../azure-devops-go-api/azuredevops/v7
 ## explicit; go 1.23.0
 github.com/microsoft/azure-devops-go-api/azuredevops/v7
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts
@@ -376,4 +379,4 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/timestamppb
-# github.com/microsoft/azure-devops-go-api/azuredevops/v7 => github.com/magodo/azure-devops-go-api/azuredevops/v7 v7.0.0-20250711060739-8a0bc4f93533
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 => ../azure-devops-go-api/azuredevops/v7

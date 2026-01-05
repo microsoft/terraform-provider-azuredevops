@@ -22,15 +22,13 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/providerdata"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/service/core"
 )
 
 var _ provider.Provider = (*Provider)(nil)
 
 type Provider struct{}
-
-type ProviderData struct {
-	Client *client.Client
-}
 
 type providerModel struct {
 	OrgServiceUrl                types.String `tfsdk:"org_service_url"`
@@ -79,7 +77,7 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 		return
 	}
 
-	d := &ProviderData{Client: client}
+	d := &providerdata.ProviderData{Client: client}
 	resp.DataSourceData = d
 	resp.ResourceData = d
 	resp.EphemeralResourceData = d
@@ -96,7 +94,9 @@ func (p *Provider) DataSources(ctx context.Context) []func() datasource.DataSour
 }
 
 func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		core.NewProjectResource,
+	}
 }
 
 func (p *Provider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
