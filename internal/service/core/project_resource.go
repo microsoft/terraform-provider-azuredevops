@@ -133,8 +133,6 @@ func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 }
 
 func (p *projectResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Always perform a nil check when handling ProviderData because Terraform
-	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
 		return
 	}

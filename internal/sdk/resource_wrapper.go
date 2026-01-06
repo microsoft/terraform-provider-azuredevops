@@ -12,8 +12,6 @@ import (
 // Implement "Safe" resource interfaces here.
 // "Safe" here means calling an interface by doing nothing is effectively the same as if
 // this interface is not implemented, during terraform execution.
-//
-// TODO: Move unsafe interfaces from here, instead extend them in the specific resource.
 var _ resource.Resource = resourceWrapper{}
 var _ resource.ResourceWithConfigure = resourceWrapper{}
 var _ resource.ResourceWithConfigValidators = resourceWrapper{}
@@ -28,22 +26,22 @@ var _ resource.ResourceWithValidateConfig = resourceWrapper{}
 // var _ resource.ResourceWithUpgradeIdentity = resourceWrapper{}
 
 type resourceWrapper struct {
-	Resource Resource
+	inner Resource
 }
 
 func WrapResource(in Resource) func() resource.Resource {
 	return func() resource.Resource {
-		return resourceWrapper{Resource: in}
+		return resourceWrapper{inner: in}
 	}
 }
 
 func (r resourceWrapper) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	r.Resource.Metadata(ctx, req, resp)
+	r.inner.Metadata(ctx, req, resp)
 }
 
 func (r resourceWrapper) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	r.Resource.Schema(ctx, req, resp)
-	timeout := r.Resource.Timeout()
+	r.inner.Schema(ctx, req, resp)
+	timeout := r.inner.Timeout()
 	resp.Schema.Attributes["timeouts"] = timeouts.Attributes(ctx, timeouts.Opts{
 		Create:            true,
 		Read:              true,
@@ -63,7 +61,7 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	duration, diags := timeout.Create(ctx, r.Resource.Timeout().Create)
+	duration, diags := timeout.Create(ctx, r.inner.Timeout().Create)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -72,7 +70,7 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	r.Resource.Create(ctx, req, resp)
+	r.inner.Create(ctx, req, resp)
 }
 
 func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -82,7 +80,7 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	duration, diags := timeout.Read(ctx, r.Resource.Timeout().Read)
+	duration, diags := timeout.Read(ctx, r.inner.Timeout().Read)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -91,7 +89,7 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	r.Resource.Read(ctx, req, resp)
+	r.inner.Read(ctx, req, resp)
 }
 
 func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -101,7 +99,7 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	duration, diags := timeout.Update(ctx, r.Resource.Timeout().Update)
+	duration, diags := timeout.Update(ctx, r.inner.Timeout().Update)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,7 +108,7 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	r.Resource.Update(ctx, req, resp)
+	r.inner.Update(ctx, req, resp)
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -120,7 +118,7 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	duration, diags := timeout.Delete(ctx, r.Resource.Timeout().Delete)
+	duration, diags := timeout.Delete(ctx, r.inner.Timeout().Delete)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -129,12 +127,12 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	r.Resource.Delete(ctx, req, resp)
+	r.inner.Delete(ctx, req, resp)
 }
 
 // Configure implements resource.ResourceWithConfigure.
 func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if r, ok := r.Resource.(resource.ResourceWithConfigure); ok {
+	if r, ok := r.inner.(resource.ResourceWithConfigure); ok {
 		r.Configure(ctx, req, resp)
 		return
 	}
@@ -142,7 +140,7 @@ func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRe
 
 // ConfigValidators implements resource.ResourceWithConfigValidators.
 func (r resourceWrapper) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
-	if r, ok := r.Resource.(resource.ResourceWithConfigValidators); ok {
+	if r, ok := r.inner.(resource.ResourceWithConfigValidators); ok {
 		return r.ConfigValidators(ctx)
 	}
 	return nil
@@ -150,7 +148,7 @@ func (r resourceWrapper) ConfigValidators(ctx context.Context) []resource.Config
 
 // ImportState implements resource.ResourceWithImportState.
 func (r resourceWrapper) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	if r, ok := r.Resource.(resource.ResourceWithImportState); ok {
+	if r, ok := r.inner.(resource.ResourceWithImportState); ok {
 		r.ImportState(ctx, req, resp)
 		return
 	}
@@ -158,7 +156,7 @@ func (r resourceWrapper) ImportState(ctx context.Context, req resource.ImportSta
 
 // ModifyPlan implements resource.ResourceWithModifyPlan.
 func (r resourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if r, ok := r.Resource.(resource.ResourceWithModifyPlan); ok {
+	if r, ok := r.inner.(resource.ResourceWithModifyPlan); ok {
 		r.ModifyPlan(ctx, req, resp)
 		return
 	}
@@ -166,7 +164,7 @@ func (r resourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 
 // MoveState implements resource.ResourceWithMoveState.
 func (r resourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
-	if r, ok := r.Resource.(resource.ResourceWithMoveState); ok {
+	if r, ok := r.inner.(resource.ResourceWithMoveState); ok {
 		return r.MoveState(ctx)
 	}
 	return nil
@@ -174,7 +172,7 @@ func (r resourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
 
 // UpgradeState implements resource.ResourceWithUpgradeState.
 func (r resourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-	if r, ok := r.Resource.(resource.ResourceWithUpgradeState); ok {
+	if r, ok := r.inner.(resource.ResourceWithUpgradeState); ok {
 		return r.UpgradeState(ctx)
 	}
 	return nil
@@ -182,7 +180,7 @@ func (r resourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.St
 
 // ValidateConfig implements resource.ResourceWithValidateConfig.
 func (r resourceWrapper) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	if r, ok := r.Resource.(resource.ResourceWithValidateConfig); ok {
+	if r, ok := r.inner.(resource.ResourceWithValidateConfig); ok {
 		r.ValidateConfig(ctx, req, resp)
 		return
 	}
