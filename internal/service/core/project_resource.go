@@ -100,7 +100,6 @@ func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -155,8 +154,8 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	tflog.Debug(ctx, "look up the process template id")
 
 	process, err := p.lookupProcess(ctx, func(p core.Process) bool {
-		// Actually in this case, `work_item_template` is unknown as it is set as O+C.
-		if plan.WorkItemTemplate.ValueString() == "" {
+		// `work_item_template` is unknown as it is set as O+C.
+		if plan.WorkItemTemplate.IsUnknown() {
 			return p.IsDefault != nil && *p.IsDefault
 		} else {
 			return p.Name != nil && *p.Name == plan.WorkItemTemplate.ValueString()
