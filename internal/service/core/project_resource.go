@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -22,12 +23,15 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/providerdata"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-func NewProjectResource() resource.Resource {
+var _ sdk.Resource = &projectResource{}
+
+func NewProjectResource() sdk.Resource {
 	return &projectResource{}
 }
 
@@ -43,10 +47,20 @@ type projectModel struct {
 	WorkItemTemplate  types.String                             `tfsdk:"work_item_template"`
 	Id                types.String                             `tfsdk:"id"`
 	ProcessTemplateId types.String                             `tfsdk:"process_template_id"`
+	Timeouts          timeouts.Value                           `tfsdk:"timeouts"`
 }
 
 func (p *projectResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
+}
+
+func (p *projectResource) Timeout() sdk.ResourceTimeout {
+	return sdk.ResourceTimeout{
+		Create: 5 * time.Minute,
+		Read:   time.Minute,
+		Update: 5 * time.Minute,
+		Delete: 5 * time.Minute,
+	}
 }
 
 func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -226,7 +240,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	tflog.Debug(ctx, "read the project after creation")
 
-	state, exists, err := p.read(ctx, plan.Name.ValueString())
+	state, exists, err := p.read(ctx, plan.Name.ValueString(), plan.Timeouts)
 	if err != nil {
 		resp.Diagnostics.AddError("Read project right after creation", err.Error())
 		return
@@ -238,7 +252,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-func (p *projectResource) read(ctx context.Context, idOrName string) (model projectModel, exists bool, err error) {
+func (p *projectResource) read(ctx context.Context, idOrName string, timeouts timeouts.Value) (model projectModel, exists bool, err error) {
 	project, err := p.client.CoreClient.GetProject(ctx, core.GetProjectArgs{
 		ProjectId:           &idOrName,
 		IncludeCapabilities: pointer.From(true),
@@ -286,6 +300,7 @@ func (p *projectResource) read(ctx context.Context, idOrName string) (model proj
 		WorkItemTemplate:  fwtype.StringValue(templateName),
 		ProcessTemplateId: fwtype.StringValue(templateId),
 		Id:                fwtype.StringValue(id),
+		Timeouts:          timeouts,
 	}
 
 	return model, true, nil
@@ -298,7 +313,7 @@ func (p *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	state, exists, err := p.read(ctx, state.Id.ValueString())
+	state, exists, err := p.read(ctx, state.Id.ValueString(), state.Timeouts)
 	if err != nil {
 		resp.Diagnostics.AddError("Read project", err.Error())
 		return
@@ -381,7 +396,7 @@ func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	tflog.Debug(ctx, "read the project after update")
 
-	state, exists, err := p.read(ctx, plan.Name.ValueString())
+	state, exists, err := p.read(ctx, plan.Name.ValueString(), plan.Timeouts)
 	if err != nil {
 		resp.Diagnostics.AddError("Read project right after update", err.Error())
 		return

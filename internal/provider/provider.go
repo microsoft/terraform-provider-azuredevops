@@ -23,6 +23,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/providerdata"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/service/core"
 )
 
@@ -95,7 +96,7 @@ func (p *Provider) DataSources(ctx context.Context) []func() datasource.DataSour
 
 func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		core.NewProjectResource,
+		sdk.WrapResource(core.NewProjectResource()),
 	}
 }
 
