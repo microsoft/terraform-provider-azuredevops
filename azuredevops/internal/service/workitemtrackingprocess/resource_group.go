@@ -1,8 +1,11 @@
 package workitemtrackingprocess
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"math"
+	"slices"
 	"strings"
 	"time"
 
@@ -305,8 +308,12 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	// Read controls if present
 	if foundGroup.Controls != nil && len(*foundGroup.Controls) > 0 {
-		controls := make([]map[string]interface{}, len(*foundGroup.Controls))
-		for i, c := range *foundGroup.Controls {
+		groupControls := *foundGroup.Controls
+		slices.SortStableFunc(groupControls, func(a, b workitemtrackingprocess.Control) int {
+			return cmp.Compare(converter.ToInt(a.Order, math.MaxInt), converter.ToInt(b.Order, math.MaxInt))
+		})
+		controls := make([]map[string]interface{}, len(groupControls))
+		for i, c := range groupControls {
 			control := map[string]interface{}{
 				"visible":    c.Visible,
 				"read_only":  c.ReadOnly,
@@ -339,7 +346,9 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 			}
 			controls[i] = control
 		}
-		d.Set("control", controls)
+		if err := d.Set("control", controls); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return nil
 }
