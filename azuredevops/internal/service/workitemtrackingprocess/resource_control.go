@@ -102,13 +102,11 @@ func ResourceControl() *schema.Resource {
 			},
 			"inherited": {
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
 				Description: "A value indicating whether this layout node has been inherited from a parent layout.",
 			},
 			"overridden": {
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
 				Description: "A value indicating whether this layout node has been overridden by a child layout.",
 			},
@@ -196,12 +194,6 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	if inherited := rawConfig["inherited"]; !inherited.IsNull() {
-		control.Inherited = converter.Bool(inherited.True())
-	}
-	if overridden := rawConfig["overridden"]; !overridden.IsNull() {
-		control.Overridden = converter.Bool(overridden.True())
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {
@@ -335,12 +327,6 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
-	}
-	if inherited := rawConfig["inherited"]; !inherited.IsNull() {
-		control.Inherited = converter.Bool(inherited.True())
-	}
-	if overridden := rawConfig["overridden"]; !overridden.IsNull() {
-		control.Overridden = converter.Bool(overridden.True())
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {
