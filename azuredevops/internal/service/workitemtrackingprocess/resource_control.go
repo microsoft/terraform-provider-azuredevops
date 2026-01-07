@@ -186,9 +186,10 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	if v, ok := d.GetOk("label"); ok {
 		control.Label = converter.String(v.(string))
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("order"); ok {
-		control.Order = converter.Int(v.(int))
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if order := rawConfig["order"]; !order.IsNull() {
+		orderInt, _ := order.AsBigFloat().Int64()
+		control.Order = converter.Int(int(orderInt))
 	}
 	if v, ok := d.GetOk("metadata"); ok {
 		control.Metadata = converter.String(v.(string))
@@ -196,13 +197,11 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("inherited"); ok {
-		control.Inherited = converter.Bool(v.(bool))
+	if inherited := rawConfig["inherited"]; !inherited.IsNull() {
+		control.Inherited = converter.Bool(inherited.True())
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("overridden"); ok {
-		control.Overridden = converter.Bool(v.(bool))
+	if overridden := rawConfig["overridden"]; !overridden.IsNull() {
+		control.Overridden = converter.Bool(overridden.True())
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {
@@ -324,9 +323,10 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	if v, ok := d.GetOk("label"); ok {
 		control.Label = converter.String(v.(string))
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("order"); ok {
-		control.Order = converter.Int(v.(int))
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if order := rawConfig["order"]; !order.IsNull() {
+		orderInt, _ := order.AsBigFloat().Int64()
+		control.Order = converter.Int(int(orderInt))
 	}
 	if v, ok := d.GetOk("metadata"); ok {
 		control.Metadata = converter.String(v.(string))
@@ -334,13 +334,11 @@ func updateResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	if v, ok := d.GetOk("watermark"); ok {
 		control.Watermark = converter.String(v.(string))
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("inherited"); ok {
-		control.Inherited = converter.Bool(v.(bool))
+	if inherited := rawConfig["inherited"]; !inherited.IsNull() {
+		control.Inherited = converter.Bool(inherited.True())
 	}
-	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
-	if v, ok := d.GetOkExists("overridden"); ok {
-		control.Overridden = converter.Bool(v.(bool))
+	if overridden := rawConfig["overridden"]; !overridden.IsNull() {
+		control.Overridden = converter.Bool(overridden.True())
 	}
 	control.IsContribution = converter.Bool(d.Get("is_contribution").(bool))
 	if v, ok := d.GetOk("contribution"); ok {
