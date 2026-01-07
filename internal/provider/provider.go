@@ -24,7 +24,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/service/core"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/services/core"
 )
 
 var _ provider.Provider = (*Provider)(nil)
@@ -53,10 +53,8 @@ type providerModel struct {
 	UseMSI                       types.Bool   `tfsdk:"use_msi"`
 }
 
-func New() func() provider.Provider {
-	return func() provider.Provider {
-		return &Provider{}
-	}
+func New() provider.Provider {
+	return &Provider{}
 }
 
 func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
