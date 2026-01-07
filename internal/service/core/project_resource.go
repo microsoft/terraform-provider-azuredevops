@@ -20,9 +20,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/providerdata"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
@@ -36,7 +34,8 @@ func NewProjectResource() sdk.Resource {
 }
 
 type projectResource struct {
-	client *client.Client
+	sdk.WithMeta
+	sdk.WithMetadata
 }
 
 type projectModel struct {
@@ -50,8 +49,8 @@ type projectModel struct {
 	Timeouts          timeouts.Value                           `tfsdk:"timeouts"`
 }
 
-func (p *projectResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_project"
+func (projectResource) Type() string {
+	return "azuredevops_project"
 }
 
 func (p *projectResource) Timeout() sdk.ResourceTimeout {
@@ -132,13 +131,6 @@ func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 	}
 }
 
-func (p *projectResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	p.client = req.ProviderData.(*providerdata.ProviderData).Client
-}
-
 func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan projectModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -148,7 +140,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	tflog.Debug(ctx, "check the presence of the project")
 
-	existing, err := p.client.CoreClient.GetProject(ctx, core.GetProjectArgs{ProjectId: plan.Name.ValueStringPointer()})
+	existing, err := p.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{ProjectId: plan.Name.ValueStringPointer()})
 	if err != nil {
 		if !errorutil.WasNotFound(err) {
 			resp.Diagnostics.AddError("check the presence of the project", err.Error())
@@ -199,7 +191,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		},
 	}
 
-	operationRef, err := p.client.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
+	operationRef, err := p.Meta.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
 		resp.Diagnostics.AddError("Queue create project", err.Error())
 		return
@@ -251,7 +243,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (p *projectResource) read(ctx context.Context, idOrName string, timeouts timeouts.Value) (model projectModel, exists bool, err error) {
-	project, err := p.client.CoreClient.GetProject(ctx, core.GetProjectArgs{
+	project, err := p.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
 		ProjectId:           &idOrName,
 		IncludeCapabilities: pointer.From(true),
 	})
@@ -352,7 +344,7 @@ func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Visibility:  pointer.From(core.ProjectVisibility(plan.Visibility.ValueString())),
 	}
 
-	operationRef, err := p.client.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
+	operationRef, err := p.Meta.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
 		ProjectUpdate: project,
 		ProjectId:     &id,
 	})
@@ -421,7 +413,7 @@ func (p *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	operationRef, err := p.client.CoreClient.QueueDeleteProject(ctx, core.QueueDeleteProjectArgs{ProjectId: &id})
+	operationRef, err := p.Meta.CoreClient.QueueDeleteProject(ctx, core.QueueDeleteProjectArgs{ProjectId: &id})
 	if err != nil {
 		resp.Diagnostics.AddError("Queue delete project", err.Error())
 		return
@@ -459,7 +451,7 @@ func (p *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (p *projectResource) lookupProcess(ctx context.Context, f func(p core.Process) bool) (*core.Process, error) {
-	processes, err := p.client.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
+	processes, err := p.Meta.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
 	if err != nil {
 		return nil, err
 	}
@@ -478,7 +470,7 @@ func (p *projectResource) lookupProcess(ctx context.Context, f func(p core.Proce
 
 func (p *projectResource) pollOperationResult(ctx context.Context, operationRef *operations.OperationReference) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		ret, err := p.client.OperationsClient.GetOperation(ctx, operations.GetOperationArgs{
+		ret, err := p.Meta.OperationsClient.GetOperation(ctx, operations.GetOperationArgs{
 			OperationId: operationRef.Id,
 			PluginId:    operationRef.PluginId,
 		})

@@ -1,7 +1,7 @@
-package providerdata
+package meta
 
 import "github.com/microsoft/terraform-provider-azuredevops/internal/client"
 
-type ProviderData struct {
-	Client *client.Client
+type Meta struct {
+	*client.Client
 }

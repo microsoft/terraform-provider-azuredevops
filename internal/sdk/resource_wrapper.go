@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
 
 // Implement "Safe" resource interfaces here.
@@ -21,7 +22,7 @@ var _ resource.ResourceWithMoveState = resourceWrapper{}
 var _ resource.ResourceWithUpgradeState = resourceWrapper{}
 var _ resource.ResourceWithValidateConfig = resourceWrapper{}
 
-// The followings are unsafe interfaces. This requires additional wrapping around this resourceWrapper and opt-in.
+// The followings are unsafe interfaces. This requires additional wrappers around this resourceWrapper and opt-in.
 // var _ resource.ResourceWithIdentity = resourceWrapper{}
 // var _ resource.ResourceWithUpgradeIdentity = resourceWrapper{}
 
@@ -36,7 +37,7 @@ func WrapResource(in Resource) func() resource.Resource {
 }
 
 func (r resourceWrapper) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	r.inner.Metadata(ctx, req, resp)
+	resp.TypeName = r.inner.Type()
 }
 
 func (r resourceWrapper) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -132,10 +133,10 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 
 // Configure implements resource.ResourceWithConfigure.
 func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if r, ok := r.inner.(resource.ResourceWithConfigure); ok {
-		r.Configure(ctx, req, resp)
+	if req.ProviderData == nil {
 		return
 	}
+	r.inner.SetMeta(req.ProviderData.(meta.Meta))
 }
 
 // ConfigValidators implements resource.ResourceWithConfigValidators.

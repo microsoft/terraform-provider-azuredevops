@@ -22,7 +22,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/providerdata"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/service/core"
 )
@@ -78,7 +78,7 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 		return
 	}
 
-	d := &providerdata.ProviderData{Client: client}
+	d := meta.Meta{Client: client}
 	resp.DataSourceData = d
 	resp.ResourceData = d
 	resp.EphemeralResourceData = d
