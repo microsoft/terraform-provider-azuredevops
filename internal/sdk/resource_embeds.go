@@ -7,16 +7,16 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
 
-type WithMeta struct {
+type ImplSetMeta struct {
 	meta.Meta
 }
 
-func (r *WithMeta) SetMeta(m meta.Meta) {
+func (r *ImplSetMeta) SetMeta(m meta.Meta) {
 	r.Meta = m
 }
 
-type WithMetadata struct{}
+type ImplMetadata struct{}
 
-func (WithMetadata) Metadata(context.Context, resource.MetadataRequest, *resource.MetadataResponse) {
+func (ImplMetadata) Metadata(context.Context, resource.MetadataRequest, *resource.MetadataResponse) {
 	panic("This should have been implemented by the wrapper")
 }

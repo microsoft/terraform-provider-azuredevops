@@ -15,6 +15,13 @@ type ResourceTimeout struct {
 	Delete time.Duration
 }
 
+type ResourceWithTimeout interface {
+	resource.Resource
+
+	// Timeout returns the timeout for each operation.
+	Timeout() ResourceTimeout
+}
+
 type Resource interface {
 	// Type returns the resource type
 	Type() string
@@ -23,19 +30,18 @@ type Resource interface {
 	// This is implemented by the WithMeta, the implementer struct shall simply embed it.
 	SetMeta(meta.Meta)
 
-	// Timeout returns the default timeout for each operation.
-	Timeout() ResourceTimeout
-
 	// Resource implements the framework Resource interface.
 	// Since the Metadata() is implemented by the wrapper, the implementer struct shall not implement it.
 	// Instead, it is supposed to embed the WithMetadata to meet the interface requirement.
 	resource.Resource
 
 	// The followings are interfaces that a resource can opt-in by implementing them.
+
 	// resource.ResourceWithConfigValidators
 	// resource.ResourceWithModifyPlan
 	// resource.ResourceWithImportState
 	// resource.ResourceWithMoveState
 	// resource.ResourceWithUpgradeState
 	// resource.ResourceWithValidateConfig
+	// ResourceWithTimeout
 }

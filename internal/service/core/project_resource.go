@@ -34,8 +34,8 @@ func NewProjectResource() sdk.Resource {
 }
 
 type projectResource struct {
-	sdk.WithMeta
-	sdk.WithMetadata
+	sdk.ImplSetMeta
+	sdk.ImplMetadata
 }
 
 type projectModel struct {
@@ -51,15 +51,6 @@ type projectModel struct {
 
 func (projectResource) Type() string {
 	return "azuredevops_project"
-}
-
-func (p *projectResource) Timeout() sdk.ResourceTimeout {
-	return sdk.ResourceTimeout{
-		Create: 5 * time.Minute,
-		Read:   time.Minute,
-		Update: 5 * time.Minute,
-		Delete: 5 * time.Minute,
-	}
 }
 
 func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

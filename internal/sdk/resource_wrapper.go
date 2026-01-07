@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -36,13 +37,25 @@ func WrapResource(in Resource) func() resource.Resource {
 	}
 }
 
+func (r resourceWrapper) Timeout() ResourceTimeout {
+	if r, ok := r.inner.(ResourceWithTimeout); ok {
+		return r.Timeout()
+	}
+	return ResourceTimeout{
+		Create: 5 * time.Minute,
+		Read:   5 * time.Minute,
+		Update: 5 * time.Minute,
+		Delete: 5 * time.Minute,
+	}
+}
+
 func (r resourceWrapper) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = r.inner.Type()
 }
 
 func (r resourceWrapper) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	r.inner.Schema(ctx, req, resp)
-	timeout := r.inner.Timeout()
+	timeout := r.Timeout()
 	resp.Schema.Attributes["timeouts"] = timeouts.Attributes(ctx, timeouts.Opts{
 		Create:            true,
 		Read:              true,
@@ -62,7 +75,7 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	duration, diags := timeout.Create(ctx, r.inner.Timeout().Create)
+	duration, diags := timeout.Create(ctx, r.Timeout().Create)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -81,7 +94,7 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	duration, diags := timeout.Read(ctx, r.inner.Timeout().Read)
+	duration, diags := timeout.Read(ctx, r.Timeout().Read)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -100,7 +113,7 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	duration, diags := timeout.Update(ctx, r.inner.Timeout().Update)
+	duration, diags := timeout.Update(ctx, r.Timeout().Update)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -119,7 +132,7 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	duration, diags := timeout.Delete(ctx, r.inner.Timeout().Delete)
+	duration, diags := timeout.Delete(ctx, r.Timeout().Delete)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
