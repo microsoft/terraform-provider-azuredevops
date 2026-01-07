@@ -301,7 +301,9 @@ func readResourceControlWithError(ctx context.Context, d *schema.ResourceData, m
 	d.Set("is_contribution", foundControl.IsContribution)
 
 	if foundControl.Contribution != nil {
-		d.Set("contribution", flattenContribution(foundControl.Contribution))
+		if err := d.Set("contribution", flattenContribution(foundControl.Contribution)); err != nil {
+			return err
+		}
 	}
 
 	return nil
