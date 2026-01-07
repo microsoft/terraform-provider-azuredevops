@@ -4,12 +4,14 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"log"
 	"math"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
@@ -271,10 +273,36 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	d.SetId(*createdGroup.Id)
-	return readResourceGroup(ctx, d, m)
+
+	expectedControlCount := 0
+	if group.Controls != nil {
+		expectedControlCount = len(*group.Controls)
+	}
+	// NOTE: Adding contribution controls (and potentially other controls) have eventual
+	// consistency issues, so we need to retry reading the resource until all expected
+	// controls are present
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+		if err := readResourceGroupWithError(ctx, d, m); err != nil {
+			return retry.NonRetryableError(err)
+		}
+		actualControlCount := 0
+		if v, ok := d.GetOk("control"); ok {
+			actualControlCount = len(v.([]any))
+		}
+		log.Printf("[DEBUG] Expected control count: %d, Actual control count: %d", expectedControlCount, actualControlCount)
+		if actualControlCount < expectedControlCount {
+			return retry.RetryableError(fmt.Errorf("control count mismatch: expected %d, got %d", expectedControlCount, actualControlCount))
+		}
+		return nil
+	})
+	return diag.FromErr(err)
 }
 
 func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	return diag.FromErr(readResourceGroupWithError(ctx, d, m))
+}
+
+func readResourceGroupWithError(ctx context.Context, d *schema.ResourceData, m any) error {
 	clients := m.(*client.AggregatedClient)
 
 	groupId := d.Id()
@@ -293,7 +321,7 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
+		return fmt.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
 	}
 
 	foundGroup := findGroupById(workItemType.Layout, groupId)
@@ -347,7 +375,7 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 			controls[i] = control
 		}
 		if err := d.Set("control", controls); err != nil {
-			return diag.FromErr(err)
+			return err
 		}
 	}
 	return nil

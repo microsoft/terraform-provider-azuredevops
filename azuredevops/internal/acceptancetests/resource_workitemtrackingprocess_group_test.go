@@ -158,6 +158,7 @@ func TestAccWorkitemtrackingprocessGroup_Move(t *testing.T) {
 	})
 }
 
+// NOTE: This test might be flakey during refresh and/or import due to eventual consistent read
 func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
@@ -169,7 +170,8 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: groupWithMultipleControlTypes(workItemTypeName, processName),
+				Config:       groupWithMultipleControlTypes(workItemTypeName, processName),
+				RefreshState: false,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
@@ -184,7 +186,7 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.0.control_type", "HtmlFieldControl"),
 					resource.TestCheckResourceAttr(tfNode, "control.0.visible", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.0.read_only", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "control.0.order"),
+					resource.TestCheckResourceAttr(tfNode, "control.0.order", "0"),
 					resource.TestCheckResourceAttr(tfNode, "control.0.inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "control.0.overridden", "false"),
 					// FieldControl - for plain text fields
@@ -193,7 +195,7 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.1.control_type", "FieldControl"),
 					resource.TestCheckResourceAttr(tfNode, "control.1.visible", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.1.read_only", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "control.1.order"),
+					resource.TestCheckResourceAttr(tfNode, "control.1.order", "1"),
 					resource.TestCheckResourceAttr(tfNode, "control.1.inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "control.1.overridden", "false"),
 					// FieldControl - for identity fields
@@ -202,7 +204,7 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.2.control_type", "FieldControl"),
 					resource.TestCheckResourceAttr(tfNode, "control.2.visible", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.2.read_only", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "control.2.order"),
+					resource.TestCheckResourceAttr(tfNode, "control.2.order", "2"),
 					resource.TestCheckResourceAttr(tfNode, "control.2.inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "control.2.overridden", "false"),
 					// DateTimeControl - for date/time fields
@@ -211,7 +213,7 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.3.control_type", "DateTimeControl"),
 					resource.TestCheckResourceAttr(tfNode, "control.3.visible", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.3.read_only", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "control.3.order"),
+					resource.TestCheckResourceAttr(tfNode, "control.3.order", "3"),
 					resource.TestCheckResourceAttr(tfNode, "control.3.inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "control.3.overridden", "false"),
 					// WorkItemClassificationControl - for tree path fields
@@ -220,11 +222,12 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.4.control_type", "WorkItemClassificationControl"),
 					resource.TestCheckResourceAttr(tfNode, "control.4.visible", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.4.read_only", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "control.4.order"),
+					resource.TestCheckResourceAttr(tfNode, "control.4.order", "4"),
 					resource.TestCheckResourceAttr(tfNode, "control.4.inherited", "false"),
 					resource.TestCheckResourceAttr(tfNode, "control.4.overridden", "false"),
 					// Contribution control (extension)
 					resource.TestCheckResourceAttr(tfNode, "control.5.id", "ms-devlabs.vsts-extensions-multivalue-control.multivalue-form-control"),
+					resource.TestCheckResourceAttr(tfNode, "control.5.order", "5"),
 					resource.TestCheckResourceAttr(tfNode, "control.5.is_contribution", "true"),
 					resource.TestCheckResourceAttr(tfNode, "control.5.contribution.#", "1"),
 					resource.TestCheckResourceAttr(tfNode, "control.5.contribution.0.contribution_id", "ms-devlabs.vsts-extensions-multivalue-control.multivalue-form-control"),
@@ -232,6 +235,12 @@ func TestAccWorkitemtrackingprocessGroup_WithMultipleControlTypes(t *testing.T) 
 					resource.TestCheckResourceAttr(tfNode, "control.5.contribution.0.inputs.FieldName", "System.Tags"),
 					resource.TestCheckResourceAttr(tfNode, "control.5.contribution.0.inputs.Values", "Option1;Option2;Option3"),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: groupImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
