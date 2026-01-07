@@ -3,11 +3,13 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
 
@@ -50,7 +52,7 @@ func (r resourceWrapper) Timeout() ResourceTimeout {
 }
 
 func (r resourceWrapper) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = r.inner.Type()
+	resp.TypeName = r.inner.ResourceType()
 }
 
 func (r resourceWrapper) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -84,7 +86,40 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
+	ctx = tflog.NewSubsystem(ctx, r.inner.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.inner.ResourceType(), "operation", "Create")
+
 	r.inner.Create(ctx, req, resp)
+
+	// Temporarily set the plan to state, so that we can use the state to construct the read request below.
+	resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	rreq := resource.ReadRequest{
+		State:              resp.State,
+		Private:            resp.Private,
+		Identity:           resp.Identity,
+		ProviderMeta:       req.ProviderMeta,
+		ClientCapabilities: resource.ReadClientCapabilities{},
+	}
+	rresp := resource.ReadResponse{
+		State:       resp.State,
+		Diagnostics: resp.Diagnostics,
+		Identity:    resp.Identity,
+		Private:     resp.Private,
+		Deferred:    nil,
+	}
+
+	r.inner.Read(ctx, rreq, &rresp)
+
+	*resp = resource.CreateResponse{
+		State:       rresp.State,
+		Identity:    rresp.Identity,
+		Private:     rresp.Private,
+		Diagnostics: rresp.Diagnostics,
+	}
 }
 
 func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -103,7 +138,17 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
+	ctx = tflog.NewSubsystem(ctx, r.inner.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.inner.ResourceType(), "operation", "Read")
+
 	r.inner.Read(ctx, req, resp)
+
+	// If the resource doesn't exist, remove it from the state and return.
+	if slices.ContainsFunc(resp.Diagnostics, IsDiagResourceNotFound) {
+		resp.Diagnostics = slices.DeleteFunc(resp.Diagnostics, IsDiagResourceNotFound)
+		resp.State.RemoveResource(ctx)
+		return
+	}
 }
 
 func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -122,7 +167,34 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
+	ctx = tflog.NewSubsystem(ctx, r.inner.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.inner.ResourceType(), "operation", "Update")
+
 	r.inner.Update(ctx, req, resp)
+
+	rreq := resource.ReadRequest{
+		State:              resp.State,
+		Private:            resp.Private,
+		Identity:           resp.Identity,
+		ProviderMeta:       req.ProviderMeta,
+		ClientCapabilities: resource.ReadClientCapabilities{},
+	}
+	rresp := resource.ReadResponse{
+		State:       resp.State,
+		Diagnostics: resp.Diagnostics,
+		Identity:    resp.Identity,
+		Private:     resp.Private,
+		Deferred:    nil,
+	}
+
+	r.inner.Read(ctx, rreq, &rresp)
+
+	*resp = resource.UpdateResponse{
+		State:       rresp.State,
+		Identity:    rresp.Identity,
+		Private:     rresp.Private,
+		Diagnostics: rresp.Diagnostics,
+	}
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -140,6 +212,9 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
+
+	ctx = tflog.NewSubsystem(ctx, r.inner.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.inner.ResourceType(), "operation", "Delete")
 
 	r.inner.Delete(ctx, req, resp)
 }

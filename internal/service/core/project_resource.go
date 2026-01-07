@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
@@ -36,6 +35,7 @@ func NewProjectResource() sdk.Resource {
 type projectResource struct {
 	sdk.ImplSetMeta
 	sdk.ImplMetadata
+	sdk.ImplLog[*projectResource]
 }
 
 type projectModel struct {
@@ -49,11 +49,11 @@ type projectModel struct {
 	Timeouts          timeouts.Value                           `tfsdk:"timeouts"`
 }
 
-func (projectResource) Type() string {
+func (*projectResource) ResourceType() string {
 	return "azuredevops_project"
 }
 
-func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -98,13 +98,13 @@ func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			// BC: This was defaults to Agile but now to the org's default template
 			"work_item_template": schema.StringAttribute{
 				MarkdownDescription: "The work item template name. Defaults to the parent organization's default template.",
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"id": schema.StringAttribute{
@@ -122,16 +122,16 @@ func (p *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 	}
 }
 
-func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan projectModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "check the presence of the project")
+	r.Log(ctx, "check the presence of the project")
 
-	existing, err := p.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{ProjectId: plan.Name.ValueStringPointer()})
+	existing, err := r.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{ProjectId: plan.Name.ValueStringPointer()})
 	if err != nil {
 		if !errorutil.WasNotFound(err) {
 			resp.Diagnostics.AddError("check the presence of the project", err.Error())
@@ -146,9 +146,9 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		resp.Diagnostics = append(resp.Diagnostics, errorutil.ImportAsExistsError(existing.Id.String()))
 	}
 
-	tflog.Debug(ctx, "look up the process template id")
+	r.Log(ctx, "look up the process template id")
 
-	process, err := p.lookupProcess(ctx, func(p core.Process) bool {
+	process, err := r.lookupProcess(ctx, func(p core.Process) bool {
 		// `work_item_template` is unknown as it is set as O+C.
 		if plan.WorkItemTemplate.IsUnknown() {
 			return p.IsDefault != nil && *p.IsDefault
@@ -166,7 +166,7 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 	processTemplateId := process.Id.String()
 
-	tflog.Debug(ctx, "create the project")
+	r.Log(ctx, "create the project")
 
 	project := &core.TeamProject{
 		Name:        plan.Name.ValueStringPointer(),
@@ -182,67 +182,40 @@ func (p *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		},
 	}
 
-	operationRef, err := p.Meta.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
+	operationRef, err := r.Meta.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
 		resp.Diagnostics.AddError("Queue create project", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "wait for the project creation")
+	r.Log(ctx, "wait for the project creation")
 
-	stateConf := &retry.StateChangeConf{
-		ContinuousTargetOccurence: 1,
-		Delay:                     5 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Timeout:                   time.Duration(5 * time.Minute),
-		Pending: []string{
-			string(operations.OperationStatusValues.InProgress),
-			string(operations.OperationStatusValues.Queued),
-			string(operations.OperationStatusValues.NotSet),
-		},
-		Target: []string{
-			string(operations.OperationStatusValues.Failed),
-			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled),
-		},
-		Refresh: p.pollOperationResult(ctx, operationRef),
-	}
-
-	status, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError("Wait for project create finished", err.Error())
+	if err := r.waitOperation(ctx, operationRef); err != nil {
+		resp.Diagnostics.AddError("Wait for project delete operation", err.Error())
 		return
 	}
-
-	if status := status.(operations.OperationStatus); status != operations.OperationStatusValues.Succeeded {
-		resp.Diagnostics.AddError("Project create failed", "status="+string(status))
-		return
-	}
-
-	tflog.Debug(ctx, "read the project after creation")
-
-	state, exists, err := p.read(ctx, plan.Name.ValueString(), plan.Timeouts)
-	if err != nil {
-		resp.Diagnostics.AddError("Read project right after creation", err.Error())
-		return
-	}
-	if !exists {
-		resp.Diagnostics.AddError("Read project right after creation", "project doesn't exist")
-		return
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-func (p *projectResource) read(ctx context.Context, idOrName string, timeouts timeouts.Value) (model projectModel, exists bool, err error) {
-	project, err := p.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
-		ProjectId:           &idOrName,
+func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state projectModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.Log(ctx, "get the project")
+
+	project, err := r.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
+		ProjectId:           state.Name.ValueStringPointer(), // Always use "name" to get as "id" is not available at create time
 		IncludeCapabilities: pointer.From(true),
 	})
 	if err != nil && !errorutil.WasNotFound(err) {
-		return projectModel{}, false, fmt.Errorf("failed to read the project: %v", err)
+		resp.Diagnostics.AddError("Read project", err.Error())
+		return
 	}
 	if errorutil.WasNotFound(err) {
-		return projectModel{}, false, nil
+		resp.Diagnostics = append(resp.Diagnostics, sdk.NewDiagResourceNotFound(r.ResourceType(), state.Name.ValueString()))
+		return
 	}
 
 	var (
@@ -259,9 +232,13 @@ func (p *projectResource) read(ctx context.Context, idOrName string, timeouts ti
 		}
 	}
 	if templateId != nil {
-		process, err := p.lookupProcess(ctx, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
+
+		r.Log(ctx, "look up the template name by id")
+
+		process, err := r.lookupProcess(ctx, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
 		if err != nil {
-			return projectModel{}, false, fmt.Errorf("failed to lookup process: %v", err)
+			resp.Diagnostics.AddError("Lookup process", err.Error())
+			return
 		}
 		templateName = process.Name
 	}
@@ -271,44 +248,20 @@ func (p *projectResource) read(ctx context.Context, idOrName string, timeouts ti
 		id = pointer.From(project.Id.String())
 	}
 
-	model = projectModel{
-		Name: adocustomtype.StringCaseInsensitiveValue{
-			StringValue: fwtype.StringValue(project.Name),
-		},
-		Description:       fwtype.StringValue(project.Description),
-		Visibility:        fwtype.StringValue(project.Visibility),
-		VersionControl:    fwtype.StringValue(versionControl),
-		WorkItemTemplate:  fwtype.StringValue(templateName),
-		ProcessTemplateId: fwtype.StringValue(templateId),
-		Id:                fwtype.StringValue(id),
-		Timeouts:          timeouts,
+	state.Id = fwtype.StringValue(id)
+	state.Name = adocustomtype.StringCaseInsensitiveValue{
+		StringValue: fwtype.StringValue(project.Name),
 	}
-
-	return model, true, nil
-}
-
-func (p *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state projectModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	state, exists, err := p.read(ctx, state.Id.ValueString(), state.Timeouts)
-	if err != nil {
-		resp.Diagnostics.AddError("Read project", err.Error())
-		return
-	}
-	if !exists {
-		tflog.Info(ctx, "resource no longer exists, remove it from state")
-		resp.State.RemoveResource(ctx)
-		return
-	}
+	state.Description = fwtype.StringValue(project.Description)
+	state.Visibility = fwtype.StringValue(project.Visibility)
+	state.VersionControl = fwtype.StringValue(versionControl)
+	state.WorkItemTemplate = fwtype.StringValue(templateName)
+	state.ProcessTemplateId = fwtype.StringValue(templateId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan projectModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -327,7 +280,7 @@ func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	tflog.Debug(ctx, "update the project")
+	r.Log(ctx, "update the project")
 
 	project := &core.TeamProject{
 		Name:        plan.Name.ValueStringPointer(),
@@ -335,7 +288,7 @@ func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Visibility:  pointer.From(core.ProjectVisibility(plan.Visibility.ValueString())),
 	}
 
-	operationRef, err := p.Meta.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
+	operationRef, err := r.Meta.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
 		ProjectUpdate: project,
 		ProjectId:     &id,
 	})
@@ -344,59 +297,22 @@ func (p *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	tflog.Debug(ctx, "wait for the project update")
+	r.Log(ctx, "wait for the project update")
 
-	stateConf := &retry.StateChangeConf{
-		ContinuousTargetOccurence: 1,
-		Delay:                     5 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Timeout:                   time.Duration(5 * time.Minute),
-		Pending: []string{
-			string(operations.OperationStatusValues.InProgress),
-			string(operations.OperationStatusValues.Queued),
-			string(operations.OperationStatusValues.NotSet),
-		},
-		Target: []string{
-			string(operations.OperationStatusValues.Failed),
-			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled),
-		},
-		Refresh: p.pollOperationResult(ctx, operationRef),
-	}
-
-	status, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError("Wait for project update finished", err.Error())
+	if err := r.waitOperation(ctx, operationRef); err != nil {
+		resp.Diagnostics.AddError("Wait for project update operation", err.Error())
 		return
 	}
-
-	if status := status.(operations.OperationStatus); status != operations.OperationStatusValues.Succeeded {
-		resp.Diagnostics.AddError("Project update failed", "status="+string(status))
-		return
-	}
-
-	tflog.Debug(ctx, "read the project after update")
-
-	state, exists, err := p.read(ctx, plan.Name.ValueString(), plan.Timeouts)
-	if err != nil {
-		resp.Diagnostics.AddError("Read project right after update", err.Error())
-		return
-	}
-	if !exists {
-		resp.Diagnostics.AddError("Read project right after update", "project doesn't exist")
-		return
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-func (p *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state projectModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "delete the prject")
+	r.Log(ctx, "delete the prject")
 
 	id, err := uuid.Parse(state.Id.ValueString())
 	if err != nil {
@@ -404,45 +320,22 @@ func (p *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	operationRef, err := p.Meta.CoreClient.QueueDeleteProject(ctx, core.QueueDeleteProjectArgs{ProjectId: &id})
+	operationRef, err := r.Meta.CoreClient.QueueDeleteProject(ctx, core.QueueDeleteProjectArgs{ProjectId: &id})
 	if err != nil {
 		resp.Diagnostics.AddError("Queue delete project", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "wait for the project deletion")
+	r.Log(ctx, "wait for the project deletion")
 
-	stateConf := &retry.StateChangeConf{
-		ContinuousTargetOccurence: 1,
-		Delay:                     5 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Timeout:                   time.Duration(5 * time.Minute),
-		Pending: []string{
-			string(operations.OperationStatusValues.InProgress),
-			string(operations.OperationStatusValues.Queued),
-			string(operations.OperationStatusValues.NotSet),
-		},
-		Target: []string{
-			string(operations.OperationStatusValues.Failed),
-			string(operations.OperationStatusValues.Succeeded),
-			string(operations.OperationStatusValues.Cancelled),
-		},
-		Refresh: p.pollOperationResult(ctx, operationRef),
-	}
-
-	status, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError("Wait for project create finished", err.Error())
-		return
-	}
-	if status := status.(operations.OperationStatus); status != operations.OperationStatusValues.Succeeded {
-		resp.Diagnostics.AddError("Project delete failed", "status="+string(status))
+	if err := r.waitOperation(ctx, operationRef); err != nil {
+		resp.Diagnostics.AddError("Wait for project delete operation", err.Error())
 		return
 	}
 }
 
-func (p *projectResource) lookupProcess(ctx context.Context, f func(p core.Process) bool) (*core.Process, error) {
-	processes, err := p.Meta.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
+func (r *projectResource) lookupProcess(ctx context.Context, f func(p core.Process) bool) (*core.Process, error) {
+	processes, err := r.Meta.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
 	if err != nil {
 		return nil, err
 	}
@@ -459,9 +352,38 @@ func (p *projectResource) lookupProcess(ctx context.Context, f func(p core.Proce
 	return nil, errors.New("process not found")
 }
 
-func (p *projectResource) pollOperationResult(ctx context.Context, operationRef *operations.OperationReference) retry.StateRefreshFunc {
+func (r *projectResource) waitOperation(ctx context.Context, operationRef *operations.OperationReference) error {
+	stateConf := &retry.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Timeout:                   time.Duration(5 * time.Minute),
+		Pending: []string{
+			string(operations.OperationStatusValues.InProgress),
+			string(operations.OperationStatusValues.Queued),
+			string(operations.OperationStatusValues.NotSet),
+		},
+		Target: []string{
+			string(operations.OperationStatusValues.Failed),
+			string(operations.OperationStatusValues.Succeeded),
+			string(operations.OperationStatusValues.Cancelled),
+		},
+		Refresh: r.pollOperationResult(ctx, operationRef),
+	}
+
+	status, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return err
+	}
+	if status := status.(operations.OperationStatus); status != operations.OperationStatusValues.Succeeded {
+		return fmt.Errorf("operation terminated at status: %q", status)
+	}
+	return nil
+}
+
+func (r *projectResource) pollOperationResult(ctx context.Context, operationRef *operations.OperationReference) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		ret, err := p.Meta.OperationsClient.GetOperation(ctx, operations.GetOperationArgs{
+		ret, err := r.Meta.OperationsClient.GetOperation(ctx, operations.GetOperationArgs{
 			OperationId: operationRef.Id,
 			PluginId:    operationRef.PluginId,
 		})
@@ -469,7 +391,7 @@ func (p *projectResource) pollOperationResult(ctx context.Context, operationRef 
 			return nil, string(operations.OperationStatusValues.Failed), err
 		}
 
-		tflog.Debug(ctx, "waiting for project operation success", map[string]any{
+		r.Log(ctx, "polling project operation status", map[string]any{
 			"status": ret.Status,
 			"detaul": ret.DetailedMessage,
 		})
