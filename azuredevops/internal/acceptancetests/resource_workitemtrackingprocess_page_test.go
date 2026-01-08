@@ -29,6 +29,7 @@ func TestAccWorkitemtrackingprocessPage_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "order"),
 					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
@@ -61,6 +62,7 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
@@ -71,8 +73,10 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
 					resource.TestCheckResourceAttr(tfNode, "label", "Updated Page"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
+					resource.TestCheckResourceAttr(tfNode, "order", "4"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
@@ -109,6 +113,7 @@ resource "azuredevops_workitemtrackingprocess_page" "test" {
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   label                         = "Updated Page"
   visible                       = false
+  order                         = 4
 }
 `, workItemType)
 }

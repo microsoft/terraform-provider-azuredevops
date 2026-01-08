@@ -70,8 +70,7 @@ func ResourcePage() *schema.Resource {
 			},
 			"locked": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "A value indicating whether any user operations are permitted on this page.",
 			},
 			"inherited": {
@@ -122,7 +121,6 @@ func createResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 	page := workitemtrackingprocess.Page{
 		Label:    converter.String(d.Get("label").(string)),
 		Visible:  converter.Bool(d.Get("visible").(bool)),
-		Locked:   converter.Bool(d.Get("locked").(bool)),
 		PageType: &workitemtrackingprocess.PageTypeValues.Custom,
 	}
 	rawConfig := d.GetRawConfig().AsValueMap()
@@ -211,7 +209,6 @@ func updateResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 		Id:      &pageId,
 		Label:   converter.String(d.Get("label").(string)),
 		Visible: converter.Bool(d.Get("visible").(bool)),
-		Locked:  converter.Bool(d.Get("locked").(bool)),
 	}
 	rawConfig := d.GetRawConfig().AsValueMap()
 	if order := rawConfig["order"]; !order.IsNull() {

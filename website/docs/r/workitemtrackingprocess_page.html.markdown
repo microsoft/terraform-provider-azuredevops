@@ -48,8 +48,6 @@ The following arguments are supported:
 
 * `visible` - (Optional) A value indicating if the page should be visible or not. Default: `true`
 
-* `locked` - (Optional) A value indicating whether any user operations are permitted on this page. Default: `false`
-
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
@@ -57,6 +55,8 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `id` - The ID of the page.
 
 * `page_type` - The type of the page (e.g., custom, history, links, attachments).
+
+* `locked` - A value indicating whether any user operations are permitted on this page.
 
 * `inherited` - A value indicating whether this page has been inherited from a parent layout.
 
