@@ -28,7 +28,6 @@ func TestAccVariableGroupDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "variable.#"),
 					resource.TestCheckResourceAttr(tfNode, "variable.#", "3"),
-					resource.TestCheckResourceAttr(tfNode, "secret_variable.#", "3"),
 				),
 			},
 		},

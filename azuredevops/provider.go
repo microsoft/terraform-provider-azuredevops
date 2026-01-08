@@ -34,6 +34,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtrackingprocess"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -146,12 +147,17 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":                            memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),
 			"azuredevops_variable_group_permissions":                  permissions.ResourceVariableGroupPermissions(),
+			"azuredevops_variable_group_variable":                     taskagent.ResourceVariableGroupVariable(),
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
+			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
+			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
+			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
+			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                            taskagent.DataAgentPool(),
@@ -195,6 +201,10 @@ func Provider() *schema.Provider {
 			"azuredevops_user":                                  graph.DataUser(),
 			"azuredevops_users":                                 graph.DataUsers(),
 			"azuredevops_variable_group":                        taskagent.DataVariableGroup(),
+			"azuredevops_workitemtrackingprocess_process":       workitemtrackingprocess.DataProcess(),
+			"azuredevops_workitemtrackingprocess_processes":     workitemtrackingprocess.DataProcesses(),
+			"azuredevops_workitemtrackingprocess_workitemtype":  workitemtrackingprocess.DataWorkItemType(),
+			"azuredevops_workitemtrackingprocess_workitemtypes": workitemtrackingprocess.DataWorkItemTypes(),
 		},
 		Schema: map[string]*schema.Schema{
 			"org_service_url": {

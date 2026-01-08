@@ -34,7 +34,7 @@ func ResourceFeed() *schema.Resource {
 				if len(ids) == 1 {
 					d.SetId(ids[0])
 				} else {
-					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id())
+					projectNameOrID, resourceID, err := tfhelper.ParseImportedName(d.Id(), "projectid/resourceName")
 					if err != nil {
 						return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 					}

@@ -116,12 +116,17 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_user_entitlement",
 		"azuredevops_variable_group",
 		"azuredevops_variable_group_permissions",
+		"azuredevops_variable_group_variable",
 		"azuredevops_wiki",
 		"azuredevops_wiki_page",
 		"azuredevops_workitem",
 		"azuredevops_workitemquery",
 		"azuredevops_workitemquery_folder",
 		"azuredevops_workitemquery_permissions",
+		"azuredevops_workitemtrackingprocess_group",
+		"azuredevops_workitemtrackingprocess_process",
+		"azuredevops_workitemtrackingprocess_process_permissions",
+		"azuredevops_workitemtrackingprocess_workitemtype",
 	}
 
 	resources := azuredevops.Provider().ResourcesMap
@@ -176,6 +181,10 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_user",
 		"azuredevops_users",
 		"azuredevops_variable_group",
+		"azuredevops_workitemtrackingprocess_process",
+		"azuredevops_workitemtrackingprocess_processes",
+		"azuredevops_workitemtrackingprocess_workitemtype",
+		"azuredevops_workitemtrackingprocess_workitemtypes",
 	}
 
 	dataSources := azuredevops.Provider().DataSourcesMap

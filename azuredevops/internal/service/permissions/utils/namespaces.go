@@ -240,19 +240,17 @@ func (sn *SecurityNamespace) GetActionDefinitions() (*map[string]security.Action
 }
 
 func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
-	if descriptorList == nil || len(*descriptorList) == 0 {
-		return nil, nil
+	var descriptors *string = nil
+	if descriptorList != nil && len(*descriptorList) > 0 {
+		val := linq.From(*descriptorList).
+			Aggregate(func(r interface{}, i interface{}) interface{} {
+				if r.(string) == "" {
+					return i
+				}
+				return r.(string) + "," + i.(string)
+			}).(string)
+		descriptors = &val
 	}
-
-	var descriptors *string
-	val := linq.From(*descriptorList).
-		Aggregate(func(r interface{}, i interface{}) interface{} {
-			if r.(string) == "" {
-				return i
-			}
-			return r.(string) + "," + i.(string)
-		}).(string)
-	descriptors = &val
 
 	bTrue := true
 	acl, err := sn.securityClient.QueryAccessControlLists(sn.context, security.QueryAccessControlListsArgs{

@@ -82,9 +82,9 @@ func ResourceVariableGroup() *schema.Resource {
 				Default:  false,
 			},
 			"variable": {
-				Type:         schema.TypeSet,
-				Optional:     true,
-				AtLeastOneOf: []string{"variable", "secret_variable"},
+				Type:     schema.TypeSet,
+				Required: true,
+				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -97,36 +97,17 @@ func ResourceVariableGroup() *schema.Resource {
 							Default:       "",
 							ConflictsWith: []string{"key_vault"},
 						},
-						"content_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"enabled": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"expires": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"secret_variable": {
-				Type:         schema.TypeSet,
-				Optional:     true,
-				AtLeastOneOf: []string{"variable", "secret_variable"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"value": {
+						"secret_value": {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Sensitive:     true,
 							Default:       "",
+							ConflictsWith: []string{"key_vault"},
+						},
+						"is_secret": {
+							Type:          schema.TypeBool,
+							Optional:      true,
+							Default:       false,
 							ConflictsWith: []string{"key_vault"},
 						},
 						"content_type": {
@@ -375,20 +356,39 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 	projectID := converter.String(d.Get("project_id").(string))
 	name := converter.String(d.Get("name").(string))
 	description := converter.String(d.Get("description").(string))
+	variables := d.Get("variable").(*schema.Set).List()
 
-	variableMap := make(map[string]interface{})
-	for _, variable := range d.Get("variable").(*schema.Set).List() {
-		asMap := variable.(map[string]interface{})
-		variableMap[asMap["name"].(string)] = taskagent.VariableValue{
-			Value:    converter.String(asMap["value"].(string)),
-			IsSecret: converter.Bool(false),
+	// needed to detect if the secret_value attribute is set in the config
+	// see https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+	for it := d.GetRawConfig().AsValueMap()["variable"].ElementIterator(); it.Next(); {
+		_, ctyVariable := it.Element()
+		ctyVariableAsMap := ctyVariable.AsValueMap()
+		name := ctyVariableAsMap["name"].AsString()
+		valueSet := !ctyVariableAsMap["value"].IsNull()
+		secretValueSet := !ctyVariableAsMap["secret_value"].IsNull()
+		isSecret := !ctyVariableAsMap["is_secret"].IsNull()
+
+		if valueSet && (secretValueSet || isSecret) || secretValueSet != isSecret {
+			return nil, nil, fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
 		}
 	}
-	for _, variable := range d.Get("secret_variable").(*schema.Set).List() {
+
+	variableMap := make(map[string]interface{})
+
+	for _, variable := range variables {
 		asMap := variable.(map[string]interface{})
-		variableMap[asMap["name"].(string)] = taskagent.VariableValue{
-			Value:    converter.String(asMap["value"].(string)),
-			IsSecret: converter.Bool(true),
+
+		isSecret := converter.Bool(asMap["is_secret"].(bool))
+		if *isSecret {
+			variableMap[asMap["name"].(string)] = taskagent.VariableValue{
+				Value:    converter.String(asMap["secret_value"].(string)),
+				IsSecret: isSecret,
+			}
+		} else {
+			variableMap[asMap["name"].(string)] = taskagent.VariableValue{
+				Value:    converter.String(asMap["value"].(string)),
+				IsSecret: isSecret,
+			}
 		}
 	}
 
@@ -433,7 +433,7 @@ func expandVariableGroupParameters(clients *client.AggregatedClient, d *schema.R
 		}
 
 		variableGroup.Type = converter.String(azureKeyVaultType)
-		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variableMap, depth)
+		kvVariables, invalidVariables, err := searchAzureKVSecrets(clients, *projectID, kvName, serviceEndpointID, variables, depth)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -456,16 +456,12 @@ func flattenVariableGroup(d *schema.ResourceData, variableGroup *taskagent.Varia
 	d.Set("description", converter.ToString(variableGroup.Description, ""))
 	d.Set("project_id", projectID)
 
-	variables, secretVariables, err := flattenVariables(d, variableGroup)
+	variables, err := flattenVariables(d, variableGroup)
 	if err != nil {
 		return err
 	}
 
 	if err = d.Set("variable", variables); err != nil {
-		return err
-	}
-
-	if err = d.Set("secret_variable", secretVariables); err != nil {
 		return err
 	}
 
@@ -491,37 +487,30 @@ func isKeyVaultVariableGroupType(variableGrouptype *string) bool {
 // Note: The AzDO API does not return the value for variables marked as a secret. For this reason
 //
 //	variables marked as secret will need to be pulled from the state itself
-func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, interface{}, error) {
-	variables := []map[string]interface{}{}
-	secretVariables := []map[string]interface{}{}
+func flattenVariables(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
+	variables := make([]map[string]interface{}, len(*variableGroup.Variables))
 
+	index := 0
 	for varName, varVal := range *variableGroup.Variables {
 		variableAsJSON, err := json.Marshal(varVal)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Unable to marshal variable into JSON: %+v", err)
+			return nil, fmt.Errorf("Unable to marshal variable into JSON: %+v", err)
 		}
-
-		var (
-			variable map[string]interface{}
-			isSecret bool
-		)
 
 		if isKeyVaultVariableGroupType(variableGroup.Type) {
-			variable, err = flattenKeyVaultVariable(variableAsJSON, varName)
+			variables[index], err = flattenKeyVaultVariable(variableAsJSON, varName)
 		} else {
-			variable, isSecret, err = flattenVariable(d, variableAsJSON, varName)
-		}
-		if err != nil {
-			return nil, nil, err
+			variables[index], err = flattenVariable(d, variableAsJSON, varName)
 		}
 
-		if isSecret {
-			secretVariables = append(secretVariables, variable)
-		} else {
-			variables = append(variables, variable)
+		if err != nil {
+			return nil, err
 		}
+
+		index++
 	}
-	return variables, secretVariables, nil
+
+	return variables, nil
 }
 
 func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]interface{}, error) {
@@ -534,6 +523,8 @@ func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]
 	variableMap := map[string]interface{}{
 		"name":         varName,
 		"value":        nil,
+		"secret_value": nil,
+		"is_secret":    false,
 		"enabled":      converter.ToBool(variable.Enabled, false),
 		"content_type": converter.ToString(variable.ContentType, ""),
 	}
@@ -543,26 +534,27 @@ func flattenKeyVaultVariable(variableAsJSON []byte, varName string) (map[string]
 	return variableMap, nil
 }
 
-func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName string) (map[string]interface{}, bool, error) {
+func flattenVariable(d *schema.ResourceData, variableAsJSON []byte, varName string) (map[string]interface{}, error) {
 	var variable taskagent.AzureKeyVaultVariableValue
 	err := json.Unmarshal(variableAsJSON, &variable)
 	if err != nil {
-		return nil, false, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
+		return nil, fmt.Errorf("Unable to unmarshal variable (%+v): %+v", variable, err)
 	}
 
 	isSecret := converter.ToBool(variable.IsSecret, false)
 	val := map[string]interface{}{
-		"name":  varName,
-		"value": converter.ToString(variable.Value, ""),
+		"name":      varName,
+		"value":     converter.ToString(variable.Value, ""),
+		"is_secret": isSecret,
 	}
 
 	// read secret variables from state if exist
 	if isSecret {
-		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, "secret_variable", "name", varName); stateVal != nil {
+		if stateVal := tfhelper.FindMapInSetWithGivenKeyValue(d, "variable", "name", varName); stateVal != nil {
 			val = stateVal
 		}
 	}
-	return val, isSecret, nil
+	return val, nil
 }
 
 func flattenKeyVault(d *schema.ResourceData, variableGroup *taskagent.VariableGroup) (interface{}, error) {
@@ -661,14 +653,15 @@ func flattenAllowAccess(d *schema.ResourceData, definitionResource *[]build.Defi
 	d.Set("allow_access", allowAccess)
 }
 
-func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variableMap map[string]interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, err error) {
+func searchAzureKVSecrets(clients *client.AggregatedClient, projectID, kvName, serviceEndpointID string, variables []interface{}, depth int) (kvSecrets map[string]interface{}, invalidSecrets []string, err error) {
 	var azkvSecretsRaw *KeyVaultSecretResult
 	token, loop := "", 0
 	kvSecrets = make(map[string]interface{})
 	invalidSecrets = make([]string, 0)
 
 	secretNames := make(map[string]string)
-	for name := range variableMap {
+	for _, val := range variables {
+		name := val.(map[string]interface{})["name"].(string)
 		secretNames[name] = name
 	}
 	for {
