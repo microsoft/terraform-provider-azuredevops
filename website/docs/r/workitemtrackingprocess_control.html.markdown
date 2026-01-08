@@ -20,8 +20,8 @@ resource "azuredevops_workitemtrackingprocess_process" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
-  process_id  = azuredevops_workitemtrackingprocess_process.example.id
-  name        = "example"
+  process_id = azuredevops_workitemtrackingprocess_process.example.id
+  name       = "example"
 }
 
 resource "azuredevops_workitemtrackingprocess_group" "example" {
@@ -50,8 +50,8 @@ resource "azuredevops_workitemtrackingprocess_process" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
-  process_id  = azuredevops_workitemtrackingprocess_process.example.id
-  name        = "example"
+  process_id = azuredevops_workitemtrackingprocess_process.example.id
+  name       = "example"
 }
 
 resource "azuredevops_workitemtrackingprocess_group" "example" {
@@ -106,10 +106,6 @@ The following arguments are supported:
 
 * `watermark` - (Optional) Watermark text for the textbox.
 
-* `inherited` - (Optional) A value indicating whether this layout node has been inherited from a parent layout.
-
-* `overridden` - (Optional) A value indicating whether this layout node has been overridden by a child layout.
-
 * `is_contribution` - (Optional) A value indicating if the control is a contribution (extension) control. Default: `false`
 
 * `contribution` - (Optional) Contribution configuration for extension controls. A `contribution` block as defined below.
@@ -133,6 +129,10 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `id` - The ID of the control.
 
 * `control_type` - The type of the control (e.g., FieldControl, HtmlFieldControl, DateTimeControl).
+
+* `inherited` - A value indicating whether this layout node has been inherited from a parent layout.
+
+* `overridden` - A value indicating whether this layout node has been overridden by a child layout.
 
 ## Relevant Links
 
