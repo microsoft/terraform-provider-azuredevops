@@ -175,13 +175,27 @@ func readResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return nil
 	}
 
-	d.Set("label", foundPage.Label)
-	d.Set("order", foundPage.Order)
-	d.Set("visible", foundPage.Visible)
-	d.Set("page_type", foundPage.PageType)
-	d.Set("locked", foundPage.Locked)
-	d.Set("inherited", foundPage.Inherited)
-	d.Set("overridden", foundPage.Overridden)
+	if foundPage.Label != nil {
+		d.Set("label", *foundPage.Label)
+	}
+	if foundPage.Order != nil {
+		d.Set("order", *foundPage.Order)
+	}
+	if foundPage.Visible != nil {
+		d.Set("visible", *foundPage.Visible)
+	}
+	if foundPage.PageType != nil {
+		d.Set("page_type", *foundPage.PageType)
+	}
+	if foundPage.Locked != nil {
+		d.Set("locked", *foundPage.Locked)
+	}
+	if foundPage.Inherited != nil {
+		d.Set("inherited", *foundPage.Inherited)
+	}
+	if foundPage.Overridden != nil {
+		d.Set("overridden", *foundPage.Overridden)
+	}
 
 	if foundPage.Sections != nil {
 		sections := make([]map[string]any, len(*foundPage.Sections))
@@ -192,7 +206,9 @@ func readResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.D
 			}
 			sections[i] = section
 		}
-		d.Set("section", sections)
+		if err := d.Set("section", sections); err != nil {
+			return diag.Errorf(" setting section: %+v", err)
+		}
 	}
 
 	return nil
