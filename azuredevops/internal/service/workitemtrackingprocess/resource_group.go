@@ -274,27 +274,38 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	d.SetId(*createdGroup.Id)
 
-	expectedControlCount := 0
-	if group.Controls != nil {
-		expectedControlCount = len(*group.Controls)
+	if group.Controls == nil || len(*group.Controls) == 0 {
+		return readResourceGroup(ctx, d, m)
 	}
+
+	expectedControlCount := len(*group.Controls)
 	// NOTE: Adding contribution controls (and potentially other controls) have eventual
 	// consistency issues, so we need to retry reading the resource until all expected
-	// controls are present
-	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
-		if err := readResourceGroupWithError(ctx, d, m); err != nil {
-			return retry.NonRetryableError(err)
-		}
-		actualControlCount := 0
-		if v, ok := d.GetOk("control"); ok {
-			actualControlCount = len(v.([]any))
-		}
-		log.Printf("[DEBUG] Expected control count: %d, Actual control count: %d", expectedControlCount, actualControlCount)
-		if actualControlCount < expectedControlCount {
-			return retry.RetryableError(fmt.Errorf("control count mismatch: expected %d, got %d", expectedControlCount, actualControlCount))
-		}
-		return nil
-	})
+	// controls are present. We use ContinuousTargetOccurence to ensure the count is
+	// stable across multiple reads.
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{"waiting"},
+		Target:     []string{"ready", "error"},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		MinTimeout: 1 * time.Second,
+		// Tested with 3 which still causes the issue intermittently
+		ContinuousTargetOccurence: 4,
+		Refresh: func() (interface{}, string, error) {
+			if err := readResourceGroupWithError(ctx, d, m); err != nil {
+				return nil, "error", err
+			}
+			actualControlCount := 0
+			if v, ok := d.GetOk("control"); ok {
+				actualControlCount = len(v.([]any))
+			}
+			log.Printf("[DEBUG] Expected control count: %d, Actual control count: %d", expectedControlCount, actualControlCount)
+			if actualControlCount < expectedControlCount {
+				return nil, "waiting", nil
+			}
+			return d, "ready", nil
+		},
+	}
+	_, err = stateConf.WaitForStateContext(ctx)
 	return diag.FromErr(err)
 }
 
