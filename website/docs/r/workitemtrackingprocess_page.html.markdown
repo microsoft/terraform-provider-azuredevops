@@ -50,13 +50,13 @@ The following arguments are supported:
 
 * `locked` - (Optional) A value indicating whether any user operations are permitted on this page. Default: `false`
 
-* `page_type` - (Optional) The type of the page. Possible values are `custom`, `history`, `links`, `attachments`. Default: `custom`
-
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
 * `id` - The ID of the page.
+
+* `page_type` - The type of the page (e.g., custom, history, links, attachments).
 
 * `inherited` - A value indicating whether this page has been inherited from a parent layout.
 

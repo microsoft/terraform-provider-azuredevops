@@ -64,16 +64,9 @@ func ResourcePage() *schema.Resource {
 				Description: "A value indicating if the page should be hidden or not.",
 			},
 			"page_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  string(workitemtrackingprocess.PageTypeValues.Custom),
-				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{
-					string(workitemtrackingprocess.PageTypeValues.Custom),
-					string(workitemtrackingprocess.PageTypeValues.History),
-					string(workitemtrackingprocess.PageTypeValues.Links),
-					string(workitemtrackingprocess.PageTypeValues.Attachments),
-				}, false)),
-				Description: "The type of the page. Possible values are `custom`, `history`, `links`, `attachments`. Default: `custom`",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of the page (e.g., custom, history, links, attachments).",
 			},
 			"locked": {
 				Type:        schema.TypeBool,
@@ -93,16 +86,14 @@ func ResourcePage() *schema.Resource {
 			},
 			"section": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "The sections of the page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-							Description:      "The ID of the section.",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the section.",
 						},
 					},
 				},
@@ -128,15 +119,11 @@ func importResourcePage(ctx context.Context, d *schema.ResourceData, m any) ([]*
 func createResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	pageType := workitemtrackingprocess.PageType(d.Get("page_type").(string))
 	page := workitemtrackingprocess.Page{
 		Label:    converter.String(d.Get("label").(string)),
 		Visible:  converter.Bool(d.Get("visible").(bool)),
 		Locked:   converter.Bool(d.Get("locked").(bool)),
-		PageType: &pageType,
-	}
-	if v, ok := d.GetOk("section"); ok {
-		page.Sections = expandSections(v.([]any))
+		PageType: &workitemtrackingprocess.PageTypeValues.Custom,
 	}
 	rawConfig := d.GetRawConfig().AsValueMap()
 	if order := rawConfig["order"]; !order.IsNull() {
@@ -220,16 +207,11 @@ func updateResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_reference_name").(string)
 
-	pageType := workitemtrackingprocess.PageType(d.Get("page_type").(string))
 	updatePage := &workitemtrackingprocess.Page{
-		Id:       &pageId,
-		Label:    converter.String(d.Get("label").(string)),
-		Visible:  converter.Bool(d.Get("visible").(bool)),
-		Locked:   converter.Bool(d.Get("locked").(bool)),
-		PageType: &pageType,
-	}
-	if v, ok := d.GetOk("section"); ok {
-		updatePage.Sections = expandSections(v.([]any))
+		Id:      &pageId,
+		Label:   converter.String(d.Get("label").(string)),
+		Visible: converter.Bool(d.Get("visible").(bool)),
+		Locked:  converter.Bool(d.Get("locked").(bool)),
 	}
 	rawConfig := d.GetRawConfig().AsValueMap()
 	if order := rawConfig["order"]; !order.IsNull() {
@@ -285,16 +267,3 @@ func findPageById(layout *workitemtrackingprocess.FormLayout, pageId string) *wo
 	return nil
 }
 
-func expandSections(input []any) *[]workitemtrackingprocess.Section {
-	if len(input) == 0 {
-		return nil
-	}
-	sections := make([]workitemtrackingprocess.Section, len(input))
-	for i, v := range input {
-		raw := v.(map[string]any)
-		sections[i] = workitemtrackingprocess.Section{
-			Id: converter.String(raw["id"].(string)),
-		}
-	}
-	return &sections
-}

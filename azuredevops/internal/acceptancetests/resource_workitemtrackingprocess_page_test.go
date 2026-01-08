@@ -28,8 +28,8 @@ func TestAccWorkitemtrackingprocessPage_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "order"),
-					resource.TestCheckResourceAttr(tfNode, "page_type", "custom"),
-					resource.TestCheckResourceAttr(tfNode, "section.#", "0"),
+					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
 			{
@@ -60,6 +60,8 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Test Page"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
 			{
@@ -70,6 +72,8 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "label", "Updated Page"),
 					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
+					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
 			{
