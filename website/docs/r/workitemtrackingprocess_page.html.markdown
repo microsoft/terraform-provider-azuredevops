@@ -20,9 +20,6 @@ resource "azuredevops_workitemtrackingprocess_process" "example" {
 resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
   process_id  = azuredevops_workitemtrackingprocess_process.example.id
   name        = "example"
-  description = "Example work item type"
-  color       = "#FF5733"
-  icon        = "icon_clipboard"
 }
 
 resource "azuredevops_workitemtrackingprocess_page" "example" {
