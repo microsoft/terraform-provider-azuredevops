@@ -466,7 +466,6 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingProcessClient.RemoveGroup(ctx, args)
 	})
-
 	if err != nil {
 		label := d.Get("label").(string)
 		return diag.Errorf(" Delete group %s. Error %+v", label, err)
