@@ -55,3 +55,16 @@ func ResponseContainsStatusMessage(err error, statusMessages ...string) bool {
 	}
 	return false
 }
+
+// ResponseWasTypeKey is used to check if error has a specific TypeKey
+func ResponseWasTypeKey(err error, typeKey string) bool {
+	if err == nil {
+		return false
+	}
+	if wrapperErr, ok := err.(azuredevops.WrappedError); ok {
+		if wrapperErr.TypeKey != nil && *wrapperErr.TypeKey == typeKey {
+			return true
+		}
+	}
+	return false
+}
