@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":                            memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),
 			"azuredevops_variable_group_permissions":                  permissions.ResourceVariableGroupPermissions(),
+			"azuredevops_variable_group_variable":                     taskagent.ResourceVariableGroupVariable(),
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
@@ -154,8 +155,10 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
+			"azuredevops_workitemtrackingprocess_control":             workitemtrackingprocess.ResourceControl(),
 			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
+			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
 			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{

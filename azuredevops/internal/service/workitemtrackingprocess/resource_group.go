@@ -1,12 +1,17 @@
 package workitemtrackingprocess
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"log"
+	"math"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
@@ -75,6 +80,111 @@ func ResourceGroup() *schema.Resource {
 				Default:     true,
 				Description: "A value indicating if the group should be hidden or not.",
 			},
+			"control": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Controls to be created with the group. Required for HTML controls which cannot be added to existing groups. This is mutally exclusive with the 'azuredevops_workitemtrackingprocess_control' resource.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+							Description:      "The ID of the control. This is the field reference name (e.g., System.Description).",
+						},
+						"label": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Label for the control.",
+						},
+						"control_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the control (e.g., HtmlFieldControl, FieldControl).",
+						},
+						"visible": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "A value indicating if the control should be hidden or not.",
+						},
+						"read_only": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A value indicating if the control is read only.",
+						},
+						"order": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Order in which the control appears in the group. Determined by the position in the control list.",
+						},
+						"metadata": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Inner text of the control.",
+						},
+						"watermark": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Watermark text for the textbox.",
+						},
+						"inherited": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "A value indicating whether this control has been inherited from a parent layout.",
+						},
+						"overridden": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "A value indicating whether this control has been overridden by a child layout.",
+						},
+						"is_contribution": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A value indicating if the control is a contribution (extension) control.",
+						},
+						"contribution": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Contribution for the control.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"contribution_id": {
+										Type:             schema.TypeString,
+										Required:         true,
+										ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+										Description:      "The id for the contribution.",
+									},
+									"height": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+										Description: "The height for the contribution.",
+									},
+									"inputs": {
+										Type:        schema.TypeMap,
+										Optional:    true,
+										Description: "A dictionary holding key value pairs for contribution inputs.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"show_on_deleted_work_item": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     false,
+										Description: "A value indicating if the contribution should be shown on deleted work item.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -107,6 +217,39 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		group.Order = converter.Int(v.(int))
 	}
 
+	// Add controls to the group if specified
+	if v, ok := d.GetOk("control"); ok {
+		controlList := v.([]interface{})
+		controls := make([]workitemtrackingprocess.Control, len(controlList))
+		for i, c := range controlList {
+			controlMap := c.(map[string]interface{})
+			control := workitemtrackingprocess.Control{
+				Id:       converter.String(controlMap["id"].(string)),
+				Visible:  converter.Bool(controlMap["visible"].(bool)),
+				ReadOnly: converter.Bool(controlMap["read_only"].(bool)),
+			}
+			if label, ok := controlMap["label"].(string); ok {
+				control.Label = converter.String(label)
+			}
+			// Use the list index as the order
+			control.Order = converter.Int(i)
+			if metadata, ok := controlMap["metadata"].(string); ok {
+				control.Metadata = converter.String(metadata)
+			}
+			if watermark, ok := controlMap["watermark"].(string); ok {
+				control.Watermark = converter.String(watermark)
+			}
+			if isContribution, ok := controlMap["is_contribution"].(bool); ok {
+				control.IsContribution = converter.Bool(isContribution)
+			}
+			if contribution, ok := controlMap["contribution"].([]interface{}); ok && len(contribution) > 0 {
+				control.Contribution = expandContribution(contribution)
+			}
+			controls[i] = control
+		}
+		group.Controls = &controls
+	}
+
 	args := workitemtrackingprocess.AddGroupArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
 		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
@@ -115,7 +258,12 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		Group:      &group,
 	}
 
-	createdGroup, err := clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
+	var createdGroup *workitemtrackingprocess.Group
+	err := retryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		var createErr error
+		createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
+		return createErr
+	})
 	if err != nil {
 		return diag.Errorf(" Creating group. Error %+v", err)
 	}
@@ -125,10 +273,47 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	d.SetId(*createdGroup.Id)
-	return readResourceGroup(ctx, d, m)
+
+	if group.Controls == nil || len(*group.Controls) == 0 {
+		return readResourceGroup(ctx, d, m)
+	}
+
+	expectedControlCount := len(*group.Controls)
+	// NOTE: Adding contribution controls (and potentially other controls) have eventual
+	// consistency issues, so we need to retry reading the resource until all expected
+	// controls are present. We use ContinuousTargetOccurence to ensure the count is
+	// stable across multiple reads.
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{"waiting"},
+		Target:     []string{"ready", "error"},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		MinTimeout: 1 * time.Second,
+		// Tested with 3 which still causes the issue intermittently
+		ContinuousTargetOccurence: 4,
+		Refresh: func() (interface{}, string, error) {
+			if err := readResourceGroupWithError(ctx, d, m); err != nil {
+				return nil, "error", err
+			}
+			actualControlCount := 0
+			if v, ok := d.GetOk("control"); ok {
+				actualControlCount = len(v.([]any))
+			}
+			log.Printf("[DEBUG] Expected control count: %d, Actual control count: %d", expectedControlCount, actualControlCount)
+			if actualControlCount < expectedControlCount {
+				return nil, "waiting", nil
+			}
+			return d, "ready", nil
+		},
+	}
+	_, err = stateConf.WaitForStateContext(ctx)
+	return diag.FromErr(err)
 }
 
 func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	return diag.FromErr(readResourceGroupWithError(ctx, d, m))
+}
+
+func readResourceGroupWithError(ctx context.Context, d *schema.ResourceData, m any) error {
 	clients := m.(*client.AggregatedClient)
 
 	groupId := d.Id()
@@ -147,7 +332,7 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
+		return fmt.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", witRefName, processId, err)
 	}
 
 	foundGroup := findGroupById(workItemType.Layout, groupId)
@@ -159,6 +344,51 @@ func readResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.
 	d.Set("label", foundGroup.Label)
 	d.Set("order", foundGroup.Order)
 	d.Set("visible", foundGroup.Visible)
+
+	// Read controls if present
+	if foundGroup.Controls != nil && len(*foundGroup.Controls) > 0 {
+		groupControls := *foundGroup.Controls
+		slices.SortStableFunc(groupControls, func(a, b workitemtrackingprocess.Control) int {
+			return cmp.Compare(converter.ToInt(a.Order, math.MaxInt), converter.ToInt(b.Order, math.MaxInt))
+		})
+		controls := make([]map[string]interface{}, len(groupControls))
+		for i, c := range groupControls {
+			control := map[string]interface{}{
+				"visible":    c.Visible,
+				"read_only":  c.ReadOnly,
+				"inherited":  c.Inherited,
+				"overridden": c.Overridden,
+			}
+			if c.Id != nil {
+				control["id"] = *c.Id
+			}
+			if c.Label != nil {
+				control["label"] = *c.Label
+			}
+			if c.ControlType != nil {
+				control["control_type"] = *c.ControlType
+			}
+			if c.Order != nil {
+				control["order"] = *c.Order
+			}
+			if c.Metadata != nil {
+				control["metadata"] = *c.Metadata
+			}
+			if c.Watermark != nil {
+				control["watermark"] = *c.Watermark
+			}
+			if c.IsContribution != nil {
+				control["is_contribution"] = *c.IsContribution
+			}
+			if c.Contribution != nil {
+				control["contribution"] = flattenContribution(c.Contribution)
+			}
+			controls[i] = control
+		}
+		if err := d.Set("control", controls); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -233,9 +463,12 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		GroupId:    &groupId,
 	}
 
-	err := clients.WorkItemTrackingProcessClient.RemoveGroup(ctx, args)
+	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+		return clients.WorkItemTrackingProcessClient.RemoveGroup(ctx, args)
+	})
 	if err != nil {
-		return diag.Errorf(" Delete group. Error %+v", err)
+		label := d.Get("label").(string)
+		return diag.Errorf(" Delete group %s. Error %+v", label, err)
 	}
 
 	return nil
