@@ -179,7 +179,33 @@ func ResourceField() *schema.Resource {
 func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	field := expandField(d)
+	field := &workitemtracking.WorkItemField2{
+		Name:                converter.String(d.Get("name").(string)),
+		ReferenceName:       converter.String(d.Get("reference_name").(string)),
+		Type:                converter.ToPtr(workitemtracking.FieldType(d.Get("type").(string))),
+		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
+		CanSortBy:           converter.Bool(d.Get("can_sort_by").(bool)),
+		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
+		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
+		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
+		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
+		IsLocked:            converter.Bool(d.Get("is_locked").(bool)),
+	}
+
+	if v, ok := d.GetOk("usage"); ok {
+		fieldUsage := workitemtracking.FieldUsage(v.(string))
+		field.Usage = &fieldUsage
+	}
+
+	if v, ok := d.GetOk("description"); ok {
+		field.Description = converter.String(v.(string))
+	}
+
+	if v, ok := d.GetOk("picklist_id"); ok {
+		picklistId, _ := uuid.Parse(v.(string))
+		field.PicklistId = &picklistId
+	}
+
 	restore := d.Get("restore").(bool)
 
 	if restore {
@@ -234,86 +260,6 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf("reading field %s: %+v", referenceName, err)
 	}
 
-	flattenField(d, field)
-	return nil
-}
-
-func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
-	referenceName := d.Id()
-
-	if d.HasChange("is_locked") {
-		isLocked := d.Get("is_locked").(bool)
-		args := workitemtracking.UpdateWorkItemFieldArgs{
-			FieldNameOrRefName: &referenceName,
-			Payload: &workitemtracking.FieldUpdate{
-				IsLocked: &isLocked,
-			},
-		}
-
-		_, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
-		if err != nil {
-			return diag.Errorf("updating field %s: %+v", referenceName, err)
-		}
-	}
-
-	return resourceFieldRead(ctx, d, m)
-}
-
-func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
-
-	referenceName := d.Id()
-
-	args := workitemtracking.DeleteWorkItemFieldArgs{
-		FieldNameOrRefName: &referenceName,
-	}
-
-	err := clients.WorkItemTrackingClient.DeleteWorkItemField(clients.Ctx, args)
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			return nil
-		}
-		return diag.Errorf("deleting field %s: %+v", referenceName, err)
-	}
-
-	return nil
-}
-
-func expandField(d *schema.ResourceData) *workitemtracking.WorkItemField2 {
-	fieldType := workitemtracking.FieldType(d.Get("type").(string))
-
-	field := &workitemtracking.WorkItemField2{
-		Name:                converter.String(d.Get("name").(string)),
-		ReferenceName:       converter.String(d.Get("reference_name").(string)),
-		Type:                &fieldType,
-		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
-		CanSortBy:           converter.Bool(d.Get("can_sort_by").(bool)),
-		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
-		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
-		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
-		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
-		IsLocked:            converter.Bool(d.Get("is_locked").(bool)),
-	}
-
-	if v, ok := d.GetOk("usage"); ok {
-		fieldUsage := workitemtracking.FieldUsage(v.(string))
-		field.Usage = &fieldUsage
-	}
-
-	if v, ok := d.GetOk("description"); ok {
-		field.Description = converter.String(v.(string))
-	}
-
-	if v, ok := d.GetOk("picklist_id"); ok {
-		picklistId, _ := uuid.Parse(v.(string))
-		field.PicklistId = &picklistId
-	}
-
-	return field
-}
-
-func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2) {
 	if field.Name != nil {
 		d.Set("name", *field.Name)
 	}
@@ -358,9 +304,9 @@ func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2
 	}
 
 	if field.SupportedOperations != nil {
-		operations := make([]map[string]interface{}, len(*field.SupportedOperations))
+		operations := make([]map[string]any, len(*field.SupportedOperations))
 		for i, op := range *field.SupportedOperations {
-			operation := map[string]interface{}{}
+			operation := map[string]any{}
 			if op.Name != nil {
 				operation["name"] = *op.Name
 			}
@@ -369,6 +315,52 @@ func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2
 			}
 			operations[i] = operation
 		}
-		d.Set("supported_operations", operations)
+		if err := d.Set("supported_operations", operations); err != nil {
+			return diag.Errorf("setting supported_operations: %+v", err)
+		}
 	}
+
+	return nil
+}
+
+func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+	referenceName := d.Id()
+
+	if d.HasChange("is_locked") {
+		isLocked := d.Get("is_locked").(bool)
+		args := workitemtracking.UpdateWorkItemFieldArgs{
+			FieldNameOrRefName: &referenceName,
+			Payload: &workitemtracking.FieldUpdate{
+				IsLocked: &isLocked,
+			},
+		}
+
+		_, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
+		if err != nil {
+			return diag.Errorf("updating field %s: %+v", referenceName, err)
+		}
+	}
+
+	return resourceFieldRead(ctx, d, m)
+}
+
+func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clients := m.(*client.AggregatedClient)
+
+	referenceName := d.Id()
+
+	args := workitemtracking.DeleteWorkItemFieldArgs{
+		FieldNameOrRefName: &referenceName,
+	}
+
+	err := clients.WorkItemTrackingClient.DeleteWorkItemField(clients.Ctx, args)
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			return nil
+		}
+		return diag.Errorf("deleting field %s: %+v", referenceName, err)
+	}
+
+	return nil
 }
