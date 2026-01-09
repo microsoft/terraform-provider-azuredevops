@@ -157,6 +157,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
 			"azuredevops_workitemtrackingprocess_control":             workitemtrackingprocess.ResourceControl(),
 			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
+			"azuredevops_workitemtrackingprocess_list":                workitemtrackingprocess.ResourceList(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
 			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
 			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),

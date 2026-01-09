@@ -187,6 +187,96 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 	})
 }
 
+func TestAccWorkItemTrackingField_Picklist(t *testing.T) {
+	fieldName := testutils.GenerateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklist(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "string"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist", "true"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "false"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_PicklistSuggested(t *testing.T) {
+	fieldName := testutils.GenerateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklistSuggested(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "string"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist", "true"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "true"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_PicklistInteger(t *testing.T) {
+	fieldName := testutils.GenerateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklistInteger(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+					resource.TestCheckResourceAttr(tfNode, "type", "integer"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist", "true"),
+					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "false"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func fieldBasic(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtracking_field" "test" {
@@ -247,4 +337,58 @@ resource "azuredevops_workitemtracking_field" "test" {
   restore        = true
 }
 `, name, name)
+}
+
+func fieldPicklist(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name  = "%s"
+  items = ["Red", "Green", "Blue"]
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+  is_picklist    = true
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
+}
+
+func fieldPicklistSuggested(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name         = "%s"
+  items        = ["Option1", "Option2", "Option3"]
+  is_suggested = true
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name                  = "%s"
+  reference_name        = "Custom.%s"
+  type                  = "string"
+  is_picklist           = true
+  is_picklist_suggested = true
+  picklist_id           = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
+}
+
+func fieldPicklistInteger(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name  = "%s"
+  type  = "integer"
+  items = ["1", "2", "3", "5", "8"]
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "integer"
+  is_picklist    = true
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
 }
