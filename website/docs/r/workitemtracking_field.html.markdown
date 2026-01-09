@@ -56,6 +56,23 @@ resource "azuredevops_workitemtracking_field" "notes" {
 }
 ```
 
+### List Field
+
+```hcl
+resource "azuredevops_workitemtrackingprocess_list" "example" {
+  name  = "Priority Levels"
+  items = ["Low", "Medium", "High", "Critical"]
+}
+
+resource "azuredevops_workitemtracking_field" "example" {
+  name           = "Priority Level"
+  reference_name = "Custom.PriorityLevel"
+  type           = "string"
+  is_picklist    = true
+  picklist_id    = azuredevops_workitemtrackingprocess_list.example.id
+}
+```
+
 ### Restore a Deleted Field
 
 ```hcl
