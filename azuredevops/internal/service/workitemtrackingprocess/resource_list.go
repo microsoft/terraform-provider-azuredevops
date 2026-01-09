@@ -2,6 +2,7 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -121,7 +122,7 @@ func resourceListRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		d.Set("name", *list.Name)
 	}
 	if list.Type != nil {
-		d.Set("type", *list.Type)
+		d.Set("type", strings.ToLower(*list.Type))
 	}
 	if list.IsSuggested != nil {
 		d.Set("is_suggested", *list.IsSuggested)
