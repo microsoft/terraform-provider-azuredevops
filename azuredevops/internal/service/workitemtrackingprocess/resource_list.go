@@ -41,7 +41,7 @@ func ResourceList() *schema.Resource {
 				Default:          "string",
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"string", "integer"}, false)),
-				Description:      "DataType of the list. Valid values: string, integer.",
+				Description:      "Data type of the list. Valid values: string, integer.",
 			},
 			"items": {
 				Type:        schema.TypeList,

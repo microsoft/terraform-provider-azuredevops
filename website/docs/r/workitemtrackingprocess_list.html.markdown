@@ -52,7 +52,7 @@ The following arguments are supported:
 
 ---
 
-* `type` - (Optional) DataType of the list. Valid values: `string`, `integer`. Defaults to `string`. Changing this forces a new resource to be created.
+* `type` - (Optional) Data type of the list. Valid values: `string`, `integer`. Defaults to `string`. Changing this forces a new resource to be created.
 
 * `is_suggested` - (Optional) Indicates whether items outside of the suggested list are allowed. Defaults to `false`.
 
