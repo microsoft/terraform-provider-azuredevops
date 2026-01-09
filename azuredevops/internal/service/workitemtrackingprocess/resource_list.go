@@ -33,7 +33,7 @@ func ResourceList() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "Name of the picklist.",
+				Description:      "Name of the list.",
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -41,13 +41,13 @@ func ResourceList() *schema.Resource {
 				Default:          "string",
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"string", "integer"}, false)),
-				Description:      "DataType of the picklist. Valid values: string, integer.",
+				Description:      "DataType of the list. Valid values: string, integer.",
 			},
 			"items": {
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
-				Description: "A list of picklist items.",
+				Description: "A list of items.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -61,7 +61,7 @@ func ResourceList() *schema.Resource {
 			"url": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "URL of the picklist.",
+				Description: "URL of the list.",
 			},
 		},
 	}
@@ -88,11 +88,11 @@ func resourceListCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	createdList, err := clients.WorkItemTrackingProcessClient.CreateList(ctx, args)
 	if err != nil {
-		return diag.Errorf(" Creating picklist. Error: %+v", err)
+		return diag.Errorf(" Creating list. Error: %+v", err)
 	}
 
 	if createdList.Id == nil {
-		return diag.Errorf(" Created picklist has no ID")
+		return diag.Errorf(" Created list has no ID")
 	}
 
 	d.SetId(createdList.Id.String())
@@ -114,7 +114,7 @@ func resourceListRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf(" Reading picklist %s. Error: %+v", listId, err)
+		return diag.Errorf(" Reading list %s. Error: %+v", listId, err)
 	}
 
 	if list.Name != nil {
@@ -160,7 +160,7 @@ func resourceListUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_, err := clients.WorkItemTrackingProcessClient.UpdateList(ctx, args)
 	if err != nil {
-		return diag.Errorf(" Updating picklist %s. Error: %+v", listId, err)
+		return diag.Errorf(" Updating list %s. Error: %+v", listId, err)
 	}
 
 	return resourceListRead(ctx, d, m)
@@ -180,7 +180,7 @@ func resourceListDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		if utils.ResponseWasNotFound(err) {
 			return nil
 		}
-		return diag.Errorf(" Deleting picklist %s. Error: %+v", listId, err)
+		return diag.Errorf(" Deleting list %s. Error: %+v", listId, err)
 	}
 
 	return nil

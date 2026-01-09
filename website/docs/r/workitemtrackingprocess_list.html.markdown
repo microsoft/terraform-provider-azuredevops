@@ -2,18 +2,18 @@
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_workitemtrackingprocess_list"
 description: |-
-  Manages an organization-scoped picklist for work item tracking processes.
+  Manages an organization-scoped list for work item tracking processes.
 ---
 
 # azuredevops_workitemtrackingprocess_list
 
-Manages an organization-scoped picklist for work item tracking processes.
+Manages an organization-scoped list for work item tracking processes.
 
-~> **Note** Picklists are organization-scoped resources, not process-specific. They can be referenced by custom fields across multiple processes.
+~> **Note** Lists are organization-scoped resources, not process-specific. They can be referenced by custom fields across multiple processes.
 
 ## Example Usage
 
-### Basic Picklist
+### Basic List
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_list" "example" {
@@ -22,7 +22,7 @@ resource "azuredevops_workitemtrackingprocess_list" "example" {
 }
 ```
 
-### Picklist with Suggestions
+### List with Suggestions
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_list" "example" {
@@ -32,7 +32,7 @@ resource "azuredevops_workitemtrackingprocess_list" "example" {
 }
 ```
 
-### Integer Picklist
+### Integer List
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_list" "example" {
@@ -46,13 +46,13 @@ resource "azuredevops_workitemtrackingprocess_list" "example" {
 
 The following arguments are supported:
 
-* `name` - (Required) Name of the picklist.
+* `name` - (Required) Name of the list.
 
-* `items` - (Required) A list of picklist items.
+* `items` - (Required) A list of items.
 
 ---
 
-* `type` - (Optional) DataType of the picklist. Valid values: `string`, `integer`. Defaults to `string`. Changing this forces a new resource to be created.
+* `type` - (Optional) DataType of the list. Valid values: `string`, `integer`. Defaults to `string`. Changing this forces a new resource to be created.
 
 * `is_suggested` - (Optional) Indicates whether items outside of the suggested list are allowed. Defaults to `false`.
 
@@ -60,9 +60,9 @@ The following arguments are supported:
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
-* `id` - The ID of the picklist.
+* `id` - The ID of the list.
 
-* `url` - URL of the picklist.
+* `url` - URL of the list.
 
 ## Relevant Links
 
@@ -72,14 +72,14 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `create` - (Defaults to 10 minutes) Used when creating the picklist.
-* `read` - (Defaults to 5 minutes) Used when retrieving the picklist.
-* `update` - (Defaults to 10 minutes) Used when updating the picklist.
-* `delete` - (Defaults to 10 minutes) Used when deleting the picklist.
+* `create` - (Defaults to 10 minutes) Used when creating the list.
+* `read` - (Defaults to 5 minutes) Used when retrieving the list.
+* `update` - (Defaults to 10 minutes) Used when updating the list.
+* `delete` - (Defaults to 10 minutes) Used when deleting the list.
 
 ## Import
 
-Picklists can be imported using the picklist ID, e.g.
+Lists can be imported using the list ID, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_list.example 00000000-0000-0000-0000-000000000000
