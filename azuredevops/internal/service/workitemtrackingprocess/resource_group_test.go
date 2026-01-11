@@ -21,6 +21,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func init() {
+	// Disable retry delays in unit tests
+	retryMinTimeout = 0
+}
+
 func getGroupResourceData(t *testing.T, input map[string]any) *schema.ResourceData {
 	r := ResourceGroup()
 	return schema.TestResourceDataRaw(t, r.Schema, input)
@@ -147,7 +152,7 @@ func TestGroup_Create_Successful(t *testing.T) {
 
 			return returnWorkItemType, nil
 		},
-	).Times(1)
+	).Times(4)
 
 	d := getGroupResourceData(t, map[string]any{
 		"process_id":                    processId.String(),
