@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
@@ -182,6 +183,8 @@ func Provider() *schema.Provider {
 			"azuredevops_iteration":                             workitemtracking.DataIteration(),
 			"azuredevops_project":                               core.DataProject(),
 			"azuredevops_projects":                              core.DataProjects(),
+			"azuredevops_security_namespace":                    security.DataSecurityNamespace(),
+			"azuredevops_security_namespaces":                   security.DataSecurityNamespaces(),
 			"azuredevops_securityrole_definitions":              securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_generic_v2":            serviceendpoint.DataServiceEndpointGenericV2(),
 			"azuredevops_serviceendpoint_azurecr":               serviceendpoint.DataResourceServiceEndpointAzureCR(),
