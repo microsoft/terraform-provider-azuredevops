@@ -163,6 +163,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_iteration",
 		"azuredevops_project",
 		"azuredevops_projects",
+		"azuredevops_security_namespace",
+		"azuredevops_security_namespaces",
 		"azuredevops_securityrole_definitions",
 		"azuredevops_serviceendpoint_generic_v2",
 		"azuredevops_serviceendpoint_azurecr",
