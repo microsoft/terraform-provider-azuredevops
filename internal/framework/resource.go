@@ -43,7 +43,8 @@ type Resource interface {
 
 	// Log logs a message
 	// This is implemented by the ImplLog, the implement struct shall simply embed it.
-	Log(ctx context.Context, msg string, additionalFields ...map[string]any)
+	Info(ctx context.Context, msg string, additionalFields ...map[string]any)
+	Error(ctx context.Context, msg string, additionalFields ...map[string]any)
 
 	// The followings are interfaces that a resource can opt-in by implementing them.
 

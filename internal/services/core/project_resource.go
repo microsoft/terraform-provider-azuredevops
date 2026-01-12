@@ -129,7 +129,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	r.Log(ctx, "look up the process template id")
+	r.Info(ctx, "look up the process template id")
 
 	process, err := r.lookupProcess(ctx, func(p core.Process) bool {
 		// `work_item_template` is unknown as it is set as O+C.
@@ -149,7 +149,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 	processTemplateId := process.Id.String()
 
-	r.Log(ctx, "create the project")
+	r.Info(ctx, "create the project")
 
 	project := &core.TeamProject{
 		Name:        plan.Name.ValueStringPointer(),
@@ -171,7 +171,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	r.Log(ctx, "wait for the project creation")
+	r.Info(ctx, "wait for the project creation")
 
 	if err := r.waitOperation(ctx, operationRef); err != nil {
 		resp.Diagnostics.AddError("Wait for project delete operation", err.Error())
@@ -186,7 +186,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	r.Log(ctx, "get the project")
+	r.Info(ctx, "get the project")
 
 	project, err := r.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
 		ProjectId:           state.Name.ValueStringPointer(), // Always use "name" to get as "id" is not available at create time
@@ -216,7 +216,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 	if templateId != nil {
 
-		r.Log(ctx, "look up the template name by id")
+		r.Info(ctx, "look up the template name by id")
 
 		process, err := r.lookupProcess(ctx, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
 		if err != nil {
@@ -263,7 +263,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	r.Log(ctx, "update the project")
+	r.Info(ctx, "update the project")
 
 	project := &core.TeamProject{
 		Name:        plan.Name.ValueStringPointer(),
@@ -280,7 +280,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	r.Log(ctx, "wait for the project update")
+	r.Info(ctx, "wait for the project update")
 
 	if err := r.waitOperation(ctx, operationRef); err != nil {
 		resp.Diagnostics.AddError("Wait for project update operation", err.Error())
@@ -295,7 +295,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	r.Log(ctx, "delete the prject")
+	r.Info(ctx, "delete the prject")
 
 	id, err := uuid.Parse(state.Id.ValueString())
 	if err != nil {
@@ -309,7 +309,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	r.Log(ctx, "wait for the project deletion")
+	r.Info(ctx, "wait for the project deletion")
 
 	if err := r.waitOperation(ctx, operationRef); err != nil {
 		resp.Diagnostics.AddError("Wait for project delete operation", err.Error())
@@ -374,7 +374,7 @@ func (r *projectResource) pollOperationResult(ctx context.Context, operationRef 
 			return nil, string(operations.OperationStatusValues.Failed), err
 		}
 
-		r.Log(ctx, "polling project operation status", map[string]any{
+		r.Info(ctx, "polling project operation status", map[string]any{
 			"status": ret.Status,
 			"detaul": ret.DetailedMessage,
 		})

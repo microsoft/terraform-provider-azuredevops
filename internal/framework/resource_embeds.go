@@ -24,6 +24,10 @@ func (ImplMetadata) Metadata(context.Context, resource.MetadataRequest, *resourc
 
 type ImplLog[T Resource] struct{ r T }
 
-func (l ImplLog[T]) Log(ctx context.Context, msg string, additionalFields ...map[string]any) {
+func (l ImplLog[T]) Info(ctx context.Context, msg string, additionalFields ...map[string]any) {
 	tflog.SubsystemInfo(ctx, l.r.ResourceType(), msg, additionalFields...)
+}
+
+func (l ImplLog[T]) Error(ctx context.Context, msg string, additionalFields ...map[string]any) {
+	tflog.SubsystemError(ctx, l.r.ResourceType(), msg, additionalFields...)
 }

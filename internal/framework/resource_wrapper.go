@@ -93,6 +93,11 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 
 	r.inner.Create(ctx, req, resp)
 
+	// Early return, otherwise if we set the state with error diagnostics, the resource will be in tainted state.
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Temporarily set the plan to state, so that we can use the state to construct the read request below.
 	resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
 	if resp.Diagnostics.HasError() {
@@ -173,6 +178,17 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 	ctx = tflog.SubsystemSetField(ctx, r.inner.ResourceType(), "operation", "Update")
 
 	r.inner.Update(ctx, req, resp)
+
+	// Early return, otherwise if we set the state with error diagnostics, the resource will be in tainted state.
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Temporarily set the plan to state, so that we can use the state to construct the read request below.
+	resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	rreq := resource.ReadRequest{
 		State:              resp.State,
