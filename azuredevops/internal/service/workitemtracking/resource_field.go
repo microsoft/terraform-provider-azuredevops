@@ -223,7 +223,10 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 		restoredField, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
 		if err != nil {
-			return diag.Errorf("restoring field %s: %+v", *field.ReferenceName, err)
+			return diag.Errorf("restoring field: %+v", err)
+		}
+		if restoredField.ReferenceName == nil {
+			return diag.Errorf("restored field has no reference name")
 		}
 		d.SetId(*restoredField.ReferenceName)
 	} else {
