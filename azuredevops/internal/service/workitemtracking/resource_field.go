@@ -225,6 +225,9 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		if err != nil {
 			return diag.Errorf("restoring field: %+v", err)
 		}
+		if restoredField == nil {
+			return diag.Errorf("restored field is nil")
+		}
 		if restoredField.ReferenceName == nil {
 			return diag.Errorf("restored field has no reference name")
 		}
@@ -239,7 +242,9 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		if err != nil {
 			return diag.Errorf("creating field: %+v", err)
 		}
-
+		if createdField == nil {
+			return diag.Errorf("created field is nil")
+		}
 		if createdField.ReferenceName == nil {
 			return diag.Errorf("created field has no reference name")
 		}
@@ -264,6 +269,9 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 			return nil
 		}
 		return diag.Errorf("reading field %s: %+v", referenceName, err)
+	}
+	if field == nil {
+		return diag.Errorf("read field is nil")
 	}
 
 	if field.Name != nil {
