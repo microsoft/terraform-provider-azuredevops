@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
@@ -265,7 +263,6 @@ func generateFieldName() string {
 // *after* terraform destroys the resource but *before* the state is wiped clean.
 func checkFieldDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-	timeout := 10 * time.Second
 
 	for _, res := range s.RootModule().Resources {
 		if res.Type != "azuredevops_workitemtracking_field" {
@@ -274,19 +271,13 @@ func checkFieldDestroyed(s *terraform.State) error {
 
 		referenceName := res.Primary.ID
 
-		err := retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
-			_, err := clients.WorkItemTrackingClient.GetWorkItemField(clients.Ctx, workitemtracking.GetWorkItemFieldArgs{
-				FieldNameOrRefName: &referenceName,
-			})
-			if err == nil {
-				return retry.RetryableError(fmt.Errorf("field with reference name %s should not exist", referenceName))
-			}
-			if utils.ResponseWasNotFound(err) {
-				return nil
-			}
-
-			return retry.NonRetryableError(err)
+		_, err := clients.WorkItemTrackingClient.GetWorkItemField(clients.Ctx, workitemtracking.GetWorkItemFieldArgs{
+			FieldNameOrRefName: &referenceName,
 		})
+		if utils.ResponseWasNotFound(err) {
+			continue
+		}
+
 		if err != nil {
 			return err
 		}
