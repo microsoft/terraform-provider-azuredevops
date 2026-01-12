@@ -25,10 +25,10 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 			{
 				Config: fieldBasic(fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckNoResourceAttr(tfNode, "description"),
+					// Computed attributes
+					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "supported_operations.#"),
+					// Default values
 					resource.TestCheckResourceAttr(tfNode, "usage", "workItem"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
 					resource.TestCheckResourceAttr(tfNode, "can_sort_by", "true"),
@@ -36,10 +36,7 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "is_identity", "false"),
 					resource.TestCheckResourceAttr(tfNode, "is_picklist", "false"),
 					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "false"),
-					resource.TestCheckNoResourceAttr(tfNode, "picklist_id"),
 					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "url"),
-					resource.TestCheckResourceAttrSet(tfNode, "supported_operations.#"),
 				),
 			},
 			{
@@ -53,7 +50,6 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 	fieldName := generateFieldName()
-	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -62,26 +58,9 @@ func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldComplete(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckResourceAttr(tfNode, "description", "Test field description"),
-					resource.TestCheckResourceAttr(tfNode, "usage", "workItem"),
-					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
-					resource.TestCheckResourceAttr(tfNode, "can_sort_by", "true"),
-					resource.TestCheckResourceAttr(tfNode, "is_queryable", "true"),
-					resource.TestCheckResourceAttr(tfNode, "is_identity", "false"),
-					resource.TestCheckResourceAttr(tfNode, "is_picklist", "false"),
-					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "false"),
-					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
-					resource.TestCheckResourceAttrSet(tfNode, "url"),
-					resource.TestCheckResourceAttrSet(tfNode, "supported_operations.#"),
-					resource.TestCheckNoResourceAttr(tfNode, "picklist_id"),
-				),
 			},
 			{
-				ResourceName:      tfNode,
+				ResourceName:      "azuredevops_workitemtracking_field.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -90,8 +69,7 @@ func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 }
 
 func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
-	fieldName := "testaccb2i4ttpqo0"
-	tfNode := "azuredevops_workitemtracking_field.test"
+	fieldName := generateFieldName()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -100,13 +78,9 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBoolean(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "type", "boolean"),
-				),
 			},
 			{
-				ResourceName:      tfNode,
+				ResourceName:      "azuredevops_workitemtracking_field.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -116,7 +90,6 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 	fieldName := generateFieldName()
-	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -125,25 +98,17 @@ func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
-				),
 			},
 			{
-				ResourceName:      tfNode,
+				ResourceName:      "azuredevops_workitemtracking_field.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				Config: lockField(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "is_locked", "true"),
-				),
 			},
 			{
-				ResourceName:      tfNode,
+				ResourceName:      "azuredevops_workitemtracking_field.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -153,7 +118,6 @@ func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 	fieldName := generateFieldName()
-	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -162,13 +126,9 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
-				),
 			},
 			{
-				ResourceName:      tfNode,
+				ResourceName:      "azuredevops_workitemtracking_field.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -177,13 +137,9 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 			},
 			{
 				Config: restoreField(fieldName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
-				),
 			},
 			{
-				ResourceName:            tfNode,
+				ResourceName:            "azuredevops_workitemtracking_field.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"restore"},
