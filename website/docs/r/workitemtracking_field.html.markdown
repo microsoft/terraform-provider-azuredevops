@@ -23,39 +23,6 @@ resource "azuredevops_workitemtracking_field" "example" {
 }
 ```
 
-### Integer Field with Description
-
-```hcl
-resource "azuredevops_workitemtracking_field" "priority" {
-  name           = "Custom Priority"
-  reference_name = "Custom.Priority"
-  type           = "integer"
-  description    = "A custom priority field for work items"
-}
-```
-
-### Boolean Field
-
-```hcl
-resource "azuredevops_workitemtracking_field" "approved" {
-  name           = "Approved"
-  reference_name = "Custom.Approved"
-  type           = "boolean"
-  description    = "Indicates whether the item has been approved"
-}
-```
-
-### HTML Field
-
-```hcl
-resource "azuredevops_workitemtracking_field" "notes" {
-  name           = "Custom Notes"
-  reference_name = "Custom.Notes"
-  type           = "html"
-  description    = "Additional notes in HTML format"
-}
-```
-
 ### Restore a Deleted Field
 
 ```hcl
