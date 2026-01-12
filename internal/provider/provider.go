@@ -22,8 +22,8 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/services/core"
 )
 
@@ -94,7 +94,7 @@ func (p *Provider) DataSources(ctx context.Context) []func() datasource.DataSour
 
 func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		sdk.WrapResource(core.NewProjectResource()),
+		framework.WrapResource(core.NewProjectResource()),
 	}
 }
 

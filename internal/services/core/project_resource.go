@@ -20,22 +20,22 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/sdk"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-var _ sdk.Resource = &projectResource{}
+var _ framework.Resource = &projectResource{}
 
-func NewProjectResource() sdk.Resource {
+func NewProjectResource() framework.Resource {
 	return &projectResource{}
 }
 
 type projectResource struct {
-	sdk.ImplSetMeta
-	sdk.ImplMetadata
-	sdk.ImplLog[*projectResource]
+	framework.ImplSetMeta
+	framework.ImplMetadata
+	framework.ImplLog[*projectResource]
 }
 
 type projectModel struct {
@@ -214,7 +214,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 	if errorutil.WasNotFound(err) {
-		resp.Diagnostics = append(resp.Diagnostics, sdk.NewDiagResourceNotFound(r.ResourceType(), state.Name.ValueString()))
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Name.ValueString()))
 		return
 	}
 

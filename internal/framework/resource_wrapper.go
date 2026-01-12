@@ -1,4 +1,4 @@
-package sdk
+package framework
 
 import (
 	"context"
@@ -24,6 +24,8 @@ var _ resource.ResourceWithModifyPlan = resourceWrapper{}
 var _ resource.ResourceWithMoveState = resourceWrapper{}
 var _ resource.ResourceWithUpgradeState = resourceWrapper{}
 var _ resource.ResourceWithValidateConfig = resourceWrapper{}
+
+var _ ResourceWithTimeout = resourceWrapper{}
 
 // The followings are unsafe interfaces. This requires additional wrappers around this resourceWrapper and opt-in.
 // var _ resource.ResourceWithIdentity = resourceWrapper{}
