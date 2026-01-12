@@ -202,7 +202,10 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if v, ok := d.GetOk("picklist_id"); ok {
-		picklistId, _ := uuid.Parse(v.(string))
+		picklistId, err := uuid.Parse(v.(string))
+		if err != nil {
+			return diag.Errorf("parsing picklist_id %s: %+v", v.(string), err)
+		}
 		field.PicklistId = &picklistId
 	}
 
