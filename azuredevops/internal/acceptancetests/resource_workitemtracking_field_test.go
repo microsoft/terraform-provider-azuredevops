@@ -2,20 +2,27 @@ package acceptancetests
 
 import (
 	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 func TestAccWorkItemTrackingField_Basic(t *testing.T) {
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
+		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
@@ -47,13 +54,13 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 }
 
 func TestAccWorkItemTrackingField_Complete(t *testing.T) {
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
+		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fieldComplete(fieldName),
@@ -91,7 +98,7 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
+		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBoolean(fieldName),
@@ -110,13 +117,13 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 }
 
 func TestAccWorkItemTrackingField_Lock(t *testing.T) {
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
+		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
@@ -147,13 +154,13 @@ func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 }
 
 func TestAccWorkItemTrackingField_Restore(t *testing.T) {
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckFieldDestroyed,
+		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
@@ -247,4 +254,43 @@ resource "azuredevops_workitemtracking_field" "test" {
   restore        = true
 }
 `, name, name)
+}
+
+// generateFieldName generates a valid field name without hyphens or other invalid characters
+func generateFieldName() string {
+	return strings.ReplaceAll(testutils.GenerateResourceName(), "-", "")
+}
+
+// checkFieldDestroyed verifies that all fields referenced in the state are destroyed. This will be invoked
+// *after* terraform destroys the resource but *before* the state is wiped clean.
+func checkFieldDestroyed(s *terraform.State) error {
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+	timeout := 10 * time.Second
+
+	for _, res := range s.RootModule().Resources {
+		if res.Type != "azuredevops_workitemtracking_field" {
+			continue
+		}
+
+		referenceName := res.Primary.ID
+
+		err := retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
+			_, err := clients.WorkItemTrackingClient.GetWorkItemField(clients.Ctx, workitemtracking.GetWorkItemFieldArgs{
+				FieldNameOrRefName: &referenceName,
+			})
+			if err == nil {
+				return retry.RetryableError(fmt.Errorf("field with reference name %s should not exist", referenceName))
+			}
+			if utils.ResponseWasNotFound(err) {
+				return nil
+			}
+
+			return retry.NonRetryableError(err)
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
