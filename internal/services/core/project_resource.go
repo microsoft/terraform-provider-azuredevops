@@ -129,23 +129,6 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	r.Log(ctx, "check the presence of the project")
-
-	existing, err := r.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{ProjectId: plan.Name.ValueStringPointer()})
-	if err != nil {
-		if !errorutil.WasNotFound(err) {
-			resp.Diagnostics.AddError("check the presence of the project", err.Error())
-			return
-		}
-	}
-	if !errorutil.WasNotFound(err) {
-		if existing.Id == nil {
-			resp.Diagnostics.AddError("check the presence of the project", "existing project's id is null")
-			return
-		}
-		resp.Diagnostics = append(resp.Diagnostics, errorutil.ImportAsExistsError(existing.Id.String()))
-	}
-
 	r.Log(ctx, "look up the process template id")
 
 	process, err := r.lookupProcess(ctx, func(p core.Process) bool {
