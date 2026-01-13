@@ -26,6 +26,7 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 				Config: fieldBasic(fieldName),
 				Check: resource.ComposeTestCheckFunc(
 					// Computed attributes
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 					resource.TestCheckResourceAttrSet(tfNode, "supported_operations.#"),
 					// Default values
@@ -50,6 +51,7 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -58,9 +60,12 @@ func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldComplete(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:      "azuredevops_workitemtracking_field.test",
+				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -70,6 +75,7 @@ func TestAccWorkItemTrackingField_Complete(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -78,9 +84,12 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBoolean(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:      "azuredevops_workitemtracking_field.test",
+				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -90,6 +99,7 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -98,17 +108,23 @@ func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:      "azuredevops_workitemtracking_field.test",
+				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				Config: lockField(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:      "azuredevops_workitemtracking_field.test",
+				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -118,6 +134,7 @@ func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 
 func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -126,9 +143,12 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fieldBasic(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:      "azuredevops_workitemtracking_field.test",
+				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -137,9 +157,12 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 			},
 			{
 				Config: restoreField(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
 			},
 			{
-				ResourceName:            "azuredevops_workitemtracking_field.test",
+				ResourceName:            tfNode,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"restore"},
