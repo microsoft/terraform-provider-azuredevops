@@ -49,6 +49,10 @@ func ResourceField() *schema.Resource {
 				)),
 				Description: "The reference name of the field (e.g., Custom.MyField).",
 			},
+			// Not supported: https://developercommunity.visualstudio.com/t/Creating-custom-fields-scoped-to-project/11021951#T-ND11022056
+			// "project_id": {
+			//	Type:             schema.TypeString,
+			// },
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
