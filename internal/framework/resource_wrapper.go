@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
@@ -139,6 +141,9 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	r.Resource.Read(ctx, rreq, &rresp)
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-creation)")
 
+	// Set the identity
+	resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
+
 	*resp = resource.CreateResponse{
 		State:       rresp.State,
 		Identity:    rresp.Identity,
@@ -178,20 +183,8 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	// Set the identity if the resource supports it
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Set the resource identity")
-	identity := r.Identity()
-	for _, field := range identity.Fields() {
-		v := field.Value
-		resp.Diagnostics.Append(resp.State.GetAttribute(ctx, field.PathState, &v)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, field.PathIdentity, v)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
+	// Set the identity
+	resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, resp.State, resp.Identity)...)
 }
 
 func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -332,4 +325,21 @@ func (r resourceWrapper) UpgradeIdentity(ctx context.Context) map[int64]resource
 		return rr.UpgradeIdentity(ctx)
 	}
 	return nil
+}
+
+func (r resourceWrapper) setIdentity(ctx context.Context, state tfsdk.State, identity *tfsdk.ResourceIdentity) (diags diag.Diagnostics) {
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Set the resource identity")
+	ident := r.Identity()
+	for _, field := range ident.Fields() {
+		v := field.Value
+		diags.Append(state.GetAttribute(ctx, field.PathState, &v)...)
+		if diags.HasError() {
+			return
+		}
+		diags.Append(identity.SetAttribute(ctx, field.PathIdentity, v)...)
+		if diags.HasError() {
+			return
+		}
+	}
+	return diags
 }
