@@ -24,6 +24,7 @@ func TestAccWorkitemtrackingprocessState_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
+					resource.TestCheckResourceAttrSet(tfNode, "order"),
 				),
 			},
 			{
@@ -41,6 +42,8 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 	processName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_workitemtrackingprocess_state.test"
 
+	var stateId string
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
@@ -50,6 +53,8 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 				Config: basicState(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttr(tfNode, "order", "2"),
+					captureStateId(tfNode, &stateId),
 				),
 			},
 			{
@@ -61,7 +66,8 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 			{
 				Config: updatedState(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrPtr(tfNode, "id", &stateId),
+					resource.TestCheckResourceAttr(tfNode, "order", "3"),
 				),
 			},
 			{
@@ -72,6 +78,14 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 			},
 		},
 	})
+}
+
+func captureStateId(tfNode string, id *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		res := s.RootModule().Resources[tfNode]
+		*id = res.Primary.Attributes["id"]
+		return nil
+	}
 }
 
 func basicState(workItemTypeName string, processName string) string {
@@ -111,10 +125,10 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 resource "azuredevops_workitemtrackingprocess_state" "test" {
   process_id                    = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name                          = "Ready Updated"
+  name                          = "Ready"
   color                         = "#5688E0"
   state_category                = "InProgress"
-  order                         = 2
+  order                         = 3
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }

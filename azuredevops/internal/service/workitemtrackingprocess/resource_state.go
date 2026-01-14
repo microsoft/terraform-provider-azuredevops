@@ -49,6 +49,7 @@ func ResourceState() *schema.Resource {
 			"name": {
 				Type:             schema.TypeString,
 				Required:         true,
+				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "Name of the state.",
 			},
@@ -61,7 +62,6 @@ func ResourceState() *schema.Resource {
 			"state_category": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Proposed", "InProgress", "Resolved", "Completed", "Removed"}, false)),
 				Description:      "Category of the state. Valid values: Proposed, InProgress, Resolved, Completed, Removed.",
 			},
@@ -69,7 +69,7 @@ func ResourceState() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Order in which the state should appear.",
+				Description: "Order within the category where the state should appear.",
 			},
 			"url": {
 				Type:        schema.TypeString,
@@ -165,17 +165,15 @@ func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_reference_name").(string)
 
-if d.HasChanges("name", "color", "order") {
+	if d.HasChanges("color", "state_category", "order") {
 		stateModel := workitemtrackingprocess.WorkItemStateInputModel{}
 
-		if d.HasChange("name") {
-			stateModel.Name = converter.String(d.Get("name").(string))
-		}
-		if d.HasChange("color") {
-			stateModel.Color = convertColorToApi(d)
-		}
-		if d.HasChange("order") {
-			stateModel.Order = converter.Int(d.Get("order").(int))
+		stateModel.Color = convertColorToApi(d)
+		stateModel.StateCategory = converter.String(d.Get("state_category").(string))
+		rawConfig := d.GetRawConfig().AsValueMap()
+		if order := rawConfig["order"]; !order.IsNull() {
+			orderInt, _ := order.AsBigFloat().Int64()
+			stateModel.Order = converter.Int(int(orderInt))
 		}
 
 		args := workitemtrackingprocess.UpdateStateDefinitionArgs{
