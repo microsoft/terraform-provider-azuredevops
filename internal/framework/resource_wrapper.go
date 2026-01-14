@@ -16,6 +16,12 @@ import (
 var _ resource.Resource = resourceWrapper{}
 var _ resource.ResourceWithConfigure = resourceWrapper{}
 var _ resource.ResourceWithImportState = resourceWrapper{}
+var _ resource.ResourceWithConfigValidators = resourceWrapper{}
+var _ resource.ResourceWithModifyPlan = resourceWrapper{}
+var _ resource.ResourceWithMoveState = resourceWrapper{}
+var _ resource.ResourceWithUpgradeState = resourceWrapper{}
+var _ resource.ResourceWithValidateConfig = resourceWrapper{}
+var _ resource.ResourceWithUpgradeIdentity = resourceWrapper{}
 var _ ResourceWithTimeout = resourceWrapper{}
 
 // The followings are unsafe interfaces. This requires additional wrappers around this resourceWrapper and opt-in.
@@ -278,4 +284,52 @@ func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 	r.Resource.SetMeta(req.ProviderData.(meta.Meta))
+}
+
+// ConfigValidators implements resource.ResourceWithConfigValidators.
+func (r resourceWrapper) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	if rr, ok := r.Resource.(resource.ResourceWithConfigValidators); ok {
+		return rr.ConfigValidators(ctx)
+	}
+	return nil
+}
+
+// ModifyPlan implements resource.ResourceWithModifyPlan.
+func (r resourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if rr, ok := r.Resource.(resource.ResourceWithModifyPlan); ok {
+		rr.ModifyPlan(ctx, req, resp)
+		return
+	}
+}
+
+// MoveState implements resource.ResourceWithMoveState.
+func (r resourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
+	if rr, ok := r.Resource.(resource.ResourceWithMoveState); ok {
+		return rr.MoveState(ctx)
+	}
+	return nil
+}
+
+// UpgradeState implements resource.ResourceWithUpgradeState.
+func (r resourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	if rr, ok := r.Resource.(resource.ResourceWithUpgradeState); ok {
+		return rr.UpgradeState(ctx)
+	}
+	return nil
+}
+
+// ValidateConfig implements resource.ResourceWithValidateConfig.
+func (r resourceWrapper) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	if rr, ok := r.Resource.(resource.ResourceWithValidateConfig); ok {
+		rr.ValidateConfig(ctx, req, resp)
+		return
+	}
+}
+
+// UpgradeIdentity implements resource.ResourceWithUpgradeIdentity.
+func (r resourceWrapper) UpgradeIdentity(ctx context.Context) map[int64]resource.IdentityUpgrader {
+	if rr, ok := r.Resource.(resource.ResourceWithUpgradeIdentity); ok {
+		return rr.UpgradeIdentity(ctx)
+	}
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
@@ -16,14 +18,21 @@ type ResourceTimeout struct {
 	Delete time.Duration
 }
 
-// ResourceWithTimeout is an opt-in interface that can implement customized timeout.
-type ResourceWithTimeout interface {
-	resource.Resource
-
-	// Timeout returns the timeout for each operation.
-	Timeout() ResourceTimeout
+type ResourceIdentity interface {
+	// Convert from an import id to the identity
+	FromId(id string)
+	// Fields returns each identity field value, together with its path and its corresponding state path.
+	Fields() []IdentityField
 }
 
+type IdentityField struct {
+	PathIdentity path.Path
+	PathState    path.Path
+	Value        attr.Value
+}
+
+// Resource interface defines the mandatory methods that a resource requires to implement.
+// Some of the method can be implemented by embedding a utility struct (see the comments).
 type Resource interface {
 	// ResourceType returns the resource type
 	ResourceType() string
@@ -50,13 +59,21 @@ type Resource interface {
 	Info(ctx context.Context, msg string, additionalFields ...map[string]any)
 	Warn(ctx context.Context, msg string, additionalFields ...map[string]any)
 	Error(ctx context.Context, msg string, additionalFields ...map[string]any)
-
-	// The followings are interfaces are not implemented
-
-	// resource.ResourceWithConfigValidators
-	// resource.ResourceWithModifyPlan
-	// resource.ResourceWithMoveState
-	// resource.ResourceWithUpgradeState
-	// resource.ResourceWithValidateConfig
-	// resource.ResourceWithUpgradeIdentity
 }
+
+// ResourceWithTimeout is an opt-in interface that can implement customized timeout.
+type ResourceWithTimeout interface {
+	resource.Resource
+
+	// Timeout returns the timeout for each operation.
+	Timeout() ResourceTimeout
+}
+
+// Additionally, a resource can opt-in any of the following interfaces.
+//
+// resource.ResourceWithConfigValidators
+// resource.ResourceWithModifyPlan
+// resource.ResourceWithMoveState
+// resource.ResourceWithUpgradeState
+// resource.ResourceWithValidateConfig
+// resource.ResourceWithUpgradeIdentity
