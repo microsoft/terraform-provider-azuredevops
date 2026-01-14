@@ -16,6 +16,7 @@ type ResourceTimeout struct {
 	Delete time.Duration
 }
 
+// ResourceWithTimeout is an opt-in interface that can implement customized timeout.
 type ResourceWithTimeout interface {
 	resource.Resource
 
@@ -27,6 +28,9 @@ type Resource interface {
 	// ResourceType returns the resource type
 	ResourceType() string
 
+	// Identity returns a ResourceIdentity.
+	Identity() ResourceIdentity
+
 	// Resource implements the framework Resource interface.
 	//
 	// For Create/Update/Delete, the implement doesn't need to handle the protocol response, which is done by wrapper.
@@ -35,7 +39,7 @@ type Resource interface {
 	// NOTE: Since the Metadata() is implemented by the wrapper, the implement struct shall not implement it.
 	// 		 Instead, it is supposed to embed the WithMetadata to meet the interface requirement.
 	//
-	resource.Resource
+	resource.ResourceWithIdentity
 
 	// SetMeta sets the provider meta to the resource.
 	// This is implemented by the ImplMeta, the implement struct shall simply embed it.
@@ -44,15 +48,15 @@ type Resource interface {
 	// Log logs a message
 	// This is implemented by the ImplLog, the implement struct shall simply embed it.
 	Info(ctx context.Context, msg string, additionalFields ...map[string]any)
+	Warn(ctx context.Context, msg string, additionalFields ...map[string]any)
 	Error(ctx context.Context, msg string, additionalFields ...map[string]any)
 
-	// The followings are interfaces that a resource can opt-in by implementing them.
+	// The followings are interfaces are not implemented
 
 	// resource.ResourceWithConfigValidators
 	// resource.ResourceWithModifyPlan
-	// resource.ResourceWithImportState
 	// resource.ResourceWithMoveState
 	// resource.ResourceWithUpgradeState
 	// resource.ResourceWithValidateConfig
-	// ResourceWithTimeout
+	// resource.ResourceWithUpgradeIdentity
 }

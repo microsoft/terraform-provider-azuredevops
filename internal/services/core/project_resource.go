@@ -9,7 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -38,6 +40,24 @@ type projectResource struct {
 	framework.ImplLog[*projectResource]
 }
 
+type projectIdentityModel struct {
+	ID types.String `tfsdk:"id"`
+}
+
+func (p *projectIdentityModel) Fields() []framework.IdentityField {
+	return []framework.IdentityField{
+		{
+			PathState:    path.Root("id"),
+			PathIdentity: path.Root("id"),
+			Value:        p.ID,
+		},
+	}
+}
+
+func (p *projectIdentityModel) FromId(id string) {
+	p.ID = types.StringValue(id)
+}
+
 type projectModel struct {
 	Name              adocustomtype.StringCaseInsensitiveValue `tfsdk:"name"`
 	Description       types.String                             `tfsdk:"description"`
@@ -51,6 +71,21 @@ type projectModel struct {
 
 func (*projectResource) ResourceType() string {
 	return "azuredevops_project"
+}
+
+func (r *projectResource) Identity() framework.ResourceIdentity {
+	return &projectIdentityModel{}
+}
+
+func (r *projectResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
+				Description:       "The project UUID",
+			},
+		},
+	}
 }
 
 func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -188,8 +223,14 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	r.Info(ctx, "get the project")
 
+	projectId := state.Id.ValueString()
+	// The id is not available during creation, hence read by name.
+	if projectId == "" {
+		projectId = state.Name.ValueString()
+	}
+
 	project, err := r.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
-		ProjectId:           state.Name.ValueStringPointer(), // Always use "name" to get as "id" is not available at create time
+		ProjectId:           &projectId,
 		IncludeCapabilities: pointer.From(true),
 	})
 	if err != nil && !errorutil.WasNotFound(err) {
@@ -231,6 +272,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		id = pointer.From(project.Id.String())
 	}
 
+	// Set state
 	state.Id = fwtype.StringValue(id)
 	state.Name = adocustomtype.StringCaseInsensitiveValue{
 		StringValue: fwtype.StringValue(project.Name),

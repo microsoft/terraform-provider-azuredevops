@@ -18,8 +18,7 @@ func (r *ImplSetMeta) SetMeta(m meta.Meta) {
 
 type ImplMetadata struct{}
 
-func (ImplMetadata) Metadata(context.Context, resource.MetadataRequest, *resource.MetadataResponse) {
-	panic("This should have been implemented by the wrapper")
+func (ImplMetadata) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 }
 
 type ImplLog[T Resource] struct{ r T }
@@ -28,6 +27,16 @@ func (l ImplLog[T]) Info(ctx context.Context, msg string, additionalFields ...ma
 	tflog.SubsystemInfo(ctx, l.r.ResourceType(), msg, additionalFields...)
 }
 
+func (l ImplLog[T]) Warn(ctx context.Context, msg string, additionalFields ...map[string]any) {
+	tflog.SubsystemWarn(ctx, l.r.ResourceType(), msg, additionalFields...)
+}
+
 func (l ImplLog[T]) Error(ctx context.Context, msg string, additionalFields ...map[string]any) {
 	tflog.SubsystemError(ctx, l.r.ResourceType(), msg, additionalFields...)
+}
+
+type ImplIdentity[T any] struct{ model T }
+
+func (i ImplIdentity[T]) IdentityModel() any {
+	return i.model
 }
