@@ -62,8 +62,8 @@ func ResourceState() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Proposed", "In Progress", "Resolved", "Completed", "Removed"}, false)),
-				Description:      "Category of the state. Valid values: Proposed, In Progress, Resolved, Completed, Removed.",
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Proposed", "InProgress", "Resolved", "Completed", "Removed"}, false)),
+				Description:      "Category of the state. Valid values: Proposed, InProgress, Resolved, Completed, Removed.",
 			},
 			"order": {
 				Type:        schema.TypeInt,
