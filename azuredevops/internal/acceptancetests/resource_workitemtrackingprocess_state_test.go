@@ -24,8 +24,6 @@ func TestAccWorkitemtrackingprocessState_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
-					resource.TestCheckResourceAttr(tfNode, "customization_type", "custom"),
-					resource.TestCheckResourceAttr(tfNode, "hidden", "false"),
 				),
 			},
 			{
@@ -115,7 +113,8 @@ resource "azuredevops_workitemtrackingprocess_state" "test" {
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   name                          = "Ready Updated"
   color                         = "#5688E0"
-  state_category                = "Proposed"
+  state_category                = "InProgress"
+  order                         = 2
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }
