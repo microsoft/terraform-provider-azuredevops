@@ -166,10 +166,11 @@ func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 	witRefName := d.Get("work_item_type_reference_name").(string)
 
 	if d.HasChanges("color", "state_category", "order") {
-		stateModel := workitemtrackingprocess.WorkItemStateInputModel{}
+		stateModel := workitemtrackingprocess.WorkItemStateInputModel{
+			Color:         convertColorToApi(d),
+			StateCategory: converter.String(d.Get("state_category").(string)),
+		}
 
-		stateModel.Color = convertColorToApi(d)
-		stateModel.StateCategory = converter.String(d.Get("state_category").(string))
 		rawConfig := d.GetRawConfig().AsValueMap()
 		if order := rawConfig["order"]; !order.IsNull() {
 			orderInt, _ := order.AsBigFloat().Int64()
