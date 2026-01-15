@@ -159,6 +159,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
 			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
+			"azuredevops_workitemtrackingprocess_system_control":      workitemtrackingprocess.ResourceSystemControl(),
 			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
