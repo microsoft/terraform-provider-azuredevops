@@ -151,11 +151,26 @@ func readResourceState(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.Errorf("getting state with id %s: %+v", stateId, err)
 	}
 	if state == nil {
-		d.SetId("")
-		return nil
+		return diag.Errorf("state with id %s is nil", stateId)
 	}
 
-	return flattenState(d, state)
+	if state.Name != nil {
+		d.Set("name", *state.Name)
+	}
+	if state.Color != nil {
+		d.Set("color", convertColorToResource(*state.Color))
+	}
+	if state.StateCategory != nil {
+		d.Set("state_category", *state.StateCategory)
+	}
+	if state.Order != nil {
+		d.Set("order", *state.Order)
+	}
+	if state.Url != nil {
+		d.Set("url", *state.Url)
+	}
+
+	return nil
 }
 
 func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -214,22 +229,3 @@ func deleteResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 	return nil
 }
 
-func flattenState(d *schema.ResourceData, state *workitemtrackingprocess.WorkItemStateResultModel) diag.Diagnostics {
-	if state.Name != nil {
-		d.Set("name", *state.Name)
-	}
-	if state.Color != nil {
-		d.Set("color", convertColorToResource(*state.Color))
-	}
-	if state.StateCategory != nil {
-		d.Set("state_category", *state.StateCategory)
-	}
-	if state.Order != nil {
-		d.Set("order", *state.Order)
-	}
-	if state.Url != nil {
-		d.Set("url", *state.Url)
-	}
-
-	return nil
-}
