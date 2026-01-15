@@ -178,33 +178,27 @@ func readResourceState(ctx context.Context, d *schema.ResourceData, m any) diag.
 func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	stateId := d.Id()
-	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	stateModel := workitemtrackingprocess.WorkItemStateInputModel{
+		Color:         convertColorToApi(d),
+		StateCategory: converter.String(d.Get("state_category").(string)),
+	}
 
-	if d.HasChanges("color", "state_category", "order") {
-		stateModel := workitemtrackingprocess.WorkItemStateInputModel{
-			Color:         convertColorToApi(d),
-			StateCategory: converter.String(d.Get("state_category").(string)),
-		}
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if order := rawConfig["order"]; !order.IsNull() {
+		orderInt, _ := order.AsBigFloat().Int64()
+		stateModel.Order = converter.Int(int(orderInt))
+	}
 
-		rawConfig := d.GetRawConfig().AsValueMap()
-		if order := rawConfig["order"]; !order.IsNull() {
-			orderInt, _ := order.AsBigFloat().Int64()
-			stateModel.Order = converter.Int(int(orderInt))
-		}
+	args := workitemtrackingprocess.UpdateStateDefinitionArgs{
+		ProcessId:  converter.UUID(d.Get("process_id").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		StateId:    converter.UUID(d.Id()),
+		StateModel: &stateModel,
+	}
 
-		args := workitemtrackingprocess.UpdateStateDefinitionArgs{
-			ProcessId:  converter.UUID(processId),
-			WitRefName: converter.String(witRefName),
-			StateId:    converter.UUID(stateId),
-			StateModel: &stateModel,
-		}
-
-		_, err := clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, args)
-		if err != nil {
-			return diag.Errorf("updating state: %+v", err)
-		}
+	_, err := clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, args)
+	if err != nil {
+		return diag.Errorf("updating state: %+v", err)
 	}
 
 	return readResourceState(ctx, d, m)
