@@ -103,8 +103,10 @@ func createResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 		StateCategory: converter.String(d.Get("state_category").(string)),
 	}
 
-	if v, ok := d.GetOk("order"); ok {
-		stateModel.Order = converter.Int(v.(int))
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if order := rawConfig["order"]; !order.IsNull() {
+		orderInt, _ := order.AsBigFloat().Int64()
+		stateModel.Order = converter.Int(int(orderInt))
 	}
 
 	args := workitemtrackingprocess.CreateStateDefinitionArgs{
@@ -228,4 +230,3 @@ func deleteResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	return nil
 }
-
