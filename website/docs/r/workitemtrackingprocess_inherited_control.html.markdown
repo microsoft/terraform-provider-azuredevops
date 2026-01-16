@@ -9,7 +9,7 @@ description: |-
 
 Manages an inherited control customization for a work item type.
 
-Inherited controls are controls that exist in the parent process template and are inherited by derived processes. This resource allows you to customize inherited controls (change visibility, label, read-only state) without creating new controls.
+Inherited controls are controls that exist in the parent process template and are inherited by derived processes. This resource allows you to customize inherited controls.
 
 ~> **Note:** This resource customizes inherited controls. When the resource is deleted, the control reverts to its inherited state rather than being removed.
 

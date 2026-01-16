@@ -67,7 +67,7 @@ func ResourceInheritedControl() *schema.Resource {
 			"visible": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 				Description: "Whether the control should be visible.",
 			},
 		},
