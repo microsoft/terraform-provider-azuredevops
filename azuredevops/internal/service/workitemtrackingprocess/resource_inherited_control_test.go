@@ -6,6 +6,7 @@ package workitemtrackingprocess
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -120,4 +121,89 @@ func TestInheritedControl_Update_NilAttributesSentWhenNotConfigured(t *testing.T
 
 	diags := updateResourceInheritedControl(context.Background(), d, clients)
 	assert.Empty(t, diags)
+}
+
+func TestInheritedControl_Create_Validation(t *testing.T) {
+	processId := uuid.New()
+	witRefName := "MyProcess.MyWorkItemType"
+	existingGroupId := "group-1"
+	existingControlId := "System.Title"
+	inherited := true
+	notInherited := false
+
+	tests := []struct {
+		name               string
+		groupId            string
+		controlId          string
+		returnWorkItemType *workitemtrackingprocess.ProcessWorkItemType
+		returnError        error
+		expectedError      string
+	}{
+		{
+			name:          "API error",
+			groupId:       existingGroupId,
+			controlId:     existingControlId,
+			returnError:   fmt.Errorf("API error"),
+			expectedError: "getting work item type",
+		},
+		{
+			name:          "nil work item type",
+			groupId:       existingGroupId,
+			controlId:     existingControlId,
+			expectedError: "work item type or layout is nil",
+		},
+		{
+			name:      "group not found",
+			groupId:   "non-existent-group",
+			controlId: existingControlId,
+			returnWorkItemType: createProcessWorkItemTypeWithControl(witRefName, existingGroupId, workitemtrackingprocess.Control{
+				Id:        &existingControlId,
+				Inherited: &inherited,
+			}),
+			expectedError: "group non-existent-group not found in layout",
+		},
+		{
+			name:      "control not found",
+			groupId:   existingGroupId,
+			controlId: "System.NonExistent",
+			returnWorkItemType: createProcessWorkItemTypeWithControl(witRefName, existingGroupId, workitemtrackingprocess.Control{
+				Id:        &existingControlId,
+				Inherited: &inherited,
+			}),
+			expectedError: "control System.NonExistent not found in group group-1",
+		},
+		{
+			name:      "control not inherited",
+			groupId:   existingGroupId,
+			controlId: existingControlId,
+			returnWorkItemType: createProcessWorkItemTypeWithControl(witRefName, existingGroupId, workitemtrackingprocess.Control{
+				Id:        &existingControlId,
+				Inherited: &notInherited,
+			}),
+			expectedError: "control System.Title is not inherited",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+			clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+			mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).Return(tt.returnWorkItemType, tt.returnError).Times(1)
+
+			d := getInheritedControlResourceData(t, map[string]any{
+				"process_id":                    processId.String(),
+				"work_item_type_reference_name": witRefName,
+				"group_id":                      tt.groupId,
+				"control_id":                    tt.controlId,
+			})
+
+			diags := createResourceInheritedControl(context.Background(), d, clients)
+			assert.NotEmpty(t, diags)
+			assert.Contains(t, diags[0].Summary, tt.expectedError)
+		})
+	}
 }
