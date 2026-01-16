@@ -179,8 +179,11 @@ func updateResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 
 	controlId := d.Id()
 
-	control := workitemtrackingprocess.Control{
-		Visible: converter.Bool(d.Get("visible").(bool)),
+	control := workitemtrackingprocess.Control{}
+
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if visible := rawConfig["visible"]; !visible.IsNull() {
+		control.Visible = converter.Bool(visible.True())
 	}
 
 	if v, ok := d.GetOk("label"); ok {
