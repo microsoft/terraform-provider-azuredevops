@@ -106,7 +106,6 @@ func TestAccWorkitemtrackingprocessInheritedControl_Revert(t *testing.T) {
 				),
 			},
 			{
-				// Remove the inherited control customization, keeping only process and work item type
 				Config: inheritedControlRevertConfig(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					checkInheritedControlRevertedFunc(&processId, &witRefName, &groupId, &controlId),
@@ -114,47 +113,6 @@ func TestAccWorkitemtrackingprocessInheritedControl_Revert(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkInheritedControlRevertedFunc(processId, witRefName, groupId, controlId *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-
-		// Get the work item type layout to check if control is still overridden
-		args := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
-			ProcessId:  converter.UUID(*processId),
-			WitRefName: witRefName,
-			Expand:     &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
-		}
-		workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(context.Background(), args)
-		if err != nil {
-			return fmt.Errorf("error getting work item type: %+v", err)
-		}
-
-		if workItemType == nil || workItemType.Layout == nil {
-			return fmt.Errorf("work item type or layout is nil")
-		}
-
-		// Find the group and control
-		group := findGroupById(workItemType.Layout, *groupId)
-		if group == nil {
-			// Group may have been removed, which is fine
-			return nil
-		}
-
-		control := findControlInGroup(group, *controlId)
-		if control == nil {
-			// Control not found in this group, which is expected after revert
-			return nil
-		}
-
-		// If control exists but is marked as inherited (not overridden), that's the expected state
-		if control.Inherited != nil && *control.Inherited && (control.Overridden == nil || !*control.Overridden) {
-			return nil
-		}
-
-		return fmt.Errorf("inherited control %s should have been reverted but is still customized", *controlId)
-	}
 }
 
 func basicInheritedControl(workItemTypeName string, processName string) string {
@@ -259,4 +217,48 @@ func findControlInGroup(group *workitemtrackingprocess.Group, controlId string) 
 		}
 	}
 	return nil
+}
+
+func checkInheritedControlRevertedFunc(processId, witRefName, groupId, controlId *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+
+		// Get the work item type layout to verify the control still exists and is no longer overridden
+		args := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
+			ProcessId:  converter.UUID(*processId),
+			WitRefName: witRefName,
+			Expand:     &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
+		}
+		workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(context.Background(), args)
+		if err != nil {
+			return fmt.Errorf("error getting work item type: %+v", err)
+		}
+
+		if workItemType == nil || workItemType.Layout == nil {
+			return fmt.Errorf("work item type or layout is nil")
+		}
+
+		// Find the group - it must still exist
+		group := findGroupById(workItemType.Layout, *groupId)
+		if group == nil {
+			return fmt.Errorf("group %s was removed, but inherited groups should not be removed", *groupId)
+		}
+
+		// Find the control - it must still exist (revert should not remove the control)
+		control := findControlInGroup(group, *controlId)
+		if control == nil {
+			return fmt.Errorf("control %s was removed, but inherited controls should be reverted not removed", *controlId)
+		}
+
+		// The control should be marked as inherited and not overridden
+		if control.Inherited == nil || !*control.Inherited {
+			return fmt.Errorf("control %s should be marked as inherited after revert", *controlId)
+		}
+
+		if control.Overridden != nil && *control.Overridden {
+			return fmt.Errorf("control %s should not be overridden after revert", *controlId)
+		}
+
+		return nil
+	}
 }
