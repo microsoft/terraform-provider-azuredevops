@@ -52,7 +52,7 @@ The following arguments are supported:
 
 * `label` - (Optional) Label for the control.
 
-* `visible` - (Optional) Whether the control should be visible. Defaults to `true`.
+* `visible` - (Optional) Whether the control should be visible.
 
 ## Attributes Reference
 
