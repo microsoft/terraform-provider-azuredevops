@@ -1,0 +1,35 @@
+package acceptance
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+// ImportStep returns a Test Step which Imports the Resource, optionally
+// ignoring any fields which may not be imported (for example, as they're
+// not returned from the API)
+func (td TestData) ImportStep(ignore ...string) resource.TestStep {
+	resourceAddr := td.ResourceAddr()
+	if strings.HasPrefix(resourceAddr, "data.") {
+		return resource.TestStep{
+			ResourceName: resourceAddr,
+			SkipFunc: func() (bool, error) {
+				return false, fmt.Errorf("data sources (%q) do not support import - remove the ImportStep / ImportStepFor`", resourceAddr)
+			},
+		}
+	}
+
+	step := resource.TestStep{
+		ResourceName:      resourceAddr,
+		ImportState:       true,
+		ImportStateVerify: true,
+	}
+
+	if len(ignore) > 0 {
+		step.ImportStateVerifyIgnore = ignore
+	}
+
+	return step
+}

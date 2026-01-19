@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/provider"
 )
@@ -20,7 +21,7 @@ func main() {
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New(), opts)
+	err := providerserver.Serve(context.Background(), func() fwprovider.Provider { return provider.New() }, opts)
 
 	if err != nil {
 		log.Fatal(err.Error())
