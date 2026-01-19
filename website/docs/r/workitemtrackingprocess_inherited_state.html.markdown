@@ -7,13 +7,11 @@ description: |-
 
 # azuredevops_workitemtrackingprocess_inherited_state
 
-Manages inherited states for a work item type.
+Manage a state inherited from an inherited work item type.
 
-Inherited states are predefined states that exist in all work item types (e.g., "New", "Active", "Closed"). This resource allows you to hide inherited states.
+~> **Note:** When the resource is deleted, the state is reverted to default inherited state.
 
-~> **Note:** When the resource is deleted, the state remains in Azure DevOps. Inherited states cannot be deleted from Azure DevOps.
-
-~> **Note:** Only states with `customizationType` of `system` or `inherited` can be managed by this resource. Use `azuredevops_workitemtrackingprocess_state` to manage custom states.
+~> **Note:** Only inherited states can be managed by this resource. Use `azuredevops_workitemtrackingprocess_state` to manage custom states.
 
 ## Example Usage
 
@@ -24,15 +22,16 @@ resource "azuredevops_workitemtrackingprocess_process" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
-  process_id = azuredevops_workitemtrackingprocess_process.example.id
-  name       = "example"
+  process_id                      = azuredevops_workitemtrackingprocess_process.example.id
+  name                            = "Bug"
+  parent_work_item_reference_name = "Microsoft.VSTS.WorkItemTypes.Bug"
 }
 
 # Hide an inherited state
 resource "azuredevops_workitemtrackingprocess_inherited_state" "example" {
   process_id                    = azuredevops_workitemtrackingprocess_process.example.id
   work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  name                          = "Removed"
+  name                          = "New"
   hidden                        = true
 }
 ```
@@ -43,7 +42,7 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new resource to be created.
 
-* `work_item_type_reference_name` - (Required) The reference name of the work item type. Changing this forces a new resource to be created.
+* `work_item_type_reference_name` - (Required) The reference name of the inherited work item type. Changing this forces a new resource to be created.
 
 * `name` - (Required) Name of the inherited state to manage. This is used to look up the state and must match an existing inherited state name. Changing this forces a new resource to be created.
 
