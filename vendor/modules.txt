@@ -336,7 +336,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.0.0-00010101000000-000000000000 => ../azure-devops-go-api/azuredevops/v7
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.0.0-00010101000000-000000000000 => github.com/magodo/azure-devops-go-api/azuredevops/v7 v7.0.0-20260119030056-7fc85ff92766
 ## explicit; go 1.23.0
 github.com/microsoft/azure-devops-go-api/azuredevops/v7
 github.com/microsoft/azure-devops-go-api/azuredevops/v7/accounts
@@ -616,4 +616,4 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/timestamppb
-# github.com/microsoft/azure-devops-go-api/azuredevops/v7 => ../azure-devops-go-api/azuredevops/v7
+# github.com/microsoft/azure-devops-go-api/azuredevops/v7 => github.com/magodo/azure-devops-go-api/azuredevops/v7 v7.0.0-20260119030056-7fc85ff92766

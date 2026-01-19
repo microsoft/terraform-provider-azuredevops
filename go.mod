@@ -73,4 +73,4 @@ require (
 	google.golang.org/protobuf v1.36.9 // indirect
 )
 
-replace github.com/microsoft/azure-devops-go-api/azuredevops/v7 => ../azure-devops-go-api/azuredevops/v7
+replace github.com/microsoft/azure-devops-go-api/azuredevops/v7 => github.com/magodo/azure-devops-go-api/azuredevops/v7 v7.0.0-20260119030056-7fc85ff92766
