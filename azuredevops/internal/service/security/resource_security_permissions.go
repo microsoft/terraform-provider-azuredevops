@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -81,6 +82,12 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 	permissions := d.Get("permissions").(map[string]interface{})
 	replace := d.Get("replace").(bool)
 
+	// Resolve the subject descriptor to an identity descriptor
+	identityDescriptor, err := resolveIdentityDescriptor(clients, principal)
+	if err != nil {
+		return fmt.Errorf("resolving identity for principal '%s': %v", principal, err)
+	}
+
 	// Get namespace details to retrieve action definitions
 	namespaces, err := clients.SecurityClient.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
 		SecurityNamespaceId: &namespaceID,
@@ -128,7 +135,7 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 
 	// Build ACE (Access Control Entry)
 	ace := security.AccessControlEntry{
-		Descriptor: &principal,
+		Descriptor: &identityDescriptor,
 		Allow:      &allowBits,
 		Deny:       &denyBits,
 		ExtendedInfo: &security.AceExtendedInformation{
@@ -168,7 +175,7 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 			currentACL, err := clients.SecurityClient.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
 				SecurityNamespaceId: &namespaceID,
 				Token:               &token,
-				Descriptors:         &principal,
+				Descriptors:         &identityDescriptor,
 				IncludeExtendedInfo: &[]bool{true}[0],
 			})
 			if err != nil {
@@ -184,7 +191,7 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 				return "Waiting", "Waiting", nil
 			}
 
-			aceEntry, ok := (*acl.AcesDictionary)[principal]
+			aceEntry, ok := (*acl.AcesDictionary)[identityDescriptor]
 			if !ok {
 				return "Waiting", "Waiting", nil
 			}
@@ -243,6 +250,14 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 	principal := d.Get("principal").(string)
 	requestedPermissions := d.Get("permissions").(map[string]interface{})
 
+	// Resolve the subject descriptor to an identity descriptor
+	identityDescriptor, err := resolveIdentityDescriptor(clients, principal)
+	if err != nil {
+		d.SetId("")
+		log.Printf("[INFO] Unable to resolve identity for principal %s. Removing from state: %v", principal, err)
+		return nil
+	}
+
 	// Get namespace details
 	namespaces, err := clients.SecurityClient.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
 		SecurityNamespaceId: &namespaceID,
@@ -271,7 +286,7 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 	acls, err := clients.SecurityClient.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
 		SecurityNamespaceId: &namespaceID,
 		Token:               &token,
-		Descriptors:         &principal,
+		Descriptors:         &identityDescriptor,
 		IncludeExtendedInfo: &bTrue,
 	})
 	if err != nil {
@@ -291,7 +306,7 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 		return nil
 	}
 
-	ace, ok := (*acl.AcesDictionary)[principal]
+	ace, ok := (*acl.AcesDictionary)[identityDescriptor]
 	if !ok {
 		d.SetId("")
 		log.Printf("[INFO] ACE for principal %s not found. Removing from state", principal)
@@ -344,6 +359,14 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 	principal := d.Get("principal").(string)
 	permissions := d.Get("permissions").(map[string]interface{})
 
+	// Resolve the subject descriptor to an identity descriptor
+	identityDescriptor, err := resolveIdentityDescriptor(clients, principal)
+	if err != nil {
+		// If we can't resolve the identity, the principal may no longer exist, so nothing to delete
+		log.Printf("[INFO] Unable to resolve identity for principal %s during delete, assuming already removed: %v", principal, err)
+		return nil
+	}
+
 	// Get namespace details
 	namespaces, err := clients.SecurityClient.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
 		SecurityNamespaceId: &namespaceID,
@@ -377,7 +400,7 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 	acls, err := clients.SecurityClient.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
 		SecurityNamespaceId: &namespaceID,
 		Token:               &token,
-		Descriptors:         &principal,
+		Descriptors:         &identityDescriptor,
 		IncludeExtendedInfo: &bTrue,
 	})
 	if err != nil {
@@ -396,7 +419,7 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 
-	ace, ok := (*acl.AcesDictionary)[principal]
+	ace, ok := (*acl.AcesDictionary)[identityDescriptor]
 	if !ok {
 		log.Printf("[INFO] ACE for principal %s not found, nothing to delete", principal)
 		return nil
@@ -426,7 +449,7 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 
 	// Set the updated permissions
 	updatedACE := security.AccessControlEntry{
-		Descriptor: &principal,
+		Descriptor: &identityDescriptor,
 		Allow:      &newAllowBits,
 		Deny:       &newDenyBits,
 		ExtendedInfo: &security.AceExtendedInformation{
@@ -459,4 +482,32 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 
 	log.Printf("[INFO] Successfully removed managed permissions from ACE for principal %s", principal)
 	return nil
+}
+
+// resolveIdentityDescriptor resolves a subject descriptor (e.g., vssgp.Uy0xLTkt...)
+// to an identity descriptor (e.g., Microsoft.IdentityModel.Claims.ClaimsIdentity;...)
+// which is required by the security API for setting ACEs.
+func resolveIdentityDescriptor(clients *client.AggregatedClient, subjectDescriptor string) (string, error) {
+	identities, err := clients.IdentityClient.ReadIdentities(clients.Ctx, identity.ReadIdentitiesArgs{
+		SubjectDescriptors: &subjectDescriptor,
+	})
+	if err != nil {
+		return "", fmt.Errorf("reading identity for subject descriptor: %v", err)
+	}
+
+	if identities == nil || len(*identities) == 0 {
+		return "", fmt.Errorf("no identity found for subject descriptor '%s'", subjectDescriptor)
+	}
+
+	id := (*identities)[0]
+	if id.Descriptor == nil {
+		return "", fmt.Errorf("identity descriptor is nil for subject descriptor '%s'", subjectDescriptor)
+	}
+
+	// Check if identity is active
+	if id.IsActive != nil && !*id.IsActive {
+		return "", fmt.Errorf("identity for subject descriptor '%s' is not active", subjectDescriptor)
+	}
+
+	return *id.Descriptor, nil
 }
