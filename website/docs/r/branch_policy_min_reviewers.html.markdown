@@ -89,6 +89,8 @@ A `settings` block supports the following:
 
 * `on_push_reset_all_votes` (Optional) When new changes are pushed reset all code reviewer votes. Defaults to `false`.
 
+* `on_each_iteration_require_vote` (Optional) Require at least one approval on every iteration. Defaults to `false`.
+
 ~> **Note:** If `on_push_reset_all_votes` is `true` then `on_push_reset_approved_votes` will be set to `true`. To enable `on_push_reset_approved_votes`, you need explicitly set `on_push_reset_all_votes` `false` or not configure.
 
 * `on_last_iteration_require_vote` (Optional) On last iteration require vote. Defaults to `false`.
