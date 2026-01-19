@@ -74,7 +74,16 @@ func TestInheritedPage_Create_Validation(t *testing.T) {
 		{
 			name:          "nil work item type",
 			pageId:        existingPageId,
-			expectedError: "work item type or layout is nil",
+			expectedError: "work item type is nil",
+		},
+		{
+			name:   "nil layout",
+			pageId: existingPageId,
+			returnWorkItemType: &workitemtrackingprocess.ProcessWorkItemType{
+				ReferenceName: &witRefName,
+				Layout:        nil,
+			},
+			expectedError: "work item type layout is nil",
 		},
 		{
 			name:   "page not found",

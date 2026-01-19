@@ -93,8 +93,11 @@ func createResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.Errorf("getting work item type: %+v", err)
 	}
-	if workItemType == nil || workItemType.Layout == nil {
-		return diag.Errorf("work item type or layout is nil")
+	if workItemType == nil {
+		return diag.Errorf("work item type is nil")
+	}
+	if workItemType.Layout == nil {
+		return diag.Errorf("work item type layout is nil")
 	}
 
 	existingPage := findPageById(workItemType.Layout, pageId)
@@ -128,8 +131,11 @@ func readResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m an
 	if err != nil {
 		return diag.Errorf("getting work item type: %+v", err)
 	}
-	if workItemType == nil || workItemType.Layout == nil {
-		return diag.Errorf("work item type or layout is nil")
+	if workItemType == nil {
+		return diag.Errorf("work item type is nil")
+	}
+	if workItemType.Layout == nil {
+		return diag.Errorf("work item type layout is nil")
 	}
 
 	page := findPageById(workItemType.Layout, pageId)
