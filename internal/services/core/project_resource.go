@@ -101,8 +101,9 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"description": schema.StringAttribute{
 				MarkdownDescription: "The description of the project",
-				Required:            true,
+				Optional:            true,
 				Validators: []validator.String{
+					// An empty description in request will not be returned in the response.
 					stringvalidator.LengthAtLeast(1),
 				},
 			},

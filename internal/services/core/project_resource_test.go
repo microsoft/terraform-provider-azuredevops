@@ -107,7 +107,6 @@ func (r ProjectResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s"
-  description        = "test description"
 }`, data.RandomString)
 }
 
@@ -115,7 +114,7 @@ func (r ProjectResource) update(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s-update"
-  description        = "test description update"
+  description        = "test description"
   version_control    = "Git"
 }`, data.RandomString)
 }
@@ -124,7 +123,7 @@ func (r ProjectResource) complete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s"
-  description        = "test description complete"
+  description        = "test description"
   version_control    = "Tfvc"
   work_item_template = "Agile"
 }`, data.RandomString)
