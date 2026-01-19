@@ -180,6 +180,11 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 		tflog.SubsystemWarn(ctx, r.Resource.ResourceType(), "Resource not found, removing it from the state and return")
 		resp.Diagnostics = slices.DeleteFunc(resp.Diagnostics, IsDiagResourceNotFound)
 		resp.State.RemoveResource(ctx)
+
+		// Set the identity to avoid error message about lacking of identity after successfully returning from read.
+		// This happens when a resource that has no identity before, and it has disappeared in remote.
+		// We assume the "req" has the adequate state to form the identity.
+		resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, req.State, resp.Identity)...)
 		return
 	}
 
