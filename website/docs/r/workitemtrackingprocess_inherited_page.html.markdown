@@ -7,11 +7,11 @@ description: |-
 
 # azuredevops_workitemtrackingprocess_inherited_page
 
-Manages an inherited page customization for a work item type.
+Manages inherited page customizations for a work item type.
 
-Inherited pages are pages that exist in the parent process template and are inherited by derived processes. This resource allows you to customize inherited pages.
+Inherited pages are pages that exist in the parent process template and are inherited by derived processes.
 
-~> **Note:** This resource customizes inherited pages. When the resource is deleted, the page reverts to its inherited state rather than being removed.
+~> **Note:** When the resource is deleted, the page reverts to its inherited state rather than being removed.
 
 ## Example Usage
 
