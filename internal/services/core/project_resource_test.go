@@ -42,7 +42,7 @@ func TestAccProject_basic(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
 			),
 		},
-		//data.ImportStep(),
+		data.ImportStep(),
 	})
 }
 
@@ -58,7 +58,7 @@ func TestAccProject_complete(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
 			),
 		},
-		//data.ImportStep(),
+		data.ImportStep(),
 	})
 }
 
@@ -74,7 +74,7 @@ func TestAccProject_update(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
 			),
 		},
-		//data.ImportStep(),
+		data.ImportStep(),
 		{
 			Config: r.update(data),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -87,7 +87,7 @@ func TestAccProject_update(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
 			),
 		},
-		//data.ImportStep(),
+		data.ImportStep(),
 	})
 }
 
