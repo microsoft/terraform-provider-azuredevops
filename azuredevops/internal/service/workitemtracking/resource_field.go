@@ -155,6 +155,7 @@ func ResourceField() *schema.Resource {
 			"restore": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				WriteOnly:   true,
 				Description: "Set to `true` to restore a previously deleted field.",
 			},
 			"supported_operations": {
