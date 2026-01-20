@@ -294,6 +294,17 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 	if field.IsIdentity != nil {
 		d.Set("is_identity", *field.IsIdentity)
+		// NOTE! Azure DevOps API incorrectly returns type=string for identity fields.
+		// Need a more complex test scenario in the future that can verify correct behavior.
+		// Looks correct in the UI.
+		/*
+			[DEBUG] CreateWorkItemField request body: {"isIdentity":true,"isPicklistSuggested":false,"name":"testaccfihmdwdgiu","readOnly":false,"referenceName":"Custom.testaccfihmdwdgiu","type":"identity","usage":"workItem","isLocked":false}
+			[DEBUG] CreateWorkItemField raw response: {"isLocked":false,"name":"testaccfihmdwdgiu","referenceName":"Custom.testaccfihmdwdgiu","description":null,"type":"string","usage":"workItem","readOnly":false,"canSortBy":true,"isQueryable":true,"supportedOperations":[{"referenceName":"SupportedOperations.Equals","name":"="},{"referenceName":"SupportedOperations.NotEquals","name":"<>"},{"referenceName":"SupportedOperations.GreaterThan","name":">"},{"referenceName":"SupportedOperations.LessThan","name":"<"},{"referenceName":"SupportedOperations.GreaterThanEquals","name":">="},{"referenceName":"SupportedOperations.LessThanEquals","name":"<="},{"referenceName":"SupportedOperations.Contains","name":"Contains"},{"referenceName":"SupportedOperations.NotContains","name":"Does Not Contain"},{"referenceName":"SupportedOperations.In","name":"In"},{"name":"Not In"},{"referenceName":"SupportedOperations.InGroup","name":"In Group"},{"referenceName":"SupportedOperations.NotInGroup","name":"Not In Group"},{"referenceName":"Supported
+			Operations.Ever","name":"Was Ever"},{"referenceName":"SupportedOperations.EqualsField","name":"= [Field]"},{"referenceName":"SupportedOperations.NotEqualsField","name":"<> [Field]"},{"referenceName":"SupportedOperations.GreaterThanField","name":"> [Field]"},{"referenceName":"SupportedOperations.LessThanField","name":"< [Field]"},{"referenceName":"SupportedOperations.GreaterThanEqualsField","name":">= [Field]"},{"referenceName":"SupportedOperations.LessThanEqualsField","name":"<= [Field]"}],"isIdentity":true,"isPicklist":false,"isPicklistSuggested":false,"url":"..."}
+		*/
+		if *field.IsIdentity {
+			d.Set("type", string(workitemtracking.FieldTypeValues.Identity))
+		}
 	}
 	if field.IsPicklist != nil {
 		d.Set("is_picklist", *field.IsPicklist)
