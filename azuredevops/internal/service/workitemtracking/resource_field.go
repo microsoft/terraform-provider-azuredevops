@@ -101,10 +101,8 @@ func ResourceField() *schema.Resource {
 			},
 			"can_sort_by": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "Indicates whether the field can be sorted in server queries. Default: `true`.",
+				Computed:    true,
+				Description: "Indicates whether the field can be sorted in server queries.",
 			},
 			"is_queryable": {
 				Type:        schema.TypeBool,
@@ -189,7 +187,6 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		ReferenceName:       converter.String(d.Get("reference_name").(string)),
 		Type:                converter.ToPtr(workitemtracking.FieldType(d.Get("type").(string))),
 		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
-		CanSortBy:           converter.Bool(d.Get("can_sort_by").(bool)),
 		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
 		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
 		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),

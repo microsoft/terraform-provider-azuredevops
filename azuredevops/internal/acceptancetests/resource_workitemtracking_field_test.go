@@ -97,6 +97,30 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 	})
 }
 
+func TestAccWorkItemTrackingField_Html(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldHtml(fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
@@ -207,6 +231,17 @@ resource "azuredevops_workitemtracking_field" "test" {
   reference_name = "Custom.%s"
   type           = "boolean"
   description    = "A boolean field for testing"
+}
+`, name, name)
+}
+
+func fieldHtml(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "html"
+  description    = "A html field for testing"
 }
 `, name, name)
 }
