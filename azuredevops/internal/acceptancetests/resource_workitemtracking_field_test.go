@@ -121,6 +121,198 @@ func TestAccWorkItemTrackingField_Html(t *testing.T) {
 	})
 }
 
+func TestAccWorkItemTrackingField_Integer(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "integer"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_DateTime(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "dateTime"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_PlainText(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "plainText"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_Double(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "double"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_Identity(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "identity"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_TreePath(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "treePath"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_History(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "history"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_Guid(t *testing.T) {
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldWithType(fieldName, "guid"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccWorkItemTrackingField_Lock(t *testing.T) {
 	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtracking_field.test"
@@ -203,6 +395,16 @@ resource "azuredevops_workitemtracking_field" "test" {
   type           = "string"
 }
 `, name, name)
+}
+
+func fieldWithType(name string, fieldType string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "%s"
+}
+`, name, name, fieldType)
 }
 
 func fieldComplete(name string) string {
