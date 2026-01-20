@@ -106,10 +106,8 @@ func ResourceField() *schema.Resource {
 			},
 			"is_queryable": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "Indicates whether the field can be queried in the server. Default: `true`.",
+				Computed:    true,
+				Description: "Indicates whether the field can be queried in the server.",
 			},
 			"is_identity": {
 				Type:        schema.TypeBool,
@@ -187,7 +185,6 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		ReferenceName:       converter.String(d.Get("reference_name").(string)),
 		Type:                converter.ToPtr(workitemtracking.FieldType(d.Get("type").(string))),
 		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
-		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
 		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
 		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
 		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
