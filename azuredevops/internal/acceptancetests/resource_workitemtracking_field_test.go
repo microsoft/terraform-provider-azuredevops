@@ -32,10 +32,6 @@ func TestAccWorkItemTrackingField_Basic(t *testing.T) {
 					// Default values
 					resource.TestCheckResourceAttr(tfNode, "usage", "workItem"),
 					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
-					resource.TestCheckResourceAttr(tfNode, "can_sort_by", "true"),
-					resource.TestCheckResourceAttr(tfNode, "is_queryable", "true"),
-					resource.TestCheckResourceAttr(tfNode, "is_identity", "false"),
-					resource.TestCheckResourceAttr(tfNode, "is_picklist", "false"),
 					resource.TestCheckResourceAttr(tfNode, "is_picklist_suggested", "false"),
 					resource.TestCheckResourceAttr(tfNode, "is_locked", "false"),
 				),
@@ -416,10 +412,6 @@ resource "azuredevops_workitemtracking_field" "test" {
   description           = "Test field description"
   usage                 = "workItem"
   read_only             = false
-  can_sort_by           = true
-  is_queryable          = true
-  is_identity           = false
-  is_picklist           = false
   is_picklist_suggested = false
   is_locked             = false
 }
