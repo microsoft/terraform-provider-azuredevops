@@ -79,7 +79,7 @@ func TestAccWorkItemTrackingField_Boolean(t *testing.T) {
 		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fieldBoolean(fieldName),
+				Config: fieldWithType(fieldName, "boolean"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -103,7 +103,7 @@ func TestAccWorkItemTrackingField_Html(t *testing.T) {
 		CheckDestroy:      checkFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fieldHtml(fieldName),
+				Config: fieldWithType(fieldName, "html"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -414,28 +414,6 @@ resource "azuredevops_workitemtracking_field" "test" {
   read_only             = false
   is_picklist_suggested = false
   is_locked             = false
-}
-`, name, name)
-}
-
-func fieldBoolean(name string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_workitemtracking_field" "test" {
-  name           = "%s"
-  reference_name = "Custom.%s"
-  type           = "boolean"
-  description    = "A boolean field for testing"
-}
-`, name, name)
-}
-
-func fieldHtml(name string) string {
-	return fmt.Sprintf(`
-resource "azuredevops_workitemtracking_field" "test" {
-  name           = "%s"
-  reference_name = "Custom.%s"
-  type           = "html"
-  description    = "A html field for testing"
 }
 `, name, name)
 }
