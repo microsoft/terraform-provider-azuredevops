@@ -111,10 +111,8 @@ func ResourceField() *schema.Resource {
 			},
 			"is_identity": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Indicates whether this field is an identity field. Default: `false`.",
+				Computed:    true,
+				Description: "Indicates whether this field is an identity field.",
 			},
 			"is_picklist": {
 				Type:        schema.TypeBool,
@@ -185,7 +183,6 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		ReferenceName:       converter.String(d.Get("reference_name").(string)),
 		Type:                converter.ToPtr(workitemtracking.FieldType(d.Get("type").(string))),
 		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
-		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
 		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
 		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
 		IsLocked:            converter.Bool(d.Get("is_locked").(bool)),
