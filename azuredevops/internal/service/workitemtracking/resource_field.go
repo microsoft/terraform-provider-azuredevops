@@ -30,6 +30,7 @@ func ResourceField() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		// https://learn.microsoft.com/en-us/azure/devops/boards/work-items/work-item-fields?view=azure-devops#field-attributes
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
