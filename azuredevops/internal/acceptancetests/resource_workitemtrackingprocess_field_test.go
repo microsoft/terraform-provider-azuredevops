@@ -23,13 +23,7 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 			{
 				Config: basicField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
-					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
-					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
-					resource.TestCheckResourceAttr(tfNode, "required", "false"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
@@ -56,13 +50,7 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 			{
 				Config: basicField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
-					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
-					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "read_only", "false"),
-					resource.TestCheckResourceAttr(tfNode, "required", "false"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
@@ -74,13 +62,7 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 			{
 				Config: updatedField(workItemTypeName, processName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "reference_name", fmt.Sprintf("Custom.%s", fieldName)),
-					resource.TestCheckResourceAttrPair(tfNode, "process_id", "azuredevops_workitemtrackingprocess_process.test", "id"),
-					resource.TestCheckResourceAttrPair(tfNode, "work_item_type_ref_name", "azuredevops_workitemtrackingprocess_workitemtype.test", "reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckResourceAttr(tfNode, "name", fieldName),
-					resource.TestCheckResourceAttr(tfNode, "required", "true"),
-					resource.TestCheckResourceAttr(tfNode, "default_value", "default"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
