@@ -75,19 +75,16 @@ func ResourceField() *schema.Resource {
 			"read_only": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "If true, the field cannot be edited.",
 			},
 			"required": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "If true, the field cannot be empty.",
 			},
 			"allow_groups": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "Allow setting field value to a group identity. Only applies to identity fields.",
 			},
 			"customization": {
@@ -189,18 +186,12 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 	if field.ReadOnly != nil {
 		d.Set("read_only", *field.ReadOnly)
-	} else {
-		d.Set("read_only", false)
 	}
 	if field.Required != nil {
 		d.Set("required", *field.Required)
-	} else {
-		d.Set("required", false)
 	}
 	if field.AllowGroups != nil {
 		d.Set("allow_groups", *field.AllowGroups)
-	} else {
-		d.Set("allow_groups", false)
 	}
 	if field.Customization != nil {
 		d.Set("customization", string(*field.Customization))
