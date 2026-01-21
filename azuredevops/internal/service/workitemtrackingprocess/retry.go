@@ -23,11 +23,11 @@ func retryOnCondition(ctx context.Context, timeout time.Duration, f func() error
 	})
 }
 
-// retryOnUnexpectedException retries the given function when Azure DevOps returns
+// RetryOnUnexpectedException retries the given function when Azure DevOps returns
 // an "UnexpectedException" (TF401349) error. This error typically occurs due to
 // eventual consistency issues where a resource cannot be modified yet because
 // dependent resources haven't been fully processed.
-func retryOnUnexpectedException(ctx context.Context, timeout time.Duration, f func() error) error {
+func RetryOnUnexpectedException(ctx context.Context, timeout time.Duration, f func() error) error {
 	return retryOnCondition(ctx, timeout, f, func(err error) bool {
 		return utils.ResponseWasTypeKey(err, "UnexpectedException")
 	})

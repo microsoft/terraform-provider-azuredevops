@@ -381,7 +381,7 @@ func deleteResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 		ControlId:  &controlId,
 	}
 
-	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+	err := RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingProcessClient.RemoveControlFromGroup(ctx, args)
 	})
 	if err != nil {
