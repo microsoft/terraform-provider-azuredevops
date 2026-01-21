@@ -25,6 +25,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/services/core"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/services/graph"
 )
 
 var _ provider.Provider = (*Provider)(nil)
@@ -95,6 +96,7 @@ func (p *Provider) DataSources(ctx context.Context) []func() datasource.DataSour
 func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		framework.WrapResource(core.NewProjectResource()),
+		framework.WrapResource(graph.NewGroupResource()),
 	}
 }
 
