@@ -169,7 +169,45 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf("reading field %s: %+v", fieldRefName, err)
 	}
 
-	flattenProcessField(d, field)
+	if field.Name != nil {
+		d.Set("name", *field.Name)
+	}
+	if field.ReferenceName != nil {
+		d.Set("reference_name", *field.ReferenceName)
+	}
+	if field.Type != nil {
+		d.Set("type", string(*field.Type))
+	}
+	if field.Description != nil {
+		d.Set("description", *field.Description)
+	}
+	if field.DefaultValue != nil {
+		d.Set("default_value", fmt.Sprintf("%v", field.DefaultValue))
+	}
+	if field.ReadOnly != nil {
+		d.Set("read_only", *field.ReadOnly)
+	} else {
+		d.Set("read_only", false)
+	}
+	if field.Required != nil {
+		d.Set("required", *field.Required)
+	} else {
+		d.Set("required", false)
+	}
+	if field.AllowGroups != nil {
+		d.Set("allow_groups", *field.AllowGroups)
+	} else {
+		d.Set("allow_groups", false)
+	}
+	if field.Customization != nil {
+		d.Set("customization", string(*field.Customization))
+	}
+	if field.IsLocked != nil {
+		d.Set("is_locked", *field.IsLocked)
+	}
+	if field.Url != nil {
+		d.Set("url", *field.Url)
+	}
 	return nil
 }
 
@@ -240,44 +278,3 @@ func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.ProcessWorkItemTypeField) {
-	if field.Name != nil {
-		d.Set("name", *field.Name)
-	}
-	if field.ReferenceName != nil {
-		d.Set("reference_name", *field.ReferenceName)
-	}
-	if field.Type != nil {
-		d.Set("type", string(*field.Type))
-	}
-	if field.Description != nil {
-		d.Set("description", *field.Description)
-	}
-	if field.DefaultValue != nil {
-		d.Set("default_value", fmt.Sprintf("%v", field.DefaultValue))
-	}
-	if field.ReadOnly != nil {
-		d.Set("read_only", *field.ReadOnly)
-	} else {
-		d.Set("read_only", false)
-	}
-	if field.Required != nil {
-		d.Set("required", *field.Required)
-	} else {
-		d.Set("required", false)
-	}
-	if field.AllowGroups != nil {
-		d.Set("allow_groups", *field.AllowGroups)
-	} else {
-		d.Set("allow_groups", false)
-	}
-	if field.Customization != nil {
-		d.Set("customization", string(*field.Customization))
-	}
-	if field.IsLocked != nil {
-		d.Set("is_locked", *field.IsLocked)
-	}
-	if field.Url != nil {
-		d.Set("url", *field.Url)
-	}
-}
