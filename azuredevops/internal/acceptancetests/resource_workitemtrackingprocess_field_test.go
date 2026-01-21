@@ -12,7 +12,7 @@ import (
 func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtrackingprocess_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -45,7 +45,7 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
-	fieldName := testutils.GenerateFieldName()
+	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtrackingprocess_field.test"
 
 	resource.ParallelTest(t, resource.TestCase{
