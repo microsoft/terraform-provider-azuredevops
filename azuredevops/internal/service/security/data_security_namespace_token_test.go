@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -136,7 +137,7 @@ func TestGenerateToken_UnknownNamespace_NoIdentifiers(t *testing.T) {
 func TestGenerateToken_GitRepositoriesIdentifierInfo(t *testing.T) {
 	// Test that we can retrieve identifier info for Git Repositories namespace
 	namespaceID := uuid.MustParse("2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87")
-	template, exists := namespaceTokenTemplates[namespaceID.String()]
+	template, exists := namespaceTokenTemplates[utils.SecurityNamespaceID(namespaceID)]
 
 	assert.True(t, exists, "Git Repositories namespace should have a template")
 	assert.Equal(t, []string{"project_id"}, template.RequiredIdentifiers)
@@ -146,7 +147,7 @@ func TestGenerateToken_GitRepositoriesIdentifierInfo(t *testing.T) {
 func TestGenerateToken_ProjectIdentifierInfo(t *testing.T) {
 	// Test that we can retrieve identifier info for Project namespace
 	namespaceID := uuid.MustParse("52d39943-cb85-4d7f-8fa8-c6baac873819")
-	template, exists := namespaceTokenTemplates[namespaceID.String()]
+	template, exists := namespaceTokenTemplates[utils.SecurityNamespaceID(namespaceID)]
 
 	assert.True(t, exists, "Project namespace should have a template")
 	assert.Equal(t, []string{"project_id"}, template.RequiredIdentifiers)
@@ -156,7 +157,7 @@ func TestGenerateToken_ProjectIdentifierInfo(t *testing.T) {
 func TestGenerateToken_CollectionIdentifierInfo(t *testing.T) {
 	// Test that we can retrieve identifier info for Collection namespace
 	namespaceID := uuid.MustParse("3e65f728-f8bc-4ecd-8764-7e378b19bfa7")
-	template, exists := namespaceTokenTemplates[namespaceID.String()]
+	template, exists := namespaceTokenTemplates[utils.SecurityNamespaceID(namespaceID)]
 
 	assert.True(t, exists, "Collection namespace should have a template")
 	assert.Equal(t, []string{}, template.RequiredIdentifiers)

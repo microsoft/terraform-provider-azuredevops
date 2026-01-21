@@ -1,53 +1,176 @@
 package security
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
-	"unicode/utf16"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
 // TokenTemplate defines the structure for generating tokens for a namespace
 type TokenTemplate struct {
-	// Template is the format string for the token (if BuildFunc is nil)
-	Template string
 	// RequiredIdentifiers are the identifiers that must be provided
 	RequiredIdentifiers []string
 	// OptionalIdentifiers are the identifiers that may be provided
 	OptionalIdentifiers []string
-	// BuildFunc is an optional custom function to build the token
-	BuildFunc func(identifiers map[string]string) (string, error)
+	// BuildFunc is the function to build the token (receives identifiers and API clients)
+	BuildFunc func(identifiers map[string]string, clients *client.AggregatedClient) (string, error)
 }
 
-func stringToUTF16LEHex(s string) string {
-	// Convert string to UTF-16 code points
-	utf16Codes := utf16.Encode([]rune(s))
+// TokenTemplate defines the structure for generating tokens for a namespace
+// This matches the logic from CreateClassificationNodeSecurityToken in the permissions utils
+func createClassificationNodeToken(clients *client.AggregatedClient, projectID string, path string, structureGroup workitemtracking.TreeStructureGroup) (string, error) {
+	const aclClassificationNodeTokenPrefix = "vstfs:///Classification/Node/"
 
-	// Convert to bytes in little-endian format
-	bytes := make([]byte, len(utf16Codes)*2)
-	for i, code := range utf16Codes {
-		bytes[i*2] = byte(code)        // Low byte
-		bytes[i*2+1] = byte(code >> 8) // High byte
+	// Get the root ClassificationNode
+	rootClassificationNode, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
+		Project:        &projectID,
+		StructureGroup: &structureGroup,
+		Depth:          converter.Int(1),
+	})
+	if err != nil {
+		return "", fmt.Errorf("error getting root classification node: %w", err)
 	}
 
-	// Convert bytes to hexadecimal string
-	return hex.EncodeToString(bytes)
+	/*
+	 * Token format
+	 * Root Node: vstfs:///Classification/Node/<NodeIdentifier>"
+	 * 1st child: vstfs:///Classification/Node/<NodeIdentifier>:vstfs:///Classification/Node/<NodeIdentifier>
+	 */
+	aclToken := aclClassificationNodeTokenPrefix + rootClassificationNode.Identifier.String()
+
+	if path != "" {
+		path = strings.TrimLeft(strings.TrimSpace(path), "/")
+		if path != "" && (rootClassificationNode.HasChildren == nil || !*rootClassificationNode.HasChildren) {
+			return "", fmt.Errorf("a path was specified but the root classification node has no children")
+		} else if path != "" {
+			// Get the id for each classification in the provided path
+			// We do this by querying each path element
+			// 0: foo
+			// 1: foo/bar
+			// 2: foo/bar/baz
+			pathSegments := strings.Split(path, "/")
+			var pathElem []string
+
+			// Filter out empty segments
+			for _, elem := range pathSegments {
+				if len(elem) > 0 {
+					pathElem = append(pathElem, elem)
+				}
+			}
+
+			for i := range pathElem {
+				pathItem := strings.Join(pathElem[:i+1], "/")
+				node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
+					Project:        &projectID,
+					Path:           &pathItem,
+					StructureGroup: &structureGroup,
+					Depth:          converter.Int(1),
+				})
+				if err != nil {
+					return "", fmt.Errorf("error getting classification node: %w", err)
+				}
+
+				aclToken = aclToken + ":" + aclClassificationNodeTokenPrefix + node.Identifier.String()
+			}
+		}
+	}
+
+	return aclToken, nil
 }
 
-// namespaceTokenTemplates maps namespace IDs to their token generation templates
-var namespaceTokenTemplates = map[string]TokenTemplate{
+// getQueryIDsFromPath resolves a path string to a list of query/folder IDs
+// This matches the logic from getQueryIDsFromPath in the workitemquery permissions resource
+func getQueryIDsFromPath(clients *client.AggregatedClient, projectID string, path string) ([]string, error) {
+	path = strings.TrimSpace(path)
+
+	// Parse path segments, filtering out empty strings
+	var pathItems []string
+	for _, segment := range strings.Split(path, "/") {
+		if len(segment) > 0 {
+			pathItems = append(pathItems, segment)
+		}
+	}
+
+	// Start with "Shared Queries" folder
+	qry, err := clients.WorkItemTrackingClient.GetQuery(clients.Ctx, workitemtracking.GetQueryArgs{
+		Project: &projectID,
+		Query:   converter.String("Shared Queries"),
+		Depth:   converter.Int(1),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error getting Shared Queries folder: %w", err)
+	}
+
+	ret := []string{qry.Id.String()}
+
+	// Traverse path segments
+	for _, segment := range pathItems {
+		if qry.Children == nil || len(*qry.Children) == 0 {
+			return nil, fmt.Errorf("unable to find query [%s] in folder [%s] because it has no children", segment, getQueryName(qry))
+		}
+
+		// Try to parse segment as UUID first, otherwise match by name
+		segmentUUID, parseErr := uuid.Parse(segment)
+		childIdx := -1
+
+		for idx, child := range *qry.Children {
+			if parseErr == nil && strings.EqualFold(segmentUUID.String(), child.Id.String()) {
+				childIdx = idx
+				break
+			} else if child.Name != nil && strings.EqualFold(*child.Name, segment) {
+				childIdx = idx
+				break
+			}
+		}
+
+		if childIdx < 0 {
+			return nil, fmt.Errorf("unable to find query [%s] in folder [%s]", segment, getQueryName(qry))
+		}
+
+		// Get the child query/folder with depth 1
+		qry, err = clients.WorkItemTrackingClient.GetQuery(clients.Ctx, workitemtracking.GetQueryArgs{
+			Project: &projectID,
+			Query:   converter.String((*qry.Children)[childIdx].Id.String()),
+			Depth:   converter.Int(1),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error getting query: %w", err)
+		}
+
+		ret = append(ret, qry.Id.String())
+	}
+
+	return ret, nil
+}
+
+// getQueryName returns the name of a query, falling back to its ID if name is not available
+func getQueryName(qry *workitemtracking.QueryHierarchyItem) string {
+	if qry.Name != nil {
+		return *qry.Name
+	}
+	return qry.Id.String()
+}
+
+// TokenTemplate defines the structure for generating tokens for a namespace
+var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 	// Git Repositories namespace
-	"2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87": {
+	// Token formats:
+	// repoV2/project_id
+	// repoV2/project_id/repository_id
+	// repoV2/project_id/repository_id/ref_name (with ref_name segments after (refs/heads|tags) encoded in UTF-16LE hex)
+	utils.SecurityNamespaceIDValues.GitRepositories: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"repository_id", "ref_name"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			if _, hasRef := identifiers["ref_name"]; hasRef {
 				if _, hasRepo := identifiers["repository_id"]; !hasRepo {
 					return "", fmt.Errorf("ref_name provided without repository_id; ref_name needs it's parent repository_id to build the token")
@@ -60,7 +183,11 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 					// skip the first two segments
 					if len(segments) > 2 {
 						for i := 2; i < len(segments); i++ {
-							segments[i] = stringToUTF16LEHex(segments[i])
+							encoded, err := converter.EncodeUtf16HexString(segments[i])
+							if err != nil {
+								return "", fmt.Errorf("failed to encode segment '%s': %w", segments[i], err)
+							}
+							segments[i] = encoded
 						}
 					}
 					// join back the segments
@@ -73,18 +200,25 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 		},
 	},
 	// Project namespace
-	"52d39943-cb85-4d7f-8fa8-c6baac873819": {
-		Template:            "$PROJECT:vstfs:///Classification/TeamProject/%s",
+	// Token format: vstfs:///Classification/TeamProject/project_id
+	utils.SecurityNamespaceIDValues.Project: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return fmt.Sprintf("$PROJECT:vstfs:///Classification/TeamProject/%s", identifiers["project_id"]), nil
+		},
 	},
 	// Build namespace
-	// Token format: project_id or project_id/path/build_definition_id or project_id/build_definition_id
+	// Token formats:
+	// project_id
+	// project_id/build_definition_id
+	// project_id/path
+	// project_id/path/build_definition_id
 	// Note: In practice, getting the full path requires API calls, so path must be pre-transformed
-	"33344d9c-fc72-4d6f-aba5-fa317101a7e9": {
+	utils.SecurityNamespaceIDValues.Build: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"path", "build_definition_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			projectID := identifiers["project_id"]
 			buildDefID, hasBuildDef := identifiers["build_definition_id"]
 			path, hasPath := identifiers["path"]
@@ -106,50 +240,40 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 		},
 	},
 	// Service Endpoints namespace
-	"49b48001-ca20-4adc-8111-5b60c903a50c": {
-		RequiredIdentifiers: []string{"project_id"},
-		OptionalIdentifiers: []string{"serviceendpoint_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
-			projectID := identifiers["project_id"]
-			if seID, hasSE := identifiers["serviceendpoint_id"]; hasSE {
-				return fmt.Sprintf("endpoints/%s/%s", projectID, seID), nil
-			}
-			return fmt.Sprintf("endpoints/%s", projectID), nil
+	utils.SecurityNamespaceIDValues.ServiceEndpoints: {
+		RequiredIdentifiers: []string{},
+		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "", fmt.Errorf("service Endpoints namespace uses role assignments for permissions; token generation is not supported, Role assignment scope is distributedtask.project.serviceendpointrole")
 		},
 	},
 	// CSS namespace (Areas)
 	// Note: Requires API calls to resolve path to node identifiers
-	"83e28ad4-2d72-4ceb-97b0-c7726d5502c3": {
-		RequiredIdentifiers: []string{},
-		OptionalIdentifiers: []string{"node_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
-			// Format: vstfs:///Classification/Node/<NodeIdentifier>
-			// For nested: vstfs:///Classification/Node/<RootID>:vstfs:///Classification/Node/<ChildID>
-			if nodeID, hasNode := identifiers["node_id"]; hasNode {
-				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID), nil
-			}
-			return "", nil
+	utils.SecurityNamespaceIDValues.CSS: {
+		RequiredIdentifiers: []string{"project_id"},
+		OptionalIdentifiers: []string{"path"},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			projectID := identifiers["project_id"]
+			path := identifiers["path"]
+			return createClassificationNodeToken(clients, projectID, path, workitemtracking.TreeStructureGroupValues.Areas)
 		},
 	},
 	// Iteration namespace
 	// Note: Requires API calls to resolve path to node identifiers
-	"bf7bfa03-b2b7-47db-8113-fa2e002cc5b1": {
-		RequiredIdentifiers: []string{},
-		OptionalIdentifiers: []string{"node_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
-			// Format: vstfs:///Classification/Node/<NodeIdentifier>
-			// For nested: vstfs:///Classification/Node/<RootID>:vstfs:///Classification/Node/<ChildID>
-			if nodeID, hasNode := identifiers["node_id"]; hasNode {
-				return fmt.Sprintf("vstfs:///Classification/Node/%s", nodeID), nil
-			}
-			return "", nil
+	utils.SecurityNamespaceIDValues.Iteration: {
+		RequiredIdentifiers: []string{"project_id"},
+		OptionalIdentifiers: []string{"path"},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			projectID := identifiers["project_id"]
+			path := identifiers["path"]
+			return createClassificationNodeToken(clients, projectID, path, workitemtracking.TreeStructureGroupValues.Iterations)
 		},
 	},
 	// Tagging namespace
-	"bb50f182-8e5e-40b8-bc21-e8752a1e7ae2": {
+	utils.SecurityNamespaceIDValues.Tagging: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"project_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			if projectID, hasProject := identifiers["project_id"]; hasProject {
 				return fmt.Sprintf("/%s", projectID), nil
 			}
@@ -157,10 +281,10 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 		},
 	},
 	// Service Hooks namespace
-	"cb594ebe-87dd-4fc9-ac2c-6a10a4c92046": {
+	utils.SecurityNamespaceIDValues.ServiceHooks: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"project_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			if projectID, hasProject := identifiers["project_id"]; hasProject {
 				return fmt.Sprintf("PublisherSecurity/%s", projectID), nil
 			}
@@ -169,40 +293,53 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 	},
 	// Work Item Query Folders namespace
 	// Note: Requires API calls to resolve path to query IDs
-	"71356614-aad7-4757-8f2c-0fb3bff6f680": {
+	utils.SecurityNamespaceIDValues.WorkItemQueryFolders: {
 		RequiredIdentifiers: []string{"project_id"},
-		OptionalIdentifiers: []string{"query_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		OptionalIdentifiers: []string{"path"},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			projectID := identifiers["project_id"]
-			if queryID, hasQuery := identifiers["query_id"]; hasQuery {
-				return fmt.Sprintf("$/%s/%s", projectID, queryID), nil
+			aclToken := fmt.Sprintf("$/%s", projectID)
+
+			if path, hasPath := identifiers["path"]; hasPath && path != "" {
+				idList, err := getQueryIDsFromPath(clients, projectID, path)
+				if err != nil {
+					return "", err
+				}
+				aclToken = fmt.Sprintf("%s/%s", aclToken, strings.Join(idList, "/"))
 			}
-			return fmt.Sprintf("$/%s", projectID), nil
+
+			return aclToken, nil
 		},
 	},
 	// Analytics namespace
-	"58450c49-b02d-465a-ab12-59ae512d6531": {
-		Template:            "$/%s",
+	utils.SecurityNamespaceIDValues.Analytics: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return fmt.Sprintf("$/%s", identifiers["project_id"]), nil
+		},
 	},
 	// AnalyticsViews namespace
-	"d34d3680-dfe5-4cc6-a949-7d9c68f73cba": {
-		Template:            "$/Shared/%s",
+	utils.SecurityNamespaceIDValues.AnalyticsViews: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return fmt.Sprintf("$/Shared/%s", identifiers["project_id"]), nil
+		},
 	},
 	// Collection namespace
-	"3e65f728-f8bc-4ecd-8764-7e378b19bfa7": {
-		Template:            "NAMESPACE:",
+	utils.SecurityNamespaceIDValues.Collection: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "NAMESPACE:", nil
+		},
 	},
 	// Process namespace
-	"2dab47f9-bd70-49ed-9bd5-8eb051e59c02": {
+	utils.SecurityNamespaceIDValues.Process: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{"workitem_template_id", "process_id"},
-		BuildFunc: func(identifiers map[string]string) (string, error) {
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			// if process_id is given but not workitem_template_id, throw an error
 			if _, hasProcess := identifiers["process_id"]; hasProcess {
 				if _, hasTemplate := identifiers["workitem_template_id"]; !hasTemplate {
@@ -219,28 +356,36 @@ var namespaceTokenTemplates = map[string]TokenTemplate{
 		},
 	},
 	// AuditLog namespace
-	"a6cc6381-a1ca-4b36-b3c1-4e65211e82b6": {
-		Template:            "AllPermissions",
+	utils.SecurityNamespaceIDValues.AuditLog: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "AllPermissions", nil
+		},
 	},
 	// BuildAdministration namespace
-	"302acaca-b667-436d-a946-87133492041c": {
-		Template:            "BuildPrivileges",
+	utils.SecurityNamespaceIDValues.BuildAdministration: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "BuildPrivileges", nil
+		},
 	},
 	// Server namespace
-	"1f4179b3-6bac-4d01-b421-71ea09171400": {
-		Template:            "FrameworkGlobalSecurity",
+	utils.SecurityNamespaceIDValues.Server: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "FrameworkGlobalSecurity", nil
+		},
 	},
 	// VersionControlPrivileges namespace
-	"66312704-deb5-43f9-b51c-ab4ff5e351c3": {
-		Template:            "Global",
+	utils.SecurityNamespaceIDValues.VersionControlPrivileges: {
 		RequiredIdentifiers: []string{},
 		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return "Global", nil
+		},
 	},
 }
 
@@ -345,7 +490,7 @@ func dataSecurityNamespaceTokenRead(d *schema.ResourceData, m interface{}) error
 
 	if returnIdentifierInfo {
 		// Look up the template for this namespace
-		template, exists := namespaceTokenTemplates[namespaceID.String()]
+		template, exists := namespaceTokenTemplates[utils.SecurityNamespaceID(namespaceID)]
 		if !exists {
 			return fmt.Errorf("no template information available for namespace %s", namespaceID.String())
 		}
@@ -359,7 +504,7 @@ func dataSecurityNamespaceTokenRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	// Generate token based on namespace and provided parameters
-	token, err := generateToken(d, namespaceID)
+	token, err := generateToken(d, namespaceID, clients)
 	if err != nil {
 		return fmt.Errorf("generating token: %v", err)
 	}
@@ -370,7 +515,7 @@ func dataSecurityNamespaceTokenRead(d *schema.ResourceData, m interface{}) error
 	return nil
 }
 
-func generateToken(d *schema.ResourceData, namespaceID uuid.UUID) (string, error) {
+func generateToken(d *schema.ResourceData, namespaceID uuid.UUID, clients *client.AggregatedClient) (string, error) {
 	identifiers := make(map[string]string)
 
 	// Get identifiers from the schema
@@ -381,13 +526,10 @@ func generateToken(d *schema.ResourceData, namespaceID uuid.UUID) (string, error
 	}
 
 	// Look up the template for this namespace
-	template, exists := namespaceTokenTemplates[namespaceID.String()]
+	template, exists := namespaceTokenTemplates[utils.SecurityNamespaceID(namespaceID)]
 	if !exists {
-		// For unknown namespaces, provide a basic fallback
-		if projectID, hasProject := identifiers["project_id"]; hasProject {
-			return fmt.Sprintf("$/%s", projectID), nil
-		}
-		return "", fmt.Errorf("unable to generate token for namespace %s with provided identifiers. Please check documentation for required identifiers", namespaceID.String())
+		// For unknown namespaces, throw a not supported error
+		return "", fmt.Errorf("unable to generate token for namespace %s", namespaceID.String())
 	}
 
 	// Validate required identifiers
@@ -401,32 +543,11 @@ func generateToken(d *schema.ResourceData, namespaceID uuid.UUID) (string, error
 		return "", fmt.Errorf("missing required identifiers: %s", strings.Join(missing, ", "))
 	}
 
-	// If there's a custom build function, use it
+	// Use the BuildFunc to generate the token
 	if template.BuildFunc != nil {
-		return template.BuildFunc(identifiers)
+		return template.BuildFunc(identifiers, clients)
 	}
 
-	// Build the list of values to substitute into the template
-	// Order: required identifiers first, then optional identifiers
-	var values []interface{}
-
-	// Add required identifiers in order
-	for _, key := range template.RequiredIdentifiers {
-		values = append(values, identifiers[key])
-	}
-
-	// Add optional identifiers in order (if provided)
-	for _, key := range template.OptionalIdentifiers {
-		if val, exists := identifiers[key]; exists {
-			values = append(values, val)
-		}
-	}
-
-	// Generate the token using the template
-	// If there are no placeholders, return the template as-is
-	if len(values) == 0 {
-		return template.Template, nil
-	}
-
-	return fmt.Sprintf(template.Template, values...), nil
+	// This should never happen since all templates now have BuildFunc
+	return "", fmt.Errorf("no token generation function available for namespace %s", namespaceID.String())
 }
