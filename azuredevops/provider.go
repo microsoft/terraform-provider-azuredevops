@@ -152,6 +152,7 @@ func Provider() *schema.Provider {
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
+			"azuredevops_workitemtracking_field":                      workitemtracking.ResourceField(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
