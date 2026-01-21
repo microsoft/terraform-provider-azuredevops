@@ -30,6 +30,7 @@ func ResourceField() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		// https://learn.microsoft.com/en-us/azure/devops/boards/work-items/work-item-fields?view=azure-devops#field-attributes
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
@@ -49,6 +50,10 @@ func ResourceField() *schema.Resource {
 				)),
 				Description: "The reference name of the field (e.g., Custom.MyField).",
 			},
+			// Not supported: https://developercommunity.visualstudio.com/t/Creating-custom-fields-scoped-to-project/11021951#T-ND11022056
+			// "project_id": {
+			//	Type:             schema.TypeString,
+			// },
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -97,31 +102,23 @@ func ResourceField() *schema.Resource {
 			},
 			"can_sort_by": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "Indicates whether the field can be sorted in server queries. Default: `true`.",
+				Computed:    true,
+				Description: "Indicates whether the field can be sorted in server queries.",
 			},
 			"is_queryable": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "Indicates whether the field can be queried in the server. Default: `true`.",
+				Computed:    true,
+				Description: "Indicates whether the field can be queried in the server.",
 			},
 			"is_identity": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Indicates whether this field is an identity field. Default: `false`.",
+				Computed:    true,
+				Description: "Indicates whether this field is an identity field.",
 			},
 			"is_picklist": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Indicates whether this field is a picklist. Default: `false`.",
+				Computed:    true,
+				Description: "Indicates whether this field is a picklist.",
 			},
 			"is_picklist_suggested": {
 				Type:        schema.TypeBool,
@@ -151,6 +148,7 @@ func ResourceField() *schema.Resource {
 			"restore": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				WriteOnly:   true,
 				Description: "Set to `true` to restore a previously deleted field.",
 			},
 			"supported_operations": {
@@ -179,7 +177,32 @@ func ResourceField() *schema.Resource {
 func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	field := expandField(d)
+	field := &workitemtracking.WorkItemField2{
+		Name:                converter.String(d.Get("name").(string)),
+		ReferenceName:       converter.String(d.Get("reference_name").(string)),
+		Type:                converter.ToPtr(workitemtracking.FieldType(d.Get("type").(string))),
+		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
+		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
+		IsLocked:            converter.Bool(d.Get("is_locked").(bool)),
+	}
+
+	if v, ok := d.GetOk("usage"); ok {
+		fieldUsage := workitemtracking.FieldUsage(v.(string))
+		field.Usage = &fieldUsage
+	}
+
+	if v, ok := d.GetOk("description"); ok {
+		field.Description = converter.String(v.(string))
+	}
+
+	if v, ok := d.GetOk("picklist_id"); ok {
+		picklistId, err := uuid.Parse(v.(string))
+		if err != nil {
+			return diag.Errorf("parsing picklist_id %s: %+v", v.(string), err)
+		}
+		field.PicklistId = &picklistId
+	}
+
 	restore := d.Get("restore").(bool)
 
 	if restore {
@@ -194,7 +217,13 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 		restoredField, err := clients.WorkItemTrackingClient.UpdateWorkItemField(clients.Ctx, args)
 		if err != nil {
-			return diag.Errorf("restoring field %s: %+v", *field.ReferenceName, err)
+			return diag.Errorf("restoring field: %+v", err)
+		}
+		if restoredField == nil {
+			return diag.Errorf("restored field is nil")
+		}
+		if restoredField.ReferenceName == nil {
+			return diag.Errorf("restored field has no reference name")
 		}
 		d.SetId(*restoredField.ReferenceName)
 	} else {
@@ -207,7 +236,9 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		if err != nil {
 			return diag.Errorf("creating field: %+v", err)
 		}
-
+		if createdField == nil {
+			return diag.Errorf("created field is nil")
+		}
 		if createdField.ReferenceName == nil {
 			return diag.Errorf("created field has no reference name")
 		}
@@ -233,8 +264,81 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		}
 		return diag.Errorf("reading field %s: %+v", referenceName, err)
 	}
+	if field == nil {
+		return diag.Errorf("read field is nil")
+	}
 
-	flattenField(d, field)
+	if field.Name != nil {
+		d.Set("name", *field.Name)
+	}
+	if field.ReferenceName != nil {
+		d.Set("reference_name", *field.ReferenceName)
+	}
+	if field.Type != nil {
+		d.Set("type", string(*field.Type))
+	}
+	if field.Description != nil {
+		d.Set("description", *field.Description)
+	}
+	if field.Usage != nil {
+		d.Set("usage", string(*field.Usage))
+	}
+	if field.ReadOnly != nil {
+		d.Set("read_only", *field.ReadOnly)
+	}
+	if field.CanSortBy != nil {
+		d.Set("can_sort_by", *field.CanSortBy)
+	}
+	if field.IsQueryable != nil {
+		d.Set("is_queryable", *field.IsQueryable)
+	}
+	if field.IsIdentity != nil {
+		d.Set("is_identity", *field.IsIdentity)
+		// NOTE! Azure DevOps API incorrectly returns type=string for identity fields.
+		// Need a more complex test scenario in the future that can verify correct behavior.
+		// Looks correct in the UI.
+		/*
+			[DEBUG] CreateWorkItemField request body: {"isIdentity":true,"isPicklistSuggested":false,"name":"testaccfihmdwdgiu","readOnly":false,"referenceName":"Custom.testaccfihmdwdgiu","type":"identity","usage":"workItem","isLocked":false}
+			[DEBUG] CreateWorkItemField raw response: {"isLocked":false,"name":"testaccfihmdwdgiu","referenceName":"Custom.testaccfihmdwdgiu","description":null,"type":"string","usage":"workItem","readOnly":false,"canSortBy":true,"isQueryable":true,"supportedOperations":[{"referenceName":"SupportedOperations.Equals","name":"="},{"referenceName":"SupportedOperations.NotEquals","name":"<>"},{"referenceName":"SupportedOperations.GreaterThan","name":">"},{"referenceName":"SupportedOperations.LessThan","name":"<"},{"referenceName":"SupportedOperations.GreaterThanEquals","name":">="},{"referenceName":"SupportedOperations.LessThanEquals","name":"<="},{"referenceName":"SupportedOperations.Contains","name":"Contains"},{"referenceName":"SupportedOperations.NotContains","name":"Does Not Contain"},{"referenceName":"SupportedOperations.In","name":"In"},{"name":"Not In"},{"referenceName":"SupportedOperations.InGroup","name":"In Group"},{"referenceName":"SupportedOperations.NotInGroup","name":"Not In Group"},{"referenceName":"Supported
+			Operations.Ever","name":"Was Ever"},{"referenceName":"SupportedOperations.EqualsField","name":"= [Field]"},{"referenceName":"SupportedOperations.NotEqualsField","name":"<> [Field]"},{"referenceName":"SupportedOperations.GreaterThanField","name":"> [Field]"},{"referenceName":"SupportedOperations.LessThanField","name":"< [Field]"},{"referenceName":"SupportedOperations.GreaterThanEqualsField","name":">= [Field]"},{"referenceName":"SupportedOperations.LessThanEqualsField","name":"<= [Field]"}],"isIdentity":true,"isPicklist":false,"isPicklistSuggested":false,"url":"..."}
+		*/
+		if *field.IsIdentity {
+			d.Set("type", string(workitemtracking.FieldTypeValues.Identity))
+		}
+	}
+	if field.IsPicklist != nil {
+		d.Set("is_picklist", *field.IsPicklist)
+	}
+	if field.IsPicklistSuggested != nil {
+		d.Set("is_picklist_suggested", *field.IsPicklistSuggested)
+	}
+	if field.PicklistId != nil {
+		d.Set("picklist_id", field.PicklistId.String())
+	}
+	if field.IsLocked != nil {
+		d.Set("is_locked", *field.IsLocked)
+	}
+	if field.Url != nil {
+		d.Set("url", *field.Url)
+	}
+
+	if field.SupportedOperations != nil {
+		operations := make([]map[string]any, len(*field.SupportedOperations))
+		for i, op := range *field.SupportedOperations {
+			operation := map[string]any{}
+			if op.Name != nil {
+				operation["name"] = *op.Name
+			}
+			if op.ReferenceName != nil {
+				operation["reference_name"] = *op.ReferenceName
+			}
+			operations[i] = operation
+		}
+		if err := d.Set("supported_operations", operations); err != nil {
+			return diag.Errorf("setting supported_operations: %+v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -278,97 +382,4 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	return nil
-}
-
-func expandField(d *schema.ResourceData) *workitemtracking.WorkItemField2 {
-	fieldType := workitemtracking.FieldType(d.Get("type").(string))
-
-	field := &workitemtracking.WorkItemField2{
-		Name:                converter.String(d.Get("name").(string)),
-		ReferenceName:       converter.String(d.Get("reference_name").(string)),
-		Type:                &fieldType,
-		ReadOnly:            converter.Bool(d.Get("read_only").(bool)),
-		CanSortBy:           converter.Bool(d.Get("can_sort_by").(bool)),
-		IsQueryable:         converter.Bool(d.Get("is_queryable").(bool)),
-		IsIdentity:          converter.Bool(d.Get("is_identity").(bool)),
-		IsPicklist:          converter.Bool(d.Get("is_picklist").(bool)),
-		IsPicklistSuggested: converter.Bool(d.Get("is_picklist_suggested").(bool)),
-		IsLocked:            converter.Bool(d.Get("is_locked").(bool)),
-	}
-
-	if v, ok := d.GetOk("usage"); ok {
-		fieldUsage := workitemtracking.FieldUsage(v.(string))
-		field.Usage = &fieldUsage
-	}
-
-	if v, ok := d.GetOk("description"); ok {
-		field.Description = converter.String(v.(string))
-	}
-
-	if v, ok := d.GetOk("picklist_id"); ok {
-		picklistId, _ := uuid.Parse(v.(string))
-		field.PicklistId = &picklistId
-	}
-
-	return field
-}
-
-func flattenField(d *schema.ResourceData, field *workitemtracking.WorkItemField2) {
-	if field.Name != nil {
-		d.Set("name", *field.Name)
-	}
-	if field.ReferenceName != nil {
-		d.Set("reference_name", *field.ReferenceName)
-	}
-	if field.Type != nil {
-		d.Set("type", string(*field.Type))
-	}
-	if field.Description != nil {
-		d.Set("description", *field.Description)
-	}
-	if field.Usage != nil {
-		d.Set("usage", string(*field.Usage))
-	}
-	if field.ReadOnly != nil {
-		d.Set("read_only", *field.ReadOnly)
-	}
-	if field.CanSortBy != nil {
-		d.Set("can_sort_by", *field.CanSortBy)
-	}
-	if field.IsQueryable != nil {
-		d.Set("is_queryable", *field.IsQueryable)
-	}
-	if field.IsIdentity != nil {
-		d.Set("is_identity", *field.IsIdentity)
-	}
-	if field.IsPicklist != nil {
-		d.Set("is_picklist", *field.IsPicklist)
-	}
-	if field.IsPicklistSuggested != nil {
-		d.Set("is_picklist_suggested", *field.IsPicklistSuggested)
-	}
-	if field.PicklistId != nil {
-		d.Set("picklist_id", field.PicklistId.String())
-	}
-	if field.IsLocked != nil {
-		d.Set("is_locked", *field.IsLocked)
-	}
-	if field.Url != nil {
-		d.Set("url", *field.Url)
-	}
-
-	if field.SupportedOperations != nil {
-		operations := make([]map[string]interface{}, len(*field.SupportedOperations))
-		for i, op := range *field.SupportedOperations {
-			operation := map[string]interface{}{}
-			if op.Name != nil {
-				operation["name"] = *op.Name
-			}
-			if op.ReferenceName != nil {
-				operation["reference_name"] = *op.ReferenceName
-			}
-			operations[i] = operation
-		}
-		d.Set("supported_operations", operations)
-	}
 }
