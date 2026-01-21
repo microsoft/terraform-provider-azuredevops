@@ -168,6 +168,9 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		}
 		return diag.Errorf("reading field %s: %+v", fieldRefName, err)
 	}
+	if field == nil {
+		return diag.Errorf("field %s returned nil", fieldRefName)
+	}
 
 	if field.Name != nil {
 		d.Set("name", *field.Name)
@@ -277,4 +280,3 @@ func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]
 	d.SetId(parts[2])
 	return []*schema.ResourceData{d}, nil
 }
-
