@@ -284,7 +284,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.WorkItemTemplate = fwtype.StringValue(templateName)
 	state.ProcessTemplateId = fwtype.StringValue(templateId)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

@@ -109,17 +109,17 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to create the resource")
 	r.Resource.Create(ctx, req, resp)
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to create the resource")
-
-	// Early return, otherwise if we set the state with error diagnostics, the resource will be in tainted state.
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to create the resource")
 
-	// Temporarily set the plan to state, so that we can use the state to construct the read request below.
-	resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// If the inner Create() doesn't set the state, temporarily set the plan to state, so that we can use the state to construct the read request below.
+	if resp.State.Raw.IsNull() {
+		resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	rreq := resource.ReadRequest{
@@ -137,19 +137,24 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 		Deferred:    nil,
 	}
 
+	defer func() {
+		*resp = resource.CreateResponse{
+			State:       rresp.State,
+			Identity:    rresp.Identity,
+			Private:     rresp.Private,
+			Diagnostics: rresp.Diagnostics,
+		}
+	}()
+
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-creation)")
 	r.Resource.Read(ctx, rreq, &rresp)
+	if rresp.Diagnostics.HasError() {
+		return
+	}
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-creation)")
 
 	// Set the identity
-	resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
-
-	*resp = resource.CreateResponse{
-		State:       rresp.State,
-		Identity:    rresp.Identity,
-		Private:     rresp.Private,
-		Diagnostics: rresp.Diagnostics,
-	}
+	rresp.Diagnostics = append(rresp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
 }
 
 func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -173,8 +178,6 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource")
 	r.Resource.Read(ctx, req, resp)
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource")
-
 	// If the resource doesn't exist, remove it from the state and return.
 	if slices.ContainsFunc(resp.Diagnostics, IsDiagResourceNotFound) {
 		tflog.SubsystemWarn(ctx, r.Resource.ResourceType(), "Resource not found, removing it from the state and return")
@@ -187,6 +190,10 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, req.State, resp.Identity)...)
 		return
 	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource")
 
 	// Set the identity
 	resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, resp.State, resp.Identity)...)
@@ -213,12 +220,10 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to update the resource")
 	r.Resource.Update(ctx, req, resp)
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to update the resource")
-
-	// Early return, otherwise if we set the state with error diagnostics, the resource will be in tainted state.
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to update the resource")
 
 	// Temporarily set the plan to state, so that we can use the state to construct the read request below.
 	resp.Diagnostics.Append(resp.State.Set(ctx, req.Plan.Raw)...)
@@ -241,16 +246,21 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		Deferred:    nil,
 	}
 
+	defer func() {
+		*resp = resource.UpdateResponse{
+			State:       rresp.State,
+			Identity:    rresp.Identity,
+			Private:     rresp.Private,
+			Diagnostics: rresp.Diagnostics,
+		}
+	}()
+
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
 	r.Resource.Read(ctx, rreq, &rresp)
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
-
-	*resp = resource.UpdateResponse{
-		State:       rresp.State,
-		Identity:    rresp.Identity,
-		Private:     rresp.Private,
-		Diagnostics: rresp.Diagnostics,
+	if rresp.Diagnostics.HasError() {
+		return
 	}
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -274,6 +284,9 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to delete the resource")
 	r.Resource.Delete(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to delete the resource")
 }
 

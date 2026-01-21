@@ -42,7 +42,9 @@ type Resource interface {
 
 	// Resource implements the framework Resource interface.
 	//
-	// For Create/Update/Delete, the implement doesn't need to handle the protocol response, which is done by wrapper.
+	// For Create, the implement doesn't need to handle the protocol response if the req.Plan contains all the information
+	//             for a follow-up Read(). Otherwise, the implement shall set those Read() related attributes to the state.
+	// For Update/Delete, the implement doesn't need to handle the protocol response, which is done by wrapper.
 	// For Read, the implement must handle the protocol response (e.g. set the state).
 	//
 	// NOTE: Since the Metadata() is implemented by the wrapper, the implement struct shall not implement it.
