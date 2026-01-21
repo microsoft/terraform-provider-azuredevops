@@ -18,7 +18,7 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
+		CheckDestroy:      checkProcessAndFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: basicField(workItemTypeName, processName, fieldName),
@@ -51,7 +51,7 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
+		CheckDestroy:      checkProcessAndFieldDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: basicField(workItemTypeName, processName, fieldName),
@@ -135,4 +135,11 @@ func getFieldStateIdFunc(tfNode string) resource.ImportStateIdFunc {
 		witRefName := res.Primary.Attributes["work_item_type_ref_name"]
 		return fmt.Sprintf("%s/%s/%s", processId, witRefName, id), nil
 	}
+}
+
+func checkProcessAndFieldDestroyed(s *terraform.State) error {
+	if err := testutils.CheckProcessDestroyed(s); err != nil {
+		return err
+	}
+	return checkFieldDestroyed(s)
 }
