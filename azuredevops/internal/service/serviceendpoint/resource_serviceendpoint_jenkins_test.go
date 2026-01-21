@@ -60,9 +60,8 @@ func testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t *testing.T, ep *servic
 		resourceData.Set("project_id", (*se.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointJenkins(resourceData, se)
 
-		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJenkins(resourceData)
+		serviceEndpointAfterRoundTrip := expandServiceEndpointJenkins(resourceData)
 
-		require.Nil(t, err)
 		require.Equal(t, *se, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
@@ -84,7 +83,7 @@ func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T)
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	seJenkins, _ := expandServiceEndpointJenkins(resourceData)
+	seJenkins := expandServiceEndpointJenkins(resourceData)
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, serviceendpoint.CreateServiceEndpointArgs{Endpoint: seJenkins}).
