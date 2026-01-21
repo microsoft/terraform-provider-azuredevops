@@ -36,6 +36,33 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 	})
 }
 
+func TestAccWorkitemtrackingprocessField_Identity(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtrackingprocess_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkProcessAndFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: identityField(workItemTypeName, processName, fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
+			},
+		},
+	})
+}
+
 func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
@@ -108,6 +135,26 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   default_value           = "default"
 }
 `, testProcessAndWit, testField)
+}
+
+func identityField(workItemTypeName string, processName string, fieldName string) string {
+	testProcessAndWit := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "identity"
+}
+
+resource "azuredevops_workitemtrackingprocess_field" "test" {
+  process_id              = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  reference_name          = azuredevops_workitemtracking_field.test.reference_name
+  allow_groups            = true
+}
+`, testProcessAndWit, fieldName, fieldName)
 }
 
 func getFieldStateIdFunc(tfNode string) resource.ImportStateIdFunc {

@@ -84,10 +84,11 @@ func ResourceField() *schema.Resource {
 				Default:     false,
 				Description: "If true, the field cannot be empty.",
 			},
+			// We set this to write-only to circumvent this bug: https://developercommunity.visualstudio.com/t/Custom-field-APIs-are-missing-attributes/11032086
 			"allow_groups": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				WriteOnly:   true,
 				Description: "Allow setting field value to a group identity. Only applies to identity fields.",
 			},
 			"customization": {
@@ -196,11 +197,6 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		d.Set("required", *field.Required)
 	} else {
 		d.Set("required", false)
-	}
-	if field.AllowGroups != nil {
-		d.Set("allow_groups", *field.AllowGroups)
-	} else {
-		d.Set("allow_groups", false)
 	}
 	if field.Customization != nil {
 		d.Set("customization", string(*field.Customization))

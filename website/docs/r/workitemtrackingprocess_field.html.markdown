@@ -56,7 +56,7 @@ The following arguments are supported:
 
 * `required` - (Optional) If true, the field cannot be empty. Default: `false`.
 
-* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields. Default: `false`.
+* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields.
 
 ## Attributes Reference
 
