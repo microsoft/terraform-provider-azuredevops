@@ -103,6 +103,7 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id              = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   reference_name          = azuredevops_workitemtracking_field.test.reference_name
+  read_only               = true
   required                = true
   default_value           = "default"
 }
