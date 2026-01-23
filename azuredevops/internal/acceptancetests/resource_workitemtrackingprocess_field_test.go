@@ -30,7 +30,6 @@ func TestAccWorkitemtrackingprocessField_Basic(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -57,7 +56,6 @@ func TestAccWorkitemtrackingprocessField_Identity(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -84,7 +82,6 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
 			},
 			{
 				Config: updatedField(workItemTypeName, processName, fieldName),
@@ -96,7 +93,6 @@ func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getFieldStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -155,16 +151,6 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   allow_groups      = true
 }
 `, testProcessAndWit, fieldName, fieldName)
-}
-
-func getFieldStateIdFunc(tfNode string) resource.ImportStateIdFunc {
-	return func(state *terraform.State) (string, error) {
-		res := state.RootModule().Resources[tfNode]
-		id := res.Primary.ID
-		processId := res.Primary.Attributes["process_id"]
-		witId := res.Primary.Attributes["work_item_type_id"]
-		return fmt.Sprintf("%s/%s/%s", processId, witId, id), nil
-	}
 }
 
 func checkProcessAndFieldDestroyed(s *terraform.State) error {

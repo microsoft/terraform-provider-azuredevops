@@ -146,7 +146,7 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf("created field has no reference name")
 	}
 
-	d.SetId(*createdField.ReferenceName)
+	d.SetId(fmt.Sprintf("%s/%s/%s", processId, witRefName, *createdField.ReferenceName))
 	return resourceFieldRead(ctx, d, m)
 }
 
@@ -155,7 +155,7 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_id").(string)
-	fieldRefName := d.Id()
+	fieldRefName := d.Get("field_id").(string)
 
 	args := workitemtrackingprocess.GetWorkItemTypeFieldArgs{
 		ProcessId:    converter.UUID(processId),
@@ -218,7 +218,7 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_id").(string)
-	fieldRefName := d.Id()
+	fieldRefName := d.Get("field_id").(string)
 
 	fieldUpdate := &workitemtrackingprocess.UpdateProcessWorkItemTypeFieldRequest{
 		ReadOnly: converter.Bool(d.Get("read_only").(bool)),
@@ -253,7 +253,7 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_id").(string)
-	fieldRefName := d.Id()
+	fieldRefName := d.Get("field_id").(string)
 
 	args := workitemtrackingprocess.RemoveWorkItemTypeFieldArgs{
 		ProcessId:    converter.UUID(processId),
@@ -279,6 +279,6 @@ func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]
 	}
 	d.Set("process_id", parts[0])
 	d.Set("work_item_type_id", parts[1])
-	d.SetId(parts[2])
+	d.Set("field_id", parts[2])
 	return []*schema.ResourceData{d}, nil
 }
