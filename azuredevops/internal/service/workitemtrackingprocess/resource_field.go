@@ -38,12 +38,12 @@ func ResourceField() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_ref_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"reference_name": {
 				Type:             schema.TypeString,
@@ -114,7 +114,7 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	referenceName := d.Get("reference_name").(string)
 
 	fieldRequest := &workitemtrackingprocess.AddProcessWorkItemTypeFieldRequest{
@@ -151,7 +151,7 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	fieldRefName := d.Id()
 
 	args := workitemtrackingprocess.GetWorkItemTypeFieldArgs{
@@ -214,7 +214,7 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	fieldRefName := d.Id()
 
 	fieldUpdate := &workitemtrackingprocess.UpdateProcessWorkItemTypeFieldRequest{
@@ -246,7 +246,7 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	fieldRefName := d.Id()
 
 	args := workitemtrackingprocess.RemoveWorkItemTypeFieldArgs{
@@ -267,12 +267,12 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_ref_name/field_ref_name", 3)
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/field_ref_name", 3)
 	if err != nil {
 		return nil, err
 	}
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_ref_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.SetId(parts[2])
 	return []*schema.ResourceData{d}, nil
 }

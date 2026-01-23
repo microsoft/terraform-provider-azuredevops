@@ -111,9 +111,9 @@ func basicField(workItemTypeName string, processName string, fieldName string) s
 %s
 
 resource "azuredevops_workitemtrackingprocess_field" "test" {
-  process_id              = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  reference_name          = azuredevops_workitemtracking_field.test.reference_name
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  reference_name    = azuredevops_workitemtracking_field.test.reference_name
 }
 `, testProcessAndWit, testField)
 }
@@ -127,12 +127,12 @@ func updatedField(workItemTypeName string, processName string, fieldName string)
 %s
 
 resource "azuredevops_workitemtrackingprocess_field" "test" {
-  process_id              = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  reference_name          = azuredevops_workitemtracking_field.test.reference_name
-  read_only               = true
-  required                = true
-  default_value           = "default"
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  reference_name    = azuredevops_workitemtracking_field.test.reference_name
+  read_only         = true
+  required          = true
+  default_value     = "default"
 }
 `, testProcessAndWit, testField)
 }
@@ -149,10 +149,10 @@ resource "azuredevops_workitemtracking_field" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_field" "test" {
-  process_id              = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  reference_name          = azuredevops_workitemtracking_field.test.reference_name
-  allow_groups            = true
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  reference_name    = azuredevops_workitemtracking_field.test.reference_name
+  allow_groups      = true
 }
 `, testProcessAndWit, fieldName, fieldName)
 }
@@ -162,8 +162,8 @@ func getFieldStateIdFunc(tfNode string) resource.ImportStateIdFunc {
 		res := state.RootModule().Resources[tfNode]
 		id := res.Primary.ID
 		processId := res.Primary.Attributes["process_id"]
-		witRefName := res.Primary.Attributes["work_item_type_ref_name"]
-		return fmt.Sprintf("%s/%s/%s", processId, witRefName, id), nil
+		witId := res.Primary.Attributes["work_item_type_id"]
+		return fmt.Sprintf("%s/%s/%s", processId, witId, id), nil
 	}
 }
 
