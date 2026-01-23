@@ -119,6 +119,8 @@ The following arguments are supported:
 
 * `detailed_messages_to_send` - (Optional) Detailed messages to send - `all`, `text`, `html`, `markdown`, or `none`. Defaults to `all`.
 
+* `resource_version` - (Optional) The resource version for the webhook subscription. Defaults to `latest`.
+
 ---
 
 ### Event Types
