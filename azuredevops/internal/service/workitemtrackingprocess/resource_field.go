@@ -121,11 +121,14 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		ReferenceName: &referenceName,
 		ReadOnly:      converter.Bool(d.Get("read_only").(bool)),
 		Required:      converter.Bool(d.Get("required").(bool)),
-		AllowGroups:   converter.Bool(d.Get("allow_groups").(bool)),
 	}
 
 	if v, ok := d.GetOk("default_value"); ok {
 		fieldRequest.DefaultValue = v.(string)
+	}
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if allowGroups := rawConfig["allow_groups"]; !allowGroups.IsNull() {
+		fieldRequest.AllowGroups = converter.Bool(allowGroups.True())
 	}
 
 	args := workitemtrackingprocess.AddFieldToWorkItemTypeArgs{
@@ -218,13 +221,16 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	fieldRefName := d.Id()
 
 	fieldUpdate := &workitemtrackingprocess.UpdateProcessWorkItemTypeFieldRequest{
-		ReadOnly:    converter.Bool(d.Get("read_only").(bool)),
-		Required:    converter.Bool(d.Get("required").(bool)),
-		AllowGroups: converter.Bool(d.Get("allow_groups").(bool)),
+		ReadOnly: converter.Bool(d.Get("read_only").(bool)),
+		Required: converter.Bool(d.Get("required").(bool)),
 	}
 
 	if v, ok := d.GetOk("default_value"); ok {
 		fieldUpdate.DefaultValue = v.(string)
+	}
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if allowGroups := rawConfig["allow_groups"]; !allowGroups.IsNull() {
+		fieldUpdate.AllowGroups = converter.Bool(allowGroups.True())
 	}
 
 	args := workitemtrackingprocess.UpdateWorkItemTypeFieldArgs{
