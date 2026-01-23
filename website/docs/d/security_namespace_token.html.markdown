@@ -101,7 +101,7 @@ data "azuredevops_security_namespace_token" "git_branch" {
   identifiers = {
     project_id    = data.azuredevops_project.example.id
     repository_id = data.azuredevops_git_repository.example.id
-    ref_name      = "refs/heads/main"
+    ref_name      = "refs/heads/main" # This requires a git reference format as you can set permissions on branches, tags, etc.
   }
 }
 

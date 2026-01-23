@@ -2,12 +2,14 @@ package security
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -211,30 +213,44 @@ var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 	// Build namespace
 	// Token formats:
 	// project_id
-	// project_id/build_definition_id
 	// project_id/path
-	// project_id/path/build_definition_id
-	// Note: In practice, getting the full path requires API calls, so path must be pre-transformed
+	// project_id/path/definition_id
+	// Note: When definition_id is provided, path will be fetched from the API
 	utils.SecurityNamespaceIDValues.Build: {
 		RequiredIdentifiers: []string{"project_id"},
-		OptionalIdentifiers: []string{"path", "build_definition_id"},
+		OptionalIdentifiers: []string{"path", "definition_id"},
 		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			projectID := identifiers["project_id"]
-			buildDefID, hasBuildDef := identifiers["build_definition_id"]
 			path, hasPath := identifiers["path"]
+			definitionID, hasDefinitionID := identifiers["definition_id"]
 
-			if hasBuildDef {
-				if hasPath && path != "" && path != "\\" {
+			// If definition_id is provided, fetch the definition to get its path and ID
+			if hasDefinitionID {
+				defIDInt, err := strconv.Atoi(definitionID)
+				if err != nil {
+					return "", fmt.Errorf("invalid definition_id: %w", err)
+				}
+
+				definition, err := clients.BuildClient.GetDefinition(clients.Ctx, build.GetDefinitionArgs{
+					Project:      converter.String(projectID),
+					DefinitionId: converter.Int(defIDInt),
+				})
+				if err != nil {
+					return "", fmt.Errorf("error getting build definition: %w", err)
+				}
+
+				// Use the definition path if it's not root
+				if definition.Path != nil && *definition.Path != "\\" {
+					transformedPath := strings.Trim(strings.ReplaceAll(*definition.Path, "\\", "/"), "/")
+					return fmt.Sprintf("%s/%s/%d", projectID, transformedPath, defIDInt), nil
+				}
+				return fmt.Sprintf("%s/%d", projectID, defIDInt), nil
+			} else {
+				if hasPath {
 					// Remove leading/trailing slashes and convert backslashes to forward slashes
 					transformedPath := strings.Trim(strings.ReplaceAll(path, "\\", "/"), "/")
-					return fmt.Sprintf("%s/%s/%s", projectID, transformedPath, buildDefID), nil
+					return fmt.Sprintf("%s/%s", projectID, transformedPath), nil
 				}
-				return fmt.Sprintf("%s/%s", projectID, buildDefID), nil
-			}
-			if hasPath {
-				// Remove leading/trailing slashes and convert backslashes to forward slashes
-				transformedPath := strings.Trim(strings.ReplaceAll(path, "\\", "/"), "/")
-				return fmt.Sprintf("%s/%s", projectID, transformedPath), nil
 			}
 			return projectID, nil
 		},
