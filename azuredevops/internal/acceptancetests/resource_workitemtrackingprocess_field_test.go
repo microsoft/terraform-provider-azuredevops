@@ -113,7 +113,7 @@ func basicField(workItemTypeName string, processName string, fieldName string) s
 resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
-  field_id    = azuredevops_workitemtracking_field.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
 }
 `, testProcessAndWit, testField)
 }
@@ -129,7 +129,7 @@ func updatedField(workItemTypeName string, processName string, fieldName string)
 resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
-  field_id    = azuredevops_workitemtracking_field.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
   read_only         = true
   required          = true
   default_value     = "default"
@@ -151,7 +151,7 @@ resource "azuredevops_workitemtracking_field" "test" {
 resource "azuredevops_workitemtrackingprocess_field" "test" {
   process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
-  field_id    = azuredevops_workitemtracking_field.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
   allow_groups      = true
 }
 `, testProcessAndWit, fieldName, fieldName)

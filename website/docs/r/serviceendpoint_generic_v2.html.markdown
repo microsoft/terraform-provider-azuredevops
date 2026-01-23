@@ -22,11 +22,11 @@ resource "azuredevops_project" "example" {
 # Basic username/password authentication
 resource "azuredevops_serviceendpoint_generic_v2" "example" {
   project_id            = azuredevops_project.example.id
-  name = "Example Generic Service Endpoint"
+  name                  = "Example Generic Service Endpoint"
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://example.com"
-  authorization_scheme    = "UsernamePassword"
+  authorization_scheme  = "UsernamePassword"
   authorization_parameters = {
     username = "username"
     password = "password"
@@ -36,15 +36,15 @@ resource "azuredevops_serviceendpoint_generic_v2" "example" {
 # Token-based authentication
 resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
   project_id            = azuredevops_project.example.id
-  name = "Token-based Service Endpoint"
+  name                  = "Token-based Service Endpoint"
   description           = "Managed by Terraform"
   service_endpoint_type = "generic"
   server_url            = "https://api.example.com"
-  authorization_scheme    = "Token"
+  authorization_scheme  = "Token"
   authorization_parameters = {
     apitoken = "your-api-token"
   }
-  
+
   parameters = {
     releaseUrl = "https://releases.example.com"
   }
