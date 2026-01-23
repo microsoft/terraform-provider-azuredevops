@@ -322,7 +322,7 @@ func TestSecurityPermissions_InvalidPermissionName(t *testing.T) {
 	}
 
 	requestedPermissions := map[string]interface{}{
-		"Read":           "allow",
+		"Read":            "allow",
 		"NonExistentPerm": "deny",
 	}
 

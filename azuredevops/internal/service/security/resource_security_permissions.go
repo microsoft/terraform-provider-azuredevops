@@ -479,8 +479,8 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 // 4. Logs ambiguous DisplayNames that map to multiple Names (those are ignored for DisplayName resolution)
 func buildActionMap(namespace security.SecurityNamespaceDescription, requestedPermissions map[string]interface{}) (map[string]int, error) {
 	actionMap := make(map[string]int)
-	nameToDisplayName := make(map[string]string)     // Maps Name -> DisplayName
-	displayNameToNames := make(map[string][]string)  // Maps DisplayName -> []Name (to detect collisions)
+	nameToDisplayName := make(map[string]string)    // Maps Name -> DisplayName
+	displayNameToNames := make(map[string][]string) // Maps DisplayName -> []Name (to detect collisions)
 
 	// First pass: Build all mappings
 	if namespace.Actions != nil {
