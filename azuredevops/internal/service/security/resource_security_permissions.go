@@ -100,13 +100,11 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 	}
 
 	namespace := (*namespaces)[0]
-	actionMap := make(map[string]int)
-	if namespace.Actions != nil {
-		for _, action := range *namespace.Actions {
-			if action.Name != nil && action.Bit != nil {
-				actionMap[*action.Name] = *action.Bit
-			}
-		}
+
+	// Build action maps and resolve display names to names
+	actionMap, err := buildActionMap(namespace, permissions)
+	if err != nil {
+		return fmt.Errorf("building action map: %v", err)
 	}
 
 	// Calculate allow and deny bits
@@ -272,13 +270,11 @@ func resourceGenericPermissionsRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	namespace := (*namespaces)[0]
-	actionMap := make(map[string]int)
-	if namespace.Actions != nil {
-		for _, action := range *namespace.Actions {
-			if action.Name != nil && action.Bit != nil {
-				actionMap[*action.Name] = *action.Bit
-			}
-		}
+
+	// Build action maps and resolve display names to names
+	actionMap, err := buildActionMap(namespace, requestedPermissions)
+	if err != nil {
+		return fmt.Errorf("building action map: %v", err)
 	}
 
 	// Query current ACL
@@ -379,20 +375,11 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 	}
 
 	namespace := (*namespaces)[0]
-	actionMap := make(map[string]int)
-	if namespace.Actions != nil {
-		for _, action := range *namespace.Actions {
-			if action.Name != nil && action.Bit != nil {
-				actionMap[*action.Name] = *action.Bit
-			}
-		}
-	}
 
-	// Validate all permission names before proceeding
-	for permName := range permissions {
-		if _, ok := actionMap[permName]; !ok {
-			return fmt.Errorf("permission '%s' not found in namespace %s", permName, namespaceID.String())
-		}
+	// Build action maps and resolve display names to names
+	actionMap, err := buildActionMap(namespace, permissions)
+	if err != nil {
+		return fmt.Errorf("building action map: %v", err)
 	}
 
 	// Read current ACL to get existing permissions
@@ -482,6 +469,87 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 
 	log.Printf("[INFO] Successfully removed managed permissions from ACE for principal %s", principal)
 	return nil
+}
+
+// buildActionMap creates a mapping from permission names (and DisplayNames) to their bit values.
+// It handles the following:
+// 1. Maps action Names to bit values
+// 2. Maps action DisplayNames to bit values (if DisplayName is unique)
+// 3. Validates that no permission is specified twice (once via Name, once via DisplayName)
+// 4. Logs ambiguous DisplayNames that map to multiple Names (those are ignored for DisplayName resolution)
+func buildActionMap(namespace security.SecurityNamespaceDescription, requestedPermissions map[string]interface{}) (map[string]int, error) {
+	actionMap := make(map[string]int)
+	nameToDisplayName := make(map[string]string)     // Maps Name -> DisplayName
+	displayNameToNames := make(map[string][]string)  // Maps DisplayName -> []Name (to detect collisions)
+
+	// First pass: Build all mappings
+	if namespace.Actions != nil {
+		for _, action := range *namespace.Actions {
+			if action.Name != nil && action.Bit != nil {
+				name := *action.Name
+				bit := *action.Bit
+
+				// Map Name to bit
+				actionMap[name] = bit
+
+				// Track DisplayName if it exists
+				if action.DisplayName != nil && *action.DisplayName != "" {
+					displayName := *action.DisplayName
+					nameToDisplayName[name] = displayName
+					displayNameToNames[displayName] = append(displayNameToNames[displayName], name)
+				}
+			}
+		}
+	}
+
+	// Second pass: Add DisplayName mappings only if they're unambiguous
+	ambiguousDisplayNames := make(map[string]bool)
+	for displayName, names := range displayNameToNames {
+		if len(names) > 1 {
+			// Multiple names have the same DisplayName - this is ambiguous
+			ambiguousDisplayNames[displayName] = true
+			log.Printf("[DEBUG] DisplayName '%s' maps to multiple action names: %v. Will not resolve this DisplayName automatically.",
+				displayName, names)
+		} else if len(names) == 1 {
+			// Unique DisplayName - safe to add to actionMap
+			name := names[0]
+			actionMap[displayName] = actionMap[name]
+		}
+	}
+
+	// Third pass: Validate that no permission is specified twice
+	// Track which underlying action (by bit value) has been requested
+	requestedActionBits := make(map[int][]string) // Maps bit -> []permissionKey (as provided by user)
+
+	for permKey := range requestedPermissions {
+		bit, ok := actionMap[permKey]
+		if !ok {
+			// Permission key not found - will be caught by caller
+			continue
+		}
+
+		requestedActionBits[bit] = append(requestedActionBits[bit], permKey)
+	}
+
+	// Check for duplicates
+	for bit, permKeys := range requestedActionBits {
+		if len(permKeys) > 1 {
+			return nil, fmt.Errorf("permission specified multiple times using different keys: %v (all refer to the same permission bit %d)",
+				permKeys, bit)
+		}
+	}
+
+	// Fourth pass: Validate that ambiguous DisplayNames are not used in requestedPermissions
+	for permKey := range requestedPermissions {
+		if ambiguousDisplayNames[permKey] {
+			// User tried to use an ambiguous DisplayName
+			names := displayNameToNames[permKey]
+			return nil, fmt.Errorf("permission key '%s' is ambiguous - it matches DisplayName for multiple actions: %v. Please use the action Name instead",
+				permKey, names)
+		}
+	}
+
+	return actionMap, nil
 }
 
 // resolveIdentityDescriptor resolves a subject descriptor (e.g., vssgp.Uy0xLTkt...)
