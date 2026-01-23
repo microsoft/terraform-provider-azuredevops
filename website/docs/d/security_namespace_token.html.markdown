@@ -110,6 +110,31 @@ output "git_branch_token" {
 }
 ```
 
+### Build Definition Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_build_definition" "example" {
+  project_id = data.azuredevops_project.example.id
+  name       = "Example Build Pipeline"
+}
+
+data "azuredevops_security_namespace_token" "build_def" {
+  namespace_name = "Build"
+  identifiers = {
+    project_id    = data.azuredevops_project.example.id
+    definition_id = data.azuredevops_build_definition.example.id
+  }
+}
+
+output "build_def_token" {
+  value = data.azuredevops_security_namespace_token.build_def.token
+}
+```
+
 ### Using Namespace ID
 
 ```hcl
@@ -151,12 +176,18 @@ Different namespaces require different identifiers:
 
 | Namespace | Required Identifiers | Optional Identifiers | Example |
 |-----------|---------------------|---------------------|---------|
-| **Collection** | None | None | `{}` |
-| **Project** | `project_id` | None | `{project_id = "..."}` |
 | **Git Repositories** | `project_id` | `repository_id`, `ref_name` | `{project_id = "...", repository_id = "..."}` |
+| **Project** | `project_id` | None | `{project_id = "..."}` |
+| **Build** | `project_id` | `path`, `definition_id` | `{project_id = "...", definition_id = "123"}` |
+| **CSS** (Areas) | `project_id` | `path` | `{project_id = "...", path = "Area1/Area2"}` |
+| **Iteration** | `project_id` | `path` | `{project_id = "...", path = "Sprint 1"}` |
+| **Tagging** | None | `project_id` | `{project_id = "..."}` |
+| **Service Hooks** | None | `project_id` | `{project_id = "..."}` |
+| **Work Item Query Folders** | `project_id` | `path` | `{project_id = "...", path = "Shared Queries/My Queries"}` |
 | **Analytics** | `project_id` | None | `{project_id = "..."}` |
 | **AnalyticsViews** | `project_id` | None | `{project_id = "..."}` |
-| **Process** | None | None | `{}` |
+| **Collection** | None | None | `{}` |
+| **Process** | None | `workitem_template_id`, `process_id` | `{workitem_template_id = "..."}` |
 | **AuditLog** | None | None | `{}` |
 | **BuildAdministration** | None | None | `{}` |
 | **Server** | None | None | `{}` |

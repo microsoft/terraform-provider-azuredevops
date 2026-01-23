@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
@@ -194,29 +195,80 @@ func TestDataSecurityNamespaceToken_Build_WithPath(t *testing.T) {
 	require.Equal(t, fmt.Sprintf("%s/MyFolder/SubFolder", projectID.String()), resourceData.Get("token"))
 }
 
-// TestDataSecurityNamespaceToken_Build_WithBuildDefinition tests token generation for Build namespace with build definition
-func TestDataSecurityNamespaceToken_Build_WithBuildDefinition(t *testing.T) {
+// TestDataSecurityNamespaceToken_Build_WithDefinitionID tests token generation for Build namespace with definition_id
+func TestDataSecurityNamespaceToken_Build_WithDefinitionID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{
 		SecurityClient: azdosdkmocks.NewMockSecurityClient(ctrl),
+		BuildClient:    buildClient,
 		Ctx:            context.Background(),
 	}
 
 	projectID := testhelper.CreateUUID()
+	definitionID := 123
+
+	// Mock the GetDefinition call to return a build definition with a path
+	buildClient.
+		EXPECT().
+		GetDefinition(clients.Ctx, gomock.Any()).
+		Return(&build.BuildDefinition{
+			Id:   converter.Int(definitionID),
+			Path: converter.String("\\MyFolder"),
+			Name: converter.String("Test Pipeline"),
+		}, nil).
+		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataSecurityNamespaceToken().Schema, nil)
 	resourceData.Set("namespace_id", uuid.UUID(utils.SecurityNamespaceIDValues.Build).String())
 	resourceData.Set("identifiers", map[string]interface{}{
-		"project_id":          projectID.String(),
-		"path":                "/MyFolder",
-		"build_definition_id": "123",
+		"project_id":    projectID.String(),
+		"definition_id": "123",
 	})
 
 	err := dataSecurityNamespaceTokenRead(resourceData, clients)
 	require.Nil(t, err)
 	require.Equal(t, fmt.Sprintf("%s/MyFolder/123", projectID.String()), resourceData.Get("token"))
+}
+
+// TestDataSecurityNamespaceToken_Build_WithDefinitionIDRootPath tests token generation when definition is at root
+func TestDataSecurityNamespaceToken_Build_WithDefinitionIDRootPath(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
+	clients := &client.AggregatedClient{
+		SecurityClient: azdosdkmocks.NewMockSecurityClient(ctrl),
+		BuildClient:    buildClient,
+		Ctx:            context.Background(),
+	}
+
+	projectID := testhelper.CreateUUID()
+	definitionID := 456
+
+	// Mock the GetDefinition call to return a build definition at root path
+	buildClient.
+		EXPECT().
+		GetDefinition(clients.Ctx, gomock.Any()).
+		Return(&build.BuildDefinition{
+			Id:   converter.Int(definitionID),
+			Path: converter.String("\\"),
+			Name: converter.String("Root Pipeline"),
+		}, nil).
+		Times(1)
+
+	resourceData := schema.TestResourceDataRaw(t, DataSecurityNamespaceToken().Schema, nil)
+	resourceData.Set("namespace_id", uuid.UUID(utils.SecurityNamespaceIDValues.Build).String())
+	resourceData.Set("identifiers", map[string]interface{}{
+		"project_id":    projectID.String(),
+		"definition_id": "456",
+	})
+
+	err := dataSecurityNamespaceTokenRead(resourceData, clients)
+	require.Nil(t, err)
+	require.Equal(t, fmt.Sprintf("%s/456", projectID.String()), resourceData.Get("token"))
 }
 
 // TestDataSecurityNamespaceToken_CSS tests token generation for CSS (Areas) namespace
