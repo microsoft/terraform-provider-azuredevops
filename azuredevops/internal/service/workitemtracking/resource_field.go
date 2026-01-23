@@ -373,7 +373,7 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 		FieldNameOrRefName: &referenceName,
 	}
 
-	err := RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingClient.DeleteWorkItemField(clients.Ctx, args)
 	})
 	if err != nil {
