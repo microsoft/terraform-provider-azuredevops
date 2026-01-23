@@ -32,7 +32,7 @@ resource "azuredevops_workitemtracking_field" "example" {
 resource "azuredevops_workitemtrackingprocess_field" "example" {
   process_id        = azuredevops_workitemtrackingprocess_process.example.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.id
-  reference_name    = azuredevops_workitemtracking_field.example.reference_name
+  field_id          = azuredevops_workitemtracking_field.example.id
   required          = true
   default_value     = "Medium"
 }
@@ -46,7 +46,7 @@ The following arguments are supported:
 
 * `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new field to be created.
 
-* `reference_name` - (Required) The reference name of the field. Changing this forces a new field to be created.
+* `field_id` - (Required) The ID (reference name) of the field. Changing this forces a new field to be created.
 
 ---
 
@@ -91,7 +91,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Fields can be imported using the complete resource id `process_id/work_item_type_id/field_ref_name`, e.g.
+Fields can be imported using the complete resource id `process_id/work_item_type_id/field_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_field.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/Custom.MyField

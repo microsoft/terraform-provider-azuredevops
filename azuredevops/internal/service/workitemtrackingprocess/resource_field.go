@@ -45,12 +45,12 @@ func ResourceField() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "The ID (reference name) of the work item type.",
 			},
-			"reference_name": {
+			"field_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the field.",
+				Description:      "The ID (reference name) of the field.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -115,7 +115,7 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	processId := d.Get("process_id").(string)
 	witRefName := d.Get("work_item_type_id").(string)
-	referenceName := d.Get("reference_name").(string)
+	referenceName := d.Get("field_id").(string)
 
 	fieldRequest := &workitemtrackingprocess.AddProcessWorkItemTypeFieldRequest{
 		ReferenceName: &referenceName,
@@ -177,7 +177,7 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		d.Set("name", *field.Name)
 	}
 	if field.ReferenceName != nil {
-		d.Set("reference_name", *field.ReferenceName)
+		d.Set("field_id", *field.ReferenceName)
 	}
 	if field.Type != nil {
 		d.Set("type", string(*field.Type))
@@ -267,7 +267,7 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/field_ref_name", 3)
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/field_id", 3)
 	if err != nil {
 		return nil, err
 	}
