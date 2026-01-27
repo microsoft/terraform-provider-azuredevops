@@ -2,6 +2,9 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -10,18 +13,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/ctxutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-var _ framework.Resource = &groupResource{}
+var _ framework.ResourceWithPostUpdatePoll = &groupResource{}
 
 func NewGroupResource() framework.Resource {
 	return &groupResource{}
@@ -34,21 +43,21 @@ type groupResource struct {
 }
 
 type groupIdentityModel struct {
-	Descriptor types.String `tfsdk:"descriptor"`
+	Id types.String `tfsdk:"id"`
 }
 
 func (p *groupIdentityModel) Fields() []framework.IdentityField {
 	return []framework.IdentityField{
 		{
-			PathState:    path.Root("descriptor"),
-			PathIdentity: path.Root("descriptor"),
-			Value:        p.Descriptor,
+			PathState:    path.Root("id"),
+			PathIdentity: path.Root("id"),
+			Value:        p.Id,
 		},
 	}
 }
 
 func (p *groupIdentityModel) FromId(id string) {
-	p.Descriptor = types.StringValue(id)
+	p.Id = types.StringValue(id)
 }
 
 func (r *groupResource) ResourceType() string {
@@ -62,7 +71,7 @@ func (r *groupResource) Identity() framework.ResourceIdentity {
 func (r *groupResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
-			"descriptor": identityschema.StringAttribute{
+			"id": identityschema.StringAttribute{
 				RequiredForImport: true,
 				Description:       "The descriptor of the group",
 			},
@@ -71,15 +80,16 @@ func (r *groupResource) IdentitySchema(ctx context.Context, req resource.Identit
 }
 
 type groupModel struct {
-	DisplayName   types.String   `tfsdk:"display_name"`
-	Description   types.String   `tfsdk:"description"`
-	Url           types.String   `tfsdk:"url"`
-	Origin        types.String   `tfsdk:"origin"`
-	SubjectKind   types.String   `tfsdk:"subject_kind"`
-	Domain        types.String   `tfsdk:"domain"`
-	PrincipalName types.String   `tfsdk:"principal_name"`
-	Descriptor    types.String   `tfsdk:"descriptor"`
-	Timeouts      timeouts.Value `tfsdk:"timeouts"`
+	DisplayName   types.String                  `tfsdk:"display_name"`
+	Description   types.String                  `tfsdk:"description"`
+	Scope         adocustomtype.StringUUIDValue `tfsdk:"scope"`
+	Url           types.String                  `tfsdk:"url"`
+	Origin        types.String                  `tfsdk:"origin"`
+	SubjectKind   types.String                  `tfsdk:"subject_kind"`
+	Domain        types.String                  `tfsdk:"domain"`
+	PrincipalName types.String                  `tfsdk:"principal_name"`
+	Id            types.String                  `tfsdk:"id"`
+	Timeouts      timeouts.Value                `tfsdk:"timeouts"`
 }
 
 func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -96,6 +106,21 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"description": schema.StringAttribute{
 				MarkdownDescription: "The description of the group.",
 				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+			},
+			"scope": schema.StringAttribute{
+				CustomType:          adocustomtype.StringUUIDType{},
+				MarkdownDescription: "The id of the scope (e.g. project) in which the group should be created. If omitted, will be created in the scope of the enclosing account or organization. Valid only for VSTS groups.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					adovalidator.StringIsUUID(),
+				},
 			},
 
 			"url": schema.StringAttribute{
@@ -123,7 +148,7 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:            true,
 			},
 
-			"descriptor": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				MarkdownDescription: "The descriptor of the group",
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
@@ -141,9 +166,22 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	var scopeDescriptor *string
+	if scope := plan.Scope.ValueString(); scope != "" {
+		r.Info(ctx, "get the descriptor for scope", map[string]any{"scope": scope})
+		desc, err := r.Meta.GraphClient.GetDescriptor(ctx, graph.GetDescriptorArgs{
+			StorageKey: &plan.Scope.UUID,
+		})
+		if err != nil {
+			resp.Diagnostics.AddError("Get descriptor of the scope", err.Error())
+		}
+		scopeDescriptor = desc.Value
+	}
+
 	r.Info(ctx, "create the group")
 
 	param := graph.CreateGroupVstsArgs{
+		ScopeDescriptor: scopeDescriptor,
 		CreationContext: &graph.GraphGroupVstsCreationContext{
 			DisplayName: plan.DisplayName.ValueStringPointer(),
 			Description: plan.Description.ValueStringPointer(),
@@ -156,7 +194,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	// Set id related attributes to the state to be used by the read.
-	plan.Descriptor = fwtype.StringValue(group.Descriptor)
+	plan.Id = fwtype.StringValue(group.Descriptor)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -172,10 +210,10 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	r.Info(ctx, "get the group")
 
-	group, err := r.Meta.GraphClient.GetGroup(ctx, graph.GetGroupArgs{GroupDescriptor: state.Descriptor.ValueStringPointer()})
+	group, err := r.Meta.GraphClient.GetGroup(ctx, graph.GetGroupArgs{GroupDescriptor: state.Id.ValueStringPointer()})
 	if err != nil {
 		if errorutil.WasNotFound(err) {
-			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Descriptor.ValueString()))
+			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Id.ValueString()))
 			return
 		}
 		resp.Diagnostics.AddError("Get the group", err.Error())
@@ -195,6 +233,21 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.SubjectKind = fwtype.StringValue(group.SubjectKind)
 	state.Domain = fwtype.StringValue(group.Domain)
 	state.PrincipalName = fwtype.StringValue(group.PrincipalName)
+
+	state.Scope = adocustomtype.StringUUIDValue{StringValue: types.StringNull()}
+	if domain := group.Domain; domain != nil {
+		// The domain can be:
+		// - Organization scope: vstfs:///Framework/IdentityDomain/<uuid>
+		// - Project scope: vstfs:///Classification/TeamProject/<uuid>
+		// - Other unknown cases.
+		//
+		// We simply cut the last segment and regard it as the scope if is an uuid.
+		l := strings.Split(*domain, "/")
+		scope, diags := adocustomtype.StringUUIDType{}.ValueFromString(ctx, types.StringValue(l[len(l)-1]))
+		if !diags.HasError() {
+			state.Scope = scope.(adocustomtype.StringUUIDValue)
+		}
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -232,7 +285,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if len(operations) > 0 {
 		r.Info(ctx, "update the group")
 		if _, err := r.Meta.GraphClient.UpdateGroup(ctx, graph.UpdateGroupArgs{
-			GroupDescriptor: plan.Descriptor.ValueStringPointer(),
+			GroupDescriptor: plan.Id.ValueStringPointer(),
 			PatchDocument:   &operations,
 		}); err != nil {
 			resp.Diagnostics.AddError("Update the group", err.Error())
@@ -253,9 +306,40 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	r.Info(ctx, "delete the group")
 
 	if err := r.Meta.GraphClient.DeleteGroup(ctx, graph.DeleteGroupArgs{
-		GroupDescriptor: state.Descriptor.ValueStringPointer(),
+		GroupDescriptor: state.Id.ValueStringPointer(),
 	}); err != nil {
 		resp.Diagnostics.AddError("Delete the group", err.Error())
 		return
 	}
+}
+
+func (r *groupResource) PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption {
+	return retry.RetryOption{
+		Delay:                     5 * time.Second,
+		Timeout:                   ctxutil.UntilDeadline(ctx),
+		MinTimeout:                time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+}
+
+func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+	var stateModel groupModel
+	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
+		return err
+	}
+
+	var planModel groupModel
+	if err := errorutil.DiagsToError(plan.Get(ctx, &planModel)); err != nil {
+		return err
+	}
+
+	if !planModel.DisplayName.Equal(stateModel.DisplayName) {
+		return fmt.Errorf(`"display_name" not match. expect=%s, got=%s`, planModel.DisplayName.ValueString(), stateModel.DisplayName.ValueString())
+	}
+
+	if !planModel.Description.Equal(stateModel.Description) {
+		return fmt.Errorf(`"description" not match. expect=%s, got=%s`, planModel.Description.ValueString(), stateModel.Description.ValueString())
+	}
+
+	return nil
 }

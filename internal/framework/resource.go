@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
 // ResourceTimeout specifies the default timeout value for each operation.
@@ -69,6 +71,16 @@ type ResourceWithTimeout interface {
 
 	// Timeout returns the timeout for each operation.
 	Timeout() ResourceTimeout
+}
+
+type ResourceWithPostUpdatePoll interface {
+	resource.Resource
+
+	PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption
+
+	// PostUpdateCheck checks the post update state being read against the plan.
+	// If the expected state is not met, return an error, which will retry the poll.
+	PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error
 }
 
 // Additionally, a resource can opt-in any of the following interfaces.

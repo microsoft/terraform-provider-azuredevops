@@ -12,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
 var _ resource.Resource = resourceWrapper{}
@@ -238,6 +240,7 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		ProviderMeta:       req.ProviderMeta,
 		ClientCapabilities: resource.ReadClientCapabilities{},
 	}
+
 	rresp := resource.ReadResponse{
 		State:       resp.State,
 		Diagnostics: resp.Diagnostics,
@@ -255,12 +258,32 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}()
 
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
-	r.Resource.Read(ctx, rreq, &rresp)
-	if rresp.Diagnostics.HasError() {
-		return
+	if rr, ok := r.Resource.(ResourceWithPostUpdatePoll); ok {
+		retryOption := rr.PostUpdatePollRetryOption(ctx)
+		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
+			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
+			r.Resource.Read(ctx, rreq, &rresp)
+			if rresp.Diagnostics.HasError() {
+				return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+			}
+			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
+
+			if err := rr.PostUpdateCheck(ctx, req.Plan, rresp.State); err != nil {
+				return retry.RetryableError(err)
+			}
+			return nil
+		}); err != nil {
+			rresp.Diagnostics.AddError("Post update poll", err.Error())
+			return
+		}
+	} else {
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
+		r.Resource.Read(ctx, rreq, &rresp)
+		if rresp.Diagnostics.HasError() {
+			return
+		}
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
 	}
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
