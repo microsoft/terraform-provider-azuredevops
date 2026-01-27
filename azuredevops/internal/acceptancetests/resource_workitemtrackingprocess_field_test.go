@@ -61,6 +61,32 @@ func TestAccWorkitemtrackingprocessField_Identity(t *testing.T) {
 	})
 }
 
+func TestAccWorkitemtrackingprocessField_Integer(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtrackingprocess_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkProcessAndFieldDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: integerField(workItemTypeName, processName, fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccWorkitemtrackingprocessField_Update(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
@@ -149,6 +175,27 @@ resource "azuredevops_workitemtrackingprocess_field" "test" {
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
   field_id          = azuredevops_workitemtracking_field.test.id
   allow_groups      = true
+}
+`, testProcessAndWit, fieldName, fieldName)
+}
+
+func integerField(workItemTypeName string, processName string, fieldName string) string {
+	testProcessAndWit := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "integer"
+}
+
+resource "azuredevops_workitemtrackingprocess_field" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
+  default_value     = "42"
+  required          = true
 }
 `, testProcessAndWit, fieldName, fieldName)
 }
