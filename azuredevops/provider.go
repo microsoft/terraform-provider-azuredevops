@@ -185,6 +185,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project":                               core.DataProject(),
 			"azuredevops_projects":                              core.DataProjects(),
 			"azuredevops_security_namespace":                    security.DataSecurityNamespace(),
+			"azuredevops_security_namespace_token":              security.DataSecurityNamespaceToken(),
 			"azuredevops_security_namespaces":                   security.DataSecurityNamespaces(),
 			"azuredevops_securityrole_definitions":              securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_generic_v2":            serviceendpoint.DataServiceEndpointGenericV2(),
