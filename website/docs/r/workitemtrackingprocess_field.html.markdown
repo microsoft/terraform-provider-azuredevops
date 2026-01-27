@@ -65,12 +65,6 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The reference name of the field.
 
-* `name` - The name of the field.
-
-* `type` - The type of the field.
-
-* `description` - The description of the field.
-
 * `customization` - Indicates the type of customization on this work item. Possible values are `system`, `inherited`, or `custom`.
 
 * `is_locked` - Indicates whether the field definition is locked for editing.

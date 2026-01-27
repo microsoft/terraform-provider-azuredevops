@@ -52,21 +52,6 @@ func ResourceField() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
 				Description:      "The ID (reference name) of the field.",
 			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the field.",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the field.",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The description of the field.",
-			},
 			"default_value": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -176,17 +161,8 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.Errorf("field %s returned nil", fieldRefName)
 	}
 
-	if field.Name != nil {
-		d.Set("name", *field.Name)
-	}
 	if field.ReferenceName != nil {
 		d.Set("field_id", *field.ReferenceName)
-	}
-	if field.Type != nil {
-		d.Set("type", string(*field.Type))
-	}
-	if field.Description != nil {
-		d.Set("description", *field.Description)
 	}
 	if field.DefaultValue != nil {
 		d.Set("default_value", fmt.Sprintf("%v", field.DefaultValue))
