@@ -56,7 +56,8 @@ The following arguments are supported:
 
 * `required` - (Optional) If true, the field cannot be empty. Default: `false`.
 
-* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields.
+* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields.  
+**Note**: Due to limitations in the downstream API this field is [WriteOnly](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/write-only-arguments#general-concepts), meaning this field will not trigger a plan difference. Change another field alongside this field in order to trigger a plan difference.
 
 ## Attributes Reference
 
