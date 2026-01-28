@@ -10,8 +10,8 @@ import (
 // ImportStep returns a Test Step which Imports the Resource, optionally
 // ignoring any fields which may not be imported (for example, as they're
 // not returned from the API)
-func (td TestData) ImportStep(ignore ...string) resource.TestStep {
-	resourceAddr := td.ResourceAddr()
+func (d TestData) ImportStep(ignore ...string) resource.TestStep {
+	resourceAddr := d.ResourceAddr()
 	if strings.HasPrefix(resourceAddr, "data.") {
 		return resource.TestStep{
 			ResourceName: resourceAddr,

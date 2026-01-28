@@ -80,6 +80,8 @@ func (r *groupResource) IdentitySchema(ctx context.Context, req resource.Identit
 }
 
 type groupModel struct {
+	OriginId      types.String                  `tfsdk:"origin_id"`
+	Mail          types.String                  `tfsdk:"mail"`
 	DisplayName   types.String                  `tfsdk:"display_name"`
 	Description   types.String                  `tfsdk:"description"`
 	Scope         adocustomtype.StringUUIDValue `tfsdk:"scope"`
@@ -88,6 +90,7 @@ type groupModel struct {
 	SubjectKind   types.String                  `tfsdk:"subject_kind"`
 	Domain        types.String                  `tfsdk:"domain"`
 	PrincipalName types.String                  `tfsdk:"principal_name"`
+	StorageKey    types.String                  `tfsdk:"storage_key"`
 	Id            types.String                  `tfsdk:"id"`
 	Timeouts      timeouts.Value                `tfsdk:"timeouts"`
 }
@@ -95,12 +98,51 @@ type groupModel struct {
 func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"origin_id": schema.StringAttribute{
+				MarkdownDescription: "This will create a new graph group that is derived from the object id of an AAD group.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					adovalidator.StringIsUUID(),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("display_name"),
+						path.MatchRoot("mail"),
+						path.MatchRoot("origin_id"),
+					),
+				},
+			},
+			"mail": schema.StringAttribute{
+				MarkdownDescription: "This will create a new graph group that is derived from the email of an AAD group.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("display_name"),
+						path.MatchRoot("mail"),
+						path.MatchRoot("origin_id"),
+					),
+				},
+			},
 			"display_name": schema.StringAttribute{
-				MarkdownDescription: "The display name of the group.",
+				MarkdownDescription: "The display name of the VSTS group.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("display_name"),
+						path.MatchRoot("mail"),
+						path.MatchRoot("origin_id"),
+					),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -108,6 +150,12 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString(""),
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(
+						path.MatchRoot("origin_id"),
+						path.MatchRoot("mail"),
+					),
+				},
 			},
 			"scope": schema.StringAttribute{
 				CustomType:          adocustomtype.StringUUIDType{},
@@ -120,6 +168,10 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				},
 				Validators: []validator.String{
 					adovalidator.StringIsUUID(),
+					stringvalidator.ConflictsWith(
+						path.MatchRoot("origin_id"),
+						path.MatchRoot("mail"),
+					),
 				},
 			},
 
@@ -145,6 +197,11 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 
 			"principal_name": schema.StringAttribute{
 				MarkdownDescription: "The principal name of this group from the source provider.",
+				Computed:            true,
+			},
+
+			"storage_key": schema.StringAttribute{
+				MarkdownDescription: "The storage key of the group's descriptor.",
 				Computed:            true,
 			},
 
@@ -178,16 +235,48 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		scopeDescriptor = desc.Value
 	}
 
-	r.Info(ctx, "create the group")
+	var (
+		group *graph.GraphGroup
+		err   error
+	)
 
-	param := graph.CreateGroupVstsArgs{
-		ScopeDescriptor: scopeDescriptor,
-		CreationContext: &graph.GraphGroupVstsCreationContext{
-			DisplayName: plan.DisplayName.ValueStringPointer(),
-			Description: plan.Description.ValueStringPointer(),
-		},
+	r.Info(ctx, "create the group")
+	switch {
+	case !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown():
+		{
+			// Creating a VSTS group.
+			param := graph.CreateGroupVstsArgs{
+				ScopeDescriptor: scopeDescriptor,
+				CreationContext: &graph.GraphGroupVstsCreationContext{
+					DisplayName: plan.DisplayName.ValueStringPointer(),
+					Description: plan.Description.ValueStringPointer(),
+				},
+			}
+			group, err = r.Meta.GraphClient.CreateGroupVsts(ctx, param)
+		}
+	case !plan.OriginId.IsNull() && !plan.OriginId.IsUnknown():
+		{
+			// Creating a group derived from an AAD group by object id.
+			param := graph.CreateGroupOriginIdArgs{
+				ScopeDescriptor: scopeDescriptor,
+				CreationContext: &graph.GraphGroupOriginIdCreationContext{
+					OriginId: plan.OriginId.ValueStringPointer(),
+				},
+			}
+			group, err = r.Meta.GraphClient.CreateGroupOriginId(ctx, param)
+		}
+	case !plan.Mail.IsNull() && !plan.Mail.IsUnknown():
+		{
+			// Creating a group derived from an AAD group by mail address.
+			param := graph.CreateGroupMailAddressArgs{
+				ScopeDescriptor: scopeDescriptor,
+				CreationContext: &graph.GraphGroupMailAddressCreationContext{
+					MailAddress: plan.Mail.ValueStringPointer(),
+				},
+			}
+			group, err = r.Meta.GraphClient.CreateGroupMailAddress(ctx, param)
+		}
 	}
-	group, err := r.Meta.GraphClient.CreateGroupVsts(ctx, param)
 	if err != nil {
 		resp.Diagnostics.AddError("Creating the group", err.Error())
 		return
@@ -226,6 +315,8 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	// Set state
+	state.OriginId = fwtype.StringValue(group.OriginId)
+	state.Mail = fwtype.StringValue(group.MailAddress)
 	state.DisplayName = fwtype.StringValue(group.DisplayName)
 	state.Description = fwtype.StringValue(group.Description)
 	state.Url = fwtype.StringValue(group.Url)
@@ -247,6 +338,17 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		if !diags.HasError() {
 			state.Scope = scope.(adocustomtype.StringUUIDValue)
 		}
+	}
+
+	storageKey, err := r.GraphClient.GetStorageKey(ctx, graph.GetStorageKeyArgs{
+		SubjectDescriptor: group.Descriptor,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Read the storage key", err.Error())
+		return
+	}
+	if id := storageKey.Value; id != nil {
+		state.StorageKey = types.StringValue(id.String())
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)

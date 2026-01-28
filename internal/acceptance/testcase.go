@@ -15,7 +15,8 @@ import (
 
 func (d TestData) ResourceTest(t *testing.T, testResource types.TestResource, steps []resource.TestStep) {
 	testCase := resource.TestCase{
-		PreCheck: func() { PreCheck(t) },
+		PreCheck:          func() { PreCheck(t) },
+		ExternalProviders: d.externalProviders(),
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"azuredevops": providerserver.NewProtocol6WithError(provider.New()),
 		},
@@ -43,4 +44,13 @@ func (d TestData) ResourceTest(t *testing.T, testResource types.TestResource, st
 		Steps: steps,
 	}
 	resource.ParallelTest(t, testCase)
+}
+
+func (d TestData) externalProviders() map[string]resource.ExternalProvider {
+	return map[string]resource.ExternalProvider{
+		"azuread": {
+			VersionConstraint: "=3.7.0",
+			Source:            "registry.terraform.io/hashicorp/azuread",
+		},
+	}
 }

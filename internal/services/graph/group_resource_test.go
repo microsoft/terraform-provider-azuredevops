@@ -3,6 +3,7 @@ package graph_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,13 +30,13 @@ func (p GroupResource) Exists(ctx context.Context, client *client.Client, state 
 	return false, err
 }
 
-func TestAccGroup_basic(t *testing.T) {
+func TestAccGroup_vsts_basic(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
 	r := GroupResource{}
 
 	data.ResourceTest(t, r, []resource.TestStep{
 		{
-			Config: r.basic(data),
+			Config: r.vstsBasic(data),
 			Check: resource.ComposeTestCheckFunc(
 				checks.ExistsInAzure(t, r, data.ResourceAddr()),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
@@ -44,19 +45,20 @@ func TestAccGroup_basic(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
 			),
 		},
 		data.ImportStep(),
 	})
 }
 
-func TestAccGroup_scopeProject(t *testing.T) {
+func TestAccGroup_vsts_scopeProject(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
 	r := GroupResource{}
 
 	data.ResourceTest(t, r, []resource.TestStep{
 		{
-			Config: r.scopeProject(data),
+			Config: r.vstsScopeProject(data),
 			Check: resource.ComposeTestCheckFunc(
 				checks.ExistsInAzure(t, r, data.ResourceAddr()),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
@@ -64,40 +66,20 @@ func TestAccGroup_scopeProject(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "subject_kind"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
 			),
 		},
 		data.ImportStep(),
 	})
 }
 
-func TestAccGroup_complete(t *testing.T) {
+func TestAccGroup_vsts_complete(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
 	r := GroupResource{}
 
 	data.ResourceTest(t, r, []resource.TestStep{
 		{
-			Config: r.complete(data),
-			Check: resource.ComposeTestCheckFunc(
-				checks.ExistsInAzure(t, r, data.ResourceAddr()),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "origin"),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "subject_kind"),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
-				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
-			),
-		},
-		data.ImportStep(),
-	})
-}
-
-func TestAccGroup_update(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
-	r := GroupResource{}
-
-	data.ResourceTest(t, r, []resource.TestStep{
-		{
-			Config: r.basic(data),
+			Config: r.vstsComplete(data),
 			Check: resource.ComposeTestCheckFunc(
 				checks.ExistsInAzure(t, r, data.ResourceAddr()),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
@@ -106,11 +88,34 @@ func TestAccGroup_update(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccGroup_vsts_update(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
+	r := GroupResource{}
+
+	data.ResourceTest(t, r, []resource.TestStep{
+		{
+			Config: r.vstsBasic(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "origin"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "subject_kind"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
 			),
 		},
 		data.ImportStep(),
 		{
-			Config: r.complete(data),
+			Config: r.vstsComplete(data),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
 					planchecks.IsNotResourceAction(data.ResourceAddr(), plancheck.ResourceActionReplace),
@@ -124,11 +129,12 @@ func TestAccGroup_update(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
 			),
 		},
 		data.ImportStep(),
 		{
-			Config: r.basic(data),
+			Config: r.vstsBasic(data),
 			Check: resource.ComposeTestCheckFunc(
 				checks.ExistsInAzure(t, r, data.ResourceAddr()),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
@@ -137,13 +143,66 @@ func TestAccGroup_update(t *testing.T) {
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
 			),
 		},
 		data.ImportStep(),
 	})
 }
 
-func (r GroupResource) basic(data acceptance.TestData) string {
+func TestAccGroup_aad_originId(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
+	r := GroupResource{}
+
+	if os.Getenv("ARM_TENANT_ID") == "" {
+		t.Skip("AzureAD related environment variables are not specified.")
+	}
+
+	data.ResourceTest(t, r, []resource.TestStep{
+		{
+			Config: r.aadOriginId(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "origin"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "subject_kind"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccGroup_aad_mail(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azuredevops_group", "test")
+	r := GroupResource{}
+
+	if os.Getenv("ARM_TENANT_ID") == "" {
+		t.Skip("AzureAD related environment variables are not specified.")
+	}
+
+	data.ResourceTest(t, r, []resource.TestStep{
+		{
+			Config: r.aadMail(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "url"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "origin"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "subject_kind"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "domain"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "principal_name"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "scope"),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "storage_key"),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func (r GroupResource) vstsBasic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_group" "test" {
   display_name = "acctest-%[1]s"
@@ -151,7 +210,7 @@ resource "azuredevops_group" "test" {
 `, data.RandomString)
 }
 
-func (r GroupResource) complete(data acceptance.TestData) string {
+func (r GroupResource) vstsComplete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_group" "test" {
   display_name = "acctest-%[1]s-complete"
@@ -160,7 +219,7 @@ resource "azuredevops_group" "test" {
 `, data.RandomString)
 }
 
-func (r GroupResource) scopeProject(data acceptance.TestData) string {
+func (r GroupResource) vstsScopeProject(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s"
@@ -173,21 +232,37 @@ resource "azuredevops_group" "test" {
 `, data.RandomString)
 }
 
-// func (r GroupResource) update(data acceptance.TestData) string {
-// 	return fmt.Sprintf(`
-// resource "azuredevops_project" "test" {
-//   name               = "acctest-%[1]s-update"
-//   description        = "test description"
-//   version_control    = "Git"
-// }`, data.RandomString)
-// }
+func (r GroupResource) aadOriginId(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+data "azuread_client_config" "current" {}
 
-// func (r GroupResource) complete(data acceptance.TestData) string {
-// 	return fmt.Sprintf(`
-// resource "azuredevops_project" "test" {
-//   name               = "acctest-%[1]s"
-//   description        = "test description"
-//   version_control    = "Tfvc"
-//   work_item_template = "Agile"
-// }`, data.RandomString)
-// }
+resource "azuread_group" "test" {
+  display_name     = "acctest-%[1]s"
+  owners           = [data.azuread_client_config.current.object_id]
+  security_enabled = true
+}
+
+resource "azuredevops_group" "test" {
+  origin_id = azuread_group.test.object_id
+}
+`, data.RandomString)
+}
+
+func (r GroupResource) aadMail(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+data "azuread_client_config" "current" {}
+
+resource "azuread_group" "test" {
+  display_name     = "acctest-%[1]s"
+  mail_enabled     = true
+  mail_nickname    = "Acctest-%[1]s"
+  types            = ["Unified"]
+  owners           = [data.azuread_client_config.current.object_id]
+  security_enabled = true
+}
+
+resource "azuredevops_group" "test" {
+  mail = azuread_group.test.mail
+}
+`, data.RandomString)
+}
