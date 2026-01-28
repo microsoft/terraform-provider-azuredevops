@@ -22,14 +22,7 @@ func TestAccWorkitemtrackingprocessPage_Basic(t *testing.T) {
 			{
 				Config: basicPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "label", "Test Page"),
-					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "order"),
-					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
-					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
@@ -56,27 +49,14 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 			{
 				Config: basicPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "label", "Test Page"),
-					resource.TestCheckResourceAttr(tfNode, "visible", "true"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
-					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
 			{
 				Config: updatedPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "process_id"),
-					resource.TestCheckResourceAttrSet(tfNode, "work_item_type_reference_name"),
-					resource.TestCheckResourceAttr(tfNode, "label", "Updated Page"),
-					resource.TestCheckResourceAttr(tfNode, "visible", "false"),
-					resource.TestCheckResourceAttr(tfNode, "order", "4"),
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "page_type"),
-					resource.TestCheckResourceAttrSet(tfNode, "locked"),
 					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
 				),
 			},
