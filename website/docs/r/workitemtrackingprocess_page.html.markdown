@@ -51,14 +51,6 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the page.
 
-* `page_type` - The type of the page (e.g., custom, history, links, attachments).
-
-* `locked` - A value indicating whether any user operations are permitted on this page.
-
-* `inherited` - A value indicating whether this page has been inherited from a parent layout.
-
-* `overridden` - A value indicating whether this page has been overridden by a child layout.
-
 * `section` - The sections of the page. A `section` block as defined below.
 
 ---

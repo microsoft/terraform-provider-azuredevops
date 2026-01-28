@@ -62,26 +62,6 @@ func ResourcePage() *schema.Resource {
 				Default:     true,
 				Description: "A value indicating if the page should be hidden or not.",
 			},
-			"page_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the page (e.g., custom, history, links, attachments).",
-			},
-			"locked": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "A value indicating whether any user operations are permitted on this page.",
-			},
-			"inherited": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "A value indicating whether this page has been inherited from a parent layout.",
-			},
-			"overridden": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "A value indicating whether this page has been overridden by a child layout.",
-			},
 			"section": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -181,18 +161,6 @@ func readResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 	if foundPage.Visible != nil {
 		d.Set("visible", *foundPage.Visible)
-	}
-	if foundPage.PageType != nil {
-		d.Set("page_type", *foundPage.PageType)
-	}
-	if foundPage.Locked != nil {
-		d.Set("locked", *foundPage.Locked)
-	}
-	if foundPage.Inherited != nil {
-		d.Set("inherited", *foundPage.Inherited)
-	}
-	if foundPage.Overridden != nil {
-		d.Set("overridden", *foundPage.Overridden)
 	}
 
 	if foundPage.Sections != nil {
