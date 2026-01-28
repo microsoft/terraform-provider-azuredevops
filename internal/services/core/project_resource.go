@@ -54,8 +54,9 @@ func (p *projectIdentityModel) Fields() []framework.IdentityField {
 	}
 }
 
-func (p *projectIdentityModel) FromId(id string) {
+func (p *projectIdentityModel) FromId(id string) error {
 	p.ID = types.StringValue(id)
+	return nil
 }
 
 type projectModel struct {

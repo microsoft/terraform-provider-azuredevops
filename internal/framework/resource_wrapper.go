@@ -76,7 +76,10 @@ func (r resourceWrapper) ImportState(ctx context.Context, req resource.ImportSta
 	identity := r.Identity()
 	if req.ID != "" {
 		// Import via ID
-		identity.FromId(req.ID)
+		if err := identity.FromId(req.ID); err != nil {
+			resp.Diagnostics.AddError("Converting identity from id string", err.Error())
+			return
+		}
 	} else {
 		// Import via Identity
 		resp.Diagnostics.Append(req.Identity.Get(ctx, identity)...)

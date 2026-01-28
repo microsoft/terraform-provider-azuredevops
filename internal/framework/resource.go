@@ -22,7 +22,7 @@ type ResourceTimeout struct {
 
 type ResourceIdentity interface {
 	// Convert from an import id to the identity
-	FromId(id string)
+	FromId(id string) error
 	// Fields returns each identity field value, together with its path and its corresponding state path.
 	Fields() []IdentityField
 }

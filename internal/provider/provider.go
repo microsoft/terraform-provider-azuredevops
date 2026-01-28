@@ -97,6 +97,7 @@ func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		framework.WrapResource(core.NewProjectResource()),
 		framework.WrapResource(graph.NewGroupResource()),
+		framework.WrapResource(graph.NewGroupMembershipResource()),
 	}
 }
 

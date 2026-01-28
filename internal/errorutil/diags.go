@@ -22,3 +22,15 @@ func DiagsToError(diags diag.Diagnostics) error {
 	}
 	return errs
 }
+
+func ImportAsExistsError(resourceName, id string) diag.ErrorDiagnostic {
+	return diag.NewErrorDiagnostic("Resource already exists", fmt.Sprintf("resource_type=%s, id=%s", id, resourceName))
+}
+
+func noopError(operation string) diag.ErrorDiagnostic {
+	return diag.NewErrorDiagnostic(operation+" not supported", "This resource doesn't support "+operation)
+}
+
+func NoUpdateError() diag.ErrorDiagnostic {
+	return noopError("Update")
+}

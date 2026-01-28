@@ -56,8 +56,9 @@ func (p *groupIdentityModel) Fields() []framework.IdentityField {
 	}
 }
 
-func (p *groupIdentityModel) FromId(id string) {
+func (p *groupIdentityModel) FromId(id string) error {
 	p.Id = types.StringValue(id)
+	return nil
 }
 
 func (r *groupResource) ResourceType() string {
