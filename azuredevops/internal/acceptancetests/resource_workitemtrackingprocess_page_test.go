@@ -76,9 +76,9 @@ func basicPage(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_page" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  label                         = "Test Page"
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  label             = "Test Page"
 }
 `, workItemType)
 }
@@ -89,11 +89,11 @@ func updatedPage(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_page" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  label                         = "Updated Page"
-  visible                       = false
-  order                         = 4
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  label             = "Updated Page"
+  visible           = false
+  order             = 4
 }
 `, workItemType)
 }
@@ -105,7 +105,7 @@ func pageImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 			return "", fmt.Errorf("resource not found: %s", resourceName)
 		}
 		processId := rs.Primary.Attributes["process_id"]
-		witRefName := rs.Primary.Attributes["work_item_type_reference_name"]
+		witRefName := rs.Primary.Attributes["work_item_type_id"]
 		pageId := rs.Primary.ID
 		return fmt.Sprintf("%s/%s/%s", processId, witRefName, pageId), nil
 	}

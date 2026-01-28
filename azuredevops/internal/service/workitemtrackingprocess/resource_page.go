@@ -37,12 +37,12 @@ func ResourcePage() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_reference_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"label": {
 				Type:             schema.TypeString,
@@ -101,13 +101,13 @@ func ResourcePage() *schema.Resource {
 }
 
 func importResourcePage(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_reference_name/page_id", 3)
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/page_id", 3)
 	if err != nil {
 		return nil, err
 	}
 
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.SetId(parts[2])
 
 	return []*schema.ResourceData{d}, nil
@@ -128,7 +128,7 @@ func createResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	args := workitemtrackingprocess.AddPageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		Page:       &page,
 	}
 
@@ -150,7 +150,7 @@ func readResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 	pageId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	// Get the work item type with layout expanded
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
@@ -217,7 +217,7 @@ func updateResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	pageId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	updatePage := &workitemtrackingprocess.Page{
 		Id:      &pageId,
@@ -250,7 +250,7 @@ func deleteResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	args := workitemtrackingprocess.RemovePageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		PageId:     &pageId,
 	}
 
