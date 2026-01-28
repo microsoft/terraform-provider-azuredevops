@@ -77,6 +77,12 @@ func ResourceServicehookWebhookTfs() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"all", "text", "html", "markdown", "none"}, false),
 			Description:  "Detailed messages to send - all, text, html, markdown or none",
 		},
+		"resource_version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "latest",
+			Description: "The resource version for the webhook subscription",
+		},
 	}
 
 	maps.Copy(resourceSchema, genTfsPublisherSchema())
@@ -201,7 +207,7 @@ func expandServicehookWebhookTfs(d *schema.ResourceData) *servicehooks.Subscript
 		EventType:        &eventType,
 		PublisherId:      converter.String("tfs"),
 		PublisherInputs:  &publisherInputs,
-		ResourceVersion:  converter.String("7.1"),
+		ResourceVersion:  converter.String(d.Get("resource_version").(string)),
 	}
 }
 
@@ -210,6 +216,7 @@ func flattenServicehookWebhookTfs(d *schema.ResourceData, subscription *serviceh
 	d.Set(eventType, eventConfig)
 	d.Set("project_id", (*subscription.PublisherInputs)["projectId"])
 	d.Set("url", (*subscription.ConsumerInputs)["url"])
+	d.Set("resource_version", *subscription.ResourceVersion)
 
 	// Parse acceptUntrustedCerts
 	if acceptUntrustedCerts, exists := (*subscription.ConsumerInputs)["acceptUntrustedCerts"]; exists {

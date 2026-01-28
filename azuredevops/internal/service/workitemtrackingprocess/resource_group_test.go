@@ -21,6 +21,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func init() {
+	// Disable retry delays in unit tests
+	retryMinTimeout = 0
+}
+
 func getGroupResourceData(t *testing.T, input map[string]any) *schema.ResourceData {
 	r := ResourceGroup()
 	return schema.TestResourceDataRaw(t, r.Schema, input)
@@ -63,11 +68,59 @@ func TestGroup_Create_Successful(t *testing.T) {
 	order := 0
 	visible := true
 
+	control1Id := "System.Title"
+	control1Label := "Title"
+	control1Order := 0
+	control1Visible := true
+	control1ReadOnly := false
+	control1Inherited := false
+	control1Overridden := true
+	control1ControlType := "FieldControl"
+	control1Metadata := "metadata1"
+	control1Watermark := "Enter title"
+
+	control2Id := "System.Description"
+	control2Label := "Description"
+	control2Order := 1
+	control2Visible := false
+	control2ReadOnly := true
+	control2Inherited := true
+	control2Overridden := false
+	control2ControlType := "HtmlFieldControl"
+	control2Metadata := "metadata2"
+	control2Watermark := "Enter description"
+
 	returnGroup := &workitemtrackingprocess.Group{
 		Id:      &groupId,
 		Label:   &label,
 		Order:   &order,
 		Visible: &visible,
+		Controls: &[]workitemtrackingprocess.Control{
+			{
+				Id:          &control1Id,
+				Label:       &control1Label,
+				Order:       &control1Order,
+				Visible:     &control1Visible,
+				ReadOnly:    &control1ReadOnly,
+				Inherited:   &control1Inherited,
+				Overridden:  &control1Overridden,
+				ControlType: &control1ControlType,
+				Metadata:    &control1Metadata,
+				Watermark:   &control1Watermark,
+			},
+			{
+				Id:          &control2Id,
+				Label:       &control2Label,
+				Order:       &control2Order,
+				Visible:     &control2Visible,
+				ReadOnly:    &control2ReadOnly,
+				Inherited:   &control2Inherited,
+				Overridden:  &control2Overridden,
+				ControlType: &control2ControlType,
+				Metadata:    &control2Metadata,
+				Watermark:   &control2Watermark,
+			},
+		},
 	}
 
 	mockClient.EXPECT().AddGroup(clients.Ctx, gomock.Any()).DoAndReturn(
@@ -79,6 +132,11 @@ func TestGroup_Create_Successful(t *testing.T) {
 			assert.Equal(t, label, *args.Group.Label)
 			assert.Equal(t, order, *args.Group.Order)
 			assert.Equal(t, visible, *args.Group.Visible)
+
+			assert.NotNil(t, args.Group.Controls)
+			assert.Len(t, *args.Group.Controls, 2)
+			assert.Equal(t, 0, *(*args.Group.Controls)[0].Order)
+			assert.Equal(t, 1, *(*args.Group.Controls)[1].Order)
 
 			return returnGroup, nil
 		},
@@ -94,7 +152,7 @@ func TestGroup_Create_Successful(t *testing.T) {
 
 			return returnWorkItemType, nil
 		},
-	).Times(1)
+	).Times(4)
 
 	d := getGroupResourceData(t, map[string]any{
 		"process_id":                    processId.String(),
@@ -104,6 +162,16 @@ func TestGroup_Create_Successful(t *testing.T) {
 		"label":                         label,
 		"order":                         order,
 		"visible":                       visible,
+		"control": []any{
+			map[string]any{
+				"id":    control1Id,
+				"label": control1Label,
+			},
+			map[string]any{
+				"id":    control2Id,
+				"label": control2Label,
+			},
+		},
 	})
 
 	diags := createResourceGroup(context.Background(), d, clients)
@@ -118,6 +186,31 @@ func TestGroup_Create_Successful(t *testing.T) {
 		"order":                         strconv.Itoa(order),
 		"visible":                       strconv.FormatBool(visible),
 		"id":                            groupId,
+		"control.#":                     "2",
+		"control.0.id":                  control1Id,
+		"control.0.label":               control1Label,
+		"control.0.order":               strconv.Itoa(control1Order),
+		"control.0.visible":             strconv.FormatBool(control1Visible),
+		"control.0.read_only":           strconv.FormatBool(control1ReadOnly),
+		"control.0.inherited":           strconv.FormatBool(control1Inherited),
+		"control.0.overridden":          strconv.FormatBool(control1Overridden),
+		"control.0.is_contribution":     "false",
+		"control.0.control_type":        control1ControlType,
+		"control.0.metadata":            control1Metadata,
+		"control.0.watermark":           control1Watermark,
+		"control.0.contribution.#":      "0",
+		"control.1.id":                  control2Id,
+		"control.1.label":               control2Label,
+		"control.1.order":               strconv.Itoa(control2Order),
+		"control.1.visible":             strconv.FormatBool(control2Visible),
+		"control.1.read_only":           strconv.FormatBool(control2ReadOnly),
+		"control.1.inherited":           strconv.FormatBool(control2Inherited),
+		"control.1.overridden":          strconv.FormatBool(control2Overridden),
+		"control.1.is_contribution":     "false",
+		"control.1.control_type":        control2ControlType,
+		"control.1.metadata":            control2Metadata,
+		"control.1.watermark":           control2Watermark,
+		"control.1.contribution.#":      "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
