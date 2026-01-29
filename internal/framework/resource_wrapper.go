@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 

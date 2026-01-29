@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 )
 
 var _ framework.Resource = &groupMembershipResource{}
