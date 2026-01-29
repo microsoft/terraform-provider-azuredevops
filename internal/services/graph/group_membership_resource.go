@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -139,13 +140,16 @@ func (r *groupMembershipResource) Create(ctx context.Context, req resource.Creat
 
 	r.Info(ctx, "check group membership existence")
 
-	id := fmt.Sprintf("%s/%s", plan.GroupId.ValueString(), plan.MemberId.ValueString())
-
 	if err := r.GraphClient.CheckMembershipExistence(ctx, graph.CheckMembershipExistenceArgs{
 		SubjectDescriptor:   plan.MemberId.ValueStringPointer(),
 		ContainerDescriptor: plan.GroupId.ValueStringPointer(),
 	}); err == nil {
-		resp.Diagnostics.Append(errorutil.ImportAsExistsError(r.ResourceType(), id))
+		resp.Diagnostics.Append(
+			errorutil.ImportAsExistsError(
+				r.ResourceType(),
+				fmt.Sprintf("%s/%s", plan.GroupId.ValueString(), plan.MemberId.ValueString()),
+			),
+		)
 		return
 	} else if !errorutil.WasNotFound(err) {
 		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Existence check", err))
@@ -163,7 +167,6 @@ func (r *groupMembershipResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Set the state
-	plan.Id = types.StringValue(id)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,6 +190,7 @@ func (r *groupMembershipResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	state.Id = types.StringValue(fmt.Sprintf("%s/%s", state.GroupId.ValueString(), state.MemberId.ValueString()))
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
@@ -213,7 +217,7 @@ func (r *groupMembershipResource) Delete(ctx context.Context, req resource.Delet
 }
 
 func (r *groupMembershipResource) PostCreatePollRetryOption(ctx context.Context) retry.RetryOption {
-	return retry.NewSimpleRetryOption(ctx, 10)
+	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
 func (r *groupMembershipResource) PostCreateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
@@ -225,7 +229,7 @@ func (r *groupMembershipResource) PostCreateRetryableDiag(d diag.Diagnostic) boo
 }
 
 func (r *groupMembershipResource) PostDeletePollRetryOption(ctx context.Context) retry.RetryOption {
-	return retry.NewSimpleRetryOption(ctx, 10)
+	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
 func (r *groupMembershipResource) PostDeleteRetryableDiag(diag.Diagnostic) bool {

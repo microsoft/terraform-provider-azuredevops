@@ -17,10 +17,10 @@ type RetryOption struct {
 	ContinuousTargetOccurence int           // Number of times the Target state has to occur continuously
 }
 
-func NewSimpleRetryOption(ctx context.Context, streak int) RetryOption {
+func NewSimpleRetryOption(ctx context.Context, streak int, interval time.Duration) RetryOption {
 	return RetryOption{
 		Timeout:                   ctxutil.UntilDeadline(ctx),
-		MinTimeout:                time.Second,
+		PollInterval:              interval,
 		ContinuousTargetOccurence: streak,
 	}
 }

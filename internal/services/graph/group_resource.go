@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -313,6 +314,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	// Set state
+	state.Id = fwtype.StringValue(group.Descriptor)
 	state.OriginId = fwtype.StringValue(group.OriginId)
 	state.Mail = fwtype.StringValue(group.MailAddress)
 	state.DisplayName = fwtype.StringValue(group.DisplayName)
@@ -414,7 +416,7 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 func (r *groupResource) PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption {
-	return retry.NewSimpleRetryOption(ctx, 5)
+	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
 func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
