@@ -51,11 +51,11 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the page.
 
-* `section` - The sections of the page. A `section` block as defined below.
+* `sections` - The sections of the page. A `sections` block as defined below.
 
 ---
 
-A `section` block exports the following:
+A `sections` block exports the following:
 
 * `id` - The ID of the section.
 

@@ -23,7 +23,7 @@ func TestAccWorkitemtrackingprocessPage_Basic(t *testing.T) {
 				Config: basicPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
+					testutils.TestCheckAttrGreaterThan(tfNode, "sections.#", 0),
 				),
 			},
 			{
@@ -50,14 +50,14 @@ func TestAccWorkitemtrackingprocessPage_Update(t *testing.T) {
 				Config: basicPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
+					testutils.TestCheckAttrGreaterThan(tfNode, "sections.#", 0),
 				),
 			},
 			{
 				Config: updatedPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					testutils.TestCheckAttrGreaterThan(tfNode, "section.#", 0),
+					testutils.TestCheckAttrGreaterThan(tfNode, "sections.#", 0),
 				),
 			},
 			{

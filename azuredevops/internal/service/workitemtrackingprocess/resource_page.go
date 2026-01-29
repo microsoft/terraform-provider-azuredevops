@@ -62,7 +62,7 @@ func ResourcePage() *schema.Resource {
 				Default:     true,
 				Description: "A value indicating if the page should be visible or not.",
 			},
-			"section": {
+			"sections": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The sections of the page.",
@@ -172,8 +172,8 @@ func readResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag.D
 			}
 			sections[i] = section
 		}
-		if err := d.Set("section", sections); err != nil {
-			return diag.Errorf(" setting section: %+v", err)
+		if err := d.Set("sections", sections); err != nil {
+			return diag.Errorf(" setting sections: %+v", err)
 		}
 	}
 
