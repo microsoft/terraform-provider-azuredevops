@@ -60,7 +60,7 @@ func ResourcePage() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "A value indicating if the page should be hidden or not.",
+				Description: "A value indicating if the page should be visible or not.",
 			},
 			"section": {
 				Type:        schema.TypeList,
