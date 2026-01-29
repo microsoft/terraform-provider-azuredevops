@@ -101,11 +101,9 @@ func createResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 		Visible:  converter.Bool(d.Get("visible").(bool)),
 		PageType: &workitemtrackingprocess.PageTypeValues.Custom,
 	}
-	rawConfig := d.GetRawConfig().AsValueMap()
-	if order := rawConfig["order"]; !order.IsNull() {
+	if isOrderConfigured(d) {
 		page.Order = converter.Int(d.Get("order").(int))
 	}
-
 	args := workitemtrackingprocess.AddPageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
 		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
@@ -192,8 +190,8 @@ func updateResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 		Label:   converter.String(d.Get("label").(string)),
 		Visible: converter.Bool(d.Get("visible").(bool)),
 	}
-	rawConfig := d.GetRawConfig().AsValueMap()
-	if order := rawConfig["order"]; !order.IsNull() {
+
+	if isOrderConfigured(d) {
 		updatePage.Order = converter.Int(d.Get("order").(int))
 	}
 
@@ -244,4 +242,15 @@ func findPageById(layout *workitemtrackingprocess.FormLayout, pageId string) *wo
 		}
 	}
 	return nil
+}
+
+func isOrderConfigured(d *schema.ResourceData) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsKnown() && !rawConfig.IsNull() {
+		order := rawConfig.GetAttr("order")
+		if order.IsKnown() && !order.IsNull() {
+			return true
+		}
+	}
+	return false
 }
