@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty/gocty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -101,8 +102,12 @@ func createResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 		Visible:  converter.Bool(d.Get("visible").(bool)),
 		PageType: &workitemtrackingprocess.PageTypeValues.Custom,
 	}
-	if isOrderConfigured(d) {
-		page.Order = converter.Int(d.Get("order").(int))
+	order, err := getOrder(d)
+	if err != nil {
+		return diag.Errorf(" Getting order. Error %+v", err)
+	}
+	if order != nil {
+		page.Order = order
 	}
 	args := workitemtrackingprocess.AddPageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
@@ -191,8 +196,12 @@ func updateResourcePage(ctx context.Context, d *schema.ResourceData, m any) diag
 		Visible: converter.Bool(d.Get("visible").(bool)),
 	}
 
-	if isOrderConfigured(d) {
-		updatePage.Order = converter.Int(d.Get("order").(int))
+	order, orderErr := getOrder(d)
+	if orderErr != nil {
+		return diag.Errorf(" Getting order. Error %+v", orderErr)
+	}
+	if order != nil {
+		updatePage.Order = order
 	}
 
 	args := workitemtrackingprocess.UpdatePageArgs{
@@ -244,13 +253,21 @@ func findPageById(layout *workitemtrackingprocess.FormLayout, pageId string) *wo
 	return nil
 }
 
-func isOrderConfigured(d *schema.ResourceData) bool {
-	rawConfig := d.GetRawConfig()
-	if rawConfig.IsKnown() && !rawConfig.IsNull() {
-		order := rawConfig.GetAttr("order")
-		if order.IsKnown() && !order.IsNull() {
-			return true
-		}
+// Returns order if there is one defined, otherwise nil
+func getOrder(d *schema.ResourceData) (*int, error) {
+	rawPlan := d.GetRawPlan()
+	if !rawPlan.IsKnown() || rawPlan.IsNull() {
+		return nil, nil
 	}
-	return false
+
+	order := rawPlan.GetAttr("order")
+	if !order.IsKnown() || order.IsNull() {
+		return nil, nil
+	}
+
+	var val int
+	if err := gocty.FromCtyValue(order, &val); err != nil {
+		return nil, err
+	}
+	return &val, nil
 }
