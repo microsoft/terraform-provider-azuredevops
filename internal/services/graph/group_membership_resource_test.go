@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/acceptance"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/acceptance/checks"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/errorutil"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
 )
 

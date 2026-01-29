@@ -2,6 +2,7 @@ package framework
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -136,7 +137,7 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	rresp := resource.ReadResponse{
 		State:       resp.State,
-		Diagnostics: resp.Diagnostics,
+		Diagnostics: slices.Clone(resp.Diagnostics),
 		Identity:    resp.Identity,
 		Private:     resp.Private,
 		Deferred:    nil,
@@ -151,12 +152,45 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}()
 
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-creation)")
-	r.Resource.Read(ctx, rreq, &rresp)
-	if rresp.Diagnostics.HasError() {
-		return
+	if rr, ok := r.Resource.(ResourceWithPostCreatePoll); ok {
+		retryOption := rr.PostCreatePollRetryOption(ctx)
+		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
+			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-create)")
+
+			// Reset rresp before every retry
+			rresp = resource.ReadResponse{
+				State:       resp.State,
+				Diagnostics: slices.Clone(resp.Diagnostics),
+				Identity:    resp.Identity,
+				Private:     resp.Private,
+				Deferred:    nil,
+			}
+
+			r.Resource.Read(ctx, rreq, &rresp)
+			if rresp.Diagnostics.HasError() {
+				if slices.ContainsFunc(rresp.Diagnostics, rr.PostCreateRetryableDiag) {
+					return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+				} else {
+					return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+				}
+			}
+			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-create)")
+			if !rr.PostCreateCheck(ctx, req.Plan, rresp.State) {
+				return retry.RetryableError(errors.New("post create check failed"))
+			}
+			return nil
+		}); err != nil {
+			rresp.Diagnostics.AddError("Post create poll", err.Error())
+			return
+		}
+	} else {
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-create)")
+		r.Resource.Read(ctx, rreq, &rresp)
+		if rresp.Diagnostics.HasError() {
+			return
+		}
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-create)")
 	}
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-creation)")
 
 	// Set the identity
 	rresp.Diagnostics = append(rresp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
@@ -246,7 +280,7 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 
 	rresp := resource.ReadResponse{
 		State:       resp.State,
-		Diagnostics: resp.Diagnostics,
+		Diagnostics: slices.Clone(resp.Diagnostics),
 		Identity:    resp.Identity,
 		Private:     resp.Private,
 		Deferred:    nil,
@@ -265,14 +299,27 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		retryOption := rr.PostUpdatePollRetryOption(ctx)
 		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
+
+			// Reset rresp before every retry
+			rresp = resource.ReadResponse{
+				State:       resp.State,
+				Diagnostics: slices.Clone(resp.Diagnostics),
+				Identity:    resp.Identity,
+				Private:     resp.Private,
+				Deferred:    nil,
+			}
+
 			r.Resource.Read(ctx, rreq, &rresp)
 			if rresp.Diagnostics.HasError() {
-				return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+				if slices.ContainsFunc(rresp.Diagnostics, rr.PostUpdateRetryableDiag) {
+					return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+				} else {
+					return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+				}
 			}
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
-
-			if err := rr.PostUpdateCheck(ctx, req.Plan, rresp.State); err != nil {
-				return retry.RetryableError(err)
+			if !rr.PostUpdateCheck(ctx, req.Plan, rresp.State) {
+				return retry.RetryableError(errors.New("post update check failed"))
 			}
 			return nil
 		}); err != nil {
@@ -314,6 +361,51 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to delete the resource")
+
+	if rr, ok := r.Resource.(ResourceWithPostDeletePoll); ok {
+		rreq := resource.ReadRequest{
+			State:              req.State,
+			Private:            req.Private,
+			Identity:           req.Identity,
+			ProviderMeta:       req.ProviderMeta,
+			ClientCapabilities: resource.ReadClientCapabilities{},
+		}
+
+		rresp := resource.ReadResponse{
+			State:       resp.State,
+			Diagnostics: slices.Clone(resp.Diagnostics),
+			Identity:    resp.Identity,
+			Private:     resp.Private,
+			Deferred:    nil,
+		}
+
+		retryOption := rr.PostDeletePollRetryOption(ctx)
+		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
+			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-delete)")
+
+			// Reset rresp before every retry
+			rresp = resource.ReadResponse{
+				State:       resp.State,
+				Diagnostics: slices.Clone(resp.Diagnostics),
+				Identity:    resp.Identity,
+				Private:     resp.Private,
+				Deferred:    nil,
+			}
+
+			r.Resource.Read(ctx, rreq, &rresp)
+			switch {
+			case slices.ContainsFunc(rresp.Diagnostics, rr.PostDeleteTerminalDiag):
+				return nil
+			case slices.ContainsFunc(rresp.Diagnostics, rr.PostDeleteRetryableDiag):
+				return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+			default:
+				return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
+			}
+		}); err != nil {
+			rresp.Diagnostics.AddError("Post delete poll", err.Error())
+			return
+		}
+	}
 }
 
 func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

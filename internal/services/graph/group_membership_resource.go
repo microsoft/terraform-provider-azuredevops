@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -14,13 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-var _ framework.Resource = &groupMembershipResource{}
+var _ framework.ResourceWithPostCreatePoll = &groupMembershipResource{}
+var _ framework.ResourceWithPostDeletePoll = &groupMembershipResource{}
 
 func NewGroupMembershipResource() framework.Resource {
 	return &groupMembershipResource{}
@@ -143,8 +147,8 @@ func (r *groupMembershipResource) Create(ctx context.Context, req resource.Creat
 	}); err == nil {
 		resp.Diagnostics.Append(errorutil.ImportAsExistsError(r.ResourceType(), id))
 		return
-	} else if errorutil.WasNotFound(err) {
-		resp.Diagnostics.AddError("Existence check", err.Error())
+	} else if !errorutil.WasNotFound(err) {
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Existence check", err))
 		return
 	}
 
@@ -154,7 +158,7 @@ func (r *groupMembershipResource) Create(ctx context.Context, req resource.Creat
 		SubjectDescriptor:   plan.MemberId.ValueStringPointer(),
 		ContainerDescriptor: plan.GroupId.ValueStringPointer(),
 	}); err != nil {
-		resp.Diagnostics.AddError("Create the group membership", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Create the group membership", err))
 		return
 	}
 
@@ -179,11 +183,7 @@ func (r *groupMembershipResource) Read(ctx context.Context, req resource.ReadReq
 		SubjectDescriptor:   state.MemberId.ValueStringPointer(),
 		ContainerDescriptor: state.GroupId.ValueStringPointer(),
 	}); err != nil {
-		if errorutil.WasNotFound(err) {
-			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Id.ValueString()))
-			return
-		}
-		resp.Diagnostics.AddError("Get the group membership", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Get the group membership", err))
 		return
 	}
 
@@ -207,7 +207,31 @@ func (r *groupMembershipResource) Delete(ctx context.Context, req resource.Delet
 		SubjectDescriptor:   state.MemberId.ValueStringPointer(),
 		ContainerDescriptor: state.GroupId.ValueStringPointer(),
 	}); err != nil {
-		resp.Diagnostics.AddError("Delete the membership group", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Delete the group membership", err))
 		return
 	}
+}
+
+func (r *groupMembershipResource) PostCreatePollRetryOption(ctx context.Context) retry.RetryOption {
+	return retry.NewSimpleRetryOption(ctx, 10)
+}
+
+func (r *groupMembershipResource) PostCreateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
+	return true
+}
+
+func (r *groupMembershipResource) PostCreateRetryableDiag(d diag.Diagnostic) bool {
+	return framework.IsDiagResourceNotFound(d)
+}
+
+func (r *groupMembershipResource) PostDeletePollRetryOption(ctx context.Context) retry.RetryOption {
+	return retry.NewSimpleRetryOption(ctx, 10)
+}
+
+func (r *groupMembershipResource) PostDeleteRetryableDiag(diag.Diagnostic) bool {
+	return false
+}
+
+func (r *groupMembershipResource) PostDeleteTerminalDiag(d diag.Diagnostic) bool {
+	return framework.IsDiagResourceNotFound(d)
 }

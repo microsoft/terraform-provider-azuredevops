@@ -1,47 +1,65 @@
 package framework
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 )
 
-var _ diag.Diagnostic = diagResourceNotFound{}
+var _ diag.Diagnostic = DiagSdkError{}
 
-// diagResourceNotFound implies the resource is not found.
-type diagResourceNotFound struct {
-	resourceType string
-	identity     string
+// DiagSdkError represents an ADO API Error.
+type DiagSdkError struct {
+	summary string
+	err     error
 }
 
-func NewDiagResourceNotFound(resourceType, identity string) diagResourceNotFound {
-	return diagResourceNotFound{resourceType: resourceType, identity: identity}
+func (e DiagSdkError) Inner() error {
+	return e.err
+}
+
+func NewDiagSdkError(summary string, err error) DiagSdkError {
+	return DiagSdkError{summary, err}
+}
+
+func NewDiagSdkErrorWithCode(summary string, code int) DiagSdkError {
+	return DiagSdkError{summary, azuredevops.WrappedError{StatusCode: &code}}
 }
 
 func IsDiagResourceNotFound(o diag.Diagnostic) bool {
-	_, ok := o.(diagResourceNotFound)
-	return ok
+	err, ok := o.(DiagSdkError)
+	if !ok {
+		return false
+	}
+	return errorutil.WasNotFound(err.err)
 }
 
 // Summary implements diag.Diagnostic.
-func (d diagResourceNotFound) Summary() string {
-	return "Resource not found at the service side."
+func (d DiagSdkError) Summary() string {
+	return "AzureDevops SDK call: " + d.summary
 }
 
 // Detail implements diag.Diagnostic.
-func (d diagResourceNotFound) Detail() string {
-	return fmt.Sprintf("resource_type=%s, identity=%s", d.resourceType, d.identity)
+func (d DiagSdkError) Detail() string {
+	if e, ok := d.err.(azuredevops.WrappedError); ok {
+		if b, err := json.Marshal(e); err == nil {
+			return string(b)
+		}
+	}
+	return d.err.Error()
 }
 
 // Equal implements diag.Diagnostic.
-func (d diagResourceNotFound) Equal(o diag.Diagnostic) bool {
-	if do, ok := o.(diagResourceNotFound); ok {
+func (d DiagSdkError) Equal(o diag.Diagnostic) bool {
+	if do, ok := o.(DiagSdkError); ok {
 		return d == do
 	}
 	return false
 }
 
 // Severity implements diag.Diagnostic.
-func (d diagResourceNotFound) Severity() diag.Severity {
+func (d DiagSdkError) Severity() diag.Severity {
 	return diag.SeverityError
 }

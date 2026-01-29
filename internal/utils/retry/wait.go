@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/ctxutil"
 )
 
 type RetryOption struct {
@@ -13,6 +15,14 @@ type RetryOption struct {
 	MinTimeout                time.Duration // Smallest time to wait before refreshes
 	PollInterval              time.Duration // Override MinTimeout/backoff and only poll this often
 	ContinuousTargetOccurence int           // Number of times the Target state has to occur continuously
+}
+
+func NewSimpleRetryOption(ctx context.Context, streak int) RetryOption {
+	return RetryOption{
+		Timeout:                   ctxutil.UntilDeadline(ctx),
+		MinTimeout:                time.Second,
+		ContinuousTargetOccurence: streak,
+	}
 }
 
 // RetryContext is a basic wrapper around StateChangeConf that will just retry

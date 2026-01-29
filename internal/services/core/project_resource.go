@@ -22,7 +22,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/operations"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
@@ -204,7 +203,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	operationRef, err := r.Meta.CoreClient.QueueCreateProject(ctx, core.QueueCreateProjectArgs{ProjectToCreate: project})
 	if err != nil {
-		resp.Diagnostics.AddError("Queue create project", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Queue create project", err))
 		return
 	}
 
@@ -235,12 +234,8 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		ProjectId:           &projectId,
 		IncludeCapabilities: pointer.From(true),
 	})
-	if err != nil && !errorutil.WasNotFound(err) {
-		resp.Diagnostics.AddError("Read project", err.Error())
-		return
-	}
-	if errorutil.WasNotFound(err) {
-		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Name.ValueString()))
+	if err != nil {
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Read the project", err))
 		return
 	}
 
@@ -320,7 +315,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		ProjectId:     &id,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Queue update project", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Queue update project", err))
 		return
 	}
 
@@ -349,7 +344,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	operationRef, err := r.Meta.CoreClient.QueueDeleteProject(ctx, core.QueueDeleteProjectArgs{ProjectId: &id})
 	if err != nil {
-		resp.Diagnostics.AddError("Queue delete project", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Queue delete project", err))
 		return
 	}
 

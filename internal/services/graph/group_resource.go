@@ -2,12 +2,12 @@ package graph
 
 import (
 	"context"
-	"fmt"
+	"net/http"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -23,7 +23,6 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/ctxutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
@@ -231,7 +230,8 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 			StorageKey: &plan.Scope.UUID,
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("Get descriptor of the scope", err.Error())
+			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Get descriptor of the scope", err))
+			return
 		}
 		scopeDescriptor = desc.Value
 	}
@@ -279,7 +279,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		}
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Creating the group", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Creating the group", err))
 		return
 	}
 
@@ -302,16 +302,13 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	group, err := r.Meta.GraphClient.GetGroup(ctx, graph.GetGroupArgs{GroupDescriptor: state.Id.ValueStringPointer()})
 	if err != nil {
-		if errorutil.WasNotFound(err) {
-			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.Id.ValueString()))
-			return
-		}
-		resp.Diagnostics.AddError("Get the group", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Get the group", err))
 		return
 	}
 
 	if pointer.To(group.IsDeleted) {
-		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagResourceNotFound(r.ResourceType(), state.DisplayName.ValueString()))
+		resp.Diagnostics = append(resp.Diagnostics,
+			framework.NewDiagSdkErrorWithCode("Group is explicitly deleted", http.StatusNotFound))
 		return
 	}
 
@@ -345,7 +342,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		SubjectDescriptor: group.Descriptor,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Read the storage key", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Read the storage key", err))
 		return
 	}
 	if id := storageKey.Value; id != nil {
@@ -391,7 +388,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 			GroupDescriptor: plan.Id.ValueStringPointer(),
 			PatchDocument:   &operations,
 		}); err != nil {
-			resp.Diagnostics.AddError("Update the group", err.Error())
+			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Update the group", err))
 			return
 		}
 	} else {
@@ -411,38 +408,29 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if err := r.Meta.GraphClient.DeleteGroup(ctx, graph.DeleteGroupArgs{
 		GroupDescriptor: state.Id.ValueStringPointer(),
 	}); err != nil {
-		resp.Diagnostics.AddError("Delete the group", err.Error())
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Delete the group", err))
 		return
 	}
 }
 
 func (r *groupResource) PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption {
-	return retry.RetryOption{
-		Delay:                     5 * time.Second,
-		Timeout:                   ctxutil.UntilDeadline(ctx),
-		MinTimeout:                time.Second,
-		ContinuousTargetOccurence: 5,
-	}
+	return retry.NewSimpleRetryOption(ctx, 5)
 }
 
-func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
 	var stateModel groupModel
 	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
-		return err
+		return false
 	}
 
 	var planModel groupModel
 	if err := errorutil.DiagsToError(plan.Get(ctx, &planModel)); err != nil {
-		return err
+		return false
 	}
 
-	if !planModel.DisplayName.Equal(stateModel.DisplayName) {
-		return fmt.Errorf(`"display_name" not match. expect=%s, got=%s`, planModel.DisplayName.ValueString(), stateModel.DisplayName.ValueString())
-	}
+	return planModel.DisplayName.Equal(stateModel.DisplayName) && planModel.Description.Equal(stateModel.Description)
+}
 
-	if !planModel.Description.Equal(stateModel.Description) {
-		return fmt.Errorf(`"description" not match. expect=%s, got=%s`, planModel.Description.ValueString(), stateModel.Description.ValueString())
-	}
-
-	return nil
+func (r *groupResource) PostUpdateRetryableDiag(diag.Diagnostic) bool {
+	return false
 }
