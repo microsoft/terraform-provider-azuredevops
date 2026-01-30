@@ -24,8 +24,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-var _ framework.ResourceWithPostCreatePoll = &groupMembershipResource{}
-var _ framework.ResourceWithPostDeletePoll = &groupMembershipResource{}
+var _ framework.ResourceWithCreatePoll = &groupMembershipResource{}
+var _ framework.ResourceWithDeletePoll = &groupMembershipResource{}
 
 func NewGroupMembershipResource() framework.Resource {
 	return &groupMembershipResource{}
@@ -216,26 +216,26 @@ func (r *groupMembershipResource) Delete(ctx context.Context, req resource.Delet
 	}
 }
 
-func (r *groupMembershipResource) PostCreatePollRetryOption(ctx context.Context) retry.RetryOption {
+func (r *groupMembershipResource) CreatePollOption(ctx context.Context) retry.RetryOption {
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupMembershipResource) PostCreateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
+func (r *groupMembershipResource) CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
 	return true
 }
 
-func (r *groupMembershipResource) PostCreateRetryableDiag(d diag.Diagnostic) bool {
+func (r *groupMembershipResource) CreatePollRetryableDiag(d diag.Diagnostic) bool {
 	return framework.IsDiagResourceNotFound(d)
 }
 
-func (r *groupMembershipResource) PostDeletePollRetryOption(ctx context.Context) retry.RetryOption {
+func (r *groupMembershipResource) DeletePollOption(ctx context.Context) retry.RetryOption {
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupMembershipResource) PostDeleteRetryableDiag(diag.Diagnostic) bool {
+func (r *groupMembershipResource) DeletePollRetryableDiag(diag.Diagnostic) bool {
 	return false
 }
 
-func (r *groupMembershipResource) PostDeleteTerminalDiag(d diag.Diagnostic) bool {
+func (r *groupMembershipResource) DeletePollTerminalDiag(d diag.Diagnostic) bool {
 	return framework.IsDiagResourceNotFound(d)
 }

@@ -74,45 +74,45 @@ type ResourceWithTimeout interface {
 	Timeout() ResourceTimeout
 }
 
-// ResourceWithPostCreatePoll is an opt-in interface that makes the read after create retryable on certain conditions.
-type ResourceWithPostCreatePoll interface {
+// ResourceWithCreatePoll is an opt-in interface that makes the read after create retryable on certain conditions.
+type ResourceWithCreatePoll interface {
 	resource.Resource
 
-	PostCreatePollRetryOption(ctx context.Context) retry.RetryOption
+	CreatePollOption(ctx context.Context) retry.RetryOption
 
-	// PostCreateCheck checks the post create state being read against the plan.
+	// CreatePollCheck checks the post create state being read against the plan.
 	// If the expected state is not met, return false, which will retry the poll.
-	PostCreateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
+	CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
 
-	// PostCreateRetryableDiag tells whether a diagnostics returned by the post create read is retryable.
-	PostCreateRetryableDiag(diag.Diagnostic) bool
+	// CreatePollRetryableDiag tells whether a diagnostics returned by the post create read is retryable.
+	CreatePollRetryableDiag(diag.Diagnostic) bool
 }
 
-// ResourceWithPostUpdatePoll is an opt-in interface that makes the read after update retryable on certain conditions.
-type ResourceWithPostUpdatePoll interface {
+// ResourceWithUpdatePoll is an opt-in interface that makes the read after update retryable on certain conditions.
+type ResourceWithUpdatePoll interface {
 	resource.Resource
 
-	PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption
+	UpdatePollOption(ctx context.Context) retry.RetryOption
 
-	// PostUpdateCheck checks the post update state being read against the plan.
+	// UpdatePollCheck checks the post update state being read against the plan.
 	// If the expected state is not met, return false, which will retry the poll.
-	PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
+	UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
 
-	// PostUpdateRetryableDiag tells whether a diagnostics returned by the post update read is retryable.
-	PostUpdateRetryableDiag(diag.Diagnostic) bool
+	// UpdatePollRetryableDiag tells whether a diagnostics returned by the post update read is retryable.
+	UpdatePollRetryableDiag(diag.Diagnostic) bool
 }
 
-// ResourceWithPostDeletePoll is an opt-in interface that introduces a read after delete to ensure the resource has been consistently removed.
-type ResourceWithPostDeletePoll interface {
+// ResourceWithDeletePoll is an opt-in interface that introduces a read after delete to ensure the resource has been consistently removed.
+type ResourceWithDeletePoll interface {
 	resource.Resource
 
-	PostDeletePollRetryOption(ctx context.Context) retry.RetryOption
+	DeletePollOption(ctx context.Context) retry.RetryOption
 
-	// PostDeleteRetryableDiag tells whether a diagnostics returned by the post delete read is retryable.
-	PostDeleteRetryableDiag(diag.Diagnostic) bool
+	// DeletePollRetryableDiag tells whether a diagnostics returned by the post delete read is retryable.
+	DeletePollRetryableDiag(diag.Diagnostic) bool
 
-	// PostDeleteTerminalDiag represents the terminal
-	PostDeleteTerminalDiag(diag.Diagnostic) bool
+	// DeletePollTerminalDiag represents the terminal
+	DeletePollTerminalDiag(diag.Diagnostic) bool
 }
 
 // Additionally, a resource can opt-in any of the following interfaces.

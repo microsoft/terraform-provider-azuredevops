@@ -30,7 +30,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
-var _ framework.ResourceWithPostUpdatePoll = &groupResource{}
+var _ framework.ResourceWithUpdatePoll = &groupResource{}
 
 func NewGroupResource() framework.Resource {
 	return &groupResource{}
@@ -415,11 +415,11 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
-func (r *groupResource) PostUpdatePollRetryOption(ctx context.Context) retry.RetryOption {
+func (r *groupResource) UpdatePollOption(ctx context.Context) retry.RetryOption {
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
+func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
 	var stateModel groupModel
 	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
 		return false
@@ -433,6 +433,6 @@ func (r *groupResource) PostUpdateCheck(ctx context.Context, plan tfsdk.Plan, st
 	return planModel.DisplayName.Equal(stateModel.DisplayName) && planModel.Description.Equal(stateModel.Description)
 }
 
-func (r *groupResource) PostUpdateRetryableDiag(diag.Diagnostic) bool {
+func (r *groupResource) UpdatePollRetryableDiag(diag.Diagnostic) bool {
 	return false
 }

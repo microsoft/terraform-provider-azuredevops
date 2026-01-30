@@ -152,8 +152,8 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}()
 
-	if rr, ok := r.Resource.(ResourceWithPostCreatePoll); ok {
-		retryOption := rr.PostCreatePollRetryOption(ctx)
+	if rr, ok := r.Resource.(ResourceWithCreatePoll); ok {
+		retryOption := rr.CreatePollOption(ctx)
 		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-create)")
 
@@ -168,14 +168,14 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 
 			r.Resource.Read(ctx, rreq, &rresp)
 			if rresp.Diagnostics.HasError() {
-				if slices.ContainsFunc(rresp.Diagnostics, rr.PostCreateRetryableDiag) {
+				if slices.ContainsFunc(rresp.Diagnostics, rr.CreatePollRetryableDiag) {
 					return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
 				} else {
 					return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
 				}
 			}
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-create)")
-			if !rr.PostCreateCheck(ctx, req.Plan, rresp.State) {
+			if !rr.CreatePollCheck(ctx, req.Plan, rresp.State) {
 				return retry.RetryableError(errors.New("post create check failed"))
 			}
 			return nil
@@ -295,8 +295,8 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}()
 
-	if rr, ok := r.Resource.(ResourceWithPostUpdatePoll); ok {
-		retryOption := rr.PostUpdatePollRetryOption(ctx)
+	if rr, ok := r.Resource.(ResourceWithUpdatePoll); ok {
+		retryOption := rr.UpdatePollOption(ctx)
 		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-update)")
 
@@ -311,14 +311,14 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 
 			r.Resource.Read(ctx, rreq, &rresp)
 			if rresp.Diagnostics.HasError() {
-				if slices.ContainsFunc(rresp.Diagnostics, rr.PostUpdateRetryableDiag) {
+				if slices.ContainsFunc(rresp.Diagnostics, rr.UpdatePollRetryableDiag) {
 					return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
 				} else {
 					return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
 				}
 			}
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to read the resource (post-update)")
-			if !rr.PostUpdateCheck(ctx, req.Plan, rresp.State) {
+			if !rr.UpdatePollCheck(ctx, req.Plan, rresp.State) {
 				return retry.RetryableError(errors.New("post update check failed"))
 			}
 			return nil
@@ -362,7 +362,7 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to delete the resource")
 
-	if rr, ok := r.Resource.(ResourceWithPostDeletePoll); ok {
+	if rr, ok := r.Resource.(ResourceWithDeletePoll); ok {
 		rreq := resource.ReadRequest{
 			State:              req.State,
 			Private:            req.Private,
@@ -379,7 +379,7 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 			Deferred:    nil,
 		}
 
-		retryOption := rr.PostDeletePollRetryOption(ctx)
+		retryOption := rr.DeletePollOption(ctx)
 		if err := retry.RetryContext(ctx, retryOption, func() *retry.RetryError {
 			tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource (post-delete)")
 
@@ -394,9 +394,9 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 
 			r.Resource.Read(ctx, rreq, &rresp)
 			switch {
-			case slices.ContainsFunc(rresp.Diagnostics, rr.PostDeleteTerminalDiag):
+			case slices.ContainsFunc(rresp.Diagnostics, rr.DeletePollTerminalDiag):
 				return nil
-			case slices.ContainsFunc(rresp.Diagnostics, rr.PostDeleteRetryableDiag):
+			case slices.ContainsFunc(rresp.Diagnostics, rr.DeletePollRetryableDiag):
 				return retry.RetryableError(errorutil.DiagsToError(rresp.Diagnostics))
 			default:
 				return retry.NonRetryableError(errorutil.DiagsToError(rresp.Diagnostics))
