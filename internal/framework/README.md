@@ -10,8 +10,9 @@ A wrapped resource has an opinionated flow for each operation.
 
 - Underlying Create
 - (Optional) CreatePoll
+- Underlying Read
 - Set Identity
-- Read
+- Set State
 
 The underlying Create doesn't need to handle the protocol response if the req.Plan contains all the information for a follow-up Read(). Otherwise, the implement shall set those Read() related attributes to the state.
 
@@ -27,7 +28,9 @@ The underlying Read must handle the protocol response (e.g. set the state).
 
 - Underlying Update
 - (Optional) UpdatePoll
+- Underlying Read
 - Read
+- Set State
 
 The underlying Update doesn't need to handle the protocol response.
 
