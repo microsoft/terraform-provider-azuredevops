@@ -7,14 +7,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -32,6 +35,8 @@ import (
 )
 
 var _ framework.ResourceWithUpdatePoll = &groupResource{}
+var _ framework.ResourceWithPostCreate = &groupResource{}
+var _ framework.ResourceWithPostCreatePoll = &groupResource{}
 
 func NewGroupResource() framework.Resource {
 	return &groupResource{}
@@ -87,6 +92,7 @@ type groupModel struct {
 	DisplayName   types.String                  `tfsdk:"display_name"`
 	Description   types.String                  `tfsdk:"description"`
 	Scope         adocustomtype.StringUUIDValue `tfsdk:"scope"`
+	Members       types.Set                     `tfsdk:"members"`
 	Url           types.String                  `tfsdk:"url"`
 	Origin        types.String                  `tfsdk:"origin"`
 	SubjectKind   types.String                  `tfsdk:"subject_kind"`
@@ -175,6 +181,14 @@ func (r *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 						path.MatchRoot("mail"),
 					),
 				},
+			},
+
+			"members": schema.SetAttribute{
+				MarkdownDescription: "A set of member descriptors.",
+				Optional:            true,
+				Computed:            true,
+				ElementType:         types.StringType,
+				Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 			},
 
 			"url": schema.StringAttribute{
@@ -293,6 +307,37 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 }
 
+func (r *groupResource) PostCreate(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan groupModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state groupModel
+	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.Info(ctx, "create the group memberships")
+
+	for _, member := range plan.Members.Elements() {
+		if _, err := r.GraphClient.AddMembership(ctx, graph.AddMembershipArgs{
+			SubjectDescriptor:   member.(types.String).ValueStringPointer(),
+			ContainerDescriptor: state.Id.ValueStringPointer(),
+		}); err != nil {
+			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Create the group membership", err))
+			return
+		}
+	}
+}
+
+func (r *groupResource) ShouldPostCreate(ctx context.Context, req resource.CreateRequest) bool {
+	var plan groupModel
+	return !req.Plan.Get(ctx, &plan).HasError() && len(plan.Members.Elements()) != 0
+}
+
 func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state groupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -352,6 +397,34 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		state.StorageKey = types.StringValue(id.String())
 	}
 
+	membersResp, err := r.Meta.GraphClient.ListMemberships(ctx, graph.ListMembershipsArgs{
+		SubjectDescriptor: state.Id.ValueStringPointer(),
+		Direction:         &graph.GraphTraversalDirectionValues.Down,
+		Depth:             pointer.From(1),
+	})
+	if err != nil {
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("List the group membership", err))
+		return
+	}
+	var members []string
+	if membersResp != nil {
+		for _, member := range *membersResp {
+			if member.MemberDescriptor != nil {
+				members = append(members, *member.MemberDescriptor)
+			}
+		}
+	}
+
+	memberSet, diags := types.SetValueFrom(ctx, types.StringType, members)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+	if diags.HasError() {
+		return
+	}
+	if memberSet.IsNull() {
+		memberSet = types.SetValueMust(types.StringType, []attr.Value{})
+	}
+	state.Members = memberSet
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
@@ -397,6 +470,42 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	} else {
 		r.Info(ctx, "nothing to update onthe group")
 	}
+
+	if !plan.Members.Equal(state.Members) {
+		var planMembers []string
+		resp.Diagnostics = append(resp.Diagnostics, plan.Members.ElementsAs(ctx, &planMembers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		var stateMembers []string
+		resp.Diagnostics = append(resp.Diagnostics, state.Members.ElementsAs(ctx, &stateMembers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		planMemberSet, stateMemberSet := set.From(planMembers), set.From(stateMembers)
+
+		for member := range planMemberSet.Difference(stateMemberSet).Items() {
+			if _, err := r.GraphClient.AddMembership(ctx, graph.AddMembershipArgs{
+				SubjectDescriptor:   &member,
+				ContainerDescriptor: state.Id.ValueStringPointer(),
+			}); err != nil {
+				resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("update to add group membership", err))
+				return
+			}
+		}
+
+		for member := range stateMemberSet.Difference(planMemberSet).Items() {
+			if err := r.GraphClient.RemoveMembership(ctx, graph.RemoveMembershipArgs{
+				SubjectDescriptor:   &member,
+				ContainerDescriptor: state.Id.ValueStringPointer(),
+			}); err != nil {
+				resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("update to remove group membership", err))
+				return
+			}
+		}
+	}
 }
 
 func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -416,6 +525,18 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
+func (r *groupResource) PostCreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+	return r.writePollCheck(ctx, plan, state)
+}
+
+func (r *groupResource) PostCreatePollOption(ctx context.Context) retry.RetryOption {
+	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
+}
+
+func (r *groupResource) PostCreatePollRetryableDiags(diag.Diagnostics) bool {
+	return false
+}
+
 func (r *groupResource) UpdatePollOption(ctx context.Context) retry.RetryOption {
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
@@ -425,6 +546,9 @@ func (r *groupResource) UpdatePollRetryableDiags(diag.Diagnostics) bool {
 }
 
 func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+	return r.writePollCheck(ctx, plan, state)
+}
+func (r *groupResource) writePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
 	var stateModel groupModel
 	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
 		return err
@@ -440,6 +564,9 @@ func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, st
 	}
 	if !planModel.Description.Equal(stateModel.Description) {
 		return fmt.Errorf(`"description" is not consistent: expect=%s, got=%s`, planModel.Description, stateModel.Description)
+	}
+	if !planModel.Members.Equal(stateModel.Members) {
+		return fmt.Errorf(`"members" is not consistent: expect=%s, got=%s`, planModel.Members, stateModel.Members)
 	}
 	return nil
 }

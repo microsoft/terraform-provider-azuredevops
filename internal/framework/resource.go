@@ -71,6 +71,20 @@ type ResourceWithTimeout interface {
 	Timeout() ResourceTimeout
 }
 
+type ResourceWithPostCreate interface {
+	resource.Resource
+
+	ShouldPostCreate(ctx context.Context, req resource.CreateRequest) bool
+	PostCreate(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse)
+}
+
+type ResourceWithPostUpdate interface {
+	resource.Resource
+
+	ShouldPostUpdate(ctx context.Context, req resource.UpdateRequest) bool
+	PostUpdate(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse)
+}
+
 // Additionally, a resource can opt-in any of the following interfaces.
 //
 // resource.ResourceWithConfigValidators

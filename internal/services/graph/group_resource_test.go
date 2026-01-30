@@ -215,6 +215,17 @@ func (r GroupResource) vstsComplete(data acceptance.TestData) string {
 resource "azuredevops_group" "test" {
   display_name = "acctest-%[1]s-complete"
   description = "description"
+  members = [
+  	azuredevops_group.member1.id,
+  	azuredevops_group.member2.id,
+  ]
+}
+
+resource "azuredevops_group" "member1" {
+  display_name = "acctest-%[1]s-member1"
+}
+resource "azuredevops_group" "member2" {
+  display_name = "acctest-%[1]s-member2"
 }
 `, data.RandomString)
 }

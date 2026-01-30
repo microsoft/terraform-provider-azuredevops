@@ -68,6 +68,9 @@ func (r GroupMembershipResource) group(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_group" "container" {
   display_name = "acctest-%[1]s"
+  lifecycle {
+	  ignore_changes = [members]
+  }
 }
 
 resource "azuredevops_group" "member" {

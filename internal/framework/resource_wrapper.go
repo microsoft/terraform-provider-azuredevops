@@ -117,11 +117,23 @@ func (r resourceWrapper) WritePoll(ctx context.Context, operation WriteOperation
 			pollCheck = r.CreatePollCheck
 			pollRetryableDiags = r.CreatePollRetryableDiags
 		}
+	case WriteOperationPostCreate:
+		if r, ok := r.Resource.(ResourceWithPostCreatePoll); ok {
+			pollOption = r.PostCreatePollOption
+			pollCheck = r.PostCreatePollCheck
+			pollRetryableDiags = r.PostCreatePollRetryableDiags
+		}
 	case WriteOperationUpdate:
 		if r, ok := r.Resource.(ResourceWithUpdatePoll); ok {
 			pollOption = r.UpdatePollOption
 			pollCheck = r.UpdatePollCheck
 			pollRetryableDiags = r.UpdatePollRetryableDiags
+		}
+	case WriteOperationPostUpdate:
+		if r, ok := r.Resource.(ResourceWithPostUpdatePoll); ok {
+			pollOption = r.PostUpdatePollOption
+			pollCheck = r.PostUpdatePollCheck
+			pollRetryableDiags = r.PostUpdatePollRetryableDiags
 		}
 	default:
 		panic(fmt.Sprintf("unknown operation for polling: %s", operation))
@@ -197,26 +209,41 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	rresp := resource.ReadResponse{
 		State:       resp.State,
-		Diagnostics: slices.Clone(resp.Diagnostics),
+		Diagnostics: resp.Diagnostics,
 		Identity:    resp.Identity,
 		Private:     resp.Private,
 		Deferred:    nil,
 	}
 
-	defer func() {
+	// Create Poll
+	r.WritePoll(ctx, WriteOperationCreate, req.Plan, rreq, &rresp)
+	*resp = resource.CreateResponse{
+		State:       rresp.State,
+		Identity:    rresp.Identity,
+		Private:     rresp.Private,
+		Diagnostics: rresp.Diagnostics,
+	}
+
+	// Set the identity
+	rresp.Diagnostics = append(rresp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
+
+	// Post Create
+	if rr, ok := r.Resource.(ResourceWithPostCreate); ok && rr.ShouldPostCreate(ctx, req) {
+		tflog.SubsystemInfo(ctx, r.ResourceType(), "Start to post create the resource")
+		rr.PostCreate(ctx, req, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to post create the resource")
+
+		r.WritePoll(ctx, WriteOperationPostCreate, req.Plan, rreq, &rresp)
 		*resp = resource.CreateResponse{
 			State:       rresp.State,
 			Identity:    rresp.Identity,
 			Private:     rresp.Private,
 			Diagnostics: rresp.Diagnostics,
 		}
-	}()
-
-	// Create Poll
-	r.WritePoll(ctx, WriteOperationCreate, req.Plan, rreq, &rresp)
-
-	// Set the identity
-	rresp.Diagnostics = append(rresp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
+	}
 }
 
 func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -303,23 +330,38 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 
 	rresp := resource.ReadResponse{
 		State:       resp.State,
-		Diagnostics: slices.Clone(resp.Diagnostics),
+		Diagnostics: resp.Diagnostics,
 		Identity:    resp.Identity,
 		Private:     resp.Private,
 		Deferred:    nil,
 	}
 
-	defer func() {
+	// Update Poll
+	r.WritePoll(ctx, WriteOperationUpdate, req.Plan, rreq, &rresp)
+	*resp = resource.UpdateResponse{
+		State:       rresp.State,
+		Identity:    rresp.Identity,
+		Private:     rresp.Private,
+		Diagnostics: rresp.Diagnostics,
+	}
+
+	// Post Update
+	if rr, ok := r.Resource.(ResourceWithPostUpdate); ok && rr.ShouldPostUpdate(ctx, req) {
+		tflog.SubsystemInfo(ctx, r.ResourceType(), "Start to post update the resource")
+		rr.PostUpdate(ctx, req, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Finish to post update the resource")
+
+		r.WritePoll(ctx, WriteOperationPostUpdate, req.Plan, rreq, &rresp)
 		*resp = resource.UpdateResponse{
 			State:       rresp.State,
 			Identity:    rresp.Identity,
 			Private:     rresp.Private,
 			Diagnostics: rresp.Diagnostics,
 		}
-	}()
-
-	// Update Poll
-	r.WritePoll(ctx, WriteOperationUpdate, req.Plan, rreq, &rresp)
+	}
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
