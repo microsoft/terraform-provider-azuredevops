@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -220,22 +221,22 @@ func (r *groupMembershipResource) CreatePollOption(ctx context.Context) retry.Re
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupMembershipResource) CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
-	return true
+func (r *groupMembershipResource) CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+	return nil
 }
 
-func (r *groupMembershipResource) CreatePollRetryableDiag(d diag.Diagnostic) bool {
-	return framework.IsDiagResourceNotFound(d)
+func (r *groupMembershipResource) CreatePollRetryableDiags(diags diag.Diagnostics) bool {
+	return slices.ContainsFunc(diags, framework.IsDiagResourceNotFound)
 }
 
 func (r *groupMembershipResource) DeletePollOption(ctx context.Context) retry.RetryOption {
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupMembershipResource) DeletePollRetryableDiag(diag.Diagnostic) bool {
-	return false
+func (r *groupMembershipResource) DeletePollRetryableDiags(diags diag.Diagnostics) bool {
+	return !diags.HasError()
 }
 
-func (r *groupMembershipResource) DeletePollTerminalDiag(d diag.Diagnostic) bool {
-	return framework.IsDiagResourceNotFound(d)
+func (r *groupMembershipResource) DeletePollTerminalDiags(diags diag.Diagnostics) bool {
+	return slices.ContainsFunc(diags, framework.IsDiagResourceNotFound)
 }

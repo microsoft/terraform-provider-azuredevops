@@ -1,9 +1,9 @@
 package errorutil
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
@@ -15,12 +15,12 @@ func DiagToError(d diag.Diagnostic) error {
 }
 
 func DiagsToError(diags diag.Diagnostics) error {
-	var errs error
+	var errs []error
 
 	for _, ediag := range diags.Errors() {
-		errs = multierror.Append(errs, DiagToError(ediag))
+		errs = append(errs, DiagToError(ediag))
 	}
-	return errs
+	return errors.Join(errs...)
 }
 
 func ImportAsExistsError(resourceName, id string) diag.ErrorDiagnostic {

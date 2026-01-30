@@ -5,12 +5,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
 // ResourceTimeout specifies the default timeout value for each operation.
@@ -72,47 +69,6 @@ type ResourceWithTimeout interface {
 
 	// Timeout returns the timeout for each operation.
 	Timeout() ResourceTimeout
-}
-
-// ResourceWithCreatePoll is an opt-in interface that makes the read after create retryable on certain conditions.
-type ResourceWithCreatePoll interface {
-	resource.Resource
-
-	CreatePollOption(ctx context.Context) retry.RetryOption
-
-	// CreatePollCheck checks the post create state being read against the plan.
-	// If the expected state is not met, return false, which will retry the poll.
-	CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
-
-	// CreatePollRetryableDiag tells whether a diagnostics returned by the post create read is retryable.
-	CreatePollRetryableDiag(diag.Diagnostic) bool
-}
-
-// ResourceWithUpdatePoll is an opt-in interface that makes the read after update retryable on certain conditions.
-type ResourceWithUpdatePoll interface {
-	resource.Resource
-
-	UpdatePollOption(ctx context.Context) retry.RetryOption
-
-	// UpdatePollCheck checks the post update state being read against the plan.
-	// If the expected state is not met, return false, which will retry the poll.
-	UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool
-
-	// UpdatePollRetryableDiag tells whether a diagnostics returned by the post update read is retryable.
-	UpdatePollRetryableDiag(diag.Diagnostic) bool
-}
-
-// ResourceWithDeletePoll is an opt-in interface that introduces a read after delete to ensure the resource has been consistently removed.
-type ResourceWithDeletePoll interface {
-	resource.Resource
-
-	DeletePollOption(ctx context.Context) retry.RetryOption
-
-	// DeletePollRetryableDiag tells whether a diagnostics returned by the post delete read is retryable.
-	DeletePollRetryableDiag(diag.Diagnostic) bool
-
-	// DeletePollTerminalDiag represents the terminal
-	DeletePollTerminalDiag(diag.Diagnostic) bool
 }
 
 // Additionally, a resource can opt-in any of the following interfaces.

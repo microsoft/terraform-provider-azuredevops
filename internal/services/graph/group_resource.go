@@ -2,6 +2,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -419,20 +420,26 @@ func (r *groupResource) UpdatePollOption(ctx context.Context) retry.RetryOption 
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) bool {
+func (r *groupResource) UpdatePollRetryableDiags(diag.Diagnostics) bool {
+	return false
+}
+
+func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
 	var stateModel groupModel
 	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
-		return false
+		return err
 	}
 
 	var planModel groupModel
 	if err := errorutil.DiagsToError(plan.Get(ctx, &planModel)); err != nil {
-		return false
+		return err
 	}
 
-	return planModel.DisplayName.Equal(stateModel.DisplayName) && planModel.Description.Equal(stateModel.Description)
-}
-
-func (r *groupResource) UpdatePollRetryableDiag(diag.Diagnostic) bool {
-	return false
+	if !planModel.DisplayName.Equal(stateModel.DisplayName) {
+		return fmt.Errorf(`"display_name" is not consistent: expect=%s, got=%s`, planModel.DisplayName, stateModel.DisplayName)
+	}
+	if !planModel.Description.Equal(stateModel.Description) {
+		return fmt.Errorf(`"description" is not consistent: expect=%s, got=%s`, planModel.Description, stateModel.Description)
+	}
+	return nil
 }
