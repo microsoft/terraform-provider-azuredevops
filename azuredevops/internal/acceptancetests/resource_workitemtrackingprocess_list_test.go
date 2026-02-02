@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -35,7 +34,6 @@ func TestAccWorkitemtrackingprocessList_Basic(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getListStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -62,7 +60,6 @@ func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getListStateIdFunc(tfNode),
 			},
 			{
 				Config: updatedList(listName),
@@ -80,7 +77,6 @@ func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getListStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -110,7 +106,6 @@ func TestAccWorkitemtrackingprocessList_Integer(t *testing.T) {
 				ResourceName:      tfNode,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getListStateIdFunc(tfNode),
 			},
 		},
 	})
@@ -143,11 +138,4 @@ resource "azuredevops_workitemtrackingprocess_list" "test" {
   items = ["1", "2", "3"]
 }
 `, name)
-}
-
-func getListStateIdFunc(tfNode string) resource.ImportStateIdFunc {
-	return func(state *terraform.State) (string, error) {
-		res := state.RootModule().Resources[tfNode]
-		return res.Primary.ID, nil
-	}
 }
