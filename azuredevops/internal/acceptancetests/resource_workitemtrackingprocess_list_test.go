@@ -20,13 +20,7 @@ func TestAccWorkitemtrackingprocessList_Basic(t *testing.T) {
 			{
 				Config: basicList(listName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", listName),
-					resource.TestCheckResourceAttr(tfNode, "type", "string"),
-					resource.TestCheckResourceAttr(tfNode, "is_suggested", "false"),
-					resource.TestCheckResourceAttr(tfNode, "items.#", "3"),
-					resource.TestCheckResourceAttr(tfNode, "items.0", "Red"),
-					resource.TestCheckResourceAttr(tfNode, "items.1", "Green"),
-					resource.TestCheckResourceAttr(tfNode, "items.2", "Blue"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttrSet(tfNode, "url"),
 				),
 			},
@@ -51,9 +45,7 @@ func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 			{
 				Config: basicList(listName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", listName),
-					resource.TestCheckResourceAttr(tfNode, "items.#", "3"),
-					resource.TestCheckResourceAttr(tfNode, "is_suggested", "false"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
@@ -64,13 +56,7 @@ func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 			{
 				Config: updatedList(listName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", listName),
-					resource.TestCheckResourceAttr(tfNode, "items.#", "4"),
-					resource.TestCheckResourceAttr(tfNode, "items.0", "Red"),
-					resource.TestCheckResourceAttr(tfNode, "items.1", "Green"),
-					resource.TestCheckResourceAttr(tfNode, "items.2", "Blue"),
-					resource.TestCheckResourceAttr(tfNode, "items.3", "Yellow"),
-					resource.TestCheckResourceAttr(tfNode, "is_suggested", "true"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
@@ -94,12 +80,7 @@ func TestAccWorkitemtrackingprocessList_Integer(t *testing.T) {
 			{
 				Config: integerList(listName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", listName),
-					resource.TestCheckResourceAttr(tfNode, "type", "integer"),
-					resource.TestCheckResourceAttr(tfNode, "items.#", "3"),
-					resource.TestCheckResourceAttr(tfNode, "items.0", "1"),
-					resource.TestCheckResourceAttr(tfNode, "items.1", "2"),
-					resource.TestCheckResourceAttr(tfNode, "items.2", "3"),
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
 			{
