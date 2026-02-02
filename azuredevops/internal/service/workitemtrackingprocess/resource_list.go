@@ -118,25 +118,7 @@ func resourceListRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.Errorf(" Reading list %s. Error: %+v", listId, err)
 	}
 
-	if list.Name != nil {
-		d.Set("name", *list.Name)
-	}
-	if list.Type != nil {
-		d.Set("type", strings.ToLower(*list.Type))
-	}
-	if list.IsSuggested != nil {
-		d.Set("is_suggested", *list.IsSuggested)
-	}
-	if list.Items != nil {
-		if err := d.Set("items", *list.Items); err != nil {
-			return diag.Errorf(" setting items: %+v", err)
-		}
-	}
-	if list.Url != nil {
-		d.Set("url", *list.Url)
-	}
-
-	return nil
+	return flattenList(d, list)
 }
 
 func resourceListUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -159,12 +141,14 @@ func resourceListUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		Picklist: picklist,
 	}
 
-	_, err := clients.WorkItemTrackingProcessClient.UpdateList(ctx, args)
+	list, err := clients.WorkItemTrackingProcessClient.UpdateList(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Updating list %s. Error: %+v", listId, err)
 	}
 
-	return resourceListRead(ctx, d, m)
+	// NOTE! We return the response directly instead of reading the resoource due to 
+	// eventual consistent reads when updating the list.
+	return flattenList(d, list)
 }
 
 func resourceListDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -184,6 +168,30 @@ func resourceListDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.Errorf(" Deleting list %s. Error: %+v", listId, err)
 	}
 
+	return nil
+}
+
+func flattenList(d *schema.ResourceData, list *workitemtrackingprocess.PickList) diag.Diagnostics {
+	if list == nil {
+		return diag.Errorf(" list is nil")
+	}
+	if list.Name != nil {
+		d.Set("name", *list.Name)
+	}
+	if list.Type != nil {
+		d.Set("type", strings.ToLower(*list.Type))
+	}
+	if list.IsSuggested != nil {
+		d.Set("is_suggested", *list.IsSuggested)
+	}
+	if list.Items != nil {
+		if err := d.Set("items", *list.Items); err != nil {
+			return diag.Errorf(" setting items: %+v", err)
+		}
+	}
+	if list.Url != nil {
+		d.Set("url", *list.Url)
+	}
 	return nil
 }
 

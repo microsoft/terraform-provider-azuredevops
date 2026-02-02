@@ -33,6 +33,7 @@ func TestAccWorkitemtrackingprocessList_Basic(t *testing.T) {
 	})
 }
 
+// NOTE! This test might be flaky due to eventual consistent reads after update during import/refresh.
 func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 	listName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_workitemtrackingprocess_list.test"
