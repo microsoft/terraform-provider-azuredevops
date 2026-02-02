@@ -3,9 +3,16 @@ package acceptancetests
 import (
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 )
 
 func TestAccWorkitemtrackingprocessList_Basic(t *testing.T) {
@@ -15,7 +22,7 @@ func TestAccWorkitemtrackingprocessList_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckListDestroyed,
+		CheckDestroy:      checkListDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: basicList(listName),
@@ -41,7 +48,7 @@ func TestAccWorkitemtrackingprocessList_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckListDestroyed,
+		CheckDestroy:      checkListDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: basicList(listName),
@@ -76,7 +83,7 @@ func TestAccWorkitemtrackingprocessList_Integer(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckListDestroyed,
+		CheckDestroy:      checkListDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: integerList(listName),
@@ -120,4 +127,39 @@ resource "azuredevops_workitemtrackingprocess_list" "test" {
   items = ["1", "2", "3"]
 }
 `, name)
+}
+
+func checkListDestroyed(s *terraform.State) error {
+	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+	timeout := 10 * time.Second
+
+	for _, resource := range s.RootModule().Resources {
+		if resource.Type != "azuredevops_workitemtrackingprocess_list" {
+			continue
+		}
+
+		id, err := uuid.Parse(resource.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		err = retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
+			_, err := clients.WorkItemTrackingProcessClient.GetList(clients.Ctx, workitemtrackingprocess.GetListArgs{
+				ListId: &id,
+			})
+			if err == nil {
+				return retry.RetryableError(fmt.Errorf("list with ID %s should not exist", id.String()))
+			}
+			if utils.ResponseWasNotFound(err) {
+				return nil
+			}
+
+			return retry.NonRetryableError(err)
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
