@@ -33,7 +33,7 @@ func NewGroupMembershipResource() framework.Resource {
 
 type groupMembershipResource struct {
 	framework.ImplSetMeta
-	framework.ImplMetadata
+	framework.ImplResourceMetadata
 	framework.ImplLog[*groupMembershipResource]
 }
 

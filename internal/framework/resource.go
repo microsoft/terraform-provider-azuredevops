@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/meta"
 )
 
 // ResourceTimeout specifies the default timeout value for each operation.
@@ -34,8 +33,7 @@ type IdentityField struct {
 // Resource interface defines the mandatory methods that a resource requires to implement.
 // Some of the method can be implemented by embedding a utility struct (see the comments).
 type Resource interface {
-	// ResourceType returns the resource type
-	ResourceType() string
+	BaseResource
 
 	// Identity returns a ResourceIdentity.
 	Identity() ResourceIdentity
@@ -51,16 +49,6 @@ type Resource interface {
 	// 		 Instead, it is supposed to embed the WithMetadata to meet the interface requirement.
 	//
 	resource.ResourceWithIdentity
-
-	// SetMeta sets the provider meta to the resource.
-	// This is implemented by the ImplMeta, the implement struct shall simply embed it.
-	SetMeta(meta.Meta)
-
-	// Log logs a message
-	// This is implemented by the ImplLog, the implement struct shall simply embed it.
-	Info(ctx context.Context, msg string, additionalFields ...map[string]any)
-	Warn(ctx context.Context, msg string, additionalFields ...map[string]any)
-	Error(ctx context.Context, msg string, additionalFields ...map[string]any)
 }
 
 // ResourceWithTimeout is an opt-in interface that can implement customized timeout.

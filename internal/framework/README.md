@@ -106,3 +106,15 @@ With above, the framework will be able to properly set the identity during Creat
 ## Import
 
 This requires the `Identity` setup above, which will then implement the `ImportState()` method automatically, with the support for both import by id and import by identity.
+
+## Error Handling
+
+The ADO SDK calls are expected to be error handled by wraping the inner SDK error with `framework.NewDiagSdkError`, this keeps the inner `error`, so that the wrapper can leverage it to access the error detail, for use cases like conditionally retry polling:
+
+```
+	project, err := r.Meta.CoreClient.GetProject(...)
+	if err != nil {
+		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Read the project", err))
+		return
+	}
+```

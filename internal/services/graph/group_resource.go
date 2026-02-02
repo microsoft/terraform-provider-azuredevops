@@ -41,7 +41,7 @@ func NewGroupResource() framework.Resource {
 
 type groupResource struct {
 	framework.ImplSetMeta
-	framework.ImplMetadata
+	framework.ImplResourceMetadata
 	framework.ImplLog[*groupResource]
 }
 

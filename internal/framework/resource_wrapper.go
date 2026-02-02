@@ -30,8 +30,6 @@ var _ resource.ResourceWithValidateConfig = resourceWrapper{}
 var _ resource.ResourceWithUpgradeIdentity = resourceWrapper{}
 var _ ResourceWithTimeout = resourceWrapper{}
 
-// The followings are unsafe interfaces. This requires additional wrappers around this resourceWrapper and opt-in.
-
 type resourceWrapper struct {
 	Resource
 }

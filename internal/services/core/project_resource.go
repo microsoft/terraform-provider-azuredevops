@@ -35,7 +35,7 @@ func NewProjectResource() framework.Resource {
 
 type projectResource struct {
 	framework.ImplSetMeta
-	framework.ImplMetadata
+	framework.ImplResourceMetadata
 	framework.ImplLog[*projectResource]
 }
 
@@ -58,7 +58,7 @@ func (p *projectIdentityModel) FromId(id string) error {
 	return nil
 }
 
-type projectModel struct {
+type projectResourceModel struct {
 	Name              adocustomtype.StringCaseInsensitiveValue `tfsdk:"name"`
 	Description       types.String                             `tfsdk:"description"`
 	Visibility        types.String                             `tfsdk:"visibility"`
@@ -159,7 +159,7 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 }
 
 func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan projectModel
+	var plan projectResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -167,7 +167,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	r.Info(ctx, "look up the process template id")
 
-	process, err := r.lookupProcess(ctx, func(p core.Process) bool {
+	process, err := LookupProcess(ctx, r.Meta.CoreClient, func(p core.Process) bool {
 		// `work_item_template` is unknown as it is set as O+C.
 		if plan.WorkItemTemplate.IsUnknown() {
 			return p.IsDefault != nil && *p.IsDefault
@@ -216,7 +216,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state projectModel
+	var state projectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -256,7 +256,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 		r.Info(ctx, "look up the template name by id")
 
-		process, err := r.lookupProcess(ctx, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
+		process, err := LookupProcess(ctx, r.Meta.CoreClient, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
 		if err != nil {
 			resp.Diagnostics.AddError("Lookup process", err.Error())
 			return
@@ -284,13 +284,13 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan projectModel
+	var plan projectResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var state projectModel
+	var state projectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -328,7 +328,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state projectModel
+	var state projectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -354,24 +354,6 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		resp.Diagnostics.AddError("Wait for project delete operation", err.Error())
 		return
 	}
-}
-
-func (r *projectResource) lookupProcess(ctx context.Context, f func(p core.Process) bool) (*core.Process, error) {
-	processes, err := r.Meta.CoreClient.GetProcesses(ctx, core.GetProcessesArgs{})
-	if err != nil {
-		return nil, err
-	}
-	if processes == nil {
-		return nil, errors.New("unexpected null processes")
-	}
-
-	for _, process := range *processes {
-		if f(process) {
-			return &process, nil
-		}
-	}
-
-	return nil, errors.New("process not found")
 }
 
 func (r *projectResource) waitOperation(ctx context.Context, operationRef *operations.OperationReference) error {
@@ -424,4 +406,22 @@ func (r *projectResource) pollOperationResult(ctx context.Context, operationRef 
 		}
 		return status, string(status), nil
 	}
+}
+
+func LookupProcess(ctx context.Context, client core.Client, f func(p core.Process) bool) (*core.Process, error) {
+	processes, err := client.GetProcesses(ctx, core.GetProcessesArgs{})
+	if err != nil {
+		return nil, err
+	}
+	if processes == nil {
+		return nil, errors.New("unexpected null processes")
+	}
+
+	for _, process := range *processes {
+		if f(process) {
+			return &process, nil
+		}
+	}
+
+	return nil, errors.New("process not found")
 }
