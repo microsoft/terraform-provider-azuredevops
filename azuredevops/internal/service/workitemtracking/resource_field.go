@@ -121,11 +121,12 @@ func ResourceField() *schema.Resource {
 				Description: "Indicates whether this field is a picklist.",
 			},
 			"is_picklist_suggested": {
-				Type:        schema.TypeBool,
+				Type: schema.TypeBool,
+				// NOTE! This should be computed only but is kept as optional for backward compatibility.
+				// This field follows azuredevops_workitemtrackingprocess_list.is_suggested
 				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Indicates whether this field is a suggested picklist. Default: `false`.",
+				Computed:    true,
+				Description: "Indicates whether this field is a suggested picklist.",
 			},
 			"picklist_id": {
 				Type:             schema.TypeString,

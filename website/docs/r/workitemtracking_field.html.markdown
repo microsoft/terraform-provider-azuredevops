@@ -52,7 +52,9 @@ The following arguments are supported:
 
 * `read_only` - (Optional) Indicates whether the field is read-only. Default: `false`. Changing this forces a new field to be created.
 
-* `is_picklist_suggested` - (Optional) Indicates whether this field is a suggested picklist. Default: `false`. Changing this forces a new field to be created.
+* `is_picklist_suggested` - (Optional) Indicates whether this field is a suggested picklist. 
+
+  ~> **Note:** This field is kept for backwards compatibility, it should never be set as it is determined by the optional list referenced by `picklist_id`
 
 * `picklist_id` - (Optional) The identifier of the picklist associated with this field, if applicable. Changing this forces a new field to be created.
 
