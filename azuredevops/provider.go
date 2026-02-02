@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
@@ -158,6 +159,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemtrackingprocess_control":             workitemtrackingprocess.ResourceControl(),
 			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
 			"azuredevops_workitemtrackingprocess_list":                workitemtrackingprocess.ResourceList(),
+			"azuredevops_workitemtrackingprocess_page":                workitemtrackingprocess.ResourcePage(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
 			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
 			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
@@ -185,6 +187,9 @@ func Provider() *schema.Provider {
 			"azuredevops_iteration":                             workitemtracking.DataIteration(),
 			"azuredevops_project":                               core.DataProject(),
 			"azuredevops_projects":                              core.DataProjects(),
+			"azuredevops_security_namespace":                    security.DataSecurityNamespace(),
+			"azuredevops_security_namespace_token":              security.DataSecurityNamespaceToken(),
+			"azuredevops_security_namespaces":                   security.DataSecurityNamespaces(),
 			"azuredevops_securityrole_definitions":              securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_generic_v2":            serviceendpoint.DataServiceEndpointGenericV2(),
 			"azuredevops_serviceendpoint_azurecr":               serviceendpoint.DataResourceServiceEndpointAzureCR(),

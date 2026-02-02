@@ -42,10 +42,10 @@ data "azuredevops_group" "example-group" {
 }
 
 resource "azuredevops_workitemtrackingprocess_process_permissions" "example" {
-  process_id = "adcc42ab-9882-485e-a3ed-7678f01f66bc"  # Agile system process
+  process_id = "adcc42ab-9882-485e-a3ed-7678f01f66bc" # Agile system process
   principal  = data.azuredevops_group.example-group.id
   permissions = {
-    Create = "Deny"  # Prevent creating inherited processes from Agile
+    Create = "Deny" # Prevent creating inherited processes from Agile
   }
 }
 ```

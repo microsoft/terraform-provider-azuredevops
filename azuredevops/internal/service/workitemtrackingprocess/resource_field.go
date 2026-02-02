@@ -38,34 +38,19 @@ func ResourceField() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_ref_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
-			"reference_name": {
+			"field_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the field.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the field.",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the field.",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The description of the field.",
+				Description:      "The ID (reference name) of the field.",
 			},
 			"default_value": {
 				Type:        schema.TypeString,
@@ -84,10 +69,11 @@ func ResourceField() *schema.Resource {
 				Default:     false,
 				Description: "If true, the field cannot be empty.",
 			},
+			// We set this to write-only to circumvent this bug: https://developercommunity.visualstudio.com/t/Custom-field-APIs-are-missing-attributes/11032086
 			"allow_groups": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				WriteOnly:   true,
 				Description: "Allow setting field value to a group identity. Only applies to identity fields.",
 			},
 			"customization": {
@@ -113,18 +99,21 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
-	referenceName := d.Get("reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
+	referenceName := d.Get("field_id").(string)
 
 	fieldRequest := &workitemtrackingprocess.AddProcessWorkItemTypeFieldRequest{
 		ReferenceName: &referenceName,
 		ReadOnly:      converter.Bool(d.Get("read_only").(bool)),
 		Required:      converter.Bool(d.Get("required").(bool)),
-		AllowGroups:   converter.Bool(d.Get("allow_groups").(bool)),
 	}
 
 	if v, ok := d.GetOk("default_value"); ok {
 		fieldRequest.DefaultValue = v.(string)
+	}
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if allowGroups := rawConfig["allow_groups"]; !allowGroups.IsNull() {
+		fieldRequest.AllowGroups = converter.Bool(allowGroups.True())
 	}
 
 	args := workitemtrackingprocess.AddFieldToWorkItemTypeArgs{
@@ -142,7 +131,7 @@ func resourceFieldCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf("created field has no reference name")
 	}
 
-	d.SetId(*createdField.ReferenceName)
+	d.SetId(fmt.Sprintf("%s/%s/%s", processId, witRefName, *createdField.ReferenceName))
 	return resourceFieldRead(ctx, d, m)
 }
 
@@ -150,8 +139,8 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
-	fieldRefName := d.Id()
+	witRefName := d.Get("work_item_type_id").(string)
+	fieldRefName := d.Get("field_id").(string)
 
 	args := workitemtrackingprocess.GetWorkItemTypeFieldArgs{
 		ProcessId:    converter.UUID(processId),
@@ -168,8 +157,35 @@ func resourceFieldRead(ctx context.Context, d *schema.ResourceData, m interface{
 		}
 		return diag.Errorf("reading field %s: %+v", fieldRefName, err)
 	}
+	if field == nil {
+		return diag.Errorf("field %s returned nil", fieldRefName)
+	}
 
-	flattenProcessField(d, field)
+	if field.ReferenceName != nil {
+		d.Set("field_id", *field.ReferenceName)
+	}
+	if field.DefaultValue != nil {
+		d.Set("default_value", fmt.Sprintf("%v", field.DefaultValue))
+	}
+	if field.ReadOnly != nil {
+		d.Set("read_only", *field.ReadOnly)
+	} else {
+		d.Set("read_only", false)
+	}
+	if field.Required != nil {
+		d.Set("required", *field.Required)
+	} else {
+		d.Set("required", false)
+	}
+	if field.Customization != nil {
+		d.Set("customization", string(*field.Customization))
+	}
+	if field.IsLocked != nil {
+		d.Set("is_locked", *field.IsLocked)
+	}
+	if field.Url != nil {
+		d.Set("url", *field.Url)
+	}
 	return nil
 }
 
@@ -177,17 +193,20 @@ func resourceFieldUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
-	fieldRefName := d.Id()
+	witRefName := d.Get("work_item_type_id").(string)
+	fieldRefName := d.Get("field_id").(string)
 
 	fieldUpdate := &workitemtrackingprocess.UpdateProcessWorkItemTypeFieldRequest{
-		ReadOnly:    converter.Bool(d.Get("read_only").(bool)),
-		Required:    converter.Bool(d.Get("required").(bool)),
-		AllowGroups: converter.Bool(d.Get("allow_groups").(bool)),
+		ReadOnly: converter.Bool(d.Get("read_only").(bool)),
+		Required: converter.Bool(d.Get("required").(bool)),
 	}
 
 	if v, ok := d.GetOk("default_value"); ok {
 		fieldUpdate.DefaultValue = v.(string)
+	}
+	rawConfig := d.GetRawConfig().AsValueMap()
+	if allowGroups := rawConfig["allow_groups"]; !allowGroups.IsNull() {
+		fieldUpdate.AllowGroups = converter.Bool(allowGroups.True())
 	}
 
 	args := workitemtrackingprocess.UpdateWorkItemTypeFieldArgs{
@@ -209,8 +228,8 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	clients := m.(*client.AggregatedClient)
 
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_ref_name").(string)
-	fieldRefName := d.Id()
+	witRefName := d.Get("work_item_type_id").(string)
+	fieldRefName := d.Get("field_id").(string)
 
 	args := workitemtrackingprocess.RemoveWorkItemTypeFieldArgs{
 		ProcessId:    converter.UUID(processId),
@@ -230,54 +249,12 @@ func resourceFieldDelete(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func importField(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_ref_name/field_ref_name", 3)
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/field_id", 3)
 	if err != nil {
 		return nil, err
 	}
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_ref_name", parts[1])
-	d.SetId(parts[2])
+	d.Set("work_item_type_id", parts[1])
+	d.Set("field_id", parts[2])
 	return []*schema.ResourceData{d}, nil
-}
-
-func flattenProcessField(d *schema.ResourceData, field *workitemtrackingprocess.ProcessWorkItemTypeField) {
-	if field.Name != nil {
-		d.Set("name", *field.Name)
-	}
-	if field.ReferenceName != nil {
-		d.Set("reference_name", *field.ReferenceName)
-	}
-	if field.Type != nil {
-		d.Set("type", string(*field.Type))
-	}
-	if field.Description != nil {
-		d.Set("description", *field.Description)
-	}
-	if field.DefaultValue != nil {
-		d.Set("default_value", fmt.Sprintf("%v", field.DefaultValue))
-	}
-	if field.ReadOnly != nil {
-		d.Set("read_only", *field.ReadOnly)
-	} else {
-		d.Set("read_only", false)
-	}
-	if field.Required != nil {
-		d.Set("required", *field.Required)
-	} else {
-		d.Set("required", false)
-	}
-	if field.AllowGroups != nil {
-		d.Set("allow_groups", *field.AllowGroups)
-	} else {
-		d.Set("allow_groups", false)
-	}
-	if field.Customization != nil {
-		d.Set("customization", string(*field.Customization))
-	}
-	if field.IsLocked != nil {
-		d.Set("is_locked", *field.IsLocked)
-	}
-	if field.Url != nil {
-		d.Set("url", *field.Url)
-	}
 }

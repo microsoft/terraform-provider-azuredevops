@@ -20,6 +20,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+// retryMinTimeout is the minimum time to wait between retries for eventual consistency.
+// This can be set to 0 in unit tests to speed up execution.
+var retryMinTimeout = 1 * time.Second
+
 func ResourceGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createResourceGroup,
@@ -259,7 +263,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	var createdGroup *workitemtrackingprocess.Group
-	err := retryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
 		var createErr error
 		createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
 		return createErr
@@ -287,7 +291,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		Pending:    []string{"waiting"},
 		Target:     []string{"ready", "error"},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		MinTimeout: 1 * time.Second,
+		MinTimeout: retryMinTimeout,
 		// Tested with 3 which still causes the issue intermittently
 		ContinuousTargetOccurence: 4,
 		Refresh: func() (interface{}, string, error) {
@@ -463,7 +467,7 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		GroupId:    &groupId,
 	}
 
-	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingProcessClient.RemoveGroup(ctx, args)
 	})
 	if err != nil {

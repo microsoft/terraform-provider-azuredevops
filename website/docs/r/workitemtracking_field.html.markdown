@@ -23,56 +23,6 @@ resource "azuredevops_workitemtracking_field" "example" {
 }
 ```
 
-### Integer Field with Description
-
-```hcl
-resource "azuredevops_workitemtracking_field" "priority" {
-  name           = "Custom Priority"
-  reference_name = "Custom.Priority"
-  type           = "integer"
-  description    = "A custom priority field for work items"
-}
-```
-
-### Boolean Field
-
-```hcl
-resource "azuredevops_workitemtracking_field" "approved" {
-  name           = "Approved"
-  reference_name = "Custom.Approved"
-  type           = "boolean"
-  description    = "Indicates whether the item has been approved"
-}
-```
-
-### HTML Field
-
-```hcl
-resource "azuredevops_workitemtracking_field" "notes" {
-  name           = "Custom Notes"
-  reference_name = "Custom.Notes"
-  type           = "html"
-  description    = "Additional notes in HTML format"
-}
-```
-
-### List Field
-
-```hcl
-resource "azuredevops_workitemtrackingprocess_list" "example" {
-  name  = "Priority Levels"
-  items = ["Low", "Medium", "High", "Critical"]
-}
-
-resource "azuredevops_workitemtracking_field" "example" {
-  name           = "Priority Level"
-  reference_name = "Custom.PriorityLevel"
-  type           = "string"
-  is_picklist    = true
-  picklist_id    = azuredevops_workitemtrackingprocess_list.example.id
-}
-```
-
 ### Restore a Deleted Field
 
 ```hcl
@@ -102,14 +52,6 @@ The following arguments are supported:
 
 * `read_only` - (Optional) Indicates whether the field is read-only. Default: `false`. Changing this forces a new field to be created.
 
-* `can_sort_by` - (Optional) Indicates whether the field can be sorted in server queries. Default: `true`. Changing this forces a new field to be created.
-
-* `is_queryable` - (Optional) Indicates whether the field can be queried in the server. Default: `true`. Changing this forces a new field to be created.
-
-* `is_identity` - (Optional) Indicates whether this field is an identity field. Default: `false`. Changing this forces a new field to be created.
-
-* `is_picklist` - (Optional) Indicates whether this field is a picklist. Default: `false`. Changing this forces a new field to be created.
-
 * `is_picklist_suggested` - (Optional) Indicates whether this field is a suggested picklist. Default: `false`. Changing this forces a new field to be created.
 
 * `picklist_id` - (Optional) The identifier of the picklist associated with this field, if applicable. Changing this forces a new field to be created.
@@ -125,6 +67,14 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the field.
 
 * `url` - The URL of the field resource.
+
+* `can_sort_by` - Indicates whether the field can be sorted in server queries.
+
+* `is_queryable` - Indicates whether the field can be queried in the server.
+
+* `is_identity` - Indicates whether this field is an identity field.
+
+* `is_picklist` - Indicates whether this field is a picklist.
 
 * `supported_operations` - The supported operations on this field. A `supported_operations` block as defined below.
 

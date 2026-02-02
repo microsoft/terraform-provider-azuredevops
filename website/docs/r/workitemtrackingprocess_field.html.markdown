@@ -30,11 +30,11 @@ resource "azuredevops_workitemtracking_field" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_field" "example" {
-  process_id              = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_ref_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  reference_name          = azuredevops_workitemtracking_field.example.reference_name
-  required                = true
-  default_value           = "Medium"
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.id
+  field_id          = azuredevops_workitemtracking_field.example.id
+  required          = true
+  default_value     = "Medium"
 }
 ```
 
@@ -44,9 +44,9 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new field to be created.
 
-* `work_item_type_ref_name` - (Required) The reference name of the work item type. Changing this forces a new field to be created.
+* `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new field to be created.
 
-* `reference_name` - (Required) The reference name of the field. Changing this forces a new field to be created.
+* `field_id` - (Required) The ID (reference name) of the field. Changing this forces a new field to be created.
 
 ---
 
@@ -56,19 +56,14 @@ The following arguments are supported:
 
 * `required` - (Optional) If true, the field cannot be empty. Default: `false`.
 
-* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields. Default: `false`.
+* `allow_groups` - (Optional) Allow setting field value to a group identity. Only applies to identity fields.  
+**Note**: Due to limitations in the downstream API this field is [WriteOnly](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/write-only-arguments#general-concepts), meaning this field will not trigger a plan difference. Change another field alongside this field in order to trigger a plan difference.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
 * `id` - The reference name of the field.
-
-* `name` - The name of the field.
-
-* `type` - The type of the field.
-
-* `description` - The description of the field.
 
 * `customization` - Indicates the type of customization on this work item. Possible values are `system`, `inherited`, or `custom`.
 
@@ -91,7 +86,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Fields can be imported using the complete resource id `process_id/work_item_type_ref_name/field_ref_name`, e.g.
+Fields can be imported using the complete resource id `process_id/work_item_type_id/field_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_field.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/Custom.MyField
