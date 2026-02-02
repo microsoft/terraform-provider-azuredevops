@@ -543,10 +543,10 @@ resource "azuredevops_workitemtrackingprocess_list" "test" {
 }
 
 resource "azuredevops_workitemtracking_field" "test" {
-  name                  = "%s"
-  reference_name        = "Custom.%s"
-  type                  = "string"
-  picklist_id           = azuredevops_workitemtrackingprocess_list.test.id
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
 }
 `, listName, fieldName, fieldName)
 }
