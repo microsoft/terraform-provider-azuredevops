@@ -92,6 +92,10 @@ func resourceListCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.Errorf(" Creating list. Error: %+v", err)
 	}
 
+	if createdList == nil {
+		return diag.Errorf(" Created list is nil")
+	}
+
 	if createdList.Id == nil {
 		return diag.Errorf(" Created list has no ID")
 	}
