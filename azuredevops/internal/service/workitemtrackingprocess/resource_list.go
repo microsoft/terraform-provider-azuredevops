@@ -150,7 +150,7 @@ func resourceListUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.Errorf(" Updating list %s. Error: %+v", listId, err)
 	}
 
-	// NOTE! We return the response directly instead of reading the resoource due to 
+	// NOTE! We return the response directly instead of reading the resoource due to
 	// eventual consistent reads when updating the list.
 	return flattenList(d, list)
 }
