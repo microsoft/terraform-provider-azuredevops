@@ -13,22 +13,12 @@ Manages an organization-scoped list for work item tracking processes.
 
 ## Example Usage
 
-### Basic List
+### String List
 
 ```hcl
 resource "azuredevops_workitemtrackingprocess_list" "example" {
   name  = "Priority Levels"
   items = ["Low", "Medium", "High", "Critical"]
-}
-```
-
-### List with Suggestions
-
-```hcl
-resource "azuredevops_workitemtrackingprocess_list" "example" {
-  name         = "Environment"
-  items        = ["Development", "Staging", "Production"]
-  is_suggested = true
 }
 ```
 
