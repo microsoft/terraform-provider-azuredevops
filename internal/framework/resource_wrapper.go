@@ -75,6 +75,13 @@ func (r resourceWrapper) Schema(ctx context.Context, req resource.SchemaRequest,
 }
 
 func (r resourceWrapper) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Import")
+
 	identity := r.Identity()
 	if req.ID != "" {
 		// Import via ID
@@ -95,78 +102,14 @@ func (r resourceWrapper) ImportState(ctx context.Context, req resource.ImportSta
 	}
 }
 
-func (r resourceWrapper) WritePoll(ctx context.Context, operation WriteOperation, plan tfsdk.Plan, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Start to poll the resource (after %s)", operation))
-	defer tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Finish to poll the resource (after %s)", operation))
-	var (
-		pollOption = func(ctx context.Context) retry.RetryOption {
-			return retry.RetryOption{Timeout: ctxutil.UntilDeadline(ctx)}
-		}
-		pollCheck = func(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
-			return nil
-		}
-		pollRetryableDiags = func(diag.Diagnostics) bool {
-			return false
-		}
-	)
-
-	switch operation {
-	case WriteOperationCreate:
-		if r, ok := r.Resource.(ResourceWithCreatePoll); ok {
-			pollOption = r.CreatePollOption
-			pollCheck = r.CreatePollCheck
-			pollRetryableDiags = r.CreatePollRetryableDiags
-		}
-	case WriteOperationPostCreate:
-		if r, ok := r.Resource.(ResourceWithPostCreatePoll); ok {
-			pollOption = r.PostCreatePollOption
-			pollCheck = r.PostCreatePollCheck
-			pollRetryableDiags = r.PostCreatePollRetryableDiags
-		}
-	case WriteOperationUpdate:
-		if r, ok := r.Resource.(ResourceWithUpdatePoll); ok {
-			pollOption = r.UpdatePollOption
-			pollCheck = r.UpdatePollCheck
-			pollRetryableDiags = r.UpdatePollRetryableDiags
-		}
-	case WriteOperationPostUpdate:
-		if r, ok := r.Resource.(ResourceWithPostUpdatePoll); ok {
-			pollOption = r.PostUpdatePollOption
-			pollCheck = r.PostUpdatePollCheck
-			pollRetryableDiags = r.PostUpdatePollRetryableDiags
-		}
-	default:
-		panic(fmt.Sprintf("unknown operation for polling: %s", operation))
-	}
-
-	oldDiags := resp.Diagnostics
-	if err := retry.RetryContext(ctx, pollOption(ctx), func() *retry.RetryError {
-		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Start to read the resource (after %s)", operation))
-
-		// Reset rresp's diags before every retry
-		resp.Diagnostics = slices.Clone(oldDiags)
-
-		r.Resource.Read(ctx, req, resp)
-		if resp.Diagnostics.HasError() {
-			if pollRetryableDiags(resp.Diagnostics) {
-				return retry.RetryableError(errorutil.DiagsToError(resp.Diagnostics))
-			} else {
-				return retry.NonRetryableError(errorutil.DiagsToError(resp.Diagnostics))
-			}
-		}
-
-		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Finish to read the resource (after %s)", operation))
-		if err := pollCheck(ctx, plan, resp.State); err != nil {
-			return retry.RetryableError(err)
-		}
-		return nil
-	}); err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Polling failed (after %s)", operation), err.Error())
-		return
-	}
-}
-
 func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Create")
+
 	var timeout timeouts.Value
 	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("timeouts"), &timeout)...)
 	if resp.Diagnostics.HasError() {
@@ -181,9 +124,6 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
-
-	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
-	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Create")
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to create the resource")
 	r.Resource.Create(ctx, req, resp)
@@ -225,7 +165,10 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	// Set the identity
-	rresp.Diagnostics = append(rresp.Diagnostics, r.setIdentity(ctx, rresp.State, rresp.Identity)...)
+	resp.Diagnostics = append(resp.Diagnostics, r.setIdentity(ctx, resp.State, resp.Identity)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Post Create
 	if rr, ok := r.Resource.(ResourceWithPostCreate); ok && rr.ShouldPostCreate(ctx, req) {
@@ -247,6 +190,13 @@ func (r resourceWrapper) Create(ctx context.Context, req resource.CreateRequest,
 }
 
 func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Read")
+
 	var timeout timeouts.Value
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("timeouts"), &timeout)...)
 	if resp.Diagnostics.HasError() {
@@ -261,9 +211,6 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
-
-	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
-	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Read")
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to read the resource")
 	r.Resource.Read(ctx, req, resp)
@@ -289,6 +236,13 @@ func (r resourceWrapper) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Update")
+
 	var timeout timeouts.Value
 	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("timeouts"), &timeout)...)
 	if resp.Diagnostics.HasError() {
@@ -303,9 +257,6 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
-
-	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
-	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Update")
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to update the resource")
 	r.Resource.Update(ctx, req, resp)
@@ -365,6 +316,13 @@ func (r resourceWrapper) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Delete")
+
 	var timeout timeouts.Value
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("timeouts"), &timeout)...)
 	if resp.Diagnostics.HasError() {
@@ -379,9 +337,6 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
-
-	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
-	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Delete")
 
 	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Start to delete the resource")
 	r.Resource.Delete(ctx, req, resp)
@@ -444,6 +399,13 @@ func (r resourceWrapper) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "Configure")
+
 	if req.ProviderData == nil {
 		return
 	}
@@ -452,6 +414,9 @@ func (r resourceWrapper) Configure(ctx context.Context, req resource.ConfigureRe
 
 // ConfigValidators implements resource.ResourceWithConfigValidators.
 func (r resourceWrapper) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "ConfigValidators")
+
 	if rr, ok := r.Resource.(resource.ResourceWithConfigValidators); ok {
 		return rr.ConfigValidators(ctx)
 	}
@@ -460,6 +425,13 @@ func (r resourceWrapper) ConfigValidators(ctx context.Context) []resource.Config
 
 // ModifyPlan implements resource.ResourceWithModifyPlan.
 func (r resourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "ModifyPlan")
+
 	if rr, ok := r.Resource.(resource.ResourceWithModifyPlan); ok {
 		rr.ModifyPlan(ctx, req, resp)
 		return
@@ -468,6 +440,9 @@ func (r resourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 
 // MoveState implements resource.ResourceWithMoveState.
 func (r resourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "MoveState")
+
 	if rr, ok := r.Resource.(resource.ResourceWithMoveState); ok {
 		return rr.MoveState(ctx)
 	}
@@ -476,6 +451,9 @@ func (r resourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
 
 // UpgradeState implements resource.ResourceWithUpgradeState.
 func (r resourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "UpgradeState")
+
 	if rr, ok := r.Resource.(resource.ResourceWithUpgradeState); ok {
 		return rr.UpgradeState(ctx)
 	}
@@ -484,6 +462,13 @@ func (r resourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.St
 
 // ValidateConfig implements resource.ResourceWithValidateConfig.
 func (r resourceWrapper) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	defer func() {
+		r.logDiags(ctx, resp.Diagnostics)
+	}()
+
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "ValidateConfig")
+
 	if rr, ok := r.Resource.(resource.ResourceWithValidateConfig); ok {
 		rr.ValidateConfig(ctx, req, resp)
 		return
@@ -492,6 +477,9 @@ func (r resourceWrapper) ValidateConfig(ctx context.Context, req resource.Valida
 
 // UpgradeIdentity implements resource.ResourceWithUpgradeIdentity.
 func (r resourceWrapper) UpgradeIdentity(ctx context.Context) map[int64]resource.IdentityUpgrader {
+	ctx = tflog.NewSubsystem(ctx, r.Resource.ResourceType())
+	ctx = tflog.SubsystemSetField(ctx, r.Resource.ResourceType(), "operation", "UpgradeIdentity")
+
 	if rr, ok := r.Resource.(resource.ResourceWithUpgradeIdentity); ok {
 		return rr.UpgradeIdentity(ctx)
 	}
@@ -513,4 +501,100 @@ func (r resourceWrapper) setIdentity(ctx context.Context, state tfsdk.State, ide
 		}
 	}
 	return diags
+}
+
+func (r resourceWrapper) WritePoll(ctx context.Context, operation WriteOperation, plan tfsdk.Plan, req resource.ReadRequest, resp *resource.ReadResponse) {
+	tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Start to poll the resource after %s", operation))
+	defer tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), fmt.Sprintf("Finish to poll the resource after %s", operation))
+	var (
+		pollOption = func(ctx context.Context) retry.RetryOption {
+			return retry.RetryOption{Timeout: ctxutil.UntilDeadline(ctx)}
+		}
+		pollCheckers = func() []PollChecker {
+			return nil
+		}
+		pollRetryableDiags = func(diag.Diagnostics) bool {
+			return false
+		}
+	)
+
+	switch operation {
+	case WriteOperationCreate:
+		if r, ok := r.Resource.(ResourceWithCreatePoll); ok {
+			pollOption = r.CreatePollOption
+			pollCheckers = r.CreatePollCheckers
+			pollRetryableDiags = r.CreatePollRetryableDiags
+		}
+	case WriteOperationPostCreate:
+		if r, ok := r.Resource.(ResourceWithPostCreatePoll); ok {
+			pollOption = r.PostCreatePollOption
+			pollCheckers = r.PostCreatePollCheckers
+			pollRetryableDiags = r.PostCreatePollRetryableDiags
+		}
+	case WriteOperationUpdate:
+		if r, ok := r.Resource.(ResourceWithUpdatePoll); ok {
+			pollOption = r.UpdatePollOption
+			pollCheckers = r.UpdatePollCheckers
+			pollRetryableDiags = r.UpdatePollRetryableDiags
+		}
+	case WriteOperationPostUpdate:
+		if r, ok := r.Resource.(ResourceWithPostUpdatePoll); ok {
+			pollOption = r.PostUpdatePollOption
+			pollCheckers = r.PostUpdatePollCheckers
+			pollRetryableDiags = r.PostUpdatePollRetryableDiags
+		}
+	default:
+		panic(fmt.Sprintf("unknown operation for polling: %s", operation))
+	}
+
+	oldDiags := resp.Diagnostics
+	if err := retry.RetryContext(ctx, pollOption(ctx), func() (err *retry.RetryError) {
+		defer func() {
+			if err != nil && err.Retryable {
+				tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), err.Err.Error())
+			}
+		}()
+
+		tflog.SubsystemInfo(ctx, r.Resource.ResourceType(), "Read the resource as polling")
+
+		// Reset rresp's diags before every retry
+		resp.Diagnostics = slices.Clone(oldDiags)
+
+		r.Resource.Read(ctx, req, resp)
+		if resp.Diagnostics.HasError() {
+			if pollRetryableDiags(resp.Diagnostics) {
+				return retry.RetryableError(errorutil.DiagsToError(resp.Diagnostics))
+			} else {
+				return retry.NonRetryableError(errorutil.DiagsToError(resp.Diagnostics))
+			}
+		}
+
+		for _, pollChecker := range pollCheckers() {
+			planAttr := pollChecker.Target
+			resp.Diagnostics.Append(plan.GetAttribute(ctx, pollChecker.AttrPath, &planAttr)...)
+
+			stateAttr := pollChecker.Target
+			resp.Diagnostics.Append(resp.State.GetAttribute(ctx, pollChecker.AttrPath, &stateAttr)...)
+
+			if resp.Diagnostics.HasError() {
+				return retry.NonRetryableError(errorutil.DiagsToError(resp.Diagnostics))
+			}
+			if !planAttr.Equal(stateAttr) {
+				return retry.RetryableError(fmt.Errorf(`Attribute "%s" is not consistent: expect=%s, got=%s`, pollChecker.AttrPath, planAttr, stateAttr))
+			}
+		}
+		return nil
+	}); err != nil {
+		resp.Diagnostics.AddError(fmt.Sprintf("Polling failed (after %s)", operation), err.Error())
+		return
+	}
+}
+
+func (r resourceWrapper) logDiags(ctx context.Context, diags diag.Diagnostics) {
+	for _, warning := range diags.Warnings() {
+		tflog.SubsystemWarn(ctx, r.Resource.ResourceType(), fmt.Sprintf("%s: %s", warning.Summary(), warning.Detail()))
+	}
+	for _, err := range diags.Errors() {
+		tflog.SubsystemError(ctx, r.Resource.ResourceType(), fmt.Sprintf("%s: %s", err.Summary(), err.Detail()))
+	}
 }

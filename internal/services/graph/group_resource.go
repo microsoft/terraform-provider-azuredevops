@@ -2,7 +2,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -21,14 +20,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adocustomtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/adovalidator"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
-	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/errorutil"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/fwtype"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/pointer"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
@@ -525,8 +522,8 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
-func (r *groupResource) PostCreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
-	return r.writePollCheck(ctx, plan, state)
+func (r *groupResource) PostCreatePollCheckers() []framework.PollChecker {
+	return r.writePollCheckers()
 }
 
 func (r *groupResource) PostCreatePollOption(ctx context.Context) retry.RetryOption {
@@ -545,28 +542,22 @@ func (r *groupResource) UpdatePollRetryableDiags(diag.Diagnostics) bool {
 	return false
 }
 
-func (r *groupResource) UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
-	return r.writePollCheck(ctx, plan, state)
+func (r *groupResource) UpdatePollCheckers() []framework.PollChecker {
+	return r.writePollCheckers()
 }
-func (r *groupResource) writePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
-	var stateModel groupModel
-	if err := errorutil.DiagsToError(state.Get(ctx, &stateModel)); err != nil {
-		return err
+func (r *groupResource) writePollCheckers() []framework.PollChecker {
+	return []framework.PollChecker{
+		{
+			AttrPath: path.Root("display_name"),
+			Target:   types.StringNull(),
+		},
+		{
+			AttrPath: path.Root("description"),
+			Target:   types.StringNull(),
+		},
+		{
+			AttrPath: path.Root("members"),
+			Target:   types.SetNull(types.StringType),
+		},
 	}
-
-	var planModel groupModel
-	if err := errorutil.DiagsToError(plan.Get(ctx, &planModel)); err != nil {
-		return err
-	}
-
-	if !planModel.DisplayName.Equal(stateModel.DisplayName) {
-		return fmt.Errorf(`"display_name" is not consistent: expect=%s, got=%s`, planModel.DisplayName, stateModel.DisplayName)
-	}
-	if !planModel.Description.Equal(stateModel.Description) {
-		return fmt.Errorf(`"description" is not consistent: expect=%s, got=%s`, planModel.Description, stateModel.Description)
-	}
-	if !planModel.Members.Equal(stateModel.Members) {
-		return fmt.Errorf(`"members" is not consistent: expect=%s, got=%s`, planModel.Members, stateModel.Members)
-	}
-	return nil
 }

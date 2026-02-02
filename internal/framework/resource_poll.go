@@ -3,9 +3,10 @@ package framework
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/utils/retry"
 )
 
@@ -18,15 +19,19 @@ const (
 	WriteOperationPostUpdate WriteOperation = "post-update"
 )
 
+type PollChecker struct {
+	AttrPath path.Path
+	Target   attr.Value
+}
+
 // ResourceWithCreatePoll is an opt-in interface that makes the read after create retryable on certain conditions.
 type ResourceWithCreatePoll interface {
 	resource.Resource
 
 	CreatePollOption(ctx context.Context) retry.RetryOption
 
-	// CreatePollCheck checks the state being read after create against the plan.
-	// If the expected state is not met, return error, which will retry the poll.
-	CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error
+	// CreatePollCheckers returns poll checkers that check the state being read after create.
+	CreatePollCheckers() []PollChecker
 
 	// CreatePollRetryableDiag tells whether the diagnostics returned by the read after create is retryable.
 	CreatePollRetryableDiags(diag.Diagnostics) bool
@@ -38,9 +43,8 @@ type ResourceWithPostCreatePoll interface {
 
 	PostCreatePollOption(ctx context.Context) retry.RetryOption
 
-	// PostCreatePollCheck checks the state being read after post create against the plan.
-	// If the expected state is not met, return error, which will retry the poll.
-	PostCreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error
+	// PostCreatePollCheckers returns poll checkers that check the state being read after post create.
+	PostCreatePollCheckers() []PollChecker
 
 	// PostCreatePollRetryableDiag tells whether the diagnostics returned by the read after post create is retryable.
 	PostCreatePollRetryableDiags(diag.Diagnostics) bool
@@ -52,9 +56,8 @@ type ResourceWithUpdatePoll interface {
 
 	UpdatePollOption(ctx context.Context) retry.RetryOption
 
-	// UpdatePollCheck checks the state being read after update against the plan.
-	// If the expected state is not met, return error, which will retry the poll.
-	UpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error
+	// UpdatePollCheckers returns poll checkers that check the state being read after update.
+	UpdatePollCheckers() []PollChecker
 
 	// UpdatePollRetryableDiag tells whether the diagnostics returned by the read after update is retryable.
 	UpdatePollRetryableDiags(diag.Diagnostics) bool
@@ -66,9 +69,8 @@ type ResourceWithPostUpdatePoll interface {
 
 	PostUpdatePollOption(ctx context.Context) retry.RetryOption
 
-	// PostUpdatePollCheck checks the state being read after post update against the plan.
-	// If the expected state is not met, return error, which will retry the poll.
-	PostUpdatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error
+	// PostUpdatePollCheckers returns poll checkers that check the state being read after update.
+	PostUpdatePollCheckers() []PollChecker
 
 	// PostUpdatePollRetryableDiag tells whether the diagnostics returned by the read after post update is retryable.
 	PostUpdatePollRetryableDiags(diag.Diagnostics) bool

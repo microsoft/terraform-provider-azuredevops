@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/terraform-provider-azuredevops/internal/framework"
@@ -221,7 +220,7 @@ func (r *groupMembershipResource) CreatePollOption(ctx context.Context) retry.Re
 	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }
 
-func (r *groupMembershipResource) CreatePollCheck(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) error {
+func (r *groupMembershipResource) CreatePollCheckers() []framework.PollChecker {
 	return nil
 }
 
