@@ -45,7 +45,10 @@ func (d datasourceWrapper) Metadata(ctx context.Context, req datasource.Metadata
 
 func (d datasourceWrapper) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	d.DataSource.Schema(ctx, req, resp)
-	resp.Schema.Attributes["timeouts"] = timeouts.Attributes(ctx)
+	timeout := d.Timeout()
+	resp.Schema.Attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{
+		ReadDescription: fmt.Sprintf("(Defaults to %s) Used when reading this data source.", timeout.Read),
+	})
 }
 
 func (d datasourceWrapper) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

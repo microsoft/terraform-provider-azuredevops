@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -37,7 +37,6 @@ type projectDataSourceModel struct {
 	VersionControl    types.String   `tfsdk:"version_control"`
 	WorkItemTemplate  types.String   `tfsdk:"work_item_template"`
 	ProcessTemplateId types.String   `tfsdk:"process_template_id"`
-	Features          types.Map      `tfsdk:"features"`
 	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -88,10 +87,6 @@ func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			},
 			"process_template_id": schema.StringAttribute{
 				MarkdownDescription: "The Process Template ID used by the project.",
-				Computed:            true,
-			},
-			"features": schema.MapAttribute{
-				MarkdownDescription: "The features of this project.",
 				Computed:            true,
 			},
 		},
@@ -159,7 +154,6 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		VersionControl:    fwtype.StringValue(versionControl),
 		WorkItemTemplate:  fwtype.StringValue(templateName),
 		ProcessTemplateId: fwtype.StringValue(templateId),
-		Features:          "", //TODO,
 		Timeouts:          config.Timeouts,
 	}
 

@@ -90,7 +90,9 @@ func (p *Provider) Metadata(ctx context.Context, req provider.MetadataRequest, r
 }
 
 func (p *Provider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		framework.WrapDataSource(core.NewProjectDataSource()),
+	}
 }
 
 func (p *Provider) Resources(ctx context.Context) []func() resource.Resource {

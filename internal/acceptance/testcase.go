@@ -13,13 +13,17 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/internal/provider"
 )
 
+func (d TestData) DataSourceTest(t *testing.T, steps []resource.TestStep) {
+	testCase := resource.TestCase{
+		PreCheck: func() { PreCheck(t) },
+		Steps:    steps,
+	}
+	d.runAcceptanceTest(t, testCase)
+}
+
 func (d TestData) ResourceTest(t *testing.T, testResource types.TestResource, steps []resource.TestStep) {
 	testCase := resource.TestCase{
-		PreCheck:          func() { PreCheck(t) },
-		ExternalProviders: d.externalProviders(),
-		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"azuredevops": providerserver.NewProtocol6WithError(provider.New()),
-		},
+		PreCheck: func() { PreCheck(t) },
 		CheckDestroy: func(s *terraform.State) error {
 			client := testclient.New(t)
 			for label, resourceState := range s.RootModule().Resources {
@@ -43,6 +47,15 @@ func (d TestData) ResourceTest(t *testing.T, testResource types.TestResource, st
 		},
 		Steps: steps,
 	}
+	d.runAcceptanceTest(t, testCase)
+}
+
+func (d TestData) runAcceptanceTest(t *testing.T, testCase resource.TestCase) {
+	testCase.ExternalProviders = d.externalProviders()
+	testCase.ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"azuredevops": providerserver.NewProtocol6WithError(provider.New()),
+	}
+
 	resource.ParallelTest(t, testCase)
 }
 
