@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -28,6 +27,8 @@ import (
 )
 
 var _ framework.Resource = &projectResource{}
+var _ framework.ResourceWithPostCreate = &projectResource{}
+var _ framework.ResourceWithPostUpdate = &projectResource{}
 
 func NewProjectResource() framework.Resource {
 	return &projectResource{}
@@ -64,6 +65,7 @@ type projectResourceModel struct {
 	Visibility        types.String                             `tfsdk:"visibility"`
 	VersionControl    types.String                             `tfsdk:"version_control"`
 	WorkItemTemplate  types.String                             `tfsdk:"work_item_template"`
+	Features          types.Object                             `tfsdk:"features"`
 	Id                types.String                             `tfsdk:"id"`
 	ProcessTemplateId types.String                             `tfsdk:"process_template_id"`
 	Timeouts          timeouts.Value                           `tfsdk:"timeouts"`
@@ -143,6 +145,33 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"features": schema.SingleNestedAttribute{
+				MarkdownDescription: "Define the status (enabled/disabled) of the project features.",
+				Optional:            true,
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"boards": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"repos": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"pipelines": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"test_plans": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"artifacts": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+			},
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The id of the project",
 				Computed:            true,
@@ -215,6 +244,30 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 }
 
+func (r *projectResource) PostCreate(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var state projectResourceModel
+	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var features projectFeaturesTFModel
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("features"), &features)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.Info(ctx, "set the project features")
+	if err := setProjectFeature(ctx, r.Meta.FeatureManagementClient, state.Id.ValueString(), features); err != nil {
+		resp.Diagnostics.AddError("failed to set project featuers", err.Error())
+	}
+}
+
+func (r *projectResource) ShouldPostCreate(ctx context.Context, req resource.CreateRequest) bool {
+	var features types.Object
+	return !req.Plan.GetAttribute(ctx, path.Root("features"), &features).HasError() && !features.IsNull()
+}
+
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state projectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -238,6 +291,12 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Read the project", err))
 		return
 	}
+	if project.Id == nil {
+		resp.Diagnostics.AddError("Unexpected API response", "project id is null")
+		return
+	}
+
+	id := project.Id.String()
 
 	var (
 		templateId     *string
@@ -253,9 +312,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		}
 	}
 	if templateId != nil {
-
 		r.Info(ctx, "look up the template name by id")
-
 		process, err := LookupProcess(ctx, r.Meta.CoreClient, func(p core.Process) bool { return p.Id != nil && p.Id.String() == *templateId })
 		if err != nil {
 			resp.Diagnostics.AddError("Lookup process", err.Error())
@@ -264,13 +321,15 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		templateName = process.Name
 	}
 
-	var id *string
-	if project.Id != nil {
-		id = pointer.From(project.Id.String())
+	r.Info(ctx, "get the project features")
+	features, err := getProjectFeatures(ctx, r.Meta.FeatureManagementClient, id)
+	if err != nil {
+		resp.Diagnostics.AddError("get the project features", err.Error())
+		return
 	}
 
 	// Set state
-	state.Id = fwtype.StringValue(id)
+	state.Id = types.StringValue(id)
 	state.Name = adocustomtype.StringCaseInsensitiveValue{
 		StringValue: fwtype.StringValue(project.Name),
 	}
@@ -278,6 +337,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Visibility = fwtype.StringValue(project.Visibility)
 	state.VersionControl = fwtype.StringValue(versionControl)
 	state.WorkItemTemplate = fwtype.StringValue(templateName)
+	state.Features = *features
 	state.ProcessTemplateId = fwtype.StringValue(templateId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
@@ -296,35 +356,70 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	id, err := uuid.Parse(state.Id.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Parse resource id as UUID", err.Error())
+	if !plan.Name.Equal(state.Name) || !plan.Description.Equal(state.Description) || !plan.Visibility.Equal(state.Visibility) {
+		r.Info(ctx, "update the project")
+
+		id, err := uuid.Parse(state.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Parse resource id as UUID", err.Error())
+			return
+		}
+
+		project := &core.TeamProject{
+			Name:        plan.Name.ValueStringPointer(),
+			Description: plan.Description.ValueStringPointer(),
+			Visibility:  pointer.From(core.ProjectVisibility(plan.Visibility.ValueString())),
+		}
+
+		operationRef, err := r.Meta.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
+			ProjectUpdate: project,
+			ProjectId:     &id,
+		})
+		if err != nil {
+			resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Queue update project", err))
+			return
+		}
+
+		r.Info(ctx, "wait for the project update")
+
+		if err := r.waitOperation(ctx, operationRef); err != nil {
+			resp.Diagnostics.AddError("Wait for project update operation", err.Error())
+			return
+		}
+	}
+}
+
+func (r *projectResource) PostUpdate(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state projectResourceModel
+	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	r.Info(ctx, "update the project")
-
-	project := &core.TeamProject{
-		Name:        plan.Name.ValueStringPointer(),
-		Description: plan.Description.ValueStringPointer(),
-		Visibility:  pointer.From(core.ProjectVisibility(plan.Visibility.ValueString())),
-	}
-
-	operationRef, err := r.Meta.CoreClient.UpdateProject(ctx, core.UpdateProjectArgs{
-		ProjectUpdate: project,
-		ProjectId:     &id,
-	})
-	if err != nil {
-		resp.Diagnostics = append(resp.Diagnostics, framework.NewDiagSdkError("Queue update project", err))
+	var features projectFeaturesTFModel
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("features"), &features)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	r.Info(ctx, "wait for the project update")
-
-	if err := r.waitOperation(ctx, operationRef); err != nil {
-		resp.Diagnostics.AddError("Wait for project update operation", err.Error())
-		return
+	r.Info(ctx, "set the project features")
+	if err := setProjectFeature(ctx, r.Meta.FeatureManagementClient, state.Id.ValueString(), features); err != nil {
+		resp.Diagnostics.AddError("failed to set project featuers", err.Error())
 	}
+}
+
+func (r *projectResource) ShouldPostUpdate(ctx context.Context, req resource.UpdateRequest) bool {
+	var planFeatures types.Object
+	if req.Plan.GetAttribute(ctx, path.Root("features"), &planFeatures).HasError() {
+		return false
+	}
+
+	var stateFeatures types.Object
+	if req.State.GetAttribute(ctx, path.Root("features"), &stateFeatures).HasError() {
+		return false
+	}
+
+	return !planFeatures.Equal(stateFeatures)
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -406,22 +501,4 @@ func (r *projectResource) pollOperationResult(ctx context.Context, operationRef 
 		}
 		return status, string(status), nil
 	}
-}
-
-func LookupProcess(ctx context.Context, client core.Client, f func(p core.Process) bool) (*core.Process, error) {
-	processes, err := client.GetProcesses(ctx, core.GetProcessesArgs{})
-	if err != nil {
-		return nil, err
-	}
-	if processes == nil {
-		return nil, errors.New("unexpected null processes")
-	}
-
-	for _, process := range *processes {
-		if f(process) {
-			return &process, nil
-		}
-	}
-
-	return nil, errors.New("process not found")
 }
