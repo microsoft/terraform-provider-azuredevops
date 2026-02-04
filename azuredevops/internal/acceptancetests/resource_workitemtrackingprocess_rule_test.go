@@ -103,6 +103,12 @@ func TestAccWorkitemtrackingprocessRule_ConditionTypes(t *testing.T) {
 							resource.TestCheckResourceAttrSet(tfNode, "id"),
 						),
 					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
 				},
 			})
 		})
@@ -136,6 +142,12 @@ func TestAccWorkitemtrackingprocessRule_ConditionGroupMembership(t *testing.T) {
 						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttrSet(tfNode, "id"),
 						),
+					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
 					},
 				},
 			})
@@ -180,6 +192,12 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 							resource.TestCheckResourceAttrSet(tfNode, "id"),
 						),
 					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
 				},
 			})
 		})
@@ -208,6 +226,12 @@ func TestAccWorkitemtrackingprocessRule_HideTargetField(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
 			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -227,6 +251,12 @@ func TestAccWorkitemtrackingprocessRule_DisallowValue(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
