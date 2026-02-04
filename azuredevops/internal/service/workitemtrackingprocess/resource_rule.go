@@ -93,7 +93,6 @@ func ResourceRule() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				MinItems:    1,
-				MaxItems:    2,
 				Description: "Set of conditions when the rule should be triggered.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -120,7 +119,6 @@ func ResourceRule() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				MinItems:    1,
-				MaxItems:    10,
 				Description: "Set of actions to take when the rule is triggered.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

@@ -159,15 +159,20 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
   name              = "Multiple Conditions Rule"
 
   condition {
+    condition_type = "whenWas"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  condition {
     condition_type = "when"
     field          = "System.State"
     value          = "Active"
   }
 
   condition {
-    condition_type = "whenNot"
-    field          = "System.State"
-    value          = "Closed"
+    condition_type = "whenChanged"
+    field          = "System.Title"
   }
 
   action {
