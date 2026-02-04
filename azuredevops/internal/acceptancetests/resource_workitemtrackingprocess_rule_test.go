@@ -200,26 +200,6 @@ func TestAccWorkitemtrackingprocessRule_ConditionWhenWas(t *testing.T) {
 	})
 }
 
-func TestAccWorkitemtrackingprocessRule_ConditionWhenStateChangedFromAndTo(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: ruleWithStateChangedFromAndTo(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccWorkitemtrackingprocessRule_ConditionWhenCurrentUserIsMemberOfGroup(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
@@ -371,30 +351,6 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
     condition_type = "when"
     field          = "System.State"
     value          = "Active"
-  }
-
-  action {
-    action_type  = "makeRequired"
-    target_field = "System.Title"
-  }
-}
-`, workItemType)
-}
-
-func ruleWithStateChangedFromAndTo(workItemTypeName, processName string) string {
-	workItemType := basicWorkItemType(workItemTypeName, processName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_workitemtrackingprocess_rule" "test" {
-  process_id        = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name              = "Test whenStateChangedFromAndTo Rule"
-
-  condition {
-    condition_type = "whenStateChangedFromAndTo"
-    field          = "System.State"
-    value          = "New;Active"
   }
 
   action {

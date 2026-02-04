@@ -20,7 +20,6 @@ var conditionTypes = []string{
 	"whenChanged",
 	"whenNotChanged",
 	"whenWas",
-	"whenStateChangedFromAndTo",
 	"whenCurrentUserIsMemberOfGroup",
 	"whenCurrentUserIsNotMemberOfGroup",
 }
