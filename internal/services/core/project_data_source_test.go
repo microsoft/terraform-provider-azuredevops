@@ -25,6 +25,7 @@ func TestAccDataSourceProject_withName(t *testing.T) {
 				resource.TestCheckResourceAttr(data.ResourceAddr(), "version_control", "Git"),
 				resource.TestCheckResourceAttr(data.ResourceAddr(), "work_item_template", "Basic"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+				resource.TestCheckResourceAttr(data.ResourceAddr(), "features.%", "5"),
 			),
 		},
 	})
@@ -45,6 +46,7 @@ func TestAccDataSourceProject_withID(t *testing.T) {
 				resource.TestCheckResourceAttr(data.ResourceAddr(), "version_control", "Git"),
 				resource.TestCheckResourceAttr(data.ResourceAddr(), "work_item_template", "Basic"),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+				resource.TestCheckResourceAttr(data.ResourceAddr(), "features.%", "5"),
 			),
 		},
 	})

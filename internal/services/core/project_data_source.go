@@ -37,6 +37,7 @@ type projectDataSourceModel struct {
 	VersionControl    types.String   `tfsdk:"version_control"`
 	WorkItemTemplate  types.String   `tfsdk:"work_item_template"`
 	ProcessTemplateId types.String   `tfsdk:"process_template_id"`
+	Features          types.Object   `tfsdk:"features"`
 	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -89,6 +90,27 @@ func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "The Process Template ID used by the project.",
 				Computed:            true,
 			},
+			"features": schema.SingleNestedAttribute{
+				MarkdownDescription: "The status (enabled/disabled) of the project features.",
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"boards": schema.BoolAttribute{
+						Computed: true,
+					},
+					"repos": schema.BoolAttribute{
+						Computed: true,
+					},
+					"pipelines": schema.BoolAttribute{
+						Computed: true,
+					},
+					"test_plans": schema.BoolAttribute{
+						Computed: true,
+					},
+					"artifacts": schema.BoolAttribute{
+						Computed: true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -100,8 +122,6 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	d.Info(ctx, "get the project")
-
 	var projectId string
 	switch {
 	case !config.ProjectId.IsNull():
@@ -110,6 +130,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		projectId = config.Name.ValueString()
 	}
 
+	d.Info(ctx, "get the project")
 	project, err := d.Meta.CoreClient.GetProject(ctx, core.GetProjectArgs{
 		ProjectId:           &projectId,
 		IncludeCapabilities: pointer.From(true),
@@ -146,6 +167,13 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		templateName = process.Name
 	}
 
+	d.Info(ctx, "get the project features")
+	features, err := getProjectFeatures(ctx, d.Meta.FeatureManagementClient, *id)
+	if err != nil {
+		resp.Diagnostics.AddError("get the project features", err.Error())
+		return
+	}
+
 	config = projectDataSourceModel{
 		Name:              fwtype.StringValue(project.Name),
 		ProjectId:         fwtype.StringValue(id),
@@ -154,6 +182,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		VersionControl:    fwtype.StringValue(versionControl),
 		WorkItemTemplate:  fwtype.StringValue(templateName),
 		ProcessTemplateId: fwtype.StringValue(templateId),
+		Features:          *features,
 		Timeouts:          config.Timeouts,
 	}
 
