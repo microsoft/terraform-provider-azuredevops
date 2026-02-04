@@ -22,6 +22,16 @@ var conditionTypes = []string{
 	"whenWas",
 	"whenCurrentUserIsMemberOfGroup",
 	"whenCurrentUserIsNotMemberOfGroup",
+	/*
+	   The following condition types are not supported by the API and will return an error:
+	   Error:  Creating rule. Error: VS1640105: Unrecognized value '$whenValueIsDefined' for property condition.conditionType.
+
+	   "whenStateChangedTo",
+	   "whenStateChangedFromAndTo",
+	   "whenWorkItemIsCreated",
+	   "whenValueIsDefined",
+	   "whenValueIsNotDefined",
+	*/
 }
 
 var actionTypes = []string{
@@ -39,6 +49,12 @@ var actionTypes = []string{
 	"copyFromServerCurrentUser",
 	"hideTargetField",
 	"disallowValue",
+	/*
+		The following action types are not supported by the API and will return an error:
+		Error:  Creating rule. Error: VS1640103: Missing required property action.actionType.
+
+		"setDefaultFromCurrentUser",
+	*/
 }
 
 func ResourceRule() *schema.Resource {
