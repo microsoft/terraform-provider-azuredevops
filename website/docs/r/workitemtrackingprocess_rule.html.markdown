@@ -10,6 +10,9 @@ description: |-
 Manages a rule for a work item type in a process. Rules define conditions and actions that are triggered during work item lifecycle events.
 
 ## Example Usage
+
+### Basic Rule
+
 ```hcl
 resource "azuredevops_workitemtrackingprocess_process" "example" {
   name                   = "example-process"
@@ -36,6 +39,97 @@ resource "azuredevops_workitemtrackingprocess_rule" "example" {
     action_type  = "makeRequired"
     target_field = "System.Title"
   }
+}
+```
+
+### Group Membership Condition
+
+The `whenCurrentUserIsMemberOfGroup` and `whenCurrentUserIsNotMemberOfGroup` conditions operate on groups.
+
+```hcl
+resource "azuredevops_project" "example" {
+  name = "example-project"
+}
+
+resource "azuredevops_group" "example" {
+  scope        = azuredevops_project.example.id
+  display_name = "example-group"
+}
+
+resource "azuredevops_workitemtrackingprocess_rule" "group_membership" {
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  name              = "Require Title for Group Members"
+
+  condition {
+    condition_type = "whenCurrentUserIsMemberOfGroup"
+    value          = azuredevops_group.example.origin_id
+  }
+
+  action {
+    action_type  = "makeRequired"
+    target_field = "System.Title"
+  }
+}
+```
+
+### Disallow Value Action
+
+The `disallowValue` action must target `System.State` and be paired with a `whenWas` condition on `System.State`.
+
+```hcl
+resource "azuredevops_workitemtrackingprocess_rule" "disallow_value" {
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  name              = "Prevent Closing from New"
+
+  condition {
+    condition_type = "whenWas"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  action {
+    action_type  = "disallowValue"
+    target_field = "System.State"
+    value        = "Closed"
+  }
+}
+```
+
+### Hide Target Field Action
+
+The `hideTargetField` action requires group membership conditions.
+
+```hcl
+resource "azuredevops_workitemtracking_field" "custom" {
+  name           = "Custom Field"
+  reference_name = "Custom.Field"
+  type           = "string"
+}
+
+resource "azuredevops_workitemtrackingprocess_field" "custom" {
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.id
+  field_id          = azuredevops_workitemtracking_field.custom.id
+}
+
+resource "azuredevops_workitemtrackingprocess_rule" "hide_field" {
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  name              = "Hide Custom Field for Non-Members"
+
+  condition {
+    condition_type = "whenCurrentUserIsNotMemberOfGroup"
+    value          = azuredevops_group.example.origin_id
+  }
+
+  action {
+    action_type  = "hideTargetField"
+    target_field = azuredevops_workitemtracking_field.custom.reference_name
+  }
+
+  depends_on = [azuredevops_workitemtrackingprocess_field.custom]
 }
 ```
 
