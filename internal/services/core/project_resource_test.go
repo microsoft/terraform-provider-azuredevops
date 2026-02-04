@@ -156,6 +156,21 @@ func TestAccProject_requiresImport(t *testing.T) {
 	})
 }
 
+func TestAccProject_migrateFromV0(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azuredevops_project", "test")
+	r := ProjectResource{}
+
+	data.ResourceTest(t, r, []resource.TestStep{
+		{
+			Config: r.migrateV0(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+			),
+		},
+		data.MigratePlanStep(r.migrateNow(data)),
+	})
+}
+
 func (r ProjectResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -169,7 +184,7 @@ resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s"
   features = {
     boards     = %[2]t
-    repos      = %[2]t
+    repositories      = %[2]t
     pipelines  = %[2]t
     testplans  = %[2]t
     artifacts  = %[2]t
@@ -186,7 +201,7 @@ resource "azuredevops_project" "test" {
   work_item_template = "Basic"
   features = {
     boards     = false
-    repos      = false
+    repositories      = false
     pipelines  = false
     testplans  = false
     artifacts  = false
@@ -201,4 +216,43 @@ func (r ProjectResource) requiresImport(data acceptance.TestData) string {
 resource "azuredevops_project" "import" {
   name = azuredevops_project.test.name
 }`, r.basic(data))
+}
+
+func (r ProjectResource) migrateV0(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  provider = azuredevops-v1
+
+  name               = "acctest-%[1]s"
+  description        = "test description"
+  version_control    = "Git"
+  work_item_template = "Basic"
+  features = {
+    boards     		= "disabled"
+    repositories    = "enabled"
+  }
+}
+
+# This is to accomodate the eventual consistency issue of the ADO API,
+# which is not handled by the v1 azuredevops provider.
+resource "time_sleep" "wait_30_seconds" {
+  depends_on = [azuredevops_project.test]
+  create_duration = "30s"
+}
+
+`, data.RandomString)
+}
+
+func (r ProjectResource) migrateNow(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name               = "acctest-%[1]s"
+  description        = "test description"
+  version_control    = "Git"
+  work_item_template = "Basic"
+  features = {
+    boards     		= false
+    repositories    = true
+  }
+}`, data.RandomString)
 }

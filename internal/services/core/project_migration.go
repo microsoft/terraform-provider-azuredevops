@@ -78,26 +78,26 @@ func (r *projectResource) UpgradeState(ctx context.Context) map[int64]resource.S
 				features := projectFeaturesTFModel{}
 				for k, v := range oldState.Features.Elements() {
 					switch k {
-					case "ms.vss-work.agile":
+					case "boards":
 						features.Boards = types.BoolValue(v.(types.String).ValueString() == string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled))
-					case "ms.vss-code.version-control":
+					case "repositories":
 						features.Repos = types.BoolValue(v.(types.String).ValueString() == string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled))
-					case "ms.vss-build.pipelines":
+					case "pipelines":
 						features.Pipelines = types.BoolValue(v.(types.String).ValueString() == string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled))
-					case "ms.vss-test-web.test":
+					case "testplans":
 						features.TestPlans = types.BoolValue(v.(types.String).ValueString() == string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled))
-					case "ms.azure-artifacts.feature":
+					case "artifacts":
 						features.Artifacts = types.BoolValue(v.(types.String).ValueString() == string(featuremanagement.ContributedFeatureEnabledValueValues.Enabled))
 					}
 				}
 				featuresObject, diags := types.ObjectValueFrom(
 					ctx,
 					map[string]attr.Type{
-						"boards":    types.BoolType,
-						"repos":     types.BoolType,
-						"pipelines": types.BoolType,
-						"testplans": types.BoolType,
-						"artifacts": types.BoolType,
+						"boards":       types.BoolType,
+						"repositories": types.BoolType,
+						"pipelines":    types.BoolType,
+						"testplans":    types.BoolType,
+						"artifacts":    types.BoolType,
 					},
 					features,
 				)

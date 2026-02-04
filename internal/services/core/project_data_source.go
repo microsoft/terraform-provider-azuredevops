@@ -97,7 +97,7 @@ func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 					"boards": schema.BoolAttribute{
 						Computed: true,
 					},
-					"repos": schema.BoolAttribute{
+					"repositories": schema.BoolAttribute{
 						Computed: true,
 					},
 					"pipelines": schema.BoolAttribute{

@@ -161,7 +161,7 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						Optional: true,
 						Computed: true,
 					},
-					"repos": schema.BoolAttribute{
+					"repositories": schema.BoolAttribute{
 						Optional: true,
 						Computed: true,
 					},
@@ -544,11 +544,11 @@ func (r *projectResource) postWritePollCheckers() []framework.PollChecker {
 		{
 			AttrPath: path.Root("features"),
 			Target: types.ObjectNull(map[string]attr.Type{
-				"boards":    types.BoolType,
-				"repos":     types.BoolType,
-				"pipelines": types.BoolType,
-				"testplans": types.BoolType,
-				"artifacts": types.BoolType,
+				"boards":       types.BoolType,
+				"repositories": types.BoolType,
+				"pipelines":    types.BoolType,
+				"testplans":    types.BoolType,
+				"artifacts":    types.BoolType,
 			}),
 		},
 	}

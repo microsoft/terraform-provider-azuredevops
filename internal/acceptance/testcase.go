@@ -65,5 +65,13 @@ func (d TestData) externalProviders() map[string]resource.ExternalProvider {
 			VersionConstraint: "=3.7.0",
 			Source:            "registry.terraform.io/hashicorp/azuread",
 		},
+		"time": {
+			VersionConstraint: "=0.13.1",
+			Source:            "registry.terraform.io/hashicorp/time",
+		},
+		"azuredevops-v1": {
+			VersionConstraint: "=1.13.0",
+			Source:            "registry.terraform.io/microsoft/azuredevops",
+		},
 	}
 }
