@@ -21,7 +21,6 @@ var conditionTypes = []string{
 	"whenNotChanged",
 	"whenWas",
 	"whenStateChangedFromAndTo",
-	"whenWorkItemIsCreated",
 	"whenCurrentUserIsMemberOfGroup",
 	"whenCurrentUserIsNotMemberOfGroup",
 }

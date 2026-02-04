@@ -61,7 +61,7 @@ The following arguments are supported:
 
 A `condition` block supports the following:
 
-* `condition_type` - (Required) Type of condition. Valid values: `when`, `whenNot`, `whenChanged`, `whenNotChanged`, `whenWas`, `whenStateChangedFromAndTo`, `whenWorkItemIsCreated`, `whenCurrentUserIsMemberOfGroup`, `whenCurrentUserIsNotMemberOfGroup`.
+* `condition_type` - (Required) Type of condition. Valid values: `when`, `whenNot`, `whenChanged`, `whenNotChanged`, `whenWas`, `whenStateChangedFromAndTo`, `whenCurrentUserIsMemberOfGroup`, `whenCurrentUserIsNotMemberOfGroup`.
 
 * `field` - (Optional) Field reference name for the condition. Required for most condition types.
 

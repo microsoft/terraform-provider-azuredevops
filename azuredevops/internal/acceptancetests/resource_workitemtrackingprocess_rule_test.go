@@ -109,7 +109,6 @@ func TestAccWorkitemtrackingprocessRule_ConditionTypes(t *testing.T) {
 		{"whenNot", "System.State", "Closed"},
 		{"whenChanged", "System.Title", ""},
 		{"whenNotChanged", "System.Title", ""},
-		{"whenWorkItemIsCreated", "", ""},
 	}
 
 	for _, tc := range testCases {
