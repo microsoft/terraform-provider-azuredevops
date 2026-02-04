@@ -29,7 +29,6 @@ var actionTypes = []string{
 	"makeReadOnly",
 	"setDefaultValue",
 	"setDefaultFromClock",
-	"setDefaultFromCurrentUser",
 	"setDefaultFromField",
 	"copyValue",
 	"copyFromClock",

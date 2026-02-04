@@ -153,7 +153,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 		{"makeReadOnly", "System.Title", ""},
 		{"setDefaultValue", "System.Title", "Default Title"},
 		{"setDefaultFromClock", "System.ChangedDate", ""},
-		{"setDefaultFromCurrentUser", "System.AssignedTo", ""},
 		{"setDefaultFromField", "System.Description", "System.Title"},
 		{"copyValue", "System.Title", "Copied Value"},
 		{"copyFromClock", "System.ChangedDate", ""},
@@ -162,8 +161,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 		{"setValueToEmpty", "System.Description", ""},
 		{"copyFromServerClock", "System.ChangedDate", ""},
 		{"copyFromServerCurrentUser", "System.AssignedTo", ""},
-		{"hideTargetField", "System.Description", ""},
-		{"disallowValue", "System.State", "Closed"},
 	}
 
 	for _, tc := range testCases {
@@ -187,6 +184,52 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestAccWorkitemtrackingprocessRule_HideTargetField(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	projectName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testutils.CheckProcessDestroyed,
+			testutils.CheckProjectDestroyed,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: ruleWithHideTargetField(workItemTypeName, processName, projectName, groupName, fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWorkitemtrackingprocessRule_DisallowValue(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: ruleWithDisallowValue(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+		},
+	})
 }
 
 func updatedRule(workItemTypeName string, processName string) string {
@@ -318,6 +361,77 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
   }
 }
 `, workItemType, conditionType, conditionType, fieldAttr, valueAttr)
+}
+
+func ruleWithHideTargetField(workItemTypeName, processName, projectName, groupName, fieldName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_project" "group_test" {
+  name = "%s"
+}
+
+resource "azuredevops_group" "test" {
+  scope        = azuredevops_project.group_test.id
+  display_name = "%s"
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+}
+
+resource "azuredevops_workitemtrackingprocess_field" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
+}
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test hideTargetField Rule"
+
+  condition {
+    condition_type = "whenCurrentUserIsNotMemberOfGroup"
+    value          = azuredevops_group.test.origin_id
+  }
+
+  action {
+    action_type  = "hideTargetField"
+    target_field = azuredevops_workitemtracking_field.test.reference_name
+  }
+
+  depends_on = [azuredevops_workitemtrackingprocess_field.test]
+}
+`, workItemType, projectName, groupName, fieldName, fieldName)
+}
+
+func ruleWithDisallowValue(workItemTypeName, processName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test disallowValue Rule"
+
+  condition {
+    condition_type = "whenWas"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  action {
+    action_type  = "disallowValue"
+    target_field = "System.State"
+    value        = "Closed"
+  }
+}
+`, workItemType)
 }
 
 func ruleWithActionType(workItemTypeName, processName, actionType, targetField, value string) string {
