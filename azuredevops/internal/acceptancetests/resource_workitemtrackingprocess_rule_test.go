@@ -135,6 +135,40 @@ func TestAccWorkitemtrackingprocessRule_ConditionTypes(t *testing.T) {
 	}
 }
 
+func TestAccWorkitemtrackingprocessRule_ConditionGroupMembership(t *testing.T) {
+	testCases := []string{
+		"whenCurrentUserIsMemberOfGroup",
+		"whenCurrentUserIsNotMemberOfGroup",
+	}
+
+	for _, conditionType := range testCases {
+		t.Run(conditionType, func(t *testing.T) {
+			workItemTypeName := testutils.GenerateWorkItemTypeName()
+			processName := testutils.GenerateResourceName()
+			projectName := testutils.GenerateResourceName()
+			groupName := testutils.GenerateResourceName()
+			tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+			resource.ParallelTest(t, resource.TestCase{
+				PreCheck:          func() { testutils.PreCheck(t, nil) },
+				ProviderFactories: testutils.GetProviderFactories(),
+				CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+					testutils.CheckProcessDestroyed,
+					testutils.CheckProjectDestroyed,
+				),
+				Steps: []resource.TestStep{
+					{
+						Config: ruleWithGroupMembershipCondition(workItemTypeName, processName, projectName, groupName, conditionType),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttrSet(tfNode, "id"),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
 func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 	testCases := []struct {
 		actionType  string
@@ -179,48 +213,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 			})
 		})
 	}
-}
-
-func TestAccWorkitemtrackingprocessRule_ConditionWhenCurrentUserIsMemberOfGroup(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	groupName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: ruleWithCurrentUserIsMemberOfGroup(workItemTypeName, processName, groupName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccWorkitemtrackingprocessRule_ConditionWhenCurrentUserIsNotMemberOfGroup(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	groupName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: ruleWithCurrentUserIsNotMemberOfGroup(workItemTypeName, processName, groupName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			},
-		},
-	})
 }
 
 func basicRule(workItemTypeName string, processName string) string {
@@ -312,13 +304,13 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 `, workItemType)
 }
 
-func ruleWithCurrentUserIsMemberOfGroup(workItemTypeName, processName, groupName string) string {
+func ruleWithGroupMembershipCondition(workItemTypeName, processName, projectName, groupName, conditionType string) string {
 	workItemType := basicWorkItemType(workItemTypeName, processName)
 	return fmt.Sprintf(`
 %s
 
 resource "azuredevops_project" "group_test" {
-  name = "%s-proj"
+  name = "%s"
 }
 
 resource "azuredevops_group" "test" {
@@ -329,10 +321,10 @@ resource "azuredevops_group" "test" {
 resource "azuredevops_workitemtrackingprocess_rule" "test" {
   process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name              = "Test whenCurrentUserIsMemberOfGroup Rule"
+  name              = "Test %s Rule"
 
   condition {
-    condition_type = "whenCurrentUserIsMemberOfGroup"
+    condition_type = "%s"
     value          = azuredevops_group.test.origin_id
   }
 
@@ -341,39 +333,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
     target_field = "System.Title"
   }
 }
-`, workItemType, groupName, groupName)
-}
-
-func ruleWithCurrentUserIsNotMemberOfGroup(workItemTypeName, processName, groupName string) string {
-	workItemType := basicWorkItemType(workItemTypeName, processName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_project" "group_test" {
-  name = "%s-proj"
-}
-
-resource "azuredevops_group" "test" {
-  scope        = azuredevops_project.group_test.id
-  display_name = "%s"
-}
-
-resource "azuredevops_workitemtrackingprocess_rule" "test" {
-  process_id        = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name              = "Test whenCurrentUserIsNotMemberOfGroup Rule"
-
-  condition {
-    condition_type = "whenCurrentUserIsNotMemberOfGroup"
-    value          = azuredevops_group.test.origin_id
-  }
-
-  action {
-    action_type  = "makeRequired"
-    target_field = "System.Title"
-  }
-}
-`, workItemType, groupName, groupName)
+`, workItemType, projectName, groupName, conditionType, conditionType)
 }
 
 func ruleWithConditionType(workItemTypeName, processName, conditionType, field, value string) string {
