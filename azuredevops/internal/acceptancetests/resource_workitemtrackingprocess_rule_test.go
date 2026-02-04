@@ -109,6 +109,7 @@ func TestAccWorkitemtrackingprocessRule_ConditionTypes(t *testing.T) {
 		{"whenNot", "System.State", "Closed"},
 		{"whenChanged", "System.Title", ""},
 		{"whenNotChanged", "System.Title", ""},
+		{"whenWas", "System.State", "New"},
 	}
 
 	for _, tc := range testCases {
@@ -178,26 +179,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 			})
 		})
 	}
-}
-
-func TestAccWorkitemtrackingprocessRule_ConditionWhenWas(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: ruleWithWhenWas(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			},
-		},
-	})
 }
 
 func TestAccWorkitemtrackingprocessRule_ConditionWhenCurrentUserIsMemberOfGroup(t *testing.T) {
@@ -326,36 +307,6 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
   action {
     action_type  = "makeReadOnly"
     target_field = "System.Description"
-  }
-}
-`, workItemType)
-}
-
-func ruleWithWhenWas(workItemTypeName, processName string) string {
-	workItemType := basicWorkItemType(workItemTypeName, processName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_workitemtrackingprocess_rule" "test" {
-  process_id        = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name              = "Test whenWas Rule"
-
-  condition {
-    condition_type = "whenWas"
-    field          = "System.State"
-    value          = "New"
-  }
-
-  condition {
-    condition_type = "when"
-    field          = "System.State"
-    value          = "Active"
-  }
-
-  action {
-    action_type  = "makeRequired"
-    target_field = "System.Title"
   }
 }
 `, workItemType)
