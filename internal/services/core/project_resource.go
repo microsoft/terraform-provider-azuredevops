@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -28,7 +30,9 @@ import (
 
 var _ framework.Resource = &projectResource{}
 var _ framework.ResourceWithPostCreate = &projectResource{}
+var _ framework.ResourceWithPostCreatePoll = &projectResource{}
 var _ framework.ResourceWithPostUpdate = &projectResource{}
+var _ framework.ResourceWithPostUpdatePoll = &projectResource{}
 
 func NewProjectResource() framework.Resource {
 	return &projectResource{}
@@ -104,10 +108,12 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"description": schema.StringAttribute{
 				MarkdownDescription: "The description of the project",
 				Optional:            true,
+				Computed:            true,
 				Validators: []validator.String{
 					// An empty description in request will not be returned in the response.
 					stringvalidator.LengthAtLeast(1),
 				},
+				Default: stringdefault.StaticString(""),
 			},
 			"visibility": schema.StringAttribute{
 				MarkdownDescription: "The visibility of the project. Possible values are `private` and `public`. Defaults to `private`.",
@@ -265,7 +271,20 @@ func (r *projectResource) PostCreate(ctx context.Context, req resource.CreateReq
 
 func (r *projectResource) ShouldPostCreate(ctx context.Context, req resource.CreateRequest) bool {
 	var features types.Object
-	return !req.Plan.GetAttribute(ctx, path.Root("features"), &features).HasError() && !features.IsNull()
+	// If not specified (will be unknown as is O+C), no need to set features.
+	return !req.Plan.GetAttribute(ctx, path.Root("features"), &features).HasError() && !features.IsUnknown()
+}
+
+func (r *projectResource) PostCreatePollCheckers() []framework.PollChecker {
+	return r.postWritePollCheckers()
+}
+
+func (r *projectResource) PostCreatePollOption(ctx context.Context) retry.RetryOption {
+	return r.postWritePollOption(ctx)
+}
+
+func (r *projectResource) PostCreatePollRetryableDiags(diags diag.Diagnostics) bool {
+	return false
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -333,7 +352,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Name = adocustomtype.StringCaseInsensitiveValue{
 		StringValue: fwtype.StringValue(project.Name),
 	}
-	state.Description = fwtype.StringValue(project.Description)
+	state.Description = fwtype.StringValueOrZero(project.Description)
 	state.Visibility = fwtype.StringValue(project.Visibility)
 	state.VersionControl = fwtype.StringValue(versionControl)
 	state.WorkItemTemplate = fwtype.StringValue(templateName)
@@ -413,6 +432,10 @@ func (r *projectResource) ShouldPostUpdate(ctx context.Context, req resource.Upd
 	if req.Plan.GetAttribute(ctx, path.Root("features"), &planFeatures).HasError() {
 		return false
 	}
+	// If not specified (will be unknown as is O+C), no need to set features.
+	if planFeatures.IsUnknown() {
+		return false
+	}
 
 	var stateFeatures types.Object
 	if req.State.GetAttribute(ctx, path.Root("features"), &stateFeatures).HasError() {
@@ -420,6 +443,18 @@ func (r *projectResource) ShouldPostUpdate(ctx context.Context, req resource.Upd
 	}
 
 	return !planFeatures.Equal(stateFeatures)
+}
+
+func (r *projectResource) PostUpdatePollCheckers() []framework.PollChecker {
+	return r.postWritePollCheckers()
+}
+
+func (r *projectResource) PostUpdatePollOption(ctx context.Context) retry.RetryOption {
+	return r.postWritePollOption(ctx)
+}
+
+func (r *projectResource) PostUpdatePollRetryableDiags(diag.Diagnostics) bool {
+	return false
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -501,4 +536,23 @@ func (r *projectResource) pollOperationResult(ctx context.Context, operationRef 
 		}
 		return status, string(status), nil
 	}
+}
+
+func (r *projectResource) postWritePollCheckers() []framework.PollChecker {
+	return []framework.PollChecker{
+		{
+			AttrPath: path.Root("features"),
+			Target: types.ObjectNull(map[string]attr.Type{
+				"boards":     types.BoolType,
+				"repos":      types.BoolType,
+				"pipelines":  types.BoolType,
+				"test_plans": types.BoolType,
+				"artifacts":  types.BoolType,
+			}),
+		},
+	}
+}
+
+func (r *projectResource) postWritePollOption(ctx context.Context) retry.RetryOption {
+	return retry.NewSimpleRetryOption(ctx, 10, time.Second)
 }

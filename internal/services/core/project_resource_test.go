@@ -76,12 +76,65 @@ func TestAccProject_update(t *testing.T) {
 		},
 		data.ImportStep(),
 		{
-			Config: r.update(data),
+			Config: r.complete(data),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
 					planchecks.IsNotResourceAction(data.ResourceAddr(), plancheck.ResourceActionReplace),
 				},
 			},
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.basic(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccProject_features(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azuredevops_project", "test")
+	r := ProjectResource{}
+
+	data.ResourceTest(t, r, []resource.TestStep{
+		{
+			Config: r.basic(data),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.features(data, true),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					planchecks.IsNotResourceAction(data.ResourceAddr(), plancheck.ResourceActionReplace),
+				},
+			},
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.features(data, false),
+			Check: resource.ComposeTestCheckFunc(
+				checks.ExistsInAzure(t, r, data.ResourceAddr()),
+				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.basic(data),
 			Check: resource.ComposeTestCheckFunc(
 				checks.ExistsInAzure(t, r, data.ResourceAddr()),
 				resource.TestCheckResourceAttrSet(data.ResourceAddr(), "process_template_id"),
@@ -106,17 +159,22 @@ func TestAccProject_requiresImport(t *testing.T) {
 func (r ProjectResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-  name               = "acctest-%[1]s"
+  name = "acctest-%[1]s"
 }`, data.RandomString)
 }
 
-func (r ProjectResource) update(data acceptance.TestData) string {
+func (r ProjectResource) features(data acceptance.TestData, v bool) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-  name               = "acctest-%[1]s-update"
-  description        = "test description"
-  version_control    = "Git"
-}`, data.RandomString)
+  name               = "acctest-%[1]s"
+  features = {
+    boards     = %[2]t
+    repos      = %[2]t
+    pipelines  = %[2]t
+    test_plans = %[2]t
+    artifacts  = %[2]t
+  }
+}`, data.RandomString, v)
 }
 
 func (r ProjectResource) complete(data acceptance.TestData) string {
@@ -124,8 +182,15 @@ func (r ProjectResource) complete(data acceptance.TestData) string {
 resource "azuredevops_project" "test" {
   name               = "acctest-%[1]s"
   description        = "test description"
-  version_control    = "Tfvc"
-  work_item_template = "Agile"
+  version_control    = "Git"
+  work_item_template = "Basic"
+  features = {
+    boards     = false
+    repos      = false
+    pipelines  = false
+    test_plans = false
+    artifacts  = false
+  }
 }`, data.RandomString)
 }
 
@@ -134,7 +199,6 @@ func (r ProjectResource) requiresImport(data acceptance.TestData) string {
 %s
 
 resource "azuredevops_project" "import" {
-  name               = azuredevops_project.test.name
-  description        = azuredevops_project.test.description
+  name = azuredevops_project.test.name
 }`, r.basic(data))
 }
