@@ -127,6 +127,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_workitemtrackingprocess_control",
 		"azuredevops_workitemtrackingprocess_field",
 		"azuredevops_workitemtrackingprocess_group",
+		"azuredevops_workitemtrackingprocess_list",
 		"azuredevops_workitemtrackingprocess_page",
 		"azuredevops_workitemtrackingprocess_process",
 		"azuredevops_workitemtrackingprocess_process_permissions",

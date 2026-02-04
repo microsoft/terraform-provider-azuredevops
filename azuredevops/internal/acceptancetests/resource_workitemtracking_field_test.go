@@ -383,6 +383,84 @@ func TestAccWorkItemTrackingField_Restore(t *testing.T) {
 	})
 }
 
+func TestAccWorkItemTrackingField_Picklist(t *testing.T) {
+	fieldName := generateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldAndListDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklist(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_PicklistSuggested(t *testing.T) {
+	fieldName := generateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldAndListDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklistSuggested(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkItemTrackingField_PicklistInteger(t *testing.T) {
+	fieldName := generateFieldName()
+	listName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtracking_field.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      checkFieldAndListDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: fieldPicklistInteger(fieldName, listName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrPair(tfNode, "picklist_id", "azuredevops_workitemtrackingprocess_list.test", "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func fieldBasic(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtracking_field" "test" {
@@ -440,9 +518,66 @@ resource "azuredevops_workitemtracking_field" "test" {
 `, name, name)
 }
 
+func fieldPicklist(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name  = "%s"
+  items = ["Red", "Green", "Blue"]
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
+}
+
+func fieldPicklistSuggested(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name         = "%s"
+  items        = ["Option1", "Option2", "Option3"]
+  is_suggested = true
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
+}
+
+func fieldPicklistInteger(fieldName, listName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_list" "test" {
+  name  = "%s"
+  type  = "integer"
+  items = ["1", "2", "3", "5", "8"]
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "integer"
+  picklist_id    = azuredevops_workitemtrackingprocess_list.test.id
+}
+`, listName, fieldName, fieldName)
+}
+
 // generateFieldName generates a valid field name without hyphens or other invalid characters
 func generateFieldName() string {
 	return strings.ReplaceAll(testutils.GenerateResourceName(), "-", "")
+}
+
+func checkFieldAndListDestroyed(s *terraform.State) error {
+	if err := checkFieldDestroyed(s); err != nil {
+		return err
+	}
+	return checkListDestroyed(s)
 }
 
 // checkFieldDestroyed verifies that all fields referenced in the state are destroyed. This will be invoked
