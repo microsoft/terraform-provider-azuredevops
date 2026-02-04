@@ -20,7 +20,7 @@ func TestAccWorkitemtrackingprocessRule_Basic(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicRule(workItemTypeName, processName),
+				Config: multipleConditionsRule(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -46,7 +46,7 @@ func TestAccWorkitemtrackingprocessRule_Update(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicRule(workItemTypeName, processName),
+				Config: multipleConditionsRule(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -59,32 +59,6 @@ func TestAccWorkitemtrackingprocessRule_Update(t *testing.T) {
 			},
 			{
 				Config: updatedRule(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
-			},
-			{
-				ResourceName:      tfNode,
-				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccWorkitemtrackingprocessRule_MultipleConditionsAndActions(t *testing.T) {
-	workItemTypeName := testutils.GenerateWorkItemTypeName()
-	processName := testutils.GenerateResourceName()
-	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testutils.PreCheck(t, nil) },
-		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy:      testutils.CheckProcessDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: multipleConditionsRule(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -213,30 +187,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 			})
 		})
 	}
-}
-
-func basicRule(workItemTypeName string, processName string) string {
-	workItemType := basicWorkItemType(workItemTypeName, processName)
-	return fmt.Sprintf(`
-%s
-
-resource "azuredevops_workitemtrackingprocess_rule" "test" {
-  process_id        = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name              = "Test Rule"
-
-  condition {
-    condition_type = "when"
-    field          = "System.State"
-    value          = "New"
-  }
-
-  action {
-    action_type  = "makeRequired"
-    target_field = "System.Title"
-  }
-}
-`, workItemType)
 }
 
 func updatedRule(workItemTypeName string, processName string) string {
