@@ -333,7 +333,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 
   condition {
     condition_type = "whenCurrentUserIsMemberOfGroup"
-    value          = azuredevops_group.test.descriptor
+    value          = azuredevops_group.test.origin_id
   }
 
   action {
@@ -365,7 +365,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 
   condition {
     condition_type = "whenCurrentUserIsNotMemberOfGroup"
-    value          = azuredevops_group.test.descriptor
+    value          = azuredevops_group.test.origin_id
   }
 
   action {
