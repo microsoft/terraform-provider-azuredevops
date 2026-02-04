@@ -23,7 +23,7 @@ type projectFeaturesTFModel struct {
 	Boards    types.Bool `tfsdk:"boards"`
 	Repos     types.Bool `tfsdk:"repos"`
 	Pipelines types.Bool `tfsdk:"pipelines"`
-	TestPlans types.Bool `tfsdk:"test_plans"`
+	TestPlans types.Bool `tfsdk:"testplans"`
 	Artifacts types.Bool `tfsdk:"artifacts"`
 }
 
@@ -137,11 +137,11 @@ func getProjectFeatures(ctx context.Context, client featuremanagement.Client, pr
 	obj, diags := types.ObjectValueFrom(
 		ctx,
 		map[string]attr.Type{
-			"boards":     types.BoolType,
-			"repos":      types.BoolType,
-			"pipelines":  types.BoolType,
-			"test_plans": types.BoolType,
-			"artifacts":  types.BoolType,
+			"boards":    types.BoolType,
+			"repos":     types.BoolType,
+			"pipelines": types.BoolType,
+			"testplans": types.BoolType,
+			"artifacts": types.BoolType,
 		},
 		apiModel.ToTFModel(),
 	)

@@ -103,7 +103,7 @@ func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 					"pipelines": schema.BoolAttribute{
 						Computed: true,
 					},
-					"test_plans": schema.BoolAttribute{
+					"testplans": schema.BoolAttribute{
 						Computed: true,
 					},
 					"artifacts": schema.BoolAttribute{

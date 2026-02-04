@@ -171,7 +171,7 @@ resource "azuredevops_project" "test" {
     boards     = %[2]t
     repos      = %[2]t
     pipelines  = %[2]t
-    test_plans = %[2]t
+    testplans  = %[2]t
     artifacts  = %[2]t
   }
 }`, data.RandomString, v)
@@ -188,7 +188,7 @@ resource "azuredevops_project" "test" {
     boards     = false
     repos      = false
     pipelines  = false
-    test_plans = false
+    testplans  = false
     artifacts  = false
   }
 }`, data.RandomString)

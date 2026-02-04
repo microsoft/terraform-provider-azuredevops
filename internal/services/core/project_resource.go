@@ -96,6 +96,7 @@ func (r *projectResource) IdentitySchema(ctx context.Context, req resource.Ident
 
 func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version: 1,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				CustomType:          adocustomtype.StringCaseInsensitiveType{},
@@ -168,7 +169,7 @@ func (r *projectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						Optional: true,
 						Computed: true,
 					},
-					"test_plans": schema.BoolAttribute{
+					"testplans": schema.BoolAttribute{
 						Optional: true,
 						Computed: true,
 					},
@@ -543,11 +544,11 @@ func (r *projectResource) postWritePollCheckers() []framework.PollChecker {
 		{
 			AttrPath: path.Root("features"),
 			Target: types.ObjectNull(map[string]attr.Type{
-				"boards":     types.BoolType,
-				"repos":      types.BoolType,
-				"pipelines":  types.BoolType,
-				"test_plans": types.BoolType,
-				"artifacts":  types.BoolType,
+				"boards":    types.BoolType,
+				"repos":     types.BoolType,
+				"pipelines": types.BoolType,
+				"testplans": types.BoolType,
+				"artifacts": types.BoolType,
 			}),
 		},
 	}
