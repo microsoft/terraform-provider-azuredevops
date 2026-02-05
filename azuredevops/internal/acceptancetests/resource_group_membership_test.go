@@ -14,9 +14,8 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
-func TestAccGroupMembership_createAndRemove(t *testing.T) {
+func TestAccGroupMembership_overwrite(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	userPrincipalName := testutils.GenerateResourceName() + "@msaztest.com"
 	tfNode := "azuredevops_group_membership.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -24,15 +23,22 @@ func TestAccGroupMembership_createAndRemove(t *testing.T) {
 		Providers: testutils.GetProviders(),
 		Steps: []resource.TestStep{
 			{
-				Config: hclMemberShipBasic(projectName, userPrincipalName),
+				Config: overwriteEmpty(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "group"),
+					resource.TestCheckResourceAttr(tfNode, "members.#", "0"),
+				),
+			},
+			{
+				Config: overwriteWithMember(projectName),
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
 				),
-			}, {
-				Config: hclMemberShipRemove(projectName, userPrincipalName),
-				Check:  checkGroupMembershipMatchesState(),
+			},
+			{
+				Config: overwriteEmpty(projectName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "members.#", "0"),
+				),
 			},
 		},
 	})
@@ -89,43 +95,45 @@ func getMembersOfGroup(groupDescriptor string) (*[]graph.GraphMembership, error)
 	})
 }
 
-func hclMemberShipTemplate(projectName, userPrincipalName string) string {
+func overwriteEmpty(name string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
-  name = "%s"
-}
-data "azuredevops_group" "test" {
-  project_id = azuredevops_project.test.id
-  name       = "Build Administrators"
-}
-resource "azuredevops_user_entitlement" "test" {
-  principal_name       = "%s"
-  account_license_type = "express"
-}`, projectName, userPrincipalName)
+  name = "acctest-%[1]s"
 }
 
-func hclMemberShipBasic(projectName, userPrincipalName string) string {
-	return fmt.Sprintf(`
-%s
-output "group_descriptor" {
-  value = data.azuredevops_group.test.descriptor
+resource "azuredevops_group" "test" {
+  display_name = "acctest-%[1]s"
+  scope        = azuredevops_project.test.id
 }
-output "user_descriptor" {
-  value = azuredevops_user_entitlement.test.descriptor
-}
+
 resource "azuredevops_group_membership" "test" {
-  group   = data.azuredevops_group.test.descriptor
-  members = [azuredevops_user_entitlement.test.descriptor]
-}`, hclMemberShipTemplate(projectName, userPrincipalName))
+  group      = azuredevops_group.test.id
+  mode       = "overwrite"
+  members    = []
+}
+`, name)
 }
 
-func hclMemberShipRemove(projectName, userPrincipalName string) string {
+func overwriteWithMember(name string) string {
 	return fmt.Sprintf(`
-%s
-output "group_descriptor" {
-  value = data.azuredevops_group.test.descriptor
+resource "azuredevops_project" "test" {
+  name = "acctest-%[1]s"
 }
-output "user_descriptor" {
-  value = azuredevops_user_entitlement.test.descriptor
-}`, hclMemberShipTemplate(projectName, userPrincipalName))
+
+resource "azuredevops_group" "test" {
+  display_name = "acctest-%[1]s"
+  scope        = azuredevops_project.test.id
+}
+
+resource "azuredevops_group" "member" {
+  display_name = "acctest-member-%[1]s"
+  scope        = azuredevops_project.test.id
+}
+
+resource "azuredevops_group_membership" "test" {
+  group      = azuredevops_group.test.id
+  mode       = "overwrite"
+  members    = [azuredevops_group.member.id]
+}
+`, name)
 }
