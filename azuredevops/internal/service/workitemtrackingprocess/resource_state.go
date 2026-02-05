@@ -99,10 +99,12 @@ func createResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 		StateCategory: converter.String(d.Get("state_category").(string)),
 	}
 
-	rawConfig := d.GetRawConfig().AsValueMap()
-	if order := rawConfig["order"]; !order.IsNull() {
-		orderInt, _ := order.AsBigFloat().Int64()
-		stateModel.Order = converter.Int(int(orderInt))
+	order, err := getOrder(d)
+	if err != nil {
+		return diag.Errorf(" Getting order. Error %+v", err)
+	}
+	if order != nil {
+		stateModel.Order = order
 	}
 
 	args := workitemtrackingprocess.CreateStateDefinitionArgs{
@@ -179,10 +181,12 @@ func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 		StateCategory: converter.String(d.Get("state_category").(string)),
 	}
 
-	rawConfig := d.GetRawConfig().AsValueMap()
-	if order := rawConfig["order"]; !order.IsNull() {
-		orderInt, _ := order.AsBigFloat().Int64()
-		stateModel.Order = converter.Int(int(orderInt))
+	order, err := getOrder(d)
+	if err != nil {
+		return diag.Errorf(" Getting order. Error %+v", err)
+	}
+	if order != nil {
+		stateModel.Order = order
 	}
 
 	args := workitemtrackingprocess.UpdateStateDefinitionArgs{
@@ -192,7 +196,7 @@ func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 		StateModel: &stateModel,
 	}
 
-	_, err := clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, args)
+	_, err = clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, args)
 	if err != nil {
 		return diag.Errorf("updating state: %+v", err)
 	}
