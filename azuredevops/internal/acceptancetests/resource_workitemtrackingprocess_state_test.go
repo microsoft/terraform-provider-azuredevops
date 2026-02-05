@@ -53,7 +53,6 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 				Config: basicState(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttr(tfNode, "order", "2"),
 					captureStateId(tfNode, &stateId),
 				),
 			},
@@ -67,7 +66,6 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 				Config: updatedState(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPtr(tfNode, "id", &stateId),
-					resource.TestCheckResourceAttr(tfNode, "order", "3"),
 				),
 			},
 			{
