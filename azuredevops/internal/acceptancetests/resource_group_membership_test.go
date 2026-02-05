@@ -107,9 +107,9 @@ resource "azuredevops_group" "test" {
 }
 
 resource "azuredevops_group_membership" "test" {
-  group      = azuredevops_group.test.id
-  mode       = "overwrite"
-  members    = []
+  group   = azuredevops_group.test.id
+  mode    = "overwrite"
+  members = []
 }
 `, name)
 }
@@ -131,9 +131,9 @@ resource "azuredevops_group" "member" {
 }
 
 resource "azuredevops_group_membership" "test" {
-  group      = azuredevops_group.test.id
-  mode       = "overwrite"
-  members    = [azuredevops_group.member.id]
+  group   = azuredevops_group.test.id
+  mode    = "overwrite"
+  members = [azuredevops_group.member.id]
 }
 `, name)
 }
