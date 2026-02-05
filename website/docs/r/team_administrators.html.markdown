@@ -1,4 +1,4 @@
-*---
+---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_team_administrators"
 description: |-
@@ -88,4 +88,4 @@ The resource does not support import.
 
 ## PAT Permissions Required
 
-- **vso.project_write**:	Grants the ability to read and update projects and teams. 
+- **vso.project_write**:	Grants the ability to read and update projects and teams.

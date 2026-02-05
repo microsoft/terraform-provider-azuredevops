@@ -208,7 +208,7 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	var createdControl *workitemtrackingprocess.Control
-	err := retryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
 		var createErr error
 		createdControl, createErr = clients.WorkItemTrackingProcessClient.CreateControlInGroup(ctx, args)
 		return createErr
@@ -224,7 +224,7 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	d.SetId(*createdControl.Id)
 
 	// Retry reading the control to handle eventual consistency
-	err = retryOnNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+	err = utils.RetryOnNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
 		return readResourceControlWithError(ctx, d, m)
 	})
 	if err != nil {
@@ -381,7 +381,7 @@ func deleteResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 		ControlId:  &controlId,
 	}
 
-	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingProcessClient.RemoveControlFromGroup(ctx, args)
 	})
 	if err != nil {
