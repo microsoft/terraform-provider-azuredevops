@@ -1,0 +1,491 @@
+package acceptancetests
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+)
+
+func TestAccWorkitemtrackingprocessRule_Basic(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: multipleConditionsRule(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkitemtrackingprocessRule_Update(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: multipleConditionsRule(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: updatedRule(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkitemtrackingprocessRule_ConditionTypes(t *testing.T) {
+	testCases := []struct {
+		conditionType string
+		field         string
+		value         string
+	}{
+		{"when", "System.State", "New"},
+		{"whenNot", "System.State", "Closed"},
+		{"whenChanged", "System.Title", ""},
+		{"whenNotChanged", "System.Title", ""},
+		{"whenWas", "System.State", "New"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.conditionType, func(t *testing.T) {
+			workItemTypeName := testutils.GenerateWorkItemTypeName()
+			processName := testutils.GenerateResourceName()
+			tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+			resource.ParallelTest(t, resource.TestCase{
+				PreCheck:          func() { testutils.PreCheck(t, nil) },
+				ProviderFactories: testutils.GetProviderFactories(),
+				CheckDestroy:      testutils.CheckProcessDestroyed,
+				Steps: []resource.TestStep{
+					{
+						Config: ruleWithConditionType(workItemTypeName, processName, tc.conditionType, tc.field, tc.value),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttrSet(tfNode, "id"),
+						),
+					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAccWorkitemtrackingprocessRule_ConditionGroupMembership(t *testing.T) {
+	testCases := []string{
+		"whenCurrentUserIsMemberOfGroup",
+		"whenCurrentUserIsNotMemberOfGroup",
+	}
+
+	for _, conditionType := range testCases {
+		t.Run(conditionType, func(t *testing.T) {
+			workItemTypeName := testutils.GenerateWorkItemTypeName()
+			processName := testutils.GenerateResourceName()
+			groupName := testutils.GenerateResourceName()
+			tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+			resource.ParallelTest(t, resource.TestCase{
+				PreCheck:          func() { testutils.PreCheck(t, nil) },
+				ProviderFactories: testutils.GetProviderFactories(),
+				CheckDestroy:      testutils.CheckProcessDestroyed,
+				Steps: []resource.TestStep{
+					{
+						Config: ruleWithGroupMembershipCondition(workItemTypeName, processName, "", groupName, conditionType),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttrSet(tfNode, "id"),
+						),
+					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
+	testCases := []struct {
+		actionType  string
+		targetField string
+		value       string
+	}{
+		{"makeRequired", "System.Title", ""},
+		{"makeReadOnly", "System.Title", ""},
+		{"setDefaultValue", "System.Title", "Default Title"},
+		{"setDefaultFromClock", "System.ChangedDate", ""},
+		{"setDefaultFromField", "System.Description", "System.Title"},
+		{"copyValue", "System.Title", "Copied Value"},
+		{"copyFromClock", "System.ChangedDate", ""},
+		{"copyFromCurrentUser", "System.AssignedTo", ""},
+		{"copyFromField", "System.Description", "System.Title"},
+		{"setValueToEmpty", "System.Description", ""},
+		{"copyFromServerClock", "System.ChangedDate", ""},
+		{"copyFromServerCurrentUser", "System.AssignedTo", ""},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.actionType, func(t *testing.T) {
+			workItemTypeName := testutils.GenerateWorkItemTypeName()
+			processName := testutils.GenerateResourceName()
+			tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+			resource.ParallelTest(t, resource.TestCase{
+				PreCheck:          func() { testutils.PreCheck(t, nil) },
+				ProviderFactories: testutils.GetProviderFactories(),
+				CheckDestroy:      testutils.CheckProcessDestroyed,
+				Steps: []resource.TestStep{
+					{
+						Config: ruleWithActionType(workItemTypeName, processName, tc.actionType, tc.targetField, tc.value),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttrSet(tfNode, "id"),
+						),
+					},
+					{
+						ResourceName:      tfNode,
+						ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAccWorkitemtrackingprocessRule_HideTargetField(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+	fieldName := generateFieldName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: ruleWithHideTargetField(workItemTypeName, processName, "", groupName, fieldName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkitemtrackingprocessRule_DisallowValue(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: ruleWithDisallowValue(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "id"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: ruleImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func updatedRule(workItemTypeName string, processName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Updated Rule"
+  is_disabled       = true
+
+  condition {
+    condition_type = "when"
+    field          = "System.State"
+    value          = "Active"
+  }
+
+  action {
+    action_type  = "makeReadOnly"
+    target_field = "System.Title"
+  }
+}
+`, workItemType)
+}
+
+func multipleConditionsRule(workItemTypeName string, processName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Multiple Conditions Rule"
+
+  condition {
+    condition_type = "whenWas"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  condition {
+    condition_type = "when"
+    field          = "System.State"
+    value          = "Active"
+  }
+
+  condition {
+    condition_type = "whenChanged"
+    field          = "System.Title"
+  }
+
+  action {
+    action_type  = "makeRequired"
+    target_field = "System.Title"
+  }
+
+  action {
+    action_type  = "makeReadOnly"
+    target_field = "System.Description"
+  }
+}
+`, workItemType)
+}
+
+func ruleWithGroupMembershipCondition(workItemTypeName, processName, _, groupName, conditionType string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_group_entitlement" "test" {
+  display_name = "%s"
+}
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test %s Rule"
+
+  condition {
+    condition_type = "%s"
+    value          = azuredevops_group_entitlement.test.id
+  }
+
+  action {
+    action_type  = "makeRequired"
+    target_field = "System.Title"
+  }
+}
+`, workItemType, groupName, conditionType, conditionType)
+}
+
+func ruleWithConditionType(workItemTypeName, processName, conditionType, field, value string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+
+	fieldAttr := ""
+	if field != "" {
+		fieldAttr = fmt.Sprintf(`field = "%s"`, field)
+	}
+	valueAttr := ""
+	if value != "" {
+		valueAttr = fmt.Sprintf(`value = "%s"`, value)
+	}
+
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test %s Rule"
+
+  condition {
+    condition_type = "%s"
+    %s
+    %s
+  }
+
+  action {
+    action_type  = "makeRequired"
+    target_field = "System.Title"
+  }
+}
+`, workItemType, conditionType, conditionType, fieldAttr, valueAttr)
+}
+
+func ruleWithHideTargetField(workItemTypeName, processName, _, groupName, fieldName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_group_entitlement" "test" {
+  display_name = "%s"
+}
+
+resource "azuredevops_workitemtracking_field" "test" {
+  name           = "%s"
+  reference_name = "Custom.%s"
+  type           = "string"
+}
+
+resource "azuredevops_workitemtrackingprocess_field" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  field_id          = azuredevops_workitemtracking_field.test.id
+}
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test hideTargetField Rule"
+
+  condition {
+    condition_type = "whenCurrentUserIsNotMemberOfGroup"
+    value          = azuredevops_group_entitlement.test.id
+  }
+
+  action {
+    action_type  = "hideTargetField"
+    target_field = azuredevops_workitemtracking_field.test.reference_name
+  }
+
+  depends_on = [azuredevops_workitemtrackingprocess_field.test]
+}
+`, workItemType, groupName, fieldName, fieldName)
+}
+
+func ruleWithDisallowValue(workItemTypeName, processName string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test disallowValue Rule"
+
+  condition {
+    condition_type = "whenWas"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  action {
+    action_type  = "disallowValue"
+    target_field = "System.State"
+    value        = "Closed"
+  }
+}
+`, workItemType)
+}
+
+func ruleWithActionType(workItemTypeName, processName, actionType, targetField, value string) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+
+	valueAttr := ""
+	if value != "" {
+		valueAttr = fmt.Sprintf(`value = "%s"`, value)
+	}
+
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_rule" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  name              = "Test %s Rule"
+
+  condition {
+    condition_type = "when"
+    field          = "System.State"
+    value          = "New"
+  }
+
+  action {
+    action_type  = "%s"
+    target_field = "%s"
+    %s
+  }
+}
+`, workItemType, actionType, actionType, targetField, valueAttr)
+}
+
+func ruleImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("resource not found: %s", resourceName)
+		}
+		processId := rs.Primary.Attributes["process_id"]
+		witRefName := rs.Primary.Attributes["work_item_type_id"]
+		ruleId := rs.Primary.ID
+		return fmt.Sprintf("%s/%s/%s", processId, witRefName, ruleId), nil
+	}
+}
