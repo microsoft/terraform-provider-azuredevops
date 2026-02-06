@@ -2,9 +2,7 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -295,15 +293,6 @@ func flattenWorkItemType(d *schema.ResourceData, workItemType *workitemtrackingp
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func convertColorToApi(d *schema.ResourceData) *string {
-	return converter.String(
-		strings.ReplaceAll(d.Get("color").(string), "#", ""))
-}
-
-func convertColorToResource(apiFormattedColor string) string {
-	return fmt.Sprintf("#%s", apiFormattedColor)
 }
 
 func flattenControl(control workitemtrackingprocess.Control) map[string]any {
