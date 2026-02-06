@@ -74,6 +74,18 @@ func TestAccWorkitemtrackingprocessState_Update(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: getStateImportIdFunc(tfNode),
 			},
+			{
+				Config: basicState(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPtr(tfNode, "id", &stateId),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getStateImportIdFunc(tfNode),
+			},
 		},
 	})
 }
@@ -104,6 +116,7 @@ resource "azuredevops_workitemtrackingprocess_state" "test" {
   name              = "Ready"
   color             = "#b2b2b2"
   state_category    = "Proposed"
+  order             = 2
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }
