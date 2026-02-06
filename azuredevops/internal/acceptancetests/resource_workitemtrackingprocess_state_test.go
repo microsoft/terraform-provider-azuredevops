@@ -99,11 +99,11 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_state" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name                          = "Ready"
-  color                         = "#b2b2b2"
-  state_category                = "Proposed"
+  name              = "Ready"
+  color             = "#b2b2b2"
+  state_category    = "Proposed"
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }
@@ -121,12 +121,12 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_state" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  name                          = "Ready"
-  color                         = "#5688E0"
-  state_category                = "InProgress"
-  order                         = 3
+  name              = "Ready"
+  color             = "#5688E0"
+  state_category    = "InProgress"
+  order             = 3
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }

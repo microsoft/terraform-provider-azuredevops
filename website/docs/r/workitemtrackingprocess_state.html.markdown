@@ -23,11 +23,11 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_state" "example" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.example.id
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  name                          = "Ready"
-  color                         = "#5688E0"
-  state_category                = "Proposed"
+  name              = "Ready"
+  color             = "#5688E0"
+  state_category    = "Proposed"
 }
 ```
 
