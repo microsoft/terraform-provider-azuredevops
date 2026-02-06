@@ -68,7 +68,7 @@ resource "azuredevops_check_approval" "example" {
 
   requester_can_approve = true
   approvers = [
-    azuredevops_group.example.origin_id,
+    azuredevops_group.example.group_id,
   ]
 }
 ```
