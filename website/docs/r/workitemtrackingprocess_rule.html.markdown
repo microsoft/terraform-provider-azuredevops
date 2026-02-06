@@ -44,15 +44,10 @@ resource "azuredevops_workitemtrackingprocess_rule" "example" {
 
 ### Group Membership Condition
 
-The `whenCurrentUserIsMemberOfGroup` and `whenCurrentUserIsNotMemberOfGroup` conditions operate on groups.
+The `whenCurrentUserIsMemberOfGroup` and `whenCurrentUserIsNotMemberOfGroup` conditions require a group entitlement ID.
 
 ```hcl
-resource "azuredevops_project" "example" {
-  name = "example-project"
-}
-
-resource "azuredevops_group" "example" {
-  scope        = azuredevops_project.example.id
+resource "azuredevops_group_entitlement" "example" {
   display_name = "example-group"
 }
 
@@ -63,7 +58,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "group_membership" {
 
   condition {
     condition_type = "whenCurrentUserIsMemberOfGroup"
-    value          = azuredevops_group.example.origin_id
+    value          = azuredevops_group_entitlement.example.id
   }
 
   action {
@@ -102,6 +97,10 @@ resource "azuredevops_workitemtrackingprocess_rule" "disallow_value" {
 The `hideTargetField` action requires group membership conditions.
 
 ```hcl
+resource "azuredevops_group_entitlement" "example" {
+  display_name = "example-group"
+}
+
 resource "azuredevops_workitemtracking_field" "custom" {
   name           = "Custom Field"
   reference_name = "Custom.Field"
@@ -121,7 +120,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "hide_field" {
 
   condition {
     condition_type = "whenCurrentUserIsNotMemberOfGroup"
-    value          = azuredevops_group.example.origin_id
+    value          = azuredevops_group_entitlement.example.id
   }
 
   action {

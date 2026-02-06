@@ -125,20 +125,16 @@ func TestAccWorkitemtrackingprocessRule_ConditionGroupMembership(t *testing.T) {
 		t.Run(conditionType, func(t *testing.T) {
 			workItemTypeName := testutils.GenerateWorkItemTypeName()
 			processName := testutils.GenerateResourceName()
-			projectName := testutils.GenerateResourceName()
 			groupName := testutils.GenerateResourceName()
 			tfNode := "azuredevops_workitemtrackingprocess_rule.test"
 
 			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:          func() { testutils.PreCheck(t, nil) },
 				ProviderFactories: testutils.GetProviderFactories(),
-				CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-					testutils.CheckProcessDestroyed,
-					testutils.CheckProjectDestroyed,
-				),
+				CheckDestroy:      testutils.CheckProcessDestroyed,
 				Steps: []resource.TestStep{
 					{
-						Config: ruleWithGroupMembershipCondition(workItemTypeName, processName, projectName, groupName, conditionType),
+						Config: ruleWithGroupMembershipCondition(workItemTypeName, processName, "", groupName, conditionType),
 						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttrSet(tfNode, "id"),
 						),
@@ -207,7 +203,6 @@ func TestAccWorkitemtrackingprocessRule_ActionTypes(t *testing.T) {
 func TestAccWorkitemtrackingprocessRule_HideTargetField(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
-	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()
 	fieldName := generateFieldName()
 	tfNode := "azuredevops_workitemtrackingprocess_rule.test"
@@ -215,13 +210,10 @@ func TestAccWorkitemtrackingprocessRule_HideTargetField(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
 		ProviderFactories: testutils.GetProviderFactories(),
-		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			testutils.CheckProcessDestroyed,
-			testutils.CheckProjectDestroyed,
-		),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: ruleWithHideTargetField(workItemTypeName, processName, projectName, groupName, fieldName),
+				Config: ruleWithHideTargetField(workItemTypeName, processName, "", groupName, fieldName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -327,17 +319,12 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 `, workItemType)
 }
 
-func ruleWithGroupMembershipCondition(workItemTypeName, processName, projectName, groupName, conditionType string) string {
+func ruleWithGroupMembershipCondition(workItemTypeName, processName, _, groupName, conditionType string) string {
 	workItemType := basicWorkItemType(workItemTypeName, processName)
 	return fmt.Sprintf(`
 %s
 
-resource "azuredevops_project" "group_test" {
-  name = "%s"
-}
-
-resource "azuredevops_group" "test" {
-  scope        = azuredevops_project.group_test.id
+resource "azuredevops_group_entitlement" "test" {
   display_name = "%s"
 }
 
@@ -348,7 +335,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 
   condition {
     condition_type = "%s"
-    value          = azuredevops_group.test.origin_id
+    value          = azuredevops_group_entitlement.test.id
   }
 
   action {
@@ -356,7 +343,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
     target_field = "System.Title"
   }
 }
-`, workItemType, projectName, groupName, conditionType, conditionType)
+`, workItemType, groupName, conditionType, conditionType)
 }
 
 func ruleWithConditionType(workItemTypeName, processName, conditionType, field, value string) string {
@@ -393,17 +380,12 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 `, workItemType, conditionType, conditionType, fieldAttr, valueAttr)
 }
 
-func ruleWithHideTargetField(workItemTypeName, processName, projectName, groupName, fieldName string) string {
+func ruleWithHideTargetField(workItemTypeName, processName, _, groupName, fieldName string) string {
 	workItemType := basicWorkItemType(workItemTypeName, processName)
 	return fmt.Sprintf(`
 %s
 
-resource "azuredevops_project" "group_test" {
-  name = "%s"
-}
-
-resource "azuredevops_group" "test" {
-  scope        = azuredevops_project.group_test.id
+resource "azuredevops_group_entitlement" "test" {
   display_name = "%s"
 }
 
@@ -426,7 +408,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 
   condition {
     condition_type = "whenCurrentUserIsNotMemberOfGroup"
-    value          = azuredevops_group.test.origin_id
+    value          = azuredevops_group_entitlement.test.id
   }
 
   action {
@@ -436,7 +418,7 @@ resource "azuredevops_workitemtrackingprocess_rule" "test" {
 
   depends_on = [azuredevops_workitemtrackingprocess_field.test]
 }
-`, workItemType, projectName, groupName, fieldName, fieldName)
+`, workItemType, groupName, fieldName, fieldName)
 }
 
 func ruleWithDisallowValue(workItemTypeName, processName string) string {
