@@ -24,7 +24,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 
 resource "azuredevops_workitemtrackingprocess_state" "example" {
   process_id                    = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
   name                          = "Ready"
   color                         = "#5688E0"
   state_category                = "Proposed"
@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new state to be created.
 
-* `work_item_type_reference_name` - (Required) The reference name of the work item type. Changing this forces a new state to be created.
+* `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new state to be created.
 
 * `state_category` - (Required) Category of the state. Valid values: `Proposed`, `InProgress`, `Resolved`, `Completed`, `Removed`.
 
@@ -72,7 +72,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-States can be imported using the complete resource id `process_id/work_item_type_reference_name/state_id`, e.g.
+States can be imported using the complete resource id `process_id/work_item_type_id/state_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_state.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/00000000-0000-0000-0000-000000000000

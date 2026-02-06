@@ -38,12 +38,12 @@ func ResourceState() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_reference_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"name": {
 				Type:             schema.TypeString,
@@ -80,12 +80,12 @@ func ResourceState() *schema.Resource {
 }
 
 func importResourceState(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_reference_name/state_id", 3)
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/state_id", 3)
 	if err != nil {
 		return nil, err
 	}
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.SetId(parts[2])
 	return []*schema.ResourceData{d}, nil
 }
@@ -109,7 +109,7 @@ func createResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	args := workitemtrackingprocess.CreateStateDefinitionArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		StateModel: &stateModel,
 	}
 
@@ -134,7 +134,7 @@ func readResourceState(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	stateId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	args := workitemtrackingprocess.GetStateDefinitionArgs{
 		ProcessId:  converter.UUID(processId),
@@ -191,7 +191,7 @@ func updateResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	args := workitemtrackingprocess.UpdateStateDefinitionArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		StateId:    converter.UUID(d.Id()),
 		StateModel: &stateModel,
 	}
@@ -209,7 +209,7 @@ func deleteResourceState(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	stateId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	args := workitemtrackingprocess.DeleteStateDefinitionArgs{
 		ProcessId:  converter.UUID(processId),
