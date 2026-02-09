@@ -2,8 +2,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceSystemControl() *schema.Resource {
@@ -78,10 +77,9 @@ func ResourceSystemControl() *schema.Resource {
 }
 
 func importResourceSystemControl(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	// Import ID format: process_id/work_item_type_id/control_id
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_id/control_id")
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/control_id", 3)
+	if err != nil {
+		return nil, err
 	}
 
 	d.Set("process_id", parts[0])
