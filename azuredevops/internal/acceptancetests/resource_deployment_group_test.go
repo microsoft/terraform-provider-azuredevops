@@ -12,11 +12,10 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
-// TestAccDeploymentGroup_basic verifies that a deployment group can be created and updated
+// TestAccDeploymentGroup_basic verifies that a deployment group can be created and imported
 func TestAccDeploymentGroup_basic(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
-	deploymentGroupNameFirst := testutils.GenerateResourceName()
-	deploymentGroupNameSecond := testutils.GenerateResourceName()
+	deploymentGroupName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_deployment_group.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -25,20 +24,9 @@ func TestAccDeploymentGroup_basic(t *testing.T) {
 		CheckDestroy: checkDeploymentGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: hclDeploymentGroupResource(projectName, deploymentGroupNameFirst, ""),
+				Config: hclDeploymentGroupBasic(projectName, deploymentGroupName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupNameFirst),
-					resource.TestCheckResourceAttr(tfNode, "description", ""),
-					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
-					checkDeploymentGroupExists(deploymentGroupNameFirst),
-				),
-			},
-			{
-				Config: hclDeploymentGroupResource(projectName, deploymentGroupNameSecond, "Updated description"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupNameSecond),
-					resource.TestCheckResourceAttr(tfNode, "description", "Updated description"),
-					checkDeploymentGroupExists(deploymentGroupNameSecond),
+					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupName),
 				),
 			},
 			{
@@ -51,8 +39,49 @@ func TestAccDeploymentGroup_basic(t *testing.T) {
 	})
 }
 
-// TestAccDeploymentGroup_withDescription verifies that a deployment group with description can be created
-func TestAccDeploymentGroup_withDescription(t *testing.T) {
+// TestAccDeploymentGroup_update verifies that a deployment group can be updated
+func TestAccDeploymentGroup_update(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	deploymentGroupNameFirst := testutils.GenerateResourceName()
+	deploymentGroupNameSecond := testutils.GenerateResourceName()
+	tfNode := "azuredevops_deployment_group.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkDeploymentGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclDeploymentGroupBasic(projectName, deploymentGroupNameFirst),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupNameFirst),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: hclDeploymentGroupResource(projectName, deploymentGroupNameSecond, "Updated description"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupNameSecond),
+					resource.TestCheckResourceAttr(tfNode, "description", "Updated description"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccDeploymentGroup_withPoolId verifies that a deployment group can be created with a pool_id
+func TestAccDeploymentGroup_withPoolId(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	deploymentGroupName := testutils.GenerateResourceName()
 	tfNode := "azuredevops_deployment_group.test"
@@ -63,12 +92,17 @@ func TestAccDeploymentGroup_withDescription(t *testing.T) {
 		CheckDestroy: checkDeploymentGroupDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: hclDeploymentGroupResource(projectName, deploymentGroupName, "Test description"),
+				Config: hclDeploymentGroupWithPoolId(projectName, deploymentGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "name", deploymentGroupName),
-					resource.TestCheckResourceAttr(tfNode, "description", "Test description"),
-					checkDeploymentGroupExists(deploymentGroupName),
+					resource.TestCheckResourceAttrSet(tfNode, "pool_id"),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -129,6 +163,18 @@ func checkDeploymentGroupDestroyed(s *terraform.State) error {
 	return nil
 }
 
+func hclDeploymentGroupBasic(projectName string, deploymentGroupName string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_deployment_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+}
+`, projectResource, deploymentGroupName)
+}
+
 func hclDeploymentGroupResource(projectName string, deploymentGroupName string, description string) string {
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf(`
@@ -140,4 +186,22 @@ resource "azuredevops_deployment_group" "test" {
   description = "%s"
 }
 `, projectResource, deploymentGroupName, description)
+}
+
+func hclDeploymentGroupWithPoolId(projectName string, deploymentGroupName string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_deployment_group" "pool_source" {
+  project_id = azuredevops_project.project.id
+  name       = "%s-source"
+}
+
+resource "azuredevops_deployment_group" "test" {
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  pool_id    = azuredevops_deployment_group.pool_source.pool_id
+}
+`, projectResource, deploymentGroupName, deploymentGroupName)
 }
