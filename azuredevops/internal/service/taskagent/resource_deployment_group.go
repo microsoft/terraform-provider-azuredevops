@@ -51,6 +51,7 @@ func ResourceDeploymentGroup() *schema.Resource {
 			"pool_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the deployment pool in which deployment agents are registered. If not specified, a new pool will be created.",
 			},
@@ -89,6 +90,10 @@ func resourceDeploymentGroupCreate(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Error creating deployment group: %+v", err)
 	}
 
+	if deploymentGroup == nil || deploymentGroup.Id == nil {
+		return fmt.Errorf("Error creating deployment group: response or ID is nil")
+	}
+
 	d.SetId(strconv.Itoa(*deploymentGroup.Id))
 
 	return resourceDeploymentGroupRead(d, m)
@@ -115,12 +120,15 @@ func resourceDeploymentGroupRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Error reading deployment group: %+v", err)
 	}
 
-	if deploymentGroup.Id == nil {
-		d.SetId("")
-		return nil
+	d.Set("project_id", projectID)
+	d.Set("name", converter.ToString(deploymentGroup.Name, ""))
+	d.Set("description", converter.ToString(deploymentGroup.Description, ""))
+	d.Set("machine_count", converter.ToInt(deploymentGroup.MachineCount, 0))
+
+	if deploymentGroup.Pool != nil && deploymentGroup.Pool.Id != nil {
+		d.Set("pool_id", *deploymentGroup.Pool.Id)
 	}
 
-	flattenDeploymentGroup(d, deploymentGroup, &projectID)
 	return nil
 }
 
@@ -172,16 +180,4 @@ func resourceDeploymentGroupDelete(d *schema.ResourceData, m interface{}) error 
 
 	d.SetId("")
 	return nil
-}
-
-func flattenDeploymentGroup(d *schema.ResourceData, deploymentGroup *taskagent.DeploymentGroup, projectID *string) {
-	d.SetId(strconv.Itoa(*deploymentGroup.Id))
-	d.Set("project_id", projectID)
-	d.Set("name", converter.ToString(deploymentGroup.Name, ""))
-	d.Set("description", converter.ToString(deploymentGroup.Description, ""))
-	d.Set("machine_count", converter.ToInt(deploymentGroup.MachineCount, 0))
-
-	if deploymentGroup.Pool != nil && deploymentGroup.Pool.Id != nil {
-		d.Set("pool_id", *deploymentGroup.Pool.Id)
-	}
 }
