@@ -70,10 +70,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			return fmt.Errorf("Reading group memberships during read: %+v", err)
 		}
 		actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-		if err != nil {
-			return fmt.Errorf("Converting membership list to set: %+v", err)
-		}
-		membersToRemove = membersToAdd.Difference(actualMembershipsSet)
+		membersToRemove = actualMembershipsSet.Difference(membersToAdd)
 	} else {
 		membersToRemove = getGroupMembershipSet(nil)
 	}
@@ -96,9 +93,6 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if err != nil {
-				return nil, "", fmt.Errorf("Converting membership list to set: %+v", err)
-			}
 			if (membersToAdd == nil || actualMembershipsSet.Intersection(membersToAdd).Len() <= 0) &&
 				(membersToRemove == nil || actualMembershipsSet.Intersection(membersToRemove).Len() <= 0) {
 				state = "Synched"

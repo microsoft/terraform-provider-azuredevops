@@ -1,4 +1,4 @@
-*---
+---
 layout: "azuredevops"
 page_title: "AzureDevops: azuredevops_team"
 description: |-
@@ -101,4 +101,4 @@ terraform import azuredevops_team.example 00000000-0000-0000-0000-000000000000/0
 
 ## PAT Permissions Required
 
-- **vso.project_manage**:	Grants the ability to create, read, update, and delete projects and teams. 
+- **vso.project_manage**:	Grants the ability to create, read, update, and delete projects and teams.
