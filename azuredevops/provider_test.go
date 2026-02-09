@@ -177,6 +177,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
+		"azuredevops_serviceendpoint_type",
+		"azuredevops_serviceendpoint_types",
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_storage_key",
 		"azuredevops_service_principal",

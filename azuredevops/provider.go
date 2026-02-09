@@ -192,6 +192,8 @@ func Provider() *schema.Provider {
 			"azuredevops_security_namespaces":                   security.DataSecurityNamespaces(),
 			"azuredevops_securityrole_definitions":              securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_generic_v2":            serviceendpoint.DataServiceEndpointGenericV2(),
+			"azuredevops_serviceendpoint_type":                  serviceendpoint.DataServiceEndpointType(),
+			"azuredevops_serviceendpoint_types":                 serviceendpoint.DataServiceEndpointTypes(),
 			"azuredevops_serviceendpoint_azurecr":               serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_azurerm":               serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":             serviceendpoint.DataResourceServiceEndpointBitbucket(),
