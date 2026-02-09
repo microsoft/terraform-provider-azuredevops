@@ -56,6 +56,12 @@ func TestAccWorkitemtrackingprocessSystemControl_Update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getSystemControlImportIdFunc(tfNode),
+			},
+			{
 				Config: updatedSystemControl(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
@@ -100,6 +106,12 @@ func TestAccWorkitemtrackingprocessSystemControl_Revert(t *testing.T) {
 						return nil
 					}),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getSystemControlImportIdFunc(tfNode),
 			},
 			{
 				Config: removedSystemControl(workItemTypeName, processName),
