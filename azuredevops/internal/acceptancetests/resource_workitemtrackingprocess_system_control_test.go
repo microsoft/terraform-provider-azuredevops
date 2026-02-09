@@ -148,10 +148,10 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_system_control" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  control_id                    = "System.AreaPath"
-  visible                       = false
+  control_id        = "System.AreaPath"
+  visible           = false
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }
@@ -169,11 +169,11 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_system_control" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  control_id                    = "System.AreaPath"
-  visible                       = true
-  label                         = "Custom Area"
+  control_id        = "System.AreaPath"
+  visible           = true
+  label             = "Custom Area"
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }

@@ -27,10 +27,10 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_system_control" "example" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.example.id
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  control_id                    = "System.AreaPath"
-  visible                       = false
+  control_id        = "System.AreaPath"
+  visible           = false
 }
 ```
 
