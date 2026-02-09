@@ -28,7 +28,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 
 resource "azuredevops_workitemtrackingprocess_system_control" "example" {
   process_id                    = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
   control_id                    = "System.AreaPath"
   visible                       = false
 }
@@ -40,7 +40,7 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new resource to be created.
 
-* `work_item_type_reference_name` - (Required) The reference name of the work item type. Changing this forces a new resource to be created.
+* `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new resource to be created.
 
 * `control_id` - (Required) The ID of the system control (e.g., `System.AreaPath`, `System.IterationPath`, `System.Reason`). Changing this forces a new resource to be created.
 
@@ -75,7 +75,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-System control customizations can be imported using the complete resource id `process_id/work_item_type_reference_name/control_id`, e.g.
+System control customizations can be imported using the complete resource id `process_id/work_item_type_id/control_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_system_control.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/System.AreaPath

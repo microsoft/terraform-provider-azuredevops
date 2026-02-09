@@ -37,12 +37,12 @@ func ResourceSystemControl() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_reference_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"control_id": {
 				Type:             schema.TypeString,
@@ -78,14 +78,14 @@ func ResourceSystemControl() *schema.Resource {
 }
 
 func importResourceSystemControl(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	// Import ID format: process_id/work_item_type_reference_name/control_id
+	// Import ID format: process_id/work_item_type_id/control_id
 	parts := strings.Split(d.Id(), "/")
 	if len(parts) != 3 {
-		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_reference_name/control_id")
+		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_id/control_id")
 	}
 
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.Set("control_id", parts[2])
 	d.SetId(parts[2])
 
@@ -107,7 +107,7 @@ func createResourceSystemControl(ctx context.Context, d *schema.ResourceData, m 
 
 	args := workitemtrackingprocess.UpdateSystemControlArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		ControlId:  &controlId,
 		Control:    &control,
 	}
@@ -130,7 +130,7 @@ func readResourceSystemControl(ctx context.Context, d *schema.ResourceData, m an
 
 	controlId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	args := workitemtrackingprocess.GetSystemControlsArgs{
 		ProcessId:  converter.UUID(processId),
@@ -190,7 +190,7 @@ func updateResourceSystemControl(ctx context.Context, d *schema.ResourceData, m 
 
 	args := workitemtrackingprocess.UpdateSystemControlArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		ControlId:  &controlId,
 		Control:    &control,
 	}
@@ -210,7 +210,7 @@ func deleteResourceSystemControl(ctx context.Context, d *schema.ResourceData, m 
 
 	args := workitemtrackingprocess.DeleteSystemControlArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		ControlId:  &controlId,
 	}
 
