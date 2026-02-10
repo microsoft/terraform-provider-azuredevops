@@ -178,6 +178,5 @@ func resourceDeploymentGroupDelete(d *schema.ResourceData, m interface{}) error 
 		return fmt.Errorf("Error deleting deployment group: %+v", err)
 	}
 
-	d.SetId("")
 	return nil
 }
