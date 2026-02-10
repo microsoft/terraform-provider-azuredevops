@@ -108,36 +108,6 @@ func TestAccDeploymentGroup_withPoolId(t *testing.T) {
 	})
 }
 
-func checkDeploymentGroupExists(expectedName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		res, ok := s.RootModule().Resources["azuredevops_deployment_group.test"]
-		if !ok {
-			return fmt.Errorf("Did not find a deployment group in the TF state")
-		}
-
-		clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
-		deploymentGroupId, err := strconv.Atoi(res.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Parse ID error, ID: %v. Error= %v", res.Primary.ID, err)
-		}
-		projectID := res.Primary.Attributes["project_id"]
-
-		deploymentGroup, err := clients.TaskAgentClient.GetDeploymentGroup(clients.Ctx, taskagent.GetDeploymentGroupArgs{
-			Project:           &projectID,
-			DeploymentGroupId: &deploymentGroupId,
-		})
-		if err != nil {
-			return fmt.Errorf("Deployment group with ID=%d cannot be found. Error=%v", deploymentGroupId, err)
-		}
-
-		if *deploymentGroup.Name != expectedName {
-			return fmt.Errorf("Deployment group with ID=%d has Name=%s, but expected Name=%s", deploymentGroupId, *deploymentGroup.Name, expectedName)
-		}
-
-		return nil
-	}
-}
-
 func checkDeploymentGroupDestroyed(s *terraform.State) error {
 	clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
 
