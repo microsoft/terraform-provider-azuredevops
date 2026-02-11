@@ -56,6 +56,12 @@ func TestAccWorkitemtrackingprocessInheritedControl_Update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getInheritedControlImportIdFunc(tfNode),
+			},
+			{
 				Config: updatedInheritedControl(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
@@ -104,6 +110,12 @@ func TestAccWorkitemtrackingprocessInheritedControl_Revert(t *testing.T) {
 						return nil
 					}),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getInheritedControlImportIdFunc(tfNode),
 			},
 			{
 				Config: inheritedControlRevertConfig(workItemTypeName, processName),
