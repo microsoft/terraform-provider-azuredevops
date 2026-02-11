@@ -179,10 +179,11 @@ func updateResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 
 	control := workitemtrackingprocess.Control{}
 
-	rawConfig := d.GetRawConfig().AsValueMap()
-	if visible := rawConfig["visible"]; !visible.IsNull() {
-		control.Visible = converter.Bool(visible.True())
+	visible, err := getBoolAttributeFromConfig(d, "visible")
+	if err != nil {
+		return diag.Errorf("getting visible from config: %+v", err)
 	}
+	control.Visible = visible
 
 	if v, ok := d.GetOk("label"); ok {
 		control.Label = converter.String(v.(string))
@@ -196,7 +197,7 @@ func updateResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 		Control:    &control,
 	}
 
-	_, err := clients.WorkItemTrackingProcessClient.UpdateControl(ctx, args)
+	_, err = clients.WorkItemTrackingProcessClient.UpdateControl(ctx, args)
 	if err != nil {
 		return diag.Errorf("updating inherited control: %+v", err)
 	}
