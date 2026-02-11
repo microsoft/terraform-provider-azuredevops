@@ -61,6 +61,9 @@ func TestDataEndpointGeneric_Read_TestFindEndpointByName(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, *serviceEndPointWellFormed.Name, resourceData.Get("service_endpoint_name").(string))
+	require.Equal(t, "someValue", resourceData.Get("data").(map[string]interface{})["someKey"])
+	require.Equal(t, "user", resourceData.Get("authorization").(map[string]interface{})["username"])
+	require.Equal(t, "UsernamePassword", resourceData.Get("authorization").(map[string]interface{})["scheme"])
 }
 
 func TestDataEndpointGeneric_Read_TestEmpty(t *testing.T) {
@@ -94,4 +97,7 @@ func TestDataEndpointGeneric_Read_TestEmpty(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, *serviceEndPointWellFormed.Name, resourceData.Get("service_endpoint_name").(string))
+	require.Equal(t, "someValue", resourceData.Get("data").(map[string]interface{})["someKey"])
+	require.Equal(t, "user", resourceData.Get("authorization").(map[string]interface{})["username"])
+	require.Equal(t, "UsernamePassword", resourceData.Get("authorization").(map[string]interface{})["scheme"])
 }

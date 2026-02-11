@@ -19,7 +19,7 @@ func TestAccServiceEndpointGeneric_dataSource_with_serviceEndpointID(t *testing.
 		testutils.HclServiceEndpointGenericDataSourceWithServiceEndpointID(),
 	)
 
-	tfNode := "data.azuredevops_serviceendpoint_github.serviceendpoint"
+	tfNode := "data.azuredevops_serviceendpoint_generic.serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
@@ -28,6 +28,9 @@ func TestAccServiceEndpointGeneric_dataSource_with_serviceEndpointID(t *testing.
 				Config: createServiceEndpointGenericWithServiceEndpointIDData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointGenericName),
+					resource.TestCheckResourceAttr(tfNode, "server_url", serverUrl),
+					resource.TestCheckResourceAttr(tfNode, "authorization.username", username),
+					resource.TestCheckResourceAttr(tfNode, "authorization.scheme", "UsernamePassword"),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
 				),
 			},
@@ -46,7 +49,7 @@ func TestAccServiceEndpointGeneric_dataSource_with_serviceEndpointName_DataSourc
 		testutils.HclServiceEndpointGenericDataSourceWithServiceEndpointID(),
 	)
 
-	tfNode := "data.azuredevops_serviceendpoint_github.serviceendpoint"
+	tfNode := "data.azuredevops_serviceendpoint_generic.serviceendpoint"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
@@ -55,6 +58,9 @@ func TestAccServiceEndpointGeneric_dataSource_with_serviceEndpointName_DataSourc
 				Config: createServiceEndpointGenericWithServiceEndpointNameData,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointGenericName),
+					resource.TestCheckResourceAttr(tfNode, "server_url", serverUrl),
+					resource.TestCheckResourceAttr(tfNode, "authorization.username", username),
+					resource.TestCheckResourceAttr(tfNode, "authorization.scheme", "UsernamePassword"),
 					resource.TestCheckResourceAttrSet(tfNode, "service_endpoint_id"),
 				),
 			},
