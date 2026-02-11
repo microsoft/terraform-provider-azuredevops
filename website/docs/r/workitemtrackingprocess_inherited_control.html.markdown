@@ -29,7 +29,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 # Customize the first control in the first group
 resource "azuredevops_workitemtrackingprocess_inherited_control" "example" {
   process_id                    = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
   group_id                      = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].id
   control_id                    = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].controls[0].id
   visible                       = false
@@ -42,7 +42,7 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new resource to be created.
 
-* `work_item_type_reference_name` - (Required) The reference name of the work item type. Changing this forces a new resource to be created.
+* `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new resource to be created.
 
 * `group_id` - (Required) The ID of the group containing the control. Changing this forces a new resource to be created.
 
@@ -75,7 +75,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Inherited control customizations can be imported using the complete resource id `process_id/work_item_type_reference_name/group_id/control_id`, e.g.
+Inherited control customizations can be imported using the complete resource id `process_id/work_item_type_id/group_id/control_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_inherited_control.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/group-id/System.Title

@@ -2,8 +2,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceInheritedControl() *schema.Resource {
@@ -37,12 +36,12 @@ func ResourceInheritedControl() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_reference_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"group_id": {
 				Type:             schema.TypeString,
@@ -75,14 +74,13 @@ func ResourceInheritedControl() *schema.Resource {
 }
 
 func importResourceInheritedControl(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	// Import ID format: process_id/work_item_type_reference_name/group_id/control_id
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 4 {
-		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_reference_name/group_id/control_id")
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/group_id/control_id", 4)
+	if err != nil {
+		return nil, err
 	}
 
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.Set("group_id", parts[2])
 	d.Set("control_id", parts[3])
 	d.SetId(parts[3])
@@ -95,7 +93,7 @@ func createResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 
 	controlId := d.Get("control_id").(string)
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	groupId := d.Get("group_id").(string)
 
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
@@ -136,7 +134,7 @@ func readResourceInheritedControl(ctx context.Context, d *schema.ResourceData, m
 
 	controlId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 	groupId := d.Get("group_id").(string)
 
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
@@ -192,7 +190,7 @@ func updateResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 
 	args := workitemtrackingprocess.UpdateControlArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		GroupId:    converter.String(d.Get("group_id").(string)),
 		ControlId:  &controlId,
 		Control:    &control,
@@ -213,7 +211,7 @@ func deleteResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 
 	args := workitemtrackingprocess.RemoveControlFromGroupArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		GroupId:    converter.String(d.Get("group_id").(string)),
 		ControlId:  &controlId,
 	}

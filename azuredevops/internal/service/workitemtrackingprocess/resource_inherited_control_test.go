@@ -113,7 +113,7 @@ func TestInheritedControl_Update_NilAttributesSentWhenNotConfigured(t *testing.T
 
 	d := getInheritedControlResourceData(t, map[string]any{
 		"process_id":                    processId.String(),
-		"work_item_type_reference_name": witRefName,
+		"work_item_type_id": witRefName,
 		"group_id":                      groupId,
 		"control_id":                    controlId,
 	})
@@ -196,7 +196,7 @@ func TestInheritedControl_Create_Validation(t *testing.T) {
 
 			d := getInheritedControlResourceData(t, map[string]any{
 				"process_id":                    processId.String(),
-				"work_item_type_reference_name": witRefName,
+				"work_item_type_id": witRefName,
 				"group_id":                      tt.groupId,
 				"control_id":                    tt.controlId,
 			})
