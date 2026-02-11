@@ -21,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func getInheritedControlResourceData(t *testing.T, input map[string]any) *schema.ResourceData {
+func getInheritedControlResourceData(_ *testing.T, input map[string]any) *schema.ResourceData {
 	r := ResourceInheritedControl()
 
 	attributes := make(map[string]string)
@@ -112,10 +112,10 @@ func TestInheritedControl_Update_NilAttributesSentWhenNotConfigured(t *testing.T
 	).Times(1)
 
 	d := getInheritedControlResourceData(t, map[string]any{
-		"process_id":                    processId.String(),
+		"process_id":        processId.String(),
 		"work_item_type_id": witRefName,
-		"group_id":                      groupId,
-		"control_id":                    controlId,
+		"group_id":          groupId,
+		"control_id":        controlId,
 	})
 	d.SetId(controlId)
 
@@ -150,7 +150,16 @@ func TestInheritedControl_Create_Validation(t *testing.T) {
 			name:          "nil work item type",
 			groupId:       existingGroupId,
 			controlId:     existingControlId,
-			expectedError: "work item type or layout is nil",
+			expectedError: "work item type is nil",
+		},
+		{
+			name:      "nil layout",
+			groupId:   existingGroupId,
+			controlId: existingControlId,
+			returnWorkItemType: &workitemtrackingprocess.ProcessWorkItemType{
+				ReferenceName: &witRefName,
+			},
+			expectedError: "work item type layout is nil",
 		},
 		{
 			name:      "group not found",
@@ -195,10 +204,10 @@ func TestInheritedControl_Create_Validation(t *testing.T) {
 			mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).Return(tt.returnWorkItemType, tt.returnError).Times(1)
 
 			d := getInheritedControlResourceData(t, map[string]any{
-				"process_id":                    processId.String(),
+				"process_id":        processId.String(),
 				"work_item_type_id": witRefName,
-				"group_id":                      tt.groupId,
-				"control_id":                    tt.controlId,
+				"group_id":          tt.groupId,
+				"control_id":        tt.controlId,
 			})
 
 			diags := createResourceInheritedControl(context.Background(), d, clients)

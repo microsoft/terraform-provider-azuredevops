@@ -106,8 +106,11 @@ func createResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.Errorf("getting work item type: %+v", err)
 	}
-	if workItemType == nil || workItemType.Layout == nil {
-		return diag.Errorf("work item type or layout is nil")
+	if workItemType == nil {
+		return diag.Errorf("work item type is nil")
+	}
+	if workItemType.Layout == nil {
+		return diag.Errorf("work item type layout is nil")
 	}
 
 	group := findGroupById(workItemType.Layout, groupId)
@@ -147,8 +150,11 @@ func readResourceInheritedControl(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.Errorf("getting work item type: %+v", err)
 	}
-	if workItemType == nil || workItemType.Layout == nil {
-		return diag.Errorf("work item type or layout is nil")
+	if workItemType == nil {
+		return diag.Errorf("work item type is nil")
+	}
+	if workItemType.Layout == nil {
+		return diag.Errorf("work item type layout is nil")
 	}
 
 	group := findGroupById(workItemType.Layout, groupId)

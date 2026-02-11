@@ -128,11 +128,11 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_inherited_control" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  group_id                      = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].id
-  control_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].controls[0].id
-  visible                       = false
+  group_id          = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].id
+  control_id        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].controls[0].id
+  visible           = false
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }
@@ -150,12 +150,12 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 }
 
 resource "azuredevops_workitemtrackingprocess_inherited_control" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  group_id                      = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].id
-  control_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].controls[0].id
-  visible                       = true
-  label                         = "Custom Label"
+  group_id          = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].id
+  control_id        = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].groups[0].controls[0].id
+  visible           = true
+  label             = "Custom Label"
 }
 `, processName, agileSystemProcessTypeId, workItemTypeName)
 }

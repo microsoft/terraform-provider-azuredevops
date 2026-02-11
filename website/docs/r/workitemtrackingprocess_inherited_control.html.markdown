@@ -28,11 +28,11 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 
 # Customize the first control in the first group
 resource "azuredevops_workitemtrackingprocess_inherited_control" "example" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.example.id
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  group_id                      = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].id
-  control_id                    = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].controls[0].id
-  visible                       = false
+  group_id          = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].id
+  control_id        = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].sections[0].groups[0].controls[0].id
+  visible           = false
 }
 ```
 
