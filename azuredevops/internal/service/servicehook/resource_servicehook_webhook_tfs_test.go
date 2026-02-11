@@ -48,7 +48,7 @@ var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 			"branch":     "main",
 			"pushedBy":   "myuser",
 		},
-		ResourceVersion: converter.String("7.1"),
+		ResourceVersion: converter.String("latest"),
 	},
 	{
 		Id:               &subscriptionWebhookID,
@@ -72,7 +72,7 @@ var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 			"pullrequestCreatedBy":         "myuser",
 			"pullrequestReviewersContains": "reviewergroup",
 		},
-		ResourceVersion: converter.String("7.1"),
+		ResourceVersion: converter.String("latest"),
 	},
 	{
 		Id:               &subscriptionWebhookID,
@@ -93,7 +93,7 @@ var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 			"areaPath":     "MyProject\\MyArea",
 			"tag":          "urgent",
 		},
-		ResourceVersion: converter.String("7.1"),
+		ResourceVersion: converter.String("latest"),
 	},
 	{
 		Id:               &subscriptionWebhookID,
@@ -113,7 +113,7 @@ var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 			"definitionName": "MyBuildDefinition",
 			"buildStatus":    "Succeeded",
 		},
-		ResourceVersion: converter.String("7.1"),
+		ResourceVersion: converter.String("latest"),
 	},
 }
 

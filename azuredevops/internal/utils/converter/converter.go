@@ -149,7 +149,7 @@ func EncodeUtf16HexString(message string) (string, error) {
 	encodedByte := utf16.Encode(runeByte)
 	var sb strings.Builder
 	for i := 0; i < len(encodedByte); i++ {
-		fmt.Fprintf(&sb, "%02x%02x", encodedByte[i], encodedByte[i]>>8)
+		fmt.Fprintf(&sb, "%02x%02x", byte(encodedByte[i]), byte(encodedByte[i]>>8))
 	}
 	return sb.String(), nil
 }

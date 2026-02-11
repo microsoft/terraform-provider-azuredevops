@@ -72,6 +72,21 @@ func ParseImportedName(id string, expectedFormat string) (string, string, error)
 	return part1, part2, nil
 }
 
+// ParseImportedNameParts parses an imported ID into the expected number of parts separated by /.
+// Returns an error if the ID doesn't have exactly the expected number of non-empty parts.
+func ParseImportedNameParts(id string, expectedFormat string, expectedParts int) ([]string, error) {
+	parts := strings.SplitN(id, "/", expectedParts)
+	if len(parts) != expectedParts {
+		return nil, fmt.Errorf("unexpected format of ID (%s), expected %s", id, expectedFormat)
+	}
+	for i, part := range parts {
+		if strings.TrimSpace(part) == "" {
+			return nil, fmt.Errorf("unexpected format of ID (%s), part %d is empty, expected %s", id, i, expectedFormat)
+		}
+	}
+	return parts, nil
+}
+
 // ParseImportedUUID parse the imported uuid from the terraform import
 func ParseImportedUUID(id string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
