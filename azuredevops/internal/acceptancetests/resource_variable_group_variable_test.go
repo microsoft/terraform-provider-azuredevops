@@ -146,9 +146,6 @@ func checkVariableGroupVariableFromState(resource *terraform.ResourceState) (boo
 	return ok, nil
 }
 
-// Reproduces #1503 by creating multiple variables concurrently via for_each.
-// The reported failure is: "Provider produced inconsistent result after apply:
-// Root object was present, but now absent."
 func TestAccVariableGroupVariable_ForEach_ConcurrentCreate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	vgName := testutils.GenerateResourceName()
