@@ -163,15 +163,22 @@ func hclDeploymentGroupWithPoolId(projectName string, deploymentGroupName string
 	return fmt.Sprintf(`
 %s
 
+resource "azuredevops_project" "project2" {
+  name               = "%s-2"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+
 resource "azuredevops_deployment_group" "pool_source" {
   project_id = azuredevops_project.project.id
   name       = "%s-source"
 }
 
 resource "azuredevops_deployment_group" "test" {
-  project_id = azuredevops_project.project.id
+  project_id = azuredevops_project.project2.id
   name       = "%s"
   pool_id    = azuredevops_deployment_group.pool_source.pool_id
 }
-`, projectResource, deploymentGroupName, deploymentGroupName)
+`, projectResource, projectName, deploymentGroupName, deploymentGroupName)
 }
