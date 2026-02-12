@@ -70,7 +70,6 @@ func ResourceVariableGroupVariable() *schema.Resource {
 }
 
 func resourceVariableGroupVariableCreateUpdate(d *schema.ResourceData, m interface{}) error {
-
 	forEachLock.Lock()
 	defer forEachLock.Unlock()
 
