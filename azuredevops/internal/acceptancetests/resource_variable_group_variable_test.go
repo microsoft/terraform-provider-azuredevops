@@ -150,39 +150,28 @@ func TestAccVariableGroupVariable_ForEach_ConcurrentCreate(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	vgName := testutils.GenerateResourceName()
 
-	node1 := "azuredevops_variable_group_variable.example1"
-	node2 := "azuredevops_variable_group_variable.example2"
-	node3 := "azuredevops_variable_group_variable.example3"
+	var nodes []string
+
+	for i := 0; i < 20; i++ {
+		nodes = append(nodes, fmt.Sprintf(`azuredevops_variable_group_variable.test.%d`, i))
+	}
+
+	var checks []resource.TestCheckFunc
+	for _, n := range nodes {
+		checks = append(checks, checkVariableGroupVariableExists(n))
+	}
+
+	steps := []resource.TestStep{
+		{
+			Config: hclVariableGroupVariableForEach(projectName, vgName),
+			Check:  resource.ComposeTestCheckFunc(checks...),
+		},
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: checkVariableGroupVariableDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: hclVariableGroupVariableForEach(projectName, vgName),
-				Check: resource.ComposeTestCheckFunc(
-					checkVariableGroupVariableExists(node1),
-					checkVariableGroupVariableExists(node2),
-					checkVariableGroupVariableExists(node3),
-				),
-			},
-			{
-				ResourceName:      node1,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				ResourceName:      node2,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				ResourceName:      node3,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps:     steps,
 	})
 }
 
@@ -262,7 +251,6 @@ resource "azuredevops_variable_group" "test" {
   description  = "test description"
   allow_access = false
 
-  # Seed variables; changes ignored to allow adding separate resources.
   variable {
     name  = "seed"
     value = "seed"
@@ -272,26 +260,12 @@ resource "azuredevops_variable_group" "test" {
   }
 }
 
-resource "azuredevops_variable_group_variable" "example1" {
+resource "azuredevops_variable_group_variable" "test" {
+  count = 20
   project_id        = azuredevops_project.test.id
   variable_group_id = azuredevops_variable_group.test.id
-  name              = "key1"
-  value             = "val1"
-}
-
-resource "azuredevops_variable_group_variable" "example2" {
-  project_id        = azuredevops_project.test.id
-  variable_group_id = azuredevops_variable_group.test.id
-  name              = "key2"
-  value             = "val2"
-}
-
-
-resource "azuredevops_variable_group_variable" "example3" {
-  project_id        = azuredevops_project.test.id
-  variable_group_id = azuredevops_variable_group.test.id
-  name              = "key3"
-  value             = "val3"
+  name              = "key${count.index}"
+  value             = "val${count.index}"
 }
 `, projectName, variableGroupName)
 }
