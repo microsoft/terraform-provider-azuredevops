@@ -23,7 +23,7 @@ func TestAccWorkitemtrackingprocessInheritedPage_Basic(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicInheritedPage(workItemTypeName, processName, "Custom label"),
+				Config: basicInheritedPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -49,7 +49,7 @@ func TestAccWorkitemtrackingprocessInheritedPage_Update(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicInheritedPage(workItemTypeName, processName, "Custom label"),
+				Config: basicInheritedPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 				),
@@ -79,12 +79,11 @@ func TestAccWorkitemtrackingprocessInheritedPage_Update(t *testing.T) {
 func TestAccWorkitemtrackingprocessInheritedPage_Revert(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
-	inheritedPageNode := "azuredevops_workitemtrackingprocess_inherited_page.test"
-	customLabel := "Custom label"
-
+	tfNode := "azuredevops_workitemtrackingprocess_inherited_page.test"
 	var pageId string
 	var processId string
 	var witRefName string
+	var customLabel string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testutils.PreCheck(t, nil) },
@@ -92,21 +91,31 @@ func TestAccWorkitemtrackingprocessInheritedPage_Revert(t *testing.T) {
 		CheckDestroy:      testutils.CheckProcessDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: basicInheritedPage(workItemTypeName, processName, customLabel),
+				Config: basicInheritedPage(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrWith(inheritedPageNode, "id", func(value string) error {
+					resource.TestCheckResourceAttrWith(tfNode, "id", func(value string) error {
 						pageId = value
 						return nil
 					}),
-					resource.TestCheckResourceAttrWith(inheritedPageNode, "process_id", func(value string) error {
+					resource.TestCheckResourceAttrWith(tfNode, "process_id", func(value string) error {
 						processId = value
 						return nil
 					}),
-					resource.TestCheckResourceAttrWith(inheritedPageNode, "work_item_type_id", func(value string) error {
+					resource.TestCheckResourceAttrWith(tfNode, "work_item_type_id", func(value string) error {
 						witRefName = value
 						return nil
 					}),
+					resource.TestCheckResourceAttrWith(tfNode, "label", func(value string) error {
+						customLabel = value
+						return nil
+					}),
 				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportStateIdFunc: inheritedPageImportStateIdFunc(tfNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: removedWorkItemType(workItemTypeName, processName),
@@ -118,7 +127,7 @@ func TestAccWorkitemtrackingprocessInheritedPage_Revert(t *testing.T) {
 	})
 }
 
-func basicInheritedPage(workItemTypeName string, processName string, label string) string {
+func basicInheritedPage(workItemTypeName string, processName string) string {
 	workItemType := basicWorkItemType(workItemTypeName, processName)
 	return fmt.Sprintf(`
 %s
@@ -127,9 +136,9 @@ resource "azuredevops_workitemtrackingprocess_inherited_page" "test" {
   process_id        = azuredevops_workitemtrackingprocess_process.test.id
   work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
   page_id           = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  label             = "%s"
+  label             = "Custom label"
 }
-`, workItemType, label)
+`, workItemType)
 }
 
 func updatedInheritedPage(workItemTypeName string, processName string) string {
