@@ -31,6 +31,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_check_required_template",
 		"azuredevops_check_rest_api",
 		"azuredevops_dashboard",
+		"azuredevops_deployment_group",
 		"azuredevops_elastic_pool",
 		"azuredevops_environment",
 		"azuredevops_environment_resource_kubernetes",
