@@ -102,7 +102,7 @@ func TestAccWorkitemtrackingprocessInheritedPage_Revert(t *testing.T) {
 						processId = value
 						return nil
 					}),
-					resource.TestCheckResourceAttrWith(inheritedPageNode, "work_item_type_reference_name", func(value string) error {
+					resource.TestCheckResourceAttrWith(inheritedPageNode, "work_item_type_id", func(value string) error {
 						witRefName = value
 						return nil
 					}),
@@ -124,10 +124,10 @@ func basicInheritedPage(workItemTypeName string, processName string, label strin
 %s
 
 resource "azuredevops_workitemtrackingprocess_inherited_page" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  label                         = "%s"
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  page_id           = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  label             = "%s"
 }
 `, workItemType, label)
 }
@@ -138,10 +138,10 @@ func updatedInheritedPage(workItemTypeName string, processName string) string {
 %s
 
 resource "azuredevops_workitemtrackingprocess_inherited_page" "test" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
-  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
-  label                         = "Updated label"
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  page_id           = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  label             = "Updated label"
 }
 `, workItemType)
 }
@@ -210,7 +210,7 @@ func inheritedPageImportStateIdFunc(resourceName string) resource.ImportStateIdF
 			return "", fmt.Errorf("resource not found: %s", resourceName)
 		}
 		processId := rs.Primary.Attributes["process_id"]
-		witRefName := rs.Primary.Attributes["work_item_type_reference_name"]
+		witRefName := rs.Primary.Attributes["work_item_type_id"]
 		pageId := rs.Primary.ID
 		return fmt.Sprintf("%s/%s/%s", processId, witRefName, pageId), nil
 	}

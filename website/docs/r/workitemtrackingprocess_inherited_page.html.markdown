@@ -28,10 +28,10 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 
 # Relabel the Details page
 resource "azuredevops_workitemtrackingprocess_inherited_page" "example" {
-  process_id                    = azuredevops_workitemtrackingprocess_process.example.id
-  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
-  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].id
-  label                         = "Custom Details"
+  process_id        = azuredevops_workitemtrackingprocess_process.example.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.example.reference_name
+  page_id           = azuredevops_workitemtrackingprocess_workitemtype.example.pages[0].id
+  label             = "Custom Details"
 }
 ```
 
@@ -41,7 +41,7 @@ The following arguments are supported:
 
 * `process_id` - (Required) The ID of the process. Changing this forces a new resource to be created.
 
-* `work_item_type_reference_name` - (Required) The reference name of the work item type. Changing this forces a new resource to be created.
+* `work_item_type_id` - (Required) The ID (reference name) of the work item type. Changing this forces a new resource to be created.
 
 * `page_id` - (Required) The ID of the inherited page to customize. Changing this forces a new resource to be created.
 
@@ -68,7 +68,7 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## Import
 
-Inherited page customizations can be imported using the complete resource id `process_id/work_item_type_reference_name/page_id`, e.g.
+Inherited page customizations can be imported using the complete resource id `process_id/work_item_type_id/page_id`, e.g.
 
 ```shell
 terraform import azuredevops_workitemtrackingprocess_inherited_page.example 00000000-0000-0000-0000-000000000000/MyProcess.CustomWorkItemType/page-id

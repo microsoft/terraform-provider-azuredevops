@@ -116,9 +116,9 @@ func TestInheritedPage_Create_Validation(t *testing.T) {
 			mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).Return(tt.returnWorkItemType, tt.returnError).Times(1)
 
 			d := getInheritedPageResourceData(t, map[string]any{
-				"process_id":                    processId.String(),
-				"work_item_type_reference_name": witRefName,
-				"page_id":                       tt.pageId,
+				"process_id":        processId.String(),
+				"work_item_type_id": witRefName,
+				"page_id":           tt.pageId,
 			})
 
 			diags := createResourceInheritedPage(context.Background(), d, clients)

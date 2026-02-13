@@ -2,8 +2,6 @@ package workitemtrackingprocess
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +10,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
 func ResourceInheritedPage() *schema.Resource {
@@ -37,12 +36,12 @@ func ResourceInheritedPage() *schema.Resource {
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IsUUID),
 				Description:      "The ID of the process.",
 			},
-			"work_item_type_reference_name": {
+			"work_item_type_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
-				Description:      "The reference name of the work item type.",
+				Description:      "The ID (reference name) of the work item type.",
 			},
 			"page_id": {
 				Type:             schema.TypeString,
@@ -62,14 +61,13 @@ func ResourceInheritedPage() *schema.Resource {
 }
 
 func importResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	// Import ID format: process_id/work_item_type_reference_name/page_id
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("invalid import ID format, expected: process_id/work_item_type_reference_name/page_id")
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "process_id/work_item_type_id/page_id", 3)
+	if err != nil {
+		return nil, err
 	}
 
 	d.Set("process_id", parts[0])
-	d.Set("work_item_type_reference_name", parts[1])
+	d.Set("work_item_type_id", parts[1])
 	d.Set("page_id", parts[2])
 	d.SetId(parts[2])
 
@@ -81,7 +79,7 @@ func createResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 
 	pageId := d.Get("page_id").(string)
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
 		ProcessId:  converter.UUID(processId),
@@ -119,7 +117,7 @@ func readResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m an
 
 	pageId := d.Id()
 	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_reference_name").(string)
+	witRefName := d.Get("work_item_type_id").(string)
 
 	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
 		ProcessId:  converter.UUID(processId),
@@ -162,7 +160,7 @@ func updateResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 
 	args := workitemtrackingprocess.UpdatePageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		Page:       &page,
 	}
 
@@ -181,7 +179,7 @@ func deleteResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 
 	args := workitemtrackingprocess.RemovePageArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
-		WitRefName: converter.String(d.Get("work_item_type_reference_name").(string)),
+		WitRefName: converter.String(d.Get("work_item_type_id").(string)),
 		PageId:     &pageId,
 	}
 
@@ -190,17 +188,5 @@ func deleteResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("reverting inherited page: %+v", err)
 	}
 
-	return nil
-}
-
-func findPageById(layout *workitemtrackingprocess.FormLayout, pageId string) *workitemtrackingprocess.Page {
-	if layout == nil || layout.Pages == nil {
-		return nil
-	}
-	for _, page := range *layout.Pages {
-		if page.Id != nil && *page.Id == pageId {
-			return &page
-		}
-	}
 	return nil
 }
