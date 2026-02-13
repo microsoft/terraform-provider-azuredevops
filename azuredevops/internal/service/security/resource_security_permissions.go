@@ -467,6 +467,61 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf("removing managed permissions: %v", err)
 	}
 
+	// Wait for permissions to propagate
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"Waiting"},
+		Target:  []string{"Synced"},
+		Refresh: func() (interface{}, string, error) {
+			currentACL, err := clients.SecurityClient.QueryAccessControlLists(clients.Ctx, security.QueryAccessControlListsArgs{
+				SecurityNamespaceId: &namespaceID,
+				Token:               &token,
+				Descriptors:         &identityDescriptor,
+				IncludeExtendedInfo: &[]bool{true}[0],
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf("reading permissions: %v", err)
+			}
+
+			if currentACL == nil || len(*currentACL) == 0 {
+				return "Synced", "Synced", nil
+			}
+
+			acl := (*currentACL)[0]
+			if acl.AcesDictionary == nil {
+				return "Synced", "Synced", nil
+			}
+
+			aceEntry, ok := (*acl.AcesDictionary)[identityDescriptor]
+			if !ok {
+				return "Synced", "Synced", nil
+			}
+
+			currentAllow := 0
+			currentDeny := 0
+			if aceEntry.Allow != nil {
+				currentAllow = *aceEntry.Allow
+			}
+			if aceEntry.Deny != nil {
+				currentDeny = *aceEntry.Deny
+			}
+
+			// Check if managed bits are cleared
+			if (currentAllow&managedBits) == 0 && (currentDeny&managedBits) == 0 {
+				return "Synced", "Synced", nil
+			}
+
+			return "Waiting", "Waiting", nil
+		},
+		Timeout:                   5 * time.Minute,
+		MinTimeout:                2 * time.Second,
+		Delay:                     2 * time.Second,
+		ContinuousTargetOccurence: 1,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+		return fmt.Errorf("waiting for permission removal: %v", err)
+	}
+
 	log.Printf("[INFO] Successfully removed managed permissions from ACE for principal %s", principal)
 	return nil
 }
