@@ -44,6 +44,12 @@ func ResourceBranchPolicyMinReviewers() *schema.Resource {
 			ConflictsWith: []string{"settings.0.on_push_reset_approved_votes", "settings.0.on_push_reset_all_votes"},
 		},
 
+		"on_each_iteration_require_vote": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
+
 		"on_push_reset_approved_votes": {
 			Type:          schema.TypeBool,
 			Optional:      true,
@@ -86,6 +92,7 @@ func minReviewersFlattenFunc(d *schema.ResourceData, policyConfig *policy.Policy
 	settings["on_last_iteration_require_vote"] = policySettings["requireVoteOnLastIteration"]
 	settings["on_push_reset_all_votes"] = policySettings["resetRejectionsOnSourcePush"]
 	settings["last_pusher_cannot_approve"] = policySettings["blockLastPusherVote"]
+	settings["on_each_iteration_require_vote"] = policySettings["requireVoteOnEachIteration"]
 
 	d.Set("settings", settingsList)
 	return nil
@@ -108,6 +115,7 @@ func minReviewersExpandFunc(d *schema.ResourceData, typeID uuid.UUID) (*policy.P
 	policySettings["requireVoteOnLastIteration"] = settings["on_last_iteration_require_vote"]
 	policySettings["resetOnSourcePush"] = settings["on_push_reset_approved_votes"]
 	policySettings["blockLastPusherVote"] = settings["last_pusher_cannot_approve"]
+	policySettings["requireVoteOnEachIteration"] = settings["on_each_iteration_require_vote"]
 
 	resetRejectionsOnSourcePush := settings["on_push_reset_all_votes"].(bool)
 	policySettings["resetRejectionsOnSourcePush"] = resetRejectionsOnSourcePush

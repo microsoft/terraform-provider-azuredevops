@@ -112,12 +112,12 @@ resource "azuredevops_workitemquery_permissions" "query_permissions" {
     azuredevops_workitemquery_folder.team_folder.name,
     azuredevops_workitemquery.my_team_bugs.name
   )
-  principal  = data.azuredevops_group.example-readers.id
+  principal = data.azuredevops_group.example-readers.id
   permissions = {
-    "Read"   = "Allow"
-    "Contribute"   = "Deny"
+    "Read"              = "Allow"
+    "Contribute"        = "Deny"
     "ManagePermissions" = "Deny"
-    "Delete" = "Deny"
+    "Delete"            = "Deny"
   }
 }
 ```
