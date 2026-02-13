@@ -263,7 +263,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	var createdGroup *workitemtrackingprocess.Group
-	err := retryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
 		var createErr error
 		createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
 		return createErr
@@ -467,7 +467,7 @@ func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		GroupId:    &groupId,
 	}
 
-	err := retryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
 		return clients.WorkItemTrackingProcessClient.RemoveGroup(ctx, args)
 	})
 	if err != nil {
