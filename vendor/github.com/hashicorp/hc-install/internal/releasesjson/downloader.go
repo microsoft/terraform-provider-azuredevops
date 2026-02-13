@@ -100,18 +100,11 @@ func (d *Downloader) DownloadAndUnpack(ctx context.Context, pv *ProductVersion, 
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		pkgFile.Close()
-		filePath := pkgFile.Name()
-		err = os.Remove(filePath)
-		if err != nil {
-			d.Logger.Printf("failed to delete unpacked archive at %s: %s", filePath, err)
-			return
-		}
-		d.Logger.Printf("deleted unpacked archive at %s", filePath)
-	}()
+	defer pkgFile.Close()
+	pkgFilePath, err := filepath.Abs(pkgFile.Name())
 
 	up = &UnpackedProduct{}
+	up.PathsToRemove = append(up.PathsToRemove, pkgFilePath)
 
 	d.Logger.Printf("copying %q (%d bytes) to %s", pb.Filename, expectedSize, pkgFile.Name())
 

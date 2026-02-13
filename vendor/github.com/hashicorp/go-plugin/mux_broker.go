@@ -68,7 +68,7 @@ func (m *MuxBroker) Accept(id uint32) (net.Conn, error) {
 
 	// Ack our connection
 	if err := binary.Write(c, binary.LittleEndian, id); err != nil {
-		_ = c.Close()
+		c.Close()
 		return nil, err
 	}
 
@@ -105,18 +105,18 @@ func (m *MuxBroker) Dial(id uint32) (net.Conn, error) {
 
 	// Write the stream ID onto the wire.
 	if err := binary.Write(stream, binary.LittleEndian, id); err != nil {
-		_ = stream.Close()
+		stream.Close()
 		return nil, err
 	}
 
 	// Read the ack that we connected. Then we're off!
 	var ack uint32
 	if err := binary.Read(stream, binary.LittleEndian, &ack); err != nil {
-		_ = stream.Close()
+		stream.Close()
 		return nil, err
 	}
 	if ack != id {
-		_ = stream.Close()
+		stream.Close()
 		return nil, fmt.Errorf("bad ack: %d (expected %d)", ack, id)
 	}
 
@@ -148,7 +148,7 @@ func (m *MuxBroker) Run() {
 		// Read the stream ID from the stream
 		var id uint32
 		if err := binary.Read(stream, binary.LittleEndian, &id); err != nil {
-			_ = stream.Close()
+			stream.Close()
 			continue
 		}
 
@@ -199,7 +199,9 @@ func (m *MuxBroker) timeoutWait(id uint32, p *muxBrokerPending) {
 	// If we timed out, then check if we have a channel in the buffer,
 	// and if so, close it.
 	if timeout {
-		s := <-p.ch
-		_ = s.Close()
+		select {
+		case s := <-p.ch:
+			s.Close()
+		}
 	}
 }

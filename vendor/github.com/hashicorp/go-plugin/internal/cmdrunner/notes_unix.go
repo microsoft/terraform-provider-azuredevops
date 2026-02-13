@@ -53,13 +53,13 @@ func additionalNotesAboutCommand(path string) string {
 	}
 
 	if elfFile, err := elf.Open(path); err == nil {
-		defer func() { _ = elfFile.Close() }()
+		defer elfFile.Close()
 		notes += fmt.Sprintf("  ELF architecture: %s (current architecture: %s)\n", elfFile.Machine, runtime.GOARCH)
 	} else if machoFile, err := macho.Open(path); err == nil {
-		defer func() { _ = machoFile.Close() }()
+		defer machoFile.Close()
 		notes += fmt.Sprintf("  MachO architecture: %s (current architecture: %s)\n", machoFile.Cpu, runtime.GOARCH)
 	} else if peFile, err := pe.Open(path); err == nil {
-		defer func() { _ = peFile.Close() }()
+		defer peFile.Close()
 		machine, ok := peTypes[peFile.Machine]
 		if !ok {
 			machine = "unknown"

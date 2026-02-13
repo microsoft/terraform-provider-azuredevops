@@ -69,7 +69,7 @@ func (s *RPCServer) ServeConn(conn io.ReadWriteCloser) {
 	// First create the yamux server to wrap this connection
 	mux, err := yamux.Server(conn, nil)
 	if err != nil {
-		_ = conn.Close()
+		conn.Close()
 		log.Printf("[ERR] plugin: error creating yamux server: %s", err)
 		return
 	}
@@ -77,7 +77,7 @@ func (s *RPCServer) ServeConn(conn io.ReadWriteCloser) {
 	// Accept the control connection
 	control, err := mux.Accept()
 	if err != nil {
-		_ = mux.Close()
+		mux.Close()
 		if err != io.EOF {
 			log.Printf("[ERR] plugin: error accepting control connection: %s", err)
 		}
@@ -90,7 +90,7 @@ func (s *RPCServer) ServeConn(conn io.ReadWriteCloser) {
 	for i := range stdstream {
 		stdstream[i], err = mux.Accept()
 		if err != nil {
-			_ = mux.Close()
+			mux.Close()
 			log.Printf("[ERR] plugin: accepting stream %d: %s", i, err)
 			return
 		}
@@ -107,10 +107,10 @@ func (s *RPCServer) ServeConn(conn io.ReadWriteCloser) {
 	// Use the control connection to build the dispenser and serve the
 	// connection.
 	server := rpc.NewServer()
-	_ = server.RegisterName("Control", &controlServer{
+	server.RegisterName("Control", &controlServer{
 		server: s,
 	})
-	_ = server.RegisterName("Dispenser", &dispenseServer{
+	server.RegisterName("Dispenser", &dispenseServer{
 		broker:  broker,
 		plugins: s.Plugins,
 	})

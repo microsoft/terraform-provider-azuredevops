@@ -151,7 +151,7 @@ func (d *gzipDecompressor) Type() string {
 
 // callInfo contains all related configuration and information about an RPC.
 type callInfo struct {
-	compressorName        string
+	compressorType        string
 	failFast              bool
 	maxReceiveMessageSize *int
 	maxSendMessageSize    *int
@@ -160,7 +160,6 @@ type callInfo struct {
 	codec                 baseCodec
 	maxRetryRPCBufferSize int
 	onFinish              []func(err error)
-	authority             string
 }
 
 func defaultCallInfo() *callInfo {
@@ -223,7 +222,7 @@ type HeaderCallOption struct {
 
 func (o HeaderCallOption) before(*callInfo) error { return nil }
 func (o HeaderCallOption) after(_ *callInfo, attempt *csAttempt) {
-	*o.HeaderAddr, _ = attempt.transportStream.Header()
+	*o.HeaderAddr, _ = attempt.s.Header()
 }
 
 // Trailer returns a CallOptions that retrieves the trailer metadata
@@ -245,7 +244,7 @@ type TrailerCallOption struct {
 
 func (o TrailerCallOption) before(*callInfo) error { return nil }
 func (o TrailerCallOption) after(_ *callInfo, attempt *csAttempt) {
-	*o.TrailerAddr = attempt.transportStream.Trailer()
+	*o.TrailerAddr = attempt.s.Trailer()
 }
 
 // Peer returns a CallOption that retrieves peer information for a unary RPC.
@@ -267,7 +266,7 @@ type PeerCallOption struct {
 
 func (o PeerCallOption) before(*callInfo) error { return nil }
 func (o PeerCallOption) after(_ *callInfo, attempt *csAttempt) {
-	if x, ok := peer.FromContext(attempt.transportStream.Context()); ok {
+	if x, ok := peer.FromContext(attempt.s.Context()); ok {
 		*o.PeerAddr = *x
 	}
 }
@@ -366,36 +365,6 @@ func (o MaxRecvMsgSizeCallOption) before(c *callInfo) error {
 }
 func (o MaxRecvMsgSizeCallOption) after(*callInfo, *csAttempt) {}
 
-// CallAuthority returns a CallOption that sets the HTTP/2 :authority header of
-// an RPC to the specified value. When using CallAuthority, the credentials in
-// use must implement the AuthorityValidator interface.
-//
-// # Experimental
-//
-// Notice: This API is EXPERIMENTAL and may be changed or removed in a later
-// release.
-func CallAuthority(authority string) CallOption {
-	return AuthorityOverrideCallOption{Authority: authority}
-}
-
-// AuthorityOverrideCallOption is a CallOption that indicates the HTTP/2
-// :authority header value to use for the call.
-//
-// # Experimental
-//
-// Notice: This type is EXPERIMENTAL and may be changed or removed in a later
-// release.
-type AuthorityOverrideCallOption struct {
-	Authority string
-}
-
-func (o AuthorityOverrideCallOption) before(c *callInfo) error {
-	c.authority = o.Authority
-	return nil
-}
-
-func (o AuthorityOverrideCallOption) after(*callInfo, *csAttempt) {}
-
 // MaxCallSendMsgSize returns a CallOption which sets the maximum message size
 // in bytes the client can send. If this is not set, gRPC uses the default
 // `math.MaxInt32`.
@@ -466,7 +435,7 @@ type CompressorCallOption struct {
 }
 
 func (o CompressorCallOption) before(c *callInfo) error {
-	c.compressorName = o.CompressorType
+	c.compressorType = o.CompressorType
 	return nil
 }
 func (o CompressorCallOption) after(*callInfo, *csAttempt) {}
@@ -723,9 +692,9 @@ func encode(c baseCodec, msg any) (mem.BufferSlice, error) {
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "grpc: error while marshaling: %v", err.Error())
 	}
-	if bufSize := uint(b.Len()); bufSize > math.MaxUint32 {
+	if uint(b.Len()) > math.MaxUint32 {
 		b.Free()
-		return nil, status.Errorf(codes.ResourceExhausted, "grpc: message too large (%d bytes)", bufSize)
+		return nil, status.Errorf(codes.ResourceExhausted, "grpc: message too large (%d bytes)", len(b))
 	}
 	return b, nil
 }
@@ -859,13 +828,30 @@ func recvAndDecompress(p *parser, s recvCompressor, dc Decompressor, maxReceiveM
 		return nil, st.Err()
 	}
 
+	var size int
 	if pf.isCompressed() {
 		defer compressed.Free()
+
 		// To match legacy behavior, if the decompressor is set by WithDecompressor or RPCDecompressor,
 		// use this decompressor as the default.
-		out, err = decompress(compressor, compressed, dc, maxReceiveMessageSize, p.bufferPool)
+		if dc != nil {
+			var uncompressedBuf []byte
+			uncompressedBuf, err = dc.Do(compressed.Reader())
+			if err == nil {
+				out = mem.BufferSlice{mem.SliceBuffer(uncompressedBuf)}
+			}
+			size = len(uncompressedBuf)
+		} else {
+			out, size, err = decompress(compressor, compressed, maxReceiveMessageSize, p.bufferPool)
+		}
 		if err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "grpc: failed to decompress the received message: %v", err)
+		}
+		if size > maxReceiveMessageSize {
+			out.Free()
+			// TODO: Revisit the error code. Currently keep it consistent with java
+			// implementation.
+			return nil, status.Errorf(codes.ResourceExhausted, "grpc: received message after decompression larger than max (%d vs. %d)", size, maxReceiveMessageSize)
 		}
 	} else {
 		out = compressed
@@ -880,46 +866,20 @@ func recvAndDecompress(p *parser, s recvCompressor, dc Decompressor, maxReceiveM
 	return out, nil
 }
 
-// decompress processes the given data by decompressing it using either a custom decompressor or a standard compressor.
-// If a custom decompressor is provided, it takes precedence. The function validates that the decompressed data
-// does not exceed the specified maximum size and returns an error if this limit is exceeded.
-// On success, it returns the decompressed data. Otherwise, it returns an error if decompression fails or the data exceeds the size limit.
-func decompress(compressor encoding.Compressor, d mem.BufferSlice, dc Decompressor, maxReceiveMessageSize int, pool mem.BufferPool) (mem.BufferSlice, error) {
-	if dc != nil {
-		uncompressed, err := dc.Do(d.Reader())
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "grpc: failed to decompress the received message: %v", err)
-		}
-		if len(uncompressed) > maxReceiveMessageSize {
-			return nil, status.Errorf(codes.ResourceExhausted, "grpc: message after decompression larger than max (%d vs. %d)", len(uncompressed), maxReceiveMessageSize)
-		}
-		return mem.BufferSlice{mem.SliceBuffer(uncompressed)}, nil
+// Using compressor, decompress d, returning data and size.
+// Optionally, if data will be over maxReceiveMessageSize, just return the size.
+func decompress(compressor encoding.Compressor, d mem.BufferSlice, maxReceiveMessageSize int, pool mem.BufferPool) (mem.BufferSlice, int, error) {
+	dcReader, err := compressor.Decompress(d.Reader())
+	if err != nil {
+		return nil, 0, err
 	}
-	if compressor != nil {
-		dcReader, err := compressor.Decompress(d.Reader())
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "grpc: failed to decompress the message: %v", err)
-		}
 
-		// Read at most one byte more than the limit from the decompressor.
-		// Unless the limit is MaxInt64, in which case, that's impossible, so
-		// apply no limit.
-		if limit := int64(maxReceiveMessageSize); limit < math.MaxInt64 {
-			dcReader = io.LimitReader(dcReader, limit+1)
-		}
-		out, err := mem.ReadAll(dcReader, pool)
-		if err != nil {
-			out.Free()
-			return nil, status.Errorf(codes.Internal, "grpc: failed to read decompressed data: %v", err)
-		}
-
-		if out.Len() > maxReceiveMessageSize {
-			out.Free()
-			return nil, status.Errorf(codes.ResourceExhausted, "grpc: received message after decompression larger than max %d", maxReceiveMessageSize)
-		}
-		return out, nil
+	out, err := mem.ReadAll(io.LimitReader(dcReader, int64(maxReceiveMessageSize)+1), pool)
+	if err != nil {
+		out.Free()
+		return nil, 0, err
 	}
-	return nil, status.Errorf(codes.Internal, "grpc: no decompressor available for compressed payload")
+	return out, out.Len(), nil
 }
 
 type recvCompressor interface {

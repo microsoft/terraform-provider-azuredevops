@@ -2,10 +2,7 @@ package cty
 
 import (
 	"fmt"
-	"iter"
 	"strings"
-
-	"github.com/zclconf/go-cty/cty/ctymarks"
 )
 
 // marker is an internal wrapper type used to add special "marks" to values.
@@ -21,19 +18,19 @@ import (
 // an application that never marks a value does not need to worry about
 // encountering marked values.
 type marker struct {
-	realV any
+	realV interface{}
 	marks ValueMarks
 }
 
 // ValueMarks is a map, representing a set, of "mark" values associated with
 // a Value. See Value.Mark for more information on the usage of mark values.
-type ValueMarks map[any]struct{}
+type ValueMarks map[interface{}]struct{}
 
 // NewValueMarks constructs a new ValueMarks set with the given mark values.
 //
 // If any of the arguments are already ValueMarks values then they'll be merged
 // into the result, rather than used directly as individual marks.
-func NewValueMarks(marks ...any) ValueMarks {
+func NewValueMarks(marks ...interface{}) ValueMarks {
 	if len(marks) == 0 {
 		return nil
 	}
@@ -114,62 +111,12 @@ func (val Value) IsMarked() bool {
 }
 
 // HasMark returns true if and only if the receiving value has the given mark.
-func (val Value) HasMark(mark any) bool {
+func (val Value) HasMark(mark interface{}) bool {
 	if mr, ok := val.v.(marker); ok {
 		_, ok := mr.marks[mark]
 		return ok
 	}
 	return false
-}
-
-// HasMarkDeep is like [HasMark] but also searches any values nested inside
-// the given value.
-func (val Value) HasMarkDeep(mark any) bool {
-	for _, v := range DeepValues(val) {
-		if v.HasMark(mark) {
-			return true
-		}
-	}
-	return false
-}
-
-// ValueMarksOfType returns an iterable sequence of any marks directly
-// associated with the given value that can be type-asserted to the given
-// type.
-func ValueMarksOfType[T any](v Value) iter.Seq[T] {
-	return func(yield func(T) bool) {
-		yieldValueMarksOfType(v, yield)
-	}
-}
-
-// ValueMarksOfTypeDeep is like [ValueMarksOfType] but also visits any values
-// nested inside the given value.
-//
-// The same value may be produced multiple times if multiple nested values are
-// marked with it.
-func ValueMarksOfTypeDeep[T any](v Value) iter.Seq[T] {
-	return func(yield func(T) bool) {
-		for _, v := range DeepValues(v) {
-			if !yieldValueMarksOfType(v, yield) {
-				break
-			}
-		}
-	}
-}
-
-func yieldValueMarksOfType[T any](v Value, yield func(T) bool) bool {
-	mr, ok := v.v.(marker)
-	if !ok {
-		return true
-	}
-	for mark := range mr.marks {
-		if v, ok := mark.(T); ok {
-			if !yield(v) {
-				return false
-			}
-		}
-	}
-	return true
 }
 
 // ContainsMarked returns true if the receiving value or any value within it
@@ -178,12 +125,15 @@ func yieldValueMarksOfType[T any](v Value, yield func(T) bool) bool {
 // This operation is relatively expensive. If you only need a shallow result,
 // use IsMarked instead.
 func (val Value) ContainsMarked() bool {
-	for _, v := range DeepValues(val) {
+	ret := false
+	Walk(val, func(_ Path, v Value) (bool, error) {
 		if v.IsMarked() {
-			return true
+			ret = true
+			return false, nil
 		}
-	}
-	return false
+		return true, nil
+	})
+	return ret
 }
 
 func (val Value) assertUnmarked() {
@@ -239,7 +189,7 @@ func (val Value) HasSameMarks(other Value) bool {
 //
 // An application that never calls this method does not need to worry about
 // handling marked values.
-func (val Value) Mark(mark any) Value {
+func (val Value) Mark(mark interface{}) Value {
 	if _, ok := mark.(ValueMarks); ok {
 		panic("cannot call Value.Mark with a ValueMarks value (use WithMarks instead)")
 	}
@@ -286,11 +236,6 @@ func (t *applyPathValueMarksTransformer) Exit(p Path, v Value) (Value, error) {
 // markers to particular paths and returns the marked
 // Value.
 func (val Value) MarkWithPaths(pvm []PathValueMarks) Value {
-	if len(pvm) == 0 {
-		// If we have no marks to apply then there's nothing to do, so we'll
-		// just return the same value rather than wastefully rebuilding it.
-		return val
-	}
 	ret, _ := TransformWithTransformer(val, &applyPathValueMarksTransformer{pvm})
 	return ret
 }
@@ -312,6 +257,24 @@ func (val Value) Unmark() (Value, ValueMarks) {
 	}, marks
 }
 
+type unmarkTransformer struct {
+	pvm []PathValueMarks
+}
+
+func (t *unmarkTransformer) Enter(p Path, v Value) (Value, error) {
+	unmarkedVal, marks := v.Unmark()
+	if len(marks) > 0 {
+		path := make(Path, len(p), len(p)+1)
+		copy(path, p)
+		t.pvm = append(t.pvm, PathValueMarks{path, marks})
+	}
+	return unmarkedVal, nil
+}
+
+func (t *unmarkTransformer) Exit(p Path, v Value) (Value, error) {
+	return v, nil
+}
+
 // UnmarkDeep is similar to Unmark, but it works with an entire nested structure
 // rather than just the given value directly.
 //
@@ -319,12 +282,17 @@ func (val Value) Unmark() (Value, ValueMarks) {
 // the returned marks set includes the superset of all of the marks encountered
 // during the operation.
 func (val Value) UnmarkDeep() (Value, ValueMarks) {
-	retMarks := make(ValueMarks)
-	retVal, _ := val.WrangleMarksDeep(func(mark any, path Path) (ctymarks.WrangleAction, error) {
-		retMarks[mark] = struct{}{}
-		return ctymarks.WrangleDrop, nil
-	})
-	return retVal, retMarks
+	t := unmarkTransformer{}
+	ret, _ := TransformWithTransformer(val, &t)
+
+	marks := make(ValueMarks)
+	for _, pvm := range t.pvm {
+		for m, s := range pvm.Marks {
+			marks[m] = s
+		}
+	}
+
+	return ret, marks
 }
 
 // UnmarkDeepWithPaths is like UnmarkDeep, except it returns a slice
@@ -332,24 +300,9 @@ func (val Value) UnmarkDeep() (Value, ValueMarks) {
 // a caller to know which marks are associated with which paths
 // in the Value.
 func (val Value) UnmarkDeepWithPaths() (Value, []PathValueMarks) {
-	var pvm []PathValueMarks
-	retVal, _ := val.WrangleMarksDeep(func(mark any, path Path) (ctymarks.WrangleAction, error) {
-		if len(pvm) != 0 {
-			// We'll try to modify the most recent item instead of adding
-			// a new one, if the path hasn't changed.
-			latest := &pvm[len(pvm)-1]
-			if latest.Path.Equals(path) {
-				latest.Marks[mark] = struct{}{}
-				return ctymarks.WrangleDrop, nil
-			}
-		}
-		pvm = append(pvm, PathValueMarks{
-			Path:  path.Copy(),
-			Marks: NewValueMarks(mark),
-		})
-		return ctymarks.WrangleDrop, nil
-	})
-	return retVal, pvm
+	t := unmarkTransformer{}
+	ret, _ := TransformWithTransformer(val, &t)
+	return ret, t.pvm
 }
 
 func (val Value) unmarkForce() Value {

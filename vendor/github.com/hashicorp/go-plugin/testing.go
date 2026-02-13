@@ -14,7 +14,6 @@ import (
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin/internal/grpcmux"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // TestOptions allows specifying options that can affect the behavior of the
@@ -47,7 +46,7 @@ func TestConn(t testing.TB) (net.Conn, net.Conn) {
 	doneCh := make(chan struct{})
 	go func() {
 		defer close(doneCh)
-		defer func() { _ = l.Close() }()
+		defer l.Close()
 		var err error
 		serverConn, err = l.Accept()
 		if err != nil {
@@ -117,20 +116,19 @@ func TestGRPCConn(t testing.TB, register func(*grpc.Server)) (*grpc.ClientConn, 
 
 	server := grpc.NewServer()
 	register(server)
-	go func() { _ = server.Serve(l) }()
+	go server.Serve(l)
 
 	// Connect to the server
 	conn, err := grpc.Dial(
 		l.Addr().String(),
 		grpc.WithBlock(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+		grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
 
 	// Connection successful, close the listener
-	_ = l.Close()
+	l.Close()
 
 	return conn, server
 }

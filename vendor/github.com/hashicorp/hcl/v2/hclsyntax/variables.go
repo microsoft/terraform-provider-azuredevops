@@ -20,7 +20,6 @@ func Variables(expr Expression) []hcl.Traversal {
 		},
 	}
 
-	//nolint:errcheck // FIXME: Propogate diagnostics/errors upward.
 	Walk(expr, walker)
 
 	return vars

@@ -62,10 +62,6 @@ func (e cmdErr) Is(target error) bool {
 	return false
 }
 
-func (e cmdErr) Unwrap() error {
-	return e.err
-}
-
 func (e cmdErr) Error() string {
 	return e.err.Error()
 }

@@ -11,11 +11,11 @@ import (
 //
 // Its usage pattern is as follows:
 //
-//	it := val.ElementIterator()
-//	for it.Next() {
-//	    key, val := it.Element()
-//	    // ...
-//	}
+//     it := val.ElementIterator()
+//     for it.Next() {
+//         key, val := it.Element()
+//         // ...
+//     }
 type ElementIterator interface {
 	Next() bool
 	Element() (key Value, value Value)
@@ -46,13 +46,13 @@ func elementIterator(val Value) ElementIterator {
 	case val.ty.IsListType():
 		return &listElementIterator{
 			ety:  val.ty.ElementType(),
-			vals: val.v.([]any),
+			vals: val.v.([]interface{}),
 			idx:  -1,
 		}
 	case val.ty.IsMapType():
 		// We iterate the keys in a predictable lexicographical order so
 		// that results will always be stable given the same input map.
-		rawMap := val.v.(map[string]any)
+		rawMap := val.v.(map[string]interface{})
 		keys := make([]string, 0, len(rawMap))
 		for key := range rawMap {
 			keys = append(keys, key)
@@ -66,7 +66,7 @@ func elementIterator(val Value) ElementIterator {
 			idx:  -1,
 		}
 	case val.ty.IsSetType():
-		rawSet := val.v.(set.Set[any])
+		rawSet := val.v.(set.Set[interface{}])
 		return &setElementIterator{
 			ety:   val.ty.ElementType(),
 			setIt: rawSet.Iterator(),
@@ -74,7 +74,7 @@ func elementIterator(val Value) ElementIterator {
 	case val.ty.IsTupleType():
 		return &tupleElementIterator{
 			etys: val.ty.TupleElementTypes(),
-			vals: val.v.([]any),
+			vals: val.v.([]interface{}),
 			idx:  -1,
 		}
 	case val.ty.IsObjectType():
@@ -89,7 +89,7 @@ func elementIterator(val Value) ElementIterator {
 
 		return &objectElementIterator{
 			atys:      atys,
-			vals:      val.v.(map[string]any),
+			vals:      val.v.(map[string]interface{}),
 			attrNames: keys,
 			idx:       -1,
 		}
@@ -100,7 +100,7 @@ func elementIterator(val Value) ElementIterator {
 
 type listElementIterator struct {
 	ety  Type
-	vals []any
+	vals []interface{}
 	idx  int
 }
 
@@ -119,7 +119,7 @@ func (it *listElementIterator) Next() bool {
 
 type mapElementIterator struct {
 	ety  Type
-	vals map[string]any
+	vals map[string]interface{}
 	keys []string
 	idx  int
 }
@@ -139,7 +139,7 @@ func (it *mapElementIterator) Next() bool {
 
 type setElementIterator struct {
 	ety   Type
-	setIt *set.Iterator[any]
+	setIt *set.Iterator[interface{}]
 }
 
 func (it *setElementIterator) Element() (Value, Value) {
@@ -156,7 +156,7 @@ func (it *setElementIterator) Next() bool {
 
 type tupleElementIterator struct {
 	etys []Type
-	vals []any
+	vals []interface{}
 	idx  int
 }
 
@@ -175,7 +175,7 @@ func (it *tupleElementIterator) Next() bool {
 
 type objectElementIterator struct {
 	atys      map[string]Type
-	vals      map[string]any
+	vals      map[string]interface{}
 	attrNames []string
 	idx       int
 }

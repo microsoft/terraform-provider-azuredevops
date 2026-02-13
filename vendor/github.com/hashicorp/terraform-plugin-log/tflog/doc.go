@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 // Package tflog provides helper functions for writing log output and creating
 // loggers for Terraform plugins.
 //

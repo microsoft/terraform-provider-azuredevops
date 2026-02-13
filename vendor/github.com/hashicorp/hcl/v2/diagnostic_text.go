@@ -71,10 +71,7 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 		severityStr = "???????"
 	}
 
-	_, err := fmt.Fprintf(w.wr, "%s%s%s: %s\n\n", colorCode, severityStr, resetCode, diag.Summary)
-	if err != nil {
-		return fmt.Errorf("write failed: %w", err)
-	}
+	fmt.Fprintf(w.wr, "%s%s%s: %s\n\n", colorCode, severityStr, resetCode, diag.Summary)
 
 	if diag.Subject != nil {
 		snipRange := *diag.Subject
@@ -100,10 +97,7 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 
 		file := w.files[diag.Subject.Filename]
 		if file == nil || file.Bytes == nil {
-			_, err = fmt.Fprintf(w.wr, "  on %s line %d:\n  (source code not available)\n\n", diag.Subject.Filename, diag.Subject.Start.Line)
-			if err != nil {
-				return fmt.Errorf("write failed: %w", err)
-			}
+			fmt.Fprintf(w.wr, "  on %s line %d:\n  (source code not available)\n\n", diag.Subject.Filename, diag.Subject.Start.Line)
 		} else {
 
 			var contextLine string
@@ -114,10 +108,7 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 				}
 			}
 
-			_, err = fmt.Fprintf(w.wr, "  on %s line %d%s:\n", diag.Subject.Filename, diag.Subject.Start.Line, contextLine)
-			if err != nil {
-				return fmt.Errorf("write failed: %w", err)
-			}
+			fmt.Fprintf(w.wr, "  on %s line %d%s:\n", diag.Subject.Filename, diag.Subject.Start.Line, contextLine)
 
 			src := file.Bytes
 			sc := NewRangeScanner(src, diag.Subject.Filename, bufio.ScanLines)
@@ -130,32 +121,23 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 
 				beforeRange, highlightedRange, afterRange := lineRange.PartitionAround(highlightRange)
 				if highlightedRange.Empty() {
-					_, err = fmt.Fprintf(w.wr, "%4d: %s\n", lineRange.Start.Line, sc.Bytes())
-					if err != nil {
-						return fmt.Errorf("write failed: %w", err)
-					}
+					fmt.Fprintf(w.wr, "%4d: %s\n", lineRange.Start.Line, sc.Bytes())
 				} else {
 					before := beforeRange.SliceBytes(src)
 					highlighted := highlightedRange.SliceBytes(src)
 					after := afterRange.SliceBytes(src)
-					_, err = fmt.Fprintf(
+					fmt.Fprintf(
 						w.wr, "%4d: %s%s%s%s%s\n",
 						lineRange.Start.Line,
 						before,
 						highlightCode, highlighted, resetCode,
 						after,
 					)
-					if err != nil {
-						return fmt.Errorf("write failed: %w", err)
-					}
 				}
 
 			}
 
-			_, err = w.wr.Write([]byte{'\n'})
-			if err != nil {
-				return fmt.Errorf("write failed: %w", err)
-			}
+			w.wr.Write([]byte{'\n'})
 		}
 
 		if diag.Expression != nil && diag.EvalContext != nil {
@@ -200,26 +182,16 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 			for i, stmt := range stmts {
 				switch i {
 				case 0:
-					_, err = w.wr.Write([]byte{'w', 'i', 't', 'h', ' '})
+					w.wr.Write([]byte{'w', 'i', 't', 'h', ' '})
 				default:
-					_, err = w.wr.Write([]byte{' ', ' ', ' ', ' ', ' '})
+					w.wr.Write([]byte{' ', ' ', ' ', ' ', ' '})
 				}
-				if err != nil {
-					return fmt.Errorf("write failed: %w", err)
-				}
-
-				_, err = w.wr.Write([]byte(stmt))
-				if err != nil {
-					return fmt.Errorf("write failed: %w", err)
-				}
+				w.wr.Write([]byte(stmt))
 				switch i {
 				case last:
-					_, err = w.wr.Write([]byte{'.', '\n', '\n'})
+					w.wr.Write([]byte{'.', '\n', '\n'})
 				default:
-					_, err = w.wr.Write([]byte{',', '\n'})
-				}
-				if err != nil {
-					return fmt.Errorf("write failed: %w", err)
+					w.wr.Write([]byte{',', '\n'})
 				}
 			}
 		}
@@ -230,10 +202,7 @@ func (w *diagnosticTextWriter) WriteDiagnostic(diag *Diagnostic) error {
 		if w.width != 0 {
 			detail = wordwrap.WrapString(detail, w.width)
 		}
-		_, err = fmt.Fprintf(w.wr, "%s\n\n", detail)
-		if err != nil {
-			return fmt.Errorf("write failed: %w", err)
-		}
+		fmt.Fprintf(w.wr, "%s\n\n", detail)
 	}
 
 	return nil

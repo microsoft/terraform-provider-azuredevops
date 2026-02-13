@@ -156,45 +156,34 @@ func conversionCollectionToMap(ety cty.Type, conv conversion) conversion {
 // given tuple type and return a set of the given element type.
 //
 // Will panic if the given tupleType isn't actually a tuple type.
-func conversionTupleToSet(tupleType cty.Type, setEty cty.Type, unsafe bool) conversion {
+func conversionTupleToSet(tupleType cty.Type, listEty cty.Type, unsafe bool) conversion {
 	tupleEtys := tupleType.TupleElementTypes()
 
 	if len(tupleEtys) == 0 {
 		// Empty tuple short-circuit
 		return func(val cty.Value, path cty.Path) (cty.Value, error) {
-			return cty.SetValEmpty(setEty), nil
+			return cty.SetValEmpty(listEty), nil
 		}
 	}
 
-	if setEty == cty.DynamicPseudoType {
+	if listEty == cty.DynamicPseudoType {
 		// This is a special case where the caller wants us to find
 		// a suitable single type that all elements can convert to, if
 		// possible.
-		setEty, _ = unify(tupleEtys, unsafe)
-		if setEty == cty.NilType {
+		listEty, _ = unify(tupleEtys, unsafe)
+		if listEty == cty.NilType {
 			return nil
-		}
-
-		// If the set element type after unification is still the dynamic
-		// type, the only way this can result in a valid set is if all values
-		// are of dynamic type
-		if setEty == cty.DynamicPseudoType {
-			for _, tupleEty := range tupleEtys {
-				if !tupleEty.Equals(cty.DynamicPseudoType) {
-					return nil
-				}
-			}
 		}
 	}
 
 	elemConvs := make([]conversion, len(tupleEtys))
 	for i, tupleEty := range tupleEtys {
-		if tupleEty.Equals(setEty) {
+		if tupleEty.Equals(listEty) {
 			// no conversion required
 			continue
 		}
 
-		elemConvs[i] = getConversion(tupleEty, setEty, unsafe)
+		elemConvs[i] = getConversion(tupleEty, listEty, unsafe)
 		if elemConvs[i] == nil {
 			// If any of our element conversions are impossible, then the our
 			// whole conversion is impossible.
@@ -255,17 +244,6 @@ func conversionTupleToList(tupleType cty.Type, listEty cty.Type, unsafe bool) co
 		if listEty == cty.NilType {
 			return nil
 		}
-
-		// If the list element type after unification is still the dynamic
-		// type, the only way this can result in a valid list is if all values
-		// are of dynamic type
-		if listEty == cty.DynamicPseudoType {
-			for _, tupleEty := range tupleEtys {
-				if !tupleEty.Equals(cty.DynamicPseudoType) {
-					return nil
-				}
-			}
-		}
 	}
 
 	elemConvs := make([]conversion, len(tupleEtys))
@@ -287,7 +265,6 @@ func conversionTupleToList(tupleType cty.Type, listEty cty.Type, unsafe bool) co
 	// element conversions in elemConvs
 	return func(val cty.Value, path cty.Path) (cty.Value, error) {
 		elems := make([]cty.Value, 0, len(elemConvs))
-		elemTys := make([]cty.Type, 0, len(elems))
 		elemPath := append(path.Copy(), nil)
 		i := int64(0)
 		it := val.ElementIterator()
@@ -307,15 +284,10 @@ func conversionTupleToList(tupleType cty.Type, listEty cty.Type, unsafe bool) co
 				}
 			}
 			elems = append(elems, val)
-			elemTys = append(elemTys, val.Type())
 
 			i++
 		}
 
-		elems, err := conversionUnifyListElements(elems, elemPath, unsafe)
-		if err != nil {
-			return cty.NilVal, err
-		}
 		return cty.ListVal(elems), nil
 	}
 }
@@ -469,7 +441,6 @@ func conversionUnifyCollectionElements(elems map[string]cty.Value, path cty.Path
 	}
 	unifiedType, _ := unify(elemTypes, unsafe)
 	if unifiedType == cty.NilType {
-		return nil, path.NewErrorf("collection elements cannot be unified")
 	}
 
 	unifiedElems := make(map[string]cty.Value)
@@ -514,38 +485,4 @@ func conversionCheckMapElementTypes(elems map[string]cty.Value, path cty.Path) e
 	}
 
 	return nil
-}
-
-func conversionUnifyListElements(elems []cty.Value, path cty.Path, unsafe bool) ([]cty.Value, error) {
-	elemTypes := make([]cty.Type, len(elems))
-	for i, elem := range elems {
-		elemTypes[i] = elem.Type()
-	}
-	unifiedType, _ := unify(elemTypes, unsafe)
-	if unifiedType == cty.NilType {
-		return nil, path.NewErrorf("collection elements cannot be unified")
-	}
-
-	ret := make([]cty.Value, len(elems))
-	elemPath := append(path.Copy(), nil)
-
-	for i, elem := range elems {
-		if elem.Type().Equals(unifiedType) {
-			ret[i] = elem
-			continue
-		}
-		conv := getConversion(elem.Type(), unifiedType, unsafe)
-		if conv == nil {
-		}
-		elemPath[len(elemPath)-1] = cty.IndexStep{
-			Key: cty.NumberIntVal(int64(i)),
-		}
-		val, err := conv(elem, elemPath)
-		if err != nil {
-			return nil, err
-		}
-		ret[i] = val
-	}
-
-	return ret, nil
 }

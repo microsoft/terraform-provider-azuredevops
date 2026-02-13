@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package fieldutils
 
 // MergeFieldMaps takes a slice of field maps,
