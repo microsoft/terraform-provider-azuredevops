@@ -261,7 +261,7 @@ resource "azuredevops_variable_group" "test" {
 }
 
 resource "azuredevops_variable_group_variable" "test" {
-  count = 20
+  count             = 20
   project_id        = azuredevops_project.test.id
   variable_group_id = azuredevops_variable_group.test.id
   name              = "key${count.index}"
