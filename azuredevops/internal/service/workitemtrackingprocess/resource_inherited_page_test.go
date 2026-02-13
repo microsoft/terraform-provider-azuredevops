@@ -10,9 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -21,23 +19,7 @@ import (
 )
 
 func getInheritedPageResourceData(t *testing.T, input map[string]any) *schema.ResourceData {
-	r := ResourceInheritedPage()
-
-	attributes := make(map[string]string)
-	rawConfigValues := make(map[string]cty.Value)
-	for k, v := range input {
-		if s, ok := v.(string); ok {
-			attributes[k] = s
-			rawConfigValues[k] = cty.StringVal(s)
-		}
-	}
-
-	state := &terraform.InstanceState{
-		Attributes: attributes,
-		RawConfig:  cty.ObjectVal(rawConfigValues),
-	}
-
-	return r.Data(state)
+	return schema.TestResourceDataRaw(t, ResourceInheritedPage().Schema, input)
 }
 
 func createProcessWorkItemTypeWithPage(witRefName string, page workitemtrackingprocess.Page) *workitemtrackingprocess.ProcessWorkItemType {
