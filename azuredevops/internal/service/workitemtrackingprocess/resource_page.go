@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty/gocty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -251,23 +250,4 @@ func findPageById(layout *workitemtrackingprocess.FormLayout, pageId string) *wo
 		}
 	}
 	return nil
-}
-
-// Returns order if there is one defined, otherwise nil
-func getOrder(d *schema.ResourceData) (*int, error) {
-	rawPlan := d.GetRawPlan()
-	if !rawPlan.IsKnown() || rawPlan.IsNull() {
-		return nil, nil
-	}
-
-	order := rawPlan.GetAttr("order")
-	if !order.IsKnown() || order.IsNull() {
-		return nil, nil
-	}
-
-	var val int
-	if err := gocty.FromCtyValue(order, &val); err != nil {
-		return nil, err
-	}
-	return &val, nil
 }

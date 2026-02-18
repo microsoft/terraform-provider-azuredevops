@@ -31,6 +31,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_check_required_template",
 		"azuredevops_check_rest_api",
 		"azuredevops_dashboard",
+		"azuredevops_deployment_group",
 		"azuredevops_elastic_pool",
 		"azuredevops_environment",
 		"azuredevops_environment_resource_kubernetes",
@@ -128,10 +129,13 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_workitemtrackingprocess_control",
 		"azuredevops_workitemtrackingprocess_field",
 		"azuredevops_workitemtrackingprocess_group",
+		"azuredevops_workitemtrackingprocess_inherited_control",
 		"azuredevops_workitemtrackingprocess_list",
 		"azuredevops_workitemtrackingprocess_page",
 		"azuredevops_workitemtrackingprocess_process",
 		"azuredevops_workitemtrackingprocess_process_permissions",
+		"azuredevops_workitemtrackingprocess_state",
+		"azuredevops_workitemtrackingprocess_system_control",
 		"azuredevops_workitemtrackingprocess_workitemtype",
 	}
 
