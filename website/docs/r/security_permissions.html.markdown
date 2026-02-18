@@ -174,7 +174,7 @@ The following arguments are supported:
   - `Deny` (or `deny`, `DENY`) - Explicitly deny the permission
   - `NotSet` (or `notset`, `NOTSET`) - Remove the permission (inherit from parent)
 
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions with existing permissions. When `true`, all existing permissions for the principal on this token will be replaced with the specified permissions. When `false`, the specified permissions will be merged with existing permissions. Default: `false`.
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions with existing permissions. When `true`, all existing permissions for the principal on this token will be replaced with the specified permissions. When `false`, the specified permissions will be merged with existing permissions. Default: `true`.
 
 ### Permission Names by Namespace
 
@@ -253,6 +253,7 @@ The resource does not support import.
 - Permission names are namespace-specific and case-sensitive. All permission names in the `permissions` map are validated against the namespace - if any permission name is invalid, an error will be returned
 - When `replace = true`, all existing permissions for the principal will be removed and replaced with the specified permissions
 - When `replace = false`, the specified permissions will be merged with existing permissions, allowing you to manage only a subset of permissions
+- when `replace = false`, deletion of the resource only removes the permissions specified in the `permissions` map, rather than all permissions for the principal
 - The `principal` must be a group descriptor or identity ID. Individual user principals are not supported
 - Use the `azuredevops_security_namespace_token` data source to generate correct tokens for different resource types
 - Permissions are propagated asynchronously and may take a few moments to take effect

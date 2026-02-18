@@ -62,8 +62,8 @@ func ResourceGenericPermissions() *schema.Resource {
 			"replace": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
-				Description: "Replace existing permissions (true) or merge with existing (false)",
+				Default:     true,
+				Description: "Replace existing permissions (true) or merge with existing (true)",
 			},
 		},
 	}
