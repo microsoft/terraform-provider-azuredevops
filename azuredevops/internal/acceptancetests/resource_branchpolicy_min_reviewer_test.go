@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -28,6 +28,7 @@ func TestAccBranchPolicyMinReviewers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(node, "settings.0.last_pusher_cannot_approve", "false"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_last_iteration_require_vote", "false"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_push_reset_approved_votes", "true"),
+					resource.TestCheckResourceAttr(node, "settings.0.on_each_iteration_require_vote", "false"),
 				),
 			}, {
 				ResourceName:      node,
@@ -58,6 +59,7 @@ func TestAccBranchPolicyMinReviewers_update(t *testing.T) {
 					resource.TestCheckResourceAttr(node, "settings.0.last_pusher_cannot_approve", "false"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_last_iteration_require_vote", "false"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_push_reset_approved_votes", "true"),
+					resource.TestCheckResourceAttr(node, "settings.0.on_each_iteration_require_vote", "false"),
 				),
 			}, {
 				Config: hclPolicyMinReviewersUpdate(2, name),
@@ -70,6 +72,7 @@ func TestAccBranchPolicyMinReviewers_update(t *testing.T) {
 					resource.TestCheckResourceAttr(node, "settings.0.last_pusher_cannot_approve", "true"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_last_iteration_require_vote", "true"),
 					resource.TestCheckResourceAttr(node, "settings.0.on_push_reset_all_votes", "false"),
+					resource.TestCheckResourceAttr(node, "settings.0.on_each_iteration_require_vote", "true"),
 				),
 			}, {
 				ResourceName:      node,
@@ -155,6 +158,7 @@ func hclPolicyMinReviewersBasic(reviewers int, name string) string {
 	template := hclPolicyMinReviewersTemplate(name)
 	return fmt.Sprintf(`
 
+
 %s
 
 resource "azuredevops_branch_policy_min_reviewers" "test" {
@@ -166,6 +170,7 @@ resource "azuredevops_branch_policy_min_reviewers" "test" {
     submitter_can_vote                     = false
     allow_completion_with_rejects_or_waits = false
     on_push_reset_approved_votes           = true
+    on_each_iteration_require_vote         = false
     scope {
       repository_id  = data.azuredevops_git_repository.test.id
       repository_ref = "refs/heads/release"
@@ -191,6 +196,7 @@ resource "azuredevops_branch_policy_min_reviewers" "test" {
     allow_completion_with_rejects_or_waits = true
     last_pusher_cannot_approve             = true
     on_last_iteration_require_vote         = true
+    on_each_iteration_require_vote         = true
     scope {
       repository_id  = data.azuredevops_git_repository.test.id
       repository_ref = "refs/heads/release"

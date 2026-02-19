@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -90,6 +90,22 @@ resource "azuredevops_servicehook_webhook_tfs" "test" {
   detailed_messages_to_send = "html"
 }
 `, projectResource, url)
+}
+
+// HclServicehookWebhookTfsResourceWithResourceVersion creates a HCL representation of a TFS webhook with a custom resource version
+func HclServicehookWebhookTfsResourceWithResourceVersion(projectName, url, resourceVersion string) string {
+	projectResource := testutils.HclProjectResource(projectName)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_servicehook_webhook_tfs" "test" {
+  project_id       = azuredevops_project.project.id
+  url              = "%s"
+  resource_version = "%s"
+
+  git_push {}
+}
+`, projectResource, url, resourceVersion)
 }
 
 func TestAccServicehookWebhookTfs_basic(t *testing.T) {
@@ -259,6 +275,35 @@ func TestAccServicehookWebhookTfs_WithResourceDetails(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "resource_details_to_send", "minimal"),
 					resource.TestCheckResourceAttr(tfCheckNode, "messages_to_send", "text"),
 					resource.TestCheckResourceAttr(tfCheckNode, "detailed_messages_to_send", "html"),
+				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateCheck:  checkImportProject(),
+			},
+		},
+	})
+}
+
+func TestAccServicehookWebhookTfs_WithResourceVersion(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	url := "https://example.com/webhook"
+	resourceVersion := "7.1"
+
+	resourceType := "azuredevops_servicehook_webhook_tfs"
+	tfCheckNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: CheckServicehookWebhookTfsDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: HclServicehookWebhookTfsResourceWithResourceVersion(projectName, url, resourceVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfCheckNode, "url", url),
+					resource.TestCheckResourceAttr(tfCheckNode, "resource_version", resourceVersion),
 				),
 			},
 			{
