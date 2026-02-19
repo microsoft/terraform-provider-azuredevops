@@ -34,6 +34,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/servicehook"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/work"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtrackingprocess"
 )
@@ -152,6 +153,7 @@ func Provider() *schema.Provider {
 			"azuredevops_variable_group_variable":                     taskagent.ResourceVariableGroupVariable(),
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
+			"azuredevops_work_team_settings":                          work.ResourceTeamSettings(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
 			"azuredevops_workitemtracking_field":                      workitemtracking.ResourceField(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
