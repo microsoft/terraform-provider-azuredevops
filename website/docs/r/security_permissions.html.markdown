@@ -11,21 +11,13 @@ Manages permissions for Azure DevOps security namespaces. This is a generic perm
 
 ~> **Note** This is a low-level generic permissions resource. For specific resource types, consider using the dedicated permission resources such as `azuredevops_project_permissions`, `azuredevops_git_permissions`, `azuredevops_build_definition_permissions`, etc.
 
-~> **Note** Permissions can be assigned to group principals and not to single user principals.
-
 ## Example Usage
 
 ### Collection-level Permissions
 
 ```hcl
-data "azuredevops_security_namespaces" "all" {
-}
-
-locals {
-  collection_namespace = [
-    for ns in data.azuredevops_security_namespaces.all.namespaces :
-    ns if ns.name == "Collection"
-  ][0]
+data "azuredevops_security_namespace" "collection" {
+  name = "Collection"
 }
 
 data "azuredevops_security_namespace_token" "collection" {
@@ -37,12 +29,12 @@ data "azuredevops_group" "example" {
 }
 
 resource "azuredevops_security_permissions" "collection_perms" {
-  namespace_id = local.collection_namespace.namespace_id
+  namespace_id = data.azuredevops_security_namespace.collection.id
   token        = data.azuredevops_security_namespace_token.collection.token
   principal    = data.azuredevops_group.example.descriptor
   permissions = {
-    "GENERIC_READ"  = "Allow"
-    "GENERIC_WRITE" = "Allow"
+    "GENERIC_READ"  = "allow"
+    "GENERIC_WRITE" = "allow"
   }
 }
 ```
@@ -66,14 +58,18 @@ data "azuredevops_group" "example_readers" {
   name       = "Readers"
 }
 
+data "azuredevops_namespace" "project" {
+  name = "Project"
+}
+
 resource "azuredevops_security_permissions" "project_perms" {
-  namespace_id = "52d39943-cb85-4d7f-8fa8-c6baac873819" # Project namespace
+  namespace_id = data.azuredevops_namespace.project.id
   token        = data.azuredevops_security_namespace_token.project.token
   principal    = data.azuredevops_group.example_readers.descriptor
   permissions = {
-    "GENERIC_READ"  = "Allow"
-    "GENERIC_WRITE" = "Deny"
-    "DELETE"        = "Deny"
+    "GENERIC_READ"  = "allow"
+    "GENERIC_WRITE" = "deny"
+    "DELETE"        = "deny"
   }
 }
 ```
@@ -90,6 +86,10 @@ data "azuredevops_git_repository" "example" {
   name       = "Example Repository"
 }
 
+data "azuredevops_security_namespace" "git_repos" {
+  name = "Git Repositories"
+}
+
 data "azuredevops_security_namespace_token" "git_repo" {
   namespace_name = "Git Repositories"
   identifiers = {
@@ -104,14 +104,14 @@ data "azuredevops_group" "example_contributors" {
 }
 
 resource "azuredevops_security_permissions" "git_perms" {
-  namespace_id = "2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87" # Git Repositories namespace
+  namespace_id = data.azuredevops_security_namespace.git_repos.id
   token        = data.azuredevops_security_namespace_token.git_repo.token
   principal    = data.azuredevops_group.example_contributors.descriptor
   permissions = {
-    "GenericRead"       = "Allow"
-    "GenericContribute" = "Allow"
-    "ForcePush"         = "Deny"
-    "ManagePermissions" = "Deny"
+    "GenericRead"       = "allow"
+    "GenericContribute" = "allow"
+    "ForcePush"         = "deny"
+    "ManagePermissions" = "deny"
   }
   replace = false
 }
@@ -127,6 +127,10 @@ data "azuredevops_project" "example" {
 data "azuredevops_git_repository" "example" {
   project_id = data.azuredevops_project.example.id
   name       = "Example Repository"
+}
+
+data "azuredevops_security_namespace" "git_repos" {
+  name = "Git Repositories"
 }
 
 data "azuredevops_security_namespace_token" "main_branch" {
@@ -170,7 +174,7 @@ The following arguments are supported:
   - `Deny` (or `deny`, `DENY`) - Explicitly deny the permission
   - `NotSet` (or `notset`, `NOTSET`) - Remove the permission (inherit from parent)
 
-* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions with existing permissions. When `true`, all existing permissions for the principal on this token will be replaced with the specified permissions. When `false`, the specified permissions will be merged with existing permissions. Default: `false`.
+* `replace` - (Optional) Replace (`true`) or merge (`false`) the permissions with existing permissions. When `true`, all existing permissions for the principal on this token will be replaced with the specified permissions. When `false`, the specified permissions will be merged with existing permissions. Default: `true`.
 
 ### Permission Names by Namespace
 
@@ -249,6 +253,7 @@ The resource does not support import.
 - Permission names are namespace-specific and case-sensitive. All permission names in the `permissions` map are validated against the namespace - if any permission name is invalid, an error will be returned
 - When `replace = true`, all existing permissions for the principal will be removed and replaced with the specified permissions
 - When `replace = false`, the specified permissions will be merged with existing permissions, allowing you to manage only a subset of permissions
+- when `replace = false`, deletion of the resource only removes the permissions specified in the `permissions` map, rather than all permissions for the principal
 - The `principal` must be a group descriptor or identity ID. Individual user principals are not supported
 - Use the `azuredevops_security_namespace_token` data source to generate correct tokens for different resource types
 - Permissions are propagated asynchronously and may take a few moments to take effect
