@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,6 +16,8 @@ import (
 )
 
 const VariableGroupVariable = "azuredevops_variable_group_variable"
+
+var forEachLock = new(sync.Mutex)
 
 func ResourceVariableGroupVariable() *schema.Resource {
 	return &schema.Resource{
@@ -67,6 +70,9 @@ func ResourceVariableGroupVariable() *schema.Resource {
 }
 
 func resourceVariableGroupVariableCreateUpdate(d *schema.ResourceData, m interface{}) error {
+	forEachLock.Lock()
+	defer forEachLock.Unlock()
+
 	clients := m.(*client.AggregatedClient)
 
 	projectId := d.Get("project_id").(string)

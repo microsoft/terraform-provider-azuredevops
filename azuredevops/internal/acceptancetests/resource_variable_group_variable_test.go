@@ -146,6 +146,35 @@ func checkVariableGroupVariableFromState(resource *terraform.ResourceState) (boo
 	return ok, nil
 }
 
+func TestAccVariableGroupVariable_ForEach_ConcurrentCreate(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	vgName := testutils.GenerateResourceName()
+
+	var nodes []string
+
+	for i := 0; i < 20; i++ {
+		nodes = append(nodes, fmt.Sprintf(`azuredevops_variable_group_variable.test.%d`, i))
+	}
+
+	var checks []resource.TestCheckFunc
+	for _, n := range nodes {
+		checks = append(checks, checkVariableGroupVariableExists(n))
+	}
+
+	steps := []resource.TestStep{
+		{
+			Config: hclVariableGroupVariableForEach(projectName, vgName),
+			Check:  resource.ComposeTestCheckFunc(checks...),
+		},
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps:     steps,
+	})
+}
+
 func hclVariableGroupVariableBasic(projectName, variableGroupName, val string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -208,4 +237,35 @@ resource "azuredevops_variable_group_variable" "test" {
   secret_value      = "%s"
 }
 `, projectName, variableGroupName, val)
+}
+
+func hclVariableGroupVariableForEach(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "test description"
+  allow_access = false
+
+  variable {
+    name  = "seed"
+    value = "seed"
+  }
+  lifecycle {
+    ignore_changes = [variable]
+  }
+}
+
+resource "azuredevops_variable_group_variable" "test" {
+  count             = 20
+  project_id        = azuredevops_project.test.id
+  variable_group_id = azuredevops_variable_group.test.id
+  name              = "key${count.index}"
+  value             = "val${count.index}"
+}
+`, projectName, variableGroupName)
 }
