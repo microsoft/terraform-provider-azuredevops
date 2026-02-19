@@ -109,6 +109,12 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"validate_input": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether to validate the provided service endpoint configuration against the service endpoint type definition. Enabling this will cause the provider to return an error if the configuration is invalid.",
+			},
 		},
 	}
 }
@@ -301,9 +307,12 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// Validate the service endpoint configuration
-	if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
-		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+	// Validate the service endpoint configuration if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if validateInput {
+		if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
+			return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+		}
 	}
 
 	// Create the service endpoint
@@ -786,6 +795,12 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
 	// Only validate on resource creation changes
 	if d.Id() != "" {
+		return nil
+	}
+
+	// Only validate if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if !validateInput {
 		return nil
 	}
 

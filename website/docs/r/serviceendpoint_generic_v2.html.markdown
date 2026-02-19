@@ -24,7 +24,7 @@ resource "azuredevops_serviceendpoint_generic_v2" "example" {
   project_id            = azuredevops_project.example.id
   name                  = "Example Generic Service Endpoint"
   description           = "Managed by Terraform"
-  service_endpoint_type = "generic"
+  type                  = "generic"
   server_url            = "https://example.com"
   authorization_scheme  = "UsernamePassword"
   authorization_parameters = {
@@ -33,17 +33,18 @@ resource "azuredevops_serviceendpoint_generic_v2" "example" {
   }
 }
 
-# Token-based authentication
+# Token-based authentication with validation enabled
 resource "azuredevops_serviceendpoint_generic_v2" "token_example" {
   project_id            = azuredevops_project.example.id
   name                  = "Token-based Service Endpoint"
   description           = "Managed by Terraform"
-  service_endpoint_type = "generic"
+  type                  = "generic"
   server_url            = "https://api.example.com"
   authorization_scheme  = "Token"
   authorization_parameters = {
     apitoken = "your-api-token"
   }
+  validate_input = true
 
   parameters = {
     releaseUrl = "https://releases.example.com"
@@ -64,6 +65,7 @@ The following arguments are supported:
 * `authorization_scheme` - (Required) The authorization scheme to use. Common values include "UsernamePassword", "Token", "OAuth", etc.
 * `authorization_parameters` - (Optional) Map of key/value pairs for the specific authorization scheme. These often include sensitive data like tokens, usernames, and passwords.
 * `parameters` - (Optional) Additional data associated with the service endpoint. This is a map of key/value pairs.
+* `validate_input` - (Optional) Whether to validate the provided service endpoint configuration against the service endpoint type definition retrieved from Azure DevOps. When enabled, Terraform will verify that the `type`, `authorization_scheme`, `authorization_parameters`, and `parameters` match the expected schema for the service endpoint type. This helps catch configuration errors during plan/apply. Defaults to `false`.
 
 ## Attributes Reference
 
