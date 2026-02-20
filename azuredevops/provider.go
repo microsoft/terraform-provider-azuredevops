@@ -167,6 +167,10 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemtrackingprocess_system_control":      workitemtrackingprocess.ResourceSystemControl(),
 			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
 			"azuredevops_workitemtrackingprocess_field":               workitemtrackingprocess.ResourceField(),
+			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.DataProcess(),
+			"azuredevops_workitemtrackingprocess_processes":           workitemtrackingprocess.DataProcesses(),
+			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.DataWorkItemType(),
+			"azuredevops_workitemtrackingprocess_workitemtypes":       workitemtrackingprocess.DataWorkItemTypes(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                     taskagent.DataAgentPool(),
