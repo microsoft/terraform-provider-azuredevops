@@ -1,7 +1,9 @@
 package build
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,6 +56,58 @@ func ResourcePipelineAuthorization() *schema.Resource {
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 		},
+
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				parts := strings.Split(d.Id(), "/")
+				if len(parts) != 3 && len(parts) != 4 {
+					return nil, fmt.Errorf(
+						"unexpected import ID format %q, expected project_id/type/resource_id[/pipeline_id]",
+						d.Id(),
+					)
+				}
+
+				projectID := parts[0]
+				typ := strings.ToLower(parts[1])
+				resourceID := parts[2]
+
+				if projectID == "" || typ == "" || resourceID == "" {
+					return nil, fmt.Errorf("import ID contains empty segment: %q", d.Id())
+				}
+
+				if err := d.Set("project_id", projectID); err != nil {
+					return nil, err
+				}
+				if err := d.Set("type", typ); err != nil {
+					return nil, err
+				}
+				if err := d.Set("resource_id", resourceID); err != nil {
+					return nil, err
+				}
+
+				if len(parts) == 4 {
+					pipelineIDStr := parts[3]
+					if pipelineIDStr == "" {
+						return nil, fmt.Errorf("pipeline_id segment is empty in import ID: %q", d.Id())
+					}
+
+					pipelineID, err := strconv.Atoi(pipelineIDStr)
+					if err != nil || pipelineID < 1 {
+						return nil, fmt.Errorf("pipeline_id must be a positive integer, got %q in %q", pipelineIDStr, d.Id())
+					}
+
+					if err := d.Set("pipeline_id", pipelineID); err != nil {
+						return nil, err
+					}
+
+					d.SetId(fmt.Sprintf("%s/%s/%s/%d", projectID, typ, resourceID, pipelineID))
+				} else {
+					d.SetId(fmt.Sprintf("%s/%s/%s", projectID, typ, resourceID))
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 	}
 }
 
@@ -93,7 +147,7 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 		}
 	}
 
-	response, err := clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
+	_, err := clients.PipelinePermissionsClient.UpdatePipelinePermisionsForResource(
 		clients.Ctx,
 		pipePermissionParams,
 	)
@@ -116,7 +170,15 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 		return fmt.Errorf("waiting for pipeline authorization ready. %v ", err)
 	}
 
-	d.SetId(*response.Resource.Id)
+	idProject := d.Get("project_id").(string)
+	idType := d.Get("type").(string)
+	idRes := d.Get("resource_id").(string)
+
+	if v, ok := d.GetOk("pipeline_id"); ok {
+		d.SetId(fmt.Sprintf("%s/%s/%s/%d", idProject, idType, idRes, v.(int)))
+	} else {
+		d.SetId(fmt.Sprintf("%s/%s/%s", idProject, idType, idRes))
+	}
 
 	return resourcePipelineAuthorizationRead(d, m)
 }
@@ -147,29 +209,54 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 		return fmt.Errorf("%+v", err)
 	}
 
-	if resp == nil || (resp.AllPipelines == nil && len(*resp.Pipelines) == 0) {
+	if resp == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("type", resp.Resource.Type)
-	d.Set("resource_id", resp.Resource.Id)
-	if strings.EqualFold(*resp.Resource.Type, "repository") {
-		resIds := strings.Split(*resp.Resource.Id, ".")
-		d.Set("resource_id", resIds[1])
+	noPipelines := resp.Pipelines == nil || len(*resp.Pipelines) == 0
+	if resp.AllPipelines == nil && noPipelines {
+		d.SetId("")
+		return nil
 	}
 
-	if resp.Pipelines != nil && len(*resp.Pipelines) > 0 {
-		exist := false
-		for _, pipe := range *resp.Pipelines {
-			if *pipe.Id == d.Get("pipeline_id").(int) {
-				exist = true
-			}
-		}
-		if !exist {
-			d.Set("pipeline_id", nil)
+	d.Set("type", *resp.Resource.Type)
+	d.Set("resource_id", *resp.Resource.Id)
+
+	if strings.EqualFold(*resp.Resource.Type, "repository") {
+		resIds := strings.Split(*resp.Resource.Id, ".")
+		if len(resIds) == 2 {
+			d.Set("resource_id", resIds[1])
 		}
 	}
+
+	if v, ok := d.GetOk("pipeline_id"); ok {
+		want := v.(int)
+		found := false
+		if resp.Pipelines != nil {
+			for _, pipe := range *resp.Pipelines {
+				if pipe.Id != nil && *pipe.Id == want {
+					found = true
+					break
+				}
+			}
+		}
+
+		if !found {
+			d.SetId("")
+			return nil
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s/%s/%d", projectId, resType, d.Get("resource_id").(string), want))
+		return nil
+	}
+
+	if resp.AllPipelines == nil || resp.AllPipelines.Authorized == nil || !*resp.AllPipelines.Authorized {
+		d.SetId("")
+		return nil
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s/%s", projectId, resType, d.Get("resource_id").(string)))
 
 	return nil
 }
