@@ -138,6 +138,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_sonarqube":                   serviceendpoint.ResourceServiceEndpointSonarQube(),
 			"azuredevops_serviceendpoint_ssh":                         serviceendpoint.ResourceServiceEndpointSSH(),
 			"azuredevops_serviceendpoint_visualstudiomarketplace":     serviceendpoint.ResourceServiceEndpointMarketplace(),
+			"azuredevops_serviceendpoint_project_permissions":         serviceendpoint.ResourceServiceEndpointProjectPermissions(),
 			"azuredevops_servicehook_permissions":                     permissions.ResourceServiceHookPermissions(),
 			"azuredevops_servicehook_storage_queue_pipelines":         servicehook.ResourceServicehookStorageQueuePipelines(),
 			"azuredevops_servicehook_webhook_tfs":                     servicehook.ResourceServicehookWebhookTfs(),
