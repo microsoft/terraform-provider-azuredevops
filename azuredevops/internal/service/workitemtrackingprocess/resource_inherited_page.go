@@ -75,36 +75,14 @@ func importResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func createResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
-
 	pageId := d.Get("page_id").(string)
-	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_id").(string)
 
-	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
-		ProcessId:  converter.UUID(processId),
-		WitRefName: &witRefName,
-		// Returns the layout containing the pages
-		Expand: &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
+	existingPage, diags := getInheritedPage(ctx, d, m, pageId)
+	if diags != nil {
+		return diags
 	}
-	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
-	if err != nil {
-		return diag.Errorf("getting work item type: %+v", err)
-	}
-	if workItemType == nil {
-		return diag.Errorf("work item type is nil")
-	}
-	if workItemType.Layout == nil {
-		return diag.Errorf("work item type layout is nil")
-	}
-
-	existingPage := findPageById(workItemType.Layout, pageId)
 	if existingPage == nil {
 		return diag.Errorf("page %s not found in layout", pageId)
-	}
-
-	if existingPage.Inherited == nil || !*existingPage.Inherited {
-		return diag.Errorf("page %s is not inherited, use azuredevops_workitemtrackingprocess_page to manage custom pages", pageId)
 	}
 
 	d.SetId(pageId)
@@ -113,30 +91,10 @@ func createResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func readResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	clients := m.(*client.AggregatedClient)
-
-	pageId := d.Id()
-	processId := d.Get("process_id").(string)
-	witRefName := d.Get("work_item_type_id").(string)
-
-	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
-		ProcessId:  converter.UUID(processId),
-		WitRefName: &witRefName,
-		// Returns the layout containing the pages
-		Expand: &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
+	page, diags := getInheritedPage(ctx, d, m, d.Id())
+	if diags != nil {
+		return diags
 	}
-	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
-	if err != nil {
-		return diag.Errorf("getting work item type: %+v", err)
-	}
-	if workItemType == nil {
-		return diag.Errorf("work item type is nil")
-	}
-	if workItemType.Layout == nil {
-		return diag.Errorf("work item type layout is nil")
-	}
-
-	page := findPageById(workItemType.Layout, pageId)
 	if page == nil {
 		d.SetId("")
 		return nil
@@ -146,6 +104,40 @@ func readResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m an
 		d.Set("label", *page.Label)
 	}
 	return nil
+}
+
+func getInheritedPage(ctx context.Context, d *schema.ResourceData, m any, pageId string) (*workitemtrackingprocess.Page, diag.Diagnostics) {
+	clients := m.(*client.AggregatedClient)
+
+	processId := d.Get("process_id").(string)
+	witRefName := d.Get("work_item_type_id").(string)
+
+	getWorkItemTypeArgs := workitemtrackingprocess.GetProcessWorkItemTypeArgs{
+		ProcessId:  converter.UUID(processId),
+		WitRefName: &witRefName,
+		Expand:     &workitemtrackingprocess.GetWorkItemTypeExpandValues.Layout,
+	}
+	workItemType, err := clients.WorkItemTrackingProcessClient.GetProcessWorkItemType(ctx, getWorkItemTypeArgs)
+	if err != nil {
+		return nil, diag.Errorf("getting work item type: %+v", err)
+	}
+	if workItemType == nil {
+		return nil, diag.Errorf("work item type is nil")
+	}
+	if workItemType.Layout == nil {
+		return nil, diag.Errorf("work item type layout is nil")
+	}
+
+	page := findPageById(workItemType.Layout, pageId)
+	if page == nil {
+		return nil, nil
+	}
+
+	if page.Inherited == nil || !*page.Inherited {
+		return nil, diag.Errorf("page %s is not inherited, use azuredevops_workitemtrackingprocess_page to manage custom pages", pageId)
+	}
+
+	return page, nil
 }
 
 func updateResourceInheritedPage(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
