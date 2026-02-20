@@ -44,6 +44,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                                  taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                                 taskagent.ResourceAgentQueue(),
+			"azuredevops_area":                                        workitemtracking.ResourceArea(),
 			"azuredevops_area_permissions":                            permissions.ResourceAreaPermissions(),
 			"azuredevops_branch_policy_auto_reviewers":                branch.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_branch_policy_build_validation":              branch.ResourceBranchPolicyBuildValidation(),
@@ -78,6 +79,7 @@ func Provider() *schema.Provider {
 			"azuredevops_group":                                       graph.ResourceGroup(),
 			"azuredevops_group_entitlement":                           memberentitlementmanagement.ResourceGroupEntitlement(),
 			"azuredevops_group_membership":                            graph.ResourceGroupMembership(),
+			"azuredevops_iteration":                                   workitemtracking.ResourceIteration(),
 			"azuredevops_iteration_permissions":                       permissions.ResourceIterationPermissions(),
 			"azuredevops_library_permissions":                         permissions.ResourceLibraryPermissions(),
 			"azuredevops_pipeline_authorization":                      build.ResourcePipelineAuthorization(),
