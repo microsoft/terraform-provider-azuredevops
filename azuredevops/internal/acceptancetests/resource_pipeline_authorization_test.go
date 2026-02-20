@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -251,6 +252,44 @@ func TestAccPipelineAuthorization_pipeline_cross_project_repository(t *testing.T
 					resource.TestCheckResourceAttrSet(node, "pipeline_project_id"),
 					resource.TestCheckResourceAttrSet(node, "resource_id"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccPipelineAuthorization_queue_import(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	resourceName := "azuredevops_pipeline_authorization.import_test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclPipelineAuthorizationQueueConfig(projectName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "type", "queue"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found in state: %s", resourceName)
+					}
+					projectID := rs.Primary.Attributes["project_id"]
+					resourceID := rs.Primary.Attributes["resource_id"]
+					typ := rs.Primary.Attributes["type"]
+
+					if projectID == "" || typ == "" || resourceID == "" {
+						return "", fmt.Errorf("missing required attributes for import id (project_id=%q type=%q resource_id=%q)", projectID, typ, resourceID)
+					}
+
+					return fmt.Sprintf("%s/%s/%s", projectID, typ, resourceID), nil
+				},
 			},
 		},
 	})
@@ -765,4 +804,23 @@ resource "azuredevops_pipeline_authorization" "test" {
   pipeline_project_id = azuredevops_project.test.id
 }
 `, name)
+}
+
+func hclPipelineAuthorizationQueueConfig(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = %q
+}
+
+data "azuredevops_agent_queue" "default" {
+  project_id = azuredevops_project.test.id
+  name       = "Default"
+}
+
+resource "azuredevops_pipeline_authorization" "import_test" {
+  project_id  = azuredevops_project.test.id
+  type        = "queue"
+  resource_id = data.azuredevops_agent_queue.default.id
+}
+`, projectName)
 }
