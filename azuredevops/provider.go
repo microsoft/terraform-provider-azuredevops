@@ -160,6 +160,7 @@ func Provider() *schema.Provider {
 			"azuredevops_workitemtrackingprocess_control":             workitemtrackingprocess.ResourceControl(),
 			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
 			"azuredevops_workitemtrackingprocess_inherited_control":   workitemtrackingprocess.ResourceInheritedControl(),
+			"azuredevops_workitemtrackingprocess_inherited_page":      workitemtrackingprocess.ResourceInheritedPage(),
 			"azuredevops_workitemtrackingprocess_list":                workitemtrackingprocess.ResourceList(),
 			"azuredevops_workitemtrackingprocess_page":                workitemtrackingprocess.ResourcePage(),
 			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
