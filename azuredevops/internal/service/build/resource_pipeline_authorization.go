@@ -181,7 +181,6 @@ func resourcePipelineAuthorizationCreateUpdate(d *schema.ResourceData, m interfa
 	}
 
 	return resourcePipelineAuthorizationRead(d, m)
-
 }
 
 func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) error {
@@ -225,12 +224,10 @@ func resourcePipelineAuthorizationRead(d *schema.ResourceData, m interface{}) er
 	d.Set("resource_id", *resp.Resource.Id)
 
 	if strings.EqualFold(*resp.Resource.Type, "repository") {
-
 		resIds := strings.Split(*resp.Resource.Id, ".")
 		if len(resIds) == 2 {
 			d.Set("resource_id", resIds[1])
 		}
-
 	}
 
 	if v, ok := d.GetOk("pipeline_id"); ok {
