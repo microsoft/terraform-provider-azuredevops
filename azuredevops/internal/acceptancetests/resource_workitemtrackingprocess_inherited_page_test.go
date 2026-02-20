@@ -5,8 +5,11 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -24,9 +27,9 @@ func TestAccWorkitemtrackingprocessInheritedPage_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicInheritedPage(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("id"), knownvalue.NotNull()),
+				},
 			},
 			{
 				ResourceName:      tfNode,
@@ -50,9 +53,9 @@ func TestAccWorkitemtrackingprocessInheritedPage_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicInheritedPage(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("id"), knownvalue.NotNull()),
+				},
 			},
 			{
 				ResourceName:      tfNode,
@@ -62,9 +65,9 @@ func TestAccWorkitemtrackingprocessInheritedPage_Update(t *testing.T) {
 			},
 			{
 				Config: updatedInheritedPage(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(tfNode, "id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("id"), knownvalue.NotNull()),
+				},
 			},
 			{
 				ResourceName:      tfNode,
@@ -92,24 +95,28 @@ func TestAccWorkitemtrackingprocessInheritedPage_Revert(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicInheritedPage(workItemTypeName, processName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrWith(tfNode, "id", func(value string) error {
-						pageId = value
-						return nil
-					}),
-					resource.TestCheckResourceAttrWith(tfNode, "process_id", func(value string) error {
-						processId = value
-						return nil
-					}),
-					resource.TestCheckResourceAttrWith(tfNode, "work_item_type_id", func(value string) error {
-						witRefName = value
-						return nil
-					}),
-					resource.TestCheckResourceAttrWith(tfNode, "label", func(value string) error {
-						customLabel = value
-						return nil
-					}),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("id"),
+						knownvalue.StringFunc(func(value string) error {
+							pageId = value
+							return nil
+						})),
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("process_id"),
+						knownvalue.StringFunc(func(value string) error {
+							processId = value
+							return nil
+						})),
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("work_item_type_id"),
+						knownvalue.StringFunc(func(value string) error {
+							witRefName = value
+							return nil
+						})),
+					statecheck.ExpectKnownValue(tfNode, tfjsonpath.New("label"),
+						knownvalue.StringFunc(func(value string) error {
+							customLabel = value
+							return nil
+						})),
+				},
 			},
 			{
 				ResourceName:      tfNode,
