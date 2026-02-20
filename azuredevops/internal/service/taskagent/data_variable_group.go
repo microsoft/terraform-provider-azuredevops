@@ -50,36 +50,14 @@ func DataVariableGroup() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"content_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+						"secret_value": {
+							Type:      schema.TypeString,
+							Computed:  true,
+							Sensitive: true,
 						},
-						"enabled": {
+						"is_secret": {
 							Type:     schema.TypeBool,
 							Computed: true,
-						},
-						"expires": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Set: getVariableHash,
-			},
-
-			"secret_variable": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:      schema.TypeString,
-							Sensitive: true,
-							Computed:  true,
 						},
 						"content_type": {
 							Type:     schema.TypeString,

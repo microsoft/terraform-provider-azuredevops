@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
@@ -28,7 +28,6 @@ func TestAccVariableGroupDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
 					resource.TestCheckResourceAttrSet(tfNode, "variable.#"),
 					resource.TestCheckResourceAttr(tfNode, "variable.#", "3"),
-					resource.TestCheckResourceAttr(tfNode, "secret_variable.#", "3"),
 				),
 			},
 		},

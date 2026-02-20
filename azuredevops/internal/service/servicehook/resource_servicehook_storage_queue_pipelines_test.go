@@ -89,7 +89,7 @@ func TestServicehookStorageQueuePipelines_FlattenExpandRoundTrip(t *testing.T) {
 	for _, subscription := range testResourceSubscriptionStorageQueue {
 		resourceData := schema.TestResourceDataRaw(t, ResourceServicehookStorageQueuePipelines().Schema, nil)
 		flattenServicehookStorageQueuePipelines(resourceData, &subscription, (*subscription.ConsumerInputs)["accountKey"])
-		subscriptionAfterRoundTrip, _ := expandServicehookStorageQueuePipelines(resourceData)
+		subscriptionAfterRoundTrip := expandServicehookStorageQueuePipelines(resourceData)
 		subscriptionAfterRoundTrip.Id = subscription.Id
 
 		require.Equal(t, subscription, *subscriptionAfterRoundTrip)

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
@@ -32,6 +32,10 @@ func TestAccVariableGroup_basic(t *testing.T) {
 				Config: hclVariableGroupBasic(projectName, vgName),
 				Check: resource.ComposeTestCheckFunc(
 					checkVariableGroupExists(vgName, false),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "test description"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
 				),
 			},
 			{
@@ -59,6 +63,9 @@ func TestAccVariableGroup_update(t *testing.T) {
 				Config: hclVariableGroupBasic(projectName, vgName),
 				Check: resource.ComposeTestCheckFunc(
 					checkVariableGroupExists(vgName, false),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
 				),
 			},
 			{
@@ -71,6 +78,10 @@ func TestAccVariableGroup_update(t *testing.T) {
 				Config: hclVariableGroupUpdate(projectName, vgName2),
 				Check: resource.ComposeTestCheckFunc(
 					checkVariableGroupExists(vgName2, true),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName2),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "3"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "update description"),
 				),
 			},
 			{
@@ -78,12 +89,15 @@ func TestAccVariableGroup_update(t *testing.T) {
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"secret_variable.0.value", "secret_variable.1.value", "secret_variable.2.value"},
+				ImportStateVerifyIgnore: []string{"variable.2.secret_value"},
 			},
 			{
 				Config: hclVariableGroupBasic(projectName, vgName),
 				Check: resource.ComposeTestCheckFunc(
 					checkVariableGroupExists(vgName, false),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
 				),
 			},
 			{
@@ -91,6 +105,39 @@ func TestAccVariableGroup_update(t *testing.T) {
 				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccVariableGroup_secretValue(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	vgName := testutils.GenerateResourceName()
+	tfVarGroupNode := "azuredevops_variable_group.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkVariableGroupDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclVariableGroupSecretValue(projectName, vgName),
+				Check: resource.ComposeTestCheckFunc(
+					checkVariableGroupExists(vgName, true),
+					resource.TestCheckResourceAttrSet(tfVarGroupNode, "project_id"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "name", vgName),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "description", "test description"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.#", "1"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.0.is_secret", "true"),
+					resource.TestCheckResourceAttr(tfVarGroupNode, "variable.0.secret_value", "value1"),
+				),
+			},
+			{
+				ResourceName:            tfVarGroupNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfVarGroupNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"variable.0.secret_value"},
 			},
 		},
 	})
@@ -250,27 +297,37 @@ resource "azuredevops_variable_group" "test" {
   description  = "update description"
   allow_access = true
   variable {
-    name  = "key1"
-    value = "value1"
+    name         = "key1"
+    secret_value = "value1"
+    is_secret    = true
   }
+
   variable {
     name  = "key2"
     value = "value2"
   }
+
   variable {
     name = "key3"
   }
+}`, projectName, variableGroupName)
+}
 
-  secret_variable {
-    name  = "skey1"
-    value = "value1"
-  }
-  secret_variable {
-    name  = "skey2"
-    value = "value2"
-  }
-  secret_variable {
-    name = "skey3"
+func hclVariableGroupSecretValue(projectName, variableGroupName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_variable_group" "test" {
+  project_id   = azuredevops_project.test.id
+  name         = "%s"
+  description  = "test description"
+  allow_access = true
+  variable {
+    name         = "key1"
+    secret_value = "value1"
+    is_secret    = true
   }
 }`, projectName, variableGroupName)
 }
