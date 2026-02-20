@@ -66,6 +66,11 @@ func TestResponseWasNotFound(t *testing.T) {
 			Result: true,
 		},
 		{
+			Name:   "400FieldNotFound",
+			Error:  GetError(400, "VS402806: Work item type does not contain field"),
+			Result: true,
+		},
+		{
 			Name:   "400Different",
 			Error:  GetError(400, "Some different issue"),
 			Result: false,

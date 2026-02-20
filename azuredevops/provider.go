@@ -34,6 +34,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/wiki"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtracking"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/workitemtrackingprocess"
 )
 
 // Provider - The top level Azure DevOps Provider definition.
@@ -61,6 +62,7 @@ func Provider() *schema.Provider {
 			"azuredevops_check_required_template":                     approvalsandchecks.ResourceCheckRequiredTemplate(),
 			"azuredevops_check_rest_api":                              approvalsandchecks.ResourceCheckRestAPI(),
 			"azuredevops_dashboard":                                   dashboard.ResourceDashboard(),
+			"azuredevops_deployment_group":                            taskagent.ResourceDeploymentGroup(),
 			"azuredevops_elastic_pool":                                taskagent.ResourceAgentPoolVMSS(),
 			"azuredevops_environment":                                 taskagent.ResourceEnvironment(),
 			"azuredevops_environment_resource_kubernetes":             taskagent.ResourceEnvironmentKubernetes(),
@@ -92,6 +94,7 @@ func Provider() *schema.Provider {
 			"azuredevops_repository_policy_reserved_names":            repository.ResourceRepositoryReservedNames(),
 			"azuredevops_resource_authorization":                      build.ResourceResourceAuthorization(),
 			"azuredevops_securityrole_assignment":                     securityroles.ResourceSecurityRoleAssignment(),
+			"azuredevops_serviceendpoint_generic_v2":                  serviceendpoint.ResourceServiceEndpointGenericV2(),
 			"azuredevops_serviceendpoint_argocd":                      serviceendpoint.ResourceServiceEndpointArgoCD(),
 			"azuredevops_serviceendpoint_artifactory":                 serviceendpoint.ResourceServiceEndpointArtifactory(),
 			"azuredevops_serviceendpoint_aws":                         serviceendpoint.ResourceServiceEndpointAws(),
@@ -136,6 +139,7 @@ func Provider() *schema.Provider {
 			"azuredevops_serviceendpoint_visualstudiomarketplace":     serviceendpoint.ResourceServiceEndpointMarketplace(),
 			"azuredevops_servicehook_permissions":                     permissions.ResourceServiceHookPermissions(),
 			"azuredevops_servicehook_storage_queue_pipelines":         servicehook.ResourceServicehookStorageQueuePipelines(),
+			"azuredevops_servicehook_webhook_tfs":                     servicehook.ResourceServicehookWebhookTfs(),
 			"azuredevops_service_principal_entitlement":               memberentitlementmanagement.ResourceServicePrincipalEntitlement(),
 			"azuredevops_tagging_permissions":                         permissions.ResourceTaggingPermissions(),
 			"azuredevops_team":                                        core.ResourceTeam(),
@@ -144,12 +148,25 @@ func Provider() *schema.Provider {
 			"azuredevops_user_entitlement":                            memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),
 			"azuredevops_variable_group_permissions":                  permissions.ResourceVariableGroupPermissions(),
+			"azuredevops_variable_group_variable":                     taskagent.ResourceVariableGroupVariable(),
 			"azuredevops_wiki":                                        wiki.ResourceWiki(),
 			"azuredevops_wiki_page":                                   wiki.ResourceWikiPage(),
 			"azuredevops_workitem":                                    workitemtracking.ResourceWorkItem(),
+			"azuredevops_workitemtracking_field":                      workitemtracking.ResourceField(),
 			"azuredevops_workitemquery_permissions":                   permissions.ResourceWorkItemQueryPermissions(),
 			"azuredevops_workitemquery":                               workitemtracking.ResourceQuery(),
 			"azuredevops_workitemquery_folder":                        workitemtracking.ResourceQueryFolder(),
+			"azuredevops_workitemtrackingprocess_control":             workitemtrackingprocess.ResourceControl(),
+			"azuredevops_workitemtrackingprocess_group":               workitemtrackingprocess.ResourceGroup(),
+			"azuredevops_workitemtrackingprocess_inherited_control":   workitemtrackingprocess.ResourceInheritedControl(),
+			"azuredevops_workitemtrackingprocess_list":                workitemtrackingprocess.ResourceList(),
+			"azuredevops_workitemtrackingprocess_page":                workitemtrackingprocess.ResourcePage(),
+			"azuredevops_workitemtrackingprocess_process":             workitemtrackingprocess.ResourceProcess(),
+			"azuredevops_workitemtrackingprocess_process_permissions": permissions.ResourceWorkItemTrackingProcessPermissions(),
+			"azuredevops_workitemtrackingprocess_state":               workitemtrackingprocess.ResourceState(),
+			"azuredevops_workitemtrackingprocess_system_control":      workitemtrackingprocess.ResourceSystemControl(),
+			"azuredevops_workitemtrackingprocess_workitemtype":        workitemtrackingprocess.ResourceWorkItemType(),
+			"azuredevops_workitemtrackingprocess_field":               workitemtrackingprocess.ResourceField(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                     taskagent.DataAgentPool(),

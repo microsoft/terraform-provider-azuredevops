@@ -240,19 +240,17 @@ func (sn *SecurityNamespace) GetActionDefinitions() (*map[string]security.Action
 }
 
 func (sn *SecurityNamespace) GetAccessControlList(descriptorList *[]string) (*security.AccessControlList, error) {
-	if descriptorList == nil || len(*descriptorList) == 0 {
-		return nil, nil
+	var descriptors *string = nil
+	if descriptorList != nil && len(*descriptorList) > 0 {
+		val := linq.From(*descriptorList).
+			Aggregate(func(r interface{}, i interface{}) interface{} {
+				if r.(string) == "" {
+					return i
+				}
+				return r.(string) + "," + i.(string)
+			}).(string)
+		descriptors = &val
 	}
-
-	var descriptors *string
-	val := linq.From(*descriptorList).
-		Aggregate(func(r interface{}, i interface{}) interface{} {
-			if r.(string) == "" {
-				return i
-			}
-			return r.(string) + "," + i.(string)
-		}).(string)
-	descriptors = &val
 
 	bTrue := true
 	acl, err := sn.securityClient.QueryAccessControlLists(sn.context, security.QueryAccessControlListsArgs{
@@ -427,7 +425,14 @@ func (sn *SecurityNamespace) SetPrincipalPermissions(permissionList *[]SetPrinci
 		for key, value := range principalPermissions.PrincipalPermission.Permissions {
 			actionDef, ok := (*actionMap)[string(key)]
 			if !ok {
-				return fmt.Errorf("Invalid permission [%s]", key)
+				return fmt.Errorf("Invalid permission [%s], valid permissions are %s", key,
+					strings.Join(func() []string {
+						var names []string
+						linq.From(*actionMap).SelectT(func(item interface{}) string {
+							return item.(linq.KeyValue).Key.(string)
+						}).ToSlice(&names)
+						return names
+					}(), ", "))
 			}
 			if aceItem.Deny == nil {
 				aceItem.Deny = new(int)

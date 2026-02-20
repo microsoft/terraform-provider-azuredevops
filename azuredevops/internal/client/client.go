@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/audit"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/core"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
@@ -31,6 +32,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
@@ -72,9 +74,11 @@ type AggregatedClient struct {
 	IdentityClient                identity.Client
 	WikiClient                    wiki.Client
 	WorkItemTrackingClient        workitemtracking.Client
+	WorkItemTrackingProcessClient workitemtrackingprocess.Client
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
 	SecurityRolesClient           securityroles.Client
+	AuditClient                   audit.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -198,6 +202,12 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		return nil, err
 	}
 
+	workitemtrackingprocessClient, err := workitemtrackingprocess.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): workitemtrackingprocess.NewClient failed.")
+		return nil, err
+	}
+
 	pipelines := pipelines.NewClient(ctx, connection)
 
 	pipelinesChecksClient, err := pipelineschecks.NewClient(ctx, connection)
@@ -221,6 +231,12 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 	serviceHooksClient := servicehooks.NewClient(ctx, connection)
 
 	securityRolesClient := securityroles.NewClient(ctx, connection)
+
+	auditClient, err := audit.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): audit.NewClient failed.")
+		return nil, err
+	}
 
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
@@ -249,8 +265,10 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		IdentityClient:                identityClient,
 		WikiClient:                    wikiClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
+		WorkItemTrackingProcessClient: workitemtrackingprocessClient,
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
+		AuditClient:                   auditClient,
 		Ctx:                           ctx,
 	}
 

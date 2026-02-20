@@ -59,16 +59,32 @@ func ParseImportedID(id string) (string, int, error) {
 	return project, resourceID, nil
 }
 
-// ParseImportedName parse the imported Id (Name) from the terraform import
-func ParseImportedName(id string) (string, string, error) {
+// ParseImportedName parse the imported Id (Name) from the terraform import.
+// The expected format of id should consist of two parts separated by /, i.e. <part1>/<part2>
+func ParseImportedName(id string, expectedFormat string) (string, string, error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 || strings.EqualFold(parts[0], "") || strings.EqualFold(parts[1], "") {
-		return "", "", fmt.Errorf("unexpected format of ID (%s), expected projectid/resourceName", id)
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected %s", id, expectedFormat)
 	}
-	project := parts[0]
-	resourceID := parts[1]
+	part1 := parts[0]
+	part2 := parts[1]
 
-	return project, resourceID, nil
+	return part1, part2, nil
+}
+
+// ParseImportedNameParts parses an imported ID into the expected number of parts separated by /.
+// Returns an error if the ID doesn't have exactly the expected number of non-empty parts.
+func ParseImportedNameParts(id string, expectedFormat string, expectedParts int) ([]string, error) {
+	parts := strings.SplitN(id, "/", expectedParts)
+	if len(parts) != expectedParts {
+		return nil, fmt.Errorf("unexpected format of ID (%s), expected %s", id, expectedFormat)
+	}
+	for i, part := range parts {
+		if strings.TrimSpace(part) == "" {
+			return nil, fmt.Errorf("unexpected format of ID (%s), part %d is empty, expected %s", id, i, expectedFormat)
+		}
+	}
+	return parts, nil
 }
 
 // ParseImportedUUID parse the imported uuid from the terraform import
@@ -109,7 +125,7 @@ func ExpandStringSet(d *schema.Set) []string {
 func ImportProjectQualifiedResource() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
+			projectNameOrID, resourceID, err := ParseImportedName(d.Id(), "projectid/resourceName")
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
@@ -131,7 +147,7 @@ func ImportProjectQualifiedResource() *schema.ResourceImporter {
 func ImportProjectQualifiedResourceInteger() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-			projectNameOrID, resourceID, err := ParseImportedName(d.Id())
+			projectNameOrID, resourceID, err := ParseImportedName(d.Id(), "projectid/resourceName")
 			if err != nil {
 				return nil, fmt.Errorf("error parsing the resource ID from the Terraform resource data: %v", err)
 			}
