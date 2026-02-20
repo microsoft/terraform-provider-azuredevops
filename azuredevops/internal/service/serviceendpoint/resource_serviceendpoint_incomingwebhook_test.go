@@ -57,11 +57,10 @@ func TestServiceEndpointIncomingWebhook_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*incomingWebhookTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointIncomingWebhook(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointIncomingWebhook(resourceData)
 
 	require.Equal(t, incomingWebhookTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, incomingWebhookTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
