@@ -64,6 +64,8 @@ func ResourceWorkItem() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
+				// TODO: Remove the Computed in the major release. Also update the tests and documentation
 			},
 			"project_id": {
 				Type:         schema.TypeString,
@@ -444,7 +446,7 @@ func flattenFields(d *schema.ResourceData, m *map[string]interface{}) error {
 		}
 	}
 
-	additionalFieldsJsonConfigString, additionalFieldsConfigExists := d.GetOkExists("additional_fields_json")
+	additionalFieldsJsonConfigString, additionalFieldsConfigExists := d.GetOkExists("additional_fields_json") //nolint:staticcheck // SA1019: No non experimental alternative
 	if additionalFieldsConfigExists && additionalFieldsJsonConfigString.(string) != "" {
 		err := json.Unmarshal([]byte(additionalFieldsJsonConfigString.(string)), &configMap)
 		if err != nil {

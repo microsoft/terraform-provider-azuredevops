@@ -125,7 +125,9 @@ The following arguments are supported:
 
 * `custom_fields` - (Optional, **Deprecated** use `additional_fields_json` argument instead) Specifies a list with Custom Fields for the Work Item.
 
-* `description` - (Optional) A description for the Work Item.
+!> **Warning** To prevent a breaking change, the current `description` argument behavior will not remove the field from the Azure DevOps API when it is removed from the config or set to a blank value. When removed or set to a blank value this field will be `Computed` and contain the value received from the Azure DevOps API.
+
+* `description` - (Optional) A description for the Work Item. To prevent a breaking change, current field behavior will not remove the field from the Azure DevOps API when it is removed from the config or set to a blank value. When removed or set to a blank value this field will be `Computed` and contain the value received from the Azure DevOps API.
 
 * `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 
