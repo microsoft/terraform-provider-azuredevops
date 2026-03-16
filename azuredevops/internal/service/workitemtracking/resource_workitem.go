@@ -267,8 +267,8 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 				return fmt.Errorf("error parsing new additional_fields_json: %s", err)
 			}
 		}
-		// Identify fields for removal or update
-		for k, _ := range oldFieldsMap {
+
+		for k := range oldFieldsMap { // Identify fields for removal or update
 			if _, ok := newFieldsMap[k]; !ok {
 				removeFields[k] = ""
 			} else {
@@ -276,8 +276,7 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 
-		// identify fields for add
-		for k, v := range newFieldsMap {
+		for k, v := range newFieldsMap { // identify fields for add
 			if _, ok := updateFields[k]; !ok {
 				addFields[k] = v
 			}
