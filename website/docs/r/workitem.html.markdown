@@ -119,7 +119,7 @@ The following arguments are supported:
 
 ---
 
-* `additional_fields_json` - (Optional) Specifies a json formatted string of additional fields for the Work Item.
+* `additional_fields_json` - (Optional) Specifies a json formatted string of additional fields for the Work Item. Once additional fields have been defined, removing the `additional_fields_json` argument will not trigger removal from the API. Instead an empty json string must be provided to trigger removal of all previously defined additional fields.
 
 * `area_path` - (Optional) Specifies the area where the Work Item is used.
 

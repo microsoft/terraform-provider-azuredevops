@@ -251,11 +251,28 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 
 		oFieldsString := oFields.(string)
 		nFieldsString := nFields.(string)
+		apiFields := make(map[string]interface{})
 		oldFieldsMap := make(map[string]interface{})
 		newFieldsMap := make(map[string]interface{})
 		removeFields := make(map[string]interface{})
 		updateFields := make(map[string]interface{})
 		addFields := make(map[string]interface{})
+
+		// Get a list of additional fields from the API to know which fields require an update
+		readArgs := workitemtracking.GetWorkItemArgs{
+			Project: converter.String(project),
+			Id:      &id,
+			Expand:  converter.ToPtr(workitemtracking.WorkItemExpandValues.All),
+		}
+
+		workItem, err := clients.WorkItemTrackingClient.GetWorkItem(clients.Ctx, readArgs)
+		if err != nil {
+			return fmt.Errorf("error during update, Failed retrieving existing additional_fields_json fields form the API: %s", err)
+		}
+
+		if workItem.Fields != nil {
+			apiFields = *workItem.Fields
+		}
 
 		if oFieldsString != "" {
 			if err = json.Unmarshal([]byte(oFieldsString), &oldFieldsMap); err != nil {
@@ -268,10 +285,14 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 
-		for k := range oldFieldsMap { // Identify fields for removal or update
+		for k, _ := range oldFieldsMap { // Identify fields for removal against state
 			if _, ok := newFieldsMap[k]; !ok {
 				removeFields[k] = ""
-			} else {
+			}
+		}
+
+		for k, _ := range apiFields { // Identify fields for update against API
+			if _, ok := newFieldsMap[k]; ok {
 				updateFields[k] = newFieldsMap[k]
 			}
 		}
