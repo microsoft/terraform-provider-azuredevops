@@ -285,13 +285,13 @@ func resourceWorkItemUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 
-		for k, _ := range oldFieldsMap { // Identify fields for removal against state
+		for k := range oldFieldsMap { // Identify fields for removal against state
 			if _, ok := newFieldsMap[k]; !ok {
 				removeFields[k] = ""
 			}
 		}
 
-		for k, _ := range apiFields { // Identify fields for update against API
+		for k := range apiFields { // Identify fields for update against API
 			if _, ok := newFieldsMap[k]; ok {
 				updateFields[k] = newFieldsMap[k]
 			}
