@@ -119,15 +119,13 @@ The following arguments are supported:
 
 ---
 
-* `additional_fields_json` - (Optional) Specifies a json formatted string of additional fields for the Work Item. Once additional fields have been defined, removing the `additional_fields_json` argument will not trigger removal from the API. Instead an empty json string must be provided to trigger removal of all previously defined additional fields.
+* `additional_fields_json` - (Optional) A JSON-formatted string of extra fields. **Note**: Removing this attribute from your configuration will not clear existing fields in the API. To remove all fields, set this value to an empty JSON string (`"{}"`).
 
 * `area_path` - (Optional) Specifies the area where the Work Item is used.
 
 * `custom_fields` - (Optional, **Deprecated** use `additional_fields_json` argument instead) Specifies a list with Custom Fields for the Work Item.
 
-!> **Warning** To prevent a breaking change, the current `description` argument behavior will not remove the field from the Azure DevOps API when it is removed from the config or set to a blank value. When removed or set to a blank value this field will be `Computed` and contain the value received from the Azure DevOps API. In a future major release, the `description` argument will remove the `Computed` setting which will always update the Azure DevOps API with the value or non value of the field.
-
-* `description` - (Optional) A description for the Work Item. To prevent a breaking change, current field behavior will not remove the field from the Azure DevOps API when it is removed from the config or set to a blank value. When removed or set to a blank value this field will be `Computed` and contain the value received from the Azure DevOps API.
+* `description` - (Optional) A description for the Work Item. **Note**: Due to current lifecycle behavior, omitting this field or setting it to an empty string will not clear the description in Azure DevOps; the provider will instead read the existing value. To avoid a breaking change, the ability to clear this field will be introduced in a future major release.
 
 * `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 
