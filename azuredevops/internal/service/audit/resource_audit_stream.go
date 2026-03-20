@@ -12,9 +12,9 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	streamutils "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
+// ResourceAuditStream returns the audit stream resource
 func ResourceAuditStream() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAuditStreamCreate,
@@ -28,11 +28,14 @@ func ResourceAuditStream() *schema.Resource {
 			Update: schema.DefaultTimeout(2 * time.Minute),
 			Delete: schema.DefaultTimeout(2 * time.Minute),
 		},
-		Importer: tfhelper.ImportProjectQualifiedResourceInteger(),
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: streamutils.ResourceAuditStreamSchema(map[string]*schema.Schema{}),
 	}
 }
+
 func resourceAuditStreamCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
@@ -68,6 +71,10 @@ func resourceAuditStreamRead(ctx context.Context, d *schema.ResourceData, m inte
 	})
 
 	if err != nil {
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -112,7 +119,6 @@ func resourceAuditStreamDelete(ctx context.Context, d *schema.ResourceData, m in
 
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
-
 			d.SetId("")
 			return nil
 		}

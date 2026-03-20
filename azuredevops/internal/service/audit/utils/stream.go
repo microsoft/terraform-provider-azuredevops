@@ -1,47 +1,49 @@
 package utils
 
 import (
-	"strconv" // Import toegevoegd voor FlattenSingleAuditStream
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/audit"
 )
 
+// ResourceAuditStreamSchema returns the schema for the audit stream resource
 func ResourceAuditStreamSchema(outer map[string]*schema.Schema) map[string]*schema.Schema {
+	if outer == nil {
+		outer = make(map[string]*schema.Schema)
+	}
 	baseSchema := map[string]*schema.Schema{
 		"display_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "De leesbare naam voor de auditstroom. (Vertaalt naar REST API veld 'displayName').",
+			Description: "The human-readable name for the audit stream.",
 		},
 		"consumer_type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Het type externe service (bijv. 'splunk', 'azureMonitorLogs'). (Vertaalt naar REST API veld 'consumerType').",
+			Description: "The type of the consumer (e.g., 'splunk', 'azureMonitorLogs').",
 		},
 		"status": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "enabled",
-			Description: "De gewenste status van de stroom ('enabled' of 'disabledByUser').",
+			Description: "The status of the stream. Valid values are 'enabled' and 'disabledByUser'.",
 		},
 		"consumer_inputs": {
 			Type:        schema.TypeSet,
 			Required:    true,
 			MinItems:    1,
-			Description: "Een lijst van key/value paren met de benodigde invoerparameters voor de consument.",
+			Description: "A list of key-value pairs of consumer inputs.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "De sleutel van de invoerparameter (bijv. 'url', 'token').",
+						Type:     schema.TypeString,
+						Required: true,
 					},
 					"value": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-						Description: "De bijbehorende waarde of secret.",
+						Type:      schema.TypeString,
+						Required:  true,
+						Sensitive: true,
 					},
 				},
 			},
@@ -49,17 +51,17 @@ func ResourceAuditStreamSchema(outer map[string]*schema.Schema) map[string]*sche
 		"created_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Het tijdstip waarop de stroom is aangemaakt.",
+			Description: "The time when the stream was created.",
 		},
 		"updated_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Het tijdstip waarop de stroom voor het laatst is bijgewerkt.",
+			Description: "The time when the stream was last updated.",
 		},
 		"status_reason": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "De reden voor de huidige status, indien van toepassing.",
+			Description: "The reason for the current status.",
 		},
 	}
 	for key, elem := range baseSchema {
@@ -69,32 +71,36 @@ func ResourceAuditStreamSchema(outer map[string]*schema.Schema) map[string]*sche
 	return outer
 }
 
+// DataAuditStreamSchema returns the schema for the audit stream data source
 func DataAuditStreamSchema(outer map[string]*schema.Schema) map[string]*schema.Schema {
+	if outer == nil {
+		outer = make(map[string]*schema.Schema)
+	}
 	baseSchema := map[string]*schema.Schema{
 		"id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "De unieke ID van de gevonden auditstroom.",
+			Description: "The unique ID of the audit stream.",
 		},
 		"display_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "De leesbare naam om de auditstroom op te zoeken.",
+			Description: "The human-readable name for the audit stream.",
 		},
 		"consumer_type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Het type externe service van de gevonden stream.",
+			Description: "The type of the consumer.",
 		},
 		"status": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "De status van de gevonden stream.",
+			Description: "The status of the stream.",
 		},
 		"consumer_inputs": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "De key/value paren met de invoerparameters van de consument.",
+			Description: "A list of key-value pairs of consumer inputs.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -112,17 +118,17 @@ func DataAuditStreamSchema(outer map[string]*schema.Schema) map[string]*schema.S
 		"created_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Het tijdstip waarop de stroom is aangemaakt.",
+			Description: "The time when the stream was created.",
 		},
 		"updated_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Het tijdstip waarop de stroom voor het laatst is bijgewerkt.",
+			Description: "The time when the stream was last updated.",
 		},
 		"status_reason": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "De reden voor de huidige status.",
+			Description: "The reason for the current status.",
 		},
 	}
 	for key, elem := range baseSchema {
@@ -132,20 +138,23 @@ func DataAuditStreamSchema(outer map[string]*schema.Schema) map[string]*schema.S
 	return outer
 }
 
+// DataAuditStreamsSchema returns the schema for the audit streams data source
 func DataAuditStreamsSchema(outer map[string]*schema.Schema) map[string]*schema.Schema {
+	if outer == nil {
+		outer = make(map[string]*schema.Schema)
+	}
 	baseSchema := map[string]*schema.Schema{
 		"id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "De unieke ID van de data source (wordt ingesteld op een constante waarde).",
+			Description: "The unique ID of the data source.",
 		},
-
 		"streams": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Een lijst van alle geconfigureerde audit streams in de organisatie.",
+			Description: "A list of all configured audit streams in the organization.",
 			Elem: &schema.Resource{
-				Schema: DataAuditStreamSchema(outer),
+				Schema: DataAuditStreamSchemaComputed(make(map[string]*schema.Schema)),
 			},
 		},
 	}
@@ -156,6 +165,74 @@ func DataAuditStreamsSchema(outer map[string]*schema.Schema) map[string]*schema.
 	return outer
 }
 
+// DataAuditStreamSchemaComputed returns the schema for the audit stream data source with all fields as computed
+func DataAuditStreamSchemaComputed(outer map[string]*schema.Schema) map[string]*schema.Schema {
+	if outer == nil {
+		outer = make(map[string]*schema.Schema)
+	}
+	baseSchema := map[string]*schema.Schema{
+		"id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The unique ID of the audit stream.",
+		},
+		"display_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The human-readable name for the audit stream.",
+		},
+		"consumer_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the consumer.",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the stream.",
+		},
+		"consumer_inputs": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "A list of key-value pairs of consumer inputs.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"value": {
+						Type:      schema.TypeString,
+						Computed:  true,
+						Sensitive: true,
+					},
+				},
+			},
+		},
+		"created_time": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The time when the stream was created.",
+		},
+		"updated_time": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The time when the stream was last updated.",
+		},
+		"status_reason": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The reason for the current status.",
+		},
+	}
+	for key, elem := range baseSchema {
+		outer[key] = elem
+	}
+
+	return outer
+}
+
+// ExpandAuditStreamStatus expands a string to an AuditStreamStatus
 func ExpandAuditStreamStatus(statusStr string) *audit.AuditStreamStatus {
 	var status audit.AuditStreamStatus
 
@@ -177,10 +254,10 @@ func ExpandAuditStreamStatus(statusStr string) *audit.AuditStreamStatus {
 	return &status
 }
 
+// ExpandAuditStream expands a ResourceData to an AuditStream
 func ExpandAuditStream(d *schema.ResourceData) audit.AuditStream {
 	displayName := d.Get("display_name").(string)
 	consumerType := d.Get("consumer_type").(string)
-
 	status := ExpandAuditStreamStatus(d.Get("status").(string))
 
 	return audit.AuditStream{
@@ -191,6 +268,7 @@ func ExpandAuditStream(d *schema.ResourceData) audit.AuditStream {
 	}
 }
 
+// ExpandConsumerInputs expands a ResourceData to a map of consumer inputs
 func ExpandConsumerInputs(d *schema.ResourceData) *map[string]string {
 	v, ok := d.GetOk("consumer_inputs")
 	if !ok || v == nil {
@@ -198,21 +276,19 @@ func ExpandConsumerInputs(d *schema.ResourceData) *map[string]string {
 	}
 
 	tfInputs := v.(*schema.Set).List()
-
 	apiInputs := make(map[string]string, len(tfInputs))
 
 	for _, input := range tfInputs {
 		inputMap := input.(map[string]interface{})
-
 		key := inputMap["key"].(string)
 		value := inputMap["value"].(string)
-
 		apiInputs[key] = value
 	}
 
 	return &apiInputs
 }
 
+// FlattenConsumerInputs flattens a map of consumer inputs to a schema.Set
 func FlattenConsumerInputs(inputs *map[string]string) *schema.Set {
 	if inputs == nil {
 		return nil
@@ -230,6 +306,7 @@ func FlattenConsumerInputs(inputs *map[string]string) *schema.Set {
 	return inputSet
 }
 
+// FlattenAuditStream flattens an AuditStream to a ResourceData
 func FlattenAuditStream(d *schema.ResourceData, stream *audit.AuditStream) error {
 	if stream == nil {
 		return nil
@@ -256,6 +333,7 @@ func FlattenAuditStream(d *schema.ResourceData, stream *audit.AuditStream) error
 	return nil
 }
 
+// FlattenSingleAuditStream flattens an AuditStream to a map
 func FlattenSingleAuditStream(m map[string]interface{}, stream *audit.AuditStream) error {
 	if stream == nil {
 		return nil

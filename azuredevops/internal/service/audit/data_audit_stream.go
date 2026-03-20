@@ -11,9 +11,9 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/audit"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit/utils"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 )
 
+// DataResourceAuditStream returns the audit stream data source
 func DataResourceAuditStream() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataResourceAuditStreamRead,
@@ -28,27 +28,30 @@ func dataResourceAuditStreamRead(ctx context.Context, d *schema.ResourceData, m 
 	clients := m.(*client.AggregatedClient)
 	var diags diag.Diagnostics
 
-	streamID, err := converter.ASCIIToIntPtr(d.Get("id").(string))
+	displayName := d.Get("display_name").(string)
+
+	allStreams, err := clients.AuditClient.QueryAllStreams(clients.Ctx, audit.QueryAllStreamsArgs{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listArgs := audit.QueryStreamByIdArgs{
-		StreamId: streamID,
-	}
-	stream, err := clients.AuditClient.QueryStreamById(clients.Ctx, listArgs)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if stream == nil {
-		d.SetId("")
-		return diag.Errorf("Geen Audit Stream gevonden met id: %b", streamID)
+	var foundStream *audit.AuditStream
+	if allStreams != nil {
+		for _, stream := range *allStreams {
+			if *stream.DisplayName == displayName {
+				foundStream = &stream
+				break
+			}
+		}
 	}
 
-	d.SetId(strconv.Itoa(*stream.Id))
+	if foundStream == nil {
+		return diag.Errorf("No Audit Stream found with display_name: %s", displayName)
+	}
 
-	if err := utils.FlattenAuditStream(d, stream); err != nil {
+	d.SetId(strconv.Itoa(*foundStream.Id))
+
+	if err := utils.FlattenAuditStream(d, foundStream); err != nil {
 		return diag.FromErr(err)
 	}
 

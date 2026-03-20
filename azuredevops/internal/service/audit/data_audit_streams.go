@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit/utils"
 )
 
+// DataResourceAuditStreams returns the audit streams data source
 func DataResourceAuditStreams() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataResourceAuditStreamsRead,

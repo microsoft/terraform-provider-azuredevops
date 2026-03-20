@@ -281,7 +281,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		Ctx:                           ctx,
 	}
 
-	log.Printf("getAzdoClient(): Created core, build, operations, and serviceendpoint clients successfully!")
+	log.Printf("getAzdoClient(): Created core, build, operations, audit and serviceendpoint clients successfully!")
 	return aggregatedClient, nil
 }
 
