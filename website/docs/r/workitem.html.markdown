@@ -23,11 +23,12 @@ resource "azuredevops_project" "example" {
 }
 
 resource "azuredevops_workitem" "example" {
-  project_id = data.azuredevops_project.example.id
-  title      = "Example Work Item"
-  type       = "Issue"
-  state      = "Active"
-  tags       = ["Tag"]
+  project_id  = data.azuredevops_project.example.id
+  title       = "Example Work Item"
+  description = "Managed by Terraform"
+  type        = "Issue"
+  state       = "Active"
+  tags        = ["Tag"]
 }
 ```
 
@@ -80,6 +81,32 @@ resource "azuredevops_workitem" "example" {
 }
 ```
 
+### With Additional Fields
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+  description        = "Managed by Terraform"
+}
+
+resource "azuredevops_workitem" "example" {
+  project_id = data.azuredevops_project.example.id
+  title      = "Example Work Item"
+  type       = "User Story"
+  state      = "New"
+  tags       = ["Tag"]
+  additional_fields_json = jsonencode({
+    "Microsoft.VSTS.Scheduling.StoryPoints"    = 5
+    "Microsoft.VSTS.Common.AcceptanceCriteria" = "This is our definition of done"
+    "Microsoft.VSTS.Common.Priority"           = 2
+    "Microsoft.VSTS.Common.ValueArea"          = "Business"
+  })
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -92,9 +119,13 @@ The following arguments are supported:
 
 ---
 
+* `additional_fields_json` - (Optional) A JSON-formatted string of extra fields. **Note**: Removing this attribute from your configuration will not clear existing fields in the API. To remove all fields, set this value to an empty JSON string (`"{}"`).
+
 * `area_path` - (Optional) Specifies the area where the Work Item is used.
 
-* `custom_fields` - (Optional) Specifies a list with Custom Fields for the Work Item.
+* `custom_fields` - (Optional, **Deprecated** use `additional_fields_json` argument instead) Specifies a list with Custom Fields for the Work Item.
+
+* `description` - (Optional) A description for the Work Item. **Note**: Due to current lifecycle behavior, omitting this field or setting it to an empty string will not clear the description in Azure DevOps; the provider will instead read the existing value. To avoid a breaking change, the ability to clear this field will be introduced in a future major release.
 
 * `iteration_path` - (Optional) Specifies the iteration in which the Work Item is used.
 

@@ -5,21 +5,12 @@
 * [ ] I have added tests to cover my changes.
 * [ ] All new and existing tests passed.
 * [ ] My code follows the code style of this project.
-* [ ] I ran lint checks locally prior to submission.
 * [ ] Have you checked to ensure there aren't other open PRs for the same update/change?
 
-## What about the current behavior has changed?
+## Description
 
 <!-- Please describe the current behavior that you are modifying, or link to a relevant issue. -->
 
-Issue Number:
-
-## Does this introduce a change to `go.mod`, `go.sum` or `vendor/`?
-
-- [ ] Yes
-- [ ] No
-
-<!-- If this introduces a change to these files, please elaborate on why -->
 
 ## Does this introduce a breaking change?
 
@@ -28,10 +19,14 @@ Issue Number:
 
 <!-- If this introduces a breaking change, please describe the impact and migration path for existing applications below. -->
 
-## Any relevant logs, error output, etc?
+## Test Result
 
-(If it’s long, please paste to https://ghostbin.com/ and insert the link here.)
 
+<!-- A screenshot or text pasted here to show the acctest result. -->
+
+## Related Issue(s)
+
+Fix #0000
 
 ## Other information
 

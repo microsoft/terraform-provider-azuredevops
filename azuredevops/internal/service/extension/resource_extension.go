@@ -45,6 +45,7 @@ func ResourceExtension() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Description:  "The Azure DevOps Marketplace extension identifier, for example `vss-code-search`.",
 			},
 			"publisher_id": {
 				Type:             schema.TypeString,
@@ -52,6 +53,7 @@ func ResourceExtension() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
+				Description:      "The Azure DevOps Marketplace publisher identifier, for example `ms`.",
 			},
 			"disabled": {
 				Type:     schema.TypeBool,

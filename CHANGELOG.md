@@ -1,3 +1,117 @@
+## 1.14.0
+
+ENHANCEMENTS
+
+- New data sources: `azuredevops_security_namespaces` and `azuredevops_security_namespace` (#1471)
+- `azuredevops_branch_policy_min_reviewers` - Support `on_each_iteration_require_vote` (#1458)
+- New resource: `azuredevops_workitemtracking_field` (#1475)
+- `azuredevops_servicehook_webhook_tfs` - Support `resource_version` (#1497)
+- New data source: `azuredevops_security_namespace_token` (#1472)
+- New resource: `azuredevops_workitemtrackingprocess_field` (#1477)
+- New resource `azuredevops_workitemtrackingprocess_page` (#1482)
+- New resource: `azuredevops_workitemtrackingprocess_list` (#1484)
+- New resource: `azuredevops_workitemtrackingprocess_state` (#1489)
+- New resource: `azuredevops_workitemtrackingprocess_system_control ` (#1490)
+- New resource: `azuredevops_deployment_group` (#1504)
+- New resource: `azuredevops_workitemtrackingprocess_inherited_control` (#1491)
+- New resource: `azuredevops_workitemtrackingprocess_inherited_page` (#1492)
+- `azuredevops_pipeline_authorization` - Support import (#1511)
+- New resource: `azuredevops_workitemtrackingprocess_inherited_state` (#1493)
+- New resource: `azuredevops_workitemtrackingprocess_rule` (#1500)
+- New resource: `azuredevops_security_permissions` (#1473)
+
+BUG FIXES
+
+- Docs: fix frontmatter formatting issue for `azuredevops_team_administrators` and `azuredevops_team` (#1498)
+- `azuredevops_group_membership` - Fix a create time `overwrite` mode bug (#1501)
+- `azuredevops_variable_group_variable` - Fix racing condition issue when multiple instances are creating in parallel (#1506)
+
+OTHERS
+
+- Test: migrate to using `terraform-plugin-testing` (#1508, #1510)
+
+## 1.13.0
+
+ENHANCEMENTS
+
+- New resource: `azuredevops_workitemtrackingprocess_workitemtype` (#1460)
+- New data source: `azuredevops_workitemtrackingprocess_workitemtype` (#1460)
+- New data source: `azuredevops_workitemtrackingprocess_workitemtypes` (#1460)
+- New resource: `azuredevops_workitemtrackingprocess_group` (#1462)
+- New resource: `azuredevops_workitemtrackingprocess_process_permissions` (#1407)
+- New resource: `azuredevops_variable_group_variable` (#1476)
+- New resource: `azuredevops_workitemtrackingprocess_control` (#1474)
+
+## 1.12.2
+
+This release reverts a breaking change introduced in #1434, which splits the `variable` block to `variable` and `secret_variable` for `azuredevops_variable_group` (#1467)
+
+## 1.12.1
+
+BUG FIXES
+
+- Fix an issue that causes a few resource's that poll the ACL status won't end (#1466)
+
+## 1.12.0
+
+BREAKING CHANGES
+
+- `azuredevops_variable_group` - Split the `variable` block to `variable` and `secret_variable` (#1434)
+
+ENHANCEMENTS
+
+- New resource: `azuredevops_workitemquery` (#1430)
+- New resource: `azuredevops_workitemquery_folder` (#1430)
+- New resource: `azuredevops_servicehook_webhook_tfs` (#1412)
+- New resource: `azuredevops_serviceendpoint_generic_v2` (#1400)
+- New resource: `azuredevops_workitemtrackingprocess_process` (#1454)
+- New data source: `azuredevops_workitemtrackingprocess_process` (#1454)
+- New data source: `azuredevops_workitemtrackingprocess_processes` (#1454)
+
+BUG FIXES
+
+- `azuredevops_serviceendpoint_kubernetes`: Fix a potential panic during import (#1423)
+- Resources under `permissions` service: Fix a potential panic after the organization URL is changed (#1438)
+
+## 1.11.2
+
+BUG FIXES
+
+- Fix a bug when authenticating via system managed identity (#1415)
+
+## 1.11.1
+
+BUG FIXES
+
+- `azuredevops_git_permissions`: Permission check case-sensitively (#1411)
+
+## 1.11.0
+
+ENHANCEMENTS
+
+- Support AAD based auth token refresh (#1402)
+- Support new auth methods (#1405):
+  - Azure CLI auth
+  - ADO pipeline OIDC auth
+  - OIDC request based auth (ADO Pipeline and Github) now supports token refresh
+- Provider schema changes (#1405):
+  - `client_id`: new env var source `AZURE_CLIENT_ID`
+  - `client_secret_path`: new env var source `ARM_CLIENT_SECRET_FILE_PATH`
+  - `oidc_request_token`: new env var source `SYSTEM_ACCESSTOKEN`
+  - `oidc_request_url`: new env var source `SYSTEM_OIDCREQUESTURI`
+  - `oidc_token_file_path`: new env var source `AZURE_FEDERATED_TOKEN_FILE`
+  - `client_id_file_path`: newly added
+  - `auxiliary_tenant_ids`: newly added
+  - `use_cli`: newly added
+  - `oidc_azure_service_connection_id`: newly added
+
+BREAKING CHANGES
+
+- Provider schema changes (#1405):
+  - `oidc_audience`: removed
+  - `(tenant|client)_id_(plan|apply)`: removed
+  - `oidc_tfc_tag`: removed
+
 ## 1.10.0
 
 FEATURES:

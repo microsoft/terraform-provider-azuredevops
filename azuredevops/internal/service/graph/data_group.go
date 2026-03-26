@@ -134,9 +134,10 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 		}
 
 		if newGroups != nil && len(*newGroups) > 0 {
+			var filteredGroups []graph.GraphGroup
+
 			if projectDescriptor == "" {
 				// filter on collection groups
-				var filteredGroups []graph.GraphGroup
 				for _, grp := range *newGroups {
 					if grp.Domain == nil {
 						continue
@@ -150,7 +151,13 @@ func getGroupsForDescriptor(clients *client.AggregatedClient, projectDescriptor 
 				}
 				groups = append(groups, filteredGroups...)
 			} else {
-				groups = append(groups, *newGroups...)
+				for _, grp := range *newGroups {
+					domain := strings.ToLower(*grp.Domain)
+					if grp.Domain != nil && strings.HasPrefix(domain, "vstfs:///classification/teamproject/") {
+						filteredGroups = append(filteredGroups, grp)
+					}
+				}
+				groups = append(groups, filteredGroups...)
 			}
 		}
 		hasMore = currentToken != ""
