@@ -249,7 +249,7 @@ func Provider() *schema.Provider {
 			"tenant_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"ARM_TENANT_ID", "AZURE_TENANT_ID"}, nil),
 				Description:  "The service principal tenant id which should be used for AAD auth.",
 				ValidateFunc: validation.IsUUID,
 			},
@@ -287,7 +287,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_CLIENT_SECRET", "AZURE_CLIENT_SECRET"}, nil),
 				Description: "Client secret for authenticating to  a service principal.",
 			},
 			"client_secret_path": {
