@@ -403,14 +403,6 @@ var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 			return "Global", nil
 		},
 	},
-	// Project level Release management namespace
-	utils.SecurityNamespaceIDValues.ReleaseManagement: {
-		RequiredIdentifiers: []string{"project_id"},
-		OptionalIdentifiers: []string{},
-		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
-			return identifiers["project_id"], nil
-		},
-	},
 	// Folder or release definition level release management namespace
 	utils.SecurityNamespaceIDValues.ReleaseManagement2: {
 		RequiredIdentifiers: []string{"project_id"},
