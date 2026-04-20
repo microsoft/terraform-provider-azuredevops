@@ -403,6 +403,25 @@ var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 			return "Global", nil
 		},
 	},
+	// Project level Release management namespace
+	utils.SecurityNamespaceIDValues.ReleaseManagement: {
+		RequiredIdentifiers: []string{"project_id"},
+		OptionalIdentifiers: []string{},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			return identifiers["project_id"], nil
+		},
+	},
+	// Folder or release definition level release management namespace
+	utils.SecurityNamespaceIDValues.ReleaseManagement2: {
+		RequiredIdentifiers: []string{"project_id", "path"},
+		OptionalIdentifiers: []string{"definition_id"},
+		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
+			if definitionId, hasDefinition := identifiers["definition_id"]; hasDefinition {
+				return fmt.Sprintf("%s/%s/%s", identifiers["project_id"], identifiers["path"], definitionId), nil
+			}
+			return fmt.Sprintf("%s/%s", identifiers["project_id"], identifiers["path"]), nil
+		},
+	},
 }
 
 // DataSecurityNamespaceToken schema and implementation for security namespace token data source

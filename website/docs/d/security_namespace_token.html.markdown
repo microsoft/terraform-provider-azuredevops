@@ -135,6 +135,46 @@ output "build_def_token" {
 }
 ```
 
+### Release Management Project-level Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "release_project" {
+  namespace_name = "ReleaseManagement"
+  identifiers = {
+    project_id = data.azuredevops_project.example.id
+  }
+}
+
+output "release_project_token" {
+  value = data.azuredevops_security_namespace_token.release_project.token
+}
+```
+
+### Release Definition Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "release_def" {
+  namespace_name = "ReleaseManagement2"
+  identifiers = {
+    project_id    = data.azuredevops_project.example.id
+    path          = "MyFolder"
+    definition_id = "42"
+  }
+}
+
+output "release_def_token" {
+  value = data.azuredevops_security_namespace_token.release_def.token
+}
+```
+
 ### Using Namespace ID
 
 ```hcl
@@ -163,6 +203,8 @@ The following arguments are supported:
   - `BuildAdministration` - Build administration permissions
   - `Server` - Server-level permissions
   - `VersionControlPrivileges` - Version control privileges
+  - `ReleaseManagement` - Project-level release management permissions
+  - `ReleaseManagement2` - Folder or release definition level release management permissions
 
 * `identifiers` - (Optional) A map of identifiers required for token generation. The required identifiers depend on the namespace. Not used when `return_identifier_info` is `true`.
 
@@ -192,6 +234,12 @@ Different namespaces require different identifiers:
 | **BuildAdministration** | None | None | `{}` |
 | **Server** | None | None | `{}` |
 | **VersionControlPrivileges** | None | None | `{}` |
+| **ReleaseManagement** | `project_id` | None | `{project_id = "..."}` |
+| **ReleaseManagement2** | `project_id`, `path` | `definition_id` | `{project_id = "...", path = "\\MyFolder", definition_id = "42"}` |
+
+~> **NOTE:** For the **Process** namespace, `process_id` can only be provided together with `workitem_template_id`.
+
+~> **NOTE:** For the **ReleaseManagement2** namespace, `path` represents the release folder path (e.g., `myFolder`).
 
 ## Attributes Reference
 
