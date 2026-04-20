@@ -109,6 +109,12 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"validate_input": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether to validate the provided service endpoint configuration against the service endpoint type definition. Enabling this will cause the provider to return an error if the configuration is invalid.",
+			},
 		},
 	}
 }
@@ -301,9 +307,12 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// Validate the service endpoint configuration
-	if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
-		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+	// Validate the service endpoint configuration if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if validateInput {
+		if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
+			return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+		}
 	}
 
 	// Create the service endpoint
@@ -623,39 +632,33 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
-// updateServiceEndpointFromResourceData updates a service endpoint with values from resource data
+// updateServiceEndpointFromResourceData updates a service endpoint with values from resource data.
+// All fields are always set from the Terraform state rather than conditionally, because the API
+// returns masked/empty values for sensitive fields (e.g. authorization parameters). Relying on
+// the API-fetched endpoint as a base would send those masked values back, clearing the actual
+// credentials and breaking the service endpoint.
 func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	// Update fields that have changed
-	if d.HasChange("name") {
-		endpoint.Name = converter.String(d.Get("name").(string))
+	endpoint.Name = converter.String(d.Get("name").(string))
+	endpoint.Description = converter.String(d.Get("description").(string))
+	endpoint.Url = converter.String(d.Get("server_url").(string))
+
+	// Always set authorization from Terraform state – the API returns masked values for
+	// sensitive parameters, so we must never rely on the API response for these.
+	authScheme, authParams, err := getAuthorizationDetails(d)
+	if err != nil {
+		return nil, fmt.Errorf("error processing authorization details: %w", err)
+	}
+	endpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+		Scheme:     converter.String(authScheme),
+		Parameters: &authParams,
 	}
 
-	if d.HasChange("description") {
-		endpoint.Description = converter.String(d.Get("description").(string))
+	// Always set data parameters from Terraform state
+	data, err := toStringMap(d.Get("parameters"), "parameters")
+	if err != nil {
+		return nil, err
 	}
-
-	if d.HasChange("server_url") {
-		endpoint.Url = converter.String(d.Get("server_url").(string))
-	}
-
-	// Handle authorization updates if any auth fields changed
-	if d.HasChange("authorization_scheme") || d.HasChange("authorization_parameters") {
-		authScheme, authParams, err := getAuthorizationDetails(d)
-		if err != nil {
-			return nil, fmt.Errorf("error processing authorization details: %w", err)
-		}
-		endpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-			Scheme:     converter.String(authScheme),
-			Parameters: &authParams,
-		}
-	}
-
-	// Handle data updates if changed
-	if d.HasChange("parameters") {
-		data, err := toStringMap(d.Get("parameters"), "parameters")
-		if err != nil {
-			return nil, err
-		}
+	if len(data) > 0 {
 		endpoint.Data = &data
 	}
 
@@ -786,6 +789,12 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
 	// Only validate on resource creation changes
 	if d.Id() != "" {
+		return nil
+	}
+
+	// Only validate if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if !validateInput {
 		return nil
 	}
 
