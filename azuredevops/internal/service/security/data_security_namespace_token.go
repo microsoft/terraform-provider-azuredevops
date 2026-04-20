@@ -413,13 +413,21 @@ var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 	},
 	// Folder or release definition level release management namespace
 	utils.SecurityNamespaceIDValues.ReleaseManagement2: {
-		RequiredIdentifiers: []string{"project_id", "path"},
-		OptionalIdentifiers: []string{"definition_id"},
+		RequiredIdentifiers: []string{"project_id"},
+		OptionalIdentifiers: []string{"path", "definition_id"},
 		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
-			if definitionId, hasDefinition := identifiers["definition_id"]; hasDefinition {
-				return fmt.Sprintf("%s/%s/%s", identifiers["project_id"], identifiers["path"], definitionId), nil
+			projectID := identifiers["project_id"]
+			path, hasPath := identifiers["path"]
+			definitionId, hasDefinition := identifiers["definition_id"]
+
+			if hasPath && hasDefinition {
+				return fmt.Sprintf("%s/%s/%s", projectID, path, definitionId), nil
+			} else if hasPath {
+				return fmt.Sprintf("%s/%s", projectID, path), nil
+			} else if hasDefinition {
+				return fmt.Sprintf("%s/%s", projectID, definitionId), nil
 			}
-			return fmt.Sprintf("%s/%s", identifiers["project_id"], identifiers["path"]), nil
+			return projectID, nil
 		},
 	},
 }

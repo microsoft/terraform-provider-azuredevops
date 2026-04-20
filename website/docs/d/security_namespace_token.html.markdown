@@ -235,7 +235,7 @@ Different namespaces require different identifiers:
 | **Server** | None | None | `{}` |
 | **VersionControlPrivileges** | None | None | `{}` |
 | **ReleaseManagement** | `project_id` | None | `{project_id = "..."}` |
-| **ReleaseManagement2** | `project_id`, `path` | `definition_id` | `{project_id = "...", path = "\\MyFolder", definition_id = "42"}` |
+| **ReleaseManagement2** | `project_id` | `path`, `definition_id` | `{project_id = "...", path = "\\MyFolder", definition_id = "42"}` |
 
 ~> **NOTE:** For the **Process** namespace, `process_id` can only be provided together with `workitem_template_id`.
 
