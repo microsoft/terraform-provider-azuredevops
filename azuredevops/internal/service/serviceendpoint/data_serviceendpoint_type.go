@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
@@ -21,9 +22,10 @@ func DataServiceEndpointType() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the service endpoint type",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The name of the service endpoint type",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"authorization_scheme": {
 				Type:        schema.TypeString,
@@ -133,10 +135,6 @@ func dataServiceEndpointTypeRead(ctx context.Context, d *schema.ResourceData, m 
 
 	name := d.Get("name").(string)
 	authScheme := d.Get("authorization_scheme").(string)
-
-	if name == "" {
-		return diag.FromErr(fmt.Errorf("'name' must be specified"))
-	}
 
 	var foundType *serviceendpoint.ServiceEndpointType
 	for _, t := range *serviceEndpointTypesCache {
