@@ -30,11 +30,6 @@ func DataServiceEndpointType() *schema.Resource {
 				Optional:    true,
 				Description: "The authorization scheme to retrieve parameters for",
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the service endpoint type",
-			},
 			"display_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -59,19 +54,61 @@ func DataServiceEndpointType() *schema.Resource {
 				},
 			},
 			"parameters": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Map of default values for each possible parameter for the service endpoint",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Description: "List of parameter descriptors for the service endpoint",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The parameter name (descriptor ID)",
+						},
+						"default_value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							Description: "The default value for this parameter, if provided by the API",
+						},
+						"possible_values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Optional:    true,
+							Description: "List of possible values for this parameter, if provided by the API",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
 				},
 			},
 			"authorization_parameters": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Map of default values for each possible authorization parameter (only set if authorization_scheme is provided)",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Description: "List of authorization parameter descriptors (only set if authorization_scheme is provided)",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The authorization parameter name (descriptor ID)",
+						},
+						"default_value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							Description: "The default value for this parameter, if provided by the API",
+						},
+						"possible_values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Optional:    true,
+							Description: "List of possible values for this parameter, if provided by the API",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -116,9 +153,6 @@ func dataServiceEndpointTypeRead(ctx context.Context, d *schema.ResourceData, m 
 	// Set basic attributes
 	if foundType.Name != nil {
 		d.SetId(*foundType.Name)
-		if err := d.Set("id", *foundType.Name); err != nil {
-			return diag.FromErr(err)
-		}
 		if err := d.Set("name", *foundType.Name); err != nil {
 			return diag.FromErr(err)
 		}
@@ -156,16 +190,28 @@ func dataServiceEndpointTypeRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	// Extract parameters from InputDescriptors
-	parameters := make(map[string]string)
+	parameters := make([]map[string]interface{}, 0)
 	if foundType.InputDescriptors != nil {
 		for _, descriptor := range *foundType.InputDescriptors {
+			param := make(map[string]interface{})
 			if descriptor.Id != nil {
-				defaultValue := ""
-				if descriptor.Values != nil && descriptor.Values.DefaultValue != nil {
-					defaultValue = *descriptor.Values.DefaultValue
-				}
-				parameters[*descriptor.Id] = defaultValue
+				param["name"] = *descriptor.Id
 			}
+			if descriptor.Values != nil {
+				if descriptor.Values.DefaultValue != nil {
+					param["default_value"] = *descriptor.Values.DefaultValue
+				}
+				if descriptor.Values.PossibleValues != nil {
+					possValues := make([]string, 0, len(*descriptor.Values.PossibleValues))
+					for _, v := range *descriptor.Values.PossibleValues {
+						if v.Value != nil {
+							possValues = append(possValues, *v.Value)
+						}
+					}
+					param["possible_values"] = possValues
+				}
+			}
+			parameters = append(parameters, param)
 		}
 	}
 	if err := d.Set("parameters", parameters); err != nil {
@@ -183,7 +229,7 @@ func dataServiceEndpointTypeRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 	} else {
 		// Set to null/empty if no authorization_scheme provided
-		if err := d.Set("authorization_parameters", map[string]string{}); err != nil {
+		if err := d.Set("authorization_parameters", []map[string]interface{}{}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -191,23 +237,35 @@ func dataServiceEndpointTypeRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func extractAuthorizationParameters(endpointType *serviceendpoint.ServiceEndpointType, authScheme string) (map[string]string, error) {
+func extractAuthorizationParameters(endpointType *serviceendpoint.ServiceEndpointType, authScheme string) ([]map[string]interface{}, error) {
 	if endpointType.AuthenticationSchemes == nil {
 		return nil, fmt.Errorf("no authentication schemes available for service endpoint type '%s'", *endpointType.Name)
 	}
 
 	for _, scheme := range *endpointType.AuthenticationSchemes {
 		if scheme.Scheme != nil && strings.EqualFold(*scheme.Scheme, authScheme) {
-			authParams := make(map[string]string)
+			authParams := make([]map[string]interface{}, 0)
 			if scheme.InputDescriptors != nil {
 				for _, descriptor := range *scheme.InputDescriptors {
+					param := make(map[string]interface{})
 					if descriptor.Id != nil {
-						defaultValue := ""
-						if descriptor.Values != nil && descriptor.Values.DefaultValue != nil {
-							defaultValue = *descriptor.Values.DefaultValue
-						}
-						authParams[*descriptor.Id] = defaultValue
+						param["name"] = *descriptor.Id
 					}
+					if descriptor.Values != nil {
+						if descriptor.Values.DefaultValue != nil {
+							param["default_value"] = *descriptor.Values.DefaultValue
+						}
+						if descriptor.Values.PossibleValues != nil {
+							possValues := make([]string, 0, len(*descriptor.Values.PossibleValues))
+							for _, v := range *descriptor.Values.PossibleValues {
+								if v.Value != nil {
+									possValues = append(possValues, *v.Value)
+								}
+							}
+							param["possible_values"] = possValues
+						}
+					}
+					authParams = append(authParams, param)
 				}
 			}
 			return authParams, nil

@@ -79,13 +79,18 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the service endpoint type (typically same as name).
 * `display_name` - The display name of the service endpoint type.
 * `description` - The description of the service endpoint type.
 * `ui_contribution_id` - The UI contribution ID for this service endpoint type.
 * `authentication_schemes` - A list of available authentication schemes for this service endpoint type.
-* `parameters` - A map of parameter names to their default values. These are the parameters that can be set in the `parameters` block of a service endpoint resource.
-* `authorization_parameters` - A map of authorization parameter names to their default values. This is only populated when `authorization_scheme` is provided. These are the parameters that can be set in the `authorization_parameters` block of a service endpoint resource.
+* `parameters` - A list of parameter descriptors. Each element has:
+  * `name` - The parameter name (descriptor ID).
+  * `default_value` - The default value for this parameter, if provided by the API.
+  * `possible_values` - A list of possible values for this parameter, if provided by the API.
+* `authorization_parameters` - A list of authorization parameter descriptors. Only populated when `authorization_scheme` is provided. Each element has:
+  * `name` - The authorization parameter name (descriptor ID).
+  * `default_value` - The default value for this parameter, if provided by the API.
+  * `possible_values` - A list of possible values for this parameter, if provided by the API.
 
 ## Relevant Links
 
