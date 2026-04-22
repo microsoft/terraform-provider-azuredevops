@@ -14,6 +14,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 )
 
 func ResourceAgentPoolVMSS() *schema.Resource {
@@ -41,6 +42,9 @@ func ResourceAgentPoolVMSS() *schema.Resource {
 			"azure_resource_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				// The casing of Azure Resources ID might change, but the ADO API is case-sensitive.
+				// When `DiffSuppressFunc` is set and matched, `.d.Get()` returns value from state.
+				DiffSuppressFunc: suppress.CaseDifference,
 			},
 
 			"service_endpoint_id": {
