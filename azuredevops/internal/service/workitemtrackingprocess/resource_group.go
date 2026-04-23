@@ -222,37 +222,7 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	// Add controls to the group if specified
-	if v, ok := d.GetOk("control"); ok {
-		controlList := v.([]interface{})
-		controls := make([]workitemtrackingprocess.Control, len(controlList))
-		for i, c := range controlList {
-			controlMap := c.(map[string]interface{})
-			control := workitemtrackingprocess.Control{
-				Id:       converter.String(controlMap["id"].(string)),
-				Visible:  converter.Bool(controlMap["visible"].(bool)),
-				ReadOnly: converter.Bool(controlMap["read_only"].(bool)),
-			}
-			if label, ok := controlMap["label"].(string); ok {
-				control.Label = converter.String(label)
-			}
-			// Use the list index as the order
-			control.Order = converter.Int(i)
-			if metadata, ok := controlMap["metadata"].(string); ok {
-				control.Metadata = converter.String(metadata)
-			}
-			if watermark, ok := controlMap["watermark"].(string); ok {
-				control.Watermark = converter.String(watermark)
-			}
-			if isContribution, ok := controlMap["is_contribution"].(bool); ok {
-				control.IsContribution = converter.Bool(isContribution)
-			}
-			if contribution, ok := controlMap["contribution"].([]interface{}); ok && len(contribution) > 0 {
-				control.Contribution = expandContribution(contribution)
-			}
-			controls[i] = control
-		}
-		group.Controls = &controls
-	}
+	group.Controls = expandControls(d)
 
 	args := workitemtrackingprocess.AddGroupArgs{
 		ProcessId:  converter.UUID(d.Get("process_id").(string)),
@@ -278,11 +248,15 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	d.SetId(*createdGroup.Id)
 
-	if group.Controls == nil || len(*group.Controls) == 0 {
+	expectedControlCount := 0
+	if group.Controls != nil {
+		expectedControlCount = len(*group.Controls)
+	}
+
+	if expectedControlCount == 0 {
 		return readResourceGroup(ctx, d, m)
 	}
 
-	expectedControlCount := len(*group.Controls)
 	// NOTE: Adding contribution controls (and potentially other controls) have eventual
 	// consistency issues, so we need to retry reading the resource until all expected
 	// controls are present. We use ContinuousTargetOccurence to ensure the count is
@@ -350,12 +324,13 @@ func readResourceGroupWithError(ctx context.Context, d *schema.ResourceData, m a
 	d.Set("visible", foundGroup.Visible)
 
 	// Read controls if present
+	controls := make([]map[string]interface{}, 0)
 	if foundGroup.Controls != nil && len(*foundGroup.Controls) > 0 {
 		groupControls := *foundGroup.Controls
 		slices.SortStableFunc(groupControls, func(a, b workitemtrackingprocess.Control) int {
 			return cmp.Compare(converter.ToInt(a.Order, math.MaxInt), converter.ToInt(b.Order, math.MaxInt))
 		})
-		controls := make([]map[string]interface{}, len(groupControls))
+		controls = make([]map[string]interface{}, len(groupControls))
 		for i, c := range groupControls {
 			control := map[string]interface{}{
 				"visible":    c.Visible,
@@ -389,9 +364,9 @@ func readResourceGroupWithError(ctx context.Context, d *schema.ResourceData, m a
 			}
 			controls[i] = control
 		}
-		if err := d.Set("control", controls); err != nil {
-			return err
-		}
+	}
+	if err := d.Set("control", controls); err != nil {
+		return err
 	}
 	return nil
 }
@@ -406,8 +381,9 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	sectionId := d.Get("section_id").(string)
 
 	updateGroup := &workitemtrackingprocess.Group{
-		Label:   converter.String(d.Get("label").(string)),
-		Visible: converter.Bool(d.Get("visible").(bool)),
+		Label:    converter.String(d.Get("label").(string)),
+		Visible:  converter.Bool(d.Get("visible").(bool)),
+		Controls: expandControls(d),
 	}
 	//nolint:staticcheck // SA1019: d.GetOkExists is deprecated but required to distinguish between unset and zero value
 	if v, ok := d.GetOkExists("order"); ok {
@@ -433,25 +409,56 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		if err != nil {
 			return diag.Errorf(" Moving group. Error %+v", err)
 		}
+	} else {
+		args := workitemtrackingprocess.UpdateGroupArgs{
+			ProcessId:  converter.UUID(processId),
+			WitRefName: converter.String(witRefName),
+			PageId:     converter.String(pageId),
+			SectionId:  converter.String(sectionId),
+			GroupId:    &groupId,
+			Group:      updateGroup,
+		}
 
+		_, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
+		if err != nil {
+			return diag.Errorf(" Update group. Error %+v", err)
+		}
+	}
+
+	expectedControlCount := 0
+	if updateGroup.Controls != nil {
+		expectedControlCount = len(*updateGroup.Controls)
+	}
+
+	// NOTE: We only wait if controls are present in the configuration.
+	// If the user removed the control block, we don't wait (as per the logic in expandControls returning nil).
+	if expectedControlCount == 0 {
 		return readResourceGroup(ctx, d, m)
 	}
 
-	args := workitemtrackingprocess.UpdateGroupArgs{
-		ProcessId:  converter.UUID(processId),
-		WitRefName: converter.String(witRefName),
-		PageId:     converter.String(pageId),
-		SectionId:  converter.String(sectionId),
-		GroupId:    &groupId,
-		Group:      updateGroup,
+	stateConf := &retry.StateChangeConf{
+		Pending:                   []string{"waiting"},
+		Target:                    []string{"ready", "error"},
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		MinTimeout:                retryMinTimeout,
+		ContinuousTargetOccurence: 4,
+		Refresh: func() (interface{}, string, error) {
+			if err := readResourceGroupWithError(ctx, d, m); err != nil {
+				return nil, "error", err
+			}
+			actualControlCount := 0
+			if v, ok := d.GetOk("control"); ok {
+				actualControlCount = len(v.([]any))
+			}
+			log.Printf("[DEBUG] Expected control count: %d, Actual control count: %d", expectedControlCount, actualControlCount)
+			if actualControlCount < expectedControlCount {
+				return nil, "waiting", nil
+			}
+			return d, "ready", nil
+		},
 	}
-
-	_, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
-	if err != nil {
-		return diag.Errorf(" Update group. Error %+v", err)
-	}
-
-	return readResourceGroup(ctx, d, m)
+	_, err := stateConf.WaitForStateContext(ctx)
+	return diag.FromErr(err)
 }
 
 func deleteResourceGroup(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -522,6 +529,41 @@ func findGroupInSection(section *workitemtrackingprocess.Section, groupId string
 		if *id == groupId {
 			return &group
 		}
+	}
+	return nil
+}
+
+func expandControls(d *schema.ResourceData) *[]workitemtrackingprocess.Control {
+	if v, ok := d.GetOk("control"); ok {
+		controlList := v.([]interface{})
+		controls := make([]workitemtrackingprocess.Control, len(controlList))
+		for i, c := range controlList {
+			controlMap := c.(map[string]interface{})
+			control := workitemtrackingprocess.Control{
+				Id:       converter.String(controlMap["id"].(string)),
+				Visible:  converter.Bool(controlMap["visible"].(bool)),
+				ReadOnly: converter.Bool(controlMap["read_only"].(bool)),
+			}
+			if label, ok := controlMap["label"].(string); ok {
+				control.Label = converter.String(label)
+			}
+			// Use the list index as the order
+			control.Order = converter.Int(i)
+			if metadata, ok := controlMap["metadata"].(string); ok {
+				control.Metadata = converter.String(metadata)
+			}
+			if watermark, ok := controlMap["watermark"].(string); ok {
+				control.Watermark = converter.String(watermark)
+			}
+			if isContribution, ok := controlMap["is_contribution"].(bool); ok {
+				control.IsContribution = converter.Bool(isContribution)
+			}
+			if contribution, ok := controlMap["contribution"].([]interface{}); ok && len(contribution) > 0 {
+				control.Contribution = expandContribution(contribution)
+			}
+			controls[i] = control
+		}
+		return &controls
 	}
 	return nil
 }

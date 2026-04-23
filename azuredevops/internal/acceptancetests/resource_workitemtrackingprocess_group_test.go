@@ -371,3 +371,70 @@ func groupImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 		return fmt.Sprintf("%s/%s/%s/%s/%s", processId, witRefName, pageId, sectionId, groupId), nil
 	}
 }
+
+func TestAccWorkitemtrackingprocessGroup_UpdateControls(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_group.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: groupWithControls(workItemTypeName, processName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "control.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "control.0.id", "System.Title"),
+				),
+			},
+			{
+				Config: groupWithControls(workItemTypeName, processName, 2),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "control.#", "2"),
+					resource.TestCheckResourceAttr(tfNode, "control.0.id", "System.Title"),
+					resource.TestCheckResourceAttr(tfNode, "control.1.id", "System.Description"),
+				),
+			},
+			{
+				Config: groupWithControls(workItemTypeName, processName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "control.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "control.0.id", "System.Title"),
+				),
+			},
+		},
+	})
+}
+
+func groupWithControls(workItemTypeName string, processName string, count int) string {
+	workItemType := basicWorkItemType(workItemTypeName, processName)
+	controls := ""
+	if count >= 1 {
+		controls += `
+  control {
+    id    = "System.Title"
+    label = "Title"
+  }`
+	}
+	if count >= 2 {
+		controls += `
+  control {
+    id    = "System.Description"
+    label = "Description"
+  }`
+	}
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_group" "test" {
+  process_id                    = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_reference_name = azuredevops_workitemtrackingprocess_workitemtype.test.reference_name
+  page_id                       = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].id
+  section_id                    = azuredevops_workitemtrackingprocess_workitemtype.test.pages[0].sections[0].id
+  label                         = "Test Group"
+  %s
+}
+`, workItemType, controls)
+}
