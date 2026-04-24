@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/build"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/release"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/security"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -403,21 +404,41 @@ var namespaceTokenTemplates = map[utils.SecurityNamespaceID]TokenTemplate{
 			return "Global", nil
 		},
 	},
-	// Folder or release definition level release management namespace
+	// Project, folder or release definition level permissions
+	// Note: When definition_id is provided, path will be fetched from the API
 	utils.SecurityNamespaceIDValues.ReleaseManagement2: {
 		RequiredIdentifiers: []string{"project_id"},
 		OptionalIdentifiers: []string{"path", "definition_id"},
 		BuildFunc: func(identifiers map[string]string, clients *client.AggregatedClient) (string, error) {
 			projectID := identifiers["project_id"]
 			path, hasPath := identifiers["path"]
-			definitionId, hasDefinition := identifiers["definition_id"]
+			definitionID, hasDefinitionID := identifiers["definition_id"]
 
-			if hasPath && hasDefinition {
-				return fmt.Sprintf("%s/%s/%s", projectID, path, definitionId), nil
+			// If definition_id is provided, fetch the definition to get its path and ID
+			if hasDefinitionID {
+				defIDInt, err := strconv.Atoi(definitionID)
+				if err != nil {
+					return "", fmt.Errorf("invalid definition_id: %w", err)
+				}
+
+				definition, err := clients.ReleaseClient.GetReleaseDefinition(clients.Ctx, release.GetReleaseDefinitionArgs{
+					Project:      converter.String(projectID),
+					DefinitionId: converter.Int(defIDInt),
+				})
+				if err != nil {
+					return "", fmt.Errorf("error getting release definition: %w", err)
+				}
+
+				// Use the definition path if it's not root
+				if definition.Path != nil && *definition.Path != "\\" {
+					transformedPath := strings.Trim(strings.ReplaceAll(*definition.Path, "\\", "/"), "/")
+					return fmt.Sprintf("%s/%s/%d", projectID, transformedPath, defIDInt), nil
+				}
+				return fmt.Sprintf("%s/%d", projectID, defIDInt), nil
 			} else if hasPath {
-				return fmt.Sprintf("%s/%s", projectID, path), nil
-			} else if hasDefinition {
-				return fmt.Sprintf("%s/%s", projectID, definitionId), nil
+				// Remove leading/trailing slashes and convert backslashes to forward slashes
+				transformedPath := strings.Trim(strings.ReplaceAll(path, "\\", "/"), "/")
+				return fmt.Sprintf("%s/%s", projectID, transformedPath), nil
 			}
 			return projectID, nil
 		},
