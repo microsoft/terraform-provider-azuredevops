@@ -69,13 +69,11 @@ func DataServiceEndpointType() *schema.Resource {
 						"default_value": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Optional:    true,
 							Description: "The default value for this parameter, if provided by the API",
 						},
 						"possible_values": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Optional:    true,
 							Description: "List of possible values for this parameter, if provided by the API",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -98,13 +96,11 @@ func DataServiceEndpointType() *schema.Resource {
 						"default_value": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Optional:    true,
 							Description: "The default value for this parameter, if provided by the API",
 						},
 						"possible_values": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Optional:    true,
 							Description: "List of possible values for this parameter, if provided by the API",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
