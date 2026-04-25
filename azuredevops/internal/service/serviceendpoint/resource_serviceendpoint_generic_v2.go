@@ -633,33 +633,48 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 }
 
 // updateServiceEndpointFromResourceData updates a service endpoint with values from resource data.
-// All fields are always set from the Terraform state rather than conditionally, because the API
-// returns masked/empty values for sensitive fields (e.g. authorization parameters). Relying on
-// the API-fetched endpoint as a base would send those masked values back, clearing the actual
-// credentials and breaking the service endpoint.
+//
+// Each field is only overwritten on the endpoint returned by the API when the corresponding
+// attribute has actually changed in the Terraform plan. This way, attributes excluded via the
+// `ignore_changes` lifecycle meta-argument are preserved as-is (Terraform reports `HasChange`
+// as false for ignored attributes, so we leave the API value untouched).
+//
+// Authorization is a special case: the API returns masked/empty values for sensitive
+// parameters, so we must always reconstruct the authorization block from the Terraform state
+// (which still holds the real credentials) whenever any auth-related field has changed.
 func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	endpoint.Name = converter.String(d.Get("name").(string))
-	endpoint.Description = converter.String(d.Get("description").(string))
-	endpoint.Url = converter.String(d.Get("server_url").(string))
-
-	// Always set authorization from Terraform state – the API returns masked values for
-	// sensitive parameters, so we must never rely on the API response for these.
-	authScheme, authParams, err := getAuthorizationDetails(d)
-	if err != nil {
-		return nil, fmt.Errorf("error processing authorization details: %w", err)
+	if d.HasChange("name") {
+		endpoint.Name = converter.String(d.Get("name").(string))
 	}
-	endpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Scheme:     converter.String(authScheme),
-		Parameters: &authParams,
+	if d.HasChange("description") {
+		endpoint.Description = converter.String(d.Get("description").(string))
+	}
+	if d.HasChange("server_url") {
+		endpoint.Url = converter.String(d.Get("server_url").(string))
 	}
 
-	// Always set data parameters from Terraform state
-	data, err := toStringMap(d.Get("parameters"), "parameters")
-	if err != nil {
-		return nil, err
+	// Rebuild authorization from Terraform state when any auth field changed. The API
+	// returns masked values for sensitive parameters, so we never rely on the API response
+	// for these – the state always holds the real credentials.
+	if d.HasChange("authorization_scheme") || d.HasChange("authorization_parameters") {
+		authScheme, authParams, err := getAuthorizationDetails(d)
+		if err != nil {
+			return nil, fmt.Errorf("error processing authorization details: %w", err)
+		}
+		endpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Scheme:     converter.String(authScheme),
+			Parameters: &authParams,
+		}
 	}
-	if len(data) > 0 {
-		endpoint.Data = &data
+
+	if d.HasChange("parameters") {
+		data, err := toStringMap(d.Get("parameters"), "parameters")
+		if err != nil {
+			return nil, err
+		}
+		if len(data) > 0 {
+			endpoint.Data = &data
+		}
 	}
 
 	return endpoint, nil
