@@ -1,3 +1,9 @@
+## 1.15.1
+
+BUG FIXES
+
+- `azurredevops_elastic_pool` - supress casing diff for `azure_resource_id` (#1546)
+
 ## 1.15.0
 
 ENHANCEMENTS
