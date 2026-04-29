@@ -42,6 +42,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		"azurecr_subscription_id": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_ID", nil),
 			Description: "The Azure subscription Id which should be used.",
 		},
@@ -49,6 +50,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 		"azurecr_subscription_name": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			DefaultFunc: schema.EnvDefaultFunc("ACR_SUBSCRIPTION_NAME", nil),
 			Description: "The Azure subscription name which should be used.",
 		},
