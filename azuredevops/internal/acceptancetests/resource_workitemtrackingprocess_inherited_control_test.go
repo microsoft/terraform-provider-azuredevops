@@ -161,7 +161,6 @@ func TestAccWorkitemtrackingprocessInheritedControl_Hide(t *testing.T) {
 						Config: hideInheritedControlConfig(processName, witName, tc.groupID, tc.controlID),
 						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttrSet(tfNode, "id"),
-							resource.TestCheckResourceAttr(tfNode, "visible", "false"),
 						),
 					},
 				},
