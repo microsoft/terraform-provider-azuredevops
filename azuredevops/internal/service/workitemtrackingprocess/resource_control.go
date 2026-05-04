@@ -208,13 +208,11 @@ func createResourceControl(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	var createdControl *workitemtrackingprocess.Control
-	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
-		return utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutCreate), func() error {
-			var createErr error
-			createdControl, createErr = clients.WorkItemTrackingProcessClient.CreateControlInGroup(ctx, args)
-			return createErr
-		})
-	})
+	err := utils.RetryOn(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		var createErr error
+		createdControl, createErr = clients.WorkItemTrackingProcessClient.CreateControlInGroup(ctx, args)
+		return createErr
+	}, utils.RetryOnContributionNotFound, utils.RetryOnUnexpectedException)
 	if err != nil {
 		return diag.Errorf(" Creating control. Error %+v", err)
 	}

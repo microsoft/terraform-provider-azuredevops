@@ -263,13 +263,11 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	var createdGroup *workitemtrackingprocess.Group
-	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
-		return utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutCreate), func() error {
-			var createErr error
-			createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
-			return createErr
-		})
-	})
+	err := utils.RetryOn(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		var createErr error
+		createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
+		return createErr
+	}, utils.RetryOnContributionNotFound, utils.RetryOnUnexpectedException)
 	if err != nil {
 		return diag.Errorf(" Creating group. Error %+v", err)
 	}
