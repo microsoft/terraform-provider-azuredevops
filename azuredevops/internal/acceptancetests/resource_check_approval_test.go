@@ -107,7 +107,7 @@ resource "azuredevops_check_approval" "test" {
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
 
-  approval_kind = "approval"
+  approval_kind         = "approval"
   requester_can_approve = false
   approvers = [
     one(data.azuredevops_users.test.users).id,
@@ -134,7 +134,7 @@ resource "azuredevops_check_approval" "test" {
   target_resource_id   = azuredevops_serviceendpoint_generic.test.id
   target_resource_type = "endpoint"
 
-  approval_kind = "pre_check"
+  approval_kind         = "pre_check"
   requester_can_approve = true
   approvers = [
     one(data.azuredevops_users.test.users).id,
