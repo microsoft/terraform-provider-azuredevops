@@ -119,6 +119,8 @@ func flattenBranchControlCheck(d *schema.ResourceData, branchControlCheck *pipel
 				return err
 			}
 			d.Set("ignore_unknown_protection_status", value)
+		} else {
+			d.Set("ignore_unknown_protection_status", false)
 		}
 	} else {
 		return fmt.Errorf("inputs not found")

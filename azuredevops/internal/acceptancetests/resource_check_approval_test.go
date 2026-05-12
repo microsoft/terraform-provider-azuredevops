@@ -30,6 +30,12 @@ func TestAccCheckApproval_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "approvers.#", "1"),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -55,6 +61,12 @@ func TestAccCheckApproval_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "40000"),
 					resource.TestCheckResourceAttr(tfCheckNode, "approvers.#", "2"),
 				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

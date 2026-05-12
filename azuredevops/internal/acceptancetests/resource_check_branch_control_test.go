@@ -30,6 +30,12 @@ func TestAccCheckBranchControl_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -57,6 +63,12 @@ func TestAccCheckBranchControl_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "verify_branch_protection", "true"),
 					resource.TestCheckResourceAttr(tfCheckNode, "ignore_unknown_protection_status", "false"),
 				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
