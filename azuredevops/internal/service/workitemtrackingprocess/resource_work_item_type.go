@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -256,7 +257,74 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diag.Errorf(" Getting work item type with reference name: %s for process with id %s. Error: %+v", referenceName, processId, err)
 	}
 
-	return flattenWorkItemType(d, workItemType)
+	if diags := flattenWorkItemType(d, workItemType); diags.HasError() {
+		return diags
+	}
+
+	// Only handle custom states if at least one state block has been declared
+	if !hasStateBlocks(d) {
+		return nil
+	}
+	return readWorkItemTypeStates(ctx, clients, d, processId, referenceName)
+}
+
+// hasStateBlocks reports whether at least one `state` block exists in either
+// the resource's config or its prior state.
+func hasStateBlocks(d *schema.ResourceData) bool {
+	return hasStateAttr(d.GetRawConfig()) || hasStateAttr(d.GetRawState())
+}
+
+func hasStateAttr(v cty.Value) bool {
+	if v.IsNull() || !v.IsKnown() || !v.Type().IsObjectType() || !v.Type().HasAttribute("state") {
+		return false
+	}
+	states := v.GetAttr("state")
+	if states.IsNull() || !states.IsKnown() {
+		return false
+	}
+	return states.LengthInt() > 0
+}
+
+func readWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClient, d *schema.ResourceData, processId, witRefName string) diag.Diagnostics {
+	args := workitemtrackingprocess.GetStateDefinitionsArgs{
+		ProcessId:  converter.UUID(processId),
+		WitRefName: &witRefName,
+	}
+	states, err := clients.WorkItemTrackingProcessClient.GetStateDefinitions(ctx, args)
+	if err != nil {
+		return diag.Errorf("getting states for work item type %s: %+v", witRefName, err)
+	}
+	if states == nil {
+		return nil
+	}
+
+	flat := make([]map[string]any, 0, len(*states))
+	for _, s := range *states {
+		entry := map[string]any{}
+		if s.Id != nil {
+			entry["id"] = s.Id.String()
+		}
+		if s.Name != nil {
+			entry["name"] = *s.Name
+		}
+		if s.Color != nil {
+			entry["color"] = convertColorToResource(*s.Color)
+		}
+		if s.StateCategory != nil {
+			entry["state_category"] = *s.StateCategory
+		}
+		if s.Order != nil {
+			entry["order"] = *s.Order
+		}
+		if s.Url != nil {
+			entry["url"] = *s.Url
+		}
+		flat = append(flat, entry)
+	}
+	if err := d.Set("state", flat); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
