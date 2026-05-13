@@ -93,6 +93,49 @@ func ResourceWorkItemType() *schema.Resource {
 				Computed:    true,
 				Description: "Url of the work item type.",
 			},
+			"state": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Custom states for the work item type. This is mutually exclusive with `azuredevops_workitemtrackingprocess_state`. Only valid for non-inherited work item types (i.e. `parent_work_item_reference_name` is not set).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the state.",
+						},
+						"name": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+							Description:      "Name of the state.",
+						},
+						"color": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringMatch(regexp.MustCompile(`^#[0-9a-fA-F]{6}$`), "Must be a hexadecimal color code, i.e. #b2b2b2")),
+							Description:      "Color hexadecimal code to represent the state.",
+						},
+						"state_category": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Proposed", "InProgress", "Resolved", "Completed", "Removed"}, false)),
+							Description:      "Category of the state. Valid values: Proposed, InProgress, Resolved, Completed, Removed.",
+						},
+						"order": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "Order within the category where the state should appear.",
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URL of the state.",
+						},
+					},
+				},
+			},
 			"pages": {
 				Type:        schema.TypeList,
 				Computed:    true,
