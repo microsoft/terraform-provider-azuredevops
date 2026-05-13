@@ -3,6 +3,8 @@ package workitemtrackingprocess
 import (
 	"context"
 	"regexp"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -233,8 +235,91 @@ func createResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	}
 	d.SetId(*createdWorkItemType.ReferenceName)
 
+	processId := d.Get("process_id").(string)
+	referenceName := *createdWorkItemType.ReferenceName
+	if hasStateBlocks(d) {
+		if diags := syncWorkItemTypeStates(ctx, clients, d, processId, referenceName); diags.HasError() {
+			return diags
+		}
+	}
+
 	// The POST operation doesn't support layout expand, so we have to call read and risk eventual consistency problems
 	return readResourceWorkItemType(ctx, d, m)
+}
+
+// syncWorkItemTypeStates reconciles the work item type's states with the
+// `state` blocks declared in config. Deletes are performed last to avoid
+// at-least-one constraints
+func syncWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClient, d *schema.ResourceData, processId, witRefName string) diag.Diagnostics {
+	existing, err := clients.WorkItemTrackingProcessClient.GetStateDefinitions(ctx, workitemtrackingprocess.GetStateDefinitionsArgs{
+		ProcessId:  converter.UUID(processId),
+		WitRefName: &witRefName,
+	})
+	if err != nil {
+		return diag.Errorf("listing existing states for work item type %s: %+v", witRefName, err)
+	}
+	var remaining []workitemtrackingprocess.WorkItemStateResultModel
+	if existing != nil {
+		remaining = *existing
+	}
+
+	for _, raw := range d.Get("state").([]any) {
+		s := raw.(map[string]any)
+		name := s["name"].(string)
+		model := workitemtrackingprocess.WorkItemStateInputModel{
+			Name:          &name,
+			Color:         converter.String(strings.TrimPrefix(s["color"].(string), "#")),
+			StateCategory: converter.String(s["state_category"].(string)),
+		}
+
+		desiredOrder, hasOrder := 0, false
+		if v, ok := s["order"].(int); ok && v != 0 {
+			desiredOrder, hasOrder = v, true
+		}
+
+		if hasOrder {
+			model.Order = &desiredOrder
+		}
+
+		matchIdx := slices.IndexFunc(remaining, func(e workitemtrackingprocess.WorkItemStateResultModel) bool {
+			return e.Name != nil && *e.Name == name
+		})
+		if matchIdx < 0 {
+			if _, err := clients.WorkItemTrackingProcessClient.CreateStateDefinition(ctx, workitemtrackingprocess.CreateStateDefinitionArgs{
+				ProcessId:  converter.UUID(processId),
+				WitRefName: &witRefName,
+				StateModel: &model,
+			}); err != nil {
+				return diag.Errorf("creating state %s: %+v", name, err)
+			}
+			continue
+		}
+
+		current := remaining[matchIdx]
+		remaining = slices.Delete(remaining, matchIdx, matchIdx+1)
+		if _, err := clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, workitemtrackingprocess.UpdateStateDefinitionArgs{
+			ProcessId:  converter.UUID(processId),
+			WitRefName: &witRefName,
+			StateId:    current.Id,
+			StateModel: &model,
+		}); err != nil {
+			return diag.Errorf("updating state %s: %+v", name, err)
+		}
+	}
+
+	for _, s := range remaining {
+		if s.Id == nil {
+			continue
+		}
+		if err := clients.WorkItemTrackingProcessClient.DeleteStateDefinition(ctx, workitemtrackingprocess.DeleteStateDefinitionArgs{
+			ProcessId:  converter.UUID(processId),
+			WitRefName: &witRefName,
+			StateId:    s.Id,
+		}); err != nil {
+			return diag.Errorf("deleting state %s: %+v", *s.Name, err)
+		}
+	}
+	return nil
 }
 
 func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -351,6 +436,12 @@ func updateResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m a
 	_, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemType(ctx, args)
 	if err != nil {
 		return diag.Errorf(" Update work item type. Error %+v", err)
+	}
+
+	if hasStateBlocks(d) {
+		if diags := syncWorkItemTypeStates(ctx, clients, d, processId, referenceName); diags.HasError() {
+			return diags
+		}
 	}
 
 	// The PATCH operation doesn't support layout expand, so we have to call read and risk eventual consistency problems
