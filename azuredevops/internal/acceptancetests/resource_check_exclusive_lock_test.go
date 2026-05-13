@@ -38,6 +38,12 @@ func TestAccCheckExclusiveLock_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", fmt.Sprintf("%d", newTimeout)),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
