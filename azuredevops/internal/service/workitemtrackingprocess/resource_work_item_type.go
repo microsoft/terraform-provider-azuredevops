@@ -298,6 +298,13 @@ func syncWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClien
 
 		current := remaining[matchIdx]
 		remaining = slices.Delete(remaining, matchIdx, matchIdx+1)
+
+		// States in Completed category cannot be changed, so we explicitly
+		// ignore calling update on any state that has no changes. If it has change,
+		// let the downstream API respond with any errors accordingly
+		if !stateChanged(current, model) {
+			continue
+		}
 		if _, err := clients.WorkItemTrackingProcessClient.UpdateStateDefinition(ctx, workitemtrackingprocess.UpdateStateDefinitionArgs{
 			ProcessId:  converter.UUID(processId),
 			WitRefName: &witRefName,
@@ -348,6 +355,19 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	return readWorkItemTypeStates(ctx, clients, d, processId, referenceName)
+}
+
+func stateChanged(current workitemtrackingprocess.WorkItemStateResultModel, desired workitemtrackingprocess.WorkItemStateInputModel) bool {
+	if desired.Color != nil && (current.Color == nil || *current.Color != *desired.Color) {
+		return true
+	}
+	if desired.StateCategory != nil && (current.StateCategory == nil || *current.StateCategory != *desired.StateCategory) {
+		return true
+	}
+	if desired.Order != nil && (current.Order == nil || *current.Order != *desired.Order) {
+		return true
+	}
+	return false
 }
 
 // hasStateBlocks reports whether at least one `state` block exists in either
