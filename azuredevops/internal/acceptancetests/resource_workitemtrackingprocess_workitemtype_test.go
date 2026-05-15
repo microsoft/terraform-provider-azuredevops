@@ -107,7 +107,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 			{
 				Config: workItemTypeWithStates(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "state.#", "2"),
+					resource.TestCheckResourceAttr(tfNode, "state.#", "3"),
 				),
 			},
 			{
@@ -119,7 +119,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 			{
 				Config: workItemTypeWithStatesUpdated(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "state.#", "3"),
+					resource.TestCheckResourceAttr(tfNode, "state.#", "4"),
 				),
 			},
 			{
@@ -198,6 +198,12 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
   }
 
   state {
+    name           = "Active 3"
+    color          = "#ff9d01"
+    state_category = "InProgress"
+  }
+
+  state {
     name           = "Closed 2"
     color          = "#339933"
     state_category = "Completed"
@@ -218,18 +224,28 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
     name           = "New"
     color          = "#3544ca"
     state_category = "Proposed"
+	order          = 1
+  }
+
+  state {
+    name           = "Active 3"
+    color          = "#020100"
+    state_category = "InProgress"
+	order          = 2
   }
 
   state {
     name           = "Active 2"
     color          = "#020100"
     state_category = "InProgress"
+	order          = 3
   }
 
   state {
     name           = "Closed 3"
     color          = "#339933"
     state_category = "Completed"
+	order          = 4
   }
 }
 `, process(processName), name)
