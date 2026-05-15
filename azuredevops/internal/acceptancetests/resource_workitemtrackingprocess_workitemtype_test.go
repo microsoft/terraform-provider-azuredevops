@@ -94,6 +94,96 @@ func TestAccWorkitemtrackingprocessWorkItemType_CreateAndUpdate(t *testing.T) {
 	})
 }
 
+func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_workitemtype.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: workItemTypeWithStates(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "state.#", "2"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+			{
+				Config: workItemTypeWithStatesUpdated(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "state.#", "3"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+		},
+	})
+}
+
+func workItemTypeWithStates(name, processName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  name       = "%s"
+  process_id = azuredevops_workitemtrackingprocess_process.test.id
+
+  state {
+    name           = "Active 2"
+    color          = "#ff9d00"
+    state_category = "InProgress"
+  }
+
+  state {
+    name           = "Closed 2"
+    color          = "#339933"
+    state_category = "Completed"
+  }
+}
+`, process(processName), name)
+}
+
+func workItemTypeWithStatesUpdated(name, processName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  name       = "%s"
+  process_id = azuredevops_workitemtrackingprocess_process.test.id
+
+  state {
+    name           = "New"
+    color          = "#3544ca"
+    state_category = "Proposed"
+  }
+
+  state {
+    name           = "Active 2"
+    color          = "#020100"
+    state_category = "InProgress"
+  }
+
+  state {
+    name           = "Closed 3"
+    color          = "#339933"
+    state_category = "Completed"
+  }
+}
+`, process(processName), name)
+}
+
 func basicWorkItemType(name string, processName string) string {
 	process := process(processName)
 	return fmt.Sprintf(`
