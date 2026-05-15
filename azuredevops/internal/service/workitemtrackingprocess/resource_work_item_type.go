@@ -264,7 +264,7 @@ func syncWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClien
 		remaining = *existing
 	}
 
-	for _, raw := range d.Get("state").([]any) {
+	for i, raw := range d.Get("state").([]any) {
 		s := raw.(map[string]any)
 		name := s["name"].(string)
 		model := workitemtrackingprocess.WorkItemStateInputModel{
@@ -273,14 +273,11 @@ func syncWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClien
 			StateCategory: converter.String(s["state_category"].(string)),
 		}
 
-		desiredOrder, hasOrder := 0, false
-		if v, ok := s["order"].(int); ok && v != 0 {
-			desiredOrder, hasOrder = v, true
+		orderPtr, err := getOrderFromAttribute(d, "state", i)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-
-		if hasOrder {
-			model.Order = &desiredOrder
-		}
+		model.Order = orderPtr
 
 		matchIdx := slices.IndexFunc(remaining, func(e workitemtrackingprocess.WorkItemStateResultModel) bool {
 			return e.Name != nil && *e.Name == name
