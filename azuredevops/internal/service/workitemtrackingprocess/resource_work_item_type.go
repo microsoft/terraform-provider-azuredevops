@@ -99,6 +99,7 @@ func ResourceWorkItemType() *schema.Resource {
 			"state": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Custom states for the work item type. This is mutually exclusive with `azuredevops_workitemtrackingprocess_state`. Only valid for non-inherited work item types (i.e. `parent_work_item_reference_name` is not set).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -346,10 +347,6 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diags
 	}
 
-	// Only handle custom states if at least one state block has been declared
-	if !hasStateBlocks(d) {
-		return nil
-	}
 	return readWorkItemTypeStates(ctx, clients, d, processId, referenceName)
 }
 
