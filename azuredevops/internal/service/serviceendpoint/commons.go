@@ -230,8 +230,7 @@ func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint
 		return false
 	}
 
-	if serviceEndpoint == nil || serviceEndpoint.Id == nil ||
-		(serviceEndpoint.Id != nil && serviceEndpoint.Authorization == nil) {
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
 		log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
 		d.SetId("")
 		return true
@@ -463,4 +462,8 @@ func checkServiceConnection(endpoint *serviceendpoint.ServiceEndpoint) error {
 		return fmt.Errorf("Service connection not fully returned, this appears to be a permission issue with PAT/SPN/identity etc.")
 	}
 	return nil
+}
+
+func isServiceEndpointPartiallyReturned(endpoint *serviceendpoint.ServiceEndpoint) bool {
+	return endpoint != nil && endpoint.Id != nil && (endpoint.Data == nil || endpoint.Type == nil)
 }

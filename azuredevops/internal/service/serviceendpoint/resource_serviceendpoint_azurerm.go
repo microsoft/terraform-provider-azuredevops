@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"log"
 	"maps"
 	"strings"
 	"time"
@@ -244,8 +245,9 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 	}
 	d.Set("features", d.Get("features"))
 
-	if err = checkServiceConnection(serviceEndpoint); err != nil {
-		return err
+	if isServiceEndpointPartiallyReturned(serviceEndpoint) {
+		log.Printf("[WARN] Service endpoint %s returned partial data, likely due to insufficient permissions. Preserving existing state.", d.Id())
+		return nil
 	}
 	flattenServiceEndpointAzureRM(d, serviceEndpoint)
 	return nil

@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
+	"log"
 	"maps"
 	"strconv"
 	"strings"
@@ -138,8 +139,9 @@ func resourceServiceEndpointOpenshiftRead(ctx context.Context, d *schema.Resourc
 		return diag.Errorf(" looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
-	if err = checkServiceConnection(serviceEndpoint); err != nil {
-		return diag.Errorf(" Checking service connection permissions: %v", err)
+	if isServiceEndpointPartiallyReturned(serviceEndpoint) {
+		log.Printf("[WARN] Service endpoint %s returned partial data, likely due to insufficient permissions. Preserving existing state.", d.Id())
+		return nil
 	}
 	if err := flattenServiceEndpointOpenshift(d, serviceEndpoint); err != nil {
 		return diag.Errorf(" Flattening service endpoint configuration: %+v", err)

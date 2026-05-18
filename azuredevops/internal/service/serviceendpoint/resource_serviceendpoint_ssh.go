@@ -2,6 +2,7 @@ package serviceendpoint
 
 import (
 	"fmt"
+	"log"
 	"maps"
 	"strconv"
 	"time"
@@ -95,8 +96,9 @@ func resourceServiceEndpointSSHRead(d *schema.ResourceData, m interface{}) error
 		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
 	}
 
-	if err = checkServiceConnection(serviceEndpoint); err != nil {
-		return err
+	if isServiceEndpointPartiallyReturned(serviceEndpoint) {
+		log.Printf("[WARN] Service endpoint %s returned partial data, likely due to insufficient permissions. Preserving existing state.", d.Id())
+		return nil
 	}
 	return flattenServiceEndpointSSH(d, serviceEndpoint)
 }

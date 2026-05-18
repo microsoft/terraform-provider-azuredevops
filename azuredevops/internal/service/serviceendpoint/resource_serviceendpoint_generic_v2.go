@@ -3,6 +3,7 @@ package serviceendpoint
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -456,6 +457,12 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 
 	if serviceEndpoint == nil {
 		d.SetId("")
+		return nil
+	}
+
+	if isServiceEndpointPartiallyReturned(serviceEndpoint) {
+		log.Printf("[WARN] Service endpoint (ID: %s) returned partial data — likely insufficient permissions. Preserving existing state.",
+			d.Id())
 		return nil
 	}
 
