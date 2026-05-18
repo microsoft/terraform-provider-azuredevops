@@ -107,7 +107,7 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 			{
 				Config: workItemTypeWithStates(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfNode, "state.#", "3"),
+					resource.TestCheckResourceAttr(tfNode, "state.#", "2"),
 				),
 			},
 			{
@@ -118,6 +118,18 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 			},
 			{
 				Config: workItemTypeWithStatesUpdated(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "state.#", "4"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+			{
+				Config: workItemTypeWithStatesChangingOrder(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "state.#", "4"),
 				),
@@ -192,19 +204,13 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
   process_id = azuredevops_workitemtrackingprocess_process.test.id
 
   state {
-    name           = "Active 2"
-    color          = "#ff9d00"
-    state_category = "InProgress"
-  }
-
-  state {
-    name           = "Active 3"
+    name           = "New Active"
     color          = "#ff9d01"
     state_category = "InProgress"
   }
 
   state {
-    name           = "Closed 2"
+    name           = "New Closed"
     color          = "#339933"
     state_category = "Completed"
   }
@@ -224,28 +230,59 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
     name           = "New"
     color          = "#3544ca"
     state_category = "Proposed"
-	order          = 1
+  }
+  
+  state {
+    name           = "New Active"
+    color          = "#ff9d01"
+    state_category = "InProgress"
   }
 
   state {
-    name           = "Active 3"
+    name           = "Active Order"
     color          = "#020100"
     state_category = "InProgress"
-	order          = 2
   }
 
   state {
-    name           = "Active 2"
-    color          = "#020100"
-    state_category = "InProgress"
-	order          = 3
-  }
-
-  state {
-    name           = "Closed 3"
+    name           = "New Closed"
     color          = "#339933"
     state_category = "Completed"
-	order          = 4
+  }
+}
+`, process(processName), name)
+}
+
+func workItemTypeWithStatesChangingOrder(name, processName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  name       = "%s"
+  process_id = azuredevops_workitemtrackingprocess_process.test.id
+
+  state {
+    name           = "New"
+    color          = "#3544ca"
+    state_category = "Proposed"
+  }
+  
+  state {
+    name           = "Active Order"
+    color          = "#020100"
+    state_category = "InProgress"
+  }
+
+  state {
+    name           = "New Active"
+    color          = "#ff9d01"
+    state_category = "InProgress"
+  }
+
+  state {
+    name           = "New Closed"
+    color          = "#339933"
+    state_category = "Completed"
   }
 }
 `, process(processName), name)
