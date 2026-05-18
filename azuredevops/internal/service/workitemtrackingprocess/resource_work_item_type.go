@@ -366,6 +366,10 @@ func readResourceWorkItemType(ctx context.Context, d *schema.ResourceData, m any
 		return diags
 	}
 
+	// Inherited work item types inherit states, which this resource does not handle
+	if workItemType.Inherits != nil && *workItemType.Inherits != "" {
+		return nil
+	}
 	return readWorkItemTypeStates(ctx, clients, d, processId, referenceName)
 }
 
