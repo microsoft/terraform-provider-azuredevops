@@ -287,7 +287,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
     color          = "#3544ca"
     state_category = "Proposed"
   }
-  
+
   state {
     name           = "New Active"
     color          = "#ff9d01"
@@ -322,7 +322,7 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
     color          = "#3544ca"
     state_category = "Proposed"
   }
-  
+
   state {
     name           = "Active Order"
     color          = "#020100"
