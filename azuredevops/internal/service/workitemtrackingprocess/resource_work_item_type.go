@@ -42,10 +42,17 @@ func ResourceWorkItemType() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m any) error {
-			if len(d.Get("state").([]any)) == 0 {
+			// Custom states and inherited work item type are mutually exclusive
+			raw := d.GetRawConfig()
+			if !raw.IsKnown() || raw.IsNull() {
 				return nil
 			}
-			if v, ok := d.GetOk("parent_work_item_reference_name"); ok && v.(string) != "" {
+			states := raw.GetAttr("state")
+			if states.IsNull() || !states.IsKnown() || states.LengthInt() == 0 {
+				return nil
+			}
+			parent := raw.GetAttr("parent_work_item_reference_name")
+			if !parent.IsNull() && parent.IsKnown() && parent.AsString() != "" {
 				return fmt.Errorf("`state` blocks are only valid on non-inherited work item types; remove `parent_work_item_reference_name` or remove the `state` block(s)")
 			}
 			return nil

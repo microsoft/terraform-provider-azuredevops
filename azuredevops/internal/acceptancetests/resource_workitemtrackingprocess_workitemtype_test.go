@@ -165,6 +165,43 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 	})
 }
 
+func TestAccWorkitemtrackingprocessWorkItemType_Inherited(t *testing.T) {
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_workitemtype.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: inheritedWorkItemType(processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: getWorkItemTypeStateIdFunc(tfNode),
+			},
+		},
+	})
+}
+
+func inheritedWorkItemType(processName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  name                            = "Bug"
+  process_id                      = azuredevops_workitemtrackingprocess_process.test.id
+  parent_work_item_reference_name = "Microsoft.VSTS.WorkItemTypes.Bug"
+}
+`, process(processName))
+}
+
 func TestAccWorkitemtrackingprocessWorkItemType_StatesForbiddenOnInherited(t *testing.T) {
 	workItemTypeName := testutils.GenerateWorkItemTypeName()
 	processName := testutils.GenerateResourceName()
