@@ -128,9 +128,8 @@ func ResourceWorkItemType() *schema.Resource {
 						},
 						"order": {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
-							Description: "Order within the category where the state should appear.",
+							Description: "Order within the category where the state should appear. Specified by the order the state blocks are defined in.",
 						},
 						"url": {
 							Type:        schema.TypeString,

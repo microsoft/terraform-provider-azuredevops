@@ -108,6 +108,10 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 				Config: workItemTypeWithStates(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "state.#", "2"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.name", "New Active"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.order", "1"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.name", "New Closed"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.order", "2"),
 				),
 			},
 			{
@@ -120,6 +124,14 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 				Config: workItemTypeWithStatesUpdated(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "state.#", "4"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.name", "New"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.order", "1"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.name", "New Active"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.order", "2"),
+					resource.TestCheckResourceAttr(tfNode, "state.2.name", "Active Order"),
+					resource.TestCheckResourceAttr(tfNode, "state.2.order", "3"),
+					resource.TestCheckResourceAttr(tfNode, "state.3.name", "New Closed"),
+					resource.TestCheckResourceAttr(tfNode, "state.3.order", "4"),
 				),
 			},
 			{
@@ -132,6 +144,14 @@ func TestAccWorkitemtrackingprocessWorkItemType_States(t *testing.T) {
 				Config: workItemTypeWithStatesChangingOrder(workItemTypeName, processName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfNode, "state.#", "4"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.name", "New"),
+					resource.TestCheckResourceAttr(tfNode, "state.0.order", "1"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.name", "Active Order"),
+					resource.TestCheckResourceAttr(tfNode, "state.1.order", "2"),
+					resource.TestCheckResourceAttr(tfNode, "state.2.name", "New Active"),
+					resource.TestCheckResourceAttr(tfNode, "state.2.order", "3"),
+					resource.TestCheckResourceAttr(tfNode, "state.3.name", "New Closed"),
+					resource.TestCheckResourceAttr(tfNode, "state.3.order", "4"),
 				),
 			},
 			{
