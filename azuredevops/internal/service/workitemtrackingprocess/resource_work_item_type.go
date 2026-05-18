@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -376,21 +375,8 @@ func stateChanged(current workitemtrackingprocess.WorkItemStateResultModel, desi
 	return false
 }
 
-// hasStateBlocks reports whether at least one `state` block exists in either
-// the resource's config or its prior state.
 func hasStateBlocks(d *schema.ResourceData) bool {
-	return hasStateAttr(d.GetRawConfig()) || hasStateAttr(d.GetRawState())
-}
-
-func hasStateAttr(v cty.Value) bool {
-	if v.IsNull() || !v.IsKnown() || !v.Type().IsObjectType() || !v.Type().HasAttribute("state") {
-		return false
-	}
-	states := v.GetAttr("state")
-	if states.IsNull() || !states.IsKnown() {
-		return false
-	}
-	return states.LengthInt() > 0
+	return len(d.Get("state").([]any)) > 0
 }
 
 func readWorkItemTypeStates(ctx context.Context, clients *client.AggregatedClient, d *schema.ResourceData, processId, witRefName string) diag.Diagnostics {

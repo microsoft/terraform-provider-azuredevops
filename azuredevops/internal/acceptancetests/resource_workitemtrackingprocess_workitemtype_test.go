@@ -200,6 +200,32 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
 `, process(processName), name)
 }
 
+func TestAccWorkitemtrackingprocessWorkItemType_StatesRemovedFromConfig(t *testing.T) {
+	workItemTypeName := testutils.GenerateWorkItemTypeName()
+	processName := testutils.GenerateResourceName()
+	tfNode := "azuredevops_workitemtrackingprocess_workitemtype.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testutils.PreCheck(t, nil) },
+		ProviderFactories: testutils.GetProviderFactories(),
+		CheckDestroy:      testutils.CheckProcessDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: workItemTypeStatesWithNoChanges(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "state.#", "3"),
+				),
+			},
+			{
+				Config: basicWorkItemType(workItemTypeName, processName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfNode, "reference_name"),
+				),
+			},
+		},
+	})
+}
+
 // Azure DevOps rejects any Update against a Completed state (VS403093) even
 // when the payload is identical, so the sync must skip those calls.
 func TestAccWorkitemtrackingprocessWorkItemType_StatesWithNoChanges(t *testing.T) {
