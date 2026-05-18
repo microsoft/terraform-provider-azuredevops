@@ -106,7 +106,7 @@ Each `state` block additionally exports:
 
 * `id` - ID of the state.
 
-* `order` - Order assigned. Read-only — defiend by the order of the `state` blocks.
+* `order` - Order assigned. Read-only — defined by the order of the `state` blocks.
 
 * `url` - URL of the state.
 
