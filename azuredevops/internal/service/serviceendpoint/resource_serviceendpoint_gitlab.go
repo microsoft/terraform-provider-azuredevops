@@ -2,7 +2,6 @@ package serviceendpoint
 
 import (
 	"context"
-	"log"
 	"maps"
 	"time"
 
@@ -81,9 +80,8 @@ func resourceServiceEndpointGitLabRead(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf(" looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
 	}
 
-	if isServiceEndpointPartiallyReturned(serviceEndpoint) {
-		log.Printf("[WARN] Service endpoint %s returned partial data, likely due to insufficient permissions. Preserving existing state.", d.Id())
-		return nil
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return diag.FromErr(err)
 	}
 	flattenServiceEndpointGitLab(d, serviceEndpoint)
 	return nil

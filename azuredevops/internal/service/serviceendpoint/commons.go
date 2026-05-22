@@ -218,24 +218,22 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 // 1) Service response 404
 // 2) Service response 200 but service endpoint is null
 // 3) Service response 200 but service endpoint is not null but ID is null
-// 4) Service response 200 but service endpoint is not null and ID is null but other data is null
-// 5) Service response 200 with state property? deleted = true/false or state = deleted/success/updating
-func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) bool {
+func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) (bool, error) {
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
 			d.SetId("")
-			return true
+			return true, nil
 		}
-		return false
+		return false, fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", args.EndpointId, args.Project, err)
 	}
 
 	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
 		log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
 		d.SetId("")
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) retry.StateRefreshFunc {
@@ -462,8 +460,4 @@ func checkServiceConnection(endpoint *serviceendpoint.ServiceEndpoint) error {
 		return fmt.Errorf("Service connection not fully returned, this appears to be a permission issue with PAT/SPN/identity etc.")
 	}
 	return nil
-}
-
-func isServiceEndpointPartiallyReturned(endpoint *serviceendpoint.ServiceEndpoint) bool {
-	return endpoint != nil && endpoint.Id != nil && (endpoint.Data == nil || endpoint.Type == nil)
 }
