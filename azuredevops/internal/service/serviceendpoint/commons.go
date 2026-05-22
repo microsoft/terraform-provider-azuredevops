@@ -218,11 +218,10 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 // 1) Service response 404
 // 2) Service response 200 but service endpoint is null
 // 3) Service response 200 but service endpoint is not null but ID is null
-func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) (bool, error) {
+func isServiceEndpointDeleted(err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) (bool, error) {
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
-			d.SetId("")
 			return true, nil
 		}
 		return false, fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", args.EndpointId, args.Project, err)
@@ -230,7 +229,6 @@ func isServiceEndpointDeleted(d *schema.ResourceData, err error, serviceEndpoint
 
 	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
 		log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
-		d.SetId("")
 		return true, nil
 	}
 	return false, nil

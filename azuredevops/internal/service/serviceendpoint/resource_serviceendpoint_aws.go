@@ -108,7 +108,10 @@ func resourceServiceEndpointAwsRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if deleted, err := isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs); deleted || err != nil {
+	if deleted, err := isServiceEndpointDeleted(err, serviceEndpoint, getArgs); deleted || err != nil {
+		if deleted {
+			d.SetId("")
+		}
 		return err
 	}
 
