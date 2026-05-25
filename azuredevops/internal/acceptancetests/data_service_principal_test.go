@@ -35,10 +35,43 @@ func TestAccServicePrincipalDataSource_Read_HappyPath(t *testing.T) {
 	})
 }
 
+func TestAccServicePrincipalDataSource_Read_ByOriginId(t *testing.T) {
+	if os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID") == "" {
+		t.Skip("Skip test due to `AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID` not set")
+	}
+	servicePrincipalObjectId := os.Getenv("AZDO_TEST_AAD_SERVICE_PRINCIPAL_OBJECT_ID")
+
+	tfBuildDefNode := "data.azuredevops_service_principal.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclServicePrincipalDataByOriginId(servicePrincipalObjectId),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "display_name"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "id"),
+					resource.TestCheckResourceAttrSet(tfBuildDefNode, "origin"),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "origin_id", servicePrincipalObjectId),
+				),
+			},
+		},
+	})
+}
+
 func hclServicePrincipalDataBasic(servicePrincipalObjectId string) string {
 	return fmt.Sprintf(`
 %s
 data "azuredevops_service_principal" "test" {
   display_name = azuredevops_service_principal_entitlement.test.display_name
 }`, testutils.HclServicePrincipleEntitlementResource(servicePrincipalObjectId))
+}
+
+func hclServicePrincipalDataByOriginId(servicePrincipalObjectId string) string {
+	return fmt.Sprintf(`
+%s
+data "azuredevops_service_principal" "test" {
+  origin_id  = "%s"
+  depends_on = [azuredevops_service_principal_entitlement.test]
+}`, testutils.HclServicePrincipleEntitlementResource(servicePrincipalObjectId), servicePrincipalObjectId)
 }
