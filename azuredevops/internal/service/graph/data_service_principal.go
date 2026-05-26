@@ -29,13 +29,13 @@ func DataServicePrincipal() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
-				AtLeastOneOf:     []string{"display_name", "origin_id"},
+				ExactlyOneOf:     []string{"display_name", "origin_id"},
 			},
 			"origin_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				AtLeastOneOf: []string{"display_name", "origin_id"},
+				ExactlyOneOf: []string{"display_name", "origin_id"},
 			},
 			"origin": {
 				Type:     schema.TypeString,

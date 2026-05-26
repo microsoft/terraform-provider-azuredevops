@@ -43,7 +43,7 @@ The following arguments are supported:
 
 * `origin_id` - (Optional) The origin ID of the Service Principal.
 
-~> **NOTE:** One of `display_name` or `origin_id` must be specified.
+~> **NOTE:** Exactly one of `display_name` or `origin_id` must be specified.
 
 ## Attributes Reference
 
