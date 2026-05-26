@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -70,11 +71,15 @@ func resourceServiceEndpointSonarQubeRead(d *schema.ResourceData, m interface{})
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if deleted, err := isServiceEndpointDeleted(err, serviceEndpoint, getArgs); deleted || err != nil {
-		if deleted {
+	if err != nil {
+		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
+			return nil
 		}
-		return err
+		return fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		return fmt.Errorf("unexpected nil service endpoint, ID: (%v), project ID: (%v)", getArgs.EndpointId, getArgs.Project)
 	}
 
 	if serviceEndpoint.Id == nil {

@@ -214,25 +214,7 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 	}
 }
 
-// Check if the service endpoint has been deleted
-// 1) Service response 404
-// 2) Service response 200 but service endpoint is null
-// 3) Service response 200 but service endpoint is not null but ID is null
-func isServiceEndpointDeleted(err error, serviceEndpoint *serviceendpoint.ServiceEndpoint, args *serviceendpoint.GetServiceEndpointDetailsArgs) (bool, error) {
-	if err != nil {
-		if utils.ResponseWasNotFound(err) {
-			log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
-			return true, nil
-		}
-		return false, fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", args.EndpointId, args.Project, err)
-	}
 
-	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
-		log.Printf(" [INFO] Service endpoint not found. ID: (%v)", args.EndpointId)
-		return true, nil
-	}
-	return false, nil
-}
 
 func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
