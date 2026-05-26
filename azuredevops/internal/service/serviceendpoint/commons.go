@@ -72,7 +72,8 @@ func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedCli
 		clients.Ctx,
 		serviceendpoint.CreateServiceEndpointArgs{
 			Endpoint: endpoint,
-		})
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
 	}
@@ -105,7 +106,8 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 		serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   endpoint,
 			EndpointId: endpoint.Id,
-		})
+		},
+	)
 
 	return updatedServiceEndpoint, err
 }
@@ -119,7 +121,8 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 				projectID.String(),
 			},
 			EndpointId: serviceEndpoint.Id,
-		}); err != nil {
+		},
+	); err != nil {
 		return fmt.Errorf("Delete service endpoint error %v", err)
 	}
 
@@ -199,12 +202,13 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 			serviceendpoint.GetServiceEndpointDetailsArgs{
 				Project:    converter.String(projectID.String()),
 				EndpointId: endPointID,
-			})
+			},
+		)
 		if err != nil {
 			return nil, opState.Failed, fmt.Errorf(errMsgServiceDelete, endPointID, *projectID, err)
 		}
 		if serviceEndpoint != nil && serviceEndpoint.OperationStatus != nil {
-			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})["state"]
+			opStatus := serviceEndpoint.OperationStatus.(map[string]interface{})["state"]
 			if opStatus == opState.Failed {
 				return nil, opState.Failed, fmt.Errorf(errMsgServiceDelete, endPointID, *projectID, serviceEndpoint.OperationStatus)
 			}
@@ -213,8 +217,6 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 		return serviceendpoint.ServiceEndpoint{}, opState.Ready, nil
 	}
 }
-
-
 
 func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid.UUID, projectID *uuid.UUID) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
@@ -232,7 +234,7 @@ func getServiceEndpoint(client *client.AggregatedClient, serviceEndpointID *uuid
 		if *serviceEndpoint.IsReady {
 			return serviceEndpoint, opState.Ready, nil
 		} else if serviceEndpoint.OperationStatus != nil {
-			opStatus := (serviceEndpoint.OperationStatus).(map[string]interface{})["state"]
+			opStatus := serviceEndpoint.OperationStatus.(map[string]interface{})["state"]
 			if opStatus == opState.Failed {
 				return nil, opState.Failed, fmt.Errorf(errMsgServiceCreate, serviceEndpointID, *projectID, serviceEndpoint.OperationStatus)
 			}

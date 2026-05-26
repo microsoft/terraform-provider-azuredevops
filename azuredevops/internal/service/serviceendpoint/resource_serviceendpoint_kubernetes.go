@@ -197,7 +197,6 @@ func resourceServiceEndpointKubernetesRead(d *schema.ResourceData, m interface{}
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
