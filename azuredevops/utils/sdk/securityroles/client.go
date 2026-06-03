@@ -12,6 +12,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -156,9 +158,21 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 	}
 
 	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
-	_, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
+	resp, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
 	if err != nil {
 		return err
+	}
+
+	if resp != nil && resp.Body != nil {
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		if readErr == nil {
+			var result struct {
+				Count int `json:"count"`
+			}
+			if json.Unmarshal(bodyBytes, &result) == nil && result.Count == 0 {
+				return fmt.Errorf("the identity was not recognized by Azure DevOps. Ensure you are using the internal identity ID (storage key).")
+			}
+		}
 	}
 
 	return nil
