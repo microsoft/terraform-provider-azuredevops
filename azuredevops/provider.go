@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/approvalsandchecks"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/audit"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/build"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/core"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/dashboard"
@@ -45,6 +46,7 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pool":                                  taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                                 taskagent.ResourceAgentQueue(),
 			"azuredevops_area_permissions":                            permissions.ResourceAreaPermissions(),
+			"azuredevops_audit_stream":                                audit.ResourceAuditStream(),
 			"azuredevops_branch_policy_auto_reviewers":                branch.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_branch_policy_build_validation":              branch.ResourceBranchPolicyBuildValidation(),
 			"azuredevops_branch_policy_comment_resolution":            branch.ResourceBranchPolicyCommentResolution(),
@@ -178,6 +180,8 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_pools":                           taskagent.DataAgentPools(),
 			"azuredevops_agent_queue":                           taskagent.DataAgentQueue(),
 			"azuredevops_area":                                  workitemtracking.DataArea(),
+			"azuredevops_audit_stream":                          audit.DataResourceAuditStream(),
+			"azuredevops_audit_streams":                         audit.DataResourceAuditStreams(),
 			"azuredevops_build_definition":                      build.DataBuildDefinition(),
 			"azuredevops_client_config":                         service.DataClientConfig(),
 			"azuredevops_descriptor":                            graph.DataDescriptor(),
