@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_iteration"
+page_title: "AzureDevops: azuredevops_workitemtracking_iteration"
 description: |-
   Use this data source to access information about an existing Iteration (Sprint) within Azure DevOps.
 ---
 
-# Data Source: azuredevops_iteration
+# Data Source: azuredevops_workitemtracking_iteration
 
 Use this data source to access information about an existing Iteration (Sprint) within Azure DevOps.
 
@@ -20,13 +20,13 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_iteration" "example-root-iteration" {
+data "azuredevops_workitemtracking_iteration" "example-root-iteration" {
   project_id     = azuredevops_project.example.id
   path           = "/"
   fetch_children = true
 }
 
-data "azuredevops_iteration" "example-child-iteration" {
+data "azuredevops_workitemtracking_iteration" "example-child-iteration" {
   project_id     = azuredevops_project.example.id
   path           = "/Iteration 1"
   fetch_children = true

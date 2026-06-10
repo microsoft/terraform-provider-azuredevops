@@ -8,19 +8,19 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccIterationDataSource_Read(t *testing.T) {
+func TestAccWorkItemTrackingIterationDataSource_Read(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := fmt.Sprintf(`
 %s
 
-data "azuredevops_iteration" "root-iteration" {
+data "azuredevops_workitemtracking_iteration" "root-iteration" {
   project_id = azuredevops_project.project.id
 }
 
 
 `, testutils.HclProjectResource(projectName))
 
-	tfNode := "data.azuredevops_iteration.root-iteration"
+	tfNode := "data.azuredevops_workitemtracking_iteration.root-iteration"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
@@ -40,12 +40,12 @@ data "azuredevops_iteration" "root-iteration" {
 	})
 }
 
-func TestAccIterationDataSource_ReadNoChildren(t *testing.T) {
+func TestAccWorkItemTrackingIterationDataSource_ReadNoChildren(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := fmt.Sprintf(`
 %s
 
-data "azuredevops_iteration" "root-iteration" {
+data "azuredevops_workitemtracking_iteration" "root-iteration" {
   project_id     = azuredevops_project.project.id
   fetch_children = false
 }
@@ -53,7 +53,7 @@ data "azuredevops_iteration" "root-iteration" {
 
 `, testutils.HclProjectResource(projectName))
 
-	tfNode := "data.azuredevops_iteration.root-iteration"
+	tfNode := "data.azuredevops_workitemtracking_iteration.root-iteration"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),

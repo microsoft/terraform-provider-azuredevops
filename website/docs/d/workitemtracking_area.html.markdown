@@ -1,11 +1,11 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_area"
+page_title: "AzureDevops: azuredevops_workitemtracking_area"
 description: |-
   Use this data source to access information about an existing Area (Component) within Azure DevOps.
 ---
 
-# Data Source: azuredevops_area
+# Data Source: azuredevops_workitemtracking_area
 
 Use this data source to access information about an existing Area (Component) within Azure DevOps.
 
@@ -20,7 +20,7 @@ resource "azuredevops_project" "example" {
   description        = "Managed by Terraform"
 }
 
-data "azuredevops_area" "example" {
+data "azuredevops_workitemtracking_area" "example" {
   project_id     = azuredevops_project.example.id
   path           = "/"
   fetch_children = "false"

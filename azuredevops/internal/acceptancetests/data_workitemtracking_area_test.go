@@ -8,19 +8,19 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
 )
 
-func TestAccAreaDataSource_Read(t *testing.T) {
+func TestAccWorkItemTrackingAreaDataSource_Read(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := fmt.Sprintf(`
 %s
 
-data "azuredevops_area" "root-area" {
+data "azuredevops_workitemtracking_area" "root-area" {
   project_id = azuredevops_project.project.id
 }
 
 
 `, testutils.HclProjectResource(projectName))
 
-	tfNode := "data.azuredevops_area.root-area"
+	tfNode := "data.azuredevops_workitemtracking_area.root-area"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
@@ -40,12 +40,12 @@ data "azuredevops_area" "root-area" {
 	})
 }
 
-func TestAccAreaDataSource_ReadNoChildren(t *testing.T) {
+func TestAccWorkItemTrackingAreaDataSource_ReadNoChildren(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	config := fmt.Sprintf(`
 %s
 
-data "azuredevops_area" "root-area" {
+data "azuredevops_workitemtracking_area" "root-area" {
   project_id     = azuredevops_project.project.id
   fetch_children = false
 }
@@ -53,7 +53,7 @@ data "azuredevops_area" "root-area" {
 
 `, testutils.HclProjectResource(projectName))
 
-	tfNode := "data.azuredevops_area.root-area"
+	tfNode := "data.azuredevops_workitemtracking_area.root-area"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testutils.PreCheck(t, nil) },
 		Providers: testutils.GetProviders(),
