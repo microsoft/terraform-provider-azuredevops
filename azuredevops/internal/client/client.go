@@ -36,6 +36,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/teamsettings"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -77,6 +78,7 @@ type AggregatedClient struct {
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
 	SecurityRolesClient           securityroles.Client
+	TeamSettingsClient            teamsettings.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -230,6 +232,12 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 
 	securityRolesClient := securityroles.NewClient(ctx, connection)
 
+	teamSettingsClient, err := teamsettings.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): teamsettings.NewClient failed.")
+		return nil, err
+	}
+
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
 		CoreClient:                    coreClient,
@@ -260,6 +268,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		WorkItemTrackingProcessClient: workitemtrackingprocessClient,
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
+		TeamSettingsClient:            teamSettingsClient,
 		Ctx:                           ctx,
 	}
 
