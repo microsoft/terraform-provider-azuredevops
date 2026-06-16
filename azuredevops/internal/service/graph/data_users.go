@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ahmetb/go-linq"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
@@ -20,9 +22,9 @@ import (
 // DataUsers schema and implementation for users data source
 func DataUsers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataUsersRead,
+		ReadContext: dataUsersReadContext,
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(30 * time.Minute),
+			Read: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"principal_name": {
@@ -106,7 +108,7 @@ func DataUsers() *schema.Resource {
 	}
 }
 
-func dataUsersRead(d *schema.ResourceData, m interface{}) error {
+func dataUsersReadContext(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	users := make([]interface{}, 0)
 	subjectTypes := []string{}
@@ -122,11 +124,11 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 
 	var currentToken string
 	for hasMore := true; hasMore; {
-		newUsers, latestToken, err := getUsersWithContinuationToken(clients, &subjectTypes, currentToken)
+		newUsers, latestToken, err := getUsersWithContinuationToken(ctx, clients, &subjectTypes, currentToken)
 		currentToken = latestToken
 		hasMore = currentToken != ""
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		linq.From(newUsers).
@@ -156,9 +158,9 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 			numWorkers = v.(int)
 		}
 	}
-	err := addStorageKeyAsId(clients, users, numWorkers)
+	err := addStorageKeyAsId(ctx, clients, users, numWorkers)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var descriptors []string
@@ -173,11 +175,11 @@ func dataUsersRead(d *schema.ResourceData, m interface{}) error {
 
 	h := sha1.New()
 	if _, err := h.Write([]byte(strings.Join(descriptors, "-"))); err != nil {
-		return fmt.Errorf("Unable to compute hash for user descriptors: %v", err)
+		return diag.FromErr(fmt.Errorf("Unable to compute hash for user descriptors: %v", err))
 	}
 	d.SetId("users#" + base64.URLEncoding.EncodeToString(h.Sum(nil)))
 	if err := d.Set("users", users); err != nil {
-		return fmt.Errorf("Error setting `users`: %+v", err)
+		return diag.FromErr(fmt.Errorf("Error setting `users`: %+v", err))
 	}
 
 	return nil
@@ -223,14 +225,14 @@ func flattenUser(user *graph.GraphUser) map[string]interface{} {
 	return s
 }
 
-func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectTypes *[]string, continuationToken string) ([]graph.GraphUser, string, error) {
+func getUsersWithContinuationToken(ctx context.Context, clients *client.AggregatedClient, subjectTypes *[]string, continuationToken string) ([]graph.GraphUser, string, error) {
 	args := graph.ListUsersArgs{
 		SubjectTypes: subjectTypes,
 	}
 	if continuationToken != "" {
 		args.ContinuationToken = &continuationToken
 	}
-	response, err := clients.GraphClient.ListUsers(clients.Ctx, args)
+	response, err := clients.GraphClient.ListUsers(ctx, args)
 	if err != nil {
 		return nil, "", fmt.Errorf("Listing users: %q", err)
 	}
@@ -243,7 +245,7 @@ func getUsersWithContinuationToken(clients *client.AggregatedClient, subjectType
 	return *response.GraphUsers, continuationToken, nil
 }
 
-func addStorageKeyAsId(clients *client.AggregatedClient, users []interface{}, numWorkers int) error {
+func addStorageKeyAsId(ctx context.Context, clients *client.AggregatedClient, users []interface{}, numWorkers int) error {
 	userQueue := make(chan map[string]interface{}, len(users))
 	errChan := make(chan error)
 
@@ -254,7 +256,7 @@ func addStorageKeyAsId(clients *client.AggregatedClient, users []interface{}, nu
 		go func() {
 			defer wg.Done()
 			for user := range userQueue {
-				storageKey, err := clients.GraphClient.GetStorageKey(clients.Ctx, graph.GetStorageKeyArgs{
+				storageKey, err := clients.GraphClient.GetStorageKey(ctx, graph.GetStorageKeyArgs{
 					SubjectDescriptor: converter.String(user["descriptor"].(string)),
 				})
 				if err != nil {

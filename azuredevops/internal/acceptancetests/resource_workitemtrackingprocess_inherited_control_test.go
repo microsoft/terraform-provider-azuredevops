@@ -127,6 +127,70 @@ func TestAccWorkitemtrackingprocessInheritedControl_Revert(t *testing.T) {
 	})
 }
 
+// https://github.com/microsoft/terraform-provider-azuredevops/issues/1549
+func TestAccWorkitemtrackingprocessInheritedControl_Hide(t *testing.T) {
+	testCases := []struct {
+		name      string
+		groupID   string
+		controlID string
+	}{
+		{
+			name:      "DeploymentsControl",
+			groupID:   "Agile.Bug.Bug.Deployment",
+			controlID: "Deployments",
+		},
+		{
+			name:      "LinksControl",
+			groupID:   "Agile.Bug.Bug.Development",
+			controlID: "Development",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			processName := testutils.GenerateResourceName()
+			witName := testutils.GenerateWorkItemTypeName()
+			tfNode := "azuredevops_workitemtrackingprocess_inherited_control.test"
+
+			resource.ParallelTest(t, resource.TestCase{
+				PreCheck:          func() { testutils.PreCheck(t, nil) },
+				ProviderFactories: testutils.GetProviderFactories(),
+				CheckDestroy:      testutils.CheckProcessDestroyed,
+				Steps: []resource.TestStep{
+					{
+						Config: hideInheritedControlConfig(processName, witName, tc.groupID, tc.controlID),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttrSet(tfNode, "id"),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
+func hideInheritedControlConfig(processName, witName, groupID, controlID string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_workitemtrackingprocess_process" "test" {
+  parent_process_type_id = "%s"
+  name                   = "%s"
+}
+
+resource "azuredevops_workitemtrackingprocess_workitemtype" "test" {
+  process_id = azuredevops_workitemtrackingprocess_process.test.id
+  name       = "%s"
+}
+
+resource "azuredevops_workitemtrackingprocess_inherited_control" "test" {
+  process_id        = azuredevops_workitemtrackingprocess_process.test.id
+  work_item_type_id = azuredevops_workitemtrackingprocess_workitemtype.test.id
+  group_id          = "%s"
+  control_id        = "%s"
+  visible           = false
+}
+`, agileSystemProcessTypeId, processName, witName, groupID, controlID)
+}
+
 func basicInheritedControl(workItemTypeName string, processName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_workitemtrackingprocess_process" "test" {

@@ -468,6 +468,10 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
+	if err = checkServiceConnection(serviceEndpoint); err != nil {
+		return diag.FromErr(err)
+	}
+
 	if serviceEndpoint.Name != nil {
 		if err := d.Set("name", *serviceEndpoint.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting name: %w", err))

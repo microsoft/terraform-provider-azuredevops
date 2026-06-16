@@ -178,6 +178,10 @@ func flattenRestAPI(d *schema.ResourceData, check *pipelineschecksextras.CheckCo
 			if v, exist := inputs["successCriteria"]; exist {
 				d.Set("success_criteria", v.(string))
 			}
+
+			if v, exist := inputs["urlSuffix"]; exist {
+				d.Set("url_suffix", v.(string))
+			}
 		}
 	}
 	return nil

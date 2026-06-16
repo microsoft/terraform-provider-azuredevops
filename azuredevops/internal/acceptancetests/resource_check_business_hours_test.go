@@ -32,6 +32,12 @@ func TestAccCheckBusinessHours_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "end_time", end_time),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -76,6 +82,12 @@ func TestAccCheckBusinessHours_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "sunday", "false"),
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "1440"),
 				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

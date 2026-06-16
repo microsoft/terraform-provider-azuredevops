@@ -30,6 +30,12 @@ func TestAccCheckRequiredTemplate_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePath),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -57,6 +63,12 @@ func TestAccCheckRequiredTemplate_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.repository_ref", repositoryRef),
 					resource.TestCheckResourceAttr(tfCheckNode, "required_template.0.template_path", templatePath),
 				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
