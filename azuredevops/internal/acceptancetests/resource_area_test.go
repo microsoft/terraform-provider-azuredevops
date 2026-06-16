@@ -24,7 +24,7 @@ func TestAccArea_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "name", areaName),
-					resource.TestCheckResourceAttr(tfNode, "path", "/"),
+					resource.TestCheckResourceAttrSet(tfNode, "area_id"),
 				),
 			},
 			{
@@ -54,10 +54,10 @@ func TestAccArea_child(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNodeParent, "id"),
 					resource.TestCheckResourceAttr(tfNodeParent, "name", parentAreaName),
-					resource.TestCheckResourceAttr(tfNodeParent, "path", "/"),
+					resource.TestCheckResourceAttrSet(tfNodeParent, "area_id"),
 					resource.TestCheckResourceAttrSet(tfNodeChild, "id"),
 					resource.TestCheckResourceAttr(tfNodeChild, "name", childAreaName),
-					resource.TestCheckResourceAttr(tfNodeChild, "path", "/"+parentAreaName),
+					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_area_id", tfNodeParent, "area_id"),
 				),
 			},
 			{
@@ -112,7 +112,6 @@ func hclAreaBasic(projectName, areaName string) string {
 resource "azuredevops_area" "test" {
   project_id = azuredevops_project.project.id
   name       = "%s"
-  path       = "/"
 }
 `, testutils.HclProjectResource(projectName), areaName)
 }
@@ -124,15 +123,12 @@ func hclAreaChild(projectName, parentAreaName, childAreaName string) string {
 resource "azuredevops_area" "parent" {
   project_id = azuredevops_project.project.id
   name       = "%s"
-  path       = "/"
 }
 
 resource "azuredevops_area" "child" {
   project_id = azuredevops_project.project.id
   name       = "%s"
-  path       = "/${azuredevops_area.parent.name}"
-
-  depends_on = [azuredevops_area.parent]
+  parent_area_id  = azuredevops_area.parent.area_id
 }
 `, testutils.HclProjectResource(projectName), parentAreaName, childAreaName)
 }
@@ -144,15 +140,8 @@ func testAccAreaImportStateIdFunc(resourceName string) func(s *terraform.State) 
 			return "", fmt.Errorf("not found: %s", resourceName)
 		}
 		projectID := rs.Primary.Attributes["project_id"]
-		name := rs.Primary.Attributes["name"]
-		path := rs.Primary.Attributes["path"]
+		nodeID := rs.Primary.Attributes["area_id"]
 
-		var importID string
-		if path == "/" || path == "" {
-			importID = fmt.Sprintf("%s/%s", projectID, name)
-		} else {
-			importID = fmt.Sprintf("%s%s/%s", projectID, path, name)
-		}
-		return importID, nil
+		return fmt.Sprintf("%s/%s", projectID, nodeID), nil
 	}
 }

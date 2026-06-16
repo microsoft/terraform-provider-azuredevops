@@ -3,8 +3,11 @@ package workitemtracking
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,13 +43,16 @@ func ResourceArea() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validateClassificationNodeName,
 			},
-			"path": {
-				Type:     schema.TypeString,
+			"parent_area_id": {
+				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  "/",
 				ForceNew: true,
+			},
+			"area_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"full_path": {
 				Type:     schema.TypeString,
@@ -61,9 +67,11 @@ func resourceAreaCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	parentPath := d.Get("path").(string)
 
-	apiPath := trimLeadingSlash(parentPath)
+	apiPath, err := resolveParentPath(clients, projectID, d)
+	if err != nil {
+		return diag.Errorf("resolving parent path: %+v", err)
+	}
 
 	node, err := clients.WorkItemTrackingClient.CreateOrUpdateClassificationNode(clients.Ctx, workitemtracking.CreateOrUpdateClassificationNodeArgs{
 		Project:        &projectID,
@@ -74,7 +82,7 @@ func resourceAreaCreate(ctx context.Context, d *schema.ResourceData, m interface
 		},
 	})
 	if err != nil {
-		return diag.Errorf("creating area path %q under %q: %+v", name, parentPath, err)
+		return diag.Errorf("creating area path %q: %+v", name, err)
 	}
 
 	if node.Identifier == nil {
@@ -90,26 +98,32 @@ func resourceAreaRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	parentPath := d.Get("path").(string)
 
-	apiPath := buildApiPath(parentPath, name)
+	apiPath, err := resolveParentPath(clients, projectID, d)
+	if err != nil {
+		return diag.Errorf("resolving parent path: %+v", err)
+	}
+	fullApiPath := buildApiPath(apiPath, name)
 
 	node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &apiPath,
+		Path:           &fullApiPath,
 	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf("reading area path %q: %+v", apiPath, err)
+		return diag.Errorf("reading area path %q: %+v", fullApiPath, err)
 	}
 
 	d.SetId(node.Identifier.String())
 	d.Set("name", node.Name)
 	d.Set("full_path", convertAreaNodePath(node.Path))
+	if node.Id != nil {
+		d.Set("area_id", *node.Id)
+	}
 
 	return nil
 }
@@ -119,14 +133,17 @@ func resourceAreaUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	oldName, newName := d.GetChange("name")
-	parentPath := d.Get("path").(string)
 
-	apiPath := buildApiPath(parentPath, oldName.(string))
+	apiPath, err := resolveParentPath(clients, projectID, d)
+	if err != nil {
+		return diag.Errorf("resolving parent path: %+v", err)
+	}
+	fullApiPath := buildApiPath(apiPath, oldName.(string))
 
-	_, err := clients.WorkItemTrackingClient.UpdateClassificationNode(clients.Ctx, workitemtracking.UpdateClassificationNodeArgs{
+	_, err = clients.WorkItemTrackingClient.UpdateClassificationNode(clients.Ctx, workitemtracking.UpdateClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &apiPath,
+		Path:           &fullApiPath,
 		PostedNode: &workitemtracking.WorkItemClassificationNode{
 			Name: converter.String(newName.(string)),
 		},
@@ -143,17 +160,20 @@ func resourceAreaDelete(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	parentPath := d.Get("path").(string)
 
-	apiPath := buildApiPath(parentPath, name)
+	apiPath, err := resolveParentPath(clients, projectID, d)
+	if err != nil {
+		return diag.Errorf("resolving parent path: %+v", err)
+	}
+	fullApiPath := buildApiPath(apiPath, name)
 
-	err := clients.WorkItemTrackingClient.DeleteClassificationNode(clients.Ctx, workitemtracking.DeleteClassificationNodeArgs{
+	err = clients.WorkItemTrackingClient.DeleteClassificationNode(clients.Ctx, workitemtracking.DeleteClassificationNodeArgs{
 		Project:        &projectID,
 		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &apiPath,
+		Path:           &fullApiPath,
 	})
 	if err != nil {
-		return diag.Errorf("deleting area path %q: %+v", apiPath, err)
+		return diag.Errorf("deleting area path %q: %+v", fullApiPath, err)
 	}
 
 	return nil
@@ -162,40 +182,80 @@ func resourceAreaDelete(ctx context.Context, d *schema.ResourceData, m interface
 func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "/", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return nil, fmt.Errorf("invalid import format, expected: project_id/path (e.g., project-uuid/ParentArea/ChildArea)")
+		return nil, fmt.Errorf("invalid import format, expected: project_id/area_id, got: %q", d.Id())
 	}
 
 	projectID := parts[0]
-	fullPath := "/" + parts[1]
-
-	pathParts := strings.Split(strings.TrimPrefix(fullPath, "/"), "/")
-	name := pathParts[len(pathParts)-1]
-	parentPath := "/"
-	if len(pathParts) > 1 {
-		parentPath = "/" + strings.Join(pathParts[:len(pathParts)-1], "/")
+	nodeID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("invalid area_id %q, must be an integer: %+v", parts[1], err)
 	}
-
-	d.Set("project_id", projectID)
-	d.Set("name", name)
-	d.Set("path", parentPath)
 
 	clients := m.(*client.AggregatedClient)
-	apiPath := parts[1]
 
-	node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
-		Project:        &projectID,
-		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &apiPath,
-		Depth:          converter.Int(0),
+	nodes, err := clients.WorkItemTrackingClient.GetClassificationNodes(clients.Ctx, workitemtracking.GetClassificationNodesArgs{
+		Project: &projectID,
+		Ids:     &[]int{nodeID},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("reading area path for import %q: %+v", fullPath, err)
+		return nil, fmt.Errorf("reading area node (id=%d) for import: %+v", nodeID, err)
+	}
+	if nodes == nil || len(*nodes) == 0 {
+		return nil, fmt.Errorf("area node (id=%d) not found", nodeID)
+	}
+	node := (*nodes)[0]
+	d.SetId(node.Identifier.String())
+	d.Set("project_id", projectID)
+	d.Set("name", node.Name)
+	d.Set("full_path", convertAreaNodePath(node.Path))
+	if node.Id != nil {
+		d.Set("area_id", *node.Id)
 	}
 
-	d.SetId(node.Identifier.String())
-	d.Set("full_path", convertAreaNodePath(node.Path))
+	if node.Path != nil {
+		parts := strings.Split(*node.Path, "\\")
+		if len(parts) > 4 {
+			parentApiPath := strings.Join(parts[3:len(parts)-1], "/")
+			parentNode, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
+				Project:        &projectID,
+				StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
+				Path:           &parentApiPath,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("reading parent area for import: %+v", err)
+			}
+			if parentNode.Id != nil {
+				d.Set("parent_area_id", *parentNode.Id)
+			}
+		}
+	}
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func resolveParentPath(clients *client.AggregatedClient, projectID string, d *schema.ResourceData) (string, error) {
+	parentID := d.Get("parent_area_id").(int)
+	if parentID == 0 {
+		return "", nil
+	}
+
+	nodes, err := clients.WorkItemTrackingClient.GetClassificationNodes(clients.Ctx, workitemtracking.GetClassificationNodesArgs{
+		Project: &projectID,
+		Ids:     &[]int{parentID},
+	})
+	if err != nil {
+		return "", fmt.Errorf("looking up parent area node (id=%d): %+v", parentID, err)
+	}
+	if nodes == nil || len(*nodes) == 0 {
+		return "", fmt.Errorf("parent area node (id=%d) not found", parentID)
+	}
+
+	parentNode := (*nodes)[0]
+	parts := strings.Split(*parentNode.Path, "\\")
+	if len(parts) > 3 {
+		return strings.Join(parts[3:], "/"), nil
+	}
+	return "", nil
 }
 
 func buildApiPath(parentPath, name string) string {
@@ -206,18 +266,53 @@ func buildApiPath(parentPath, name string) string {
 	return parent + "/" + name
 }
 
-func trimLeadingSlash(path string) string {
-	return strings.TrimPrefix(strings.TrimSpace(path), "/")
-}
-
 func convertAreaNodePath(path *string) string {
 	if path == nil {
 		return "/"
 	}
-	itemPath := strings.ReplaceAll(*path, "\\", "/")
-	parts := strings.Split(itemPath, "/")
+	parts := strings.Split(*path, "\\")
 	if len(parts) > 3 {
 		return "/" + strings.Join(parts[3:], "/")
 	}
 	return "/"
+}
+
+var classificationNodeReservedNames = []string{
+	"PRN", "CON", "NUL", "AUX", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+}
+
+func validateClassificationNodeName(v interface{}, k string) (warnings []string, errors []error) {
+	value := v.(string)
+
+	if len(strings.TrimSpace(value)) == 0 {
+		errors = append(errors, fmt.Errorf("%q must not be empty or whitespace", k))
+		return warnings, errors
+	}
+
+	if len(value) > 255 {
+		errors = append(errors, fmt.Errorf("%q must not exceed 255 characters, got %d", k, len(value)))
+	}
+
+	if value == "." || value == ".." {
+		errors = append(errors, fmt.Errorf("%q must not be a reserved name (%q)", k, value))
+	}
+
+	upper := strings.ToUpper(value)
+	if slices.Contains(classificationNodeReservedNames, upper) {
+		errors = append(errors, fmt.Errorf("%q must not be a system-reserved name (%s)", k, value))
+	}
+
+	const invalidChars = `\/:"*?<>|#$&+`
+	for _, ch := range value {
+		if strings.ContainsRune(invalidChars, ch) {
+			errors = append(errors, fmt.Errorf("%q must not contain the character %q", k, string(ch)))
+			break
+		}
+		if unicode.IsControl(ch) {
+			errors = append(errors, fmt.Errorf("%q must not contain Unicode control characters", k))
+			break
+		}
+	}
+
+	return warnings, errors
 }
