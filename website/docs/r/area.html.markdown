@@ -39,9 +39,9 @@ resource "azuredevops_area" "parent" {
 }
 
 resource "azuredevops_area" "child" {
-  project_id = azuredevops_project.example.id
-  name       = "Frontend"
-  parent_area_id  = azuredevops_area.parent.area_id
+  project_id     = azuredevops_project.example.id
+  name           = "Frontend"
+  parent_area_id = azuredevops_area.parent.area_id
 }
 ```
 

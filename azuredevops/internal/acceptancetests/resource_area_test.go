@@ -126,9 +126,9 @@ resource "azuredevops_area" "parent" {
 }
 
 resource "azuredevops_area" "child" {
-  project_id = azuredevops_project.project.id
-  name       = "%s"
-  parent_area_id  = azuredevops_area.parent.area_id
+  project_id     = azuredevops_project.project.id
+  name           = "%s"
+  parent_area_id = azuredevops_area.parent.area_id
 }
 `, testutils.HclProjectResource(projectName), parentAreaName, childAreaName)
 }
