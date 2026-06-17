@@ -45,14 +45,10 @@ func ResourceArea() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validateClassificationNodeName,
 			},
-			"parent_area_id": {
+			"parent_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
-			},
-			"area_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
 			},
 			"full_path": {
 				Type:     schema.TypeString,
@@ -67,8 +63,9 @@ func resourceAreaCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
+	parentID := d.Get("parent_id").(int)
 
-	apiPath, err := resolveParentPath(clients, projectID, d)
+	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
 		return diag.Errorf("resolving parent path: %+v", err)
 	}
@@ -84,12 +81,12 @@ func resourceAreaCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.Errorf("creating area path %q: %+v", name, err)
 	}
-
-	if node.Identifier == nil {
-		return diag.Errorf("creating area path: identifier was nil")
+	if node.Id == nil {
+		return diag.Errorf("creating area path %q: API did not return node ID", name)
 	}
 
-	d.SetId(node.Identifier.String())
+	d.SetId(strconv.Itoa(*node.Id))
+
 	return resourceAreaRead(ctx, d, m)
 }
 
@@ -97,33 +94,29 @@ func resourceAreaRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
-	name := d.Get("name").(string)
-
-	apiPath, err := resolveParentPath(clients, projectID, d)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return diag.Errorf("resolving parent path: %+v", err)
+		return diag.Errorf("parsing resource ID: %+v", err)
 	}
-	fullApiPath := buildApiPath(apiPath, name)
 
-	node, err := clients.WorkItemTrackingClient.GetClassificationNode(clients.Ctx, workitemtracking.GetClassificationNodeArgs{
-		Project:        &projectID,
-		StructureGroup: &workitemtracking.TreeStructureGroupValues.Areas,
-		Path:           &fullApiPath,
+	node, err := clients.WorkItemTrackingClient.GetClassificationNodes(clients.Ctx, workitemtracking.GetClassificationNodesArgs{
+		Project: &projectID,
+		Ids:     &[]int{id},
 	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			d.SetId("")
 			return nil
 		}
-		return diag.Errorf("reading area path %q: %+v", fullApiPath, err)
+		return diag.Errorf("reading area path %q: %+v", d.Get("name").(string), err)
+	}
+	if (*node)[0].Id == nil {
+		return diag.Errorf("reading area path %q: API did not return node ID", d.Get("name").(string))
 	}
 
-	d.SetId(node.Identifier.String())
-	d.Set("name", node.Name)
-	d.Set("full_path", convertAreaNodePath(node.Path))
-	if node.Id != nil {
-		d.Set("area_id", *node.Id)
-	}
+	d.SetId(strconv.Itoa(*(*node)[0].Id))
+	d.Set("name", (*node)[0].Name)
+	d.Set("full_path", convertAreaNodePath((*node)[0].Path))
 
 	return nil
 }
@@ -133,8 +126,9 @@ func resourceAreaUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	oldName, newName := d.GetChange("name")
+	parentID := d.Get("parent_id").(int)
 
-	apiPath, err := resolveParentPath(clients, projectID, d)
+	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
 		return diag.Errorf("resolving parent path: %+v", err)
 	}
@@ -160,8 +154,9 @@ func resourceAreaDelete(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
+	parentID := d.Get("parent_id").(int)
 
-	apiPath, err := resolveParentPath(clients, projectID, d)
+	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
 		return diag.Errorf("resolving parent path: %+v", err)
 	}
@@ -204,13 +199,10 @@ func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface
 		return nil, fmt.Errorf("area node (id=%d) not found", nodeID)
 	}
 	node := (*nodes)[0]
-	d.SetId(node.Identifier.String())
+	d.SetId(strconv.Itoa(*node.Id))
 	d.Set("project_id", projectID)
 	d.Set("name", node.Name)
 	d.Set("full_path", convertAreaNodePath(node.Path))
-	if node.Id != nil {
-		d.Set("area_id", *node.Id)
-	}
 
 	if node.Path != nil {
 		parts := strings.Split(*node.Path, "\\")
@@ -225,7 +217,7 @@ func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface
 				return nil, fmt.Errorf("reading parent area for import: %+v", err)
 			}
 			if parentNode.Id != nil {
-				d.Set("parent_area_id", *parentNode.Id)
+				d.Set("parent_id", *parentNode.Id)
 			}
 		}
 	}
@@ -233,8 +225,7 @@ func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface
 	return []*schema.ResourceData{d}, nil
 }
 
-func resolveParentPath(clients *client.AggregatedClient, projectID string, d *schema.ResourceData) (string, error) {
-	parentID := d.Get("parent_area_id").(int)
+func resolveParentPath(clients *client.AggregatedClient, projectID string, parentID int) (string, error) {
 	if parentID == 0 {
 		return "", nil
 	}
@@ -259,7 +250,7 @@ func resolveParentPath(clients *client.AggregatedClient, projectID string, d *sc
 }
 
 func buildApiPath(parentPath, name string) string {
-	parent := strings.TrimPrefix(strings.TrimSuffix(strings.TrimSpace(parentPath), "/"), "/")
+	parent := strings.Trim(parentPath, "/")
 	if parent == "" {
 		return name
 	}
@@ -277,11 +268,11 @@ func convertAreaNodePath(path *string) string {
 	return "/"
 }
 
-var classificationNodeReservedNames = []string{
-	"PRN", "CON", "NUL", "AUX", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-}
-
 func validateClassificationNodeName(v interface{}, k string) (warnings []string, errors []error) {
+	classificationNodeReservedNames := []string{
+		"PRN", "CON", "NUL", "AUX", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+	}
+
 	value := v.(string)
 
 	if len(strings.TrimSpace(value)) == 0 {

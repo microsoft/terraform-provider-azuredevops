@@ -24,7 +24,6 @@ func TestAccArea_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
 					resource.TestCheckResourceAttr(tfNode, "name", areaName),
-					resource.TestCheckResourceAttrSet(tfNode, "area_id"),
 				),
 			},
 			{
@@ -54,10 +53,9 @@ func TestAccArea_child(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNodeParent, "id"),
 					resource.TestCheckResourceAttr(tfNodeParent, "name", parentAreaName),
-					resource.TestCheckResourceAttrSet(tfNodeParent, "area_id"),
 					resource.TestCheckResourceAttrSet(tfNodeChild, "id"),
 					resource.TestCheckResourceAttr(tfNodeChild, "name", childAreaName),
-					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_area_id", tfNodeParent, "area_id"),
+					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_id", tfNodeParent, "id"),
 				),
 			},
 			{
@@ -126,9 +124,9 @@ resource "azuredevops_area" "parent" {
 }
 
 resource "azuredevops_area" "child" {
-  project_id     = azuredevops_project.project.id
-  name           = "%s"
-  parent_area_id = azuredevops_area.parent.area_id
+  project_id = azuredevops_project.project.id
+  name       = "%s"
+  parent_id  = azuredevops_area.parent.id
 }
 `, testutils.HclProjectResource(projectName), parentAreaName, childAreaName)
 }
@@ -140,7 +138,7 @@ func testAccAreaImportStateIdFunc(resourceName string) func(s *terraform.State) 
 			return "", fmt.Errorf("not found: %s", resourceName)
 		}
 		projectID := rs.Primary.Attributes["project_id"]
-		nodeID := rs.Primary.Attributes["area_id"]
+		nodeID := rs.Primary.Attributes["id"]
 
 		return fmt.Sprintf("%s/%s", projectID, nodeID), nil
 	}
