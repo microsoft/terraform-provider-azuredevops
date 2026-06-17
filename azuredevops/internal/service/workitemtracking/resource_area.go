@@ -111,11 +111,18 @@ func resourceAreaRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.Errorf("reading area path %q: %+v", d.Get("name").(string), err)
 	}
 
-	if len(*nodes) > 0 {
-		d.SetId(strconv.Itoa(*(*nodes)[0].Id))
-		d.Set("name", (*nodes)[0].Name)
-		d.Set("path", convertAreaNodePath((*nodes)[0].Path))
+	if len(*nodes) != 1 {
+		return diag.Errorf("reading area path %q: unexpected number of nodes returned for area (id=%d)", d.Get("name").(string), id)
 	}
+
+	node := (*nodes)[0]
+	if node.Id == nil {
+		return diag.Errorf("reading area path %q: area node (id=%d) has nil ID", d.Get("name").(string), id)
+	}
+
+	d.SetId(strconv.Itoa(*node.Id))
+	d.Set("name", node.Name)
+	d.Set("path", convertAreaNodePath(node.Path))
 
 	return nil
 }
