@@ -39,9 +39,9 @@ resource "azuredevops_area" "parent" {
 }
 
 resource "azuredevops_area" "child" {
-  project_id = azuredevops_project.example.id
-  name       = "Frontend"
-  parent_id  = azuredevops_area.parent.id
+  project_id     = azuredevops_project.example.id
+  name           = "Frontend"
+  parent_area_id = azuredevops_area.parent.id
 }
 ```
 
@@ -51,14 +51,14 @@ The following arguments are supported:
 
 * `project_id` - (Required) The ID of the project. Changing this forces a new resource to be created.
 * `name` - (Required) The name of the area path node. Must conform to [naming restrictions](https://learn.microsoft.com/en-us/azure/devops/organizations/settings/about-areas-iterations?view=azure-devops#naming-restrictions).
-* `parent_id` - (Optional) The integer ID of the parent area node. If not specified, the area is created at the root level. Changing this forces a new resource to be created. Use the `id` attribute of another `azuredevops_area` resource.
+* `parent_id` - (Optional) The integer ID of the parent area node. If not specified, the area is created at the root level. Changing this forces a new resource to be created.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The integer ID of the area path node.
-* `full_path` - The full path of the area, relative to the project (e.g., `/Engineering/Frontend`).
+* `path` - The path of the area, relative to the project root (e.g., `/Engineering/Frontend`).
 
 ## Import
 

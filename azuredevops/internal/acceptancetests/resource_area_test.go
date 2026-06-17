@@ -23,7 +23,7 @@ func TestAccArea_basic(t *testing.T) {
 				Config: hclAreaBasic(projectName, areaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttr(tfNode, "name", areaName),
+					resource.TestCheckResourceAttrSet(tfNode, "path"),
 				),
 			},
 			{
@@ -52,10 +52,10 @@ func TestAccArea_child(t *testing.T) {
 				Config: hclAreaChild(projectName, parentAreaName, childAreaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNodeParent, "id"),
-					resource.TestCheckResourceAttr(tfNodeParent, "name", parentAreaName),
+					resource.TestCheckResourceAttrSet(tfNodeParent, "path"),
 					resource.TestCheckResourceAttrSet(tfNodeChild, "id"),
-					resource.TestCheckResourceAttr(tfNodeChild, "name", childAreaName),
-					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_id", tfNodeParent, "id"),
+					resource.TestCheckResourceAttrSet(tfNodeChild, "path"),
+					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_area_id", tfNodeParent, "id"),
 				),
 			},
 			{
@@ -89,6 +89,7 @@ func TestAccArea_update(t *testing.T) {
 				Config: hclAreaBasic(projectName, areaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "path"),
 					resource.TestCheckResourceAttr(tfNode, "name", areaName),
 				),
 			},
@@ -96,6 +97,7 @@ func TestAccArea_update(t *testing.T) {
 				Config: hclAreaBasic(projectName, updatedAreaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
+					resource.TestCheckResourceAttrSet(tfNode, "path"),
 					resource.TestCheckResourceAttr(tfNode, "name", updatedAreaName),
 				),
 			},
@@ -124,9 +126,9 @@ resource "azuredevops_area" "parent" {
 }
 
 resource "azuredevops_area" "child" {
-  project_id = azuredevops_project.project.id
-  name       = "%s"
-  parent_id  = azuredevops_area.parent.id
+  project_id     = azuredevops_project.project.id
+  name           = "%s"
+  parent_area_id = azuredevops_area.parent.id
 }
 `, testutils.HclProjectResource(projectName), parentAreaName, childAreaName)
 }

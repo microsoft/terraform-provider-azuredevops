@@ -45,12 +45,12 @@ func ResourceArea() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validateClassificationNodeName,
 			},
-			"parent_id": {
+			"parent_area_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 			},
-			"full_path": {
+			"path": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -63,7 +63,7 @@ func resourceAreaCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	parentID := d.Get("parent_id").(int)
+	parentID := d.Get("parent_area_id").(int)
 
 	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
@@ -99,7 +99,7 @@ func resourceAreaRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.Errorf("parsing resource ID: %+v", err)
 	}
 
-	node, err := clients.WorkItemTrackingClient.GetClassificationNodes(clients.Ctx, workitemtracking.GetClassificationNodesArgs{
+	nodes, err := clients.WorkItemTrackingClient.GetClassificationNodes(clients.Ctx, workitemtracking.GetClassificationNodesArgs{
 		Project: &projectID,
 		Ids:     &[]int{id},
 	})
@@ -110,13 +110,12 @@ func resourceAreaRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		}
 		return diag.Errorf("reading area path %q: %+v", d.Get("name").(string), err)
 	}
-	if (*node)[0].Id == nil {
-		return diag.Errorf("reading area path %q: API did not return node ID", d.Get("name").(string))
-	}
 
-	d.SetId(strconv.Itoa(*(*node)[0].Id))
-	d.Set("name", (*node)[0].Name)
-	d.Set("full_path", convertAreaNodePath((*node)[0].Path))
+	if len(*nodes) > 0 {
+		d.SetId(strconv.Itoa(*(*nodes)[0].Id))
+		d.Set("name", (*nodes)[0].Name)
+		d.Set("path", convertAreaNodePath((*nodes)[0].Path))
+	}
 
 	return nil
 }
@@ -126,7 +125,7 @@ func resourceAreaUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	oldName, newName := d.GetChange("name")
-	parentID := d.Get("parent_id").(int)
+	parentID := d.Get("parent_area_id").(int)
 
 	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
@@ -154,7 +153,7 @@ func resourceAreaDelete(ctx context.Context, d *schema.ResourceData, m interface
 
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
-	parentID := d.Get("parent_id").(int)
+	parentID := d.Get("parent_area_id").(int)
 
 	apiPath, err := resolveParentPath(clients, projectID, parentID)
 	if err != nil {
@@ -202,7 +201,7 @@ func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface
 	d.SetId(strconv.Itoa(*node.Id))
 	d.Set("project_id", projectID)
 	d.Set("name", node.Name)
-	d.Set("full_path", convertAreaNodePath(node.Path))
+	d.Set("path", convertAreaNodePath(node.Path))
 
 	if node.Path != nil {
 		parts := strings.Split(*node.Path, "\\")
@@ -217,7 +216,7 @@ func resourceAreaImport(ctx context.Context, d *schema.ResourceData, m interface
 				return nil, fmt.Errorf("reading parent area for import: %+v", err)
 			}
 			if parentNode.Id != nil {
-				d.Set("parent_id", *parentNode.Id)
+				d.Set("parent_area_id", *parentNode.Id)
 			}
 		}
 	}
@@ -242,6 +241,9 @@ func resolveParentPath(clients *client.AggregatedClient, projectID string, paren
 	}
 
 	parentNode := (*nodes)[0]
+	if parentNode.Path == nil {
+		return "", fmt.Errorf("parent area node (id=%d) has no path", parentID)
+	}
 	parts := strings.Split(*parentNode.Path, "\\")
 	if len(parts) > 3 {
 		return strings.Join(parts[3:], "/"), nil
