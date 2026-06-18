@@ -30,13 +30,13 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/servicehooks"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/wiki"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/work"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/teamsettings"
 	"github.com/microsoft/terraform-provider-azuredevops/version"
 )
 
@@ -78,7 +78,7 @@ type AggregatedClient struct {
 	ServiceHooksClient            servicehooks.Client
 	Ctx                           context.Context
 	SecurityRolesClient           securityroles.Client
-	TeamSettingsClient            teamsettings.Client
+	WorkClient                    work.Client
 }
 
 // GetAzdoClient builds and provides a connection to the Azure DevOps API
@@ -232,9 +232,9 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 
 	securityRolesClient := securityroles.NewClient(ctx, connection)
 
-	teamSettingsClient, err := teamsettings.NewClient(ctx, connection)
+	workClient, err := work.NewClient(ctx, connection)
 	if err != nil {
-		log.Printf("getAzdoClient(): teamsettings.NewClient failed.")
+		log.Printf("getAzdoClient(): work.NewClient failed.")
 		return nil, err
 	}
 
@@ -268,7 +268,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		WorkItemTrackingProcessClient: workitemtrackingprocessClient,
 		ServiceHooksClient:            serviceHooksClient,
 		SecurityRolesClient:           securityRolesClient,
-		TeamSettingsClient:            teamSettingsClient,
+		WorkClient:                    workClient,
 		Ctx:                           ctx,
 	}
 

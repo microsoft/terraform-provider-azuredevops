@@ -1,17 +1,18 @@
 package core
 
 import (
+	"context"
 	"fmt"
-	"log"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/work"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
-	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/teamsettings"
 )
 
 var teamAreaPathMutexes = struct {
@@ -33,10 +34,10 @@ func getTeamAreaPathMutex(projectID, teamID string) *sync.Mutex {
 
 func ResourceTeamAreaPath() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTeamAreaPathCreate,
-		Read:   resourceTeamAreaPathRead,
-		Update: resourceTeamAreaPathUpdate,
-		Delete: resourceTeamAreaPathDelete,
+		CreateContext: resourceTeamAreaPathCreate,
+		ReadContext:   resourceTeamAreaPathRead,
+		UpdateContext: resourceTeamAreaPathUpdate,
+		DeleteContext: resourceTeamAreaPathDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -44,7 +45,7 @@ func ResourceTeamAreaPath() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
-			State: importTeamAreaPathState,
+			StateContext: importTeamAreaPathState,
 		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
@@ -74,7 +75,7 @@ func ResourceTeamAreaPath() *schema.Resource {
 	}
 }
 
-func resourceTeamAreaPathCreate(d *schema.ResourceData, m interface{}) error {
+func resourceTeamAreaPathCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -86,12 +87,12 @@ func resourceTeamAreaPathCreate(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	current, err := clients.TeamSettingsClient.GetTeamFieldValues(clients.Ctx, teamsettings.GetTeamFieldValuesArgs{
+	current, err := clients.WorkClient.GetTeamFieldValues(ctx, work.GetTeamFieldValuesArgs{
 		Project: &projectID,
 		Team:    &teamID,
 	})
 	if err != nil {
-		return fmt.Errorf("reading team field values for team %s: %w", teamID, err)
+		return diag.Errorf("reading team field values for team %s: %+v", teamID, err)
 	}
 
 	values := normalizeValues(current.Values)
@@ -105,7 +106,7 @@ func resourceTeamAreaPathCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if !found {
-		values = append(values, teamsettings.TeamFieldValueReference{
+		values = append(values, work.TeamFieldValue{
 			Value:           &areaPath,
 			IncludeChildren: &includeChildren,
 		})
@@ -116,18 +117,18 @@ func resourceTeamAreaPathCreate(d *schema.ResourceData, m interface{}) error {
 		defaultValue = &areaPath
 	}
 
-	patch := &teamsettings.TeamFieldValues{
+	patch := &work.TeamFieldValuesPatch{
 		DefaultValue: defaultValue,
 		Values:       &values,
 	}
 
-	result, err := clients.TeamSettingsClient.UpdateTeamFieldValues(clients.Ctx, teamsettings.UpdateTeamFieldValuesArgs{
-		Project:         &projectID,
-		Team:            &teamID,
-		TeamFieldValues: patch,
+	result, err := clients.WorkClient.UpdateTeamFieldValues(ctx, work.UpdateTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+		Patch:   patch,
 	})
 	if err != nil {
-		return fmt.Errorf("updating team field values for team %s: %w", teamID, err)
+		return diag.Errorf("updating team field values for team %s: %+v", teamID, err)
 	}
 
 	resultValues := normalizeValues(result.Values)
@@ -139,55 +140,61 @@ func resourceTeamAreaPathCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if !pathFound {
-		return fmt.Errorf("area path %q was not accepted by the API — ensure the area path node exists in project %s before assigning it to a team", areaPath, projectID)
+		return diag.Errorf("area path %q was not accepted by the API — ensure the area path node exists in project %s before assigning it to a team", areaPath, projectID)
 	}
 
-	d.SetId(buildTeamAreaPathResourceID(projectID, teamID, areaPath))
-	log.Printf("[DEBUG] azuredevops_team_area_path created: %s", d.Id())
+	d.SetId(fmt.Sprintf("%s/%s/%s", projectID, teamID, areaPath))
 
-	return resourceTeamAreaPathRead(d, m)
+	return resourceTeamAreaPathRead(ctx, d, m)
 }
 
-func resourceTeamAreaPathRead(d *schema.ResourceData, m interface{}) error {
+func resourceTeamAreaPathRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
-	projectID, teamID, areaPath, err := parseTeamAreaPathResourceID(d.Id())
-	if err != nil {
-		return err
-	}
+	projectID := d.Get("project_id").(string)
+	teamID := d.Get("team_id").(string)
+	areaPath := d.Get("area_path").(string)
 
-	current, err := clients.TeamSettingsClient.GetTeamFieldValues(clients.Ctx, teamsettings.GetTeamFieldValuesArgs{
-		Project: &projectID,
-		Team:    &teamID,
-	})
-	if err != nil {
-		return fmt.Errorf("reading team field values for team %s: %w", teamID, err)
-	}
-
-	values := normalizeValues(current.Values)
-	for _, v := range values {
-		if v.Value == nil {
-			continue
-		}
-		if strings.EqualFold(*v.Value, areaPath) {
-			d.Set("project_id", projectID)
-			d.Set("team_id", teamID)
-			d.Set("area_path", *v.Value)
-			includeChildren := false
-			if v.IncludeChildren != nil {
-				includeChildren = *v.IncludeChildren
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"notfound"},
+		Target:  []string{"found"},
+		Refresh: func() (interface{}, string, error) {
+			current, err := clients.WorkClient.GetTeamFieldValues(ctx, work.GetTeamFieldValuesArgs{
+				Project: &projectID,
+				Team:    &teamID,
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf("reading team field values for team %s: %+v", teamID, err)
 			}
-			d.Set("include_children", includeChildren)
-			return nil
-		}
+
+			for _, v := range normalizeValues(current.Values) {
+				if v.Value != nil && strings.EqualFold(*v.Value, areaPath) {
+					return &v, "found", nil
+				}
+			}
+			return nil, "notfound", nil
+		},
+		Timeout:    1 * time.Minute,
+		MinTimeout: 5 * time.Second,
+		Delay:      1 * time.Second,
 	}
 
-	log.Printf("[DEBUG] azuredevops_team_area_path %s not found, removing from state", d.Id())
-	d.SetId("")
+	result, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		d.SetId("")
+		return nil
+	}
+
+	v := result.(*work.TeamFieldValue)
+	includeChildren := false
+	if v.IncludeChildren != nil {
+		includeChildren = *v.IncludeChildren
+	}
+	d.Set("include_children", includeChildren)
 	return nil
 }
 
-func resourceTeamAreaPathUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceTeamAreaPathUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -199,12 +206,12 @@ func resourceTeamAreaPathUpdate(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	current, err := clients.TeamSettingsClient.GetTeamFieldValues(clients.Ctx, teamsettings.GetTeamFieldValuesArgs{
+	current, err := clients.WorkClient.GetTeamFieldValues(ctx, work.GetTeamFieldValuesArgs{
 		Project: &projectID,
 		Team:    &teamID,
 	})
 	if err != nil {
-		return fmt.Errorf("reading team field values for team %s: %w", teamID, err)
+		return diag.Errorf("reading team field values for team %s: %+v", teamID, err)
 	}
 
 	values := normalizeValues(current.Values)
@@ -217,27 +224,27 @@ func resourceTeamAreaPathUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("area path %q not found in team %s field values during update", areaPath, teamID)
+		return diag.Errorf("area path %q not found in team %s field values during update", areaPath, teamID)
 	}
 
-	patch := &teamsettings.TeamFieldValues{
+	patch := &work.TeamFieldValuesPatch{
 		DefaultValue: current.DefaultValue,
 		Values:       &values,
 	}
 
-	_, err = clients.TeamSettingsClient.UpdateTeamFieldValues(clients.Ctx, teamsettings.UpdateTeamFieldValuesArgs{
-		Project:         &projectID,
-		Team:            &teamID,
-		TeamFieldValues: patch,
+	_, err = clients.WorkClient.UpdateTeamFieldValues(ctx, work.UpdateTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+		Patch:   patch,
 	})
 	if err != nil {
-		return fmt.Errorf("updating team field values for team %s: %w", teamID, err)
+		return diag.Errorf("updating team field values for team %s: %+v", teamID, err)
 	}
 
-	return resourceTeamAreaPathRead(d, m)
+	return resourceTeamAreaPathRead(ctx, d, m)
 }
 
-func resourceTeamAreaPathDelete(d *schema.ResourceData, m interface{}) error {
+func resourceTeamAreaPathDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 
 	projectID := d.Get("project_id").(string)
@@ -248,17 +255,19 @@ func resourceTeamAreaPathDelete(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	current, err := clients.TeamSettingsClient.GetTeamFieldValues(clients.Ctx, teamsettings.GetTeamFieldValuesArgs{
+	current, err := clients.WorkClient.GetTeamFieldValues(ctx, work.GetTeamFieldValuesArgs{
 		Project: &projectID,
 		Team:    &teamID,
 	})
 	if err != nil {
-		return fmt.Errorf("reading team field values for team %s: %w", teamID, err)
+		return diag.Errorf("reading team field values for team %s: %+v", teamID, err)
+	}
+	if current.Values == nil || len(*current.Values) == 0 {
+		return diag.Errorf("team %s has no area path values to delete", teamID)
 	}
 
-	values := normalizeValues(current.Values)
-	var remaining []teamsettings.TeamFieldValueReference
-	for _, v := range values {
+	var remaining []work.TeamFieldValue
+	for _, v := range *current.Values {
 		if v.Value != nil && strings.EqualFold(*v.Value, areaPath) {
 			continue
 		}
@@ -267,65 +276,45 @@ func resourceTeamAreaPathDelete(d *schema.ResourceData, m interface{}) error {
 
 	if current.DefaultValue != nil && strings.EqualFold(*current.DefaultValue, areaPath) {
 		if len(remaining) == 0 {
-			log.Printf("[DEBUG] azuredevops_team_area_path %s is the only value and the default; removing from state only", d.Id())
 			return nil
 		}
 		current.DefaultValue = remaining[0].Value
 	}
 
-	patch := &teamsettings.TeamFieldValues{
+	patch := &work.TeamFieldValuesPatch{
 		DefaultValue: current.DefaultValue,
 		Values:       &remaining,
 	}
 
-	_, err = clients.TeamSettingsClient.UpdateTeamFieldValues(clients.Ctx, teamsettings.UpdateTeamFieldValuesArgs{
-		Project:         &projectID,
-		Team:            &teamID,
-		TeamFieldValues: patch,
+	_, err = clients.WorkClient.UpdateTeamFieldValues(ctx, work.UpdateTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+		Patch:   patch,
 	})
 	if err != nil {
-		return fmt.Errorf("removing area path %q from team %s: %w", areaPath, teamID, err)
+		return diag.Errorf("removing area path %q from team %s: %+v", areaPath, teamID, err)
 	}
 
-	log.Printf("[DEBUG] azuredevops_team_area_path deleted: %s", d.Id())
 	return nil
 }
 
-func importTeamAreaPathState(d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
-	projectID, teamID, areaPath, err := parseTeamAreaPathResourceID(d.Id())
-	if err != nil {
-		return nil, err
+func importTeamAreaPathState(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), "/", 3)
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("unexpected ID format (%q), expected: <project_id>/<team_id>/<area_path>", d.Id())
 	}
 
-	_ = d.Set("project_id", projectID)
-	_ = d.Set("team_id", teamID)
-	_ = d.Set("area_path", areaPath)
-	d.SetId(buildTeamAreaPathResourceID(projectID, teamID, areaPath))
+	d.Set("project_id", parts[0])
+	d.Set("team_id", parts[1])
+	d.Set("area_path", parts[2])
+	d.SetId(fmt.Sprintf("%s/%s/%s", parts[0], parts[1], parts[2]))
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func buildTeamAreaPathResourceID(projectID, teamID, areaPath string) string {
-	return fmt.Sprintf("%s/%s/%s", projectID, teamID, url.QueryEscape(areaPath))
-}
-
-func parseTeamAreaPathResourceID(id string) (string, string, string, error) {
-	parts := strings.SplitN(id, "/", 3)
-	if len(parts) != 3 {
-		return "", "", "", fmt.Errorf("unexpected ID format (%q), expected: <project_id>/<team_id>/<url-escaped-area_path>", id)
-	}
-
-	areaPath, err := url.QueryUnescape(parts[2])
-	if err != nil {
-		return "", "", "", fmt.Errorf("failed to decode area_path from ID %q: %w", id, err)
-	}
-
-	return parts[0], parts[1], areaPath, nil
-}
-
-func normalizeValues(v *[]teamsettings.TeamFieldValueReference) []teamsettings.TeamFieldValueReference {
+func normalizeValues(v *[]work.TeamFieldValue) []work.TeamFieldValue {
 	if v == nil {
-		return []teamsettings.TeamFieldValueReference{}
+		return []work.TeamFieldValue{}
 	}
 	return *v
 }

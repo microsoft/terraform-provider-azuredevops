@@ -63,14 +63,14 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the resource in the format `<project_id>/<team_id>/<url-encoded-area_path>`.
+* `id` - The ID of the resource in the format `<project_id>/<team_id>/<area_path>`.
 
 ## Import
 
 Azure DevOps Team Area Paths can be imported using the resource ID, e.g.
 
 ```shell
-terraform import azuredevops_team_area_path.example 00000000-0000-0000-0000-000000000000/11111111-1111-1111-1111-111111111111/Example+Project
+terraform import azuredevops_team_area_path.example 00000000-0000-0000-0000-000000000000/11111111-1111-1111-1111-111111111111/Example Project
 ```
 
-The format is `<project_id>/<team_id>/<url-encoded-area_path>`.
+The format is `<project_id>/<team_id>/<area_path>`.
