@@ -115,7 +115,6 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_tagging_permissions",
 		"azuredevops_team",
 		"azuredevops_team_administrators",
-		"azuredevops_team_area_path",
 		"azuredevops_team_members",
 		"azuredevops_user_entitlement",
 		"azuredevops_variable_group",

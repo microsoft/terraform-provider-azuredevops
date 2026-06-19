@@ -58,7 +58,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The integer ID of the area path node.
-* `path` - The path of the area, relative to the project root (e.g., `/Engineering/Frontend`).
+* `path` - The path of the area, in backslash-separated format including the project name (e.g., `Example Project\Frontend`).
 
 ## Import
 

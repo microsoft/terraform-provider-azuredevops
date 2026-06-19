@@ -147,7 +147,6 @@ func Provider() *schema.Provider {
 			"azuredevops_tagging_permissions":                         permissions.ResourceTaggingPermissions(),
 			"azuredevops_team":                                        core.ResourceTeam(),
 			"azuredevops_team_administrators":                         core.ResourceTeamAdministrators(),
-			"azuredevops_team_area_path":                              core.ResourceTeamAreaPath(),
 			"azuredevops_team_members":                                core.ResourceTeamMembers(),
 			"azuredevops_user_entitlement":                            memberentitlementmanagement.ResourceUserEntitlement(),
 			"azuredevops_variable_group":                              taskagent.ResourceVariableGroup(),

@@ -43,6 +43,33 @@ resource "azuredevops_team" "example" {
 }
 ```
 
+### With Area Paths
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  work_item_template = "Agile"
+  version_control    = "Git"
+  visibility         = "private"
+}
+
+resource "azuredevops_area" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Frontend"
+}
+
+resource "azuredevops_team" "example" {
+  project_id = azuredevops_project.example.id
+  name       = "Frontend Team"
+
+  area {
+    path             = azuredevops_area.example.path
+    include_children = true
+    is_default       = true
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -70,6 +97,18 @@ The following arguments are supported:
    `azuredevops_team` resource via the `members` block and by using the
    `azuredevops_team_members` resource. However it's not possible to use
    both methods to manage team members, since there'll be conflicts.
+
+---
+
+* `area` - (Optional) One or more `area` blocks as defined below. Configures the area paths associated with the team.
+
+  ~> **NOTE:** If no `area` blocks are specified, the team's area path configuration will not be managed by Terraform and any existing area paths will be left unchanged. Removing all `area` blocks from a configuration that previously had them will cause Terraform to stop managing the team's area paths without modifying them on the server.
+
+  An `area` block supports the following:
+
+  * `path` - (Required) The area path to associate with the team (e.g., `Example Project\Frontend`). Can reference `azuredevops_area.path`.
+  * `include_children` - (Optional) Whether work items in child area paths are included. Defaults to `true`.
+  * `is_default` - (Required) Whether this area path is the team's default. Exactly one `area` block must have `is_default` set to `true`.
 
 ## Attributes Reference
 
