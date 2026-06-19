@@ -156,6 +156,7 @@ func TestAccTeam_complete(t *testing.T) {
 		},
 	})
 }
+
 func TestAccTeam_area(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	teamName := testutils.GenerateResourceName()
