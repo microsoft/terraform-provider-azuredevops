@@ -271,6 +271,9 @@ func convertAreaNodePath(path *string) string {
 		return ""
 	}
 	parts := strings.Split(*path, "\\")
+	if len(parts) == 2 {
+		return parts[1]
+	}
 	if len(parts) < 3 {
 		return ""
 	}

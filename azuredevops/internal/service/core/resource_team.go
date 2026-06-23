@@ -98,6 +98,7 @@ func ResourceTeam() *schema.Resource {
 			"area": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"path": {
@@ -108,7 +109,7 @@ func ResourceTeam() *schema.Resource {
 						"include_children": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  true,
+							Default:  false,
 						},
 						"is_default": {
 							Type:     schema.TypeBool,
@@ -175,38 +176,14 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	var areaSet *schema.Set
 	if v, ok := d.GetOk("area"); ok {
 		areaSet = v.(*schema.Set)
-		var areaValues []work.TeamFieldValue
-		var defaultValue *string
-		for _, item := range areaSet.List() {
-			area := item.(map[string]interface{})
-			path := converter.String(area["path"].(string))
-			areaValues = append(areaValues, work.TeamFieldValue{
-				Value:           path,
-				IncludeChildren: converter.Bool(area["include_children"].(bool)),
-			})
-			if area["is_default"].(bool) {
-				defaultValue = path
-			}
-		}
-
-		areaPatch := &work.TeamFieldValuesPatch{
-			DefaultValue: defaultValue,
-			Values:       &areaValues,
-		}
-
-		_, err := clients.WorkClient.UpdateTeamFieldValues(clients.Ctx, work.UpdateTeamFieldValuesArgs{
-			Project: &projectID,
-			Team:    &teamID,
-			Patch:   areaPatch,
-		})
-		if err != nil {
+		if err := setTeamAreas(clients, projectID, teamID, areaSet); err != nil {
 			if delErr := clients.CoreClient.DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
 				ProjectId: converter.String(team.ProjectId.String()),
 				TeamId:    converter.String(team.Id.String()),
 			}); delErr != nil {
 				log.Printf("[ERROR] Failed to delete team after area path update failure %+v", delErr)
 			}
-			return fmt.Errorf("updating team area paths for team %s: %w", teamID, err)
+			return err
 		}
 	}
 
@@ -252,27 +229,32 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOk("area"); ok {
-		areas, err := clients.WorkClient.GetTeamFieldValues(clients.Ctx, work.GetTeamFieldValuesArgs{
-			Project: &projectID,
-			Team:    &teamID,
-		})
-		if err != nil {
-			return err
-		}
+	areas, err := clients.WorkClient.GetTeamFieldValues(clients.Ctx, work.GetTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+	})
+	if err != nil {
+		return err
+	}
 
-		if areas.Values != nil {
-			var areaList []map[string]interface{}
-			for _, v := range *areas.Values {
-				areaList = append(areaList, map[string]interface{}{
-					"path":             *v.Value,
-					"include_children": *v.IncludeChildren,
-					"is_default":       areas.DefaultValue != nil && *v.Value == *areas.DefaultValue,
-				})
+	var areaList []map[string]interface{}
+	if areas != nil && areas.Values != nil {
+		for _, v := range *areas.Values {
+			if v.Value == nil {
+				continue
 			}
-			d.Set("area", areaList)
+			includeChildren := false
+			if v.IncludeChildren != nil {
+				includeChildren = *v.IncludeChildren
+			}
+			areaList = append(areaList, map[string]interface{}{
+				"path":             *v.Value,
+				"include_children": includeChildren,
+				"is_default":       areas.DefaultValue != nil && *v.Value == *areas.DefaultValue,
+			})
 		}
 	}
+	d.Set("area", areaList)
 
 	d.Set("name", team.Name)
 	d.Set("description", team.Description)
@@ -363,32 +345,8 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	var areaSet *schema.Set
 	if d.HasChange("area") && d.Get("area").(*schema.Set).Len() != 0 {
 		areaSet = d.Get("area").(*schema.Set)
-		var areaValues []work.TeamFieldValue
-		var defaultValue *string
-		for _, item := range areaSet.List() {
-			area := item.(map[string]interface{})
-			path := converter.String(area["path"].(string))
-			areaValues = append(areaValues, work.TeamFieldValue{
-				Value:           path,
-				IncludeChildren: converter.Bool(area["include_children"].(bool)),
-			})
-			if area["is_default"].(bool) {
-				defaultValue = path
-			}
-		}
-
-		areaPatch := &work.TeamFieldValuesPatch{
-			DefaultValue: defaultValue,
-			Values:       &areaValues,
-		}
-
-		_, err := clients.WorkClient.UpdateTeamFieldValues(clients.Ctx, work.UpdateTeamFieldValuesArgs{
-			Project: &projectID,
-			Team:    &teamID,
-			Patch:   areaPatch,
-		})
-		if err != nil {
-			return fmt.Errorf("updating team area paths for team %s: %w", teamID, err)
+		if err := setTeamAreas(clients, projectID, teamID, areaSet); err != nil {
+			return err
 		}
 	}
 
@@ -534,6 +492,37 @@ func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, sub
 	err = addTeamMembers(clients, team, linq.From(*subjectDescriptors).Except(linq.From(currentMembers)), false)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func setTeamAreas(clients *client.AggregatedClient, projectID string, teamID string, areaSet *schema.Set) error {
+	var areaValues []work.TeamFieldValue
+	var defaultValue *string
+	for _, item := range areaSet.List() {
+		area := item.(map[string]interface{})
+		path := converter.String(area["path"].(string))
+		areaValues = append(areaValues, work.TeamFieldValue{
+			Value:           path,
+			IncludeChildren: converter.Bool(area["include_children"].(bool)),
+		})
+		if area["is_default"].(bool) {
+			defaultValue = path
+		}
+	}
+
+	areaPatch := &work.TeamFieldValuesPatch{
+		DefaultValue: defaultValue,
+		Values:       &areaValues,
+	}
+
+	if _, err := clients.WorkClient.UpdateTeamFieldValues(clients.Ctx, work.UpdateTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+		Patch:   areaPatch,
+	}); err != nil {
+		return fmt.Errorf("updating team area paths for team %s: %w", teamID, err)
 	}
 
 	return nil

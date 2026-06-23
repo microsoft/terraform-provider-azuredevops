@@ -107,8 +107,8 @@ The following arguments are supported:
   An `area` block supports the following:
 
   * `path` - (Required) The area path to associate with the team (e.g., `Example Project\Frontend`). Can reference `azuredevops_area.path`.
-  * `include_children` - (Optional) Whether work items in child area paths are included. Defaults to `true`.
-  * `is_default` - (Required) Whether this area path is the team's default. Exactly one `area` block must have `is_default` set to `true`.
+  * `include_children` - (Optional) Whether work items in child area paths are included? Defaults to `false`.
+  * `is_default` - (Required) Whether this area path is the team's default? Exactly one `area` block must have `is_default` set to `true`.
 
 ## Attributes Reference
 
