@@ -61,7 +61,7 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	group := d.Get("group").(string)
 	mode := d.Get("mode").(string)
-	membersToAdd := d.Get("members").(*schema.Set)
+	membersToAdd := schema.NewSet(schema.HashString, d.Get("members").(*schema.Set).List())
 	var membersToRemove *schema.Set = nil
 
 	if strings.EqualFold("overwrite", mode) {
@@ -93,14 +93,14 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if (membersToAdd == nil || actualMembershipsSet.Intersection(membersToAdd).Len() <= 0) &&
-				(membersToRemove == nil || actualMembershipsSet.Intersection(membersToRemove).Len() <= 0) {
+			if (membersToAdd == nil || actualMembershipsSet.Intersection(membersToAdd).Len() == membersToAdd.Len()) &&
+				(membersToRemove == nil || actualMembershipsSet.Intersection(membersToRemove).Len() == 0) {
 				state = "Synched"
 			}
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 2,
@@ -151,9 +151,9 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	group := d.Get("group").(string)
 	oldData, newData := d.GetChange("members")
 	// members that need to be added will be missing from the old data, but present in the new data
-	membersToAdd := newData.(*schema.Set).Difference(oldData.(*schema.Set))
+	membersToAdd := schema.NewSet(schema.HashString, newData.(*schema.Set).Difference(oldData.(*schema.Set)).List())
 	// members that need to be removed will be missing from the new data, but present in the old data
-	membersToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
+	membersToRemove := schema.NewSet(schema.HashString, oldData.(*schema.Set).Difference(newData.(*schema.Set)).List())
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
 		expandGroupMembers(group, membersToAdd),
@@ -172,14 +172,14 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
-				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+			if actualMembershipsSet.Intersection(membersToAdd).Len() == membersToAdd.Len() &&
+				actualMembershipsSet.Intersection(membersToRemove).Len() == 0 {
 				state = "Synched"
 			}
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 3,
@@ -215,7 +215,7 @@ func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error 
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutDelete),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 2,
