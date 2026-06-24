@@ -268,13 +268,20 @@ func buildApiPath(parentPath, name string) string {
 
 func convertAreaNodePath(path *string) string {
 	if path == nil {
-		return "/"
+		return ""
 	}
 	parts := strings.Split(*path, "\\")
-	if len(parts) > 3 {
-		return "/" + strings.Join(parts[3:], "/")
+	if len(parts) == 2 {
+		return parts[1]
 	}
-	return "/"
+	if len(parts) < 3 {
+		return ""
+	}
+	result := []string{parts[1]}
+	if len(parts) > 3 {
+		result = append(result, parts[3:]...)
+	}
+	return strings.Join(result, "\\")
 }
 
 func validateClassificationNodeName(v interface{}, k string) (warnings []string, errors []error) {

@@ -23,7 +23,7 @@ func TestAccArea_basic(t *testing.T) {
 				Config: hclAreaBasic(projectName, areaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "path"),
+					resource.TestCheckResourceAttr(tfNode, "path", fmt.Sprintf("%s\\%s", projectName, areaName)),
 				),
 			},
 			{
@@ -52,9 +52,9 @@ func TestAccArea_child(t *testing.T) {
 				Config: hclAreaChild(projectName, parentAreaName, childAreaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNodeParent, "id"),
-					resource.TestCheckResourceAttrSet(tfNodeParent, "path"),
+					resource.TestCheckResourceAttr(tfNodeParent, "path", fmt.Sprintf("%s\\%s", projectName, parentAreaName)),
 					resource.TestCheckResourceAttrSet(tfNodeChild, "id"),
-					resource.TestCheckResourceAttrSet(tfNodeChild, "path"),
+					resource.TestCheckResourceAttr(tfNodeChild, "path", fmt.Sprintf("%s\\%s\\%s", projectName, parentAreaName, childAreaName)),
 					resource.TestCheckResourceAttrPair(tfNodeChild, "parent_area_id", tfNodeParent, "id"),
 				),
 			},
@@ -89,7 +89,7 @@ func TestAccArea_update(t *testing.T) {
 				Config: hclAreaBasic(projectName, areaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "path"),
+					resource.TestCheckResourceAttr(tfNode, "path", fmt.Sprintf("%s\\%s", projectName, areaName)),
 					resource.TestCheckResourceAttr(tfNode, "name", areaName),
 				),
 			},
@@ -97,7 +97,7 @@ func TestAccArea_update(t *testing.T) {
 				Config: hclAreaBasic(projectName, updatedAreaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(tfNode, "id"),
-					resource.TestCheckResourceAttrSet(tfNode, "path"),
+					resource.TestCheckResourceAttr(tfNode, "path", fmt.Sprintf("%s\\%s", projectName, updatedAreaName)),
 					resource.TestCheckResourceAttr(tfNode, "name", updatedAreaName),
 				),
 			},
