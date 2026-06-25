@@ -57,6 +57,8 @@ The following attributes are exported:
 
 * `children` - A list of `children` blocks as defined below, empty if `has_children == false`
 
+* `attributes` - A map that has node attributes like start/finish date for iteration nodes. 
+
 ---
 
 A `children` block supports the following:
@@ -83,4 +85,4 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 
 ## PAT Permissions Required
 
-- **Project & Team**: vso.work - Grants the ability to read work items, queries, boards, area and iterations paths, and other work item tracking related metadata. Also grants the ability to execute queries, search work items and to receive notifications about work item events via service hooks. 
+- **Project & Team**: vso.work - Grants the ability to read work items, queries, boards, area and iterations paths, and other work item tracking related metadata. Also grants the ability to execute queries, search work items and to receive notifications about work item events via service hooks.
