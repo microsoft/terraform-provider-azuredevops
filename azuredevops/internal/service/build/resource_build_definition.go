@@ -181,6 +181,9 @@ func ResourceBuildDefinition() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "master",
+							StateFunc: func(v interface{}) string {
+								return strings.TrimPrefix(v.(string), "refs/heads/")
+							},
 						},
 						"service_connection_id": {
 							Type:     schema.TypeString,
@@ -883,7 +886,7 @@ func flattenRepository(buildDefinition *build.BuildDefinition) (interface{}, err
 		"yml_path":              yamlFilePath,
 		"repo_id":               *buildDefinition.Repository.Id,
 		"repo_type":             *buildDefinition.Repository.Type,
-		"branch_name":           *buildDefinition.Repository.DefaultBranch,
+		"branch_name":           strings.TrimPrefix(*buildDefinition.Repository.DefaultBranch, "refs/heads/"),
 		"github_enterprise_url": githubEnterpriseUrl,
 		"url":                   *buildDefinition.Repository.Url,
 	}}
